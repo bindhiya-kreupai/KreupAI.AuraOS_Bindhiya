@@ -3,7 +3,8 @@
  * Checks if a reset token is valid
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { passwordResetService } from '@/lib/auth/password-reset.service';
 import { logger } from '@/lib/logger';
 

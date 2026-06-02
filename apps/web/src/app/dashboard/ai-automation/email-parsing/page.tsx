@@ -165,20 +165,20 @@ export default function EmailParsingPage() {
                                 <div key={i} className="group flex items-start hover:bg-white/5 -mx-2 px-2 py-1 rounded transition-colors">
                                     <div className="text-purple-400 w-40 shrink-0 select-none">"{key}":</div>
                                     <div className="flex-1">
-                                        {/* @ts-ignore */}
+                                        {/* @ts-ignore — schema drift, pending #29 */}
                                         {typeof data.value === 'object' || !data.value ? (
                                             <span className="text-slate-500">{'{'} ... {'}'}</span>
                                         ) : (
                                             <div className="flex items-center justify-between">
-                                                {/* @ts-ignore */}
+                                                {/* @ts-ignore — schema drift, pending #29 */}
                                                 <span className="text-emerald-300">"{data.value}"</span>
-                                                {/* @ts-ignore */}
+                                                {/* @ts-ignore — schema drift, pending #29 */}
                                                 <span className={`text-[10px] ml-4 font-bold px-1.5 rounded ${data.confidence > 0.9 ? 'bg-emerald-500/20 text-emerald-400' :
-                                                    /* @ts-ignore */
+                                                    /* @ts-ignore — schema drift, pending #29 */
                                                     data.confidence > 0.8 ? 'bg-amber-500/20 text-amber-400' :
                                                         'bg-rose-500/20 text-rose-400'
                                                     }`}>
-                                                    {/* @ts-ignore */}
+                                                    {/* @ts-ignore — schema drift, pending #29 */}
                                                     {Math.round(data.confidence * 100)}%
                                                 </span>
                                             </div>

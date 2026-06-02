@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 
-let pilots = [
+const pilots = [
     { id: '1', name: 'Capt. Sully', rank: 'Captain', flightHours: 15000, status: 'active' },
     { id: '2', name: 'Maverick', rank: 'First Officer', flightHours: 2500, status: 'training' }
 ];

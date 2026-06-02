@@ -1,5 +1,6 @@
 // @ts-nocheck — Has Prisma schema drift (wrong field/relation names against current schema). Tracked under #29.
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@/lib/database';
 
@@ -18,7 +19,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
     if (employeeId) {
       const leaveWhere: any = {
         tenantId: user.tenantId,
-        employeeId: employeeId,
+        employeeId,
       };
       if (status) leaveWhere.status = status;
 
@@ -74,7 +75,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
     const requestData = {
       id: crypto.randomUUID(),
       tenantId: user.tenantId,
-      employeeId: employeeId,
+      employeeId,
       type: body.type || 'General',
       category: body.category || 'General',
       subject: body.subject,

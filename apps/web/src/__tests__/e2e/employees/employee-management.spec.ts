@@ -14,7 +14,8 @@
 import { test, expect } from '@playwright/test';
 import { LoginPage } from '../pages/LoginPage';
 import { DashboardPage } from '../pages/DashboardPage';
-import { EmployeesPage, EmployeeData } from '../pages/EmployeesPage';
+import type { EmployeeData } from '../pages/EmployeesPage';
+import { EmployeesPage } from '../pages/EmployeesPage';
 import { testUsers } from '../fixtures/test-users';
 
 test.describe('Employee Management', () => {

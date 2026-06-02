@@ -11,7 +11,7 @@
  * - Screenshot helpers
  */
 
-import { Page, Locator, Download } from '@playwright/test';
+import type { Page, Locator, Download } from '@playwright/test';
 
 /**
  * Generate unique email for testing

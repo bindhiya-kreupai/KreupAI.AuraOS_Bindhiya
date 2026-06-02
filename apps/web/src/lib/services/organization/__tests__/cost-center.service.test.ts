@@ -1,5 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { costCenterService, CostCenterService } from '../cost-center.service';
+import type { CostCenterService } from '../cost-center.service';
+import { costCenterService } from '../cost-center.service';
 import { prisma } from '@/lib/database';
 
 // Mock Prisma

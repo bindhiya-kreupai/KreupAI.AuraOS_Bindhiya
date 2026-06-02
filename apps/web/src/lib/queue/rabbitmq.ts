@@ -4,7 +4,8 @@
  * Provides connection management and channel pooling for RabbitMQ
  */
 
-import amqp, { Connection, Channel, Options } from 'amqplib';
+import type { Connection, Channel, Options } from 'amqplib';
+import amqp from 'amqplib';
 import { logger } from '@/lib/logger';
 
 // RabbitMQ configuration from environment

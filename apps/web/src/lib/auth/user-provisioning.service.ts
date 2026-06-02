@@ -6,7 +6,7 @@
 
 import { prisma } from '@aura/database';
 import { logger } from '@/lib/logger';
-import { OAuth2User } from '@aura/auth';
+import type { OAuth2User } from '@aura/auth';
 
 export interface ProvisionedUser {
   id: string;

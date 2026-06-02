@@ -121,7 +121,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
             // Summary stats expected by RecruitmentAnalyticsService
             totalRequisitions,
             openRequisitions,
-            totalApplications: totalApplications,
+            totalApplications,
             applicationsBySource: applicationsBySourceMap,
             applicationsByStatus: applicationsByStatusMap,
             averageTimeToHire: 0,

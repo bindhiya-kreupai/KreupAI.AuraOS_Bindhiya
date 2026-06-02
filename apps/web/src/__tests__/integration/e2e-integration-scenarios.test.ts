@@ -63,7 +63,7 @@ test.describe('E2E Integration - Employee Lifecycle', () => {
     const interviewResponse = await request.post(`${API_BASE}/recruitment/interviews`, {
       headers,
       data: {
-        candidateId: candidateId,
+        candidateId,
         interviewDate: '2025-02-15',
         interviewType: 'Technical',
         interviewerIds: ['interviewer-123']
@@ -98,7 +98,7 @@ test.describe('E2E Integration - Employee Lifecycle', () => {
     const onboardingResponse = await request.post(`${API_BASE}/onboarding/workflows`, {
       headers,
       data: {
-        candidateId: candidateId,
+        candidateId,
         startDate: '2025-03-01',
         tasks: [
           { name: 'Complete documentation', dueDate: '2025-03-01' },
@@ -314,8 +314,8 @@ test.describe('E2E Integration - Payroll Processing Cycle', () => {
       await request.post(`${API_BASE}/attendance`, {
         headers,
         data: {
-          employeeId: employeeId,
-          date: date,
+          employeeId,
+          date,
           clockIn: '09:00:00',
           clockOut: '17:00:00',
           status: 'Present',
@@ -330,7 +330,7 @@ test.describe('E2E Integration - Payroll Processing Cycle', () => {
     const leaveResponse = await request.post(`${API_BASE}/leave/applications`, {
       headers,
       data: {
-        employeeId: employeeId,
+        employeeId,
         leaveType: 'Sick Leave',
         startDate: '2025-01-20',
         endDate: '2025-01-21',
@@ -465,7 +465,7 @@ test.describe('E2E Integration - Leave Management Workflow', () => {
     const leaveAppResponse = await request.post(`${API_BASE}/leave/applications`, {
       headers,
       data: {
-        employeeId: employeeId,
+        employeeId,
         leaveType: 'Annual Leave',
         startDate: '2025-03-10',
         endDate: '2025-03-14',
@@ -520,7 +520,7 @@ test.describe('E2E Integration - Leave Management Workflow', () => {
       {
         headers,
         data: {
-          employeeId: employeeId,
+          employeeId,
           startDate: '2025-03-10',
           endDate: '2025-03-14',
           leaveType: 'Annual Leave'
@@ -552,7 +552,7 @@ test.describe('E2E Integration - Leave Management Workflow', () => {
     const notifyResponse = await request.post(`${API_BASE}/notifications/send`, {
       headers,
       data: {
-        employeeId: employeeId,
+        employeeId,
         type: 'leave_approved',
         message: 'Your leave application has been approved'
       }
@@ -602,7 +602,7 @@ test.describe('E2E Integration - Leave Management Workflow', () => {
     const leaveResponse = await request.post(`${API_BASE}/leave/applications`, {
       headers,
       data: {
-        employeeId: employeeId,
+        employeeId,
         leaveType: 'Annual Leave',
         startDate: '2025-04-01',
         endDate: '2025-04-10',
@@ -678,7 +678,7 @@ test.describe('E2E Integration - Cross-Module Workflows', () => {
     const leaveResponse = await request.post(`${API_BASE}/leave/applications`, {
       headers,
       data: {
-        employeeId: employeeId,
+        employeeId,
         leaveType: 'Sick Leave',
         startDate: '2025-02-05',
         endDate: '2025-02-06',
@@ -748,7 +748,7 @@ test.describe('E2E Integration - Cross-Module Workflows', () => {
     const reviewResponse = await request.post(`${API_BASE}/performance/reviews`, {
       headers,
       data: {
-        employeeId: employeeId,
+        employeeId,
         reviewPeriod: 'Annual 2024',
         rating: 4.8,
         status: 'Completed',
@@ -764,7 +764,7 @@ test.describe('E2E Integration - Cross-Module Workflows', () => {
     const incrementResponse = await request.post(`${API_BASE}/compensation/increment`, {
       headers,
       data: {
-        employeeId: employeeId,
+        employeeId,
         incrementPercentage: 15,
         effectiveDate: '2025-01-01',
         reason: 'Annual Performance Review'

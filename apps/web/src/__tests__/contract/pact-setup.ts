@@ -116,7 +116,7 @@ export const responseMatchers = {
     },
     body: {
       success: boolean(true),
-      data: data,
+      data,
       message: like('Success'),
     },
   }),
@@ -131,7 +131,7 @@ export const responseMatchers = {
     },
     body: {
       success: boolean(true),
-      data: data,
+      data,
       message: like('Resource created successfully'),
     },
   }),
@@ -158,7 +158,7 @@ export const responseMatchers = {
       error: {
         code: string('VALIDATION_ERROR'),
         message: like('Validation failed'),
-        errors: errors,
+        errors,
       },
     },
   }),

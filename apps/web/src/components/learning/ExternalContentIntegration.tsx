@@ -23,8 +23,8 @@ const courses: ExternalCourse[] = [
 
 const providerColors: Record<string, string> = {
   'LinkedIn Learning': 'bg-blue-50 text-blue-600 dark:bg-blue-900/20',
-  'Udemy': 'bg-purple-50 text-purple-600 dark:bg-purple-900/20',
-  'Coursera': 'bg-cyan-50 text-cyan-600 dark:bg-cyan-900/20',
+  Udemy: 'bg-purple-50 text-purple-600 dark:bg-purple-900/20',
+  Coursera: 'bg-cyan-50 text-cyan-600 dark:bg-cyan-900/20',
 };
 
 const statusConfig = {

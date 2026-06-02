@@ -4,17 +4,13 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import {
+import type {
   OrgChart,
   OrgNode,
   OrgChartView,
-  OrgChartFilter,
   Scenario,
   ScenarioChange,
-  ScenarioImpact,
   SpanOfControl,
-  SpanRecommendation,
-  PositionHierarchy,
   Position,
   MatrixStructure,
   MatrixRelationship,
@@ -24,10 +20,15 @@ import {
   DevelopmentPlan,
   OrgAnalytics,
   ChangeManagement,
-  ImpactAssessment,
   AffectedEmployee,
   OrgDesignSettings,
-  Toast,
+  Toast} from '../types';
+import {
+  OrgChartFilter,
+  ScenarioImpact,
+  SpanRecommendation,
+  PositionHierarchy,
+  ImpactAssessment
 } from '../types';
 import {
   OrgChartService,

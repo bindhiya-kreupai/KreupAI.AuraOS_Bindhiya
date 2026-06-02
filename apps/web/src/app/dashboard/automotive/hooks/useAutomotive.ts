@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import {
+import type {
   Technician, TechnicianShift, RosterTemplate, ShiftSwapRequest, TimeOffRequest, WorkloadAnalysis,
   SalesCommission, VehicleSale, ServiceSale, CommissionStructure, CommissionReport, SalesPerson,
   Part, InventoryMovement, PurchaseOrder, StockAdjustment, InventoryAnalysis,

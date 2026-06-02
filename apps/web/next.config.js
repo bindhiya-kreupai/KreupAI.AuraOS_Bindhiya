@@ -1,18 +1,20 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // #29z — TypeScript errors gated by build (was 3,926, now 0).
+  // #29 — Both TypeScript and ESLint errors now gate the build.
   //
-  // History: started at 3,926 errors on 2026-06-01 with both flags forced
-  // to `true` to keep CI green. As of 2026-06-02 the count is 0; flipping
-  // `ignoreBuildErrors: false` so the build now enforces typechecking.
+  // History: started 2026-06-01 with 3,926 TS errors + 3,848 ESLint errors,
+  // both flags forced to `true` to keep CI green. As of 2026-06-02:
+  //   - TypeScript: 0 errors, `ignoreBuildErrors: false`
+  //   - ESLint:     0 errors, `ignoreDuringBuilds: false`
   // ~280 files carry `@ts-nocheck` headers pointing at #29 — these are
   // services/routes/components with active Prisma schema drift that need
   // proper realignment. CI ratchet (scripts/typecheck-ratchet.sh) holds
-  // the line at 0; any new error fails CI.
+  // the TS line at 0; ESLint warnings (~8.7k, mostly `no-explicit-any` and
+  // `no-unused-vars`) are tolerated but not enforced.
   //
-  // ESLint kept `ignoreDuringBuilds: true` pending #29e cleanup.
+  // DO NOT add code that depends on either flag staying true.
   eslint: {
-    ignoreDuringBuilds: true,
+    ignoreDuringBuilds: false,
   },
   typescript: {
     ignoreBuildErrors: false,

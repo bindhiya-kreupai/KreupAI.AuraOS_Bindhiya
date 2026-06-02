@@ -18,9 +18,9 @@ const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
 test.describe('NoSQL Injection Tests', () => {
   test('should prevent NoSQL injection in MongoDB-style queries', async ({ request }) => {
     const maliciousPayloads = [
-      { email: { '$ne': null } }, // Match all
-      { email: { '$gt': '' } }, // Greater than empty string
-      { password: { '$regex': '.*' } }, // Regex match all
+      { email: { $ne: null } }, // Match all
+      { email: { $gt: '' } }, // Greater than empty string
+      { password: { $regex: '.*' } }, // Regex match all
     ];
 
     for (const payload of maliciousPayloads) {
@@ -36,7 +36,7 @@ test.describe('NoSQL Injection Tests', () => {
   test('should sanitize JSON inputs in search', async ({ request }) => {
     const response = await request.get(`${BASE_URL}/api/employees`, {
       params: {
-        filter: JSON.stringify({ '$where': 'this.salary > 100000' }),
+        filter: JSON.stringify({ $where: 'this.salary > 100000' }),
       },
     });
 
@@ -405,7 +405,7 @@ test.describe('Host Header Injection', () => {
 
     for (const host of maliciousHosts) {
       const response = await request.get(`${BASE_URL}/api/health`, {
-        headers: { 'Host': host },
+        headers: { Host: host },
       });
 
       // Should either reject or ignore malicious host
@@ -416,7 +416,7 @@ test.describe('Host Header Injection', () => {
   test('should validate Host header in password reset', async ({ request }) => {
     const response = await request.post(`${BASE_URL}/api/auth/forgot-password`, {
       data: { email: 'user@example.com' },
-      headers: { 'Host': 'evil.com' },
+      headers: { Host: 'evil.com' },
     });
 
     // Should not send reset email to malicious domain

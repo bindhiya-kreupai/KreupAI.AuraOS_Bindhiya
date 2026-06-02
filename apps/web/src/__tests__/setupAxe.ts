@@ -16,7 +16,7 @@ export const axe = configureAxe({
     'color-contrast': { enabled: true },
     'valid-lang': { enabled: true },
     'html-has-lang': { enabled: true },
-    'label': { enabled: true },
+    label: { enabled: true },
     'button-name': { enabled: true },
     'link-name': { enabled: true },
     'image-alt': { enabled: true },
@@ -24,7 +24,7 @@ export const axe = configureAxe({
     'duplicate-id': { enabled: true },
     'heading-order': { enabled: true },
     'landmark-one-main': { enabled: true },
-    'region': { enabled: true },
+    region: { enabled: true },
 
     // Form accessibility
     'label-title-only': { enabled: true },
@@ -33,7 +33,7 @@ export const axe = configureAxe({
 
     // Keyboard navigation
     'focus-order-semantics': { enabled: true },
-    'tabindex': { enabled: true },
+    tabindex: { enabled: true },
 
     // ARIA
     'aria-valid-attr': { enabled: true },
@@ -44,7 +44,7 @@ export const axe = configureAxe({
     'aria-required-parent': { enabled: true },
 
     // Disable rules that may cause false positives in testing
-    'region': { enabled: false } // Often triggers on test components
+    region: { enabled: false } // Often triggers on test components
   }
 });
 

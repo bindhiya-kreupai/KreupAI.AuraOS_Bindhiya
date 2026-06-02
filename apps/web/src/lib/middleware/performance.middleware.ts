@@ -3,7 +3,8 @@
  * Tracks API response times and detects slow queries
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { logger } from '@/lib/logger';
 
 export interface PerformanceMetrics {

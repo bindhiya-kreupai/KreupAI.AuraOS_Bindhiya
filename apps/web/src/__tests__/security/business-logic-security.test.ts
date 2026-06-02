@@ -29,7 +29,7 @@ test.describe('Payroll Security', () => {
 
     // Try to update own salary
     const response = await request.patch(`${BASE_URL}/api/employees/me`, {
-      headers: { 'Authorization': `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}` },
       data: {
         salary: 1000000, // Try to set high salary
       },
@@ -48,7 +48,7 @@ test.describe('Payroll Security', () => {
 
     // Try to manipulate payroll calculation
     const response = await request.post(`${BASE_URL}/api/payroll/calculate`, {
-      headers: { 'Authorization': `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}` },
       data: {
         employeeId: 'me',
         baseSalary: 999999, // Manipulated value
@@ -69,7 +69,7 @@ test.describe('Payroll Security', () => {
 
     // Try to access employee 2's payslip
     const response = await request.get(`${BASE_URL}/api/payroll/payslips/employee2-id`, {
-      headers: { 'Authorization': `Bearer ${token1}` },
+      headers: { Authorization: `Bearer ${token1}` },
     });
 
     expect([403, 404]).toContain(response.status());
@@ -87,7 +87,7 @@ test.describe('Payroll Security', () => {
     futureDate.setFullYear(futureDate.getFullYear() + 10);
 
     const response = await request.post(`${BASE_URL}/api/payroll/runs`, {
-      headers: { 'Authorization': `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}` },
       data: {
         payPeriod: futureDate.toISOString(),
         companyId: 'company-1',
@@ -108,13 +108,13 @@ test.describe('Payroll Security', () => {
 
     // Create first payroll run
     await request.post(`${BASE_URL}/api/payroll/runs`, {
-      headers: { 'Authorization': `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}` },
       data: { payPeriod, companyId: 'company-1' },
     });
 
     // Try to create duplicate
     const response = await request.post(`${BASE_URL}/api/payroll/runs`, {
-      headers: { 'Authorization': `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}` },
       data: { payPeriod, companyId: 'company-1' },
     });
 
@@ -132,7 +132,7 @@ test.describe('Leave Balance Manipulation', () => {
 
     // Try to apply for more leave than available
     const response = await request.post(`${BASE_URL}/api/leave/applications`, {
-      headers: { 'Authorization': `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}` },
       data: {
         leaveTypeId: 'casual-leave',
         startDate: '2024-02-01',
@@ -144,7 +144,7 @@ test.describe('Leave Balance Manipulation', () => {
     if (response.status() === 201) {
       // If it was accepted, balance should be checked
       const balanceResponse = await request.get(`${BASE_URL}/api/leave/balance`, {
-        headers: { 'Authorization': `Bearer ${token}` },
+        headers: { Authorization: `Bearer ${token}` },
       });
 
       const balance = await balanceResponse.json();
@@ -164,7 +164,7 @@ test.describe('Leave Balance Manipulation', () => {
 
     // Try to manually add leave balance
     const response = await request.patch(`${BASE_URL}/api/leave/balance`, {
-      headers: { 'Authorization': `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}` },
       data: {
         leaveTypeId: 'casual-leave',
         balance: 100, // Set high balance
@@ -183,7 +183,7 @@ test.describe('Leave Balance Manipulation', () => {
 
     // Try to apply for leave in the past
     const response = await request.post(`${BASE_URL}/api/leave/applications`, {
-      headers: { 'Authorization': `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}` },
       data: {
         leaveTypeId: 'casual-leave',
         startDate: '2020-01-01',
@@ -205,7 +205,7 @@ test.describe('Leave Balance Manipulation', () => {
 
     // Try to approve own leave
     const response = await request.patch(`${BASE_URL}/api/leave/applications/1/approve`, {
-      headers: { 'Authorization': `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}` },
     });
 
     expect([403, 404]).toContain(response.status());
@@ -225,7 +225,7 @@ test.describe('Attendance Fraud Prevention', () => {
     pastDate.setDate(pastDate.getDate() - 30); // 30 days ago
 
     const response = await request.post(`${BASE_URL}/api/attendance/clock-in`, {
-      headers: { 'Authorization': `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}` },
       data: {
         clockInTime: pastDate.toISOString(),
       },
@@ -244,12 +244,12 @@ test.describe('Attendance Fraud Prevention', () => {
 
     // Clock in
     await request.post(`${BASE_URL}/api/attendance/clock-in`, {
-      headers: { 'Authorization': `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}` },
     });
 
     // Try to clock in again without clock-out
     const response = await request.post(`${BASE_URL}/api/attendance/clock-in`, {
-      headers: { 'Authorization': `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}` },
     });
 
     expect([400, 409]).toContain(response.status());
@@ -264,7 +264,7 @@ test.describe('Attendance Fraud Prevention', () => {
 
     // Try to clock in with fake GPS coordinates
     const response = await request.post(`${BASE_URL}/api/attendance/clock-in`, {
-      headers: { 'Authorization': `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}` },
       data: {
         latitude: 0, // Invalid coordinates
         longitude: 0,
@@ -286,7 +286,7 @@ test.describe('Attendance Fraud Prevention', () => {
     for (let i = 1; i <= 30; i++) {
       promises.push(
         request.post(`${BASE_URL}/api/attendance/regularization`, {
-          headers: { 'Authorization': `Bearer ${token}` },
+          headers: { Authorization: `Bearer ${token}` },
           data: {
             date: `2024-01-${i.toString().padStart(2, '0')}`,
             reason: 'Forgot to mark',
@@ -315,7 +315,7 @@ test.describe('Multi-Tenancy Isolation', () => {
     // Try to access tenant 2's data
     const response = await request.get(`${BASE_URL}/api/employees`, {
       headers: {
-        'Authorization': `Bearer ${token1}`,
+        Authorization: `Bearer ${token1}`,
         'X-Tenant-ID': 'tenant-2', // Try to override tenant
       },
     });
@@ -341,7 +341,7 @@ test.describe('Multi-Tenancy Isolation', () => {
 
     // Try to create employee for different tenant
     const response = await request.post(`${BASE_URL}/api/employees`, {
-      headers: { 'Authorization': `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}` },
       data: {
         firstName: 'Test',
         lastName: 'User',
@@ -372,7 +372,7 @@ test.describe('Workflow Bypass Prevention', () => {
 
     // Create leave application
     const createResponse = await request.post(`${BASE_URL}/api/leave/applications`, {
-      headers: { 'Authorization': `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}` },
       data: {
         leaveTypeId: 'casual-leave',
         startDate: '2024-03-01',
@@ -388,7 +388,7 @@ test.describe('Workflow Bypass Prevention', () => {
       const finalApprovalResponse = await request.patch(
         `${BASE_URL}/api/leave/applications/${application.id}/final-approve`,
         {
-          headers: { 'Authorization': `Bearer ${token}` },
+          headers: { Authorization: `Bearer ${token}` },
         }
       );
 
@@ -405,7 +405,7 @@ test.describe('Workflow Bypass Prevention', () => {
 
     // Try to directly set application status to approved
     const response = await request.patch(`${BASE_URL}/api/leave/applications/1`, {
-      headers: { 'Authorization': `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}` },
       data: {
         status: 'APPROVED', // Try to bypass approval
       },
@@ -424,7 +424,7 @@ test.describe('Workflow Bypass Prevention', () => {
 
     // Try to perform manager action
     const response = await request.patch(`${BASE_URL}/api/leave/applications/1/approve`, {
-      headers: { 'Authorization': `Bearer ${empToken}` },
+      headers: { Authorization: `Bearer ${empToken}` },
     });
 
     expect([403, 404]).toContain(response.status());
@@ -446,7 +446,7 @@ test.describe('Time-Based Attacks', () => {
       .fill(null)
       .map(() =>
         request.post(`${BASE_URL}/api/leave/applications`, {
-          headers: { 'Authorization': `Bearer ${token}` },
+          headers: { Authorization: `Bearer ${token}` },
           data: {
             leaveTypeId: 'casual-leave',
             startDate: '2024-03-01',
@@ -483,7 +483,7 @@ test.describe('Rate Limiting & Resource Exhaustion', () => {
       .fill(null)
       .map(() =>
         request.post(`${BASE_URL}/api/reports/generate`, {
-          headers: { 'Authorization': `Bearer ${token}` },
+          headers: { Authorization: `Bearer ${token}` },
           data: { type: 'payroll-summary' },
         })
       );
@@ -510,7 +510,7 @@ test.describe('Business Logic Edge Cases', () => {
 
     // Try to set negative salary
     const response = await request.post(`${BASE_URL}/api/employees`, {
-      headers: { 'Authorization': `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}` },
       data: {
         firstName: 'Test',
         lastName: 'User',
@@ -531,7 +531,7 @@ test.describe('Business Logic Edge Cases', () => {
 
     // Try to set extremely large number
     const response = await request.post(`${BASE_URL}/api/employees`, {
-      headers: { 'Authorization': `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}` },
       data: {
         firstName: 'Test',
         lastName: 'User',
@@ -555,7 +555,7 @@ test.describe('Business Logic Edge Cases', () => {
     futureDate.setFullYear(futureDate.getFullYear() + 1);
 
     const response = await request.post(`${BASE_URL}/api/employees`, {
-      headers: { 'Authorization': `Bearer ${token}` },
+      headers: { Authorization: `Bearer ${token}` },
       data: {
         firstName: 'Test',
         lastName: 'User',
@@ -581,7 +581,7 @@ test.describe('Idempotency', () => {
     // Make same request twice with same idempotency key
     const response1 = await request.post(`${BASE_URL}/api/leave/applications`, {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
         'Idempotency-Key': idempotencyKey,
       },
       data: {
@@ -594,7 +594,7 @@ test.describe('Idempotency', () => {
 
     const response2 = await request.post(`${BASE_URL}/api/leave/applications`, {
       headers: {
-        'Authorization': `Bearer ${token}`,
+        Authorization: `Bearer ${token}`,
         'Idempotency-Key': idempotencyKey,
       },
       data: {

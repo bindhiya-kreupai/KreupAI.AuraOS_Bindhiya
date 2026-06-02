@@ -646,10 +646,10 @@ export class ResumeParserService {
     if (!req.requiredEducation) return 75;
 
     const degreeHierarchy: Record<string, number> = {
-      'phd': 100, 'doctorate': 100, 'ph.d': 100,
-      'mba': 90, 'master': 90, 'msc': 90, 'ma': 90, 'mtech': 90,
-      'bachelor': 70, 'bsc': 70, 'ba': 70, 'btech': 70, 'be': 70,
-      'diploma': 50, 'associate': 50, 'certificate': 40,
+      phd: 100, doctorate: 100, 'ph.d': 100,
+      mba: 90, master: 90, msc: 90, ma: 90, mtech: 90,
+      bachelor: 70, bsc: 70, ba: 70, btech: 70, be: 70,
+      diploma: 50, associate: 50, certificate: 40,
     };
 
     let maxScore = 0;

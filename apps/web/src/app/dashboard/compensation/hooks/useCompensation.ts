@@ -7,10 +7,9 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import {
+import type {
   SalaryComponent,
   Grade,
-  SalaryBand,
   SalaryStructure,
   EmployeeCompensation,
   IncrementCycle,
@@ -25,6 +24,9 @@ import {
   MarketBenchmark,
   CompensationMetrics,
   CompensationSettings
+} from '../types';
+import {
+  SalaryBand
 } from '../types';
 import {
   SalaryComponentService,

@@ -3,7 +3,7 @@
  * Generates comprehensive API documentation
  */
 
-import { OpenAPIV3 } from 'openapi-types';
+import type { OpenAPIV3 } from 'openapi-types';
 
 /**
  * Generate OpenAPI 3.0 specification for AuraOS HCM APIs
@@ -188,7 +188,7 @@ function generateEmployeePaths(): OpenAPIV3.PathsObject {
           },
         ],
         responses: {
-          '200': {
+          200: {
             description: 'Successful response',
             content: {
               'application/json': {
@@ -198,13 +198,13 @@ function generateEmployeePaths(): OpenAPIV3.PathsObject {
               },
             },
           },
-          '400': {
+          400: {
             $ref: '#/components/responses/BadRequest',
           },
-          '401': {
+          401: {
             $ref: '#/components/responses/Unauthorized',
           },
-          '500': {
+          500: {
             $ref: '#/components/responses/InternalError',
           },
         },
@@ -225,7 +225,7 @@ function generateEmployeePaths(): OpenAPIV3.PathsObject {
           },
         },
         responses: {
-          '201': {
+          201: {
             description: 'Employee created successfully',
             content: {
               'application/json': {
@@ -235,10 +235,10 @@ function generateEmployeePaths(): OpenAPIV3.PathsObject {
               },
             },
           },
-          '400': {
+          400: {
             $ref: '#/components/responses/BadRequest',
           },
-          '409': {
+          409: {
             $ref: '#/components/responses/Conflict',
           },
         },
@@ -259,7 +259,7 @@ function generateEmployeePaths(): OpenAPIV3.PathsObject {
           },
         ],
         responses: {
-          '200': {
+          200: {
             description: 'Successful response',
             content: {
               'application/json': {
@@ -269,7 +269,7 @@ function generateEmployeePaths(): OpenAPIV3.PathsObject {
               },
             },
           },
-          '404': {
+          404: {
             $ref: '#/components/responses/NotFound',
           },
         },
@@ -297,7 +297,7 @@ function generateEmployeePaths(): OpenAPIV3.PathsObject {
           },
         },
         responses: {
-          '200': {
+          200: {
             description: 'Employee updated successfully',
             content: {
               'application/json': {
@@ -307,7 +307,7 @@ function generateEmployeePaths(): OpenAPIV3.PathsObject {
               },
             },
           },
-          '404': {
+          404: {
             $ref: '#/components/responses/NotFound',
           },
         },
@@ -326,10 +326,10 @@ function generateEmployeePaths(): OpenAPIV3.PathsObject {
           },
         ],
         responses: {
-          '200': {
+          200: {
             description: 'Employee deleted successfully',
           },
-          '404': {
+          404: {
             $ref: '#/components/responses/NotFound',
           },
         },
@@ -354,7 +354,7 @@ function generateDepartmentPaths(): OpenAPIV3.PathsObject {
           { name: 'limit', in: 'query', schema: { type: 'integer', default: 20 } },
         ],
         responses: {
-          '200': { description: 'Success' },
+          200: { description: 'Success' },
         },
       },
     },
@@ -391,7 +391,7 @@ function generatePayrollPaths(): OpenAPIV3.PathsObject {
           },
         },
         responses: {
-          '202': {
+          202: {
             description: 'Payroll processing started',
             content: {
               'application/json': {

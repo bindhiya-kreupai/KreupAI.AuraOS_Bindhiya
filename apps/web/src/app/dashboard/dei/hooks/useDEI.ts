@@ -1,12 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import {
+import type {
   DiversityMetric, DiversityDashboard, DiversityReport, InclusionSurvey, SurveyResponse,
-  SurveyAnalytics, PayEquityAnalysis, PayAdjustment, BiasTraining, TrainingEnrollment,
-  TrainingAnalytics, EmployeeResourceGroup, MentorshipProgram, MentorProfile, MenteeProfile,
+  SurveyAnalytics, PayEquityAnalysis, PayAdjustment, BiasTraining, TrainingEnrollment, EmployeeResourceGroup, MentorshipProgram, MentorProfile, MenteeProfile,
   MentorshipPair, AccessibilityRequest, AccessibilityAssessment, AccessibilityResource,
   DEIGoal, DEIInitiative, DEISettings, Toast
+} from '../types';
+import {
+  TrainingAnalytics
 } from '../types';
 import {
   DiversityMetricsService, InclusionSurveyService, PayEquityService, BiasTrainingService,

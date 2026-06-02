@@ -7,7 +7,7 @@
  * skills gap analysis, succession planning, and diversity metrics
  */
 
-import {
+import type {
   WorkforcePlanningData,
   HeadcountForecast,
   SkillsGapAnalysis,

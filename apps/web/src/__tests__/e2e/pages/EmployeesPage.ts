@@ -10,7 +10,7 @@
  * - Delete employee
  */
 
-import { Page, Locator } from '@playwright/test';
+import type { Page, Locator } from '@playwright/test';
 import { BasePage } from './BasePage';
 
 export interface EmployeeData {

@@ -16,11 +16,11 @@ import type {
   PayrollValidationWarning,
   EmployeeSalaryStructure,
   TaxDetails,
-  TaxRegime, TaxExemption } from './types';
+  TaxRegime, TaxExemption ,
+  SalaryComponent} from './types';
 import {
   PayrollStatus,
   PayslipStatus,
-  SalaryComponent,
   INDIA_TAX_SLABS_OLD,
   INDIA_TAX_SLABS_NEW,
   INDIA_STANDARD_DEDUCTION_OLD,

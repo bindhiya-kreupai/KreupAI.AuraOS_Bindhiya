@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { StandardReport, CustomReport, Dashboard, ScheduledReport, RealtimeMetric, ComplianceReport, ExecutiveDashboard, PredictiveAnalytics, AnalyticsSettings, Toast } from '../types';
+import type { StandardReport, CustomReport, Dashboard, ScheduledReport, RealtimeMetric, ComplianceReport, ExecutiveDashboard, PredictiveAnalytics, AnalyticsSettings, Toast } from '../types';
 import { StandardReportService, CustomReportService, DashboardService, ScheduledReportService, ReportExportService, RealtimeMetricsService, ComplianceReportService, ExecutiveDashboardService, PredictiveAnalyticsService, AnalyticsSettingsService } from '../services';
 import { sampleStandardReports, sampleCustomReports, sampleDashboards, sampleScheduledReports, sampleRealtimeMetrics, sampleComplianceReports, sampleExecutiveDashboards, samplePredictiveAnalytics, sampleAnalyticsSettings } from '../data';
 

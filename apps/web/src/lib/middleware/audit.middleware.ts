@@ -4,7 +4,8 @@
  * Automatically log critical API operations
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { auditService, AuditAction } from '../audit/audit.service';
 import { logger } from '../logger';
 

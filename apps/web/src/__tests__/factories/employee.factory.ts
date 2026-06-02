@@ -3,7 +3,7 @@
  * Generates consistent test data for employee entities
  */
 
-import { Employee, EmploymentStatus } from '@prisma/client';
+import type { Employee, EmploymentStatus } from '@prisma/client';
 
 let employeeIdCounter = 1;
 

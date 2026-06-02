@@ -206,7 +206,7 @@ test.describe('Database Integration - Relationships', () => {
     await request.post(`${API_BASE}/leave/applications`, {
       headers,
       data: {
-        employeeId: employeeId,
+        employeeId,
         leaveType: 'Annual Leave',
         startDate: '2025-02-01',
         endDate: '2025-02-05',
@@ -305,7 +305,7 @@ test.describe('Database Integration - Relationships', () => {
     await request.post(`${API_BASE}/attendance`, {
       headers,
       data: {
-        employeeId: employeeId,
+        employeeId,
         date: '2025-01-15',
         clockIn: '09:00:00',
         clockOut: '17:00:00',

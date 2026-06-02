@@ -1,5 +1,6 @@
 // @ts-nocheck — Uses prisma.salaryStructure / prisma.statutory models not in current schema, or AuditLog 'module'/'details' fields. Tracked under #29.
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';

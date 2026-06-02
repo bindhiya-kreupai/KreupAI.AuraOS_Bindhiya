@@ -4,7 +4,8 @@
  * Provides automatic caching for GET requests
  */
 
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { cacheService, DEFAULT_TTL, SHORT_TTL, LONG_TTL } from '@/lib/cache';
 import { logger } from '@/lib/logger';
 

@@ -9,7 +9,8 @@
  * - Stress testing under chaos conditions
  */
 
-import { test, expect, chromium, Browser, BrowserContext } from '@playwright/test';
+import type { BrowserContext } from '@playwright/test';
+import { test, expect, chromium, Browser } from '@playwright/test';
 
 const BASE_URL = process.env.BASE_URL || 'http://localhost:3000';
 const CONCURRENT_USERS = parseInt(process.env.CONCURRENT_USERS || '10');

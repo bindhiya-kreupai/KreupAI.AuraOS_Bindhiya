@@ -1,6 +1,7 @@
 // @ts-nocheck — Has Prisma schema drift (select/where fields don't match current schema). Tracked under #29.
 import { prisma } from '@aura/database';
-import { BaseService, ServiceResponse } from '../base.service';
+import type { ServiceResponse } from '../base.service';
+import { BaseService } from '../base.service';
 
 export interface IndustryConfig {
     id: string;

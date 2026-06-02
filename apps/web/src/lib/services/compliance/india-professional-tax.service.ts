@@ -594,7 +594,7 @@ export class IndiaProfessionalTaxService {
 
     let monthlyTax = applicableSlab.monthlyTax;
     let isFebruaryAdjustment = false;
-    let isHalfYearlyBasis = applicableSlab.isHalfYearlyBasis || false;
+    const isHalfYearlyBasis = applicableSlab.isHalfYearlyBasis || false;
     let halfYearlyAmount: number | null = null;
 
     // Handle half-yearly basis (TN, KL higher slabs)

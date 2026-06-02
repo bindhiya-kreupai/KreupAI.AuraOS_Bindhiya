@@ -2,7 +2,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import {
+import type {
   Employee, OrganizationUnit, EmploymentHistory, EmployeeDocument, Position,
   CostCenter, LifeEvent, MassUpdate, IDCard, LetterRequest, ExitProcess,
   Anniversary, AutoNumberSequence, ProbationRecord, ConfirmationLetter, Asset,

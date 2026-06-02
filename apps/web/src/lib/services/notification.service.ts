@@ -4,7 +4,8 @@
  * High-level API for sending real-time notifications
  */
 
-import { wsServer, NotificationPayload, NotificationType } from '../websocket/server';
+import type { NotificationPayload} from '../websocket/server';
+import { wsServer, NotificationType } from '../websocket/server';
 import { logger } from '../logger';
 
 export class NotificationService {

@@ -1,7 +1,8 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { DataPage, FormField, type RowAction } from '@aura/ui';
+import type { FormField} from '@aura/ui';
+import { DataPage, type RowAction } from '@aura/ui';
 import { Heart, Baby, Users, Home, AlertCircle, CheckCircle, Clock, XCircle, FileText, Calendar } from 'lucide-react';
 
 const EVENT_TYPES = [

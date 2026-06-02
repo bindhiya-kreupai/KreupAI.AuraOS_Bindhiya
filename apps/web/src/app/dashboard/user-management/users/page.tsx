@@ -155,9 +155,9 @@ export default function UsersPage() {
                         <label className="block text-xs font-medium text-silver-mist mb-1">Password {record.id && '(Leave blank to keep unchanged)'}</label>
                         <input
                             type="password"
-                            // @ts-ignore
+                            // @ts-ignore — schema drift, pending #29
                             value={record.password || ''}
-                            // @ts-ignore
+                            // @ts-ignore — schema drift, pending #29
                             onChange={e => onChange('password', e.target.value)}
                             className="w-full px-3 py-2 bg-pearl dark:bg-stellar-blue rounded-lg text-sm border border-cloud dark:border-nebula-purple/50 focus:ring-2 focus:ring-celestial-indigo/50 outline-none"
                             placeholder="********"

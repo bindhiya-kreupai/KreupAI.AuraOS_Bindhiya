@@ -95,7 +95,7 @@ test.describe('SQL Injection Security Tests', () => {
       for (const payload of SQL_INJECTION_PAYLOADS.slice(0, 10)) {
         const response = await request.get(`${API_URL}/employees?search=${encodeURIComponent(payload)}`, {
           headers: {
-            'Authorization': `Bearer ${authToken}`,
+            Authorization: `Bearer ${authToken}`,
           },
         });
 
@@ -137,7 +137,7 @@ test.describe('SQL Injection Security Tests', () => {
         const queryString = new URLSearchParams(params as any).toString();
         const response = await request.get(`${API_URL}/employees?${queryString}`, {
           headers: {
-            'Authorization': `Bearer ${authToken}`,
+            Authorization: `Bearer ${authToken}`,
           },
         });
 
@@ -160,7 +160,7 @@ test.describe('SQL Injection Security Tests', () => {
       for (const id of maliciousIds) {
         const response = await request.get(`${API_URL}/employees/${encodeURIComponent(id)}`, {
           headers: {
-            'Authorization': `Bearer ${authToken}`,
+            Authorization: `Bearer ${authToken}`,
           },
         });
 
@@ -183,7 +183,7 @@ test.describe('SQL Injection Security Tests', () => {
 
       const response = await request.post(`${API_URL}/employees`, {
         headers: {
-          'Authorization': `Bearer ${authToken}`,
+          Authorization: `Bearer ${authToken}`,
           'Content-Type': 'application/json',
         },
         data: maliciousEmployee,
@@ -259,7 +259,7 @@ test.describe('SQL Injection Security Tests', () => {
         `${API_URL}/payroll/payslips?employeeId=${"' OR '1'='1"}&month=${"' OR '1'='1"}&year=2024`,
         {
           headers: {
-            'Authorization': `Bearer ${authToken}`,
+            Authorization: `Bearer ${authToken}`,
           },
         }
       );
@@ -280,7 +280,7 @@ test.describe('SQL Injection Security Tests', () => {
       for (const id of maliciousIds) {
         const response = await request.get(`${API_URL}/payroll/payslips/${encodeURIComponent(id)}`, {
           headers: {
-            'Authorization': `Bearer ${authToken}`,
+            Authorization: `Bearer ${authToken}`,
           },
         });
 
@@ -298,7 +298,7 @@ test.describe('SQL Injection Security Tests', () => {
         `${API_URL}/reports?type=${"' OR '1'='1"}&status=${"' UNION SELECT NULL--"}`,
         {
           headers: {
-            'Authorization': `Bearer ${authToken}`,
+            Authorization: `Bearer ${authToken}`,
           },
         }
       );
@@ -316,7 +316,7 @@ test.describe('SQL Injection Security Tests', () => {
         `${API_URL}/leave/applications?employeeId=${"' OR '1'='1"}&status=${"admin' --"}`,
         {
           headers: {
-            'Authorization': `Bearer ${authToken}`,
+            Authorization: `Bearer ${authToken}`,
           },
         }
       );
@@ -341,7 +341,7 @@ test.describe('SQL Injection Security Tests', () => {
 
         const response = await request.get(`${API_URL}/employees?search=${encodeURIComponent(payload)}`, {
           headers: {
-            'Authorization': `Bearer ${authToken}`,
+            Authorization: `Bearer ${authToken}`,
           },
           timeout: 10000, // 10 second timeout
         });
@@ -369,7 +369,7 @@ test.describe('SQL Injection Security Tests', () => {
 
       const createResponse = await request.post(`${API_URL}/employees`, {
         headers: {
-          'Authorization': `Bearer ${authToken}`,
+          Authorization: `Bearer ${authToken}`,
           'Content-Type': 'application/json',
         },
         data: maliciousData,
@@ -382,7 +382,7 @@ test.describe('SQL Injection Security Tests', () => {
         // Retrieve the employee - malicious data should be escaped
         const getResponse = await request.get(`${API_URL}/employees/${employeeId}`, {
           headers: {
-            'Authorization': `Bearer ${authToken}`,
+            Authorization: `Bearer ${authToken}`,
           },
         });
 
@@ -395,7 +395,7 @@ test.describe('SQL Injection Security Tests', () => {
         // Cleanup
         await request.delete(`${API_URL}/employees/${employeeId}`, {
           headers: {
-            'Authorization': `Bearer ${authToken}`,
+            Authorization: `Bearer ${authToken}`,
           },
         });
       }
@@ -406,7 +406,7 @@ test.describe('SQL Injection Security Tests', () => {
     test('should not expose database structure in error messages', async ({ request }) => {
       const response = await request.get(`${API_URL}/employees?invalidParam=${"' OR '1'='1"}`, {
         headers: {
-          'Authorization': `Bearer ${authToken}`,
+          Authorization: `Bearer ${authToken}`,
         },
       });
 

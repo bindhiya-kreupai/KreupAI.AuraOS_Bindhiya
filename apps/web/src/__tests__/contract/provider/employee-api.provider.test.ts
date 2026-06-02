@@ -6,7 +6,8 @@
  * Verifies that the provider meets consumer expectations
  */
 
-import { Verifier, VerifierOptions } from '@pact-foundation/pact';
+import type { VerifierOptions } from '@pact-foundation/pact';
+import { Verifier } from '@pact-foundation/pact';
 import path from 'path';
 
 describe('Employee API Provider Contract Verification', () => {
@@ -147,10 +148,10 @@ describe('Employee API Provider Contract Verification', () => {
       publishVerificationResult: process.env.CI === 'true',
 
       // State handlers
-      stateHandlers: stateHandlers,
+      stateHandlers,
 
       // Request filter
-      requestFilter: requestFilter,
+      requestFilter,
 
       // Logging
       logLevel: 'info',
@@ -188,10 +189,10 @@ describe('Employee API Provider Contract Verification', () => {
       providerVersion: '1.0.0-local',
 
       // State handlers
-      stateHandlers: stateHandlers,
+      stateHandlers,
 
       // Request filter
-      requestFilter: requestFilter,
+      requestFilter,
 
       // Logging
       logLevel: 'debug',
@@ -241,10 +242,10 @@ describe('Employee API Provider Contract Verification', () => {
       providerVersionTags: ['main', 'develop'],
 
       // State handlers
-      stateHandlers: stateHandlers,
+      stateHandlers,
 
       // Request filter
-      requestFilter: requestFilter,
+      requestFilter,
 
       // Publish results
       publishVerificationResult: true,
@@ -292,8 +293,8 @@ export const providerStateSetupHandler = async (req: any, res: any) => {
 
   res.status(200).json({
     success: true,
-    state: state,
-    params: params,
+    state,
+    params,
   });
 };
 

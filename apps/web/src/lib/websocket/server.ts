@@ -3,8 +3,9 @@
  * Real-time notification system using WebSockets
  */
 
-import { Server as HTTPServer } from 'http';
-import { Server as SocketIOServer, Socket } from 'socket.io';
+import type { Server as HTTPServer } from 'http';
+import type { Socket } from 'socket.io';
+import { Server as SocketIOServer } from 'socket.io';
 import { logger } from '@/lib/logger';
 import { redis } from '@/lib/cache/redis';
 

@@ -1,5 +1,6 @@
 // @ts-nocheck — Has Prisma schema drift (select/where fields don't match current schema). Tracked under #29.
-import { BaseService, ServiceResponse } from '../base.service';
+import type { ServiceResponse } from '../base.service';
+import { BaseService } from '../base.service';
 
 /**
  * Remote Work Service - Remote work policies, equipment tracking, and productivity analytics
@@ -153,7 +154,7 @@ export class RemoteWorkService extends BaseService {
         departmentId?: string
     ): Promise<ServiceResponse<RemoteWorkAssignment[]>> {
         try {
-            let assignments: RemoteWorkAssignment[] = [
+            const assignments: RemoteWorkAssignment[] = [
                 {
                     id: 'assign-1',
                     employeeId: 'emp-1',

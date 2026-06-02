@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import {
+import type {
   FacultyMember, TenureApplication, ResearchGrant, GrantReport, AdjunctFaculty,
   AdjunctContract, AdjunctPool, EducationSettings, Toast
 } from '../types';

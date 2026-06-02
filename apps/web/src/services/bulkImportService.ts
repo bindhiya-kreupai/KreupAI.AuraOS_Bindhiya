@@ -6,6 +6,7 @@
  */
 
 import type { ZodSchema } from 'zod';
+import type * as XLSXType from 'xlsx';
 import { z } from 'zod';
 import { APIClient } from '@/lib/api-client';
 
@@ -279,7 +280,7 @@ function parseCSVRow(line: string): string[] {
  */
 export async function parseExcel(file: File, sheetName?: string): Promise<ParsedFile> {
   // Dynamically import xlsx to keep it out of the critical path
-  let XLSX: typeof import('xlsx');
+  let XLSX: typeof XLSXType;
 
   try {
     XLSX = await import('xlsx');

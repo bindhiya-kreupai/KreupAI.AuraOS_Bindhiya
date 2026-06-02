@@ -1,4 +1,4 @@
-import { SlackClient } from './client';
+import type { SlackClient } from './client';
 
 export type MessageTemplate = 'leave_approved' | 'leave_rejected' | 'review_due' | 'recognition' | 'announcement';
 

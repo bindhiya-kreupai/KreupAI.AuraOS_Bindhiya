@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 
-let plans = [
+const plans = [
     { id: '1', name: 'Standard Sales Plan', rate: 0.05, threshold: 5000, type: 'percentage' },
     { id: '2', name: 'High Performer Tier', rate: 0.08, threshold: 20000, type: 'tier' }
 ];

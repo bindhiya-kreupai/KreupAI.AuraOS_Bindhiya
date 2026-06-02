@@ -1,4 +1,4 @@
-import { DocuSignClient } from './client';
+import type { DocuSignClient } from './client';
 
 export type OfferLetterData = {
   candidateName: string;

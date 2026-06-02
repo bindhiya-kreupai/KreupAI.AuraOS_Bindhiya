@@ -3,7 +3,8 @@
  * Handles async payroll calculation and processing via PayrollService
  */
 
-import { Job, JobResult, queueService } from '../queue.service';
+import type { Job, JobResult} from '../queue.service';
+import { queueService } from '../queue.service';
 import { QUEUE_NAMES } from '../rabbitmq';
 import { logger } from '@/lib/logger';
 import { apiCache } from '@/lib/middleware/cache.middleware';

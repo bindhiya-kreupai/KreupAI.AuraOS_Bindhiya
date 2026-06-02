@@ -1,6 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 
-let hires = [
+const hires = [
     { id: '1', candidateName: 'Sarah Connor', position: 'Sales Associate', status: 'hired', startDate: '2024-11-01', storeId: '1' },
     { id: '2', candidateName: 'Kyle Reese', position: 'Warehouse Support', status: 'interviewing', startDate: '2024-11-15', storeId: '2' }
 ];

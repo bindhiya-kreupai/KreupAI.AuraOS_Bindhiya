@@ -1,5 +1,6 @@
 // @ts-nocheck — Has Prisma schema drift (wrong field/relation names against current schema). Tracked under #29.
-import { NextRequest, NextResponse } from 'next/server';
+import type { NextRequest} from 'next/server';
+import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@/lib/database';
 import { z } from 'zod';

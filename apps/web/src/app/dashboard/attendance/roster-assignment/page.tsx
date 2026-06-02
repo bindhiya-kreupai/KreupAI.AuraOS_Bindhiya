@@ -174,7 +174,7 @@ export default function RosterAssignmentPage() {
                                 </td>
                                 {DATES.map((d, dateIdx) => {
                                     const shiftCode = getShiftCode(rosters, emp.id, dateIdx);
-                                    // @ts-ignore
+                                    // @ts-ignore — schema drift, pending #29
                                     const style = SHIFT_TYPES[shiftCode] || SHIFT_TYPES['G'];
                                     return (
                                         <td key={dateIdx} className="p-2 text-center border-r border-cloud dark:border-nebula-purple/20 border-dahed bg-white dark:bg-transparent">

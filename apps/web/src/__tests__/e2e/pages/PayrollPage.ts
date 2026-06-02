@@ -9,7 +9,7 @@
  * - View payroll history
  */
 
-import { Page, Locator } from '@playwright/test';
+import type { Page, Locator } from '@playwright/test';
 import { BasePage } from './BasePage';
 
 export interface PayslipData {

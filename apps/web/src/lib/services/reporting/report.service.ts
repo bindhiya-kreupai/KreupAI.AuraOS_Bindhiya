@@ -11,7 +11,9 @@ import type {
   ReportTemplate,
   ChartData,
   SummaryData,
-  ReportType} from './types';
+  ReportType,
+  ReportSchedule,
+} from './types';
 import {
   ReportExecution
 } from './types';
@@ -599,8 +601,8 @@ export class ReportService {
    */
   static async scheduleReport(
     report: ReportDefinition,
-    schedule: Omit<import('./types').ReportSchedule, 'id' | 'createdAt' | 'updatedAt'>
-  ): Promise<import('./types').ReportSchedule> {
+    schedule: Omit<ReportSchedule, 'id' | 'createdAt' | 'updatedAt'>
+  ): Promise<ReportSchedule> {
     const now = new Date();
 
     return {

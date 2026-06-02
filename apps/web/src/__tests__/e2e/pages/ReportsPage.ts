@@ -9,7 +9,7 @@
  * - View report history
  */
 
-import { Page, Locator, Download } from '@playwright/test';
+import type { Page, Locator, Download } from '@playwright/test';
 import { BasePage } from './BasePage';
 
 export interface ReportConfig {
