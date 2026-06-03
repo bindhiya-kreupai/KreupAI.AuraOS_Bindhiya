@@ -3,8 +3,8 @@
   "numPassedTestSuites": 3,
   "numFailedTestSuites": 0,
   "numPendingTestSuites": 0,
-  "numTotalTests": 5,
-  "numPassedTests": 5,
+  "numTotalTests": 9,
+  "numPassedTests": 9,
   "numFailedTests": 0,
   "numPendingTests": 0,
   "numTodoTests": 0,
@@ -24,62 +24,98 @@
     "updated": 0,
     "didUpdate": false
   },
-  "startTime": 1780485565245,
+  "startTime": 1780510185366,
   "success": true,
   "testResults": [
     {
       "assertionResults": [
         {
-          "ancestorTitles": ["Statutory report registry"],
-          "fullName": "Statutory report registry exposes the 13 generators landed across Phase 2 + Phase 3",
+          "ancestorTitles": ["LabourMinistrySubmissionService transitions"],
+          "fullName": "LabourMinistrySubmissionService transitions DRAFT → READY / REJECTED only",
           "status": "passed",
-          "title": "exposes the 13 generators landed across Phase 2 + Phase 3",
-          "duration": 0.868959000000018,
+          "title": "DRAFT → READY / REJECTED only",
+          "duration": 0.8192920000000186,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["Statutory report registry"],
-          "fullName": "Statutory report registry filters by country code",
+          "ancestorTitles": ["LabourMinistrySubmissionService transitions"],
+          "fullName": "LabourMinistrySubmissionService transitions READY ↔ DRAFT and READY → SUBMITTED / REJECTED",
           "status": "passed",
-          "title": "filters by country code",
-          "duration": 0.32083399999999074,
+          "title": "READY ↔ DRAFT and READY → SUBMITTED / REJECTED",
+          "duration": 0.16220799999996416,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["Statutory report registry"],
-          "fullName": "Statutory report registry returns specs without the generate function (safe to serialize)",
+          "ancestorTitles": ["LabourMinistrySubmissionService transitions"],
+          "fullName": "LabourMinistrySubmissionService transitions SUBMITTED → ACKNOWLEDGED / REJECTED only",
           "status": "passed",
-          "title": "returns specs without the generate function (safe to serialize)",
-          "duration": 1.4002500000000282,
+          "title": "SUBMITTED → ACKNOWLEDGED / REJECTED only",
+          "duration": 0.1925420000000031,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["Statutory report submission contract (#85)"],
-          "fullName": "Statutory report submission contract (#85) exports InvalidReportTransitionError as a real Error subclass",
+          "ancestorTitles": ["LabourMinistrySubmissionService transitions"],
+          "fullName": "LabourMinistrySubmissionService transitions REJECTED can be redrafted or resubmitted",
           "status": "passed",
-          "title": "exports InvalidReportTransitionError as a real Error subclass",
-          "duration": 0.33512499999994816,
+          "title": "REJECTED can be redrafted or resubmitted",
+          "duration": 0.26300000000003365,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["Statutory report submission contract (#85)"],
-          "fullName": "Statutory report submission contract (#85) rejects placeholder submission references shorter than 3 chars",
+          "ancestorTitles": ["LabourMinistrySubmissionService transitions"],
+          "fullName": "LabourMinistrySubmissionService transitions ACKNOWLEDGED is terminal",
           "status": "passed",
-          "title": "rejects placeholder submission references shorter than 3 chars",
-          "duration": 0.8461669999999231,
+          "title": "ACKNOWLEDGED is terminal",
+          "duration": 0.18316600000002836,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["LabourMinistrySubmissionService transitions"],
+          "fullName": "LabourMinistrySubmissionService transitions assertTransition throws on illegal moves",
+          "status": "passed",
+          "title": "assertTransition throws on illegal moves",
+          "duration": 0.21266700000001038,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["LabourMinistrySubmissionService.hashPayload"],
+          "fullName": "LabourMinistrySubmissionService.hashPayload returns a sha256-shaped hex string",
+          "status": "passed",
+          "title": "returns a sha256-shaped hex string",
+          "duration": 0.33779100000003837,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["LabourMinistrySubmissionService.hashPayload"],
+          "fullName": "LabourMinistrySubmissionService.hashPayload is stable across key ordering",
+          "status": "passed",
+          "title": "is stable across key ordering",
+          "duration": 0.09258299999999053,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["LabourMinistrySubmissionService.hashPayload"],
+          "fullName": "LabourMinistrySubmissionService.hashPayload changes when payload content changes",
+          "status": "passed",
+          "title": "changes when payload content changes",
+          "duration": 0.4347500000000082,
           "failureMessages": [],
           "meta": {}
         }
       ],
-      "startTime": 1780485565538,
-      "endTime": 1780485565541.8462,
+      "startTime": 1780510185703,
+      "endTime": 1780510185706.4348,
       "status": "passed",
       "message": "",
-      "name": "/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/lib/services/__tests__/statutory-report.service.test.ts"
+      "name": "/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/lib/services/__tests__/labour-ministry-submission.service.test.ts"
     }
   ]
 }

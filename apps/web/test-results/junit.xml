@@ -1,15 +1,23 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuites name="vitest tests" tests="5" failures="0" errors="0" time="0.005015916">
-    <testsuite name="src/lib/services/__tests__/statutory-report.service.test.ts" timestamp="2026-06-03T11:19:25.558Z" hostname="MacBookPro.lan" tests="5" failures="0" errors="0" skipped="0" time="0.005015916">
-        <testcase classname="src/lib/services/__tests__/statutory-report.service.test.ts" name="Statutory report registry &gt; exposes the 13 generators landed across Phase 2 + Phase 3" time="0.000868959">
+<testsuites name="vitest tests" tests="9" failures="0" errors="0" time="0.004696791">
+    <testsuite name="src/lib/services/__tests__/labour-ministry-submission.service.test.ts" timestamp="2026-06-03T18:09:45.724Z" hostname="MacBookPro.lan" tests="9" failures="0" errors="0" skipped="0" time="0.004696791">
+        <testcase classname="src/lib/services/__tests__/labour-ministry-submission.service.test.ts" name="LabourMinistrySubmissionService transitions &gt; DRAFT → READY / REJECTED only" time="0.000819292">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/statutory-report.service.test.ts" name="Statutory report registry &gt; filters by country code" time="0.000320834">
+        <testcase classname="src/lib/services/__tests__/labour-ministry-submission.service.test.ts" name="LabourMinistrySubmissionService transitions &gt; READY ↔ DRAFT and READY → SUBMITTED / REJECTED" time="0.000162208">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/statutory-report.service.test.ts" name="Statutory report registry &gt; returns specs without the generate function (safe to serialize)" time="0.00140025">
+        <testcase classname="src/lib/services/__tests__/labour-ministry-submission.service.test.ts" name="LabourMinistrySubmissionService transitions &gt; SUBMITTED → ACKNOWLEDGED / REJECTED only" time="0.000192542">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/statutory-report.service.test.ts" name="Statutory report submission contract (#85) &gt; exports InvalidReportTransitionError as a real Error subclass" time="0.000335125">
+        <testcase classname="src/lib/services/__tests__/labour-ministry-submission.service.test.ts" name="LabourMinistrySubmissionService transitions &gt; REJECTED can be redrafted or resubmitted" time="0.000263">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/statutory-report.service.test.ts" name="Statutory report submission contract (#85) &gt; rejects placeholder submission references shorter than 3 chars" time="0.000846167">
+        <testcase classname="src/lib/services/__tests__/labour-ministry-submission.service.test.ts" name="LabourMinistrySubmissionService transitions &gt; ACKNOWLEDGED is terminal" time="0.000183166">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/labour-ministry-submission.service.test.ts" name="LabourMinistrySubmissionService transitions &gt; assertTransition throws on illegal moves" time="0.000212667">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/labour-ministry-submission.service.test.ts" name="LabourMinistrySubmissionService.hashPayload &gt; returns a sha256-shaped hex string" time="0.000337791">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/labour-ministry-submission.service.test.ts" name="LabourMinistrySubmissionService.hashPayload &gt; is stable across key ordering" time="0.000092583">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/labour-ministry-submission.service.test.ts" name="LabourMinistrySubmissionService.hashPayload &gt; changes when payload content changes" time="0.00043475">
         </testcase>
     </testsuite>
 </testsuites>
