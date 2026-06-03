@@ -16,7 +16,7 @@ import {
 const svc = new StatutoryReportService();
 
 describe('Statutory report registry', () => {
-  it('exposes the 20 generators landed across Phase 2 + Phase 3 + Phase 4 + Phase 5', () => {
+  it('exposes the 24 generators landed across Phase 2-5 (full target)', () => {
     const codes = listSpecs()
       .map((s) => s.code)
       .sort();
@@ -27,12 +27,15 @@ describe('Statutory report registry', () => {
       'IND_FORM_12BA',
       'IND_FORM_16',
       'IND_FORM_24Q',
+      'IND_FORM_D_BONUS',
       'IND_GRATUITY_PROVISION',
       'IND_LWF',
       'IND_PF_ECR',
       'IND_PT_CHALLAN',
+      'IND_TDS_QUARTERLY',
       'KSA_GOSI_MONTHLY',
       'KSA_GOSI_RECON',
+      'KSA_HRSD_LABOUR',
       'KSA_MUDAD',
       'KSA_NITAQAT',
       'KSA_SAUDIZATION',
@@ -40,6 +43,7 @@ describe('Statutory report registry', () => {
       'UAE_EMIRATISATION',
       'UAE_EOSB_PROVISION',
       'UAE_MOHRE',
+      'UAE_PASI',
       'UAE_WPS_RECON',
     ]);
   });
@@ -54,6 +58,7 @@ describe('Statutory report registry', () => {
       'UAE_EMIRATISATION',
       'UAE_EOSB_PROVISION',
       'UAE_MOHRE',
+      'UAE_PASI',
       'UAE_WPS_RECON',
     ]);
 
@@ -64,6 +69,7 @@ describe('Statutory report registry', () => {
     expect(sa).toEqual([
       'KSA_GOSI_MONTHLY',
       'KSA_GOSI_RECON',
+      'KSA_HRSD_LABOUR',
       'KSA_MUDAD',
       'KSA_NITAQAT',
       'KSA_SAUDIZATION',
@@ -80,10 +86,12 @@ describe('Statutory report registry', () => {
       'IND_FORM_12BA',
       'IND_FORM_16',
       'IND_FORM_24Q',
+      'IND_FORM_D_BONUS',
       'IND_GRATUITY_PROVISION',
       'IND_LWF',
       'IND_PF_ECR',
       'IND_PT_CHALLAN',
+      'IND_TDS_QUARTERLY',
     ]);
   });
 

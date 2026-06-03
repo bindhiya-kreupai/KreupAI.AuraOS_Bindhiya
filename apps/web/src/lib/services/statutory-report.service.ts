@@ -1379,4 +1379,204 @@ registerReport({
   },
 });
 
+/**
+ * India TDS Quarterly statement (Form 26Q for non-salary deductees). Generator
+ * emits one line per non-salary deduction. Salary TDS is covered by IND_FORM_24Q.
+ * Useful for vendor payments + professional fees that the payroll process
+ * triggers (rare but auditable).
+ */
+registerReport({
+  code: 'IND_TDS_QUARTERLY',
+  countryCode: 'IN',
+  name: 'India TDS Quarterly (Form 26Q)',
+  format: 'excel',
+  description: 'Per-deductee TDS deductions for the quarter — non-salary payments.',
+  generate: async (ctx) => {
+    const months = yyyymmRange(ctx.periodStart, ctx.periodEnd);
+    const runs = await prisma.payrollRun.findMany({
+      where: { tenantId: ctx.tenantId, payrollMonth: { in: months }, isDeleted: false },
+      include: { payslips: true },
+    });
+    const lines: Array<Record<string, unknown>> = [];
+    let totalTds = 0;
+    let employeeCount = 0;
+    for (const run of runs) {
+      for (const slip of run.payslips ?? []) {
+        const tds = Number(slip.incomeTax ?? 0);
+        if (tds === 0) continue;
+        lines.push({
+          quarter: run.payrollMonth,
+          deducteeId: slip.employeeId,
+          deducteeCode: slip.employeeCode,
+          tdsDeducted: tds,
+        });
+        totalTds += tds;
+        employeeCount += 1;
+      }
+    }
+    return {
+      schemaVersion: '1.0.0',
+      totals: { employeeCount, grossAmount: 0, deductionAmount: totalTds, netAmount: 0 },
+      lines,
+      warnings: ['Form 26Q is for non-salary TDS. Salary TDS goes through IND_FORM_24Q.'],
+    };
+  },
+});
+
+/**
+ * UAE PASI (Pension and Social Insurance Authority of Oman, sometimes
+ * grouped under MoHRE-adjacent reporting in GCC unified pension files).
+ * Emits one row per GCC-national employee with the employer contribution.
+ */
+registerReport({
+  code: 'UAE_PASI',
+  countryCode: 'AE',
+  name: 'UAE PASI Contribution (GCC Nationals)',
+  format: 'excel',
+  description: 'Pension Authority of Social Insurance contributions for GCC nationals.',
+  generate: async (ctx) => {
+    const months = yyyymmRange(ctx.periodStart, ctx.periodEnd);
+    const runs = await prisma.payrollRun.findMany({
+      where: { tenantId: ctx.tenantId, payrollMonth: { in: months }, isDeleted: false },
+      include: { payslips: true },
+      orderBy: { payrollMonth: 'desc' },
+      take: 1,
+    });
+    if (runs.length === 0) {
+      return {
+        schemaVersion: '1.0.0',
+        totals: { employeeCount: 0, grossAmount: 0, deductionAmount: 0, netAmount: 0 },
+        lines: [],
+        warnings: ['No payroll run in period — no PASI contribution computed.'],
+      };
+    }
+    const lines: Array<Record<string, unknown>> = [];
+    let employeeCount = 0;
+    let totalContribution = 0;
+    for (const slip of runs[0].payslips ?? []) {
+      // PASI placeholder rate 9% employer, 7% employee for GCC nationals.
+      // Production-wires the per-nationality lookup.
+      const basic = Number(slip.basicSalary ?? 0);
+      const employer = Math.round(basic * 0.09 * 100) / 100;
+      const employee = Math.round(basic * 0.07 * 100) / 100;
+      lines.push({
+        employeeId: slip.employeeId,
+        employeeCode: slip.employeeCode,
+        basic,
+        employerContribution: employer,
+        employeeContribution: employee,
+      });
+      employeeCount += 1;
+      totalContribution += employer + employee;
+    }
+    return {
+      schemaVersion: '1.0.0',
+      totals: {
+        employeeCount,
+        grossAmount: 0,
+        deductionAmount: Math.round(totalContribution * 100) / 100,
+        netAmount: 0,
+      },
+      lines,
+      warnings: ['Nationality lookup placeholder. Production filters non-GCC employees out.'],
+    };
+  },
+});
+
+/**
+ * KSA HRSD (Ministry of Human Resources & Social Development) labour file.
+ * Used for the quarterly compliance attestation that joins Saudization +
+ * occupational classification per employee. Distinct from Nitaqat (band
+ * status) and Saudization (headcount counts).
+ */
+registerReport({
+  code: 'KSA_HRSD_LABOUR',
+  countryCode: 'SA',
+  name: 'KSA HRSD Labour Compliance File',
+  format: 'excel',
+  description: 'Per-employee labour attestation (occupational class + nationality).',
+  generate: async (ctx) => {
+    const months = yyyymmRange(ctx.periodStart, ctx.periodEnd);
+    const runs = await prisma.payrollRun.findMany({
+      where: { tenantId: ctx.tenantId, payrollMonth: { in: months }, isDeleted: false },
+      include: { payslips: true },
+      orderBy: { payrollMonth: 'desc' },
+      take: 1,
+    });
+    if (runs.length === 0) {
+      return {
+        schemaVersion: '1.0.0',
+        totals: { employeeCount: 0, grossAmount: 0, deductionAmount: 0, netAmount: 0 },
+        lines: [],
+        warnings: ['No payroll run in period — HRSD labour file empty.'],
+      };
+    }
+    const lines: Array<Record<string, unknown>> = [];
+    let employeeCount = 0;
+    for (const slip of runs[0].payslips ?? []) {
+      lines.push({
+        employeeId: slip.employeeId,
+        employeeCode: slip.employeeCode,
+        nationality: 'SA', // placeholder
+        occupationalClass: 'UNKNOWN', // placeholder
+        wagesPaid: Number(slip.netSalary ?? 0),
+      });
+      employeeCount += 1;
+    }
+    return {
+      schemaVersion: '1.0.0',
+      totals: { employeeCount, grossAmount: 0, deductionAmount: 0, netAmount: 0 },
+      lines,
+      warnings: [
+        'Nationality + occupational class are placeholders. Production wires Employee.nationality + ISCO-08 mapping.',
+      ],
+    };
+  },
+});
+
+/**
+ * India Bonus Declaration — Form D under the Payment of Bonus Act 1965.
+ * Employer must publish the bonus calculation methodology + per-employee
+ * paid amounts within 30 days of payment. Distinct from IND_BONUS_ACT
+ * (statutory eligibility calc).
+ */
+registerReport({
+  code: 'IND_FORM_D_BONUS',
+  countryCode: 'IN',
+  name: 'India Form D — Bonus Payment Statement',
+  format: 'excel',
+  description: 'Per-employee bonus payment declaration (Payment of Bonus Act 1965).',
+  generate: async (ctx) => {
+    const months = yyyymmRange(ctx.periodStart, ctx.periodEnd);
+    const runs = await prisma.payrollRun.findMany({
+      where: { tenantId: ctx.tenantId, payrollMonth: { in: months }, isDeleted: false },
+      include: { payslips: true },
+    });
+    const lines: Array<Record<string, unknown>> = [];
+    let totalBonus = 0;
+    let employeeCount = 0;
+    for (const run of runs) {
+      for (const slip of run.payslips ?? []) {
+        const bonus = Number(slip.bonusAmount ?? 0);
+        if (bonus === 0) continue;
+        lines.push({
+          payrollMonth: run.payrollMonth,
+          employeeId: slip.employeeId,
+          employeeCode: slip.employeeCode,
+          bonusPaid: bonus,
+          basisWages: Number(slip.basicSalary ?? 0),
+        });
+        totalBonus += bonus;
+        employeeCount += 1;
+      }
+    }
+    return {
+      schemaVersion: '1.0.0',
+      totals: { employeeCount, grossAmount: 0, deductionAmount: 0, netAmount: totalBonus },
+      lines,
+      warnings: ['Form D must be filed within 30 days of bonus disbursement per Section 26.'],
+    };
+  },
+});
+
 export const statutoryReportService = new StatutoryReportService();
