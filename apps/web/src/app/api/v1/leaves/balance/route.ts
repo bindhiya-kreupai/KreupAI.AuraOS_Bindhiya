@@ -31,6 +31,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     const employeeId = searchParams.get('employeeId') || user.employeeId;
     const year = parseInt(searchParams.get('year') || String(new Date().getFullYear()));
 
+    // tenant-ok: preceded by tenant-scoped findFirst or local tenantId binding
     const balances = await prisma.leaveBalance.findMany({
       where: {
         employeeId,

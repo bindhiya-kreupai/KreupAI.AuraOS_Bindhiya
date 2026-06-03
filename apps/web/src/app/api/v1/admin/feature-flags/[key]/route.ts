@@ -114,6 +114,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) =
       );
     }
 
+    // tenant-ok: id-based op preceded by tenant-scoped findFirst above
     const updated = await prisma.featureFlag.update({
       where: { id: flag.id },
       data: {

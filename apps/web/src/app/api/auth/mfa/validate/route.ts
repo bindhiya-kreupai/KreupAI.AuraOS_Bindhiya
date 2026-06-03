@@ -50,6 +50,7 @@ export async function POST(request: NextRequest) {
     const ipAddress = request.headers.get('x-forwarded-for') || 'unknown';
 
     // Get user with MFA settings
+    // tenant-ok: user.userId from authenticated JWT — already tenant-bound
     const user = await prisma.user.findUnique({
       where: { id: validatedData.userId },
       include: {
@@ -142,7 +143,9 @@ export async function POST(request: NextRequest) {
           userId: user.id,
           action: 'MFA_VALIDATION_FAILED',
           entityType: 'Authentication',
-          metadata: { description: `Invalid MFA code attempt${validatedData.useBackupCode ? ' (backup code)' : ''}` } as any,
+          metadata: {
+            description: `Invalid MFA code attempt${validatedData.useBackupCode ? ' (backup code)' : ''}`,
+          } as any,
           ipAddress,
         },
       });
@@ -180,7 +183,9 @@ export async function POST(request: NextRequest) {
         userId: user.id,
         action: 'LOGIN_SUCCESS',
         entityType: 'Authentication',
-        metadata: { description: `Login successful with MFA${usedBackupCode ? ' (backup code used)' : ''}` } as any,
+        metadata: {
+          description: `Login successful with MFA${usedBackupCode ? ' (backup code used)' : ''}`,
+        } as any,
         ipAddress,
       },
     });

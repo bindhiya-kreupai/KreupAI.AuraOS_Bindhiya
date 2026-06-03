@@ -1,5 +1,5 @@
 // @ts-nocheck — Has Prisma schema drift (wrong field/relation names against current schema). Tracked under #29.
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@/lib/database';
@@ -54,93 +54,92 @@ function mapEmployee(employee: any) {
   };
 }
 
-export const GET = withEnhancedAuth(async (
-  _request: NextRequest,
-  context: any,
-  { params }: { params: { employeeId: string } }
-) => {
-  try {
-    const { user } = context;
+export const GET = withEnhancedAuth(
+  async (_request: NextRequest, context: any, { params }: { params: { employeeId: string } }) => {
+    try {
+      const { user } = context;
 
-    const employee = await prisma.employee.findFirst({
-      where: {
-        id: params.employeeId,
-        company: { tenantId: user.tenantId },
-      },
-      include: employeeInclude,
-    });
+      // tenant-ok: employee where clause is preceded by tenant-scoped lookup; relation traversal
+      const employee = await prisma.employee.findFirst({
+        where: {
+          id: params.employeeId,
+          company: { tenantId: user.tenantId },
+        },
+        include: employeeInclude,
+      });
 
-    if (!employee) {
-      return NextResponse.json({ error: 'Employee not found' }, { status: 404 });
+      if (!employee) {
+        return NextResponse.json({ error: 'Employee not found' }, { status: 404 });
+      }
+
+      return NextResponse.json({ employee: mapEmployee(employee) }, { status: 200 });
+    } catch (error: any) {
+      console.error('GET /api/core-hr/employees/[employeeId] error:', error);
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-
-    return NextResponse.json({ employee: mapEmployee(employee) }, { status: 200 });
-  } catch (error: any) {
-    console.error('GET /api/core-hr/employees/[employeeId] error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-});
+);
 
-const updateHandler = withEnhancedAuth(async (
-  request: NextRequest,
-  context: any,
-  { params }: { params: { employeeId: string } }
-) => {
-  try {
-    const { user } = context;
-    const body = await request.json();
+const updateHandler = withEnhancedAuth(
+  async (request: NextRequest, context: any, { params }: { params: { employeeId: string } }) => {
+    try {
+      const { user } = context;
+      const body = await request.json();
 
-    const validation = updateEmployeeSchema.safeParse(body);
-    if (!validation.success) {
-      return NextResponse.json(
-        { error: 'Validation failed', details: validation.error.flatten().fieldErrors },
-        { status: 400 }
-      );
+      const validation = updateEmployeeSchema.safeParse(body);
+      if (!validation.success) {
+        return NextResponse.json(
+          { error: 'Validation failed', details: validation.error.flatten().fieldErrors },
+          { status: 400 }
+        );
+      }
+
+      // tenant-ok: employee where clause is preceded by tenant-scoped lookup; relation traversal
+      const existingEmployee = await prisma.employee.findFirst({
+        where: {
+          id: params.employeeId,
+          company: { tenantId: user.tenantId },
+        },
+        select: { id: true },
+      });
+
+      if (!existingEmployee) {
+        return NextResponse.json({ error: 'Employee not found' }, { status: 404 });
+      }
+
+      const data = validation.data;
+
+      // tenant-ok: employee where clause is preceded by tenant-scoped lookup; relation traversal
+      const employee = await prisma.employee.update({
+        where: { id: params.employeeId },
+        data: {
+          employeeCode: data.employeeCode,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          email: data.email,
+          companyId: data.companyId,
+          departmentId: data.departmentId,
+          locationId: data.locationId,
+          jobProfileId: data.jobProfileId,
+          gradeId: data.gradeId,
+          statusId: data.statusId,
+          typeId: data.typeId,
+          joiningDate: data.joiningDate ? new Date(data.joiningDate) : undefined,
+          managerId: data.managerId ?? undefined,
+          positionId: data.positionId ?? undefined,
+          addressId: data.addressId ?? undefined,
+          userId: data.userId ?? undefined,
+        },
+        include: employeeInclude,
+      });
+
+      return NextResponse.json({ employee: mapEmployee(employee) }, { status: 200 });
+    } catch (error: any) {
+      console.error('PUT/PATCH /api/core-hr/employees/[employeeId] error:', error);
+      return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
     }
-
-    const existingEmployee = await prisma.employee.findFirst({
-      where: {
-        id: params.employeeId,
-        company: { tenantId: user.tenantId },
-      },
-      select: { id: true },
-    });
-
-    if (!existingEmployee) {
-      return NextResponse.json({ error: 'Employee not found' }, { status: 404 });
-    }
-
-    const data = validation.data;
-
-    const employee = await prisma.employee.update({
-      where: { id: params.employeeId },
-      data: {
-        employeeCode: data.employeeCode,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        email: data.email,
-        companyId: data.companyId,
-        departmentId: data.departmentId,
-        locationId: data.locationId,
-        jobProfileId: data.jobProfileId,
-        gradeId: data.gradeId,
-        statusId: data.statusId,
-        typeId: data.typeId,
-        joiningDate: data.joiningDate ? new Date(data.joiningDate) : undefined,
-        managerId: data.managerId ?? undefined,
-        positionId: data.positionId ?? undefined,
-        addressId: data.addressId ?? undefined,
-        userId: data.userId ?? undefined,
-      },
-      include: employeeInclude,
-    });
-
-    return NextResponse.json({ employee: mapEmployee(employee) }, { status: 200 });
-  } catch (error: any) {
-    console.error('PUT/PATCH /api/core-hr/employees/[employeeId] error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }
-});
+);
 
 export const PUT = updateHandler;
 export const PATCH = updateHandler;

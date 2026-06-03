@@ -70,6 +70,7 @@ export const POST = withAudit(
       }
 
       // Finalize: transition APPROVED → PAID
+      // tenant-ok: id-based op preceded by tenant-scoped findFirst above
       const updated = await prisma.payrollRun.update({
         where: { id },
         data: {
@@ -80,6 +81,7 @@ export const POST = withAudit(
       });
 
       // Update all approved payslips to PAID
+      // tenant-ok: id-based op preceded by tenant-scoped findFirst above
       await prisma.payslip.updateMany({
         where: { payrollRunId: id, status: 'APPROVED' },
         data: { status: 'PAID' },

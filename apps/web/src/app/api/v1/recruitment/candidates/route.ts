@@ -25,6 +25,7 @@ function normalizeStage(stage?: string): string | undefined {
 }
 
 async function getTenantUserIds(tenantId: string): Promise<string[]> {
+  // tenant-ok: helper takes tenantId as a typed parameter
   const users = await prisma.user.findMany({
     where: { tenantId },
     select: { id: true },

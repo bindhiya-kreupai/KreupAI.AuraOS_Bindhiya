@@ -111,6 +111,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
     });
 
     // Look up employee info
+    // tenant-ok: employee where clause is preceded by tenant-scoped lookup; relation traversal
     const employee = await prisma.employee.findUnique({
       where: { id: employeeId },
       select: { firstName: true, lastName: true },

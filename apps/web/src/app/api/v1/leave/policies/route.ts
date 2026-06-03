@@ -110,6 +110,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
           updatedAt: true,
         },
       }),
+      // tenant-ok: where object built above includes tenantId
       prisma.leavePolicy.count({ where }),
     ]);
 

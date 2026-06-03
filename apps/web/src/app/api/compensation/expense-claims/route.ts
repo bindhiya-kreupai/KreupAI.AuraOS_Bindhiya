@@ -122,6 +122,18 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, { user, permiss
     }
     if (updates.rejectionReason) updateData.rejectionReason = updates.rejectionReason;
 
+    // Tenant-scope the lookup before touching the row by id
+    const existing = await prisma.expenseClaim.findFirst({
+      where: { id, tenantId: user.tenantId },
+    });
+    if (!existing) {
+      return NextResponse.json(
+        { success: false, error: 'Expense claim not found' },
+        { status: 404 }
+      );
+    }
+
+    // tenant-ok: id-based update preceded by tenant-scoped findFirst above
     const claim = await prisma.expenseClaim.update({
       where: { id },
       data: updateData,
@@ -152,6 +164,18 @@ export const DELETE = withEnhancedAuth(async (request: NextRequest, { user, perm
       );
     }
 
+    // Tenant-scope the lookup before deleting by id
+    const existing = await prisma.expenseClaim.findFirst({
+      where: { id, tenantId: user.tenantId },
+    });
+    if (!existing) {
+      return NextResponse.json(
+        { success: false, error: 'Expense claim not found' },
+        { status: 404 }
+      );
+    }
+
+    // tenant-ok: id-based delete preceded by tenant-scoped findFirst above
     await prisma.expenseClaim.delete({ where: { id } });
 
     return NextResponse.json({ success: true, message: 'Expense claim deleted' });

@@ -106,6 +106,7 @@ export const PUT = withAudit(
         );
       }
 
+      // tenant-ok: id-based op preceded by tenant-scoped findFirst above
       const updated = await prisma.payrollRun.update({
         where: { id },
         data: {

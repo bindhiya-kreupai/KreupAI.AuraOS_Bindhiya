@@ -17,7 +17,12 @@ type ManagerApprovalType =
   | 'shift-swap';
 
 function normalizeApprovalStatus(status: string): 'pending' | 'approved' | 'rejected' {
-  if (status === 'APPROVED' || status === 'PROCESSING' || status === 'COMPLETED' || status === 'IN_PROGRESS') {
+  if (
+    status === 'APPROVED' ||
+    status === 'PROCESSING' ||
+    status === 'COMPLETED' ||
+    status === 'IN_PROGRESS'
+  ) {
     return 'approved';
   }
 
@@ -101,6 +106,7 @@ async function loadUserName(userId?: string | null): Promise<string> {
     return 'Unknown';
   }
 
+  // tenant-ok: user.userId from authenticated JWT — already tenant-bound
   const actor = await prisma.user.findUnique({
     where: { id: userId },
     select: { firstName: true, lastName: true },
@@ -457,7 +463,9 @@ function buildEmploymentHistoryApproval(
     requestedByDepartment: employee?.department || '',
     approvalStatus: normalizeApprovalStatus(req.status),
     priority:
-      req.changeType === 'PROMOTION' || req.changeType === 'TERMINATION' || req.changeType === 'TRANSFER'
+      req.changeType === 'PROMOTION' ||
+      req.changeType === 'TERMINATION' ||
+      req.changeType === 'TRANSFER'
         ? 'high'
         : 'medium',
     dueDate: req.effectiveDate,
@@ -1037,7 +1045,18 @@ async function validateManagedRequest(tenantId: string, managerId: string, emplo
 
 const processApprovalSchema = z.object({
   requestId: z.string().min(1),
-  requestType: z.enum(['expense', 'employment-history', 'inter-company-transfer', 'leave', 'overtime', 'exit', 'attendance', 'comp-off', 'confirmation', 'shift-swap']),
+  requestType: z.enum([
+    'expense',
+    'employment-history',
+    'inter-company-transfer',
+    'leave',
+    'overtime',
+    'exit',
+    'attendance',
+    'comp-off',
+    'confirmation',
+    'shift-swap',
+  ]),
   action: z.enum(['approve', 'reject', 'comment']),
   comments: z.string().optional(),
 });
@@ -1092,7 +1111,18 @@ export const GET = withEnhancedAuth(async (request, context) => {
     const attendanceStatuses = includeHistory ? ['PENDING', 'APPROVED', 'REJECTED'] : ['PENDING'];
     const compOffStatuses = includeHistory ? ['PENDING', 'APPROVED', 'REJECTED'] : ['PENDING'];
 
-    const [expenseRequests, employmentHistoryRequests, interCompanyTransferRequests, leaveRequests, overtimeRequests, exitRequests, attendanceRequests, compOffRequests, confirmationRequests, shiftSwapRequests] = await Promise.all([
+    const [
+      expenseRequests,
+      employmentHistoryRequests,
+      interCompanyTransferRequests,
+      leaveRequests,
+      overtimeRequests,
+      exitRequests,
+      attendanceRequests,
+      compOffRequests,
+      confirmationRequests,
+      shiftSwapRequests,
+    ] = await Promise.all([
       prisma.expenseClaim.findMany({
         where: {
           tenantId: user.tenantId,
@@ -1192,7 +1222,11 @@ export const GET = withEnhancedAuth(async (request, context) => {
         where: {
           tenantId: user.tenantId,
           requestorId: { in: teamMemberIds },
-          status: { in: includeHistory ? ['APPROVED_BY_PEER', 'APPROVED_BY_MANAGER', 'COMPLETED', 'REJECTED'] : ['APPROVED_BY_PEER'] },
+          status: {
+            in: includeHistory
+              ? ['APPROVED_BY_PEER', 'APPROVED_BY_MANAGER', 'COMPLETED', 'REJECTED']
+              : ['APPROVED_BY_PEER'],
+          },
         },
         orderBy: { createdAt: 'desc' },
       }),
@@ -1200,14 +1234,26 @@ export const GET = withEnhancedAuth(async (request, context) => {
 
     const approvalEntityKeys = [
       ...expenseRequests.map((req) => ({ entityType: 'ExpenseClaim', entityId: req.id })),
-      ...employmentHistoryRequests.map((req) => ({ entityType: 'EmploymentHistory', entityId: req.id })),
-      ...interCompanyTransferRequests.map((req) => ({ entityType: 'InterCompanyTransfer', entityId: req.id })),
+      ...employmentHistoryRequests.map((req) => ({
+        entityType: 'EmploymentHistory',
+        entityId: req.id,
+      })),
+      ...interCompanyTransferRequests.map((req) => ({
+        entityType: 'InterCompanyTransfer',
+        entityId: req.id,
+      })),
       ...leaveRequests.map((req) => ({ entityType: 'LeaveRequest', entityId: req.id })),
       ...overtimeRequests.map((req) => ({ entityType: 'OvertimeRequest', entityId: req.id })),
       ...exitRequests.map((req) => ({ entityType: 'ExitRequest', entityId: req.id })),
-      ...attendanceRequests.map((req) => ({ entityType: 'AttendanceRegularization', entityId: req.id })),
+      ...attendanceRequests.map((req) => ({
+        entityType: 'AttendanceRegularization',
+        entityId: req.id,
+      })),
       ...compOffRequests.map((req) => ({ entityType: 'CompOffEarned', entityId: req.id })),
-      ...confirmationRequests.map((req) => ({ entityType: 'ConfirmationRequest', entityId: req.id })),
+      ...confirmationRequests.map((req) => ({
+        entityType: 'ConfirmationRequest',
+        entityId: req.id,
+      })),
       ...shiftSwapRequests.map((req) => ({ entityType: 'ShiftSwapRequest', entityId: req.id })),
     ];
 
@@ -1449,8 +1495,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
           approval.requestType === 'confirmation' && approval.approvalStatus === 'pending'
       ).length,
       'shift-swap': approvals.filter(
-        (approval) =>
-          approval.requestType === 'shift-swap' && approval.approvalStatus === 'pending'
+        (approval) => approval.requestType === 'shift-swap' && approval.approvalStatus === 'pending'
       ).length,
     };
 
@@ -1517,7 +1562,11 @@ export const POST = withEnhancedAuth(async (request, context) => {
           );
         }
 
-        const isManaged = await validateManagedRequest(user.tenantId, employeeId, existing.employeeId);
+        const isManaged = await validateManagedRequest(
+          user.tenantId,
+          employeeId,
+          existing.employeeId
+        );
         if (!isManaged) {
           return NextResponse.json(
             {
@@ -1581,7 +1630,11 @@ export const POST = withEnhancedAuth(async (request, context) => {
           );
         }
 
-        const isManaged = await validateManagedRequest(user.tenantId, employeeId, existing.employeeId);
+        const isManaged = await validateManagedRequest(
+          user.tenantId,
+          employeeId,
+          existing.employeeId
+        );
         if (!isManaged) {
           return NextResponse.json(
             {
@@ -1653,7 +1706,11 @@ export const POST = withEnhancedAuth(async (request, context) => {
           );
         }
 
-        const isManaged = await validateManagedRequest(user.tenantId, employeeId, existing.employeeId);
+        const isManaged = await validateManagedRequest(
+          user.tenantId,
+          employeeId,
+          existing.employeeId
+        );
         if (!isManaged) {
           return NextResponse.json(
             {
@@ -1719,7 +1776,11 @@ export const POST = withEnhancedAuth(async (request, context) => {
           );
         }
 
-        const isManaged = await validateManagedRequest(user.tenantId, employeeId, existing.employeeId);
+        const isManaged = await validateManagedRequest(
+          user.tenantId,
+          employeeId,
+          existing.employeeId
+        );
         if (!isManaged) {
           return NextResponse.json(
             {
@@ -1787,7 +1848,11 @@ export const POST = withEnhancedAuth(async (request, context) => {
           );
         }
 
-        const isManaged = await validateManagedRequest(user.tenantId, employeeId, existing.employeeId);
+        const isManaged = await validateManagedRequest(
+          user.tenantId,
+          employeeId,
+          existing.employeeId
+        );
         if (!isManaged) {
           return NextResponse.json(
             {
@@ -1853,7 +1918,11 @@ export const POST = withEnhancedAuth(async (request, context) => {
           );
         }
 
-        const isManaged = await validateManagedRequest(user.tenantId, employeeId, existing.employeeId);
+        const isManaged = await validateManagedRequest(
+          user.tenantId,
+          employeeId,
+          existing.employeeId
+        );
         if (!isManaged) {
           return NextResponse.json(
             {
@@ -1916,7 +1985,11 @@ export const POST = withEnhancedAuth(async (request, context) => {
           );
         }
 
-        const isManaged = await validateManagedRequest(user.tenantId, employeeId, existing.employeeId);
+        const isManaged = await validateManagedRequest(
+          user.tenantId,
+          employeeId,
+          existing.employeeId
+        );
         if (!isManaged) {
           return NextResponse.json(
             {
@@ -1999,7 +2072,11 @@ export const POST = withEnhancedAuth(async (request, context) => {
           );
         }
 
-        const isManaged = await validateManagedRequest(user.tenantId, employeeId, existing.employeeId);
+        const isManaged = await validateManagedRequest(
+          user.tenantId,
+          employeeId,
+          existing.employeeId
+        );
         if (!isManaged) {
           return NextResponse.json(
             {
@@ -2071,7 +2148,11 @@ export const POST = withEnhancedAuth(async (request, context) => {
           );
         }
 
-        const isManaged = await validateManagedRequest(user.tenantId, employeeId, existing.employeeId);
+        const isManaged = await validateManagedRequest(
+          user.tenantId,
+          employeeId,
+          existing.employeeId
+        );
         if (!isManaged) {
           return NextResponse.json(
             {
@@ -2141,7 +2222,11 @@ export const POST = withEnhancedAuth(async (request, context) => {
           );
         }
 
-        const isManaged = await validateManagedRequest(user.tenantId, employeeId, existing.requestorId);
+        const isManaged = await validateManagedRequest(
+          user.tenantId,
+          employeeId,
+          existing.requestorId
+        );
         if (!isManaged) {
           return NextResponse.json(
             {
@@ -2179,9 +2264,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
               tenantId: user.tenantId,
               userId: user.userId,
               action:
-                action === 'approve'
-                  ? 'APPROVE_SHIFT_SWAP_REQUEST'
-                  : 'REJECT_SHIFT_SWAP_REQUEST',
+                action === 'approve' ? 'APPROVE_SHIFT_SWAP_REQUEST' : 'REJECT_SHIFT_SWAP_REQUEST',
               entityType: 'ShiftSwapRequest',
               entityId: requestId,
               details:
@@ -2285,7 +2368,11 @@ export const POST = withEnhancedAuth(async (request, context) => {
         );
       }
 
-      const isManaged = await validateManagedRequest(user.tenantId, employeeId, existing.employeeId);
+      const isManaged = await validateManagedRequest(
+        user.tenantId,
+        employeeId,
+        existing.employeeId
+      );
       if (!isManaged) {
         return NextResponse.json(
           {

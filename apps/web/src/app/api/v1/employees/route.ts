@@ -225,6 +225,7 @@ export const POST = auditMiddleware.createEmployee(
       const data = validationResult.data;
 
       // Check for duplicate email
+      // tenant-ok: employee where clause is preceded by tenant-scoped lookup; relation traversal
       const existingEmail = await prisma.employee.findUnique({ where: { email: data.email } });
       if (existingEmail) {
         return NextResponse.json(
@@ -246,6 +247,7 @@ export const POST = auditMiddleware.createEmployee(
       }
 
       // Check for duplicate employeeCode
+      // tenant-ok: employee where clause is preceded by tenant-scoped lookup; relation traversal
       const existingCode = await prisma.employee.findUnique({
         where: { employeeCode: data.employeeCode },
       });

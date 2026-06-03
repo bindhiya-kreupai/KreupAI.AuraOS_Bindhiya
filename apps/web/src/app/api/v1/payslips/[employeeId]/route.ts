@@ -41,9 +41,9 @@ export const GET = withEnhancedAuth(
       const skip = (page - 1) * limit;
       const month = searchParams.get('month');
 
-      // Verify employee belongs to this tenant
+      // Verify employee belongs to this tenant via the company relation
       const employee = await prisma.employee.findFirst({
-        where: { id: employeeId, tenantId },
+        where: { id: employeeId, company: { tenantId } },
         select: { id: true },
       });
 

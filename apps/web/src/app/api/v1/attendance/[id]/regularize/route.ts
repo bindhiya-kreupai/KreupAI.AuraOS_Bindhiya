@@ -68,6 +68,7 @@ export const POST = withAudit(
       });
 
       // Mark the attendance record as pending regularization
+      // tenant-ok: id-based op preceded by tenant-scoped findFirst above
       await prisma.attendanceRecord.update({
         where: { id },
         data: { regularizationId: regularization.id },

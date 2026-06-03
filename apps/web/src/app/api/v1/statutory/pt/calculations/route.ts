@@ -91,9 +91,11 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
       const runIds = payrollRuns.map((r) => r.id);
 
       // Get payslips and check earnings JSON for PT deductions
+      // tenant-ok: runIds derived from a tenant-scoped payrollRun.findMany above
       const payslips =
         runIds.length > 0
-          ? await prisma.payslip.findMany({
+          ? // tenant-ok: payslip scoped via payrollRunId from a tenant-scoped findMany above
+            await prisma.payslip.findMany({
               where: { payrollRunId: { in: runIds } },
               select: {
                 employeeId: true,

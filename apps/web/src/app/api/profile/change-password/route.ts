@@ -1,4 +1,4 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
@@ -15,16 +15,14 @@ export const POST = withAuth(async (request: NextRequest, { user }) => {
     const validatedData = ChangePasswordSchema.parse(body);
 
     // Fetch current user
+    // tenant-ok: id from authenticated JWT or tenant-scoped lookup above
     const currentUser = await prisma.user.findUnique({
       where: { id: user.userId },
       select: { id: true, password: true, email: true },
     });
 
     if (!currentUser) {
-      return NextResponse.json(
-        { success: false, error: 'User not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ success: false, error: 'User not found' }, { status: 404 });
     }
 
     // Verify current password
@@ -54,10 +52,7 @@ export const POST = withAuth(async (request: NextRequest, { user }) => {
     }
 
     // Check if new password is same as current
-    const isSameAsOld = await comparePassword(
-      validatedData.newPassword,
-      currentUser.password
-    );
+    const isSameAsOld = await comparePassword(validatedData.newPassword, currentUser.password);
 
     if (isSameAsOld) {
       return NextResponse.json(
@@ -70,6 +65,7 @@ export const POST = withAuth(async (request: NextRequest, { user }) => {
     const hashedPassword = await hashPassword(validatedData.newPassword);
 
     // Update password
+    // tenant-ok: id from authenticated JWT or tenant-scoped lookup above
     await prisma.user.update({
       where: { id: user.userId },
       data: { password: hashedPassword },
@@ -86,9 +82,7 @@ export const POST = withAuth(async (request: NextRequest, { user }) => {
 
     // Create audit log
     const ipAddress =
-      request.headers.get('x-forwarded-for') ||
-      request.headers.get('x-real-ip') ||
-      'unknown';
+      request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
 
     await prisma.auditLog.create({
       data: {

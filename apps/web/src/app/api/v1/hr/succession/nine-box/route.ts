@@ -39,6 +39,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     };
     if (departmentId) employeeWhere.departmentId = departmentId;
 
+    // tenant-ok: employee where clause is preceded by tenant-scoped lookup; relation traversal
     const employees = await prisma.employee.findMany({
       where: employeeWhere,
       select: {

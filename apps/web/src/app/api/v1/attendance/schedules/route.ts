@@ -42,6 +42,7 @@ export const GET = withEnhancedAuth(async (_request: NextRequest, context) => {
   try {
     const tenantId = context.user.tenantId;
 
+    // tenant-ok: where clause uses the locally-bound tenantId from context above
     const assignments = await prisma.shiftAssignment.findMany({
       where: { tenantId },
       include: {
@@ -50,10 +51,12 @@ export const GET = withEnhancedAuth(async (_request: NextRequest, context) => {
       orderBy: { effectiveFrom: 'desc' },
     });
 
-    // Look up employee names for all employeeIds in a single query
+    // Look up employee names for all employeeIds in a single query.
+    // Scope by tenant via the company relation so a leaked employeeId
+    // from another tenant doesn't surface here.
     const employeeIds = [...new Set(assignments.map((a) => a.employeeId))];
     const employees = await prisma.employee.findMany({
-      where: { id: { in: employeeIds } },
+      where: { id: { in: employeeIds }, company: { tenantId } },
       select: { id: true, firstName: true, lastName: true },
     });
     const employeeMap = new Map(employees.map((e) => [e.id, `${e.firstName} ${e.lastName}`]));
@@ -189,9 +192,9 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
       },
     });
 
-    // Look up employee name
-    const employee = await prisma.employee.findUnique({
-      where: { id: body.employeeId },
+    // Look up employee name — tenant-scoped via company relation
+    const employee = await prisma.employee.findFirst({
+      where: { id: body.employeeId, company: { tenantId: context.user.tenantId } },
       select: { firstName: true, lastName: true },
     });
 

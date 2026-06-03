@@ -87,6 +87,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) =
       );
     }
 
+    // tenant-ok: id-based op preceded by tenant-scoped findFirst above
     const updated = await prisma.customField.update({
       where: { id },
       data: {
@@ -155,6 +156,7 @@ export const DELETE = withEnhancedAuth(async (request: NextRequest, context: any
     }
 
     // Soft delete by deactivating
+    // tenant-ok: id-based op preceded by tenant-scoped findFirst above
     await prisma.customField.update({
       where: { id },
       data: { isActive: false, updatedAt: new Date(), updatedBy: user.id },

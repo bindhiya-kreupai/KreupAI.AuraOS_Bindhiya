@@ -1,5 +1,5 @@
 // @ts-nocheck — Has Prisma schema drift (wrong field/relation names against current schema). Tracked under #29.
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@/lib/database';
@@ -8,6 +8,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
     const { user } = context;
 
+    // tenant-ok: employee where clause is preceded by tenant-scoped lookup; relation traversal
     const employee = await prisma.employee.findFirst({
       where: {
         tenantId: user.tenantId,
@@ -37,16 +38,10 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
       );
     }
 
-    return NextResponse.json(
-      { success: true, data: employee },
-      { status: 200 }
-    );
+    return NextResponse.json({ success: true, data: employee }, { status: 200 });
   } catch (error: any) {
     console.error('[My Services Profile] GET Error:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch profile' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: 'Failed to fetch profile' }, { status: 500 });
   }
 });
 
@@ -55,6 +50,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context) => {
     const { user } = context;
     const body = await request.json();
 
+    // tenant-ok: employee where clause is preceded by tenant-scoped lookup; relation traversal
     const employee = await prisma.employee.findFirst({
       where: {
         tenantId: user.tenantId,
@@ -92,6 +88,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context) => {
       }
     }
 
+    // tenant-ok: employee where clause is preceded by tenant-scoped lookup; relation traversal
     const updated = await prisma.employee.update({
       where: { id: employee.id },
       data: updateData,
@@ -105,10 +102,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context) => {
       },
     });
 
-    return NextResponse.json(
-      { success: true, data: updated },
-      { status: 200 }
-    );
+    return NextResponse.json({ success: true, data: updated }, { status: 200 });
   } catch (error: any) {
     console.error('[My Services Profile] PUT Error:', error);
     return NextResponse.json(

@@ -79,6 +79,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user }) => {
     const secret = authenticator.generateSecret();
 
     // Get user email for QR code label
+    // tenant-ok: user.userId from authenticated JWT — already tenant-bound
     const userRecord = await prisma.user.findUnique({
       where: { id: user.userId },
       select: { email: true, tenant: { select: { name: true } } },
@@ -173,6 +174,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user }) => {
       },
     });
 
+    // tenant-ok: user.userId from authenticated JWT — already tenant-bound
     const userRecord = await prisma.user.findUnique({
       where: { id: user.userId },
       select: { mfaEnabled: true },

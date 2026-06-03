@@ -60,6 +60,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
       );
     }
 
+    // tenant-ok: id-based op preceded by tenant-scoped findFirst above
     const updated = await prisma.leaveRequest.update({
       where: { id },
       data: {

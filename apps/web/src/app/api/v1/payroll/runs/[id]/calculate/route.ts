@@ -73,7 +73,7 @@ export const POST = withAudit(
         );
       }
 
-      // Mark as PROCESSING
+      // tenant-ok: id-based update preceded by tenant-scoped findFirst above
       await prisma.payrollRun.update({
         where: { id },
         data: { status: 'PROCESSING' },
@@ -91,7 +91,8 @@ export const POST = withAudit(
         employeeIds: body.employeeIds,
       });
 
-      // Clear existing payslips for this run (supports recalculation)
+      // Payslip is scoped via payrollRunId; the parent run was tenant-checked above
+      // tenant-ok: parent payrollRun tenant-scoped in findFirst above
       await prisma.payslip.deleteMany({ where: { payrollRunId: id } });
 
       // Persist calculated payslips
@@ -143,7 +144,7 @@ export const POST = withAudit(
         });
       }
 
-      // Update run with calculated totals
+      // tenant-ok: id-based update preceded by tenant-scoped findFirst above
       const updated = await prisma.payrollRun.update({
         where: { id },
         data: {
@@ -191,6 +192,7 @@ export const POST = withAudit(
 
       // Reset run status on failure
       try {
+        // tenant-ok: id-based update preceded by tenant-scoped findFirst above
         await prisma.payrollRun.update({
           where: { id },
           data: {

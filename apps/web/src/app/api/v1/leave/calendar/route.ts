@@ -124,7 +124,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
     const leaveEmployees =
       leaveEmployeeIds.length > 0
         ? await prisma.employee.findMany({
-            where: { id: { in: leaveEmployeeIds } },
+            where: { id: { in: leaveEmployeeIds }, company: { tenantId: user.tenantId } },
             select: {
               id: true,
               employeeCode: true,
