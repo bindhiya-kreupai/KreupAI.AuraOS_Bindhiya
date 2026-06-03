@@ -755,6 +755,200 @@ registerReport({
 });
 
 /**
+ * KSA Mudad wage protection. Per-payslip salary + bank route. Mirrors
+ * the UAE WPS shape — produces a CSV file that the Mudad portal accepts
+ * for cross-checking employer wage payments against ledger transfers.
+ */
+registerReport({
+  code: 'KSA_MUDAD',
+  countryCode: 'SA',
+  name: 'KSA Mudad Wage Protection',
+  format: 'csv',
+  description: 'Wage Protection System CSV for the KSA Mudad portal.',
+  generate: async (ctx) => {
+    const months = yyyymmRange(ctx.periodStart, ctx.periodEnd);
+    const runs = await prisma.payrollRun.findMany({
+      where: { tenantId: ctx.tenantId, payrollMonth: { in: months }, isDeleted: false },
+      include: { payslips: true },
+    });
+
+    let employeeCount = 0;
+    let grossAmount = 0;
+    let netAmount = 0;
+    const lines: Array<Record<string, unknown>> = [];
+
+    for (const run of runs) {
+      for (const slip of run.payslips ?? []) {
+        employeeCount += 1;
+        grossAmount += Number(slip.grossSalary);
+        netAmount += Number(slip.netSalary);
+        lines.push({
+          payrollMonth: run.payrollMonth,
+          employeeId: slip.employeeId,
+          employeeCode: slip.employeeCode,
+          gross: Number(slip.grossSalary),
+          net: Number(slip.netSalary),
+          // Bank routing fields populated by the export layer from the
+          // employee's compliance details (IBAN, bank code).
+        });
+      }
+    }
+
+    return {
+      schemaVersion: '1.0.0',
+      totals: { employeeCount, grossAmount, deductionAmount: 0, netAmount },
+      lines,
+      warnings: lines.length === 0 ? ['No payroll runs in period — empty Mudad file'] : undefined,
+    };
+  },
+});
+
+/**
+ * India Form 12BA — annual perquisites statement. Reports per-employee
+ * total perquisite value for the financial year. Aggregates the
+ * "PERQUISITE" component code from each payslip's earnings JSON.
+ */
+registerReport({
+  code: 'IND_FORM_12BA',
+  countryCode: 'IN',
+  name: 'India Form 12BA (Annual Perquisites Statement)',
+  format: 'pdf',
+  description: 'Per-employee perquisites statement for the financial year.',
+  generate: async (ctx) => {
+    const months = yyyymmRange(ctx.periodStart, ctx.periodEnd);
+    const runs = await prisma.payrollRun.findMany({
+      where: { tenantId: ctx.tenantId, payrollMonth: { in: months }, isDeleted: false },
+      include: { payslips: true },
+    });
+
+    const perEmployee = new Map<
+      string,
+      { code: string; name: string; perqTotal: number; gross: number }
+    >();
+
+    for (const run of runs) {
+      for (const slip of run.payslips ?? []) {
+        const earnings = (slip.earnings as Array<Record<string, unknown>>) ?? [];
+        const perq = earnings
+          .filter(
+            (e) =>
+              typeof e.code === 'string' &&
+              ['PERQUISITE', 'PERQ', 'PERQS', 'CAR', 'HOUSING_PERQ'].includes(e.code.toUpperCase())
+          )
+          .reduce((s, e) => s + Number(e.amount ?? 0), 0);
+
+        const bucket = perEmployee.get(slip.employeeId) ?? {
+          code: slip.employeeCode,
+          name: slip.employeeName,
+          perqTotal: 0,
+          gross: 0,
+        };
+        bucket.perqTotal += perq;
+        bucket.gross += Number(slip.grossSalary);
+        perEmployee.set(slip.employeeId, bucket);
+      }
+    }
+
+    const lines = Array.from(perEmployee.entries()).map(([employeeId, t]) => ({
+      employeeId,
+      employeeCode: t.code,
+      employeeName: t.name,
+      grossSalary: t.gross,
+      totalPerquisites: t.perqTotal,
+    }));
+
+    return {
+      schemaVersion: '1.0.0',
+      totals: {
+        employeeCount: perEmployee.size,
+        grossAmount: lines.reduce((s, l) => s + (l.grossSalary as number), 0),
+        deductionAmount: 0,
+        netAmount: 0,
+      },
+      lines,
+    };
+  },
+});
+
+/**
+ * India Payment of Bonus Act statutory bonus calculation. Per-employee
+ * 8.33% minimum bonus on basic wages, capped at the prevailing statutory
+ * basic ceiling (currently INR 7,000/month or actual basic, whichever is
+ * less, per § 12). Employees earning > INR 21,000/month basic are
+ * excluded per § 2(13).
+ */
+registerReport({
+  code: 'IND_BONUS_ACT',
+  countryCode: 'IN',
+  name: 'India Bonus Act § 8.33% Statutory Bonus',
+  format: 'excel',
+  description: 'Statutory bonus per Payment of Bonus Act, 1965 for the period.',
+  generate: async (ctx) => {
+    const months = yyyymmRange(ctx.periodStart, ctx.periodEnd);
+    const runs = await prisma.payrollRun.findMany({
+      where: { tenantId: ctx.tenantId, payrollMonth: { in: months }, isDeleted: false },
+      include: { payslips: true },
+    });
+
+    const perEmployee = new Map<
+      string,
+      { code: string; name: string; basicSum: number; eligibleMonths: number }
+    >();
+
+    // § 2(13) wage ceiling for eligibility (basic + DA ≤ INR 21,000/month).
+    // § 12 ceiling for calculation (basic capped at INR 7,000/month).
+    const ELIGIBILITY_CEILING = 21000;
+    const CALCULATION_CEILING = 7000;
+    const MIN_RATE = 0.0833; // 8.33%
+
+    for (const run of runs) {
+      for (const slip of run.payslips ?? []) {
+        const basic = Number(slip.basicSalary);
+        if (basic > ELIGIBILITY_CEILING) continue; // excluded employee
+        const bucket = perEmployee.get(slip.employeeId) ?? {
+          code: slip.employeeCode,
+          name: slip.employeeName,
+          basicSum: 0,
+          eligibleMonths: 0,
+        };
+        bucket.basicSum += Math.min(basic, CALCULATION_CEILING);
+        bucket.eligibleMonths += 1;
+        perEmployee.set(slip.employeeId, bucket);
+      }
+    }
+
+    let totalBonus = 0;
+    const lines = Array.from(perEmployee.entries()).map(([employeeId, t]) => {
+      const bonus = Math.round(t.basicSum * MIN_RATE);
+      totalBonus += bonus;
+      return {
+        employeeId,
+        employeeCode: t.code,
+        employeeName: t.name,
+        eligibleMonths: t.eligibleMonths,
+        cappedBasicSum: t.basicSum,
+        statutoryBonus: bonus,
+      };
+    });
+
+    return {
+      schemaVersion: '1.0.0',
+      totals: {
+        employeeCount: perEmployee.size,
+        grossAmount: 0,
+        deductionAmount: 0,
+        netAmount: totalBonus,
+      },
+      lines,
+      warnings:
+        perEmployee.size === 0
+          ? ['No eligible employees in period (all basic > INR 21,000 ceiling)']
+          : undefined,
+    };
+  },
+});
+
+/**
  * KSA GOSI reconciliation. Per-payslip employee+employer GOSI contributions.
  */
 registerReport({

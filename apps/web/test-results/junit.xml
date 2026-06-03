@@ -1,43 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuites name="vitest tests" tests="19" failures="0" errors="0" time="0.005994625">
-    <testsuite name="src/lib/services/__tests__/fmla.service.test.ts" timestamp="2026-06-03T11:17:23.412Z" hostname="MacBookPro.lan" tests="19" failures="0" errors="0" skipped="0" time="0.005994625">
-        <testcase classname="src/lib/services/__tests__/fmla.service.test.ts" name="FMLA eligibility (§ 825.110) &gt; FMLA requires ≥12 months tenure AND ≥1250 hours in prior year" time="0.000658666">
+<testsuites name="vitest tests" tests="5" failures="0" errors="0" time="0.005015916">
+    <testsuite name="src/lib/services/__tests__/statutory-report.service.test.ts" timestamp="2026-06-03T11:19:25.558Z" hostname="MacBookPro.lan" tests="5" failures="0" errors="0" skipped="0" time="0.005015916">
+        <testcase classname="src/lib/services/__tests__/statutory-report.service.test.ts" name="Statutory report registry &gt; exposes the 13 generators landed across Phase 2 + Phase 3" time="0.000868959">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/fmla.service.test.ts" name="FMLA eligibility (§ 825.110) &gt; CFRA mirrors FMLA thresholds" time="0.000182625">
+        <testcase classname="src/lib/services/__tests__/statutory-report.service.test.ts" name="Statutory report registry &gt; filters by country code" time="0.000320834">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/fmla.service.test.ts" name="FMLA eligibility (§ 825.110) &gt; OFLA only requires 6 months tenure, no hours minimum" time="0.000110833">
+        <testcase classname="src/lib/services/__tests__/statutory-report.service.test.ts" name="Statutory report registry &gt; returns specs without the generate function (safe to serialize)" time="0.00140025">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/fmla.service.test.ts" name="FMLA eligibility (§ 825.110) &gt; returns a human-readable reason on ineligibility" time="0.000281">
+        <testcase classname="src/lib/services/__tests__/statutory-report.service.test.ts" name="Statutory report submission contract (#85) &gt; exports InvalidReportTransitionError as a real Error subclass" time="0.000335125">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/fmla.service.test.ts" name="FMLA period computation (§ 825.200) &gt; CALENDAR_YEAR — Jan 1 → Dec 31 of the start year" time="0.000509959">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/fmla.service.test.ts" name="FMLA period computation (§ 825.200) &gt; ROLLING_FORWARD — start date → 365 days later" time="0.000143666">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/fmla.service.test.ts" name="FMLA period computation (§ 825.200) &gt; ROLLING_BACKWARD — effective entitlement reduced by prior-year usage" time="0.000088208">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/fmla.service.test.ts" name="FMLA period computation (§ 825.200) &gt; ROLLING_BACKWARD with no prior usage gives full 480h" time="0.00013025">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/fmla.service.test.ts" name="FMLA period computation (§ 825.200) &gt; ROLLING_BACKWARD never goes negative when prior usage &gt; 480" time="0.000148208">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/fmla.service.test.ts" name="FMLA period computation (§ 825.200) &gt; EMPLOYEE_ANNIVERSARY — uses the most recent anniversary on/before the start" time="0.000183167">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/fmla.service.test.ts" name="FMLA case transitions &gt; DRAFT → NOTICE_SENT / DENIED / CANCELED only" time="0.000145458">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/fmla.service.test.ts" name="FMLA case transitions &gt; NOTICE_SENT → CERTIFIED / DENIED / CANCELED only" time="0.000165709">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/fmla.service.test.ts" name="FMLA case transitions &gt; ACTIVE ↔ INTERMITTENT" time="0.000080292">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/fmla.service.test.ts" name="FMLA case transitions &gt; EXHAUSTED → COMPLETED only" time="0.000173291">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/fmla.service.test.ts" name="FMLA case transitions &gt; terminal states reject all transitions" time="0.000177833">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/fmla.service.test.ts" name="FMLA case transitions &gt; assertTransition throws on illegal moves" time="0.000510708">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/fmla.service.test.ts" name="FMLA error contracts &gt; IneligibleForFMLAError carries reason" time="0.0001835">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/fmla.service.test.ts" name="FMLA error contracts &gt; EntitlementExceededError carries attempted + remaining" time="0.000171792">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/fmla.service.test.ts" name="FMLA error contracts &gt; InvalidFMLATransitionError is a real Error subclass" time="0.000084625">
+        <testcase classname="src/lib/services/__tests__/statutory-report.service.test.ts" name="Statutory report submission contract (#85) &gt; rejects placeholder submission references shorter than 3 chars" time="0.000846167">
         </testcase>
     </testsuite>
 </testsuites>

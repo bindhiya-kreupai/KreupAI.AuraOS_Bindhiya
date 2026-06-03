@@ -16,17 +16,20 @@ import {
 const svc = new StatutoryReportService();
 
 describe('Statutory report registry', () => {
-  it('exposes the 10 generators landed in Phase 2', () => {
+  it('exposes the 13 generators landed across Phase 2 + Phase 3', () => {
     const codes = listSpecs()
       .map((s) => s.code)
       .sort();
     expect(codes).toEqual([
+      'IND_BONUS_ACT',
       'IND_ESI_RETURN',
+      'IND_FORM_12BA',
       'IND_FORM_16',
       'IND_FORM_24Q',
       'IND_PF_ECR',
       'IND_PT_CHALLAN',
       'KSA_GOSI_RECON',
+      'KSA_MUDAD',
       'KSA_NITAQAT',
       'UAE_EMIRATISATION',
       'UAE_MOHRE',
@@ -45,14 +48,16 @@ describe('Statutory report registry', () => {
       .listSpecs({ countryCode: 'SA' })
       .map((s) => s.code)
       .sort();
-    expect(sa).toEqual(['KSA_GOSI_RECON', 'KSA_NITAQAT']);
+    expect(sa).toEqual(['KSA_GOSI_RECON', 'KSA_MUDAD', 'KSA_NITAQAT']);
 
     const ind = svc
       .listSpecs({ countryCode: 'IN' })
       .map((s) => s.code)
       .sort();
     expect(ind).toEqual([
+      'IND_BONUS_ACT',
       'IND_ESI_RETURN',
+      'IND_FORM_12BA',
       'IND_FORM_16',
       'IND_FORM_24Q',
       'IND_PF_ECR',
