@@ -72,6 +72,15 @@ async function globalSetup() {
     }
   }
 
+  // Critical-path suites (#83) reference `.auth/manager.json` — alias the
+  // HR Manager state into that path so both naming conventions resolve.
+  const hrManagerState = path.join(AUTH_DIR, 'hr-manager.json');
+  const managerAlias = path.join(AUTH_DIR, 'manager.json');
+  if (fs.existsSync(hrManagerState) && !fs.existsSync(managerAlias)) {
+    fs.copyFileSync(hrManagerState, managerAlias);
+    console.log(`[global-setup] Aliased manager.json from hr-manager.json`);
+  }
+
   await browser.close();
 }
 

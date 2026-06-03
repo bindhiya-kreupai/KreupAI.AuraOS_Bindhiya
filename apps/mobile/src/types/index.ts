@@ -315,6 +315,12 @@ export type PayrollStackParamList = {
   TaxSummary: undefined;
 };
 
+export type BenefitsStackParamList = {
+  BenefitsHome: undefined;
+  ClaimDetails: { claimId: string };
+  SubmitClaim: undefined;
+};
+
 export type MoreStackParamList = {
   MoreHome: undefined;
   Profile: undefined;
