@@ -1,31 +1,143 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuites name="vitest tests" tests="13" failures="0" errors="0" time="0.004892125">
-    <testsuite name="src/lib/services/__tests__/expense.service.test.ts" timestamp="2026-06-03T04:44:32.298Z" hostname="MacBookPro.lan" tests="13" failures="0" errors="0" skipped="0" time="0.004892125">
-        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService transitions &gt; DRAFT → SUBMITTED / CANCELED only" time="0.000786958">
+<testsuites name="vitest tests" tests="63" failures="0" errors="0" time="0.036441042">
+    <testsuite name="src/lib/services/__tests__/asset.service.test.ts" timestamp="2026-06-03T04:45:37.847Z" hostname="MacBookPro.lan" tests="8" failures="0" errors="0" skipped="0" time="0.006961917">
+        <testcase classname="src/lib/services/__tests__/asset.service.test.ts" name="AssetService.findAll &gt; filters by tenant + category + status + locationId" time="0.00103475">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService transitions &gt; SUBMITTED → APPROVED / REJECTED / CANCELED only" time="0.000173917">
+        <testcase classname="src/lib/services/__tests__/asset.service.test.ts" name="AssetService.findAll &gt; builds a 4-field OR clause for search" time="0.000805125">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService transitions &gt; APPROVED → PAID / CANCELED only" time="0.0002035">
+        <testcase classname="src/lib/services/__tests__/asset.service.test.ts" name="AssetService.findAll &gt; paginates correctly" time="0.001131416">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService transitions &gt; REJECTED → DRAFT only (re-open for re-submission)" time="0.000232542">
+        <testcase classname="src/lib/services/__tests__/asset.service.test.ts" name="AssetService.findById — tenant isolation &gt; scopes by tenantId + id" time="0.000387542">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService transitions &gt; PAID and CANCELED are terminal" time="0.00019225">
+        <testcase classname="src/lib/services/__tests__/asset.service.test.ts" name="AssetService.findById — tenant isolation &gt; returns null when tenant mismatch" time="0.000193458">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService transitions &gt; assertTransition throws InvalidExpenseTransitionError on illegal moves" time="0.000533958">
+        <testcase classname="src/lib/services/__tests__/asset.service.test.ts" name="AssetService.create &gt; refuses when asset code already exists" time="0.001547083">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService.evaluatePolicy &gt; routes ≤ managerThreshold totals to auto" time="0.000390667">
+        <testcase classname="src/lib/services/__tests__/asset.service.test.ts" name="AssetService.create &gt; rejects invalid DTO via zod" time="0.00030575">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService.evaluatePolicy &gt; routes manager-threshold totals to manager" time="0.000078583">
+        <testcase classname="src/lib/services/__tests__/asset.service.test.ts" name="AssetService.getAssignmentHistory &gt; queries assignments for the asset, scoped by tenant" time="0.000200333">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService.evaluatePolicy &gt; routes finance-threshold totals to finance" time="0.000151042">
+    </testsuite>
+    <testsuite name="src/lib/services/__tests__/employment-history.service.test.ts" timestamp="2026-06-03T04:45:37.849Z" hostname="MacBookPro.lan" tests="7" failures="0" errors="0" skipped="0" time="0.0055345">
+        <testcase classname="src/lib/services/__tests__/employment-history.service.test.ts" name="EmploymentHistoryService.findAll &gt; filters by tenant + employee + changeType" time="0.000893292">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService.evaluatePolicy &gt; blocks submission when a line is above receipt threshold and has no receipt" time="0.00024575">
+        <testcase classname="src/lib/services/__tests__/employment-history.service.test.ts" name="EmploymentHistoryService.findAll &gt; builds effectiveDate range from startDate + endDate" time="0.000529">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService.evaluatePolicy &gt; warns (but does not fail) when a line exceeds the category cap" time="0.0001165">
+        <testcase classname="src/lib/services/__tests__/employment-history.service.test.ts" name="EmploymentHistoryService.findAll &gt; paginates with default ordering effectiveDate desc" time="0.001382583">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService.evaluatePolicy &gt; defaults to manager lane when no policy is attached" time="0.000068583">
+        <testcase classname="src/lib/services/__tests__/employment-history.service.test.ts" name="EmploymentHistoryService.findById — tenant isolation &gt; scopes by tenantId + id" time="0.000340208">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="Expense error contracts &gt; PolicyViolationError carries failures and reason" time="0.00020025">
+        <testcase classname="src/lib/services/__tests__/employment-history.service.test.ts" name="EmploymentHistoryService.findById — tenant isolation &gt; returns null when tenant mismatch" time="0.000187292">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/employment-history.service.test.ts" name="EmploymentHistoryService.getEmployeeTimeline &gt; queries records for the employee in tenant" time="0.000136875">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/employment-history.service.test.ts" name="EmploymentHistoryService.delete &gt; throws when record not found" time="0.000771958">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/lib/services/__tests__/exit.service.test.ts" timestamp="2026-06-03T04:45:37.850Z" hostname="MacBookPro.lan" tests="8" failures="0" errors="0" skipped="0" time="0.003827167">
+        <testcase classname="src/lib/services/__tests__/exit.service.test.ts" name="ExitService.canTransition &gt; PENDING → APPROVED / CANCELED only" time="0.000737583">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/exit.service.test.ts" name="ExitService.canTransition &gt; APPROVED → PROCESSING / CANCELED only" time="0.000159417">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/exit.service.test.ts" name="ExitService.canTransition &gt; PROCESSING → COMPLETED / CANCELED only" time="0.000207125">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/exit.service.test.ts" name="ExitService.canTransition &gt; terminal states reject all transitions" time="0.000275458">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/exit.service.test.ts" name="ExitService.assertTransition &gt; throws InvalidExitTransitionError on illegal moves" time="0.000599959">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/exit.service.test.ts" name="ExitService.assertTransition &gt; is silent on legal moves" time="0.000236125">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/exit.service.test.ts" name="Exit error contracts &gt; InvalidExitTransitionError is a real Error subclass" time="0.000130417">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/exit.service.test.ts" name="Exit error contracts &gt; ExitNotClearedError carries the user-facing message" time="0.000176">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/lib/services/__tests__/expense.service.test.ts" timestamp="2026-06-03T04:45:37.850Z" hostname="MacBookPro.lan" tests="13" failures="0" errors="0" skipped="0" time="0.0045955">
+        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService transitions &gt; DRAFT → SUBMITTED / CANCELED only" time="0.000731375">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService transitions &gt; SUBMITTED → APPROVED / REJECTED / CANCELED only" time="0.000155792">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService transitions &gt; APPROVED → PAID / CANCELED only" time="0.000191666">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService transitions &gt; REJECTED → DRAFT only (re-open for re-submission)" time="0.000244708">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService transitions &gt; PAID and CANCELED are terminal" time="0.000184916">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService transitions &gt; assertTransition throws InvalidExpenseTransitionError on illegal moves" time="0.000486875">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService.evaluatePolicy &gt; routes ≤ managerThreshold totals to auto" time="0.00037775">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService.evaluatePolicy &gt; routes manager-threshold totals to manager" time="0.000083375">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService.evaluatePolicy &gt; routes finance-threshold totals to finance" time="0.000154083">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService.evaluatePolicy &gt; blocks submission when a line is above receipt threshold and has no receipt" time="0.000230333">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService.evaluatePolicy &gt; warns (but does not fail) when a line exceeds the category cap" time="0.000116458">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService.evaluatePolicy &gt; defaults to manager lane when no policy is attached" time="0.000069792">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="Expense error contracts &gt; PolicyViolationError carries failures and reason" time="0.0001985">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/lib/services/__tests__/full-final.service.test.ts" timestamp="2026-06-03T04:45:37.852Z" hostname="MacBookPro.lan" tests="10" failures="0" errors="0" skipped="0" time="0.004187333">
+        <testcase classname="src/lib/services/__tests__/full-final.service.test.ts" name="FullFinalService.calculate — UAE EOSB &gt; returns zero EOSB before any service" time="0.000785333">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/full-final.service.test.ts" name="FullFinalService.calculate — UAE EOSB &gt; applies 21 days basic per year for &lt;5 years" time="0.000166583">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/full-final.service.test.ts" name="FullFinalService.calculate — UAE EOSB &gt; caps at 24 months basic for long service" time="0.000115334">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/full-final.service.test.ts" name="FullFinalService.calculate — KSA Article 84 &gt; uses half-month basic per year under 5 years" time="0.000295625">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/full-final.service.test.ts" name="FullFinalService.calculate — KSA Article 84 &gt; switches to full-month basic per year beyond 5 years" time="0.000204">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/full-final.service.test.ts" name="FullFinalService.calculate — India Gratuity Act 1972 &gt; returns zero before 5 years" time="0.00011975">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/full-final.service.test.ts" name="FullFinalService.calculate — India Gratuity Act 1972 &gt; uses (15/26) * basic * years for &gt;=5 years" time="0.000096125">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/full-final.service.test.ts" name="FullFinalService.calculate — India Gratuity Act 1972 &gt; caps at INR 20,00,000" time="0.000092958">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/full-final.service.test.ts" name="FullFinalService.calculate — breakdown composition &gt; subtracts loan + notice + other deductions from gross" time="0.000370916">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/full-final.service.test.ts" name="FullFinalService.calculate — breakdown composition &gt; includes a breakdown line for every component (even zeros)" time="0.00038125">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/lib/services/__tests__/payroll.service.test.ts" timestamp="2026-06-03T04:45:37.852Z" hostname="MacBookPro.lan" tests="12" failures="0" errors="0" skipped="0" time="0.006533917">
+        <testcase classname="src/lib/services/__tests__/payroll.service.test.ts" name="PayrollService.findAllRuns &gt; filters by tenantId + status + paginates" time="0.000966">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/payroll.service.test.ts" name="PayrollService.findAllRuns &gt; computes pagination correctly" time="0.001328">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/payroll.service.test.ts" name="PayrollService.findRunById — tenant isolation &gt; scopes by tenantId + id" time="0.000431542">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/payroll.service.test.ts" name="PayrollService.findRunById — tenant isolation &gt; returns null for foreign tenant" time="0.000248625">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/payroll.service.test.ts" name="PayrollService.processPayroll &gt; sets status to CALCULATED and processedAt timestamp" time="0.000262417">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/payroll.service.test.ts" name="PayrollService.approveRun &gt; sets status to APPROVED with approvedBy + approvedAt" time="0.000175666">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/payroll.service.test.ts" name="PayrollService.getRunStatistics &gt; returns counts per status (total, draft, processing, approved)" time="0.000293375">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/payroll.service.test.ts" name="PayrollService.findAllStructures &gt; filters by tenant" time="0.000224208">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/payroll.service.test.ts" name="PayrollService.submitDeclaration &gt; updates status to SUBMITTED" time="0.000271666">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/payroll.service.test.ts" name="PayrollService.verifyDeclaration &gt; updates status to VERIFIED with verifier" time="0.000181125">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/payroll.service.test.ts" name="PayrollService.findAllBenefits &gt; filters by tenant + employeeId" time="0.000161">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/payroll.service.test.ts" name="PayrollService.findAllAdjustments &gt; filters by tenant + employeeId + payrollMonth" time="0.000319958">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/lib/services/__tests__/statutory-report.service.test.ts" timestamp="2026-06-03T04:45:37.854Z" hostname="MacBookPro.lan" tests="5" failures="0" errors="0" skipped="0" time="0.004800708">
+        <testcase classname="src/lib/services/__tests__/statutory-report.service.test.ts" name="Statutory report registry &gt; exposes the 6 generators landed in Phase 2" time="0.00083325">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/statutory-report.service.test.ts" name="Statutory report registry &gt; filters by country code" time="0.000317084">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/statutory-report.service.test.ts" name="Statutory report registry &gt; returns specs without the generate function (safe to serialize)" time="0.001005334">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/statutory-report.service.test.ts" name="Statutory report submission contract (#85) &gt; exports InvalidReportTransitionError as a real Error subclass" time="0.000344709">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/statutory-report.service.test.ts" name="Statutory report submission contract (#85) &gt; rejects placeholder submission references shorter than 3 chars" time="0.000859375">
         </testcase>
     </testsuite>
 </testsuites>

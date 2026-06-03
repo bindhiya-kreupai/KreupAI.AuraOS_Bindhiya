@@ -1,10 +1,10 @@
 {
-  "numTotalTestSuites": 4,
-  "numPassedTestSuites": 4,
+  "numTotalTestSuites": 37,
+  "numPassedTestSuites": 37,
   "numFailedTestSuites": 0,
   "numPendingTestSuites": 0,
-  "numTotalTests": 13,
-  "numPassedTests": 13,
+  "numTotalTests": 63,
+  "numPassedTests": 63,
   "numFailedTests": 0,
   "numPendingTests": 0,
   "numTodoTests": 0,
@@ -24,9 +24,243 @@
     "updated": 0,
     "didUpdate": false
   },
-  "startTime": 1780461871978,
+  "startTime": 1780461937493,
   "success": true,
   "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["AssetService.findAll"],
+          "fullName": "AssetService.findAll filters by tenant + category + status + locationId",
+          "status": "passed",
+          "title": "filters by tenant + category + status + locationId",
+          "duration": 1.034750000000031,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["AssetService.findAll"],
+          "fullName": "AssetService.findAll builds a 4-field OR clause for search",
+          "status": "passed",
+          "title": "builds a 4-field OR clause for search",
+          "duration": 0.8051249999999754,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["AssetService.findAll"],
+          "fullName": "AssetService.findAll paginates correctly",
+          "status": "passed",
+          "title": "paginates correctly",
+          "duration": 1.1314160000000584,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["AssetService.findById — tenant isolation"],
+          "fullName": "AssetService.findById — tenant isolation scopes by tenantId + id",
+          "status": "passed",
+          "title": "scopes by tenantId + id",
+          "duration": 0.3875420000000531,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["AssetService.findById — tenant isolation"],
+          "fullName": "AssetService.findById — tenant isolation returns null when tenant mismatch",
+          "status": "passed",
+          "title": "returns null when tenant mismatch",
+          "duration": 0.19345799999996416,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["AssetService.create"],
+          "fullName": "AssetService.create refuses when asset code already exists",
+          "status": "passed",
+          "title": "refuses when asset code already exists",
+          "duration": 1.5470829999999296,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["AssetService.create"],
+          "fullName": "AssetService.create rejects invalid DTO via zod",
+          "status": "passed",
+          "title": "rejects invalid DTO via zod",
+          "duration": 0.3057500000001028,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["AssetService.getAssignmentHistory"],
+          "fullName": "AssetService.getAssignmentHistory queries assignments for the asset, scoped by tenant",
+          "status": "passed",
+          "title": "queries assignments for the asset, scoped by tenant",
+          "duration": 0.20033300000000054,
+          "failureMessages": [],
+          "meta": {}
+        }
+      ],
+      "startTime": 1780461937800,
+      "endTime": 1780461937806.3057,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/lib/services/__tests__/asset.service.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["EmploymentHistoryService.findAll"],
+          "fullName": "EmploymentHistoryService.findAll filters by tenant + employee + changeType",
+          "status": "passed",
+          "title": "filters by tenant + employee + changeType",
+          "duration": 0.8932920000000877,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["EmploymentHistoryService.findAll"],
+          "fullName": "EmploymentHistoryService.findAll builds effectiveDate range from startDate + endDate",
+          "status": "passed",
+          "title": "builds effectiveDate range from startDate + endDate",
+          "duration": 0.5289999999999964,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["EmploymentHistoryService.findAll"],
+          "fullName": "EmploymentHistoryService.findAll paginates with default ordering effectiveDate desc",
+          "status": "passed",
+          "title": "paginates with default ordering effectiveDate desc",
+          "duration": 1.3825830000000678,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["EmploymentHistoryService.findById — tenant isolation"],
+          "fullName": "EmploymentHistoryService.findById — tenant isolation scopes by tenantId + id",
+          "status": "passed",
+          "title": "scopes by tenantId + id",
+          "duration": 0.34020799999996143,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["EmploymentHistoryService.findById — tenant isolation"],
+          "fullName": "EmploymentHistoryService.findById — tenant isolation returns null when tenant mismatch",
+          "status": "passed",
+          "title": "returns null when tenant mismatch",
+          "duration": 0.18729199999995672,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["EmploymentHistoryService.getEmployeeTimeline"],
+          "fullName": "EmploymentHistoryService.getEmployeeTimeline queries records for the employee in tenant",
+          "status": "passed",
+          "title": "queries records for the employee in tenant",
+          "duration": 0.13687500000003183,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["EmploymentHistoryService.delete"],
+          "fullName": "EmploymentHistoryService.delete throws when record not found",
+          "status": "passed",
+          "title": "throws when record not found",
+          "duration": 0.7719579999999269,
+          "failureMessages": [],
+          "meta": {}
+        }
+      ],
+      "startTime": 1780461937801,
+      "endTime": 1780461937804.772,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/lib/services/__tests__/employment-history.service.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["ExitService.canTransition"],
+          "fullName": "ExitService.canTransition PENDING → APPROVED / CANCELED only",
+          "status": "passed",
+          "title": "PENDING → APPROVED / CANCELED only",
+          "duration": 0.7375829999999723,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["ExitService.canTransition"],
+          "fullName": "ExitService.canTransition APPROVED → PROCESSING / CANCELED only",
+          "status": "passed",
+          "title": "APPROVED → PROCESSING / CANCELED only",
+          "duration": 0.15941699999996217,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["ExitService.canTransition"],
+          "fullName": "ExitService.canTransition PROCESSING → COMPLETED / CANCELED only",
+          "status": "passed",
+          "title": "PROCESSING → COMPLETED / CANCELED only",
+          "duration": 0.2071250000000191,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["ExitService.canTransition"],
+          "fullName": "ExitService.canTransition terminal states reject all transitions",
+          "status": "passed",
+          "title": "terminal states reject all transitions",
+          "duration": 0.2754579999999578,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["ExitService.assertTransition"],
+          "fullName": "ExitService.assertTransition throws InvalidExitTransitionError on illegal moves",
+          "status": "passed",
+          "title": "throws InvalidExitTransitionError on illegal moves",
+          "duration": 0.5999589999998989,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["ExitService.assertTransition"],
+          "fullName": "ExitService.assertTransition is silent on legal moves",
+          "status": "passed",
+          "title": "is silent on legal moves",
+          "duration": 0.23612500000001546,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Exit error contracts"],
+          "fullName": "Exit error contracts InvalidExitTransitionError is a real Error subclass",
+          "status": "passed",
+          "title": "InvalidExitTransitionError is a real Error subclass",
+          "duration": 0.1304169999999658,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Exit error contracts"],
+          "fullName": "Exit error contracts ExitNotClearedError carries the user-facing message",
+          "status": "passed",
+          "title": "ExitNotClearedError carries the user-facing message",
+          "duration": 0.17599999999993088,
+          "failureMessages": [],
+          "meta": {}
+        }
+      ],
+      "startTime": 1780461937828,
+      "endTime": 1780461937831.176,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/lib/services/__tests__/exit.service.test.ts"
+    },
     {
       "assertionResults": [
         {
@@ -34,7 +268,7 @@
           "fullName": "ExpenseService transitions DRAFT → SUBMITTED / CANCELED only",
           "status": "passed",
           "title": "DRAFT → SUBMITTED / CANCELED only",
-          "duration": 0.7869579999999132,
+          "duration": 0.7313749999999573,
           "failureMessages": [],
           "meta": {}
         },
@@ -43,7 +277,7 @@
           "fullName": "ExpenseService transitions SUBMITTED → APPROVED / REJECTED / CANCELED only",
           "status": "passed",
           "title": "SUBMITTED → APPROVED / REJECTED / CANCELED only",
-          "duration": 0.17391699999996035,
+          "duration": 0.15579200000001947,
           "failureMessages": [],
           "meta": {}
         },
@@ -52,7 +286,7 @@
           "fullName": "ExpenseService transitions APPROVED → PAID / CANCELED only",
           "status": "passed",
           "title": "APPROVED → PAID / CANCELED only",
-          "duration": 0.2034999999999627,
+          "duration": 0.19166599999994105,
           "failureMessages": [],
           "meta": {}
         },
@@ -61,7 +295,7 @@
           "fullName": "ExpenseService transitions REJECTED → DRAFT only (re-open for re-submission)",
           "status": "passed",
           "title": "REJECTED → DRAFT only (re-open for re-submission)",
-          "duration": 0.23254199999996672,
+          "duration": 0.24470800000005966,
           "failureMessages": [],
           "meta": {}
         },
@@ -70,7 +304,7 @@
           "fullName": "ExpenseService transitions PAID and CANCELED are terminal",
           "status": "passed",
           "title": "PAID and CANCELED are terminal",
-          "duration": 0.1922500000000582,
+          "duration": 0.18491599999993014,
           "failureMessages": [],
           "meta": {}
         },
@@ -79,7 +313,7 @@
           "fullName": "ExpenseService transitions assertTransition throws InvalidExpenseTransitionError on illegal moves",
           "status": "passed",
           "title": "assertTransition throws InvalidExpenseTransitionError on illegal moves",
-          "duration": 0.5339579999999842,
+          "duration": 0.4868749999999409,
           "failureMessages": [],
           "meta": {}
         },
@@ -88,7 +322,7 @@
           "fullName": "ExpenseService.evaluatePolicy routes ≤ managerThreshold totals to auto",
           "status": "passed",
           "title": "routes ≤ managerThreshold totals to auto",
-          "duration": 0.39066700000000765,
+          "duration": 0.3777499999999918,
           "failureMessages": [],
           "meta": {}
         },
@@ -97,7 +331,7 @@
           "fullName": "ExpenseService.evaluatePolicy routes manager-threshold totals to manager",
           "status": "passed",
           "title": "routes manager-threshold totals to manager",
-          "duration": 0.07858299999998053,
+          "duration": 0.08337500000004638,
           "failureMessages": [],
           "meta": {}
         },
@@ -106,7 +340,7 @@
           "fullName": "ExpenseService.evaluatePolicy routes finance-threshold totals to finance",
           "status": "passed",
           "title": "routes finance-threshold totals to finance",
-          "duration": 0.15104200000007495,
+          "duration": 0.15408300000001418,
           "failureMessages": [],
           "meta": {}
         },
@@ -115,7 +349,7 @@
           "fullName": "ExpenseService.evaluatePolicy blocks submission when a line is above receipt threshold and has no receipt",
           "status": "passed",
           "title": "blocks submission when a line is above receipt threshold and has no receipt",
-          "duration": 0.24574999999992997,
+          "duration": 0.23033299999997325,
           "failureMessages": [],
           "meta": {}
         },
@@ -124,7 +358,7 @@
           "fullName": "ExpenseService.evaluatePolicy warns (but does not fail) when a line exceeds the category cap",
           "status": "passed",
           "title": "warns (but does not fail) when a line exceeds the category cap",
-          "duration": 0.11649999999997362,
+          "duration": 0.11645799999996598,
           "failureMessages": [],
           "meta": {}
         },
@@ -133,7 +367,7 @@
           "fullName": "ExpenseService.evaluatePolicy defaults to manager lane when no policy is attached",
           "status": "passed",
           "title": "defaults to manager lane when no policy is attached",
-          "duration": 0.06858299999998962,
+          "duration": 0.06979200000000674,
           "failureMessages": [],
           "meta": {}
         },
@@ -142,16 +376,286 @@
           "fullName": "Expense error contracts PolicyViolationError carries failures and reason",
           "status": "passed",
           "title": "PolicyViolationError carries failures and reason",
-          "duration": 0.20024999999998272,
+          "duration": 0.19849999999996726,
           "failureMessages": [],
           "meta": {}
         }
       ],
-      "startTime": 1780461872277,
-      "endTime": 1780461872281.2002,
+      "startTime": 1780461937827,
+      "endTime": 1780461937831.1985,
       "status": "passed",
       "message": "",
       "name": "/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/lib/services/__tests__/expense.service.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["FullFinalService.calculate — UAE EOSB"],
+          "fullName": "FullFinalService.calculate — UAE EOSB returns zero EOSB before any service",
+          "status": "passed",
+          "title": "returns zero EOSB before any service",
+          "duration": 0.7853330000000369,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["FullFinalService.calculate — UAE EOSB"],
+          "fullName": "FullFinalService.calculate — UAE EOSB applies 21 days basic per year for <5 years",
+          "status": "passed",
+          "title": "applies 21 days basic per year for <5 years",
+          "duration": 0.16658299999994597,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["FullFinalService.calculate — UAE EOSB"],
+          "fullName": "FullFinalService.calculate — UAE EOSB caps at 24 months basic for long service",
+          "status": "passed",
+          "title": "caps at 24 months basic for long service",
+          "duration": 0.11533400000007532,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["FullFinalService.calculate — KSA Article 84"],
+          "fullName": "FullFinalService.calculate — KSA Article 84 uses half-month basic per year under 5 years",
+          "status": "passed",
+          "title": "uses half-month basic per year under 5 years",
+          "duration": 0.2956250000000864,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["FullFinalService.calculate — KSA Article 84"],
+          "fullName": "FullFinalService.calculate — KSA Article 84 switches to full-month basic per year beyond 5 years",
+          "status": "passed",
+          "title": "switches to full-month basic per year beyond 5 years",
+          "duration": 0.2039999999999509,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["FullFinalService.calculate — India Gratuity Act 1972"],
+          "fullName": "FullFinalService.calculate — India Gratuity Act 1972 returns zero before 5 years",
+          "status": "passed",
+          "title": "returns zero before 5 years",
+          "duration": 0.11974999999995362,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["FullFinalService.calculate — India Gratuity Act 1972"],
+          "fullName": "FullFinalService.calculate — India Gratuity Act 1972 uses (15/26) * basic * years for >=5 years",
+          "status": "passed",
+          "title": "uses (15/26) * basic * years for >=5 years",
+          "duration": 0.0961250000000291,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["FullFinalService.calculate — India Gratuity Act 1972"],
+          "fullName": "FullFinalService.calculate — India Gratuity Act 1972 caps at INR 20,00,000",
+          "status": "passed",
+          "title": "caps at INR 20,00,000",
+          "duration": 0.09295799999995324,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["FullFinalService.calculate — breakdown composition"],
+          "fullName": "FullFinalService.calculate — breakdown composition subtracts loan + notice + other deductions from gross",
+          "status": "passed",
+          "title": "subtracts loan + notice + other deductions from gross",
+          "duration": 0.3709159999999656,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["FullFinalService.calculate — breakdown composition"],
+          "fullName": "FullFinalService.calculate — breakdown composition includes a breakdown line for every component (even zeros)",
+          "status": "passed",
+          "title": "includes a breakdown line for every component (even zeros)",
+          "duration": 0.38124999999990905,
+          "failureMessages": [],
+          "meta": {}
+        }
+      ],
+      "startTime": 1780461937827,
+      "endTime": 1780461937830.3813,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/lib/services/__tests__/full-final.service.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["PayrollService.findAllRuns"],
+          "fullName": "PayrollService.findAllRuns filters by tenantId + status + paginates",
+          "status": "passed",
+          "title": "filters by tenantId + status + paginates",
+          "duration": 0.9660000000000082,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["PayrollService.findAllRuns"],
+          "fullName": "PayrollService.findAllRuns computes pagination correctly",
+          "status": "passed",
+          "title": "computes pagination correctly",
+          "duration": 1.3279999999999745,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["PayrollService.findRunById — tenant isolation"],
+          "fullName": "PayrollService.findRunById — tenant isolation scopes by tenantId + id",
+          "status": "passed",
+          "title": "scopes by tenantId + id",
+          "duration": 0.43154199999992215,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["PayrollService.findRunById — tenant isolation"],
+          "fullName": "PayrollService.findRunById — tenant isolation returns null for foreign tenant",
+          "status": "passed",
+          "title": "returns null for foreign tenant",
+          "duration": 0.24862499999994725,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["PayrollService.processPayroll"],
+          "fullName": "PayrollService.processPayroll sets status to CALCULATED and processedAt timestamp",
+          "status": "passed",
+          "title": "sets status to CALCULATED and processedAt timestamp",
+          "duration": 0.26241699999991397,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["PayrollService.approveRun"],
+          "fullName": "PayrollService.approveRun sets status to APPROVED with approvedBy + approvedAt",
+          "status": "passed",
+          "title": "sets status to APPROVED with approvedBy + approvedAt",
+          "duration": 0.17566599999997834,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["PayrollService.getRunStatistics"],
+          "fullName": "PayrollService.getRunStatistics returns counts per status (total, draft, processing, approved)",
+          "status": "passed",
+          "title": "returns counts per status (total, draft, processing, approved)",
+          "duration": 0.2933749999999691,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["PayrollService.findAllStructures"],
+          "fullName": "PayrollService.findAllStructures filters by tenant",
+          "status": "passed",
+          "title": "filters by tenant",
+          "duration": 0.22420799999997598,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["PayrollService.submitDeclaration"],
+          "fullName": "PayrollService.submitDeclaration updates status to SUBMITTED",
+          "status": "passed",
+          "title": "updates status to SUBMITTED",
+          "duration": 0.271665999999982,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["PayrollService.verifyDeclaration"],
+          "fullName": "PayrollService.verifyDeclaration updates status to VERIFIED with verifier",
+          "status": "passed",
+          "title": "updates status to VERIFIED with verifier",
+          "duration": 0.1811249999999518,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["PayrollService.findAllBenefits"],
+          "fullName": "PayrollService.findAllBenefits filters by tenant + employeeId",
+          "status": "passed",
+          "title": "filters by tenant + employeeId",
+          "duration": 0.16099999999994452,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["PayrollService.findAllAdjustments"],
+          "fullName": "PayrollService.findAllAdjustments filters by tenant + employeeId + payrollMonth",
+          "status": "passed",
+          "title": "filters by tenant + employeeId + payrollMonth",
+          "duration": 0.3199580000000424,
+          "failureMessages": [],
+          "meta": {}
+        }
+      ],
+      "startTime": 1780461937801,
+      "endTime": 1780461937806.32,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/lib/services/__tests__/payroll.service.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["Statutory report registry"],
+          "fullName": "Statutory report registry exposes the 6 generators landed in Phase 2",
+          "status": "passed",
+          "title": "exposes the 6 generators landed in Phase 2",
+          "duration": 0.8332500000000209,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Statutory report registry"],
+          "fullName": "Statutory report registry filters by country code",
+          "status": "passed",
+          "title": "filters by country code",
+          "duration": 0.31708400000002257,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Statutory report registry"],
+          "fullName": "Statutory report registry returns specs without the generate function (safe to serialize)",
+          "status": "passed",
+          "title": "returns specs without the generate function (safe to serialize)",
+          "duration": 1.005333999999948,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Statutory report submission contract (#85)"],
+          "fullName": "Statutory report submission contract (#85) exports InvalidReportTransitionError as a real Error subclass",
+          "status": "passed",
+          "title": "exports InvalidReportTransitionError as a real Error subclass",
+          "duration": 0.3447089999999662,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Statutory report submission contract (#85)"],
+          "fullName": "Statutory report submission contract (#85) rejects placeholder submission references shorter than 3 chars",
+          "status": "passed",
+          "title": "rejects placeholder submission references shorter than 3 chars",
+          "duration": 0.859375,
+          "failureMessages": [],
+          "meta": {}
+        }
+      ],
+      "startTime": 1780461937827,
+      "endTime": 1780461937830.8594,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/lib/services/__tests__/statutory-report.service.test.ts"
     }
   ]
 }
