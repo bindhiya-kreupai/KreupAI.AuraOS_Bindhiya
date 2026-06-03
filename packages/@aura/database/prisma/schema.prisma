@@ -253,6 +253,7 @@ model JobProfile {
 
 model Grade {
   id        String    @id @default(uuid())
+  tenantId  String?
   code      String // e.g., "L4"
   name      String // e.g., "Level 4"
   level     Int // Numeric level for hierarchy comparison
@@ -266,6 +267,9 @@ model Grade {
   previousEmploymentHistory EmploymentHistory[] @relation("PreviousGrade")
   newEmploymentHistory      EmploymentHistory[] @relation("NewGrade")
   Position                  Position[]
+  salaryStructures          SalaryStructure[]
+
+  @@index([tenantId])
   @@map("aura_grade")
 }
 
@@ -342,6 +346,10 @@ model Employee {
   sharedServiceRequests SharedServiceRequest[] @relation("ServiceRequestor")
   assignedServices      SharedServiceRequest[] @relation("ServiceAssignee")
 
+  // Compensation
+  salaryStructureId String?
+  salaryStructure   SalaryStructure? @relation("EmployeeSalaryStructure", fields: [salaryStructureId], references: [id])
+
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   createdBy String?
@@ -362,6 +370,7 @@ model Employee {
   @@index([email])
   @@index([employeeCode])
   @@index([companyId, isDeleted])
+  @@index([salaryStructureId])
   @@map("aura_employee")
 }
 
@@ -5721,32 +5730,96 @@ model GeofenceLocation {
   @@map("aura_geofence_location")
 }
 
-// Expense Claims
+// Expense Claims (report-style with multiple line items).
+// State machine: DRAFT → SUBMITTED → APPROVED → PAID (with REJECTED, CANCELED).
 model ExpenseClaim {
   id              String    @id @default(uuid())
   tenantId        String
   employeeId      String
   title           String
-  amount          Float
+  // Legacy single-amount/category/date fields kept for backward compat.
+  // Multi-line claims should use `items` and `totalAmount`.
+  amount          Float     @default(0)
+  totalAmount     Decimal   @default(0)
   currency        String    @default("USD")
-  category        String // MEALS, TRANSPORT, TRAINING, SUPPLIES, OTHER
-  date            DateTime  @db.Date
+  category        String?   // MEALS, TRANSPORT, TRAINING, SUPPLIES, OTHER (single-line mode)
+  date            DateTime? @db.Date
   receiptUrl      String?
   description     String?   @db.Text
-  status          String    @default("PENDING") // PENDING, APPROVED, REJECTED, PAID
+  status          String    @default("DRAFT") // DRAFT, SUBMITTED, APPROVED, REJECTED, PAID, CANCELED
+  policyId        String?
+  policy          ExpensePolicy? @relation(fields: [policyId], references: [id])
+  submittedAt     DateTime?
   approvedBy      String?
   approvedAt      DateTime?
   paidAt          DateTime?
+  paidReference   String?    // payroll / payment-rail ref once paid
   rejectionReason String?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+  createdBy       String?
+  updatedBy       String?
+
+  items ExpenseLineItem[]
 
   @@index([tenantId])
   @@index([employeeId])
   @@index([status])
   @@index([date])
-
+  @@index([policyId])
   @@map("aura_expense_claim")
+}
+
+// Per-line item on an expense claim. Each receipt or per-diem segment is a row.
+model ExpenseLineItem {
+  id            String     @id @default(uuid())
+  claimId       String
+  claim         ExpenseClaim @relation(fields: [claimId], references: [id], onDelete: Cascade)
+  category      String
+  description   String?
+  amount        Decimal
+  currency      String     @default("USD")
+  expenseDate   DateTime
+  receiptUrl    String?
+  merchant      String?
+  metadata      Json       @default("{}")
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([claimId])
+  @@index([category])
+  @@index([expenseDate])
+  @@map("aura_expense_line_item")
+}
+
+// Per-tenant expense policy: category caps, receipt-required threshold, etc.
+model ExpensePolicy {
+  id                   String   @id @default(uuid())
+  tenantId             String
+  name                 String
+  description          String?
+  countryCode          String?  // optional jurisdictional override
+  categoryCaps         Json     @default("{}") // { MEALS: 50, TRANSPORT: 200, ... }
+  receiptRequiredOver  Decimal  @default(25)
+  requiresManagerOver  Decimal  @default(100)
+  requiresFinanceOver  Decimal  @default(1000)
+  perDiemRates         Json     @default("{}") // { city: rate }
+  isActive             Boolean  @default(true)
+  effectiveFrom        DateTime @default(now())
+  effectiveTo          DateTime?
+  createdBy            String?
+  updatedBy            String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  isDeleted            Boolean  @default(false)
+  deletedAt            DateTime?
+
+  claims ExpenseClaim[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@index([isActive])
+  @@map("aura_expense_policy")
 }
 
 // API Keys
@@ -6348,6 +6421,359 @@ model SalaryComponent {
   @@map("aura_salary_component")
 }
 
+// Generated statutory report — UAE MOHRE/WPS, KSA GOSI/Mudad/Nitaqat, India
+// Form-16/24Q/PF-ECR/ESI/PT, etc. Holds the payload + submission reference
+// returned by the government portal.
+model StatutoryReport {
+  id                  String    @id @default(uuid())
+  tenantId            String
+  code                String    // UAE_MOHRE | UAE_WPS_RECON | KSA_GOSI_RECON | IND_FORM_16 | IND_PF_ECR | ...
+  countryCode         String    // ISO-3166-1 alpha-2
+  periodStart         DateTime
+  periodEnd           DateTime
+  format              String    @default("json")  // json | excel | pdf | csv | sif | fvu
+  status              String    @default("DRAFT") // DRAFT | GENERATED | SUBMITTED | ACKNOWLEDGED | FAILED
+  payload             Json      @default("{}")
+  fileUrl             String?
+  submissionReference String?   // real authority-issued reference, NOT a placeholder
+  errorMessage        String?   @db.Text
+  generatedAt         DateTime?
+  submittedAt         DateTime?
+  acknowledgedAt      DateTime?
+  generatedById       String?
+  submittedById       String?
+  metadata            Json      @default("{}")
+
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  createdBy           String?
+  updatedBy           String?
+  isDeleted           Boolean   @default(false)
+  deletedAt           DateTime?
+
+  @@index([tenantId])
+  @@index([code])
+  @@index([countryCode])
+  @@index([status])
+  @@index([periodStart, periodEnd])
+  @@index([tenantId, code, periodStart])
+  @@map("aura_statutory_report")
+}
+
+// COBRA — Consolidated Omnibus Budget Reconciliation Act (US).
+// A qualifying event (termination, divorce, dependent ageing out) opens a
+// 60-day election window during which the former employee may elect to
+// continue health coverage. Default 18-month coverage (longer for some
+// secondary events). State machine on the enrollment row tracks the lifecycle.
+model CobraQualifyingEvent {
+  id                  String    @id @default(uuid())
+  tenantId            String
+  employeeId          String
+  exitRequestId       String?
+  eventType           String    // TERMINATION | REDUCED_HOURS | DIVORCE | DEPENDENT_LOSS | DEATH | MEDICARE_ELIGIBILITY
+  qualifyingDate      DateTime
+  electionDeadline    DateTime  // qualifyingDate + 60 days
+  maxCoverageEndDate  DateTime  // typically qualifyingDate + 18 months (or 36 for non-termination events)
+  noticeIssuedAt      DateTime?
+  noticeReference     String?
+  notes               String?   @db.Text
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  createdBy           String?
+  updatedBy           String?
+  isDeleted           Boolean   @default(false)
+  deletedAt           DateTime?
+
+  enrollments         CobraEnrollment[]
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([electionDeadline])
+  @@index([maxCoverageEndDate])
+  @@map("aura_cobra_qualifying_event")
+}
+
+model CobraEnrollment {
+  id                  String                @id @default(uuid())
+  tenantId            String
+  qualifyingEventId   String
+  qualifyingEvent     CobraQualifyingEvent  @relation(fields: [qualifyingEventId], references: [id])
+  employeeId          String
+  benefitPlanId       String
+  monthlyPremium      Decimal               // includes the 2% admin uplift
+  status              String                @default("PENDING_ELECTION")
+  // PENDING_ELECTION | ELECTED | ACTIVE | TERMINATED_NONPAYMENT | EXPIRED | DECLINED | CANCELED
+  electedAt           DateTime?
+  coverageStart       DateTime?
+  coverageEnd         DateTime?
+  premiumsPaidThrough DateTime?
+  totalPremiumsPaid   Decimal               @default(0)
+  declineReason       String?
+  terminationReason   String?
+  notes               String?               @db.Text
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  createdBy           String?
+  updatedBy           String?
+
+  @@index([tenantId])
+  @@index([qualifyingEventId])
+  @@index([employeeId])
+  @@index([status])
+  @@index([coverageEnd])
+  @@map("aura_cobra_enrollment")
+}
+
+// Tenant-defined custom field for any supported entity (Employee, Department,
+// Position, LeaveRequest, ExpenseReport). Used by /admin/custom-fields routes.
+model CustomField {
+  id              String   @id @default(uuid())
+  tenantId        String
+  entityType      String   // Employee | Department | Position | LeaveRequest | ExpenseReport
+  fieldName       String
+  fieldLabel      String
+  fieldType       String   // TEXT | NUMBER | DATE | BOOLEAN | SELECT | MULTI_SELECT | FILE | TEXTAREA
+  isRequired      Boolean  @default(false)
+  isActive        Boolean  @default(true)
+  defaultValue    String?
+  placeholder     String?
+  helpText        String?
+  options         Json?    // for SELECT / MULTI_SELECT
+  validationRules Json?
+  displayOrder    Int      @default(0)
+  section         String   @default("General")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdBy       String?
+  updatedBy       String?
+
+  @@unique([tenantId, entityType, fieldName])
+  @@index([tenantId])
+  @@index([entityType])
+  @@index([isActive])
+  @@map("aura_custom_field")
+}
+
+// Per-tenant feature flag with role-based rollout. Used by /admin/feature-flags routes.
+model FeatureFlag {
+  id                String   @id @default(uuid())
+  tenantId          String
+  key               String
+  name              String
+  description       String?  @db.Text
+  isEnabled         Boolean  @default(false)
+  module            String   @default("general")
+  rolloutPercentage Int      @default(100)
+  enabledForRoles   String[] @default([])
+  metadata          Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdBy         String?
+  updatedBy         String?
+
+  @@unique([tenantId, key])
+  @@index([tenantId])
+  @@index([key])
+  @@index([isEnabled])
+  @@map("aura_feature_flag")
+}
+
+// Visa, permit, and identity-document tracking. Covers passports, visas,
+// Emirates IDs, Iqamas, work permits, labor cards, medical certificates.
+// Drives expiry alerts and renewal workflows.
+model VisaPermit {
+  id                String    @id @default(uuid())
+  tenantId          String
+  employeeId        String
+  documentType      String    // passport | visa | emirates_id | iqama | work_permit | labor_card | medical | residence_permit
+  documentNumber    String
+  countryCode       String    // ISO-3166-1 alpha-2 — issuing country
+  issuingAuthority  String?
+  issueDate         DateTime
+  expiryDate        DateTime
+  category          String?   // employment / family / visit / business / etc.
+  status            String    @default("ACTIVE") // ACTIVE | EXPIRED | CANCELED | RENEWED | REVOKED
+  attachmentIds     Json      @default("[]")
+  notes             String?   @db.Text
+  metadata          Json      @default("{}")  // sponsor, visa class, etc.
+
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  createdBy         String?
+  updatedBy         String?
+  isDeleted         Boolean   @default(false)
+  deletedAt         DateTime?
+
+  renewals          VisaRenewal[]
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([documentType])
+  @@index([status])
+  @@index([expiryDate])
+  @@index([tenantId, expiryDate])
+  @@map("aura_visa_permit")
+}
+
+model VisaRenewal {
+  id                String    @id @default(uuid())
+  tenantId          String
+  visaPermitId      String
+  visaPermit        VisaPermit @relation(fields: [visaPermitId], references: [id])
+  employeeId        String
+  status            String    @default("REQUESTED") // REQUESTED | IN_PROGRESS | COMPLETED | REJECTED | CANCELED
+  requestedBy       String
+  assignedTo        String?
+  newDocumentNumber String?
+  newIssueDate      DateTime?
+  newExpiryDate     DateTime?
+  estimatedCost     Decimal?
+  actualCost        Decimal?
+  vendorName        String?
+  startedAt         DateTime  @default(now())
+  completedAt       DateTime?
+  notes             String?   @db.Text
+  metadata          Json      @default("{}")
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  createdBy         String?
+  updatedBy         String?
+  isDeleted         Boolean   @default(false)
+  deletedAt         DateTime?
+
+  @@index([tenantId])
+  @@index([visaPermitId])
+  @@index([employeeId])
+  @@index([status])
+  @@map("aura_visa_renewal")
+}
+
+// Full & Final settlement record. Computed at exit and frozen at PROCESSED.
+// Per-jurisdiction rules (UAE/KSA/India/...) live in the FullFinalService;
+// breakdown holds the explicit line items: unpaid salary, leave encashment,
+// EOSB/gratuity, bonus pro-rata, loan recovery, notice period, tax.
+model FullFinalSettlement {
+  id              String    @id @default(uuid())
+  tenantId        String
+  employeeId      String
+  exitRequestId   String?
+  countryCode     String    // ISO-3166-1 alpha-2, drives jurisdiction rules
+  lastWorkingDay  DateTime
+  joiningDate     DateTime
+  serviceMonths   Int
+  basicSalary     Decimal
+  grossSalary     Decimal
+  currency        String    @default("USD")
+
+  // Line items
+  unpaidSalary    Decimal   @default(0)
+  leaveEncashment Decimal   @default(0)
+  gratuity        Decimal   @default(0)
+  bonusProRata    Decimal   @default(0)
+  loanRecovery    Decimal   @default(0)
+  noticeRecovery  Decimal   @default(0)
+  otherEarnings   Decimal   @default(0)
+  otherDeductions Decimal   @default(0)
+  taxAmount       Decimal   @default(0)
+
+  grossPayable    Decimal   @default(0)
+  totalDeductions Decimal   @default(0)
+  netPayable      Decimal   @default(0)
+
+  breakdown       Json      @default("[]")  // [{ code, label, kind: "earning"|"deduction"|"tax", amount, source }]
+  notes           String?   @db.Text
+  status          String    @default("DRAFT") // DRAFT | CALCULATED | APPROVED | PROCESSED | CANCELED
+  calculatedAt    DateTime?
+  approvedById    String?
+  approvedAt      DateTime?
+  processedAt     DateTime?
+  payrollRunId    String?
+
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  createdBy       String?
+  updatedBy       String?
+  isDeleted       Boolean   @default(false)
+  deletedAt       DateTime?
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([status])
+  @@index([countryCode])
+  @@index([tenantId, status])
+  @@map("aura_full_final_settlement")
+}
+
+// Employee-initiated profile change request (bank, address, emergency contact,
+// dependents, personal). Two-step workflow: DRAFT → SUBMITTED → APPROVED/REJECTED,
+// with APPLIED set once the underlying record is mutated. Cancel allowed by
+// requester at any non-terminal state.
+model ProfileChangeRequest {
+  id            String    @id @default(uuid())
+  tenantId      String
+  employeeId    String
+  requestedById String
+  category      String    // bank | address | emergency_contact | dependent | personal | tax
+  fieldPath     String?   // dotted field path inside category, optional
+  beforeValues  Json      @default("{}")
+  afterValues   Json      @default("{}")
+  justification String?   @db.Text
+  attachmentIds Json      @default("[]")
+  effectiveDate DateTime?
+  status        String    @default("DRAFT") // DRAFT | SUBMITTED | APPROVED | REJECTED | APPLIED | CANCELED
+  submittedAt   DateTime?
+  reviewedById  String?
+  reviewedAt    DateTime?
+  reviewNotes   String?   @db.Text
+  appliedAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  createdBy     String?
+  updatedBy     String?
+  isDeleted     Boolean   @default(false)
+  deletedAt     DateTime?
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([status])
+  @@index([category])
+  @@index([tenantId, status])
+  @@map("aura_profile_change_request")
+}
+
+// Multi-component salary structure (basic + HRA + DA + transport + ...).
+// Referenced by /api/v1/payroll/salary-structures route. components is a JSON
+// array of { code, name, type: "earning"|"deduction", calc: "fixed"|"percent"|"slab", value, basedOn? }.
+model SalaryStructure {
+  id            String    @id @default(uuid())
+  tenantId      String
+  name          String
+  code          String
+  gradeId       String?
+  grade         Grade?    @relation(fields: [gradeId], references: [id])
+  basicSalary   Decimal   @default(0)
+  grossSalary   Decimal   @default(0)
+  currency      String    @default("USD")
+  components    Json      @default("[]")
+  effectiveFrom DateTime  @default(now())
+  effectiveTo   DateTime?
+  status        String    @default("Active")
+  createdBy     String?
+  updatedBy     String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  isDeleted     Boolean   @default(false)
+  deletedAt     DateTime?
+
+  employees Employee[] @relation("EmployeeSalaryStructure")
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@index([gradeId])
+  @@index([status])
+  @@map("aura_salary_structure")
+}
+
 model CompensationBand {
   id            String    @id @default(uuid())
   tenantId      String
@@ -6514,6 +6940,7 @@ model Course {
   level           String   @default("beginner")
   type            String   @default("online")
   duration        Int?
+  durationHours   Float?   // Required for compliance reporting (SOC 2, OSHA)
   instructor      String?
   thumbnailUrl    String?
   contentUrl      String?
@@ -6525,6 +6952,12 @@ model Course {
   rating          Float?
   enrollmentCount Int      @default(0)
   completionRate  Float?
+  // Compliance training extension (#110)
+  isMandatory              Boolean  @default(false)
+  complianceCategory       String?  // SOX | HIPAA | OSHA | GDPR | PDPL | CODE_OF_CONDUCT
+  certificationValidMonths Int?     // null = perpetual; otherwise expires after N months
+  requiredForRoles         String[] @default([])
+  requiredForCountries     String[] @default([])
   createdBy       String
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
@@ -6534,6 +6967,8 @@ model Course {
   @@index([tenantId])
   @@index([status])
   @@index([category])
+  @@index([isMandatory])
+  @@index([complianceCategory])
   @@map("aura_course")
 }
 
@@ -6542,7 +6977,7 @@ model CourseEnrollment {
   courseId      String
   employeeId    String
   tenantId      String
-  status        String    @default("enrolled")
+  status        String    @default("ENROLLED") // ENROLLED | IN_PROGRESS | COMPLETED | OVERDUE | DROPPED | EXPIRED
   progress      Float     @default(0)
   enrolledAt    DateTime  @default(now())
   startedAt     DateTime?
@@ -6550,13 +6985,22 @@ model CourseEnrollment {
   score         Float?
   certificateId String?
 
+  // Compliance training extension (#110)
+  isMandatory   Boolean   @default(false)
+  dueDate       DateTime?
+  expiresAt     DateTime? // Set on completion = completedAt + course.certificationValidMonths
+  assignedBy    String?
+  assignedAt    DateTime?
+
   course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   @@unique([courseId, employeeId])
   @@index([courseId])
   @@index([employeeId])
   @@index([tenantId])
-
+  @@index([dueDate])
+  @@index([expiresAt])
+  @@index([tenantId, isMandatory, status])
   @@map("aura_course_enrollment")
 }
 

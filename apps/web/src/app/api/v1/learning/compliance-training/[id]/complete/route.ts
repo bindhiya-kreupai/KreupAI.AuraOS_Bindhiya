@@ -1,123 +1,95 @@
-// @ts-nocheck — Learning routes use richer Course/Enrollment fields and courseCertificate model not in current schema. Schema expansion or route rewrite needed. Tracked under #29.
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import crypto from 'crypto';
 import { withEnhancedAuth } from '@/lib/auth';
-import { prisma } from '@/lib/database';
+import { withAudit } from '@/lib/middleware/audit.middleware';
+import { AuditAction } from '@/lib/audit/audit.service';
+import {
+  complianceTrainingService,
+  InvalidEnrollmentTransitionError,
+} from '@/lib/services/compliance-training.service';
 
 export const dynamic = 'force-dynamic';
 
 /**
  * POST /api/v1/learning/compliance-training/[id]/complete
- * Mark a compliance training as complete (manual completion for offline/external training)
+ * Mark a compliance training enrollment complete. expiresAt is auto-set
+ * from the course's certificationValidMonths so the recurrence job can
+ * re-trigger before the certificate lapses.
  */
-export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
-  const { permissions } = context;
-  if (!permissions.includes('learning/compliance-training:create')) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: {
-          code: 'E4030',
-          message: 'Forbidden: missing learning/compliance-training:create permission',
-          messageAr: 'ممنوع',
-        },
-      },
-      { status: 403 }
-    );
-  }
-  try {
-    const { _user } = context;
-    const { id } = context.params; // enrollment ID
-    const body = await request.json().catch(() => ({}));
-
-    const enrollment = await prisma.courseEnrollment.findUnique({
-      where: { id },
-      include: {
-        course: { select: { id: true, title: true, hasCertificate: true, isMandatory: true } },
-      },
-    });
-
-    if (!enrollment) {
-      return NextResponse.json(
-        { success: false, error: { code: 'E4001', message: 'Training enrollment not found' } },
-        { status: 404 }
-      );
-    }
-
-    if (!enrollment.course.isMandatory) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: 'E4003',
-            message: 'This endpoint is only for compliance (mandatory) training',
-          },
-        },
-        { status: 422 }
-      );
-    }
-
-    if (enrollment.status === 'COMPLETED') {
-      return NextResponse.json(
-        { success: false, error: { code: 'E4003', message: 'Training is already completed' } },
-        { status: 422 }
-      );
-    }
-
-    const completedAt = body.completedAt ? new Date(body.completedAt) : new Date();
-
-    const updated = await prisma.courseEnrollment.update({
-      where: { id },
-      data: {
-        status: 'COMPLETED',
-        progress: 100,
-        completedAt,
-        completionMethod: body.completionMethod || 'ONLINE', // ONLINE, OFFLINE, EXTERNAL
-        completionNotes: body.notes || null,
-        verifiedBy: body.verifiedBy || null,
-        verifiedAt: body.verifiedBy ? new Date() : null,
-        lastAccessedAt: new Date(),
-      },
-      include: {
-        course: { select: { id: true, title: true, category: true } },
-      },
-    });
-
-    // Issue certificate if course has one
-    let certificate = null;
-    if (enrollment.course.hasCertificate) {
+export const POST = withAudit(
+  withEnhancedAuth(
+    async (
+      request: NextRequest,
+      context: {
+        user: { id: string; tenantId: string };
+        permissions: string[];
+        params?: { id?: string };
+      }
+    ) => {
       try {
-        certificate = await prisma.courseCertificate.create({
-          data: {
-            enrollmentId: id,
-            courseId: enrollment.courseId,
-            employeeId: enrollment.employeeId,
-            issuedAt: completedAt,
-            certificateNumber: `CERT-COMP-${Date.now()}-${crypto.randomBytes(4).toString('hex').toUpperCase()}`,
-          },
+        if (!context.permissions.includes('learning/compliance-training:create')) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: {
+                code: 'E4030',
+                message: 'Forbidden: missing learning/compliance-training:create',
+                messageAr: 'ممنوع',
+              },
+            },
+            { status: 403 }
+          );
+        }
+        const enrollmentId = context.params?.id;
+        if (!enrollmentId) {
+          return NextResponse.json(
+            { success: false, error: { code: 'E4040', message: 'Enrollment not found' } },
+            { status: 404 }
+          );
+        }
+        const body = await request.json().catch(() => ({}));
+        const updated = await complianceTrainingService.recordCompletion({
+          tenantId: context.user.tenantId,
+          enrollmentId,
+          actorId: context.user.id,
+          score: body.score,
+          certificateId: body.certificateId,
         });
-      } catch {}
+        if (!updated) {
+          return NextResponse.json(
+            { success: false, error: { code: 'E4040', message: 'Enrollment not found' } },
+            { status: 404 }
+          );
+        }
+        return NextResponse.json({
+          success: true,
+          data: updated,
+          message: 'Compliance training completed',
+        });
+      } catch (error) {
+        if (error instanceof InvalidEnrollmentTransitionError) {
+          return NextResponse.json(
+            { success: false, error: { code: 'E4090', message: error.message } },
+            { status: 409 }
+          );
+        }
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'E5001',
+              message: 'Failed to mark complete',
+              details: { error: error instanceof Error ? error.message : 'Unknown error' },
+            },
+          },
+          { status: 500 }
+        );
+      }
     }
-
-    return NextResponse.json({
-      success: true,
-      data: { enrollment: updated, certificate },
-      message: `Compliance training "${enrollment.course.title}" marked as complete`,
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
-    });
-  } catch (error: any) {
-    console.error('[Compliance Training Complete API] POST Error:', error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: { code: 'E5001', message: 'Failed to mark compliance training as complete' },
-      },
-      { status: 500 }
-    );
+  ),
+  {
+    action: AuditAction.SETTINGS_UPDATED,
+    resourceType: 'compliance_training_enrollment',
+    captureRequestBody: true,
   }
-});
+);

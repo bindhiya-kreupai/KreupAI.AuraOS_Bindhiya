@@ -1,116 +1,87 @@
-// @ts-nocheck — Learning routes use richer Course/Enrollment fields and courseCertificate model not in current schema. Schema expansion or route rewrite needed. Tracked under #29.
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
-import { prisma } from '@/lib/database';
+import {
+  complianceTrainingService,
+  type ComplianceCategory,
+  type EnrollmentStatus,
+} from '@/lib/services/compliance-training.service';
 
 export const dynamic = 'force-dynamic';
 
 /**
  * GET /api/v1/learning/compliance-training
- * Get compliance training assignments for current user or specified employee
+ * Compliance training assignments. Modes:
+ * - default: assignments for the caller's tenant (filterable by employee, status, category)
+ * - `?mode=courses`: list the mandatory courses (catalog)
  */
-export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
-  try {
-    const { user, permissions } = context;
-    if (!permissions.includes('learning/compliance-training:read')) {
+export const GET = withEnhancedAuth(
+  async (
+    request: NextRequest,
+    context: { user: { id: string; tenantId: string; employeeId?: string }; permissions: string[] }
+  ) => {
+    try {
+      const { user, permissions } = context;
+      if (!permissions.includes('learning/compliance-training:read')) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'E4030',
+              message: 'Forbidden: missing learning/compliance-training:read',
+              messageAr: 'ممنوع',
+            },
+          },
+          { status: 403 }
+        );
+      }
+      const { searchParams } = new URL(request.url);
+      const mode = searchParams.get('mode') ?? 'assignments';
+
+      if (mode === 'courses') {
+        const courses = await complianceTrainingService.listMandatoryCourses({
+          tenantId: user.tenantId,
+          complianceCategory:
+            (searchParams.get('complianceCategory') as ComplianceCategory) ?? undefined,
+        });
+        return NextResponse.json({ success: true, mode: 'courses', data: courses });
+      }
+
+      const dueBefore = searchParams.get('dueBefore');
+      const employeeId = searchParams.get('employeeId') ?? user.employeeId;
+      const result = await complianceTrainingService.listAssignments({
+        tenantId: user.tenantId,
+        employeeId,
+        status: (searchParams.get('status') as EnrollmentStatus | 'PENDING') ?? undefined,
+        complianceCategory:
+          (searchParams.get('complianceCategory') as ComplianceCategory) ?? undefined,
+        dueBefore: dueBefore ? new Date(dueBefore) : undefined,
+        page: Number(searchParams.get('page')) || 1,
+        limit: Number(searchParams.get('limit')) || 50,
+      });
+
+      return NextResponse.json({
+        success: true,
+        mode: 'assignments',
+        ...result,
+        meta: {
+          timestamp: new Date().toISOString(),
+          requestId: crypto.randomUUID(),
+          apiVersion: 'v1',
+        },
+      });
+    } catch (error) {
       return NextResponse.json(
         {
           success: false,
           error: {
-            code: 'E4030',
-            message: 'Forbidden: missing learning/compliance-training:read permission',
-            messageAr: 'ممنوع',
+            code: 'E5001',
+            message: 'Failed to fetch compliance training data',
+            details: { error: error instanceof Error ? error.message : 'Unknown error' },
           },
         },
-        { status: 403 }
+        { status: 500 }
       );
     }
-    const { searchParams } = new URL(request.url);
-
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 100);
-    const skip = (page - 1) * limit;
-
-    const employeeId = searchParams.get('employeeId') || user.employeeId;
-    const status = searchParams.get('status') || undefined; // PENDING, COMPLETED, OVERDUE
-    const dueBeforeDate = searchParams.get('dueBefore') || undefined;
-
-    const where: Record<string, unknown> = {
-      isMandatory: true,
-      status: { notIn: ['DROPPED'] },
-    };
-
-    if (employeeId) where.employeeId = employeeId;
-    if (status === 'OVERDUE') {
-      where.dueDate = { lt: new Date() };
-      where.status = { notIn: ['COMPLETED', 'DROPPED'] };
-    } else if (status === 'PENDING') {
-      where.status = { notIn: ['COMPLETED', 'DROPPED'] };
-    } else if (status === 'COMPLETED') {
-      where.status = 'COMPLETED';
-    }
-    if (dueBeforeDate) {
-      where.dueDate = { lte: new Date(dueBeforeDate) };
-    }
-
-    const [data, total] = await Promise.all([
-      prisma.courseEnrollment.findMany({
-        where,
-        skip,
-        take: limit,
-        orderBy: [{ dueDate: 'asc' }, { enrolledAt: 'desc' }],
-        include: {
-          course: {
-            select: {
-              id: true,
-              title: true,
-              category: true,
-              level: true,
-              durationHours: true,
-              description: true,
-              thumbnailUrl: true,
-              isMandatory: true,
-            },
-          },
-        },
-      }),
-      prisma.courseEnrollment.count({ where }),
-    ]);
-
-    const enriched = data.map((enrollment) => ({
-      ...enrollment,
-      isOverdue: enrollment.dueDate
-        ? enrollment.dueDate < new Date() && enrollment.status !== 'COMPLETED'
-        : false,
-      daysUntilDue: enrollment.dueDate
-        ? Math.ceil((enrollment.dueDate.getTime() - Date.now()) / (24 * 60 * 60 * 1000))
-        : null,
-    }));
-
-    const overdueCount = enriched.filter((e) => e.isOverdue).length;
-    const completedCount = enriched.filter((e) => e.status === 'COMPLETED').length;
-    const pendingCount = enriched.length - completedCount;
-
-    return NextResponse.json({
-      success: true,
-      data: enriched,
-      meta: {
-        pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
-        summary: { total, completed: completedCount, pending: pendingCount, overdue: overdueCount },
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
-    });
-  } catch (error: any) {
-    console.error('[Compliance Training API] GET Error:', error);
-    return NextResponse.json(
-      {
-        success: false,
-        error: { code: 'E5001', message: 'Failed to fetch compliance training assignments' },
-      },
-      { status: 500 }
-    );
   }
-});
+);

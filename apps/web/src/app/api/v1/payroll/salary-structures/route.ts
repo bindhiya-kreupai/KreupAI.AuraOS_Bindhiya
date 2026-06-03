@@ -1,4 +1,3 @@
-// @ts-nocheck — Uses prisma models / relations / fields not in current schema (salaryStructure, eRCase, grievance, BenefitClaim.employee, AssetAssignment.employee, etc.). Tracked under #29.
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';

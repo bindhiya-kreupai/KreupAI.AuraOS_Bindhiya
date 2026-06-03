@@ -1,90 +1,69 @@
-// @ts-nocheck — Expense routes were written against an earlier richer ExpenseReport/ExpenseItem schema (with approverNotes, totalAmount, items relation, expensePolicy model). Current schema is the simpler ExpenseClaim. Needs schema expansion OR route rewrite. Tracked under #29.
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
-import { prisma } from '@/lib/database';
+import { withAudit } from '@/lib/middleware/audit.middleware';
+import { AuditAction } from '@/lib/audit/audit.service';
+import { expenseService, InvalidExpenseTransitionError } from '@/lib/services/expense.service';
 
 export const dynamic = 'force-dynamic';
 
-/**
- * POST /api/v1/expenses/[id]/reject
- * Reject an expense report
- */
-export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
-  try {
-    const { user, permissions } = context;
-    if (!permissions.includes('expenses:create')) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: 'E4030',
-            message: 'Forbidden: missing expenses:create permission',
-            messageAr: 'ممنوع',
+export const POST = withAudit(
+  withEnhancedAuth(
+    async (
+      request: NextRequest,
+      context: {
+        user: { id: string; tenantId: string };
+        permissions: string[];
+        params: { id: string };
+      }
+    ) => {
+      try {
+        if (!context.permissions.includes('expenses:approve')) {
+          return NextResponse.json(
+            { success: false, error: { code: 'E4030', message: 'missing expenses:approve' } },
+            { status: 403 }
+          );
+        }
+        const body = await request.json().catch(() => ({}));
+        if (!body?.reason) {
+          return NextResponse.json(
+            { success: false, error: { code: 'E2001', message: 'reason required' } },
+            { status: 400 }
+          );
+        }
+        const updated = await expenseService.reject(
+          context.params.id,
+          context.user.tenantId,
+          context.user.id,
+          String(body.reason)
+        );
+        if (!updated) {
+          return NextResponse.json(
+            { success: false, error: { code: 'E4040', message: 'Expense claim not found' } },
+            { status: 404 }
+          );
+        }
+        return NextResponse.json({ success: true, data: updated, message: 'Rejected' });
+      } catch (error) {
+        if (error instanceof InvalidExpenseTransitionError) {
+          return NextResponse.json(
+            { success: false, error: { code: 'E4090', message: error.message } },
+            { status: 409 }
+          );
+        }
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'E5001',
+              message: 'Reject failed',
+              details: { error: error instanceof Error ? error.message : 'Unknown error' },
+            },
           },
-        },
-        { status: 403 }
-      );
+          { status: 500 }
+        );
+      }
     }
-    const { id } = context.params;
-    const body = await request.json().catch(() => ({}));
-
-    if (!body.reason) {
-      return NextResponse.json(
-        { success: false, error: { code: 'E2001', message: 'Rejection reason is required' } },
-        { status: 400 }
-      );
-    }
-
-    const report = await prisma.expenseClaim.findFirst({
-      where: { id, tenantId: user.tenantId },
-    });
-
-    if (!report) {
-      return NextResponse.json(
-        { success: false, error: { code: 'E4001', message: 'Expense report not found' } },
-        { status: 404 }
-      );
-    }
-
-    if (report.status !== 'PENDING_APPROVAL') {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: 'E4003',
-            message: `Cannot reject expense report with status: ${report.status}`,
-          },
-        },
-        { status: 422 }
-      );
-    }
-
-    const updated = await prisma.expenseClaim.update({
-      where: { id },
-      data: {
-        status: 'REJECTED',
-        rejectedBy: user.id,
-        rejectedAt: new Date(),
-        rejectionReason: body.reason,
-      },
-    });
-
-    return NextResponse.json({
-      success: true,
-      data: updated,
-      message: 'Expense report rejected',
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
-    });
-  } catch (error: any) {
-    console.error('[Expense Reject API] POST Error:', error);
-    return NextResponse.json(
-      { success: false, error: { code: 'E5001', message: 'Failed to reject expense report' } },
-      { status: 500 }
-    );
-  }
-});
+  ),
+  { action: AuditAction.SETTINGS_UPDATED, resourceType: 'expense_claim', captureRequestBody: true }
+);

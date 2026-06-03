@@ -12,6 +12,10 @@ process.env.NODE_ENV = 'test';
 process.env.DATABASE_URL = 'postgresql://test:test@localhost:5432/auraos_test';
 process.env.JWT_SECRET = 'test-jwt-secret-min-32-characters-long';
 process.env.JWT_REFRESH_SECRET = 'test-refresh-secret-min-32-characters';
+// Test-only encryption keys required by env.ts validation. Real values are
+// provisioned only in staging/prod; never use these placeholders outside tests.
+process.env.MFA_ENCRYPTION_KEY = 'test-mfa-encryption-key-32-chars!!';
+process.env.SSN_ENCRYPTION_KEY = 'test-ssn-encryption-key-32-chars!!';
 process.env.LOG_LEVEL = 'error'; // Suppress logs in tests
 
 // Mock Prisma Client
@@ -94,20 +98,22 @@ vi.mock('@aura/database', () => ({
       delete: vi.fn(),
       count: vi.fn(),
     },
-    $transaction: vi.fn((callback) => callback({
-      user: {
-        create: vi.fn(),
-        update: vi.fn(),
-        delete: vi.fn(),
-      },
-      auditLog: {
-        create: vi.fn(),
-      },
-      license: {
-        create: vi.fn(),
-        update: vi.fn(),
-      },
-    })),
+    $transaction: vi.fn((callback) =>
+      callback({
+        user: {
+          create: vi.fn(),
+          update: vi.fn(),
+          delete: vi.fn(),
+        },
+        auditLog: {
+          create: vi.fn(),
+        },
+        license: {
+          create: vi.fn(),
+          update: vi.fn(),
+        },
+      })
+    ),
   },
 }));
 

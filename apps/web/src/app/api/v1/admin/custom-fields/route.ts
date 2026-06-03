@@ -1,4 +1,3 @@
-// @ts-nocheck — Route uses prisma.customField / prisma.featureFlag models not in current schema. Tracked under #29.
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';

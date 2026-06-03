@@ -1,141 +1,93 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
+import { withAudit } from '@/lib/middleware/audit.middleware';
+import { AuditAction } from '@/lib/audit/audit.service';
+import { prisma } from '@/lib/database';
+import { cobraService } from '@/lib/services/cobra.service';
 
-// Tenant isolation is enforced via tenantId extracted from auth context
+export const dynamic = 'force-dynamic';
 
-interface ApiResponse<T = any> {
-  success: boolean;
-  data?: T;
-  error?: { code: string; message: string; details?: Record<string, unknown> };
-  meta?: any;
-}
-
-const mockEnrollments = [
-  {
-    id: 'enr-001',
-    tenantId: 'tenant-1',
-    eventId: 'evt-001',
-    employeeId: 'emp-001',
-    employeeName: 'John Smith',
-    eventType: 'TERMINATION',
-    coverageType: 'MEDICAL',
-    planName: 'BlueCross PPO 2000',
-    enrollmentDate: '2026-02-01',
-    coverageStartDate: '2026-02-01',
-    coverageEndDate: '2027-07-31',
-    monthlyPremium: 1450.75,
-    adminFee: 72.54,
-    totalMonthlyAmount: 1523.29,
-    status: 'ACTIVE',
-    beneficiaries: ['Jane Smith', 'Alex Smith'],
-    paymentStatus: 'CURRENT',
-    lastPaymentDate: '2026-02-15',
-    createdAt: '2026-02-01T08:00:00.000Z',
-    updatedAt: '2026-02-15T08:00:00.000Z',
-  },
-  {
-    id: 'enr-002',
-    tenantId: 'tenant-1',
-    eventId: 'evt-001',
-    employeeId: 'emp-001',
-    employeeName: 'John Smith',
-    eventType: 'TERMINATION',
-    coverageType: 'DENTAL',
-    planName: 'Delta Dental Plus',
-    enrollmentDate: '2026-02-01',
-    coverageStartDate: '2026-02-01',
-    coverageEndDate: '2027-07-31',
-    monthlyPremium: 85.5,
-    adminFee: 4.28,
-    totalMonthlyAmount: 89.78,
-    status: 'ACTIVE',
-    beneficiaries: ['Jane Smith', 'Alex Smith'],
-    paymentStatus: 'CURRENT',
-    lastPaymentDate: '2026-02-15',
-    createdAt: '2026-02-01T08:00:00.000Z',
-    updatedAt: '2026-02-15T08:00:00.000Z',
-  },
-  {
-    id: 'enr-003',
-    tenantId: 'tenant-1',
-    eventId: 'evt-003',
-    employeeId: 'emp-010',
-    employeeName: 'Robert Chen',
-    eventType: 'DIVORCE',
-    coverageType: 'MEDICAL',
-    planName: 'Aetna HMO Select',
-    enrollmentDate: '2025-11-15',
-    coverageStartDate: '2025-11-15',
-    coverageEndDate: '2027-05-14',
-    monthlyPremium: 1320.0,
-    adminFee: 66.0,
-    totalMonthlyAmount: 1386.0,
-    status: 'LAPSED',
-    beneficiaries: [],
-    paymentStatus: 'OVERDUE',
-    lastPaymentDate: '2026-01-10',
-    createdAt: '2025-11-15T10:00:00.000Z',
-    updatedAt: '2026-02-20T09:00:00.000Z',
-  },
-];
-
-export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
-  try {
-    const { user, permissions } = context;
-    if (!permissions.includes('benefits/cobra:read')) {
+export const GET = withEnhancedAuth(
+  async (request: NextRequest, context: { user: { tenantId: string }; permissions: string[] }) => {
+    if (!context.permissions.includes('benefits/cobra:read')) {
       return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: 'E4030',
-            message: 'Forbidden: missing benefits/cobra:read permission',
-            messageAr: 'ممنوع',
-          },
-        },
+        { success: false, error: { code: 'E4030', message: 'missing benefits/cobra:read' } },
         { status: 403 }
       );
     }
-    const _tenantId = user.tenantId;
-    const { searchParams } = new URL(request.url);
-    const status = searchParams.get('status') || undefined;
-    const eventType = searchParams.get('eventType') || undefined;
-    const page = parseInt(searchParams.get('page') || '1');
-    const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 100);
-
-    let enrollments = [...mockEnrollments];
-    if (status) enrollments = enrollments.filter((e) => e.status === status);
-    if (eventType) enrollments = enrollments.filter((e) => e.eventType === eventType);
-
-    const total = enrollments.length;
-    const paginated = enrollments.slice((page - 1) * limit, page * limit);
-
-    const response: ApiResponse = {
-      success: true,
-      data: paginated,
-      meta: {
-        pagination: { page, limit, total, totalPages: Math.ceil(total / limit) },
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
-    };
-
-    return NextResponse.json(response, { status: 200 });
-  } catch (error: any) {
-    const response: ApiResponse = {
-      success: false,
-      error: {
-        code: 'E5001',
-        message: 'Failed to fetch COBRA enrollments',
-        details: { error: error instanceof Error ? error.message : 'Unknown error' },
-      },
-      meta: {
-        timestamp: new Date().toISOString(),
-        requestId: crypto.randomUUID(),
-        apiVersion: 'v1',
-      },
-    };
-    return NextResponse.json(response, { status: 500 });
+    const url = new URL(request.url);
+    const status = url.searchParams.get('status') ?? undefined;
+    const employeeId = url.searchParams.get('employeeId') ?? undefined;
+    const items = await prisma.cobraEnrollment.findMany({
+      where: { tenantId: context.user.tenantId, status, employeeId },
+      orderBy: { createdAt: 'desc' },
+      include: { qualifyingEvent: true },
+    });
+    return NextResponse.json({ success: true, items, total: items.length });
   }
-});
+);
+
+export const POST = withAudit(
+  withEnhancedAuth(
+    async (
+      request: NextRequest,
+      context: { user: { id: string; tenantId: string }; permissions: string[] }
+    ) => {
+      try {
+        if (!context.permissions.includes('benefits/cobra:create')) {
+          return NextResponse.json(
+            { success: false, error: { code: 'E4030', message: 'missing benefits/cobra:create' } },
+            { status: 403 }
+          );
+        }
+        const body = await request.json();
+        if (!body?.qualifyingEventId || !body?.benefitPlanId) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: { code: 'E2001', message: 'qualifyingEventId, benefitPlanId required' },
+            },
+            { status: 400 }
+          );
+        }
+        const enrollment = await cobraService.openEnrollment({
+          tenantId: context.user.tenantId,
+          qualifyingEventId: body.qualifyingEventId,
+          benefitPlanId: body.benefitPlanId,
+          actorId: context.user.id,
+        });
+        if (!enrollment) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: { code: 'E4040', message: 'Qualifying event or plan not found' },
+            },
+            { status: 404 }
+          );
+        }
+        return NextResponse.json(
+          { success: true, data: enrollment, message: 'Enrollment opened' },
+          { status: 201 }
+        );
+      } catch (error) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'E5001',
+              message: 'Open enrollment failed',
+              details: { error: error instanceof Error ? error.message : 'Unknown error' },
+            },
+          },
+          { status: 500 }
+        );
+      }
+    }
+  ),
+  {
+    action: AuditAction.EMPLOYEE_UPDATED,
+    resourceType: 'cobra_enrollment',
+    captureRequestBody: true,
+  }
+);
