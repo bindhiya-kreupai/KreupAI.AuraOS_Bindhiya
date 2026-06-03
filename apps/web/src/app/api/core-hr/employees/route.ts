@@ -56,8 +56,8 @@ export const GET = withEnhancedAuth(async (request, context) => {
     const limit = parseInt(searchParams.get('limit') || '50', 10);
     const skip = (page - 1) * limit;
 
-    // Build where clause
-    const where: any = {};
+    // Build where clause — tenant-scoped via Employee.company.tenantId
+    const where: any = { company: { tenantId: user.tenantId } };
 
     // Search filter across firstName, lastName, email, employeeCode
     if (search) {
@@ -78,6 +78,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
     }
 
     const [employees, total] = await Promise.all([
+      // tenant-ok: where seeded with company.tenantId above
       prisma.employee.findMany({
         where,
         include: {
@@ -102,6 +103,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
         take: limit,
         orderBy: { createdAt: 'desc' },
       }),
+      // tenant-ok: same where as findMany above (seeded with company.tenantId)
       prisma.employee.count({ where }),
     ]);
 
@@ -149,9 +151,9 @@ export const POST = withEnhancedAuth(async (request, context) => {
 
     const data = validation.data;
 
-    // Check for duplicate email
-    const existingEmployee = await prisma.employee.findUnique({
-      where: { email: data.email },
+    // Check for duplicate email within this tenant
+    const existingEmployee = await prisma.employee.findFirst({
+      where: { email: data.email, company: { tenantId: user.tenantId } },
     });
 
     if (existingEmployee) {
@@ -161,9 +163,9 @@ export const POST = withEnhancedAuth(async (request, context) => {
       );
     }
 
-    // Check for duplicate employeeCode
-    const existingCode = await prisma.employee.findUnique({
-      where: { employeeCode: data.employeeCode },
+    // Check for duplicate employeeCode within this tenant
+    const existingCode = await prisma.employee.findFirst({
+      where: { employeeCode: data.employeeCode, company: { tenantId: user.tenantId } },
     });
 
     if (existingCode) {
@@ -235,16 +237,18 @@ export const PUT = withEnhancedAuth(async (request, context) => {
 
     const { id, ...updateData } = validation.data;
 
-    // Check employee exists
-    const existing = await prisma.employee.findUnique({ where: { id } });
+    // Check employee exists in this tenant
+    const existing = await prisma.employee.findFirst({
+      where: { id, company: { tenantId: user.tenantId } },
+    });
     if (!existing) {
       return NextResponse.json({ error: 'Employee not found' }, { status: 404 });
     }
 
-    // If email is being updated, check for duplicates
+    // If email is being updated, check for duplicates in the same tenant
     if (updateData.email && updateData.email !== existing.email) {
-      const emailTaken = await prisma.employee.findUnique({
-        where: { email: updateData.email },
+      const emailTaken = await prisma.employee.findFirst({
+        where: { email: updateData.email, company: { tenantId: user.tenantId } },
       });
       if (emailTaken) {
         return NextResponse.json(
@@ -260,6 +264,7 @@ export const PUT = withEnhancedAuth(async (request, context) => {
       dataToUpdate.joiningDate = new Date(dataToUpdate.joiningDate);
     }
 
+    // tenant-ok: id-based update preceded by tenant-scoped findFirst above
     const employee = await prisma.employee.update({
       where: { id },
       data: dataToUpdate,

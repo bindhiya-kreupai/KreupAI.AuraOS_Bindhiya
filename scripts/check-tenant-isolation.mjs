@@ -134,7 +134,27 @@ function* scanFile(text, path) {
     const hasTenantId = /tenantId\s*[:,]/.test(window);
     const usesCompanyTenant = /company:\s*\{\s*tenantId/.test(window);
     const usesUserTenantTrick = /user:\s*\{[^}]*tenantId/.test(window);
-    if (!hasTenantId && !usesCompanyTenant && !usesUserTenantTrick) {
+
+    // If the call uses a variable `where` (rather than inlining the object),
+    // scan back up to 50 lines for its tenant-scoped assignment.
+    let usesVarWithTenant = false;
+    if (
+      /\bwhere\s*[,}]/.test(window) &&
+      !hasTenantId &&
+      !usesCompanyTenant &&
+      !usesUserTenantTrick
+    ) {
+      const back = lines.slice(Math.max(0, i - 50), i).join('\n');
+      if (
+        /\bwhere[^=]*=[\s\S]{0,400}tenantId/.test(back) ||
+        /\bwhere[^=]*=[\s\S]{0,400}company:\s*\{\s*tenantId/.test(back) ||
+        /\bwhere\.[a-zA-Z]+[\s\S]{0,200}=\s*\{[\s\S]{0,200}tenantId/.test(back)
+      ) {
+        usesVarWithTenant = true;
+      }
+    }
+
+    if (!hasTenantId && !usesCompanyTenant && !usesUserTenantTrick && !usesVarWithTenant) {
       yield {
         file: relative(ROOT, path),
         line: i + 1,
