@@ -1,10 +1,10 @@
 {
-  "numTotalTestSuites": 8,
-  "numPassedTestSuites": 8,
+  "numTotalTestSuites": 4,
+  "numPassedTestSuites": 4,
   "numFailedTestSuites": 0,
   "numPendingTestSuites": 0,
-  "numTotalTests": 15,
-  "numPassedTests": 15,
+  "numTotalTests": 8,
+  "numPassedTests": 8,
   "numFailedTests": 0,
   "numPendingTests": 0,
   "numTodoTests": 0,
@@ -24,161 +24,89 @@
     "updated": 0,
     "didUpdate": false
   },
-  "startTime": 1780461208116,
+  "startTime": 1780461456809,
   "success": true,
   "testResults": [
     {
       "assertionResults": [
         {
-          "ancestorTitles": ["FullFinalService.calculate — UAE EOSB"],
-          "fullName": "FullFinalService.calculate — UAE EOSB returns zero EOSB before any service",
+          "ancestorTitles": ["ExitService.canTransition"],
+          "fullName": "ExitService.canTransition PENDING → APPROVED / CANCELED only",
           "status": "passed",
-          "title": "returns zero EOSB before any service",
-          "duration": 0.7882499999999482,
+          "title": "PENDING → APPROVED / CANCELED only",
+          "duration": 0.7567500000000109,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["FullFinalService.calculate — UAE EOSB"],
-          "fullName": "FullFinalService.calculate — UAE EOSB applies 21 days basic per year for <5 years",
+          "ancestorTitles": ["ExitService.canTransition"],
+          "fullName": "ExitService.canTransition APPROVED → PROCESSING / CANCELED only",
           "status": "passed",
-          "title": "applies 21 days basic per year for <5 years",
-          "duration": 0.16637500000001637,
+          "title": "APPROVED → PROCESSING / CANCELED only",
+          "duration": 0.15895799999998417,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["FullFinalService.calculate — UAE EOSB"],
-          "fullName": "FullFinalService.calculate — UAE EOSB caps at 24 months basic for long service",
+          "ancestorTitles": ["ExitService.canTransition"],
+          "fullName": "ExitService.canTransition PROCESSING → COMPLETED / CANCELED only",
           "status": "passed",
-          "title": "caps at 24 months basic for long service",
-          "duration": 0.10637500000007094,
+          "title": "PROCESSING → COMPLETED / CANCELED only",
+          "duration": 0.21029199999998127,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["FullFinalService.calculate — KSA Article 84"],
-          "fullName": "FullFinalService.calculate — KSA Article 84 uses half-month basic per year under 5 years",
+          "ancestorTitles": ["ExitService.canTransition"],
+          "fullName": "ExitService.canTransition terminal states reject all transitions",
           "status": "passed",
-          "title": "uses half-month basic per year under 5 years",
-          "duration": 0.29395900000008623,
+          "title": "terminal states reject all transitions",
+          "duration": 0.2665000000000646,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["FullFinalService.calculate — KSA Article 84"],
-          "fullName": "FullFinalService.calculate — KSA Article 84 switches to full-month basic per year beyond 5 years",
+          "ancestorTitles": ["ExitService.assertTransition"],
+          "fullName": "ExitService.assertTransition throws InvalidExitTransitionError on illegal moves",
           "status": "passed",
-          "title": "switches to full-month basic per year beyond 5 years",
-          "duration": 0.19979100000000471,
+          "title": "throws InvalidExitTransitionError on illegal moves",
+          "duration": 0.5833749999999327,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["FullFinalService.calculate — India Gratuity Act 1972"],
-          "fullName": "FullFinalService.calculate — India Gratuity Act 1972 returns zero before 5 years",
+          "ancestorTitles": ["ExitService.assertTransition"],
+          "fullName": "ExitService.assertTransition is silent on legal moves",
           "status": "passed",
-          "title": "returns zero before 5 years",
-          "duration": 0.12333399999999983,
+          "title": "is silent on legal moves",
+          "duration": 0.23804200000006404,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["FullFinalService.calculate — India Gratuity Act 1972"],
-          "fullName": "FullFinalService.calculate — India Gratuity Act 1972 uses (15/26) * basic * years for >=5 years",
+          "ancestorTitles": ["Exit error contracts"],
+          "fullName": "Exit error contracts InvalidExitTransitionError is a real Error subclass",
           "status": "passed",
-          "title": "uses (15/26) * basic * years for >=5 years",
-          "duration": 0.10445800000002237,
+          "title": "InvalidExitTransitionError is a real Error subclass",
+          "duration": 0.1337909999999738,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["FullFinalService.calculate — India Gratuity Act 1972"],
-          "fullName": "FullFinalService.calculate — India Gratuity Act 1972 caps at INR 20,00,000",
+          "ancestorTitles": ["Exit error contracts"],
+          "fullName": "Exit error contracts ExitNotClearedError carries the user-facing message",
           "status": "passed",
-          "title": "caps at INR 20,00,000",
-          "duration": 0.08641599999998562,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["FullFinalService.calculate — breakdown composition"],
-          "fullName": "FullFinalService.calculate — breakdown composition subtracts loan + notice + other deductions from gross",
-          "status": "passed",
-          "title": "subtracts loan + notice + other deductions from gross",
-          "duration": 0.3728330000000142,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["FullFinalService.calculate — breakdown composition"],
-          "fullName": "FullFinalService.calculate — breakdown composition includes a breakdown line for every component (even zeros)",
-          "status": "passed",
-          "title": "includes a breakdown line for every component (even zeros)",
-          "duration": 0.3848329999999578,
+          "title": "ExitNotClearedError carries the user-facing message",
+          "duration": 0.17479200000002493,
           "failureMessages": [],
           "meta": {}
         }
       ],
-      "startTime": 1780461208408,
-      "endTime": 1780461208411.3848,
+      "startTime": 1780461457299,
+      "endTime": 1780461457302.1748,
       "status": "passed",
       "message": "",
-      "name": "/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/lib/services/__tests__/full-final.service.test.ts"
-    },
-    {
-      "assertionResults": [
-        {
-          "ancestorTitles": ["Statutory report registry"],
-          "fullName": "Statutory report registry exposes the 6 generators landed in Phase 2",
-          "status": "passed",
-          "title": "exposes the 6 generators landed in Phase 2",
-          "duration": 0.8499170000000049,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["Statutory report registry"],
-          "fullName": "Statutory report registry filters by country code",
-          "status": "passed",
-          "title": "filters by country code",
-          "duration": 0.3202090000000908,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["Statutory report registry"],
-          "fullName": "Statutory report registry returns specs without the generate function (safe to serialize)",
-          "status": "passed",
-          "title": "returns specs without the generate function (safe to serialize)",
-          "duration": 0.9835419999999431,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["Statutory report submission contract (#85)"],
-          "fullName": "Statutory report submission contract (#85) exports InvalidReportTransitionError as a real Error subclass",
-          "status": "passed",
-          "title": "exports InvalidReportTransitionError as a real Error subclass",
-          "duration": 0.3579589999999371,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["Statutory report submission contract (#85)"],
-          "fullName": "Statutory report submission contract (#85) rejects placeholder submission references shorter than 3 chars",
-          "status": "passed",
-          "title": "rejects placeholder submission references shorter than 3 chars",
-          "duration": 0.8642500000000837,
-          "failureMessages": [],
-          "meta": {}
-        }
-      ],
-      "startTime": 1780461208408,
-      "endTime": 1780461208411.8643,
-      "status": "passed",
-      "message": "",
-      "name": "/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/lib/services/__tests__/statutory-report.service.test.ts"
+      "name": "/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/lib/services/__tests__/exit.service.test.ts"
     }
   ]
 }

@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { ExitService } from '@/lib/services/exit.service';
+import { exitService } from '@/lib/services/exit.service';
 import { withEnhancedAuth } from '@/lib/auth';
 
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
@@ -19,7 +19,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
         { status: 403 }
       );
     }
-    const stats = await ExitService.getStatistics(user.tenantId);
+    const stats = await exitService.getStatistics(user.tenantId);
     return NextResponse.json({ success: true, data: stats });
   } catch (error: any) {
     return NextResponse.json(

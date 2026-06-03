@@ -1,37 +1,21 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuites name="vitest tests" tests="15" failures="0" errors="0" time="0.009134959">
-    <testsuite name="src/lib/services/__tests__/full-final.service.test.ts" timestamp="2026-06-03T04:33:28.429Z" hostname="MacBookPro.lan" tests="10" failures="0" errors="0" skipped="0" time="0.004273375">
-        <testcase classname="src/lib/services/__tests__/full-final.service.test.ts" name="FullFinalService.calculate — UAE EOSB &gt; returns zero EOSB before any service" time="0.00078825">
+<testsuites name="vitest tests" tests="8" failures="0" errors="0" time="0.004001541">
+    <testsuite name="src/lib/services/__tests__/exit.service.test.ts" timestamp="2026-06-03T04:37:37.318Z" hostname="MacBookPro.lan" tests="8" failures="0" errors="0" skipped="0" time="0.004001541">
+        <testcase classname="src/lib/services/__tests__/exit.service.test.ts" name="ExitService.canTransition &gt; PENDING → APPROVED / CANCELED only" time="0.00075675">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/full-final.service.test.ts" name="FullFinalService.calculate — UAE EOSB &gt; applies 21 days basic per year for &lt;5 years" time="0.000166375">
+        <testcase classname="src/lib/services/__tests__/exit.service.test.ts" name="ExitService.canTransition &gt; APPROVED → PROCESSING / CANCELED only" time="0.000158958">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/full-final.service.test.ts" name="FullFinalService.calculate — UAE EOSB &gt; caps at 24 months basic for long service" time="0.000106375">
+        <testcase classname="src/lib/services/__tests__/exit.service.test.ts" name="ExitService.canTransition &gt; PROCESSING → COMPLETED / CANCELED only" time="0.000210292">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/full-final.service.test.ts" name="FullFinalService.calculate — KSA Article 84 &gt; uses half-month basic per year under 5 years" time="0.000293959">
+        <testcase classname="src/lib/services/__tests__/exit.service.test.ts" name="ExitService.canTransition &gt; terminal states reject all transitions" time="0.0002665">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/full-final.service.test.ts" name="FullFinalService.calculate — KSA Article 84 &gt; switches to full-month basic per year beyond 5 years" time="0.000199791">
+        <testcase classname="src/lib/services/__tests__/exit.service.test.ts" name="ExitService.assertTransition &gt; throws InvalidExitTransitionError on illegal moves" time="0.000583375">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/full-final.service.test.ts" name="FullFinalService.calculate — India Gratuity Act 1972 &gt; returns zero before 5 years" time="0.000123334">
+        <testcase classname="src/lib/services/__tests__/exit.service.test.ts" name="ExitService.assertTransition &gt; is silent on legal moves" time="0.000238042">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/full-final.service.test.ts" name="FullFinalService.calculate — India Gratuity Act 1972 &gt; uses (15/26) * basic * years for &gt;=5 years" time="0.000104458">
+        <testcase classname="src/lib/services/__tests__/exit.service.test.ts" name="Exit error contracts &gt; InvalidExitTransitionError is a real Error subclass" time="0.000133791">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/full-final.service.test.ts" name="FullFinalService.calculate — India Gratuity Act 1972 &gt; caps at INR 20,00,000" time="0.000086416">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/full-final.service.test.ts" name="FullFinalService.calculate — breakdown composition &gt; subtracts loan + notice + other deductions from gross" time="0.000372833">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/full-final.service.test.ts" name="FullFinalService.calculate — breakdown composition &gt; includes a breakdown line for every component (even zeros)" time="0.000384833">
-        </testcase>
-    </testsuite>
-    <testsuite name="src/lib/services/__tests__/statutory-report.service.test.ts" timestamp="2026-06-03T04:33:28.431Z" hostname="MacBookPro.lan" tests="5" failures="0" errors="0" skipped="0" time="0.004861584">
-        <testcase classname="src/lib/services/__tests__/statutory-report.service.test.ts" name="Statutory report registry &gt; exposes the 6 generators landed in Phase 2" time="0.000849917">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/statutory-report.service.test.ts" name="Statutory report registry &gt; filters by country code" time="0.000320209">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/statutory-report.service.test.ts" name="Statutory report registry &gt; returns specs without the generate function (safe to serialize)" time="0.000983542">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/statutory-report.service.test.ts" name="Statutory report submission contract (#85) &gt; exports InvalidReportTransitionError as a real Error subclass" time="0.000357959">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/statutory-report.service.test.ts" name="Statutory report submission contract (#85) &gt; rejects placeholder submission references shorter than 3 chars" time="0.00086425">
+        <testcase classname="src/lib/services/__tests__/exit.service.test.ts" name="Exit error contracts &gt; ExitNotClearedError carries the user-facing message" time="0.000174792">
         </testcase>
     </testsuite>
 </testsuites>
