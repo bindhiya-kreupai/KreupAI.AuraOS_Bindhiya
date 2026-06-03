@@ -1,10 +1,10 @@
 {
-  "numTotalTestSuites": 4,
-  "numPassedTestSuites": 4,
+  "numTotalTestSuites": 5,
+  "numPassedTestSuites": 5,
   "numFailedTestSuites": 0,
   "numPendingTestSuites": 0,
-  "numTotalTests": 11,
-  "numPassedTests": 11,
+  "numTotalTests": 19,
+  "numPassedTests": 19,
   "numFailedTests": 0,
   "numPendingTests": 0,
   "numTodoTests": 0,
@@ -24,116 +24,188 @@
     "updated": 0,
     "didUpdate": false
   },
-  "startTime": 1780485152869,
+  "startTime": 1780485442968,
   "success": true,
   "testResults": [
     {
       "assertionResults": [
         {
-          "ancestorTitles": ["GLPostingService.assertBalanced"],
-          "fullName": "GLPostingService.assertBalanced accepts equal debits and credits",
+          "ancestorTitles": ["FMLA eligibility (§ 825.110)"],
+          "fullName": "FMLA eligibility (§ 825.110) FMLA requires ≥12 months tenure AND ≥1250 hours in prior year",
           "status": "passed",
-          "title": "accepts equal debits and credits",
-          "duration": 0.6762500000000955,
+          "title": "FMLA requires ≥12 months tenure AND ≥1250 hours in prior year",
+          "duration": 0.6586660000000393,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["GLPostingService.assertBalanced"],
-          "fullName": "GLPostingService.assertBalanced accepts multi-line balanced journal with 2dp rounding",
+          "ancestorTitles": ["FMLA eligibility (§ 825.110)"],
+          "fullName": "FMLA eligibility (§ 825.110) CFRA mirrors FMLA thresholds",
           "status": "passed",
-          "title": "accepts multi-line balanced journal with 2dp rounding",
-          "duration": 0.21737499999994725,
+          "title": "CFRA mirrors FMLA thresholds",
+          "duration": 0.18262499999991633,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["GLPostingService.assertBalanced"],
-          "fullName": "GLPostingService.assertBalanced rejects unbalanced journal with UnbalancedJournalError",
+          "ancestorTitles": ["FMLA eligibility (§ 825.110)"],
+          "fullName": "FMLA eligibility (§ 825.110) OFLA only requires 6 months tenure, no hours minimum",
           "status": "passed",
-          "title": "rejects unbalanced journal with UnbalancedJournalError",
-          "duration": 0.2739169999999831,
+          "title": "OFLA only requires 6 months tenure, no hours minimum",
+          "duration": 0.11083300000007057,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["GLPostingService.assertBalanced"],
-          "fullName": "GLPostingService.assertBalanced tolerates floating-point noise within 1 cent",
+          "ancestorTitles": ["FMLA eligibility (§ 825.110)"],
+          "fullName": "FMLA eligibility (§ 825.110) returns a human-readable reason on ineligibility",
           "status": "passed",
-          "title": "tolerates floating-point noise within 1 cent",
-          "duration": 0.4984590000000253,
+          "title": "returns a human-readable reason on ineligibility",
+          "duration": 0.28100000000006276,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["GLPostingService transitions"],
-          "fullName": "GLPostingService transitions DRAFT → POSTED / REVERSED only",
+          "ancestorTitles": ["FMLA period computation (§ 825.200)"],
+          "fullName": "FMLA period computation (§ 825.200) CALENDAR_YEAR — Jan 1 → Dec 31 of the start year",
           "status": "passed",
-          "title": "DRAFT → POSTED / REVERSED only",
-          "duration": 0.2154170000000022,
+          "title": "CALENDAR_YEAR — Jan 1 → Dec 31 of the start year",
+          "duration": 0.5099589999999807,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["GLPostingService transitions"],
-          "fullName": "GLPostingService transitions POSTED → EXPORTED / REVERSED only",
+          "ancestorTitles": ["FMLA period computation (§ 825.200)"],
+          "fullName": "FMLA period computation (§ 825.200) ROLLING_FORWARD — start date → 365 days later",
           "status": "passed",
-          "title": "POSTED → EXPORTED / REVERSED only",
-          "duration": 0.11812499999996362,
+          "title": "ROLLING_FORWARD — start date → 365 days later",
+          "duration": 0.14366600000005292,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["GLPostingService transitions"],
-          "fullName": "GLPostingService transitions EXPORTED → REVERSED only",
+          "ancestorTitles": ["FMLA period computation (§ 825.200)"],
+          "fullName": "FMLA period computation (§ 825.200) ROLLING_BACKWARD — effective entitlement reduced by prior-year usage",
           "status": "passed",
-          "title": "EXPORTED → REVERSED only",
-          "duration": 0.17945800000006784,
+          "title": "ROLLING_BACKWARD — effective entitlement reduced by prior-year usage",
+          "duration": 0.08820800000000872,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["GLPostingService transitions"],
-          "fullName": "GLPostingService transitions REVERSED is terminal",
+          "ancestorTitles": ["FMLA period computation (§ 825.200)"],
+          "fullName": "FMLA period computation (§ 825.200) ROLLING_BACKWARD with no prior usage gives full 480h",
           "status": "passed",
-          "title": "REVERSED is terminal",
-          "duration": 0.0987079999999878,
+          "title": "ROLLING_BACKWARD with no prior usage gives full 480h",
+          "duration": 0.1302499999999327,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["GLPostingService transitions"],
-          "fullName": "GLPostingService transitions assertTransition throws on illegal moves",
+          "ancestorTitles": ["FMLA period computation (§ 825.200)"],
+          "fullName": "FMLA period computation (§ 825.200) ROLLING_BACKWARD never goes negative when prior usage > 480",
+          "status": "passed",
+          "title": "ROLLING_BACKWARD never goes negative when prior usage > 480",
+          "duration": 0.14820800000006784,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["FMLA period computation (§ 825.200)"],
+          "fullName": "FMLA period computation (§ 825.200) EMPLOYEE_ANNIVERSARY — uses the most recent anniversary on/before the start",
+          "status": "passed",
+          "title": "EMPLOYEE_ANNIVERSARY — uses the most recent anniversary on/before the start",
+          "duration": 0.18316700000002584,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["FMLA case transitions"],
+          "fullName": "FMLA case transitions DRAFT → NOTICE_SENT / DENIED / CANCELED only",
+          "status": "passed",
+          "title": "DRAFT → NOTICE_SENT / DENIED / CANCELED only",
+          "duration": 0.14545799999996234,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["FMLA case transitions"],
+          "fullName": "FMLA case transitions NOTICE_SENT → CERTIFIED / DENIED / CANCELED only",
+          "status": "passed",
+          "title": "NOTICE_SENT → CERTIFIED / DENIED / CANCELED only",
+          "duration": 0.16570899999999256,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["FMLA case transitions"],
+          "fullName": "FMLA case transitions ACTIVE ↔ INTERMITTENT",
+          "status": "passed",
+          "title": "ACTIVE ↔ INTERMITTENT",
+          "duration": 0.08029199999998582,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["FMLA case transitions"],
+          "fullName": "FMLA case transitions EXHAUSTED → COMPLETED only",
+          "status": "passed",
+          "title": "EXHAUSTED → COMPLETED only",
+          "duration": 0.17329099999994924,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["FMLA case transitions"],
+          "fullName": "FMLA case transitions terminal states reject all transitions",
+          "status": "passed",
+          "title": "terminal states reject all transitions",
+          "duration": 0.17783299999996416,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["FMLA case transitions"],
+          "fullName": "FMLA case transitions assertTransition throws on illegal moves",
           "status": "passed",
           "title": "assertTransition throws on illegal moves",
-          "duration": 0.29254100000002836,
+          "duration": 0.5107080000000224,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["GL error contracts"],
-          "fullName": "GL error contracts UnbalancedJournalError carries totals in the message",
+          "ancestorTitles": ["FMLA error contracts"],
+          "fullName": "FMLA error contracts IneligibleForFMLAError carries reason",
           "status": "passed",
-          "title": "UnbalancedJournalError carries totals in the message",
-          "duration": 0.27129200000001674,
+          "title": "IneligibleForFMLAError carries reason",
+          "duration": 0.1834999999999809,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["GL error contracts"],
-          "fullName": "GL error contracts InvalidGLTransitionError is a real Error subclass",
+          "ancestorTitles": ["FMLA error contracts"],
+          "fullName": "FMLA error contracts EntitlementExceededError carries attempted + remaining",
           "status": "passed",
-          "title": "InvalidGLTransitionError is a real Error subclass",
-          "duration": 0.08791699999994762,
+          "title": "EntitlementExceededError carries attempted + remaining",
+          "duration": 0.17179199999998218,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["FMLA error contracts"],
+          "fullName": "FMLA error contracts InvalidFMLATransitionError is a real Error subclass",
+          "status": "passed",
+          "title": "InvalidFMLATransitionError is a real Error subclass",
+          "duration": 0.08462499999995998,
           "failureMessages": [],
           "meta": {}
         }
       ],
-      "startTime": 1780485153475,
-      "endTime": 1780485153478.2925,
+      "startTime": 1780485443390,
+      "endTime": 1780485443395.1836,
       "status": "passed",
       "message": "",
-      "name": "/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/lib/services/__tests__/gl-posting.service.test.ts"
+      "name": "/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/lib/services/__tests__/fmla.service.test.ts"
     }
   ]
 }

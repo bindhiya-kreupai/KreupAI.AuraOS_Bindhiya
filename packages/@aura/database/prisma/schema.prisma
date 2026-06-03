@@ -6525,6 +6525,94 @@ model CobraEnrollment {
 }
 
 // ============================================================================
+// FMLA & EXTENDED LEAVE MANAGEMENT (#111)
+// ============================================================================
+// US federal mandate: employers with ≥50 employees must track FMLA.
+// 12 work-weeks (480 hours) of unpaid leave per 12-month period for
+// qualifying reasons. State analogs (CFRA, OFLA, PFML) plug into the
+// same state machine via the `framework` discriminator.
+
+model FMLACase {
+  id                  String   @id @default(uuid())
+  tenantId            String
+  employeeId          String
+  framework           String   @default("FMLA") // FMLA | CFRA | OFLA | PFML | INTL_EQUIVALENT
+  reason              String   // BIRTH | ADOPTION | FOSTER_CARE | SELF_SERIOUS | FAMILY_SERIOUS | MILITARY_EXIGENCY | MILITARY_CAREGIVER
+  // Eligibility snapshot at request time — captured because eligibility
+  // criteria depend on tenure (≥1yr) + hours worked (≥1,250) at the moment
+  // of request. Stored to make audit reproducible.
+  hoursWorkedPrev12Mo Int?     // employer hours-worked threshold check (1,250)
+  tenureMonths        Int?     // 12-month employment check
+  eligible            Boolean  @default(true)
+  ineligibilityReason String?
+
+  // 12-month tracking method (per US DOL § 825.200(b))
+  trackingMethod      String   @default("ROLLING_BACKWARD")
+  // CALENDAR_YEAR | FIXED_FISCAL | EMPLOYEE_ANNIVERSARY | ROLLING_FORWARD | ROLLING_BACKWARD
+  periodStart         DateTime
+  periodEnd           DateTime
+
+  // Entitlement accounting (in hours — work the math in hours to handle
+  // both continuous and intermittent leave uniformly)
+  entitlementHours    Int      @default(480)  // standard 12 work-weeks × 40h
+  usedHours           Int      @default(0)
+  remainingHours      Int      @default(480)
+
+  requestedAt         DateTime @default(now())
+  startDate           DateTime
+  expectedEndDate     DateTime?
+  actualEndDate       DateTime?
+  status              String   @default("DRAFT") // DRAFT | NOTICE_SENT | CERTIFIED | APPROVED | ACTIVE | INTERMITTENT | EXHAUSTED | COMPLETED | DENIED | CANCELED
+  certificationDueBy  DateTime?
+  certificationReceived DateTime?
+  noticeIssuedAt      DateTime?
+  noticeReference     String?
+  denialReason        String?
+  notes               String?  @db.Text
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  createdBy           String?
+  updatedBy           String?
+  isDeleted           Boolean  @default(false)
+  deletedAt           DateTime?
+
+  usages              FMLAUsage[]
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([status])
+  @@index([periodEnd])
+  @@index([tenantId, employeeId, status])
+  @@map("aura_fmla_case")
+}
+
+// One row per discrete day or block of FMLA-counted absence. Supports both
+// continuous and intermittent patterns. The sum of hours across usages
+// equals the case's usedHours.
+model FMLAUsage {
+  id            String   @id @default(uuid())
+  caseId        String
+  case          FMLACase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  tenantId      String
+  employeeId    String
+  usageDate     DateTime @db.Date
+  hours         Int      // hours of FMLA used on this date (typically ≤ 8)
+  pattern       String   @default("CONTINUOUS") // CONTINUOUS | INTERMITTENT | REDUCED_SCHEDULE
+  leaveRequestId String?  // optional link back to the underlying LeaveRequest
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  createdBy     String?
+  updatedBy     String?
+
+  @@index([caseId])
+  @@index([tenantId, employeeId, usageDate])
+  @@index([usageDate])
+  @@map("aura_fmla_usage")
+}
+
+// ============================================================================
 // GLOBAL PAYROLL OPS + GL INTEGRATION (#109)
 // ============================================================================
 
