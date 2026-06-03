@@ -30,8 +30,8 @@ export const GET = withEnhancedAuth(async (request, context) => {
     const search = searchParams.get('search') || '';
     const companyId = searchParams.get('companyId');
 
-    // Build where clause
-    const where: any = {};
+    // Build where clause — tenant-scoped via Department.company.tenantId
+    const where: any = { company: { tenantId: user.tenantId } };
 
     if (search) {
       where.OR = [
@@ -117,11 +117,12 @@ export const POST = withEnhancedAuth(async (request, context) => {
 
     const data = validation.data;
 
-    // Check for duplicate code within the same company
+    // Check for duplicate code within the same company (tenant-scoped via company)
     const existingDept = await prisma.department.findFirst({
       where: {
         companyId: data.companyId,
         code: data.code,
+        company: { tenantId: user.tenantId },
       },
     });
 
@@ -168,7 +169,11 @@ export const POST = withEnhancedAuth(async (request, context) => {
       headCount: department._count.employees,
       costCenterId: department.costCenterId,
       costCenter: department.costCenter
-        ? { id: department.costCenter.id, code: department.costCenter.code, name: department.costCenter.name }
+        ? {
+            id: department.costCenter.id,
+            code: department.costCenter.code,
+            name: department.costCenter.name,
+          }
         : null,
       children: department.children,
     };
@@ -196,13 +201,15 @@ export const PUT = withEnhancedAuth(async (request, context) => {
 
     const { id, ...updateData } = validation.data;
 
-    // Check department exists
-    const existing = await prisma.department.findUnique({ where: { id } });
+    // Check department exists in this tenant
+    const existing = await prisma.department.findFirst({
+      where: { id, company: { tenantId: user.tenantId } },
+    });
     if (!existing) {
       return NextResponse.json({ error: 'Department not found' }, { status: 404 });
     }
 
-    // If code is being updated, check for duplicates within the same company
+    // If code is being updated, check for duplicates within the same company (tenant-scoped)
     if (updateData.code) {
       const companyId = updateData.companyId || existing.companyId;
       const codeTaken = await prisma.department.findFirst({
@@ -210,6 +217,7 @@ export const PUT = withEnhancedAuth(async (request, context) => {
           companyId,
           code: updateData.code,
           NOT: { id },
+          company: { tenantId: user.tenantId },
         },
       });
       if (codeTaken) {
@@ -220,6 +228,7 @@ export const PUT = withEnhancedAuth(async (request, context) => {
       }
     }
 
+    // tenant-ok: id-based update preceded by tenant-scoped findFirst above
     const department = await prisma.department.update({
       where: { id },
       data: updateData,
@@ -251,7 +260,11 @@ export const PUT = withEnhancedAuth(async (request, context) => {
       headCount: department._count.employees,
       costCenterId: department.costCenterId,
       costCenter: department.costCenter
-        ? { id: department.costCenter.id, code: department.costCenter.code, name: department.costCenter.name }
+        ? {
+            id: department.costCenter.id,
+            code: department.costCenter.code,
+            name: department.costCenter.name,
+          }
         : null,
       children: department.children,
     };

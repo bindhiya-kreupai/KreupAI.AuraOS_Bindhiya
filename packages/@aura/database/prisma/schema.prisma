@@ -6524,6 +6524,783 @@ model CobraEnrollment {
   @@map("aura_cobra_enrollment")
 }
 
+// ============================================================================
+// v2.0 — MENA/APAC COMPLIANCE DEEPENING (#97)
+// ============================================================================
+
+// GCC labour ministry submissions. Per-jurisdiction adapter pattern — the
+// SubmissionAdapter knows whether to format SIF (UAE WPS), CSV (Mudad /
+// GOSI batch), JSON (HRSD APIs), or FVU (India TDS).
+model LabourMinistrySubmission {
+  id              String   @id @default(uuid())
+  tenantId        String
+  countryCode     String   // ISO-3166-1 alpha-2
+  authority       String   // MOHRE | MUDAD | GOSI | HRSD | EPFO | PFRDA | ESIC
+  submissionType  String   // WPS | EOSB | NITAQAT_REPORT | SAUDIZATION_QUOTA | EPFO_KYC | ...
+  periodStart     DateTime
+  periodEnd       DateTime
+  payload         Json     @default("{}")
+  payloadHash     String?  // sha256 for tamper detection
+  format          String   // SIF | CSV | XML | JSON | XBRL | FVU
+  status          String   @default("DRAFT") // DRAFT | READY | SUBMITTED | ACKNOWLEDGED | REJECTED | RESUBMITTED
+  authorityRef    String?  // real reference returned by the ministry portal
+  submittedAt     DateTime?
+  acknowledgedAt  DateTime?
+  rejectedAt      DateTime?
+  rejectionReason String?  @db.Text
+  fileUrl         String?
+  metadata        Json     @default("{}")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdBy       String?
+  updatedBy       String?
+  isDeleted       Boolean  @default(false)
+
+  @@index([tenantId])
+  @@index([countryCode])
+  @@index([authority])
+  @@index([status])
+  @@index([periodStart, periodEnd])
+  @@map("aura_labour_ministry_submission")
+}
+
+// Per-employee statutory identifier per country. One row per (employee,
+// country, identifier-type) so an employee on rotation can have multiple
+// GOSI + Emirates ID rows.
+model StatutoryIdentifier {
+  id              String   @id @default(uuid())
+  tenantId        String
+  employeeId      String
+  countryCode     String   // AE | SA | IN | OM | BH | QA | KW
+  identifierType  String   // EMIRATES_ID | IQAMA | GOSI_NUMBER | UAN | AADHAAR | PAN | NPSAN | ...
+  identifierValue String
+  issuedDate      DateTime?
+  expiryDate      DateTime?
+  issuingAuthority String?
+  validated       Boolean  @default(false)
+  validatedAt     DateTime?
+  metadata        Json     @default("{}")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdBy       String?
+  updatedBy       String?
+  isDeleted       Boolean  @default(false)
+
+  @@unique([tenantId, employeeId, countryCode, identifierType])
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([countryCode])
+  @@index([identifierType])
+  @@map("aura_statutory_identifier")
+}
+
+// ============================================================================
+// v2.0 — AI/ML PREDICTIVE ANALYTICS (#98)
+// ============================================================================
+
+// One row per scored prediction. Used by attrition risk, performance
+// prediction, succession-readiness, time-to-hire forecasting. Linked
+// back to AIModelCard for full reproducibility under EU AI Act audits.
+model PredictionResult {
+  id              String   @id @default(uuid())
+  tenantId        String
+  modelCardId     String?
+  modelCode       String   // ATTRITION_RISK | PERF_FORECAST | PROMOTION_READINESS | TIME_TO_HIRE | SOURCING_FUNNEL
+  subjectType     String   // EMPLOYEE | CANDIDATE | REQUISITION | TEAM | DEPARTMENT
+  subjectId       String
+  scoredAt        DateTime @default(now())
+  scoreValue      Float    // 0-1 risk for classifiers; raw forecast for regressors
+  scoreBand       String?  // LOW | MEDIUM | HIGH | CRITICAL — derived bucket
+  features        Json     @default("{}") // input features captured for reproducibility
+  explanations    Json     @default("{}") // SHAP / feature-importance values per feature
+  confidence      Float?
+  confidenceInterval Json? // {lo, hi}
+  modelVersion    String
+  active          Boolean  @default(true) // false = superseded by a fresher prediction
+  expiresAt       DateTime?
+  metadata        Json     @default("{}")
+
+  @@index([tenantId])
+  @@index([modelCode])
+  @@index([subjectType, subjectId])
+  @@index([scoreBand])
+  @@index([scoredAt])
+  @@index([tenantId, modelCode, active])
+  @@map("aura_prediction_result")
+}
+
+// Recommendation surfaced by the AI agent — distinct from a raw prediction
+// because a recommendation is actionable (with a CTA).
+model AIRecommendation {
+  id              String   @id @default(uuid())
+  tenantId        String
+  category        String   // ATTRITION_INTERVENTION | LEARNING_PATH | INTERNAL_MOBILITY | TASK_AUTOMATION | INSIGHT
+  subjectType     String
+  subjectId       String
+  title           String
+  rationale       String   @db.Text
+  recommendedAction Json   @default("{}")
+  priority        String   @default("MEDIUM") // LOW | MEDIUM | HIGH | CRITICAL
+  status          String   @default("OPEN") // OPEN | ACCEPTED | DISMISSED | EXPIRED
+  acceptedAt      DateTime?
+  acceptedById    String?
+  dismissedAt     DateTime?
+  dismissedById   String?
+  dismissReason   String?
+  generatingModelCardId String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  expiresAt       DateTime?
+  isDeleted       Boolean  @default(false)
+
+  @@index([tenantId])
+  @@index([category])
+  @@index([subjectType, subjectId])
+  @@index([status])
+  @@index([priority])
+  @@map("aura_ai_recommendation")
+}
+
+// ============================================================================
+// v4.0 — CLOUD MULTI-REGION + FinOps (#114)
+// ============================================================================
+
+// Per-tenant data residency. The platform routes Prisma queries to the
+// corresponding regional cluster based on tenant.regionConfig.primaryRegion.
+model TenantRegionConfig {
+  id              String   @id @default(uuid())
+  tenantId        String   @unique
+  primaryRegion   String   // us-east-1 | ap-south-1 | eu-west-1 | me-south-1 | ...
+  replicaRegions  String[] @default([])
+  dataResidency   String   // STRICT | RELAXED | PROHIBITED_REGIONS
+  prohibitedRegions String[] @default([])
+  encryptionKeyArn String?  // tenant-specific CMK ARN for cross-region encryption
+  effectiveFrom   DateTime @default(now())
+  lastVerifiedAt  DateTime?
+  notes           String?  @db.Text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdBy       String?
+  updatedBy       String?
+
+  @@index([primaryRegion])
+  @@index([dataResidency])
+  @@map("aura_tenant_region_config")
+}
+
+// FinOps cost record — one row per (tenant, region, service, day) rollup.
+// Lives independently of the cloud provider's billing because chargeback /
+// showback per-tenant requires our own attribution model.
+model CloudCostRecord {
+  id              String   @id @default(uuid())
+  tenantId        String?
+  region          String
+  service         String   // COMPUTE | STORAGE | DB | NETWORK | OBSERVABILITY | ML | LICENSE
+  resourceTag     String?
+  day             DateTime @db.Date
+  costAmount      Decimal
+  currency        String   @default("USD")
+  unitsConsumed   Float?
+  unitMeasure     String?  // vCPU-hours | GB-month | GB-egress | requests | tokens
+  provider        String   // AWS | GCP | AZURE | SUPABASE | DATADOG | OPENAI
+  metadata        Json     @default("{}")
+  createdAt       DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([region])
+  @@index([service])
+  @@index([day])
+  @@index([tenantId, day])
+  @@index([provider])
+  @@map("aura_cloud_cost_record")
+}
+
+// Budget alert — fires when actual or forecast spend exceeds threshold.
+model CostBudget {
+  id              String   @id @default(uuid())
+  tenantId        String?
+  name            String
+  scope           String   // TENANT | SERVICE | REGION | PLATFORM
+  scopeValue      String?
+  monthlyBudget   Decimal
+  currency        String   @default("USD")
+  alertThresholdPct Int    @default(80)
+  forecastThresholdPct Int @default(100)
+  ownerEmail      String?
+  isActive        Boolean  @default(true)
+  metadata        Json     @default("{}")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdBy       String?
+  updatedBy       String?
+
+  @@index([tenantId])
+  @@index([scope, scopeValue])
+  @@map("aura_cost_budget")
+}
+
+// ============================================================================
+// v2.0 — DISASTER RECOVERY (#96)
+// ============================================================================
+
+// Recorded outcome of a DR drill (restore + smoke + cutover). Drives the
+// RPO/RTO scorecard and certifies that backups are actually restorable.
+model DRDrill {
+  id              String   @id @default(uuid())
+  tenantId        String?
+  name            String
+  scope           String   // FULL | PARTIAL | RUNBOOK_TEST | TABLETOP
+  rpoTargetMin    Int      // recovery point objective (minutes of data loss tolerated)
+  rtoTargetMin    Int      // recovery time objective (minutes to restore)
+  actualRpoMin    Int?     // observed
+  actualRtoMin    Int?     // observed
+  startedAt       DateTime
+  completedAt     DateTime?
+  outcome         String   @default("PLANNED") // PLANNED | IN_PROGRESS | PASS | FAIL | INCONCLUSIVE
+  notes           String?  @db.Text
+  runbookVersion  String?
+  ownerUserId     String?
+  metadata        Json     @default("{}")
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdBy       String?
+  updatedBy       String?
+
+  @@index([tenantId])
+  @@index([scope])
+  @@index([outcome])
+  @@index([startedAt])
+  @@map("aura_dr_drill")
+}
+
+// Backup metadata — per-job evidence record. Worker writes one row per
+// successful backup; restore drills reference these by id.
+model BackupRun {
+  id              String   @id @default(uuid())
+  tenantId        String?  // null = platform-wide backup
+  jobName         String   // db-full | db-wal | redis-rdb | objectstore-sync | etc.
+  status          String   @default("SUCCESS") // SUCCESS | FAILED | PARTIAL
+  startedAt       DateTime
+  finishedAt      DateTime?
+  durationSec     Int?
+  sizeBytes       BigInt?
+  checksum        String?
+  storageLocation String?  // s3://... or gs://...
+  expiresAt       DateTime?
+  errorMessage    String?
+  metadata        Json     @default("{}")
+  createdAt       DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([jobName])
+  @@index([status])
+  @@index([startedAt])
+  @@map("aura_backup_run")
+}
+
+// ============================================================================
+// v2.0 — SECURITY, COMPLIANCE & DATA GOVERNANCE (#99)
+// ============================================================================
+
+// DSAR — Data Subject Access Request (GDPR Art. 15, CCPA, UAE PDPL).
+// Captures the request, the response artifact, and the SLA clock.
+model DSARRequest {
+  id            String   @id @default(uuid())
+  tenantId      String
+  subjectType   String   @default("EMPLOYEE") // EMPLOYEE | CANDIDATE | DEPENDENT | EX_EMPLOYEE | OTHER
+  subjectId     String?
+  subjectEmail  String
+  requestType   String   // ACCESS | DELETION | RECTIFICATION | PORTABILITY | OBJECTION | RESTRICTION
+  status        String   @default("RECEIVED") // RECEIVED | VERIFYING | IN_PROGRESS | FULFILLED | REJECTED | EXTENDED
+  legalBasis    String?  // GDPR_ART_15 | CCPA | UAE_PDPL_ART_18 | KSA_PDPL_ART_X | ...
+  receivedAt    DateTime @default(now())
+  dueBy         DateTime // SLA deadline (jurisdiction-specific; GDPR 30 days)
+  fulfilledAt   DateTime?
+  extendedAt    DateTime?
+  extensionReason String?
+  rejectionReason String?
+  artifactUrl   String?  // signed link to the export package
+  reviewedById  String?
+  notes         String?  @db.Text
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  createdBy     String?
+  updatedBy     String?
+  isDeleted     Boolean  @default(false)
+
+  @@index([tenantId])
+  @@index([status])
+  @@index([dueBy])
+  @@index([subjectEmail])
+  @@map("aura_dsar_request")
+}
+
+// Consent record — for processing personal data under each legal basis.
+// Versioned: each new privacy policy version requires a fresh consent row.
+model ConsentRecord {
+  id              String   @id @default(uuid())
+  tenantId        String
+  subjectId       String
+  subjectType     String   @default("EMPLOYEE")
+  purpose         String   // PAYROLL | RECRUITMENT | MARKETING | ANALYTICS | THIRD_PARTY_SHARING
+  policyVersion   String
+  legalBasis      String   // CONSENT | CONTRACT | LEGAL_OBLIGATION | LEGITIMATE_INTERESTS | VITAL_INTERESTS | PUBLIC_TASK
+  granted         Boolean
+  grantedAt       DateTime?
+  revokedAt       DateTime?
+  ipAddress       String?
+  userAgent       String?  @db.Text
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([subjectId])
+  @@index([purpose])
+  @@index([policyVersion])
+  @@map("aura_consent_record")
+}
+
+// Data Processing Agreement (DPA) with a vendor / sub-processor.
+// Required by GDPR Art. 28 for any third party processing personal data
+// on the controller's behalf.
+model DataProcessingAgreement {
+  id              String   @id @default(uuid())
+  tenantId        String
+  vendorName      String
+  vendorCountry   String?
+  scope           String   @db.Text // what personal data is processed
+  signedAt        DateTime?
+  effectiveFrom   DateTime
+  effectiveTo     DateTime?
+  status          String   @default("ACTIVE") // DRAFT | ACTIVE | EXPIRED | TERMINATED
+  documentUrl     String?
+  isSubProcessor  Boolean  @default(false)
+  jurisdiction    String?
+  transferMechanism String? // SCC_2021_914 | BCR | ADEQUACY | NONE
+  reviewedAt      DateTime?
+  reviewedById    String?
+  notes           String?  @db.Text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdBy       String?
+  updatedBy       String?
+  isDeleted       Boolean  @default(false)
+
+  @@index([tenantId])
+  @@index([status])
+  @@index([effectiveTo])
+  @@map("aura_data_processing_agreement")
+}
+
+// ============================================================================
+// v2.0 — DEVOPS / SLO-SLI (#100)
+// ============================================================================
+
+// SLO definition. Per-service / per-route latency or error-rate target.
+// Burn-down rates and alert routing live in the observability platform;
+// this row is the source of truth for the target.
+model ServiceLevelObjective {
+  id              String   @id @default(uuid())
+  tenantId        String?  // null = platform-wide SLO
+  serviceName     String   // payroll-engine | leave-engine | attendance-api | ...
+  indicatorType   String   // LATENCY_P95 | LATENCY_P99 | ERROR_RATE | AVAILABILITY | THROUGHPUT
+  routePattern    String?  // optional: GET /api/v1/employees/:id
+  targetValue     Float    // 99.95 for availability; 250 for p95 ms latency
+  unit            String   // PCT | MS | RPS | COUNT
+  errorBudgetWindow String   @default("30d") // 7d | 30d | 90d
+  ownerTeam       String
+  runbookUrl      String?
+  alertChannel    String?
+  description     String?  @db.Text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdBy       String?
+  updatedBy       String?
+  isDeleted       Boolean  @default(false)
+
+  @@index([tenantId])
+  @@index([serviceName])
+  @@index([indicatorType])
+  @@map("aura_service_level_objective")
+}
+
+// Incident record. Captures every SEV-1/2 paging event for postmortem.
+// Closes the loop between an SLO burn and the postmortem doc.
+model Incident {
+  id              String   @id @default(uuid())
+  tenantId        String?
+  incidentNumber  String   // INC-2026-001
+  title           String
+  severity        String   // SEV1 | SEV2 | SEV3 | SEV4
+  status          String   @default("OPEN") // OPEN | INVESTIGATING | MITIGATED | RESOLVED | POSTMORTEM_PUBLISHED
+  detectedAt      DateTime
+  acknowledgedAt  DateTime?
+  mitigatedAt     DateTime?
+  resolvedAt      DateTime?
+  postmortemUrl   String?
+  commanderUserId String?
+  rootCause       String?  @db.Text
+  affectedServices String[] @default([])
+  customerImpact  String?
+  metadata        Json     @default("{}")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdBy       String?
+  updatedBy       String?
+
+  @@unique([tenantId, incidentNumber])
+  @@index([tenantId])
+  @@index([severity])
+  @@index([status])
+  @@index([detectedAt])
+  @@map("aura_incident")
+}
+
+// ============================================================================
+// v4.0 — AI GOVERNANCE & MLOps (#115) — EU AI Act 2024/1689 deadline Aug 2026
+// ============================================================================
+
+// Model card — required by EU AI Act for every "high-risk" HR AI system
+// (hiring, promotion, comp, performance prediction, attrition risk).
+// Stored versioned: each retrain creates a new ModelCard row.
+model AIModelCard {
+  id              String   @id @default(uuid())
+  tenantId        String?  // null = platform-wide model
+  modelName       String   // attrition-risk-v3 | resume-parser | promotion-recommender | ...
+  modelVersion    String   // semver
+  modelType       String   // CLASSIFIER | REGRESSOR | LLM | EMBEDDING | RANKER
+  riskTier        String   @default("HIGH") // UNACCEPTABLE | HIGH | LIMITED | MINIMAL (per EU AI Act Annex III)
+  intendedUse     String   @db.Text
+  prohibitedUse   String?  @db.Text
+  trainingData    Json     @default("{}") // data sources, date range, license
+  performanceMetrics Json  @default("{}") // {accuracy, f1, auc, ...}
+  fairnessMetrics Json     @default("{}") // {demographic_parity, equal_opp, ...}
+  knownLimitations String? @db.Text
+  validatorUserId String?
+  validatedAt     DateTime?
+  publishedAt     DateTime?
+  deprecatedAt    DateTime?
+  status          String   @default("DRAFT") // DRAFT | UNDER_REVIEW | PUBLISHED | DEPRECATED | RECALLED
+  cardUrl         String?  // signed link to the full PDF
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdBy       String?
+  updatedBy       String?
+  isDeleted       Boolean  @default(false)
+
+  biasAudits      AIBiasAudit[]
+
+  @@unique([tenantId, modelName, modelVersion])
+  @@index([tenantId])
+  @@index([modelName])
+  @@index([riskTier])
+  @@index([status])
+  @@map("aura_ai_model_card")
+}
+
+// Bias audit run — required for "high-risk" HR systems before deployment
+// AND on a recurring schedule per EU AI Act § 14 (human oversight) +
+// § 15 (accuracy, robustness, cybersecurity).
+model AIBiasAudit {
+  id              String   @id @default(uuid())
+  tenantId        String?
+  modelCardId     String
+  modelCard       AIModelCard @relation(fields: [modelCardId], references: [id])
+  auditDate       DateTime
+  auditor         String   // user, vendor, or internal team
+  cohorts         Json     @default("[]") // [{name: "gender:F", n: 1024, positiveRate: 0.32}, ...]
+  metric          String   // DEMOGRAPHIC_PARITY | EQUAL_OPPORTUNITY | DISPARATE_IMPACT_RATIO | CALIBRATION
+  passed          Boolean
+  worstCohortGap  Float?   // largest absolute disparity between cohorts
+  threshold       Float?   // configured fail threshold (e.g., 0.8 for 4/5ths rule)
+  findings        String?  @db.Text
+  remediationPlan String?  @db.Text
+  reportUrl       String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdBy       String?
+
+  @@index([modelCardId])
+  @@index([tenantId])
+  @@index([passed])
+  @@index([auditDate])
+  @@map("aura_ai_bias_audit")
+}
+
+// ============================================================================
+// v4.0 — SECOPS WAF/SIEM (#113) — stub models for SecOps event ingestion
+// ============================================================================
+
+// Security event from WAF / SIEM / IDS. Headers + payload kept minimal
+// because the heavy data lives in the SIEM; this is just the index for
+// joining incidents.
+model SecurityEvent {
+  id              String   @id @default(uuid())
+  tenantId        String?
+  source          String   // WAF | SIEM | CLOUDTRAIL | IDS | AUTH | API_GATEWAY
+  eventType       String   // SQL_INJECTION | XSS | RATE_LIMIT_HIT | LOGIN_ANOMALY | PRIV_ESCAL
+  severity        String   // INFO | LOW | MEDIUM | HIGH | CRITICAL
+  detectedAt      DateTime
+  sourceIp        String?
+  userId          String?
+  resourceId      String?
+  ruleId          String?
+  blocked         Boolean  @default(false)
+  incidentId      String?  // link to Incident if escalated
+  rawPayload      Json     @default("{}")
+  metadata        Json     @default("{}")
+  createdAt       DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([source])
+  @@index([severity])
+  @@index([detectedAt])
+  @@index([incidentId])
+  @@map("aura_security_event")
+}
+
+// ============================================================================
+// FMLA & EXTENDED LEAVE MANAGEMENT (#111)
+// ============================================================================
+// US federal mandate: employers with ≥50 employees must track FMLA.
+// 12 work-weeks (480 hours) of unpaid leave per 12-month period for
+// qualifying reasons. State analogs (CFRA, OFLA, PFML) plug into the
+// same state machine via the `framework` discriminator.
+
+model FMLACase {
+  id                  String   @id @default(uuid())
+  tenantId            String
+  employeeId          String
+  framework           String   @default("FMLA") // FMLA | CFRA | OFLA | PFML | INTL_EQUIVALENT
+  reason              String   // BIRTH | ADOPTION | FOSTER_CARE | SELF_SERIOUS | FAMILY_SERIOUS | MILITARY_EXIGENCY | MILITARY_CAREGIVER
+  // Eligibility snapshot at request time — captured because eligibility
+  // criteria depend on tenure (≥1yr) + hours worked (≥1,250) at the moment
+  // of request. Stored to make audit reproducible.
+  hoursWorkedPrev12Mo Int?     // employer hours-worked threshold check (1,250)
+  tenureMonths        Int?     // 12-month employment check
+  eligible            Boolean  @default(true)
+  ineligibilityReason String?
+
+  // 12-month tracking method (per US DOL § 825.200(b))
+  trackingMethod      String   @default("ROLLING_BACKWARD")
+  // CALENDAR_YEAR | FIXED_FISCAL | EMPLOYEE_ANNIVERSARY | ROLLING_FORWARD | ROLLING_BACKWARD
+  periodStart         DateTime
+  periodEnd           DateTime
+
+  // Entitlement accounting (in hours — work the math in hours to handle
+  // both continuous and intermittent leave uniformly)
+  entitlementHours    Int      @default(480)  // standard 12 work-weeks × 40h
+  usedHours           Int      @default(0)
+  remainingHours      Int      @default(480)
+
+  requestedAt         DateTime @default(now())
+  startDate           DateTime
+  expectedEndDate     DateTime?
+  actualEndDate       DateTime?
+  status              String   @default("DRAFT") // DRAFT | NOTICE_SENT | CERTIFIED | APPROVED | ACTIVE | INTERMITTENT | EXHAUSTED | COMPLETED | DENIED | CANCELED
+  certificationDueBy  DateTime?
+  certificationReceived DateTime?
+  noticeIssuedAt      DateTime?
+  noticeReference     String?
+  denialReason        String?
+  notes               String?  @db.Text
+
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  createdBy           String?
+  updatedBy           String?
+  isDeleted           Boolean  @default(false)
+  deletedAt           DateTime?
+
+  usages              FMLAUsage[]
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([status])
+  @@index([periodEnd])
+  @@index([tenantId, employeeId, status])
+  @@map("aura_fmla_case")
+}
+
+// One row per discrete day or block of FMLA-counted absence. Supports both
+// continuous and intermittent patterns. The sum of hours across usages
+// equals the case's usedHours.
+model FMLAUsage {
+  id            String   @id @default(uuid())
+  caseId        String
+  case          FMLACase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  tenantId      String
+  employeeId    String
+  usageDate     DateTime @db.Date
+  hours         Int      // hours of FMLA used on this date (typically ≤ 8)
+  pattern       String   @default("CONTINUOUS") // CONTINUOUS | INTERMITTENT | REDUCED_SCHEDULE
+  leaveRequestId String?  // optional link back to the underlying LeaveRequest
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  createdBy     String?
+  updatedBy     String?
+
+  @@index([caseId])
+  @@index([tenantId, employeeId, usageDate])
+  @@index([usageDate])
+  @@map("aura_fmla_usage")
+}
+
+// ============================================================================
+// GLOBAL PAYROLL OPS + GL INTEGRATION (#109)
+// ============================================================================
+
+// Chart of accounts entry. Per-tenant, hierarchical via parentId.
+// Drives GL journal posting from payroll runs and expense claims.
+model GLAccount {
+  id            String   @id @default(uuid())
+  tenantId      String
+  code          String   // e.g., "6100", "2200"
+  name          String   // e.g., "Salaries — Operations", "Income Tax Payable"
+  type          String   // ASSET | LIABILITY | EQUITY | REVENUE | EXPENSE
+  category      String?  // SALARY | TAX | BENEFITS | DEDUCTION | EMPLOYER_COST | PAYABLE
+  parentId      String?
+  parent        GLAccount? @relation("GLAccountHierarchy", fields: [parentId], references: [id])
+  children      GLAccount[] @relation("GLAccountHierarchy")
+  countryCode   String?  // optional jurisdictional scoping
+  isActive      Boolean  @default(true)
+  externalId    String?  // ID in the downstream accounting system (QB / Xero / SAP / Tally)
+  metadata      Json     @default("{}")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  createdBy     String?
+  updatedBy     String?
+  isDeleted     Boolean  @default(false)
+
+  mappings      PayrollAccountMapping[]
+  journalLines  GLJournalLine[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@index([type])
+  @@index([category])
+  @@index([countryCode])
+  @@map("aura_gl_account")
+}
+
+// Maps a payroll/expense component code → debit/credit GL account.
+// Per-country override supported via countryCode.
+model PayrollAccountMapping {
+  id            String   @id @default(uuid())
+  tenantId      String
+  componentCode String   // BASIC | HRA | DA | PF | TDS | OT | BONUS | EXPENSE_REIMB | etc.
+  componentKind String   // earning | deduction | employer_cost | reimbursement
+  debitAccountId  String
+  debitAccount    GLAccount @relation(fields: [debitAccountId], references: [id])
+  creditAccountId String?
+  // (creditAccount relation omitted to avoid Prisma's "Ambiguous relation" detection — second FK lookup done via service)
+  countryCode   String?
+  costCenterId  String?
+  effectiveFrom DateTime @default(now())
+  effectiveTo   DateTime?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  createdBy     String?
+  updatedBy     String?
+  isDeleted     Boolean  @default(false)
+
+  @@unique([tenantId, componentCode, countryCode, effectiveFrom])
+  @@index([tenantId])
+  @@index([componentCode])
+  @@index([countryCode])
+  @@map("aura_payroll_account_mapping")
+}
+
+// One journal entry per source event (payroll run, F&F, expense pay, etc.).
+// Header rows. The line items live in GLJournalLine.
+model GLJournalEntry {
+  id            String   @id @default(uuid())
+  tenantId      String
+  countryCode   String
+  currency      String   @default("USD")
+  entryDate     DateTime
+  reference     String   // e.g., "PAYROLL-AE-2026-05"
+  description   String?
+  sourceType    String   // PAYROLL_RUN | FULL_FINAL | EXPENSE_PAY | ARREARS | BONUS_PAYOUT
+  sourceId      String
+  status        String   @default("DRAFT") // DRAFT | POSTED | EXPORTED | REVERSED
+  totalDebit    Decimal  @default(0)
+  totalCredit   Decimal  @default(0)
+  postedAt      DateTime?
+  postedById    String?
+  exportedAt    DateTime?
+  exportedToSystem String? // QUICKBOOKS | XERO | SAP | TALLY | ZOHO_BOOKS
+  exportReference  String? // real ID returned by the downstream accounting system
+  reversalOfId  String?
+  metadata      Json     @default("{}")
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  createdBy     String?
+  updatedBy     String?
+  isDeleted     Boolean  @default(false)
+
+  lines         GLJournalLine[]
+
+  @@index([tenantId])
+  @@index([status])
+  @@index([sourceType, sourceId])
+  @@index([entryDate])
+  @@index([countryCode])
+  @@map("aura_gl_journal_entry")
+}
+
+model GLJournalLine {
+  id            String   @id @default(uuid())
+  entryId       String
+  entry         GLJournalEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  accountId     String
+  account       GLAccount @relation(fields: [accountId], references: [id])
+  costCenterId  String?
+  departmentId  String?
+  description   String?
+  debit         Decimal  @default(0)
+  credit        Decimal  @default(0)
+  currency      String   @default("USD")
+  metadata      Json     @default("{}")
+  createdAt     DateTime @default(now())
+
+  @@index([entryId])
+  @@index([accountId])
+  @@index([costCenterId])
+  @@map("aura_gl_journal_line")
+}
+
+// Pay-equity finding — drives US/EU pay-transparency reporting (#109, P1).
+// Captures the result of a Pay Equity Analyzer run against a job grade /
+// gender / ethnicity / location cohort.
+model PayEquityFinding {
+  id             String   @id @default(uuid())
+  tenantId       String
+  analysisId     String   // ties findings to one analyzer run
+  cohortKey      String   // e.g., "grade:L4|gender:F|country:US"
+  populationSize Int
+  medianPay      Decimal
+  meanPay        Decimal
+  benchmarkPay   Decimal  // comparable cohort median
+  payGapPct      Float    // (medianPay - benchmarkPay) / benchmarkPay * 100
+  status         String   @default("OPEN") // OPEN | UNDER_REVIEW | REMEDIATED | DISMISSED
+  notes          String?  @db.Text
+  remediatedAt   DateTime?
+  remediatedById String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([analysisId])
+  @@index([status])
+  @@map("aura_pay_equity_finding")
+}
+
 // Tenant-defined custom field for any supported entity (Employee, Department,
 // Position, LeaveRequest, ExpenseReport). Used by /admin/custom-fields routes.
 model CustomField {

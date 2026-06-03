@@ -76,7 +76,8 @@
       "Bash(pnpm --filter @aura/search build:*)",
       "Bash(pnpm --filter @aura/monitoring build:*)",
       "Bash(npx prisma migrate diff:*)",
-      "Bash(pnpm build:*)"
+      "Bash(pnpm build:*)",
+      "Bash(psql:*)"
     ],
     "deny": [],
     "ask": []
