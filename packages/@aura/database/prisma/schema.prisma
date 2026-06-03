@@ -6524,6 +6524,158 @@ model CobraEnrollment {
   @@map("aura_cobra_enrollment")
 }
 
+// ============================================================================
+// GLOBAL PAYROLL OPS + GL INTEGRATION (#109)
+// ============================================================================
+
+// Chart of accounts entry. Per-tenant, hierarchical via parentId.
+// Drives GL journal posting from payroll runs and expense claims.
+model GLAccount {
+  id            String   @id @default(uuid())
+  tenantId      String
+  code          String   // e.g., "6100", "2200"
+  name          String   // e.g., "Salaries — Operations", "Income Tax Payable"
+  type          String   // ASSET | LIABILITY | EQUITY | REVENUE | EXPENSE
+  category      String?  // SALARY | TAX | BENEFITS | DEDUCTION | EMPLOYER_COST | PAYABLE
+  parentId      String?
+  parent        GLAccount? @relation("GLAccountHierarchy", fields: [parentId], references: [id])
+  children      GLAccount[] @relation("GLAccountHierarchy")
+  countryCode   String?  // optional jurisdictional scoping
+  isActive      Boolean  @default(true)
+  externalId    String?  // ID in the downstream accounting system (QB / Xero / SAP / Tally)
+  metadata      Json     @default("{}")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  createdBy     String?
+  updatedBy     String?
+  isDeleted     Boolean  @default(false)
+
+  mappings      PayrollAccountMapping[]
+  journalLines  GLJournalLine[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@index([type])
+  @@index([category])
+  @@index([countryCode])
+  @@map("aura_gl_account")
+}
+
+// Maps a payroll/expense component code → debit/credit GL account.
+// Per-country override supported via countryCode.
+model PayrollAccountMapping {
+  id            String   @id @default(uuid())
+  tenantId      String
+  componentCode String   // BASIC | HRA | DA | PF | TDS | OT | BONUS | EXPENSE_REIMB | etc.
+  componentKind String   // earning | deduction | employer_cost | reimbursement
+  debitAccountId  String
+  debitAccount    GLAccount @relation(fields: [debitAccountId], references: [id])
+  creditAccountId String?
+  // (creditAccount relation omitted to avoid Prisma's "Ambiguous relation" detection — second FK lookup done via service)
+  countryCode   String?
+  costCenterId  String?
+  effectiveFrom DateTime @default(now())
+  effectiveTo   DateTime?
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  createdBy     String?
+  updatedBy     String?
+  isDeleted     Boolean  @default(false)
+
+  @@unique([tenantId, componentCode, countryCode, effectiveFrom])
+  @@index([tenantId])
+  @@index([componentCode])
+  @@index([countryCode])
+  @@map("aura_payroll_account_mapping")
+}
+
+// One journal entry per source event (payroll run, F&F, expense pay, etc.).
+// Header rows. The line items live in GLJournalLine.
+model GLJournalEntry {
+  id            String   @id @default(uuid())
+  tenantId      String
+  countryCode   String
+  currency      String   @default("USD")
+  entryDate     DateTime
+  reference     String   // e.g., "PAYROLL-AE-2026-05"
+  description   String?
+  sourceType    String   // PAYROLL_RUN | FULL_FINAL | EXPENSE_PAY | ARREARS | BONUS_PAYOUT
+  sourceId      String
+  status        String   @default("DRAFT") // DRAFT | POSTED | EXPORTED | REVERSED
+  totalDebit    Decimal  @default(0)
+  totalCredit   Decimal  @default(0)
+  postedAt      DateTime?
+  postedById    String?
+  exportedAt    DateTime?
+  exportedToSystem String? // QUICKBOOKS | XERO | SAP | TALLY | ZOHO_BOOKS
+  exportReference  String? // real ID returned by the downstream accounting system
+  reversalOfId  String?
+  metadata      Json     @default("{}")
+
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  createdBy     String?
+  updatedBy     String?
+  isDeleted     Boolean  @default(false)
+
+  lines         GLJournalLine[]
+
+  @@index([tenantId])
+  @@index([status])
+  @@index([sourceType, sourceId])
+  @@index([entryDate])
+  @@index([countryCode])
+  @@map("aura_gl_journal_entry")
+}
+
+model GLJournalLine {
+  id            String   @id @default(uuid())
+  entryId       String
+  entry         GLJournalEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  accountId     String
+  account       GLAccount @relation(fields: [accountId], references: [id])
+  costCenterId  String?
+  departmentId  String?
+  description   String?
+  debit         Decimal  @default(0)
+  credit        Decimal  @default(0)
+  currency      String   @default("USD")
+  metadata      Json     @default("{}")
+  createdAt     DateTime @default(now())
+
+  @@index([entryId])
+  @@index([accountId])
+  @@index([costCenterId])
+  @@map("aura_gl_journal_line")
+}
+
+// Pay-equity finding — drives US/EU pay-transparency reporting (#109, P1).
+// Captures the result of a Pay Equity Analyzer run against a job grade /
+// gender / ethnicity / location cohort.
+model PayEquityFinding {
+  id             String   @id @default(uuid())
+  tenantId       String
+  analysisId     String   // ties findings to one analyzer run
+  cohortKey      String   // e.g., "grade:L4|gender:F|country:US"
+  populationSize Int
+  medianPay      Decimal
+  meanPay        Decimal
+  benchmarkPay   Decimal  // comparable cohort median
+  payGapPct      Float    // (medianPay - benchmarkPay) / benchmarkPay * 100
+  status         String   @default("OPEN") // OPEN | UNDER_REVIEW | REMEDIATED | DISMISSED
+  notes          String?  @db.Text
+  remediatedAt   DateTime?
+  remediatedById String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([analysisId])
+  @@index([status])
+  @@map("aura_pay_equity_finding")
+}
+
 // Tenant-defined custom field for any supported entity (Employee, Department,
 // Position, LeaveRequest, ExpenseReport). Used by /admin/custom-fields routes.
 model CustomField {

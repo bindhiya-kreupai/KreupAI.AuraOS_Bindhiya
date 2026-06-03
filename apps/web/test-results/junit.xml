@@ -1,29 +1,27 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuites name="vitest tests" tests="12" failures="0" errors="0" time="0.004804792">
-    <testsuite name="src/lib/services/__tests__/cobra.service.test.ts" timestamp="2026-06-03T05:12:14.040Z" hostname="MacBookPro.lan" tests="12" failures="0" errors="0" skipped="0" time="0.004804792">
-        <testcase classname="src/lib/services/__tests__/cobra.service.test.ts" name="CobraService.computeDeadlines &gt; TERMINATION → 60-day election window + 18-month coverage cap" time="0.000734583">
+<testsuites name="vitest tests" tests="11" failures="0" errors="0" time="0.0046875">
+    <testsuite name="src/lib/services/__tests__/gl-posting.service.test.ts" timestamp="2026-06-03T11:12:33.494Z" hostname="MacBookPro.lan" tests="11" failures="0" errors="0" skipped="0" time="0.0046875">
+        <testcase classname="src/lib/services/__tests__/gl-posting.service.test.ts" name="GLPostingService.assertBalanced &gt; accepts equal debits and credits" time="0.00067625">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/cobra.service.test.ts" name="CobraService.computeDeadlines &gt; REDUCED_HOURS → 18-month cap (same as termination)" time="0.000114625">
+        <testcase classname="src/lib/services/__tests__/gl-posting.service.test.ts" name="GLPostingService.assertBalanced &gt; accepts multi-line balanced journal with 2dp rounding" time="0.000217375">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/cobra.service.test.ts" name="CobraService.computeDeadlines &gt; DIVORCE / DEPENDENT_LOSS / DEATH / MEDICARE → 36-month cap" time="0.000237458">
+        <testcase classname="src/lib/services/__tests__/gl-posting.service.test.ts" name="GLPostingService.assertBalanced &gt; rejects unbalanced journal with UnbalancedJournalError" time="0.000273917">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/cobra.service.test.ts" name="CobraService.computeCobraPremium &gt; sums employee+employer and adds 2% admin uplift" time="0.000254583">
+        <testcase classname="src/lib/services/__tests__/gl-posting.service.test.ts" name="GLPostingService.assertBalanced &gt; tolerates floating-point noise within 1 cent" time="0.000498459">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/cobra.service.test.ts" name="CobraService.computeCobraPremium &gt; rounds to 2 decimals" time="0.000220666">
+        <testcase classname="src/lib/services/__tests__/gl-posting.service.test.ts" name="GLPostingService transitions &gt; DRAFT → POSTED / REVERSED only" time="0.000215417">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/cobra.service.test.ts" name="CobraService transitions &gt; PENDING_ELECTION → ELECTED / DECLINED / EXPIRED / CANCELED" time="0.000180084">
+        <testcase classname="src/lib/services/__tests__/gl-posting.service.test.ts" name="GLPostingService transitions &gt; POSTED → EXPORTED / REVERSED only" time="0.000118125">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/cobra.service.test.ts" name="CobraService transitions &gt; ELECTED → ACTIVE / CANCELED only" time="0.000119125">
+        <testcase classname="src/lib/services/__tests__/gl-posting.service.test.ts" name="GLPostingService transitions &gt; EXPORTED → REVERSED only" time="0.000179458">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/cobra.service.test.ts" name="CobraService transitions &gt; ACTIVE → TERMINATED_NONPAYMENT / EXPIRED / CANCELED" time="0.000176625">
+        <testcase classname="src/lib/services/__tests__/gl-posting.service.test.ts" name="GLPostingService transitions &gt; REVERSED is terminal" time="0.000098708">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/cobra.service.test.ts" name="CobraService transitions &gt; terminal states reject everything" time="0.000255833">
+        <testcase classname="src/lib/services/__tests__/gl-posting.service.test.ts" name="GLPostingService transitions &gt; assertTransition throws on illegal moves" time="0.000292541">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/cobra.service.test.ts" name="CobraService transitions &gt; assertTransition throws on illegal moves" time="0.000595125">
+        <testcase classname="src/lib/services/__tests__/gl-posting.service.test.ts" name="GL error contracts &gt; UnbalancedJournalError carries totals in the message" time="0.000271292">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/cobra.service.test.ts" name="COBRA error contracts &gt; InvalidCobraTransitionError is a real Error subclass" time="0.000148166">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/cobra.service.test.ts" name="COBRA error contracts &gt; ElectionWindowExpiredError carries the deadline in the message" time="0.000210875">
+        <testcase classname="src/lib/services/__tests__/gl-posting.service.test.ts" name="GL error contracts &gt; InvalidGLTransitionError is a real Error subclass" time="0.000087917">
         </testcase>
     </testsuite>
 </testsuites>

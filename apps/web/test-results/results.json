@@ -1,10 +1,10 @@
 {
-  "numTotalTestSuites": 5,
-  "numPassedTestSuites": 5,
+  "numTotalTestSuites": 4,
+  "numPassedTestSuites": 4,
   "numFailedTestSuites": 0,
   "numPendingTestSuites": 0,
-  "numTotalTests": 12,
-  "numPassedTests": 12,
+  "numTotalTests": 11,
+  "numPassedTests": 11,
   "numFailedTests": 0,
   "numPendingTests": 0,
   "numTodoTests": 0,
@@ -24,125 +24,116 @@
     "updated": 0,
     "didUpdate": false
   },
-  "startTime": 1780463533766,
+  "startTime": 1780485152869,
   "success": true,
   "testResults": [
     {
       "assertionResults": [
         {
-          "ancestorTitles": ["CobraService.computeDeadlines"],
-          "fullName": "CobraService.computeDeadlines TERMINATION → 60-day election window + 18-month coverage cap",
+          "ancestorTitles": ["GLPostingService.assertBalanced"],
+          "fullName": "GLPostingService.assertBalanced accepts equal debits and credits",
           "status": "passed",
-          "title": "TERMINATION → 60-day election window + 18-month coverage cap",
-          "duration": 0.7345830000000433,
+          "title": "accepts equal debits and credits",
+          "duration": 0.6762500000000955,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["CobraService.computeDeadlines"],
-          "fullName": "CobraService.computeDeadlines REDUCED_HOURS → 18-month cap (same as termination)",
+          "ancestorTitles": ["GLPostingService.assertBalanced"],
+          "fullName": "GLPostingService.assertBalanced accepts multi-line balanced journal with 2dp rounding",
           "status": "passed",
-          "title": "REDUCED_HOURS → 18-month cap (same as termination)",
-          "duration": 0.11462500000004638,
+          "title": "accepts multi-line balanced journal with 2dp rounding",
+          "duration": 0.21737499999994725,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["CobraService.computeDeadlines"],
-          "fullName": "CobraService.computeDeadlines DIVORCE / DEPENDENT_LOSS / DEATH / MEDICARE → 36-month cap",
+          "ancestorTitles": ["GLPostingService.assertBalanced"],
+          "fullName": "GLPostingService.assertBalanced rejects unbalanced journal with UnbalancedJournalError",
           "status": "passed",
-          "title": "DIVORCE / DEPENDENT_LOSS / DEATH / MEDICARE → 36-month cap",
-          "duration": 0.23745799999994688,
+          "title": "rejects unbalanced journal with UnbalancedJournalError",
+          "duration": 0.2739169999999831,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["CobraService.computeCobraPremium"],
-          "fullName": "CobraService.computeCobraPremium sums employee+employer and adds 2% admin uplift",
+          "ancestorTitles": ["GLPostingService.assertBalanced"],
+          "fullName": "GLPostingService.assertBalanced tolerates floating-point noise within 1 cent",
           "status": "passed",
-          "title": "sums employee+employer and adds 2% admin uplift",
-          "duration": 0.2545830000000251,
+          "title": "tolerates floating-point noise within 1 cent",
+          "duration": 0.4984590000000253,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["CobraService.computeCobraPremium"],
-          "fullName": "CobraService.computeCobraPremium rounds to 2 decimals",
+          "ancestorTitles": ["GLPostingService transitions"],
+          "fullName": "GLPostingService transitions DRAFT → POSTED / REVERSED only",
           "status": "passed",
-          "title": "rounds to 2 decimals",
-          "duration": 0.2206660000000511,
+          "title": "DRAFT → POSTED / REVERSED only",
+          "duration": 0.2154170000000022,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["CobraService transitions"],
-          "fullName": "CobraService transitions PENDING_ELECTION → ELECTED / DECLINED / EXPIRED / CANCELED",
+          "ancestorTitles": ["GLPostingService transitions"],
+          "fullName": "GLPostingService transitions POSTED → EXPORTED / REVERSED only",
           "status": "passed",
-          "title": "PENDING_ELECTION → ELECTED / DECLINED / EXPIRED / CANCELED",
-          "duration": 0.18008399999996527,
+          "title": "POSTED → EXPORTED / REVERSED only",
+          "duration": 0.11812499999996362,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["CobraService transitions"],
-          "fullName": "CobraService transitions ELECTED → ACTIVE / CANCELED only",
+          "ancestorTitles": ["GLPostingService transitions"],
+          "fullName": "GLPostingService transitions EXPORTED → REVERSED only",
           "status": "passed",
-          "title": "ELECTED → ACTIVE / CANCELED only",
-          "duration": 0.11912500000005366,
+          "title": "EXPORTED → REVERSED only",
+          "duration": 0.17945800000006784,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["CobraService transitions"],
-          "fullName": "CobraService transitions ACTIVE → TERMINATED_NONPAYMENT / EXPIRED / CANCELED",
+          "ancestorTitles": ["GLPostingService transitions"],
+          "fullName": "GLPostingService transitions REVERSED is terminal",
           "status": "passed",
-          "title": "ACTIVE → TERMINATED_NONPAYMENT / EXPIRED / CANCELED",
-          "duration": 0.17662499999994452,
+          "title": "REVERSED is terminal",
+          "duration": 0.0987079999999878,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["CobraService transitions"],
-          "fullName": "CobraService transitions terminal states reject everything",
-          "status": "passed",
-          "title": "terminal states reject everything",
-          "duration": 0.2558330000000524,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["CobraService transitions"],
-          "fullName": "CobraService transitions assertTransition throws on illegal moves",
+          "ancestorTitles": ["GLPostingService transitions"],
+          "fullName": "GLPostingService transitions assertTransition throws on illegal moves",
           "status": "passed",
           "title": "assertTransition throws on illegal moves",
-          "duration": 0.5951249999999391,
+          "duration": 0.29254100000002836,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["COBRA error contracts"],
-          "fullName": "COBRA error contracts InvalidCobraTransitionError is a real Error subclass",
+          "ancestorTitles": ["GL error contracts"],
+          "fullName": "GL error contracts UnbalancedJournalError carries totals in the message",
           "status": "passed",
-          "title": "InvalidCobraTransitionError is a real Error subclass",
-          "duration": 0.1481659999999465,
+          "title": "UnbalancedJournalError carries totals in the message",
+          "duration": 0.27129200000001674,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["COBRA error contracts"],
-          "fullName": "COBRA error contracts ElectionWindowExpiredError carries the deadline in the message",
+          "ancestorTitles": ["GL error contracts"],
+          "fullName": "GL error contracts InvalidGLTransitionError is a real Error subclass",
           "status": "passed",
-          "title": "ElectionWindowExpiredError carries the deadline in the message",
-          "duration": 0.21087499999998727,
+          "title": "InvalidGLTransitionError is a real Error subclass",
+          "duration": 0.08791699999994762,
           "failureMessages": [],
           "meta": {}
         }
       ],
-      "startTime": 1780463534020,
-      "endTime": 1780463534024.211,
+      "startTime": 1780485153475,
+      "endTime": 1780485153478.2925,
       "status": "passed",
       "message": "",
-      "name": "/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/lib/services/__tests__/cobra.service.test.ts"
+      "name": "/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/lib/services/__tests__/gl-posting.service.test.ts"
     }
   ]
 }
