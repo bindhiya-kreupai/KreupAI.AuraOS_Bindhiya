@@ -16,16 +16,19 @@ import {
 const svc = new StatutoryReportService();
 
 describe('Statutory report registry', () => {
-  it('exposes the 6 generators landed in Phase 2', () => {
+  it('exposes the 10 generators landed in Phase 2', () => {
     const codes = listSpecs()
       .map((s) => s.code)
       .sort();
     expect(codes).toEqual([
+      'IND_ESI_RETURN',
       'IND_FORM_16',
       'IND_FORM_24Q',
       'IND_PF_ECR',
+      'IND_PT_CHALLAN',
       'KSA_GOSI_RECON',
       'KSA_NITAQAT',
+      'UAE_EMIRATISATION',
       'UAE_MOHRE',
       'UAE_WPS_RECON',
     ]);
@@ -36,7 +39,7 @@ describe('Statutory report registry', () => {
       .listSpecs({ countryCode: 'AE' })
       .map((s) => s.code)
       .sort();
-    expect(ae).toEqual(['UAE_MOHRE', 'UAE_WPS_RECON']);
+    expect(ae).toEqual(['UAE_EMIRATISATION', 'UAE_MOHRE', 'UAE_WPS_RECON']);
 
     const sa = svc
       .listSpecs({ countryCode: 'SA' })
@@ -48,7 +51,13 @@ describe('Statutory report registry', () => {
       .listSpecs({ countryCode: 'IN' })
       .map((s) => s.code)
       .sort();
-    expect(ind).toEqual(['IND_FORM_16', 'IND_FORM_24Q', 'IND_PF_ECR']);
+    expect(ind).toEqual([
+      'IND_ESI_RETURN',
+      'IND_FORM_16',
+      'IND_FORM_24Q',
+      'IND_PF_ECR',
+      'IND_PT_CHALLAN',
+    ]);
   });
 
   it('returns specs without the generate function (safe to serialize)', () => {

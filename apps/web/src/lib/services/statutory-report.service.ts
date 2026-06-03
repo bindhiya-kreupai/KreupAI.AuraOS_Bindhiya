@@ -588,6 +588,173 @@ registerReport({
 });
 
 /**
+ * UAE Emiratisation compliance. Per-company headcount of Emirati vs non-Emirati
+ * employees and the resulting Emiratisation %. Like Nitaqat, surfaces a warning
+ * until a nationality column is wired on Employee.
+ */
+registerReport({
+  code: 'UAE_EMIRATISATION',
+  countryCode: 'AE',
+  name: 'UAE Emiratisation Ratio',
+  format: 'pdf',
+  description: 'Emiratisation compliance ratio per company for UAE MOHRE.',
+  generate: async (ctx) => {
+    const employees = await prisma.employee.findMany({
+      where: {
+        isDeleted: false,
+        company: { tenantId: ctx.tenantId },
+      },
+      select: {
+        id: true,
+        companyId: true,
+        company: { select: { name: true } },
+      },
+    });
+
+    const byCompany = new Map<string, { total: number; emirati: number; name: string }>();
+    for (const emp of employees) {
+      const bucket = byCompany.get(emp.companyId) ?? {
+        total: 0,
+        emirati: 0,
+        name: emp.company?.name ?? emp.companyId,
+      };
+      bucket.total += 1;
+      byCompany.set(emp.companyId, bucket);
+    }
+
+    let totalEmployees = 0;
+    const lines: Array<Record<string, unknown>> = [];
+    for (const [companyId, totals] of byCompany.entries()) {
+      const ratio = totals.total > 0 ? totals.emirati / totals.total : 0;
+      lines.push({
+        companyId,
+        companyName: totals.name,
+        totalEmployees: totals.total,
+        emiratiEmployees: totals.emirati,
+        emiratisationRatio: Math.round(ratio * 10000) / 100,
+      });
+      totalEmployees += totals.total;
+    }
+
+    return {
+      schemaVersion: '1.0.0',
+      totals: { employeeCount: totalEmployees, grossAmount: 0, deductionAmount: 0, netAmount: 0 },
+      lines,
+      warnings: [
+        'Emirati/non-Emirati classification requires nationality column on Employee. ' +
+          'All employees currently bucketed as non-Emirati pending nationality field wiring.',
+      ],
+    };
+  },
+});
+
+/**
+ * India ESI half-yearly return. Per-employee ESI wages with employee + employer
+ * share. Statutory wage ceiling INR 21,000/month (employees earning above are
+ * exempt from ESI).
+ */
+registerReport({
+  code: 'IND_ESI_RETURN',
+  countryCode: 'IN',
+  name: 'India ESI Half-Yearly Return',
+  format: 'excel',
+  description: 'Employee State Insurance half-yearly return for the period.',
+  generate: async (ctx) => {
+    const months = yyyymmRange(ctx.periodStart, ctx.periodEnd);
+    const runs = await prisma.payrollRun.findMany({
+      where: { tenantId: ctx.tenantId, payrollMonth: { in: months }, isDeleted: false },
+      include: { payslips: true },
+    });
+
+    let employeeCount = 0;
+    let grossAmount = 0;
+    let deductionAmount = 0;
+    const lines: Array<Record<string, unknown>> = [];
+
+    for (const run of runs) {
+      for (const slip of run.payslips ?? []) {
+        const gross = Number(slip.grossSalary);
+        // ESI wage ceiling = INR 21,000; employees above are exempt.
+        if (gross > 21000) continue;
+        const employeeShare = Math.round(gross * 0.0075); // 0.75%
+        const employerShare = Math.round(gross * 0.0325); // 3.25%
+        employeeCount += 1;
+        grossAmount += gross;
+        deductionAmount += employeeShare + employerShare;
+        lines.push({
+          employeeId: slip.employeeId,
+          employeeCode: slip.employeeCode,
+          payrollMonth: run.payrollMonth,
+          esiWages: gross,
+          employeeShare,
+          employerShare,
+        });
+      }
+    }
+
+    return {
+      schemaVersion: '1.0.0',
+      totals: { employeeCount, grossAmount, deductionAmount, netAmount: 0 },
+      lines,
+      warnings: lines.length === 0 ? ['No eligible payslips (ESI ceiling INR 21,000)'] : undefined,
+    };
+  },
+});
+
+/**
+ * India Professional Tax challan. Per-state PT slabs vary; this report
+ * aggregates the PT amount captured on each payslip and groups by month.
+ * Per-state slab evaluation lives in IndiaProfessionalTaxService (#103
+ * follow-up).
+ */
+registerReport({
+  code: 'IND_PT_CHALLAN',
+  countryCode: 'IN',
+  name: 'India Professional Tax Challan',
+  format: 'csv',
+  description: 'Monthly Professional Tax challan aggregating PT captured on payslips.',
+  generate: async (ctx) => {
+    const months = yyyymmRange(ctx.periodStart, ctx.periodEnd);
+    const runs = await prisma.payrollRun.findMany({
+      where: { tenantId: ctx.tenantId, payrollMonth: { in: months }, isDeleted: false },
+      include: { payslips: true },
+    });
+
+    let employeeCount = 0;
+    let deductionAmount = 0;
+    const lines: Array<Record<string, unknown>> = [];
+
+    for (const run of runs) {
+      // PT is captured in payslip.deductions JSON; we surface a per-payslip
+      // row even when zero so finance can reconcile.
+      for (const slip of run.payslips ?? []) {
+        const deds = (slip.deductions as Array<Record<string, unknown>>) ?? [];
+        const pt = deds.find(
+          (d) =>
+            typeof d.code === 'string' &&
+            ['PT', 'PROF_TAX', 'PROFESSIONAL_TAX'].includes(d.code.toUpperCase())
+        );
+        const ptAmount = pt ? Number(pt.amount ?? 0) : 0;
+        employeeCount += 1;
+        deductionAmount += ptAmount;
+        lines.push({
+          employeeId: slip.employeeId,
+          employeeCode: slip.employeeCode,
+          payrollMonth: run.payrollMonth,
+          ptAmount,
+        });
+      }
+    }
+
+    return {
+      schemaVersion: '1.0.0',
+      totals: { employeeCount, grossAmount: 0, deductionAmount, netAmount: 0 },
+      lines,
+    };
+  },
+});
+
+/**
  * KSA GOSI reconciliation. Per-payslip employee+employer GOSI contributions.
  */
 registerReport({
