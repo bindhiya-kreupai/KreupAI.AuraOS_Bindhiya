@@ -6,7 +6,7 @@
  * Targeted at the v1.0 integration-test gap (#81).
  */
 
-import { describe, it, expect } from '@jest/globals';
+import { describe, it, expect } from 'vitest';
 import { FullFinalService } from '../full-final.service';
 
 const svc = new FullFinalService();

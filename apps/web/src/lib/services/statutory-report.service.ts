@@ -169,17 +169,18 @@ export class StatutoryReportService extends BaseService {
     submissionReference: string,
     fileUrl?: string
   ) {
+    // Cheap input validation first — never hit Prisma for a placeholder ref.
+    if (!submissionReference || submissionReference.trim().length < 3) {
+      throw new Error(
+        'A real authority-issued submission reference is required (no placeholders).'
+      );
+    }
     const existing = await this.getById(id, tenantId);
     if (!existing) return null;
     if (
       !(SUBMISSION_ALLOWED[existing.status as StatutoryReportStatus] ?? []).includes('SUBMITTED')
     ) {
       throw new InvalidReportTransitionError(existing.status as StatutoryReportStatus, 'SUBMITTED');
-    }
-    if (!submissionReference || submissionReference.trim().length < 3) {
-      throw new Error(
-        'A real authority-issued submission reference is required (no placeholders).'
-      );
     }
     return prisma.statutoryReport.update({
       where: { id },
@@ -328,6 +329,260 @@ registerReport({
       totals: { employeeCount, grossAmount, deductionAmount, netAmount: 0 },
       lines,
       warnings: lines.length === 0 ? ['No payroll runs in period — empty ECR'] : undefined,
+    };
+  },
+});
+
+/**
+ * UAE MOHRE headcount and salary report. Aggregates active employees and
+ * total monthly salary spend per month in the period. Drives MOHRE filings
+ * and EOSB provision reporting.
+ */
+registerReport({
+  code: 'UAE_MOHRE',
+  countryCode: 'AE',
+  name: 'UAE MOHRE Headcount & Salary',
+  format: 'excel',
+  description: 'Headcount and salary spend per month for UAE MOHRE filing.',
+  generate: async (ctx) => {
+    const months = yyyymmRange(ctx.periodStart, ctx.periodEnd);
+    const runs = await prisma.payrollRun.findMany({
+      where: {
+        tenantId: ctx.tenantId,
+        payrollMonth: { in: months },
+        isDeleted: false,
+      },
+      include: { payslips: true },
+    });
+
+    let employeeCount = 0;
+    let grossAmount = 0;
+    let deductionAmount = 0;
+    let netAmount = 0;
+    const monthlyTotals = new Map<string, { count: number; gross: number; net: number }>();
+
+    for (const run of runs) {
+      const bucket = monthlyTotals.get(run.payrollMonth) ?? { count: 0, gross: 0, net: 0 };
+      for (const slip of run.payslips ?? []) {
+        bucket.count += 1;
+        bucket.gross += Number(slip.grossSalary);
+        bucket.net += Number(slip.netSalary);
+        employeeCount += 1;
+        grossAmount += Number(slip.grossSalary);
+        deductionAmount += Number(slip.totalDeductions);
+        netAmount += Number(slip.netSalary);
+      }
+      monthlyTotals.set(run.payrollMonth, bucket);
+    }
+
+    const lines = Array.from(monthlyTotals.entries())
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([payrollMonth, totals]) => ({
+        payrollMonth,
+        employeeCount: totals.count,
+        totalGross: totals.gross,
+        totalNet: totals.net,
+      }));
+
+    return {
+      schemaVersion: '1.0.0',
+      totals: { employeeCount, grossAmount, deductionAmount, netAmount },
+      lines,
+    };
+  },
+});
+
+/**
+ * Saudization (Nitaqat) compliance ratio. Requires per-employee nationality
+ * metadata; falls back to `unknown` bucket when nationality is missing and
+ * surfaces a warning rather than failing.
+ */
+registerReport({
+  code: 'KSA_NITAQAT',
+  countryCode: 'SA',
+  name: 'KSA Nitaqat (Saudization) Ratio',
+  format: 'pdf',
+  description: 'Saudization ratio per company for KSA Nitaqat compliance.',
+  generate: async (ctx) => {
+    const employees = await prisma.employee.findMany({
+      where: {
+        isDeleted: false,
+        company: { tenantId: ctx.tenantId },
+      },
+      select: {
+        id: true,
+        companyId: true,
+        company: { select: { name: true } },
+      },
+    });
+
+    const lines: Array<Record<string, unknown>> = [];
+    const byCompany = new Map<string, { total: number; saudi: number; name: string }>();
+
+    for (const emp of employees) {
+      const bucket = byCompany.get(emp.companyId) ?? {
+        total: 0,
+        saudi: 0,
+        name: emp.company?.name ?? emp.companyId,
+      };
+      bucket.total += 1;
+      byCompany.set(emp.companyId, bucket);
+    }
+
+    let totalEmployees = 0;
+    for (const [companyId, totals] of byCompany.entries()) {
+      const ratio = totals.total > 0 ? totals.saudi / totals.total : 0;
+      lines.push({
+        companyId,
+        companyName: totals.name,
+        totalEmployees: totals.total,
+        saudiEmployees: totals.saudi,
+        saudizationRatio: Math.round(ratio * 10000) / 100, // percent with 2dp
+      });
+      totalEmployees += totals.total;
+    }
+
+    return {
+      schemaVersion: '1.0.0',
+      totals: { employeeCount: totalEmployees, grossAmount: 0, deductionAmount: 0, netAmount: 0 },
+      lines,
+      warnings: [
+        'Saudi/non-Saudi classification requires nationality column on Employee. ' +
+          'All employees currently bucketed as non-Saudi pending nationality field wiring.',
+      ],
+    };
+  },
+});
+
+/**
+ * India Form 24Q — quarterly TDS return for salary payments. Reports per
+ * employee gross, TDS deducted, and PAN. Quarter is inferred from period.
+ */
+registerReport({
+  code: 'IND_FORM_24Q',
+  countryCode: 'IN',
+  name: 'India Form 24Q (Quarterly TDS Return)',
+  format: 'fvu',
+  description: 'Quarterly TDS return for salary payments (India).',
+  generate: async (ctx) => {
+    const months = yyyymmRange(ctx.periodStart, ctx.periodEnd);
+    const runs = await prisma.payrollRun.findMany({
+      where: {
+        tenantId: ctx.tenantId,
+        payrollMonth: { in: months },
+        isDeleted: false,
+      },
+      include: { payslips: true },
+    });
+
+    let employeeCount = 0;
+    let grossAmount = 0;
+    let deductionAmount = 0;
+    const lines: Array<Record<string, unknown>> = [];
+    const perEmployee = new Map<string, { gross: number; tds: number; code: string }>();
+
+    for (const run of runs) {
+      for (const slip of run.payslips ?? []) {
+        const bucket = perEmployee.get(slip.employeeId) ?? {
+          gross: 0,
+          tds: 0,
+          code: slip.employeeCode,
+        };
+        bucket.gross += Number(slip.grossSalary);
+        bucket.tds += Number(slip.employeeTDS);
+        perEmployee.set(slip.employeeId, bucket);
+      }
+    }
+
+    for (const [employeeId, totals] of perEmployee.entries()) {
+      employeeCount += 1;
+      grossAmount += totals.gross;
+      deductionAmount += totals.tds;
+      lines.push({
+        employeeId,
+        employeeCode: totals.code,
+        pan: '', // PAN sourced from EmployeeComplianceDetails — populated by export layer
+        grossSalary: totals.gross,
+        tdsDeducted: totals.tds,
+      });
+    }
+
+    return {
+      schemaVersion: '1.0.0',
+      totals: { employeeCount, grossAmount, deductionAmount, netAmount: 0 },
+      lines,
+      warnings: lines.length === 0 ? ['No payslips in period — empty 24Q return'] : undefined,
+    };
+  },
+});
+
+/**
+ * India Form 16 — annual TDS certificate per employee. Period is expected to
+ * cover the financial year (April → March).
+ */
+registerReport({
+  code: 'IND_FORM_16',
+  countryCode: 'IN',
+  name: 'India Form 16 (Annual TDS Certificate)',
+  format: 'pdf',
+  description: 'Annual Form 16 generation per employee for the financial year.',
+  generate: async (ctx) => {
+    const months = yyyymmRange(ctx.periodStart, ctx.periodEnd);
+    const runs = await prisma.payrollRun.findMany({
+      where: {
+        tenantId: ctx.tenantId,
+        payrollMonth: { in: months },
+        isDeleted: false,
+      },
+      include: { payslips: true },
+    });
+
+    const perEmployee = new Map<
+      string,
+      { code: string; name: string; gross: number; tds: number; basic: number }
+    >();
+
+    for (const run of runs) {
+      for (const slip of run.payslips ?? []) {
+        const bucket = perEmployee.get(slip.employeeId) ?? {
+          code: slip.employeeCode,
+          name: slip.employeeName,
+          gross: 0,
+          tds: 0,
+          basic: 0,
+        };
+        bucket.gross += Number(slip.grossSalary);
+        bucket.tds += Number(slip.employeeTDS);
+        bucket.basic += Number(slip.basicSalary);
+        perEmployee.set(slip.employeeId, bucket);
+      }
+    }
+
+    let totalGross = 0;
+    let totalTds = 0;
+    const lines: Array<Record<string, unknown>> = [];
+    for (const [employeeId, totals] of perEmployee.entries()) {
+      totalGross += totals.gross;
+      totalTds += totals.tds;
+      lines.push({
+        employeeId,
+        employeeCode: totals.code,
+        employeeName: totals.name,
+        grossSalary: totals.gross,
+        basicSalary: totals.basic,
+        tdsDeducted: totals.tds,
+      });
+    }
+
+    return {
+      schemaVersion: '1.0.0',
+      totals: {
+        employeeCount: perEmployee.size,
+        grossAmount: totalGross,
+        deductionAmount: totalTds,
+        netAmount: 0,
+      },
+      lines,
     };
   },
 });
