@@ -5727,32 +5727,96 @@ model GeofenceLocation {
   @@map("aura_geofence_location")
 }
 
-// Expense Claims
+// Expense Claims (report-style with multiple line items).
+// State machine: DRAFT → SUBMITTED → APPROVED → PAID (with REJECTED, CANCELED).
 model ExpenseClaim {
   id              String    @id @default(uuid())
   tenantId        String
   employeeId      String
   title           String
-  amount          Float
+  // Legacy single-amount/category/date fields kept for backward compat.
+  // Multi-line claims should use `items` and `totalAmount`.
+  amount          Float     @default(0)
+  totalAmount     Decimal   @default(0)
   currency        String    @default("USD")
-  category        String // MEALS, TRANSPORT, TRAINING, SUPPLIES, OTHER
-  date            DateTime  @db.Date
+  category        String?   // MEALS, TRANSPORT, TRAINING, SUPPLIES, OTHER (single-line mode)
+  date            DateTime? @db.Date
   receiptUrl      String?
   description     String?   @db.Text
-  status          String    @default("PENDING") // PENDING, APPROVED, REJECTED, PAID
+  status          String    @default("DRAFT") // DRAFT, SUBMITTED, APPROVED, REJECTED, PAID, CANCELED
+  policyId        String?
+  policy          ExpensePolicy? @relation(fields: [policyId], references: [id])
+  submittedAt     DateTime?
   approvedBy      String?
   approvedAt      DateTime?
   paidAt          DateTime?
+  paidReference   String?    // payroll / payment-rail ref once paid
   rejectionReason String?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
+  createdBy       String?
+  updatedBy       String?
+
+  items ExpenseLineItem[]
 
   @@index([tenantId])
   @@index([employeeId])
   @@index([status])
   @@index([date])
-
+  @@index([policyId])
   @@map("aura_expense_claim")
+}
+
+// Per-line item on an expense claim. Each receipt or per-diem segment is a row.
+model ExpenseLineItem {
+  id            String     @id @default(uuid())
+  claimId       String
+  claim         ExpenseClaim @relation(fields: [claimId], references: [id], onDelete: Cascade)
+  category      String
+  description   String?
+  amount        Decimal
+  currency      String     @default("USD")
+  expenseDate   DateTime
+  receiptUrl    String?
+  merchant      String?
+  metadata      Json       @default("{}")
+  createdAt     DateTime   @default(now())
+  updatedAt     DateTime   @updatedAt
+
+  @@index([claimId])
+  @@index([category])
+  @@index([expenseDate])
+  @@map("aura_expense_line_item")
+}
+
+// Per-tenant expense policy: category caps, receipt-required threshold, etc.
+model ExpensePolicy {
+  id                   String   @id @default(uuid())
+  tenantId             String
+  name                 String
+  description          String?
+  countryCode          String?  // optional jurisdictional override
+  categoryCaps         Json     @default("{}") // { MEALS: 50, TRANSPORT: 200, ... }
+  receiptRequiredOver  Decimal  @default(25)
+  requiresManagerOver  Decimal  @default(100)
+  requiresFinanceOver  Decimal  @default(1000)
+  perDiemRates         Json     @default("{}") // { city: rate }
+  isActive             Boolean  @default(true)
+  effectiveFrom        DateTime @default(now())
+  effectiveTo          DateTime?
+  createdBy            String?
+  updatedBy            String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  isDeleted            Boolean  @default(false)
+  deletedAt            DateTime?
+
+  claims ExpenseClaim[]
+
+  @@unique([tenantId, name])
+  @@index([tenantId])
+  @@index([isActive])
+  @@map("aura_expense_policy")
 }
 
 // API Keys

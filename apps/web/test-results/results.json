@@ -3,8 +3,8 @@
   "numPassedTestSuites": 4,
   "numFailedTestSuites": 0,
   "numPendingTestSuites": 0,
-  "numTotalTests": 8,
-  "numPassedTests": 8,
+  "numTotalTests": 13,
+  "numPassedTests": 13,
   "numFailedTests": 0,
   "numPendingTests": 0,
   "numTodoTests": 0,
@@ -24,89 +24,134 @@
     "updated": 0,
     "didUpdate": false
   },
-  "startTime": 1780461456809,
+  "startTime": 1780461871978,
   "success": true,
   "testResults": [
     {
       "assertionResults": [
         {
-          "ancestorTitles": ["ExitService.canTransition"],
-          "fullName": "ExitService.canTransition PENDING → APPROVED / CANCELED only",
+          "ancestorTitles": ["ExpenseService transitions"],
+          "fullName": "ExpenseService transitions DRAFT → SUBMITTED / CANCELED only",
           "status": "passed",
-          "title": "PENDING → APPROVED / CANCELED only",
-          "duration": 0.7567500000000109,
+          "title": "DRAFT → SUBMITTED / CANCELED only",
+          "duration": 0.7869579999999132,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["ExitService.canTransition"],
-          "fullName": "ExitService.canTransition APPROVED → PROCESSING / CANCELED only",
+          "ancestorTitles": ["ExpenseService transitions"],
+          "fullName": "ExpenseService transitions SUBMITTED → APPROVED / REJECTED / CANCELED only",
           "status": "passed",
-          "title": "APPROVED → PROCESSING / CANCELED only",
-          "duration": 0.15895799999998417,
+          "title": "SUBMITTED → APPROVED / REJECTED / CANCELED only",
+          "duration": 0.17391699999996035,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["ExitService.canTransition"],
-          "fullName": "ExitService.canTransition PROCESSING → COMPLETED / CANCELED only",
+          "ancestorTitles": ["ExpenseService transitions"],
+          "fullName": "ExpenseService transitions APPROVED → PAID / CANCELED only",
           "status": "passed",
-          "title": "PROCESSING → COMPLETED / CANCELED only",
-          "duration": 0.21029199999998127,
+          "title": "APPROVED → PAID / CANCELED only",
+          "duration": 0.2034999999999627,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["ExitService.canTransition"],
-          "fullName": "ExitService.canTransition terminal states reject all transitions",
+          "ancestorTitles": ["ExpenseService transitions"],
+          "fullName": "ExpenseService transitions REJECTED → DRAFT only (re-open for re-submission)",
           "status": "passed",
-          "title": "terminal states reject all transitions",
-          "duration": 0.2665000000000646,
+          "title": "REJECTED → DRAFT only (re-open for re-submission)",
+          "duration": 0.23254199999996672,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["ExitService.assertTransition"],
-          "fullName": "ExitService.assertTransition throws InvalidExitTransitionError on illegal moves",
+          "ancestorTitles": ["ExpenseService transitions"],
+          "fullName": "ExpenseService transitions PAID and CANCELED are terminal",
           "status": "passed",
-          "title": "throws InvalidExitTransitionError on illegal moves",
-          "duration": 0.5833749999999327,
+          "title": "PAID and CANCELED are terminal",
+          "duration": 0.1922500000000582,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["ExitService.assertTransition"],
-          "fullName": "ExitService.assertTransition is silent on legal moves",
+          "ancestorTitles": ["ExpenseService transitions"],
+          "fullName": "ExpenseService transitions assertTransition throws InvalidExpenseTransitionError on illegal moves",
           "status": "passed",
-          "title": "is silent on legal moves",
-          "duration": 0.23804200000006404,
+          "title": "assertTransition throws InvalidExpenseTransitionError on illegal moves",
+          "duration": 0.5339579999999842,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["Exit error contracts"],
-          "fullName": "Exit error contracts InvalidExitTransitionError is a real Error subclass",
+          "ancestorTitles": ["ExpenseService.evaluatePolicy"],
+          "fullName": "ExpenseService.evaluatePolicy routes ≤ managerThreshold totals to auto",
           "status": "passed",
-          "title": "InvalidExitTransitionError is a real Error subclass",
-          "duration": 0.1337909999999738,
+          "title": "routes ≤ managerThreshold totals to auto",
+          "duration": 0.39066700000000765,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["Exit error contracts"],
-          "fullName": "Exit error contracts ExitNotClearedError carries the user-facing message",
+          "ancestorTitles": ["ExpenseService.evaluatePolicy"],
+          "fullName": "ExpenseService.evaluatePolicy routes manager-threshold totals to manager",
           "status": "passed",
-          "title": "ExitNotClearedError carries the user-facing message",
-          "duration": 0.17479200000002493,
+          "title": "routes manager-threshold totals to manager",
+          "duration": 0.07858299999998053,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["ExpenseService.evaluatePolicy"],
+          "fullName": "ExpenseService.evaluatePolicy routes finance-threshold totals to finance",
+          "status": "passed",
+          "title": "routes finance-threshold totals to finance",
+          "duration": 0.15104200000007495,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["ExpenseService.evaluatePolicy"],
+          "fullName": "ExpenseService.evaluatePolicy blocks submission when a line is above receipt threshold and has no receipt",
+          "status": "passed",
+          "title": "blocks submission when a line is above receipt threshold and has no receipt",
+          "duration": 0.24574999999992997,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["ExpenseService.evaluatePolicy"],
+          "fullName": "ExpenseService.evaluatePolicy warns (but does not fail) when a line exceeds the category cap",
+          "status": "passed",
+          "title": "warns (but does not fail) when a line exceeds the category cap",
+          "duration": 0.11649999999997362,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["ExpenseService.evaluatePolicy"],
+          "fullName": "ExpenseService.evaluatePolicy defaults to manager lane when no policy is attached",
+          "status": "passed",
+          "title": "defaults to manager lane when no policy is attached",
+          "duration": 0.06858299999998962,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Expense error contracts"],
+          "fullName": "Expense error contracts PolicyViolationError carries failures and reason",
+          "status": "passed",
+          "title": "PolicyViolationError carries failures and reason",
+          "duration": 0.20024999999998272,
           "failureMessages": [],
           "meta": {}
         }
       ],
-      "startTime": 1780461457299,
-      "endTime": 1780461457302.1748,
+      "startTime": 1780461872277,
+      "endTime": 1780461872281.2002,
       "status": "passed",
       "message": "",
-      "name": "/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/lib/services/__tests__/exit.service.test.ts"
+      "name": "/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/lib/services/__tests__/expense.service.test.ts"
     }
   ]
 }

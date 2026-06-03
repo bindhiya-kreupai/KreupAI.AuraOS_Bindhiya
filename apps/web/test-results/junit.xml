@@ -1,21 +1,31 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuites name="vitest tests" tests="8" failures="0" errors="0" time="0.004001541">
-    <testsuite name="src/lib/services/__tests__/exit.service.test.ts" timestamp="2026-06-03T04:37:37.318Z" hostname="MacBookPro.lan" tests="8" failures="0" errors="0" skipped="0" time="0.004001541">
-        <testcase classname="src/lib/services/__tests__/exit.service.test.ts" name="ExitService.canTransition &gt; PENDING → APPROVED / CANCELED only" time="0.00075675">
+<testsuites name="vitest tests" tests="13" failures="0" errors="0" time="0.004892125">
+    <testsuite name="src/lib/services/__tests__/expense.service.test.ts" timestamp="2026-06-03T04:44:32.298Z" hostname="MacBookPro.lan" tests="13" failures="0" errors="0" skipped="0" time="0.004892125">
+        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService transitions &gt; DRAFT → SUBMITTED / CANCELED only" time="0.000786958">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/exit.service.test.ts" name="ExitService.canTransition &gt; APPROVED → PROCESSING / CANCELED only" time="0.000158958">
+        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService transitions &gt; SUBMITTED → APPROVED / REJECTED / CANCELED only" time="0.000173917">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/exit.service.test.ts" name="ExitService.canTransition &gt; PROCESSING → COMPLETED / CANCELED only" time="0.000210292">
+        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService transitions &gt; APPROVED → PAID / CANCELED only" time="0.0002035">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/exit.service.test.ts" name="ExitService.canTransition &gt; terminal states reject all transitions" time="0.0002665">
+        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService transitions &gt; REJECTED → DRAFT only (re-open for re-submission)" time="0.000232542">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/exit.service.test.ts" name="ExitService.assertTransition &gt; throws InvalidExitTransitionError on illegal moves" time="0.000583375">
+        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService transitions &gt; PAID and CANCELED are terminal" time="0.00019225">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/exit.service.test.ts" name="ExitService.assertTransition &gt; is silent on legal moves" time="0.000238042">
+        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService transitions &gt; assertTransition throws InvalidExpenseTransitionError on illegal moves" time="0.000533958">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/exit.service.test.ts" name="Exit error contracts &gt; InvalidExitTransitionError is a real Error subclass" time="0.000133791">
+        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService.evaluatePolicy &gt; routes ≤ managerThreshold totals to auto" time="0.000390667">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/exit.service.test.ts" name="Exit error contracts &gt; ExitNotClearedError carries the user-facing message" time="0.000174792">
+        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService.evaluatePolicy &gt; routes manager-threshold totals to manager" time="0.000078583">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService.evaluatePolicy &gt; routes finance-threshold totals to finance" time="0.000151042">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService.evaluatePolicy &gt; blocks submission when a line is above receipt threshold and has no receipt" time="0.00024575">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService.evaluatePolicy &gt; warns (but does not fail) when a line exceeds the category cap" time="0.0001165">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService.evaluatePolicy &gt; defaults to manager lane when no policy is attached" time="0.000068583">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="Expense error contracts &gt; PolicyViolationError carries failures and reason" time="0.00020025">
         </testcase>
     </testsuite>
 </testsuites>

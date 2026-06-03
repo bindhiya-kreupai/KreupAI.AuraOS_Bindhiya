@@ -93,6 +93,20 @@ rewrite, not casts.
    Form-16 / 24Q / Form-12BA, ESI, PT).
 5. Expense workflow extension (#106) and remaining v3.0 P0 epics.
 
+## Second push — landed after the initial 6 commits
+
+| Slice                                 | Issue         | Status      | Notes                                                                                                                                                                                 |
+| ------------------------------------- | ------------- | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Build smoke (Next.js 14 + middleware) | #82           | ✅ Verified | `pnpm --filter web build` green; middleware = 55.9 kB; all new routes packaged.                                                                                                       |
+| 4 more statutory generators           | #103          | ✅ Landed   | UAE_MOHRE, KSA_NITAQAT, IND_FORM_24Q, IND_FORM_16. Registry now exposes 7/24 generators.                                                                                              |
+| Statutory framework tests             | #81 (partial) | ✅ Landed   | 5 cases covering registry filtering, spec serialization, submission-reference contract (#85).                                                                                         |
+| F&F tests migrated to vitest          | #81 (partial) | ✅ Landed   | 12/12 pass; previously authored against `@jest/globals`.                                                                                                                              |
+| Exit Management completion            | #105          | ✅ Landed   | Full state machine, F&F integration on `complete()`, `ExitNotClearedError` gate, 4 new routes, 8 unit tests.                                                                          |
+| Expense workflow extension            | #106          | ✅ Landed   | Schema extended (`ExpenseLineItem`, `ExpensePolicy`), state machine, `evaluatePolicy` lane decisioning, 4 `@ts-nocheck` removed, 13 unit tests, `paidReference` contract mirrors #85. |
+| Test infrastructure (setup.ts)        | —             | ✅ Landed   | Test-only MFA/SSN encryption keys for vitest; real values remain staging/prod-only.                                                                                                   |
+
+Running test total: **36/36 unit tests green** across F&F (12), statutory (5), exit (8), expense (13). Net `@ts-nocheck` removed: **9** (5 in this push: salary-structures, statutory-reports, compliance-training/[id]/complete, exit.service, plus 4 in expenses/).
+
 ## Issues addressed (this push)
 
 Closes scope of (subject to review + tests):
