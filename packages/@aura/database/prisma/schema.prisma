@@ -253,6 +253,7 @@ model JobProfile {
 
 model Grade {
   id        String    @id @default(uuid())
+  tenantId  String?
   code      String // e.g., "L4"
   name      String // e.g., "Level 4"
   level     Int // Numeric level for hierarchy comparison
@@ -267,6 +268,8 @@ model Grade {
   newEmploymentHistory      EmploymentHistory[] @relation("NewGrade")
   Position                  Position[]
   salaryStructures          SalaryStructure[]
+
+  @@index([tenantId])
   @@map("aura_grade")
 }
 
@@ -6519,6 +6522,60 @@ model CobraEnrollment {
   @@index([status])
   @@index([coverageEnd])
   @@map("aura_cobra_enrollment")
+}
+
+// Tenant-defined custom field for any supported entity (Employee, Department,
+// Position, LeaveRequest, ExpenseReport). Used by /admin/custom-fields routes.
+model CustomField {
+  id              String   @id @default(uuid())
+  tenantId        String
+  entityType      String   // Employee | Department | Position | LeaveRequest | ExpenseReport
+  fieldName       String
+  fieldLabel      String
+  fieldType       String   // TEXT | NUMBER | DATE | BOOLEAN | SELECT | MULTI_SELECT | FILE | TEXTAREA
+  isRequired      Boolean  @default(false)
+  isActive        Boolean  @default(true)
+  defaultValue    String?
+  placeholder     String?
+  helpText        String?
+  options         Json?    // for SELECT / MULTI_SELECT
+  validationRules Json?
+  displayOrder    Int      @default(0)
+  section         String   @default("General")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdBy       String?
+  updatedBy       String?
+
+  @@unique([tenantId, entityType, fieldName])
+  @@index([tenantId])
+  @@index([entityType])
+  @@index([isActive])
+  @@map("aura_custom_field")
+}
+
+// Per-tenant feature flag with role-based rollout. Used by /admin/feature-flags routes.
+model FeatureFlag {
+  id                String   @id @default(uuid())
+  tenantId          String
+  key               String
+  name              String
+  description       String?  @db.Text
+  isEnabled         Boolean  @default(false)
+  module            String   @default("general")
+  rolloutPercentage Int      @default(100)
+  enabledForRoles   String[] @default([])
+  metadata          Json?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdBy         String?
+  updatedBy         String?
+
+  @@unique([tenantId, key])
+  @@index([tenantId])
+  @@index([key])
+  @@index([isEnabled])
+  @@map("aura_feature_flag")
 }
 
 // Visa, permit, and identity-document tracking. Covers passports, visas,
