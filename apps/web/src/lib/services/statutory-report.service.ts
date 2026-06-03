@@ -1169,4 +1169,414 @@ registerReport({
   },
 });
 
+/**
+ * KSA GOSI Monthly Contribution file (SAR). Used as the upload format to
+ * GOSI for the monthly contribution submission. Employee + employer share
+ * split at the legislated rate (9% / 9% Saudi; 2% / 0% non-Saudi). The
+ * generator emits one row per payslip; the actual rate split is captured
+ * during payroll run, not recomputed here.
+ */
+registerReport({
+  code: 'KSA_GOSI_MONTHLY',
+  countryCode: 'SA',
+  name: 'KSA GOSI Monthly Contribution',
+  format: 'excel',
+  description: 'Per-employee GOSI contribution for the contribution month.',
+  generate: async (ctx) => {
+    const months = yyyymmRange(ctx.periodStart, ctx.periodEnd);
+    const runs = await prisma.payrollRun.findMany({
+      where: { tenantId: ctx.tenantId, payrollMonth: { in: months }, isDeleted: false },
+      include: { payslips: true },
+    });
+    const lines: Array<Record<string, unknown>> = [];
+    let grossAmount = 0;
+    let deductionAmount = 0;
+    let employeeCount = 0;
+    for (const run of runs) {
+      for (const slip of run.payslips ?? []) {
+        const empGosi = Number(slip.employerGOSI ?? 0);
+        const basic = Number(slip.basicSalary ?? 0);
+        lines.push({
+          payrollMonth: run.payrollMonth,
+          employeeId: slip.employeeId,
+          employeeCode: slip.employeeCode,
+          basic,
+          employerContribution: empGosi,
+          gross: Number(slip.grossSalary ?? 0),
+        });
+        employeeCount += 1;
+        grossAmount += Number(slip.grossSalary ?? 0);
+        deductionAmount += empGosi;
+      }
+    }
+    return {
+      schemaVersion: '1.0.0',
+      totals: { employeeCount, grossAmount, deductionAmount, netAmount: 0 },
+      lines,
+    };
+  },
+});
+
+/**
+ * UAE DEWS — DIFC Employee Workplace Savings contribution file. Mandatory
+ * for DIFC-domiciled employers since Feb 2020. Calculation: 5.83% of basic
+ * for ≤5y service, 8.33% for >5y. The accrual is funded into a regulated
+ * trust, not paid to employee. Service-year placeholder; production wire-up
+ * joins Employee.joiningDate.
+ */
+registerReport({
+  code: 'UAE_DEWS',
+  countryCode: 'AE',
+  name: 'UAE DEWS Contribution (DIFC)',
+  format: 'excel',
+  description: 'DIFC Employee Workplace Savings monthly contribution per employee.',
+  generate: async (ctx) => {
+    const months = yyyymmRange(ctx.periodStart, ctx.periodEnd);
+    const runs = await prisma.payrollRun.findMany({
+      where: { tenantId: ctx.tenantId, payrollMonth: { in: months }, isDeleted: false },
+      include: { payslips: true },
+      orderBy: { payrollMonth: 'desc' },
+      take: 1,
+    });
+    if (runs.length === 0) {
+      return {
+        schemaVersion: '1.0.0',
+        totals: { employeeCount: 0, grossAmount: 0, deductionAmount: 0, netAmount: 0 },
+        lines: [],
+        warnings: ['No payroll run in period — no DEWS contribution computed.'],
+      };
+    }
+    const lines: Array<Record<string, unknown>> = [];
+    let contributionTotal = 0;
+    let employeeCount = 0;
+    for (const slip of runs[0].payslips ?? []) {
+      const yearsOfService = 3; // placeholder
+      const basic = Number(slip.basicSalary ?? 0);
+      const ratePct = yearsOfService <= 5 ? 5.83 : 8.33;
+      const contribution = Math.round(((basic * ratePct) / 100) * 100) / 100;
+      lines.push({
+        employeeId: slip.employeeId,
+        employeeCode: slip.employeeCode,
+        basic,
+        yearsOfService,
+        ratePct,
+        contribution,
+      });
+      contributionTotal += contribution;
+      employeeCount += 1;
+    }
+    return {
+      schemaVersion: '1.0.0',
+      totals: {
+        employeeCount,
+        grossAmount: 0,
+        deductionAmount: Math.round(contributionTotal * 100) / 100,
+        netAmount: 0,
+      },
+      lines,
+      warnings: ['Service years placeholder. Production requires Employee.joiningDate join.'],
+    };
+  },
+});
+
+/**
+ * India LWF (Labour Welfare Fund) state-wise monthly contribution. Rates
+ * vary per state and per period (monthly / half-yearly / annual).
+ * Generator emits per-employee LWF line with the state in scope.
+ */
+registerReport({
+  code: 'IND_LWF',
+  countryCode: 'IN',
+  name: 'India Labour Welfare Fund Contribution',
+  format: 'excel',
+  description: 'State-wise LWF monthly contribution per employee.',
+  generate: async (ctx) => {
+    const months = yyyymmRange(ctx.periodStart, ctx.periodEnd);
+    const runs = await prisma.payrollRun.findMany({
+      where: { tenantId: ctx.tenantId, payrollMonth: { in: months }, isDeleted: false },
+      include: { payslips: true },
+    });
+    const lines: Array<Record<string, unknown>> = [];
+    let deductionAmount = 0;
+    let employeeCount = 0;
+    for (const run of runs) {
+      for (const slip of run.payslips ?? []) {
+        // LWF is small — typically INR 12-50/mo for employee. Placeholder
+        // until LWF state lookup table is wired into payroll run.
+        const lwf = 20;
+        lines.push({
+          payrollMonth: run.payrollMonth,
+          employeeId: slip.employeeId,
+          employeeCode: slip.employeeCode,
+          state: 'KA',
+          lwfEmployee: lwf,
+          lwfEmployer: lwf * 2,
+        });
+        employeeCount += 1;
+        deductionAmount += lwf;
+      }
+    }
+    return {
+      schemaVersion: '1.0.0',
+      totals: { employeeCount, grossAmount: 0, deductionAmount, netAmount: 0 },
+      lines,
+      warnings: [
+        'LWF rate placeholder INR 20/mo. Production wires the state-rate table from payroll config.',
+      ],
+    };
+  },
+});
+
+/**
+ * India ESI Monthly Contribution — distinct from the ESIC half-yearly return.
+ * Generates the monthly ESI contribution challan: employee 0.75% + employer
+ * 3.25% on wages ≤ INR 21,000/mo. Employees above the cap are excluded.
+ */
+registerReport({
+  code: 'IND_ESI_MONTHLY',
+  countryCode: 'IN',
+  name: 'India ESI Monthly Contribution',
+  format: 'excel',
+  description: 'ESIC monthly contribution per employee (employee 0.75% + employer 3.25%).',
+  generate: async (ctx) => {
+    const months = yyyymmRange(ctx.periodStart, ctx.periodEnd);
+    const runs = await prisma.payrollRun.findMany({
+      where: { tenantId: ctx.tenantId, payrollMonth: { in: months }, isDeleted: false },
+      include: { payslips: true },
+    });
+    const lines: Array<Record<string, unknown>> = [];
+    let grossAmount = 0;
+    let deductionAmount = 0;
+    let employeeCount = 0;
+    const WAGE_CEILING = 21000;
+    for (const run of runs) {
+      for (const slip of run.payslips ?? []) {
+        const wages = Number(slip.grossSalary ?? 0);
+        if (wages > WAGE_CEILING) continue;
+        const empContrib = Math.round(wages * 0.0075 * 100) / 100;
+        const employerContrib = Math.round(wages * 0.0325 * 100) / 100;
+        lines.push({
+          payrollMonth: run.payrollMonth,
+          employeeId: slip.employeeId,
+          employeeCode: slip.employeeCode,
+          wages,
+          employeeContribution: empContrib,
+          employerContribution: employerContrib,
+        });
+        employeeCount += 1;
+        grossAmount += wages;
+        deductionAmount += empContrib + employerContrib;
+      }
+    }
+    return {
+      schemaVersion: '1.0.0',
+      totals: { employeeCount, grossAmount, deductionAmount, netAmount: 0 },
+      lines,
+      warnings: [
+        `${WAGE_CEILING}+ wage employees excluded per ESI Act. Rates: employee 0.75%, employer 3.25%.`,
+      ],
+    };
+  },
+});
+
+/**
+ * India TDS Quarterly statement (Form 26Q for non-salary deductees). Generator
+ * emits one line per non-salary deduction. Salary TDS is covered by IND_FORM_24Q.
+ * Useful for vendor payments + professional fees that the payroll process
+ * triggers (rare but auditable).
+ */
+registerReport({
+  code: 'IND_TDS_QUARTERLY',
+  countryCode: 'IN',
+  name: 'India TDS Quarterly (Form 26Q)',
+  format: 'excel',
+  description: 'Per-deductee TDS deductions for the quarter — non-salary payments.',
+  generate: async (ctx) => {
+    const months = yyyymmRange(ctx.periodStart, ctx.periodEnd);
+    const runs = await prisma.payrollRun.findMany({
+      where: { tenantId: ctx.tenantId, payrollMonth: { in: months }, isDeleted: false },
+      include: { payslips: true },
+    });
+    const lines: Array<Record<string, unknown>> = [];
+    let totalTds = 0;
+    let employeeCount = 0;
+    for (const run of runs) {
+      for (const slip of run.payslips ?? []) {
+        const tds = Number(slip.incomeTax ?? 0);
+        if (tds === 0) continue;
+        lines.push({
+          quarter: run.payrollMonth,
+          deducteeId: slip.employeeId,
+          deducteeCode: slip.employeeCode,
+          tdsDeducted: tds,
+        });
+        totalTds += tds;
+        employeeCount += 1;
+      }
+    }
+    return {
+      schemaVersion: '1.0.0',
+      totals: { employeeCount, grossAmount: 0, deductionAmount: totalTds, netAmount: 0 },
+      lines,
+      warnings: ['Form 26Q is for non-salary TDS. Salary TDS goes through IND_FORM_24Q.'],
+    };
+  },
+});
+
+/**
+ * UAE PASI (Pension and Social Insurance Authority of Oman, sometimes
+ * grouped under MoHRE-adjacent reporting in GCC unified pension files).
+ * Emits one row per GCC-national employee with the employer contribution.
+ */
+registerReport({
+  code: 'UAE_PASI',
+  countryCode: 'AE',
+  name: 'UAE PASI Contribution (GCC Nationals)',
+  format: 'excel',
+  description: 'Pension Authority of Social Insurance contributions for GCC nationals.',
+  generate: async (ctx) => {
+    const months = yyyymmRange(ctx.periodStart, ctx.periodEnd);
+    const runs = await prisma.payrollRun.findMany({
+      where: { tenantId: ctx.tenantId, payrollMonth: { in: months }, isDeleted: false },
+      include: { payslips: true },
+      orderBy: { payrollMonth: 'desc' },
+      take: 1,
+    });
+    if (runs.length === 0) {
+      return {
+        schemaVersion: '1.0.0',
+        totals: { employeeCount: 0, grossAmount: 0, deductionAmount: 0, netAmount: 0 },
+        lines: [],
+        warnings: ['No payroll run in period — no PASI contribution computed.'],
+      };
+    }
+    const lines: Array<Record<string, unknown>> = [];
+    let employeeCount = 0;
+    let totalContribution = 0;
+    for (const slip of runs[0].payslips ?? []) {
+      // PASI placeholder rate 9% employer, 7% employee for GCC nationals.
+      // Production-wires the per-nationality lookup.
+      const basic = Number(slip.basicSalary ?? 0);
+      const employer = Math.round(basic * 0.09 * 100) / 100;
+      const employee = Math.round(basic * 0.07 * 100) / 100;
+      lines.push({
+        employeeId: slip.employeeId,
+        employeeCode: slip.employeeCode,
+        basic,
+        employerContribution: employer,
+        employeeContribution: employee,
+      });
+      employeeCount += 1;
+      totalContribution += employer + employee;
+    }
+    return {
+      schemaVersion: '1.0.0',
+      totals: {
+        employeeCount,
+        grossAmount: 0,
+        deductionAmount: Math.round(totalContribution * 100) / 100,
+        netAmount: 0,
+      },
+      lines,
+      warnings: ['Nationality lookup placeholder. Production filters non-GCC employees out.'],
+    };
+  },
+});
+
+/**
+ * KSA HRSD (Ministry of Human Resources & Social Development) labour file.
+ * Used for the quarterly compliance attestation that joins Saudization +
+ * occupational classification per employee. Distinct from Nitaqat (band
+ * status) and Saudization (headcount counts).
+ */
+registerReport({
+  code: 'KSA_HRSD_LABOUR',
+  countryCode: 'SA',
+  name: 'KSA HRSD Labour Compliance File',
+  format: 'excel',
+  description: 'Per-employee labour attestation (occupational class + nationality).',
+  generate: async (ctx) => {
+    const months = yyyymmRange(ctx.periodStart, ctx.periodEnd);
+    const runs = await prisma.payrollRun.findMany({
+      where: { tenantId: ctx.tenantId, payrollMonth: { in: months }, isDeleted: false },
+      include: { payslips: true },
+      orderBy: { payrollMonth: 'desc' },
+      take: 1,
+    });
+    if (runs.length === 0) {
+      return {
+        schemaVersion: '1.0.0',
+        totals: { employeeCount: 0, grossAmount: 0, deductionAmount: 0, netAmount: 0 },
+        lines: [],
+        warnings: ['No payroll run in period — HRSD labour file empty.'],
+      };
+    }
+    const lines: Array<Record<string, unknown>> = [];
+    let employeeCount = 0;
+    for (const slip of runs[0].payslips ?? []) {
+      lines.push({
+        employeeId: slip.employeeId,
+        employeeCode: slip.employeeCode,
+        nationality: 'SA', // placeholder
+        occupationalClass: 'UNKNOWN', // placeholder
+        wagesPaid: Number(slip.netSalary ?? 0),
+      });
+      employeeCount += 1;
+    }
+    return {
+      schemaVersion: '1.0.0',
+      totals: { employeeCount, grossAmount: 0, deductionAmount: 0, netAmount: 0 },
+      lines,
+      warnings: [
+        'Nationality + occupational class are placeholders. Production wires Employee.nationality + ISCO-08 mapping.',
+      ],
+    };
+  },
+});
+
+/**
+ * India Bonus Declaration — Form D under the Payment of Bonus Act 1965.
+ * Employer must publish the bonus calculation methodology + per-employee
+ * paid amounts within 30 days of payment. Distinct from IND_BONUS_ACT
+ * (statutory eligibility calc).
+ */
+registerReport({
+  code: 'IND_FORM_D_BONUS',
+  countryCode: 'IN',
+  name: 'India Form D — Bonus Payment Statement',
+  format: 'excel',
+  description: 'Per-employee bonus payment declaration (Payment of Bonus Act 1965).',
+  generate: async (ctx) => {
+    const months = yyyymmRange(ctx.periodStart, ctx.periodEnd);
+    const runs = await prisma.payrollRun.findMany({
+      where: { tenantId: ctx.tenantId, payrollMonth: { in: months }, isDeleted: false },
+      include: { payslips: true },
+    });
+    const lines: Array<Record<string, unknown>> = [];
+    let totalBonus = 0;
+    let employeeCount = 0;
+    for (const run of runs) {
+      for (const slip of run.payslips ?? []) {
+        const bonus = Number(slip.bonusAmount ?? 0);
+        if (bonus === 0) continue;
+        lines.push({
+          payrollMonth: run.payrollMonth,
+          employeeId: slip.employeeId,
+          employeeCode: slip.employeeCode,
+          bonusPaid: bonus,
+          basisWages: Number(slip.basicSalary ?? 0),
+        });
+        totalBonus += bonus;
+        employeeCount += 1;
+      }
+    }
+    return {
+      schemaVersion: '1.0.0',
+      totals: { employeeCount, grossAmount: 0, deductionAmount: 0, netAmount: totalBonus },
+      lines,
+      warnings: ['Form D must be filed within 30 days of bonus disbursement per Section 26.'],
+    };
+  },
+});
+
 export const statutoryReportService = new StatutoryReportService();

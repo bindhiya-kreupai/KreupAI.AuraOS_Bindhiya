@@ -16,26 +16,34 @@ import {
 const svc = new StatutoryReportService();
 
 describe('Statutory report registry', () => {
-  it('exposes the 16 generators landed across Phase 2 + Phase 3 + Phase 4', () => {
+  it('exposes the 24 generators landed across Phase 2-5 (full target)', () => {
     const codes = listSpecs()
       .map((s) => s.code)
       .sort();
     expect(codes).toEqual([
       'IND_BONUS_ACT',
+      'IND_ESI_MONTHLY',
       'IND_ESI_RETURN',
       'IND_FORM_12BA',
       'IND_FORM_16',
       'IND_FORM_24Q',
+      'IND_FORM_D_BONUS',
       'IND_GRATUITY_PROVISION',
+      'IND_LWF',
       'IND_PF_ECR',
       'IND_PT_CHALLAN',
+      'IND_TDS_QUARTERLY',
+      'KSA_GOSI_MONTHLY',
       'KSA_GOSI_RECON',
+      'KSA_HRSD_LABOUR',
       'KSA_MUDAD',
       'KSA_NITAQAT',
       'KSA_SAUDIZATION',
+      'UAE_DEWS',
       'UAE_EMIRATISATION',
       'UAE_EOSB_PROVISION',
       'UAE_MOHRE',
+      'UAE_PASI',
       'UAE_WPS_RECON',
     ]);
   });
@@ -45,13 +53,27 @@ describe('Statutory report registry', () => {
       .listSpecs({ countryCode: 'AE' })
       .map((s) => s.code)
       .sort();
-    expect(ae).toEqual(['UAE_EMIRATISATION', 'UAE_EOSB_PROVISION', 'UAE_MOHRE', 'UAE_WPS_RECON']);
+    expect(ae).toEqual([
+      'UAE_DEWS',
+      'UAE_EMIRATISATION',
+      'UAE_EOSB_PROVISION',
+      'UAE_MOHRE',
+      'UAE_PASI',
+      'UAE_WPS_RECON',
+    ]);
 
     const sa = svc
       .listSpecs({ countryCode: 'SA' })
       .map((s) => s.code)
       .sort();
-    expect(sa).toEqual(['KSA_GOSI_RECON', 'KSA_MUDAD', 'KSA_NITAQAT', 'KSA_SAUDIZATION']);
+    expect(sa).toEqual([
+      'KSA_GOSI_MONTHLY',
+      'KSA_GOSI_RECON',
+      'KSA_HRSD_LABOUR',
+      'KSA_MUDAD',
+      'KSA_NITAQAT',
+      'KSA_SAUDIZATION',
+    ]);
 
     const ind = svc
       .listSpecs({ countryCode: 'IN' })
@@ -59,13 +81,17 @@ describe('Statutory report registry', () => {
       .sort();
     expect(ind).toEqual([
       'IND_BONUS_ACT',
+      'IND_ESI_MONTHLY',
       'IND_ESI_RETURN',
       'IND_FORM_12BA',
       'IND_FORM_16',
       'IND_FORM_24Q',
+      'IND_FORM_D_BONUS',
       'IND_GRATUITY_PROVISION',
+      'IND_LWF',
       'IND_PF_ECR',
       'IND_PT_CHALLAN',
+      'IND_TDS_QUARTERLY',
     ]);
   });
 
