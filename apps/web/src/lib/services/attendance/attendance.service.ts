@@ -23,10 +23,9 @@ import type {
   AttendanceProcessingResult,
   AttendanceProcessingError,
   MonthlyAttendanceSummary,
-  AttendanceCalendarEntry} from './types';
-import {
-  OvertimePolicy
+  AttendanceCalendarEntry,
 } from './types';
+import { OvertimePolicy } from './types';
 import type { SupportedCountryCode } from '../compliance/types';
 import { LabourLawService } from '../compliance/labour-law.service';
 import { prisma } from '@aura/database';
@@ -76,7 +75,7 @@ export class AttendanceService {
         }
 
         // Check if on approved leave
-        const employeeLeave = leaves.find(l => l.employeeId === employee.id);
+        const employeeLeave = leaves.find((l) => l.employeeId === employee.id);
         if (employeeLeave) {
           await this.createLeaveRecord(tenantId, employee.id, date, employeeLeave);
           onLeave++;
@@ -155,11 +154,9 @@ export class AttendanceService {
     );
 
     // Find first check-in and last check-out
-    const checkIns = sortedPunches.filter(p => p.type === 'CHECK_IN');
-    const checkOuts = sortedPunches.filter(p => p.type === 'CHECK_OUT');
-    const breaks = sortedPunches.filter(
-      p => p.type === 'BREAK_START' || p.type === 'BREAK_END'
-    );
+    const checkIns = sortedPunches.filter((p) => p.type === 'CHECK_IN');
+    const checkOuts = sortedPunches.filter((p) => p.type === 'CHECK_OUT');
+    const breaks = sortedPunches.filter((p) => p.type === 'BREAK_START' || p.type === 'BREAK_END');
 
     const firstCheckIn = checkIns[0];
     const lastCheckOut = checkOuts[checkOuts.length - 1];
@@ -249,7 +246,7 @@ export class AttendanceService {
       isEarlyOut,
       lateMinutes,
       earlyOutMinutes,
-      isRemote: sortedPunches.some(p => !p.isWithinGeofence),
+      isRemote: sortedPunches.some((p) => !p.isWithinGeofence),
       isRegularized: false,
       createdAt: new Date(),
       updatedAt: new Date(),
@@ -479,7 +476,7 @@ export class AttendanceService {
       const dayDate = new Date(year, monthNum - 1, day);
       const dayOfWeek = dayDate.toLocaleDateString('en-US', { weekday: 'long' });
 
-      const record = records.find(r => r.date === date);
+      const record = records.find((r) => r.date === date);
 
       let entry: AttendanceCalendarEntry;
 
@@ -580,7 +577,10 @@ export class AttendanceService {
    * Submit regularization request
    */
   static async submitRegularization(
-    request: Omit<RegularizationRequest, 'id' | 'status' | 'approvers' | 'currentApproverLevel' | 'createdAt' | 'updatedAt'>
+    request: Omit<
+      RegularizationRequest,
+      'id' | 'status' | 'approvers' | 'currentApproverLevel' | 'createdAt' | 'updatedAt'
+    >
   ): Promise<RegularizationRequest> {
     // Get approval workflow
     const approvers = await this.getRegularizationApprovers(request.employeeId);
@@ -617,7 +617,7 @@ export class AttendanceService {
     if (!regularization) throw new Error('Regularization not found');
 
     const currentApprover = regularization.approvers.find(
-      a => a.level === regularization.currentApproverLevel && a.approverId === approverId
+      (a) => a.level === regularization.currentApproverLevel && a.approverId === approverId
     );
 
     if (!currentApprover) throw new Error('Not authorized to approve');
@@ -695,12 +695,7 @@ export class AttendanceService {
     return checkOut >= nightStart && checkOut <= nightEnd;
   }
 
-  private static calculateDistance(
-    lat1: number,
-    lon1: number,
-    lat2: number,
-    lon2: number
-  ): number {
+  private static calculateDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
     const R = 6371000; // Earth's radius in meters
     const dLat = this.toRadians(lat2 - lat1);
     const dLon = this.toRadians(lon2 - lon1);
@@ -722,15 +717,13 @@ export class AttendanceService {
     return `att_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
   }
 
-  private static isHoliday(
-    holidays: Holiday[],
-    date: string,
-    locationId?: string
-  ): boolean {
+  private static isHoliday(holidays: Holiday[], date: string, locationId?: string): boolean {
     return holidays.some(
-      h =>
+      (h) =>
         h.date === date &&
-        (!h.locationIds || h.locationIds.length === 0 || (locationId && h.locationIds.includes(locationId)))
+        (!h.locationIds ||
+          h.locationIds.length === 0 ||
+          (locationId && h.locationIds.includes(locationId)))
     );
   }
 
@@ -757,13 +750,13 @@ export class AttendanceService {
       },
     });
 
-    return employees.map(e => ({
+    return employees.map((e) => ({
       id: e.id,
       name: `${e.firstName} ${e.lastName}`,
       code: e.employeeCode,
-      department: (e as any).department?.name || '',
-      tenantId: (e as any).company?.tenantId || tenantId,
-      countryCode: ((e as any).location?.address?.country?.isoCode || 'AE') as SupportedCountryCode,
+      department: e.department?.name ?? '',
+      tenantId: e.company?.tenantId ?? tenantId,
+      countryCode: (e.location?.address?.country?.isoCode ?? 'AE') as SupportedCountryCode,
       locationId: e.locationId,
     }));
   }
@@ -773,16 +766,13 @@ export class AttendanceService {
       where: { date, status: 'Active' },
     });
 
-    return rows.map(h => ({
+    return rows.map((h) => ({
       date: h.date,
       name: h.name,
     }));
   }
 
-  private static async getApprovedLeaves(
-    tenantId: string,
-    date: string
-  ): Promise<LeaveRecord[]> {
+  private static async getApprovedLeaves(tenantId: string, date: string): Promise<LeaveRecord[]> {
     const targetDate = new Date(date);
     const rows = await prisma.leaveRequest.findMany({
       where: {
@@ -800,7 +790,7 @@ export class AttendanceService {
       },
     });
 
-    return rows.map(r => ({
+    return rows.map((r) => ({
       employeeId: r.employeeId,
       leaveType: r.leaveTypeId,
       startDate: r.startDate.toISOString().substring(0, 10),
@@ -848,10 +838,7 @@ export class AttendanceService {
         employeeId,
         isActive: true,
         effectiveFrom: { lte: targetDate },
-        OR: [
-          { effectiveTo: null },
-          { effectiveTo: { gte: targetDate } },
-        ],
+        OR: [{ effectiveTo: null }, { effectiveTo: { gte: targetDate } }],
       },
       include: { shift: true },
       orderBy: { effectiveFrom: 'desc' },
@@ -898,10 +885,7 @@ export class AttendanceService {
     return null;
   }
 
-  private static async getRawPunches(
-    employeeId: string,
-    date: string
-  ): Promise<AttendancePunch[]> {
+  private static async getRawPunches(employeeId: string, date: string): Promise<AttendancePunch[]> {
     const targetDate = new Date(date);
     const nextDate = new Date(targetDate);
     nextDate.setDate(nextDate.getDate() + 1);
@@ -918,7 +902,7 @@ export class AttendanceService {
       orderBy: { punchTime: 'asc' },
     });
 
-    return rows.map(p => {
+    return rows.map((p) => {
       const timeStr = p.punchTime.toTimeString().substring(0, 8);
       const typeMap: Record<string, PunchType> = {
         CLOCK_IN: 'CHECK_IN',
@@ -1018,7 +1002,7 @@ export class AttendanceService {
       },
     });
 
-    return locations.map(l => ({
+    return locations.map((l) => ({
       name: l.name,
       nameAr: l.name,
       latitude: l.latitude,
@@ -1035,7 +1019,7 @@ export class AttendanceService {
     holidays: Holiday[]
   ): Promise<void> {
     const dateObj = new Date(date);
-    const holiday = holidays.find(h => h.date === date);
+    const holiday = holidays.find((h) => h.date === date);
     await prisma.attendanceRecord.upsert({
       where: {
         tenantId_employeeId_date: { tenantId, employeeId, date: dateObj },
@@ -1120,7 +1104,7 @@ export class AttendanceService {
       orderBy: { date: 'asc' },
     });
 
-    return rows.map(r => ({
+    return rows.map((r) => ({
       id: r.id,
       tenantId: r.tenantId,
       employeeId: r.employeeId,
@@ -1172,7 +1156,8 @@ export class AttendanceService {
       code: employee.employeeCode,
       department: (employee as any).department?.name || '',
       tenantId: (employee as any).company?.tenantId || '',
-      countryCode: ((employee as any).location?.address?.country?.isoCode || 'AE') as SupportedCountryCode,
+      countryCode: ((employee as any).location?.address?.country?.isoCode ||
+        'AE') as SupportedCountryCode,
       locationId: employee.locationId,
     };
   }
@@ -1192,10 +1177,12 @@ export class AttendanceService {
     const manager = (employee as any).manager;
     if (!manager) return [];
 
-    return [{
-      id: manager.id,
-      name: `${manager.firstName} ${manager.lastName}`,
-    }];
+    return [
+      {
+        id: manager.id,
+        name: `${manager.firstName} ${manager.lastName}`,
+      },
+    ];
   }
 
   private static async saveRegularization(request: RegularizationRequest): Promise<void> {
@@ -1208,9 +1195,9 @@ export class AttendanceService {
         where: { id: request.id },
         data: {
           status: request.status,
-          approvedBy: request.approvers.find(a => a.action)?.approverId || null,
-          approvedAt: request.approvers.find(a => a.action === 'APPROVED')?.actionAt || null,
-          rejectionReason: request.approvers.find(a => a.action === 'REJECTED')?.comments || null,
+          approvedBy: request.approvers.find((a) => a.action)?.approverId || null,
+          approvedAt: request.approvers.find((a) => a.action === 'APPROVED')?.actionAt || null,
+          rejectionReason: request.approvers.find((a) => a.action === 'REJECTED')?.comments || null,
         },
       });
     } else {
@@ -1221,8 +1208,12 @@ export class AttendanceService {
           employeeId: request.employeeId,
           date: new Date(request.date),
           regularizationType: request.type || 'MISSED_PUNCH',
-          requestedClockIn: request.correctedCheckIn ? new Date(`${request.date}T${request.correctedCheckIn}`) : null,
-          requestedClockOut: request.correctedCheckOut ? new Date(`${request.date}T${request.correctedCheckOut}`) : null,
+          requestedClockIn: request.correctedCheckIn
+            ? new Date(`${request.date}T${request.correctedCheckIn}`)
+            : null,
+          requestedClockOut: request.correctedCheckOut
+            ? new Date(`${request.date}T${request.correctedCheckOut}`)
+            : null,
           reason: request.reason,
           status: request.status,
         },
@@ -1246,14 +1237,23 @@ export class AttendanceService {
       correctedCheckOut: row.requestedClockOut?.toTimeString().substring(0, 8),
       reason: row.reason,
       status: row.status as 'PENDING' | 'APPROVED' | 'REJECTED',
-      approvers: row.approvedBy ? [{
-        level: 1,
-        approverId: row.approvedBy,
-        approverName: '',
-        action: row.status === 'APPROVED' ? 'APPROVED' : row.status === 'REJECTED' ? 'REJECTED' : undefined,
-        comments: row.rejectionReason || undefined,
-        actionAt: row.approvedAt || undefined,
-      }] : [],
+      approvers: row.approvedBy
+        ? [
+            {
+              level: 1,
+              approverId: row.approvedBy,
+              approverName: '',
+              action:
+                row.status === 'APPROVED'
+                  ? 'APPROVED'
+                  : row.status === 'REJECTED'
+                    ? 'REJECTED'
+                    : undefined,
+              comments: row.rejectionReason || undefined,
+              actionAt: row.approvedAt || undefined,
+            },
+          ]
+        : [],
       currentApproverLevel: 1,
       createdAt: row.createdAt,
       updatedAt: row.updatedAt,

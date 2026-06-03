@@ -224,7 +224,7 @@ export class RosterManagementService {
 
         if (template && template.pattern.length > 0) {
           const patternIndex = dayIndex % template.cycleDays;
-          const patternEntry = template.pattern.find(p => p.dayNumber === patternIndex + 1);
+          const patternEntry = template.pattern.find((p) => p.dayNumber === patternIndex + 1);
           if (patternEntry) {
             shiftId = patternEntry.shiftId;
             isOff = patternEntry.isOff;
@@ -483,8 +483,11 @@ export class RosterManagementService {
   /**
    * Create a shift swap request between two employees.
    */
-  static async requestShiftSwap(request: Omit<ShiftSwapRequest, 'id' | 'status'>): Promise<ShiftSwapRequest> {
-    const { tenantId, requesterId, requesterShiftDate, targetId, targetShiftDate, reason } = request;
+  static async requestShiftSwap(
+    request: Omit<ShiftSwapRequest, 'id' | 'status'>
+  ): Promise<ShiftSwapRequest> {
+    const { tenantId, requesterId, requesterShiftDate, targetId, targetShiftDate, reason } =
+      request;
 
     // Validate that both employees have roster entries on their respective dates
     const requesterRoster = await prisma.shiftRoster.findFirst({
@@ -782,14 +785,14 @@ export class RosterManagementService {
             restMinutes = startMinutes - endMinutes;
           } else {
             // Next day - rest is remaining time in day + time until next start
-            restMinutes = (24 * 60 - endMinutes) + startMinutes;
+            restMinutes = 24 * 60 - endMinutes + startMinutes;
           }
 
           const minimumRestMinutes = 11 * 60; // 11 hours minimum rest
           if (restMinutes < minimumRestMinutes && restMinutes >= 0) {
             const currentDateStr = current.rosterDate.toISOString().substring(0, 10);
             const nextDateStr = next.rosterDate.toISOString().substring(0, 10);
-            const restHours = Math.round(restMinutes / 60 * 10) / 10;
+            const restHours = Math.round((restMinutes / 60) * 10) / 10;
             conflicts.push({
               type: 'NO_REST',
               employeeId,
@@ -921,7 +924,7 @@ export class RosterManagementService {
       const prevEndTime = prevRoster.customEndTime || prevRoster.shift.endTime;
       const endMinutes = this.timeToMinutes(prevEndTime);
       const startMinutes = this.timeToMinutes(shift.startTime);
-      const restMinutes = (24 * 60 - endMinutes) + startMinutes;
+      const restMinutes = 24 * 60 - endMinutes + startMinutes;
 
       if (restMinutes < 11 * 60) {
         insufficientRestIds.add(prevRoster.employeeId);
@@ -953,7 +956,12 @@ export class RosterManagementService {
     totalCost: number;
     regularCost: number;
     overtimeCost: number;
-    byEmployee: Array<{ employeeId: string; regularCost: number; overtimeCost: number; totalCost: number }>;
+    byEmployee: Array<{
+      employeeId: string;
+      regularCost: number;
+      overtimeCost: number;
+      totalCost: number;
+    }>;
   }> {
     // Get roster entries
     const entries = await prisma.shiftRoster.findMany({
@@ -1179,9 +1187,7 @@ export class RosterManagementService {
       where: { id: { in: employeeIds }, isDeleted: false },
       select: { id: true, firstName: true, lastName: true },
     });
-    const employeeNameMap = new Map(
-      employees.map((e) => [e.id, `${e.firstName} ${e.lastName}`])
-    );
+    const employeeNameMap = new Map(employees.map((e) => [e.id, `${e.firstName} ${e.lastName}`]));
 
     // By-employee summary
     const employeeSummaryMap = new Map<
@@ -1327,7 +1333,7 @@ export class RosterManagementService {
       id: e.id,
       name: `${e.firstName} ${e.lastName}`,
       departmentId: e.departmentId,
-      tenantId: (e as any).company?.tenantId || tenantId,
+      tenantId: e.company?.tenantId ?? tenantId,
     }));
   }
 
@@ -1357,9 +1363,7 @@ export class RosterManagementService {
     }
 
     try {
-      const parsed = typeof config.value === 'string'
-        ? JSON.parse(config.value)
-        : config.value;
+      const parsed = typeof config.value === 'string' ? JSON.parse(config.value) : config.value;
 
       return {
         id: templateId,
@@ -1463,9 +1467,7 @@ export class RosterManagementService {
     // Thursday in current week decides the year
     d.setDate(d.getDate() + 3 - ((d.getDay() + 6) % 7));
     const yearStart = new Date(d.getFullYear(), 0, 4);
-    const weekNo = Math.ceil(
-      ((d.getTime() - yearStart.getTime()) / (1000 * 60 * 60 * 24) + 1) / 7
-    );
+    const weekNo = Math.ceil(((d.getTime() - yearStart.getTime()) / (1000 * 60 * 60 * 24) + 1) / 7);
     return `${d.getFullYear()}-W${String(weekNo).padStart(2, '0')}`;
   }
 
