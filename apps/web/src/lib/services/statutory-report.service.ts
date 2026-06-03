@@ -755,6 +755,178 @@ registerReport({
 });
 
 /**
+ * KSA Saudization quota — per-company saudi/non-saudi headcount + delta
+ * vs tenant-configured target. Complements KSA_NITAQAT by reporting raw
+ * compliance rather than tier classification.
+ */
+registerReport({
+  code: 'KSA_SAUDIZATION',
+  countryCode: 'SA',
+  name: 'KSA Saudization Quota',
+  format: 'excel',
+  description: 'Per-company Saudization headcount + quota delta.',
+  generate: async (ctx) => {
+    const employees = await prisma.employee.findMany({
+      where: { isDeleted: false, company: { tenantId: ctx.tenantId } },
+      select: { id: true, companyId: true, company: { select: { name: true } } },
+    });
+    const byCompany = new Map<string, { total: number; saudi: number; name: string }>();
+    for (const emp of employees) {
+      const b = byCompany.get(emp.companyId) ?? {
+        total: 0,
+        saudi: 0,
+        name: emp.company?.name ?? emp.companyId,
+      };
+      b.total += 1;
+      byCompany.set(emp.companyId, b);
+    }
+    const TARGET_RATIO = 0.4;
+    let totalEmployees = 0;
+    const lines: Array<Record<string, unknown>> = [];
+    for (const [companyId, t] of byCompany.entries()) {
+      const ratio = t.total > 0 ? t.saudi / t.total : 0;
+      lines.push({
+        companyId,
+        companyName: t.name,
+        totalEmployees: t.total,
+        saudiEmployees: t.saudi,
+        saudizationRatioPct: Math.round(ratio * 10000) / 100,
+        targetRatioPct: TARGET_RATIO * 100,
+        deltaPct: Math.round((ratio - TARGET_RATIO) * 10000) / 100,
+      });
+      totalEmployees += t.total;
+    }
+    return {
+      schemaVersion: '1.0.0',
+      totals: { employeeCount: totalEmployees, grossAmount: 0, deductionAmount: 0, netAmount: 0 },
+      lines,
+      warnings: ['Saudi/non-Saudi classification requires nationality column on Employee.'],
+    };
+  },
+});
+
+/**
+ * UAE EOSB provision — End-of-Service Benefit accrual per Federal Law
+ * No. 33 of 2021 (21 days basic ≤5y, 30 days basic >5y, capped 24mo basic).
+ * Service years placeholder — production wire-up joins Employee.joiningDate.
+ */
+registerReport({
+  code: 'UAE_EOSB_PROVISION',
+  countryCode: 'AE',
+  name: 'UAE EOSB Provision (Federal Law 33/2021)',
+  format: 'excel',
+  description: 'End-of-Service Benefit accrual per employee as of period end.',
+  generate: async (ctx) => {
+    const months = yyyymmRange(ctx.periodStart, ctx.periodEnd);
+    const runs = await prisma.payrollRun.findMany({
+      where: { tenantId: ctx.tenantId, payrollMonth: { in: months }, isDeleted: false },
+      include: { payslips: true },
+      orderBy: { payrollMonth: 'desc' },
+      take: 1,
+    });
+    if (runs.length === 0) {
+      return {
+        schemaVersion: '1.0.0',
+        totals: { employeeCount: 0, grossAmount: 0, deductionAmount: 0, netAmount: 0 },
+        lines: [],
+        warnings: ['No payroll run in period — no EOSB provision computed.'],
+      };
+    }
+    const lines: Array<Record<string, unknown>> = [];
+    let totalProvision = 0;
+    let employeeCount = 0;
+    for (const slip of runs[0].payslips ?? []) {
+      const yearsOfService = 3;
+      const dailyBasic = Number(slip.basicSalary) / 30;
+      const days = yearsOfService <= 5 ? 21 * yearsOfService : 21 * 5 + 30 * (yearsOfService - 5);
+      const eosb = Math.min(dailyBasic * days, Number(slip.basicSalary) * 24);
+      lines.push({
+        employeeId: slip.employeeId,
+        employeeCode: slip.employeeCode,
+        basicSalary: Number(slip.basicSalary),
+        yearsOfService,
+        eosbProvision: Math.round(eosb * 100) / 100,
+      });
+      totalProvision += eosb;
+      employeeCount += 1;
+    }
+    return {
+      schemaVersion: '1.0.0',
+      totals: {
+        employeeCount,
+        grossAmount: 0,
+        deductionAmount: 0,
+        netAmount: Math.round(totalProvision * 100) / 100,
+      },
+      lines,
+      warnings: ['Service years placeholder. Production requires Employee.joiningDate join.'],
+    };
+  },
+});
+
+/**
+ * India Gratuity provision per Payment of Gratuity Act 1972: (15/26) ×
+ * basic × completed years, payable only ≥ 5y service, capped at INR
+ * 20,00,000. Service years placeholder — production joins joiningDate.
+ */
+registerReport({
+  code: 'IND_GRATUITY_PROVISION',
+  countryCode: 'IN',
+  name: 'India Gratuity Provision (Act 1972)',
+  format: 'excel',
+  description: 'Per-employee gratuity provision accrual.',
+  generate: async (ctx) => {
+    const months = yyyymmRange(ctx.periodStart, ctx.periodEnd);
+    const runs = await prisma.payrollRun.findMany({
+      where: { tenantId: ctx.tenantId, payrollMonth: { in: months }, isDeleted: false },
+      include: { payslips: true },
+      orderBy: { payrollMonth: 'desc' },
+      take: 1,
+    });
+    if (runs.length === 0) {
+      return {
+        schemaVersion: '1.0.0',
+        totals: { employeeCount: 0, grossAmount: 0, deductionAmount: 0, netAmount: 0 },
+        lines: [],
+        warnings: ['No payroll run in period — no gratuity provision computed.'],
+      };
+    }
+    const lines: Array<Record<string, unknown>> = [];
+    let total = 0;
+    let employeeCount = 0;
+    const CAP = 2_000_000;
+    const MIN_YEARS = 5;
+    for (const slip of runs[0].payslips ?? []) {
+      const yearsOfService = 6;
+      let gratuity = 0;
+      if (yearsOfService >= MIN_YEARS) {
+        gratuity = Math.min(CAP, (15 / 26) * Number(slip.basicSalary) * yearsOfService);
+      }
+      lines.push({
+        employeeId: slip.employeeId,
+        employeeCode: slip.employeeCode,
+        basicSalary: Number(slip.basicSalary),
+        yearsOfService,
+        gratuityProvision: Math.round(gratuity * 100) / 100,
+      });
+      total += gratuity;
+      employeeCount += 1;
+    }
+    return {
+      schemaVersion: '1.0.0',
+      totals: {
+        employeeCount,
+        grossAmount: 0,
+        deductionAmount: 0,
+        netAmount: Math.round(total * 100) / 100,
+      },
+      lines,
+      warnings: ['Service years placeholder. Production requires Employee.joiningDate join.'],
+    };
+  },
+});
+
+/**
  * KSA Mudad wage protection. Per-payslip salary + bank route. Mirrors
  * the UAE WPS shape — produces a CSV file that the Mudad portal accepts
  * for cross-checking employer wage payments against ledger transfers.

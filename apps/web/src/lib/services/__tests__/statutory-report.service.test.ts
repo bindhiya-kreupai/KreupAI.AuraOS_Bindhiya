@@ -16,7 +16,7 @@ import {
 const svc = new StatutoryReportService();
 
 describe('Statutory report registry', () => {
-  it('exposes the 13 generators landed across Phase 2 + Phase 3', () => {
+  it('exposes the 16 generators landed across Phase 2 + Phase 3 + Phase 4', () => {
     const codes = listSpecs()
       .map((s) => s.code)
       .sort();
@@ -26,12 +26,15 @@ describe('Statutory report registry', () => {
       'IND_FORM_12BA',
       'IND_FORM_16',
       'IND_FORM_24Q',
+      'IND_GRATUITY_PROVISION',
       'IND_PF_ECR',
       'IND_PT_CHALLAN',
       'KSA_GOSI_RECON',
       'KSA_MUDAD',
       'KSA_NITAQAT',
+      'KSA_SAUDIZATION',
       'UAE_EMIRATISATION',
+      'UAE_EOSB_PROVISION',
       'UAE_MOHRE',
       'UAE_WPS_RECON',
     ]);
@@ -42,13 +45,13 @@ describe('Statutory report registry', () => {
       .listSpecs({ countryCode: 'AE' })
       .map((s) => s.code)
       .sort();
-    expect(ae).toEqual(['UAE_EMIRATISATION', 'UAE_MOHRE', 'UAE_WPS_RECON']);
+    expect(ae).toEqual(['UAE_EMIRATISATION', 'UAE_EOSB_PROVISION', 'UAE_MOHRE', 'UAE_WPS_RECON']);
 
     const sa = svc
       .listSpecs({ countryCode: 'SA' })
       .map((s) => s.code)
       .sort();
-    expect(sa).toEqual(['KSA_GOSI_RECON', 'KSA_MUDAD', 'KSA_NITAQAT']);
+    expect(sa).toEqual(['KSA_GOSI_RECON', 'KSA_MUDAD', 'KSA_NITAQAT', 'KSA_SAUDIZATION']);
 
     const ind = svc
       .listSpecs({ countryCode: 'IN' })
@@ -60,6 +63,7 @@ describe('Statutory report registry', () => {
       'IND_FORM_12BA',
       'IND_FORM_16',
       'IND_FORM_24Q',
+      'IND_GRATUITY_PROVISION',
       'IND_PF_ECR',
       'IND_PT_CHALLAN',
     ]);
