@@ -1,15 +1,29 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuites name="vitest tests" tests="5" failures="0" errors="0" time="0.005225542">
-    <testsuite name="src/lib/services/__tests__/statutory-report.service.test.ts" timestamp="2026-06-03T05:07:17.375Z" hostname="MacBookPro.lan" tests="5" failures="0" errors="0" skipped="0" time="0.005225542">
-        <testcase classname="src/lib/services/__tests__/statutory-report.service.test.ts" name="Statutory report registry &gt; exposes the 10 generators landed in Phase 2" time="0.000941166">
+<testsuites name="vitest tests" tests="12" failures="0" errors="0" time="0.004804792">
+    <testsuite name="src/lib/services/__tests__/cobra.service.test.ts" timestamp="2026-06-03T05:12:14.040Z" hostname="MacBookPro.lan" tests="12" failures="0" errors="0" skipped="0" time="0.004804792">
+        <testcase classname="src/lib/services/__tests__/cobra.service.test.ts" name="CobraService.computeDeadlines &gt; TERMINATION → 60-day election window + 18-month coverage cap" time="0.000734583">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/statutory-report.service.test.ts" name="Statutory report registry &gt; filters by country code" time="0.000331792">
+        <testcase classname="src/lib/services/__tests__/cobra.service.test.ts" name="CobraService.computeDeadlines &gt; REDUCED_HOURS → 18-month cap (same as termination)" time="0.000114625">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/statutory-report.service.test.ts" name="Statutory report registry &gt; returns specs without the generate function (safe to serialize)" time="0.001215625">
+        <testcase classname="src/lib/services/__tests__/cobra.service.test.ts" name="CobraService.computeDeadlines &gt; DIVORCE / DEPENDENT_LOSS / DEATH / MEDICARE → 36-month cap" time="0.000237458">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/statutory-report.service.test.ts" name="Statutory report submission contract (#85) &gt; exports InvalidReportTransitionError as a real Error subclass" time="0.000401209">
+        <testcase classname="src/lib/services/__tests__/cobra.service.test.ts" name="CobraService.computeCobraPremium &gt; sums employee+employer and adds 2% admin uplift" time="0.000254583">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/statutory-report.service.test.ts" name="Statutory report submission contract (#85) &gt; rejects placeholder submission references shorter than 3 chars" time="0.000897208">
+        <testcase classname="src/lib/services/__tests__/cobra.service.test.ts" name="CobraService.computeCobraPremium &gt; rounds to 2 decimals" time="0.000220666">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/cobra.service.test.ts" name="CobraService transitions &gt; PENDING_ELECTION → ELECTED / DECLINED / EXPIRED / CANCELED" time="0.000180084">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/cobra.service.test.ts" name="CobraService transitions &gt; ELECTED → ACTIVE / CANCELED only" time="0.000119125">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/cobra.service.test.ts" name="CobraService transitions &gt; ACTIVE → TERMINATED_NONPAYMENT / EXPIRED / CANCELED" time="0.000176625">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/cobra.service.test.ts" name="CobraService transitions &gt; terminal states reject everything" time="0.000255833">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/cobra.service.test.ts" name="CobraService transitions &gt; assertTransition throws on illegal moves" time="0.000595125">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/cobra.service.test.ts" name="COBRA error contracts &gt; InvalidCobraTransitionError is a real Error subclass" time="0.000148166">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/cobra.service.test.ts" name="COBRA error contracts &gt; ElectionWindowExpiredError carries the deadline in the message" time="0.000210875">
         </testcase>
     </testsuite>
 </testsuites>

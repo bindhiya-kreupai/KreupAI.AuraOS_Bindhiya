@@ -6457,6 +6457,70 @@ model StatutoryReport {
   @@map("aura_statutory_report")
 }
 
+// COBRA — Consolidated Omnibus Budget Reconciliation Act (US).
+// A qualifying event (termination, divorce, dependent ageing out) opens a
+// 60-day election window during which the former employee may elect to
+// continue health coverage. Default 18-month coverage (longer for some
+// secondary events). State machine on the enrollment row tracks the lifecycle.
+model CobraQualifyingEvent {
+  id                  String    @id @default(uuid())
+  tenantId            String
+  employeeId          String
+  exitRequestId       String?
+  eventType           String    // TERMINATION | REDUCED_HOURS | DIVORCE | DEPENDENT_LOSS | DEATH | MEDICARE_ELIGIBILITY
+  qualifyingDate      DateTime
+  electionDeadline    DateTime  // qualifyingDate + 60 days
+  maxCoverageEndDate  DateTime  // typically qualifyingDate + 18 months (or 36 for non-termination events)
+  noticeIssuedAt      DateTime?
+  noticeReference     String?
+  notes               String?   @db.Text
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  createdBy           String?
+  updatedBy           String?
+  isDeleted           Boolean   @default(false)
+  deletedAt           DateTime?
+
+  enrollments         CobraEnrollment[]
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([electionDeadline])
+  @@index([maxCoverageEndDate])
+  @@map("aura_cobra_qualifying_event")
+}
+
+model CobraEnrollment {
+  id                  String                @id @default(uuid())
+  tenantId            String
+  qualifyingEventId   String
+  qualifyingEvent     CobraQualifyingEvent  @relation(fields: [qualifyingEventId], references: [id])
+  employeeId          String
+  benefitPlanId       String
+  monthlyPremium      Decimal               // includes the 2% admin uplift
+  status              String                @default("PENDING_ELECTION")
+  // PENDING_ELECTION | ELECTED | ACTIVE | TERMINATED_NONPAYMENT | EXPIRED | DECLINED | CANCELED
+  electedAt           DateTime?
+  coverageStart       DateTime?
+  coverageEnd         DateTime?
+  premiumsPaidThrough DateTime?
+  totalPremiumsPaid   Decimal               @default(0)
+  declineReason       String?
+  terminationReason   String?
+  notes               String?               @db.Text
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+  createdBy           String?
+  updatedBy           String?
+
+  @@index([tenantId])
+  @@index([qualifyingEventId])
+  @@index([employeeId])
+  @@index([status])
+  @@index([coverageEnd])
+  @@map("aura_cobra_enrollment")
+}
+
 // Visa, permit, and identity-document tracking. Covers passports, visas,
 // Emirates IDs, Iqamas, work permits, labor cards, medical certificates.
 // Drives expiry alerts and renewal workflows.

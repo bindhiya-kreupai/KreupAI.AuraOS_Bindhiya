@@ -1,10 +1,10 @@
 {
-  "numTotalTestSuites": 3,
-  "numPassedTestSuites": 3,
+  "numTotalTestSuites": 5,
+  "numPassedTestSuites": 5,
   "numFailedTestSuites": 0,
   "numPendingTestSuites": 0,
-  "numTotalTests": 5,
-  "numPassedTests": 5,
+  "numTotalTests": 12,
+  "numPassedTests": 12,
   "numFailedTests": 0,
   "numPendingTests": 0,
   "numTodoTests": 0,
@@ -24,62 +24,125 @@
     "updated": 0,
     "didUpdate": false
   },
-  "startTime": 1780463237062,
+  "startTime": 1780463533766,
   "success": true,
   "testResults": [
     {
       "assertionResults": [
         {
-          "ancestorTitles": ["Statutory report registry"],
-          "fullName": "Statutory report registry exposes the 10 generators landed in Phase 2",
+          "ancestorTitles": ["CobraService.computeDeadlines"],
+          "fullName": "CobraService.computeDeadlines TERMINATION → 60-day election window + 18-month coverage cap",
           "status": "passed",
-          "title": "exposes the 10 generators landed in Phase 2",
-          "duration": 0.9411659999999529,
+          "title": "TERMINATION → 60-day election window + 18-month coverage cap",
+          "duration": 0.7345830000000433,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["Statutory report registry"],
-          "fullName": "Statutory report registry filters by country code",
+          "ancestorTitles": ["CobraService.computeDeadlines"],
+          "fullName": "CobraService.computeDeadlines REDUCED_HOURS → 18-month cap (same as termination)",
           "status": "passed",
-          "title": "filters by country code",
-          "duration": 0.33179199999995035,
+          "title": "REDUCED_HOURS → 18-month cap (same as termination)",
+          "duration": 0.11462500000004638,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["Statutory report registry"],
-          "fullName": "Statutory report registry returns specs without the generate function (safe to serialize)",
+          "ancestorTitles": ["CobraService.computeDeadlines"],
+          "fullName": "CobraService.computeDeadlines DIVORCE / DEPENDENT_LOSS / DEATH / MEDICARE → 36-month cap",
           "status": "passed",
-          "title": "returns specs without the generate function (safe to serialize)",
-          "duration": 1.2156249999999318,
+          "title": "DIVORCE / DEPENDENT_LOSS / DEATH / MEDICARE → 36-month cap",
+          "duration": 0.23745799999994688,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["Statutory report submission contract (#85)"],
-          "fullName": "Statutory report submission contract (#85) exports InvalidReportTransitionError as a real Error subclass",
+          "ancestorTitles": ["CobraService.computeCobraPremium"],
+          "fullName": "CobraService.computeCobraPremium sums employee+employer and adds 2% admin uplift",
           "status": "passed",
-          "title": "exports InvalidReportTransitionError as a real Error subclass",
-          "duration": 0.4012089999999944,
+          "title": "sums employee+employer and adds 2% admin uplift",
+          "duration": 0.2545830000000251,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["Statutory report submission contract (#85)"],
-          "fullName": "Statutory report submission contract (#85) rejects placeholder submission references shorter than 3 chars",
+          "ancestorTitles": ["CobraService.computeCobraPremium"],
+          "fullName": "CobraService.computeCobraPremium rounds to 2 decimals",
           "status": "passed",
-          "title": "rejects placeholder submission references shorter than 3 chars",
-          "duration": 0.8972079999999778,
+          "title": "rounds to 2 decimals",
+          "duration": 0.2206660000000511,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["CobraService transitions"],
+          "fullName": "CobraService transitions PENDING_ELECTION → ELECTED / DECLINED / EXPIRED / CANCELED",
+          "status": "passed",
+          "title": "PENDING_ELECTION → ELECTED / DECLINED / EXPIRED / CANCELED",
+          "duration": 0.18008399999996527,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["CobraService transitions"],
+          "fullName": "CobraService transitions ELECTED → ACTIVE / CANCELED only",
+          "status": "passed",
+          "title": "ELECTED → ACTIVE / CANCELED only",
+          "duration": 0.11912500000005366,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["CobraService transitions"],
+          "fullName": "CobraService transitions ACTIVE → TERMINATED_NONPAYMENT / EXPIRED / CANCELED",
+          "status": "passed",
+          "title": "ACTIVE → TERMINATED_NONPAYMENT / EXPIRED / CANCELED",
+          "duration": 0.17662499999994452,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["CobraService transitions"],
+          "fullName": "CobraService transitions terminal states reject everything",
+          "status": "passed",
+          "title": "terminal states reject everything",
+          "duration": 0.2558330000000524,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["CobraService transitions"],
+          "fullName": "CobraService transitions assertTransition throws on illegal moves",
+          "status": "passed",
+          "title": "assertTransition throws on illegal moves",
+          "duration": 0.5951249999999391,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["COBRA error contracts"],
+          "fullName": "COBRA error contracts InvalidCobraTransitionError is a real Error subclass",
+          "status": "passed",
+          "title": "InvalidCobraTransitionError is a real Error subclass",
+          "duration": 0.1481659999999465,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["COBRA error contracts"],
+          "fullName": "COBRA error contracts ElectionWindowExpiredError carries the deadline in the message",
+          "status": "passed",
+          "title": "ElectionWindowExpiredError carries the deadline in the message",
+          "duration": 0.21087499999998727,
           "failureMessages": [],
           "meta": {}
         }
       ],
-      "startTime": 1780463237355,
-      "endTime": 1780463237358.8972,
+      "startTime": 1780463534020,
+      "endTime": 1780463534024.211,
       "status": "passed",
       "message": "",
-      "name": "/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/lib/services/__tests__/statutory-report.service.test.ts"
+      "name": "/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/lib/services/__tests__/cobra.service.test.ts"
     }
   ]
 }

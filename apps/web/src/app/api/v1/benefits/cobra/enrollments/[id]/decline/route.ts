@@ -7,14 +7,6 @@ import { cobraService, InvalidCobraTransitionError } from '@/lib/services/cobra.
 
 export const dynamic = 'force-dynamic';
 
-/**
- * POST /api/v1/benefits/cobra/enrollments/[id]/premium
- * Body: { amount, paidThrough }
- *
- * Records a monthly COBRA premium payment. First payment auto-activates
- * coverage (ELECTED → ACTIVE). Refuses payment on a PENDING_ELECTION or
- * terminal-status enrollment with HTTP 409.
- */
 export const POST = withAudit(
   withEnhancedAuth(
     async (
@@ -32,19 +24,12 @@ export const POST = withAudit(
             { status: 403 }
           );
         }
-        const body = await request.json();
-        if (!body?.amount || !body?.paidThrough) {
-          return NextResponse.json(
-            { success: false, error: { code: 'E2001', message: 'amount, paidThrough required' } },
-            { status: 400 }
-          );
-        }
-        const updated = await cobraService.recordPremiumPayment(
+        const body = await request.json().catch(() => ({}));
+        const updated = await cobraService.decline(
           context.params.id,
           context.user.tenantId,
           context.user.id,
-          Number(body.amount),
-          new Date(body.paidThrough)
+          body.reason
         );
         if (!updated) {
           return NextResponse.json(
@@ -52,7 +37,7 @@ export const POST = withAudit(
             { status: 404 }
           );
         }
-        return NextResponse.json({ success: true, data: updated, message: 'Premium recorded' });
+        return NextResponse.json({ success: true, data: updated, message: 'Declined' });
       } catch (error) {
         if (error instanceof InvalidCobraTransitionError) {
           return NextResponse.json(
@@ -65,7 +50,7 @@ export const POST = withAudit(
             success: false,
             error: {
               code: 'E5001',
-              message: 'Premium recording failed',
+              message: 'Decline failed',
               details: { error: error instanceof Error ? error.message : 'Unknown error' },
             },
           },
@@ -76,7 +61,7 @@ export const POST = withAudit(
   ),
   {
     action: AuditAction.EMPLOYEE_UPDATED,
-    resourceType: 'cobra_premium_payment',
+    resourceType: 'cobra_enrollment',
     captureRequestBody: true,
   }
 );
