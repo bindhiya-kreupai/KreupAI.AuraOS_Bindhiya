@@ -29,19 +29,16 @@
  * ```
  */
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import type { ZodSchema} from 'zod';
+import type { ZodSchema } from 'zod';
 import { ZodError } from 'zod';
 import { logger } from '@/lib/logger';
 import { verifyAccessToken } from '@/lib/auth/jwt';
 import { prisma } from '@aura/database';
-import type {
-  RateLimitConfig} from '@/lib/middleware/advanced-rate-limit';
-import {
-  createRateLimit,
-  RateLimitPresets,
-} from '@/lib/middleware/advanced-rate-limit';
+import { setAuthIdentifiers } from '@/lib/observability/request-context';
+import type { RateLimitConfig } from '@/lib/middleware/advanced-rate-limit';
+import { createRateLimit, RateLimitPresets } from '@/lib/middleware/advanced-rate-limit';
 
 /**
  * Standard API response format
@@ -162,10 +159,7 @@ export function createErrorResponse(
  * @param status - HTTP status code
  * @returns NextResponse with data
  */
-export function createSuccessResponse<T>(
-  data: T,
-  status: number = 200
-): NextResponse {
+export function createSuccessResponse<T>(data: T, status: number = 200): NextResponse {
   const response: ApiResponse<T> = {
     success: true,
     data,
@@ -235,9 +229,7 @@ async function extractAuth(request: NextRequest): Promise<AuthContext | null> {
     }
 
     // Extract roles and permissions
-    const roles = user.roles
-      .filter((ur) => ur.role.isActive)
-      .map((ur) => ur.role.code);
+    const roles = user.roles.filter((ur) => ur.role.isActive).map((ur) => ur.role.code);
 
     const permissionSet = new Set<string>();
     for (const userRole of user.roles) {
@@ -269,10 +261,7 @@ async function extractAuth(request: NextRequest): Promise<AuthContext | null> {
  * @param requiredPermissions - Required permissions
  * @returns True if authorized
  */
-function checkPermissions(
-  auth: AuthContext,
-  requiredPermissions: string[]
-): boolean {
+function checkPermissions(auth: AuthContext, requiredPermissions: string[]): boolean {
   // SUPER_ADMIN has all permissions
   if (auth.roles.includes('SUPER_ADMIN')) {
     return true;
@@ -411,6 +400,10 @@ export function createProtectedRoute<T = any>(
           throw error;
         }
       }
+
+      // Seed correlation context with auth identifiers — no-op when called
+      // outside an active request scope (e.g. unit tests).
+      setAuthIdentifiers(auth.tenantId, auth.userId);
 
       // Execute handler
       const result = await handler(request, { ...context, auth });

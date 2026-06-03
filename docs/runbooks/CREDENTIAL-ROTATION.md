@@ -60,9 +60,18 @@ The order matters: rotating the JWT secret BEFORE the Supabase creds invalidates
    openssl rand -base64 64 | tr -d '\n'
    ```
 2. Update `JWT_SECRET` (and `JWT_REFRESH_SECRET` if separate) in the secrets manager. Deploy.
-3. Force-invalidate active sessions:
+3. Force-invalidate active sessions via the **audited revoke endpoint** (preferred — captures actor + reason for the post-mortem):
+   ```bash
+   curl -X POST "$BASE_URL/api/v1/security/sessions/revoke" \
+     -H "Authorization: Bearer $SUPER_ADMIN_TOKEN" \
+     -H "Content-Type: application/json" \
+     -d '{"scope":"ALL_TENANTS","reason":"JWT_ROTATION"}'
+   ```
+   The response includes `auditSummary` (paste into the incident channel).
+   Fall back to raw SQL only if the API is unreachable:
    ```sql
-   UPDATE aura_user_session SET expires_at = NOW() WHERE expires_at > NOW();
+   UPDATE aura_user_session SET status = 'Revoked'
+     WHERE status = 'Active';
    ```
    Or via Redis if sessions live there: `redis-cli --scan --pattern 'session:*' | xargs redis-cli DEL`.
 4. Audit `aura_audit_log` for last-24h logins — these accounts now need to re-authenticate.

@@ -7,6 +7,7 @@ import type { Permission } from './permissions';
 import type { JWTPayload } from './jwt';
 import { logger } from '@/lib/logger';
 import { createRateLimit, RateLimitPresets } from '@/lib/middleware/advanced-rate-limit';
+import { setAuthIdentifiers } from '@/lib/observability/request-context';
 
 export interface EnhancedAuthContext {
   user: JWTPayload;
@@ -159,6 +160,11 @@ export function withEnhancedAuth<T = any>(
       ...routeContext,
       ...context!,
     };
+
+    // Propagate tenant/user identifiers into the correlation context so every
+    // downstream log line carries them. No-op when called outside a request
+    // scope (e.g. unit tests that drive the handler directly).
+    setAuthIdentifiers(context!.user.tenantId, context!.user.userId);
 
     const isMutation = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method);
 
