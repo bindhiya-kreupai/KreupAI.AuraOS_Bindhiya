@@ -1,0 +1,56 @@
+name: Critical Path E2E
+
+on:
+  schedule:
+    # Nightly at 02:00 UTC — feeds the v1.0 release-gate sign-off dashboard (#83).
+    - cron: '0 2 * * *'
+  workflow_dispatch:
+    inputs:
+      country:
+        description: 'Tenant country (AE | SA | IN)'
+        required: false
+        default: 'AE'
+      locale:
+        description: 'Locale (en | ar)'
+        required: false
+        default: 'en'
+
+permissions:
+  contents: read
+
+jobs:
+  critical-path:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        country: ${{ github.event_name == 'workflow_dispatch' && fromJSON(format('["{0}"]', inputs.country)) || fromJSON('["AE","SA","IN"]') }}
+        locale: ${{ github.event_name == 'workflow_dispatch' && fromJSON(format('["{0}"]', inputs.locale)) || fromJSON('["en","ar"]') }}
+    env:
+      TEST_TENANT_COUNTRY: ${{ matrix.country }}
+      TEST_LOCALE: ${{ matrix.locale }}
+      BASE_URL: ${{ secrets.E2E_BASE_URL || 'http://localhost:3000' }}
+      CI: 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v3
+        with:
+          version: 9
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @aura/e2e exec playwright install --with-deps chromium
+      - name: Run @critical-path suite
+        working-directory: tests/e2e
+        run: pnpm exec playwright test --grep '@critical-path' --reporter=list,html,json
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: critical-path-${{ matrix.country }}-${{ matrix.locale }}
+          path: |
+            tests/e2e/playwright-report
+            tests/e2e/playwright-results.json
+          retention-days: 14
