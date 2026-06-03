@@ -6525,6 +6525,221 @@ model CobraEnrollment {
 }
 
 // ============================================================================
+// v2.0 — MENA/APAC COMPLIANCE DEEPENING (#97)
+// ============================================================================
+
+// GCC labour ministry submissions. Per-jurisdiction adapter pattern — the
+// SubmissionAdapter knows whether to format SIF (UAE WPS), CSV (Mudad /
+// GOSI batch), JSON (HRSD APIs), or FVU (India TDS).
+model LabourMinistrySubmission {
+  id              String   @id @default(uuid())
+  tenantId        String
+  countryCode     String   // ISO-3166-1 alpha-2
+  authority       String   // MOHRE | MUDAD | GOSI | HRSD | EPFO | PFRDA | ESIC
+  submissionType  String   // WPS | EOSB | NITAQAT_REPORT | SAUDIZATION_QUOTA | EPFO_KYC | ...
+  periodStart     DateTime
+  periodEnd       DateTime
+  payload         Json     @default("{}")
+  payloadHash     String?  // sha256 for tamper detection
+  format          String   // SIF | CSV | XML | JSON | XBRL | FVU
+  status          String   @default("DRAFT") // DRAFT | READY | SUBMITTED | ACKNOWLEDGED | REJECTED | RESUBMITTED
+  authorityRef    String?  // real reference returned by the ministry portal
+  submittedAt     DateTime?
+  acknowledgedAt  DateTime?
+  rejectedAt      DateTime?
+  rejectionReason String?  @db.Text
+  fileUrl         String?
+  metadata        Json     @default("{}")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdBy       String?
+  updatedBy       String?
+  isDeleted       Boolean  @default(false)
+
+  @@index([tenantId])
+  @@index([countryCode])
+  @@index([authority])
+  @@index([status])
+  @@index([periodStart, periodEnd])
+  @@map("aura_labour_ministry_submission")
+}
+
+// Per-employee statutory identifier per country. One row per (employee,
+// country, identifier-type) so an employee on rotation can have multiple
+// GOSI + Emirates ID rows.
+model StatutoryIdentifier {
+  id              String   @id @default(uuid())
+  tenantId        String
+  employeeId      String
+  countryCode     String   // AE | SA | IN | OM | BH | QA | KW
+  identifierType  String   // EMIRATES_ID | IQAMA | GOSI_NUMBER | UAN | AADHAAR | PAN | NPSAN | ...
+  identifierValue String
+  issuedDate      DateTime?
+  expiryDate      DateTime?
+  issuingAuthority String?
+  validated       Boolean  @default(false)
+  validatedAt     DateTime?
+  metadata        Json     @default("{}")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdBy       String?
+  updatedBy       String?
+  isDeleted       Boolean  @default(false)
+
+  @@unique([tenantId, employeeId, countryCode, identifierType])
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([countryCode])
+  @@index([identifierType])
+  @@map("aura_statutory_identifier")
+}
+
+// ============================================================================
+// v2.0 — AI/ML PREDICTIVE ANALYTICS (#98)
+// ============================================================================
+
+// One row per scored prediction. Used by attrition risk, performance
+// prediction, succession-readiness, time-to-hire forecasting. Linked
+// back to AIModelCard for full reproducibility under EU AI Act audits.
+model PredictionResult {
+  id              String   @id @default(uuid())
+  tenantId        String
+  modelCardId     String?
+  modelCode       String   // ATTRITION_RISK | PERF_FORECAST | PROMOTION_READINESS | TIME_TO_HIRE | SOURCING_FUNNEL
+  subjectType     String   // EMPLOYEE | CANDIDATE | REQUISITION | TEAM | DEPARTMENT
+  subjectId       String
+  scoredAt        DateTime @default(now())
+  scoreValue      Float    // 0-1 risk for classifiers; raw forecast for regressors
+  scoreBand       String?  // LOW | MEDIUM | HIGH | CRITICAL — derived bucket
+  features        Json     @default("{}") // input features captured for reproducibility
+  explanations    Json     @default("{}") // SHAP / feature-importance values per feature
+  confidence      Float?
+  confidenceInterval Json? // {lo, hi}
+  modelVersion    String
+  active          Boolean  @default(true) // false = superseded by a fresher prediction
+  expiresAt       DateTime?
+  metadata        Json     @default("{}")
+
+  @@index([tenantId])
+  @@index([modelCode])
+  @@index([subjectType, subjectId])
+  @@index([scoreBand])
+  @@index([scoredAt])
+  @@index([tenantId, modelCode, active])
+  @@map("aura_prediction_result")
+}
+
+// Recommendation surfaced by the AI agent — distinct from a raw prediction
+// because a recommendation is actionable (with a CTA).
+model AIRecommendation {
+  id              String   @id @default(uuid())
+  tenantId        String
+  category        String   // ATTRITION_INTERVENTION | LEARNING_PATH | INTERNAL_MOBILITY | TASK_AUTOMATION | INSIGHT
+  subjectType     String
+  subjectId       String
+  title           String
+  rationale       String   @db.Text
+  recommendedAction Json   @default("{}")
+  priority        String   @default("MEDIUM") // LOW | MEDIUM | HIGH | CRITICAL
+  status          String   @default("OPEN") // OPEN | ACCEPTED | DISMISSED | EXPIRED
+  acceptedAt      DateTime?
+  acceptedById    String?
+  dismissedAt     DateTime?
+  dismissedById   String?
+  dismissReason   String?
+  generatingModelCardId String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  expiresAt       DateTime?
+  isDeleted       Boolean  @default(false)
+
+  @@index([tenantId])
+  @@index([category])
+  @@index([subjectType, subjectId])
+  @@index([status])
+  @@index([priority])
+  @@map("aura_ai_recommendation")
+}
+
+// ============================================================================
+// v4.0 — CLOUD MULTI-REGION + FinOps (#114)
+// ============================================================================
+
+// Per-tenant data residency. The platform routes Prisma queries to the
+// corresponding regional cluster based on tenant.regionConfig.primaryRegion.
+model TenantRegionConfig {
+  id              String   @id @default(uuid())
+  tenantId        String   @unique
+  primaryRegion   String   // us-east-1 | ap-south-1 | eu-west-1 | me-south-1 | ...
+  replicaRegions  String[] @default([])
+  dataResidency   String   // STRICT | RELAXED | PROHIBITED_REGIONS
+  prohibitedRegions String[] @default([])
+  encryptionKeyArn String?  // tenant-specific CMK ARN for cross-region encryption
+  effectiveFrom   DateTime @default(now())
+  lastVerifiedAt  DateTime?
+  notes           String?  @db.Text
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdBy       String?
+  updatedBy       String?
+
+  @@index([primaryRegion])
+  @@index([dataResidency])
+  @@map("aura_tenant_region_config")
+}
+
+// FinOps cost record — one row per (tenant, region, service, day) rollup.
+// Lives independently of the cloud provider's billing because chargeback /
+// showback per-tenant requires our own attribution model.
+model CloudCostRecord {
+  id              String   @id @default(uuid())
+  tenantId        String?
+  region          String
+  service         String   // COMPUTE | STORAGE | DB | NETWORK | OBSERVABILITY | ML | LICENSE
+  resourceTag     String?
+  day             DateTime @db.Date
+  costAmount      Decimal
+  currency        String   @default("USD")
+  unitsConsumed   Float?
+  unitMeasure     String?  // vCPU-hours | GB-month | GB-egress | requests | tokens
+  provider        String   // AWS | GCP | AZURE | SUPABASE | DATADOG | OPENAI
+  metadata        Json     @default("{}")
+  createdAt       DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([region])
+  @@index([service])
+  @@index([day])
+  @@index([tenantId, day])
+  @@index([provider])
+  @@map("aura_cloud_cost_record")
+}
+
+// Budget alert — fires when actual or forecast spend exceeds threshold.
+model CostBudget {
+  id              String   @id @default(uuid())
+  tenantId        String?
+  name            String
+  scope           String   // TENANT | SERVICE | REGION | PLATFORM
+  scopeValue      String?
+  monthlyBudget   Decimal
+  currency        String   @default("USD")
+  alertThresholdPct Int    @default(80)
+  forecastThresholdPct Int @default(100)
+  ownerEmail      String?
+  isActive        Boolean  @default(true)
+  metadata        Json     @default("{}")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdBy       String?
+  updatedBy       String?
+
+  @@index([tenantId])
+  @@index([scope, scopeValue])
+  @@map("aura_cost_budget")
+}
+
+// ============================================================================
 // v2.0 — DISASTER RECOVERY (#96)
 // ============================================================================
 
