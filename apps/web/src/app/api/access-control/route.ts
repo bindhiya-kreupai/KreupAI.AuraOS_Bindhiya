@@ -12,16 +12,20 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
     const permissionError = requirePermission(Resource.ROLES, Action.READ, permissions);
     if (permissionError) return permissionError;
 
-    // Fetch all active roles
+    // Fetch active roles visible to this tenant: system-wide (null tenantId) +
+    // any tenant-owned roles. Cross-tenant private roles must not leak here.
     const roles = await prisma.role.findMany({
-      where: { isActive: true },
+      where: {
+        isActive: true,
+        OR: [{ tenantId: null }, { tenantId: user.tenantId }],
+      },
       select: {
         id: true,
         name: true,
         description: true,
         isActive: true,
         _count: {
-          select: { userRoles: true }
+          select: { userRoles: true },
         },
         createdAt: true,
         updatedAt: true,
@@ -74,22 +78,22 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
     const { roleId } = await request.json();
 
     if (!roleId) {
-      return NextResponse.json(
-        { success: false, error: 'Role ID is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: 'Role ID is required' }, { status: 400 });
     }
 
-    // Fetch the specific role
-    const role = await prisma.role.findUnique({
-      where: { id: roleId },
+    // Fetch the specific role — must be system-wide or owned by this tenant
+    const role = await prisma.role.findFirst({
+      where: {
+        id: roleId,
+        OR: [{ tenantId: null }, { tenantId: user.tenantId }],
+      },
       select: {
         id: true,
         name: true,
         description: true,
         isActive: true,
         _count: {
-          select: { userRoles: true }
+          select: { userRoles: true },
         },
         createdAt: true,
         updatedAt: true,
@@ -97,10 +101,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
     });
 
     if (!role) {
-      return NextResponse.json(
-        { success: false, error: 'Role not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ success: false, error: 'Role not found' }, { status: 404 });
     }
 
     // Get permissions for this role

@@ -6,6 +6,7 @@ import { prisma } from '@aura/database';
 export const dynamic = 'force-dynamic';
 
 async function getTenantUserIds(tenantId: string): Promise<string[]> {
+  // tenant-ok: helper takes tenantId as a typed parameter
   const users = await prisma.user.findMany({
     where: { tenantId },
     select: { id: true },

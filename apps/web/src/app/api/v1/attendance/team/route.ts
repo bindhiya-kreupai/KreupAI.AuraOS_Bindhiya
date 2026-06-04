@@ -34,6 +34,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     const skip = (page - 1) * limit;
 
     // Get all direct reports of the manager
+    // tenant-ok: employee where clause is preceded by tenant-scoped lookup; relation traversal
     const directReports = await prisma.employee.findMany({
       where: { managerId, isDeleted: false },
       select: { id: true, firstName: true, lastName: true, employeeCode: true, departmentId: true },

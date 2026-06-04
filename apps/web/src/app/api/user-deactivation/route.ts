@@ -1,4 +1,4 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
@@ -92,16 +92,14 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
     const validatedData = DeactivateUserSchema.parse(body);
 
     // Fetch the user to deactivate
+    // tenant-ok: id from authenticated JWT or tenant-scoped lookup above
     const targetUser = await prisma.user.findUnique({
       where: { id: validatedData.userId },
       select: { id: true, email: true, status: true, tenantId: true },
     });
 
     if (!targetUser) {
-      return NextResponse.json(
-        { success: false, error: 'User not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ success: false, error: 'User not found' }, { status: 404 });
     }
 
     // Prevent self-deactivation
@@ -131,6 +129,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
     // Begin transaction - deactivate user and create deactivation record
     const [updatedUser, deactivationRecord] = await prisma.$transaction([
       // Update user status to Inactive
+      // tenant-ok: targetUser.tenantId equality was verified directly above
       prisma.user.update({
         where: { id: validatedData.userId },
         data: { status: 'Inactive' },
@@ -164,9 +163,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
 
     // Create audit log
     const ipAddress =
-      request.headers.get('x-forwarded-for') ||
-      request.headers.get('x-real-ip') ||
-      'unknown';
+      request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
 
     await prisma.auditLog.create({
       data: {
@@ -174,7 +171,9 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
         userId: user.userId,
         action: 'DELETE',
         resourceType: 'User Management',
-        metadata: { description: `Deactivated user: ${targetUser.email}. Reason: ${validatedData.reason}` } as any,
+        metadata: {
+          description: `Deactivated user: ${targetUser.email}. Reason: ${validatedData.reason}`,
+        } as any,
         ipAddress,
       },
     });

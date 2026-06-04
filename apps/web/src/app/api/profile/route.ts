@@ -1,5 +1,5 @@
 // @ts-nocheck — Has Prisma schema drift (wrong field/relation names against current schema). Tracked under #29.
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
@@ -12,6 +12,7 @@ import { logger } from '@/lib/logger';
 export const GET = withAuth(async (request: NextRequest, { user }) => {
   try {
     // Fetch user profile with employee data
+    // tenant-ok: id from authenticated JWT or tenant-scoped lookup above
     const userProfile = await prisma.user.findUnique({
       where: { id: user.userId },
       select: {
@@ -94,10 +95,7 @@ export const GET = withAuth(async (request: NextRequest, { user }) => {
     });
   } catch (error: any) {
     logger.error('Error fetching profile:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch profile' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: 'Failed to fetch profile' }, { status: 500 });
   }
 });
 
@@ -107,7 +105,12 @@ export const PUT = withAuth(async (request: NextRequest, { user }) => {
     const body = await request.json();
 
     // Users can only update limited fields in their profile
-    const allowedFields = ['personalEmail', 'mobileNumber', 'emergencyContact', 'emergencyContactNumber'];
+    const allowedFields = [
+      'personalEmail',
+      'mobileNumber',
+      'emergencyContact',
+      'emergencyContactNumber',
+    ];
     const updateData: any = {};
 
     for (const field of allowedFields) {
@@ -124,6 +127,7 @@ export const PUT = withAuth(async (request: NextRequest, { user }) => {
     }
 
     // Check if user has employee record
+    // tenant-ok: id from authenticated JWT or tenant-scoped lookup above
     const userWithEmployee = await prisma.user.findUnique({
       where: { id: user.userId },
       select: {
@@ -156,9 +160,7 @@ export const PUT = withAuth(async (request: NextRequest, { user }) => {
 
     // Create audit log
     const ipAddress =
-      request.headers.get('x-forwarded-for') ||
-      request.headers.get('x-real-ip') ||
-      'unknown';
+      request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
 
     await prisma.auditLog.create({
       data: {

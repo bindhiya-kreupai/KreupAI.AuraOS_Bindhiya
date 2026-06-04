@@ -1,4 +1,4 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import bcrypt from 'bcryptjs';
@@ -29,6 +29,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user }) => {
     const ipAddress = request.headers.get('x-forwarded-for') || 'unknown';
 
     // Get user with password
+    // tenant-ok: user.userId from authenticated JWT — already tenant-bound
     const userRecord = await prisma.user.findUnique({
       where: { id: user.userId },
       select: {
@@ -40,32 +41,26 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user }) => {
     });
 
     if (!userRecord) {
-      return NextResponse.json(
-        { success: false, error: 'User not found' },
-        { status: 404 }
-      );
+      return NextResponse.json({ success: false, error: 'User not found' }, { status: 404 });
     }
 
     if (!userRecord.mfaEnabled) {
-      return NextResponse.json(
-        { success: false, error: 'MFA is not enabled' },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: 'MFA is not enabled' }, { status: 400 });
     }
 
     // Verify password
     const passwordMatch = await bcrypt.compare(validatedData.password, userRecord.password);
 
     if (!passwordMatch) {
-      logger.warn({
-        userId: user.userId,
-        ipAddress,
-      }, 'Failed MFA disable attempt - incorrect password');
-
-      return NextResponse.json(
-        { success: false, error: 'Incorrect password' },
-        { status: 401 }
+      logger.warn(
+        {
+          userId: user.userId,
+          ipAddress,
+        },
+        'Failed MFA disable attempt - incorrect password'
       );
+
+      return NextResponse.json({ success: false, error: 'Incorrect password' }, { status: 401 });
     }
 
     // Disable MFA
@@ -91,11 +86,14 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user }) => {
       },
     });
 
-    logger.info({
-      userId: user.userId,
-      email: userRecord.email,
-      ipAddress,
-    }, 'MFA disabled');
+    logger.info(
+      {
+        userId: user.userId,
+        email: userRecord.email,
+        ipAddress,
+      },
+      'MFA disabled'
+    );
 
     return NextResponse.json({
       success: true,
@@ -111,9 +109,6 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user }) => {
 
     logger.error({ error, userId: user.userId }, 'Error disabling MFA');
 
-    return NextResponse.json(
-      { success: false, error: 'Failed to disable MFA' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: 'Failed to disable MFA' }, { status: 500 });
   }
 });

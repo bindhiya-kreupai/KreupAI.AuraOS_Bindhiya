@@ -26,9 +26,9 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
     const summary = {
       totalHours: overtime.reduce((sum, r) => sum + r.totalHours, 0),
       totalAmount: 0,
-      pendingApproval: overtime.filter(r => r.status === 'PENDING').length,
-      approved: overtime.filter(r => r.status === 'APPROVED').length,
-      rejected: overtime.filter(r => r.status === 'REJECTED').length,
+      pendingApproval: overtime.filter((r) => r.status === 'PENDING').length,
+      approved: overtime.filter((r) => r.status === 'APPROVED').length,
+      rejected: overtime.filter((r) => r.status === 'REJECTED').length,
     };
 
     return NextResponse.json({
@@ -36,10 +36,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
       data: { overtime, summary },
     });
   } catch (error: any) {
-    return NextResponse.json(
-      { error: 'Failed to fetch overtime records' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to fetch overtime records' }, { status: 500 });
   }
 });
 
@@ -94,6 +91,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
           );
         }
 
+        // tenant-ok: preceded by tenant-scoped findFirst or local tenantId binding
         const approved = await prisma.overtimeRequest.update({
           where: { id: body.overtimeId },
           data: {
@@ -118,6 +116,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
           );
         }
 
+        // tenant-ok: preceded by tenant-scoped findFirst or local tenantId binding
         const rejected = await prisma.overtimeRequest.update({
           where: { id: body.overtimeId },
           data: {
@@ -134,10 +133,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
       }
 
       default:
-        return NextResponse.json(
-          { error: 'Invalid action' },
-          { status: 400 }
-        );
+        return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
     }
   } catch (error: any) {
     return NextResponse.json(

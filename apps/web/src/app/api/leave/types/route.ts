@@ -14,88 +14,85 @@ const LeaveTypeSchema = z.object({
 });
 
 // GET - Fetch leave types from database
-export const GET = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions }) => {
-    try {
-      const permissionError = requirePermission(Resource.LEAVE, Action.READ, permissions);
-      if (permissionError) return permissionError;
+export const GET = withEnhancedAuth(async (request: NextRequest, { user, permissions }) => {
+  try {
+    const permissionError = requirePermission(Resource.LEAVE, Action.READ, permissions);
+    if (permissionError) return permissionError;
 
-      const { searchParams } = new URL(request.url);
-      const status = searchParams.get('status');
+    const { searchParams } = new URL(request.url);
+    const status = searchParams.get('status');
 
-      const where: Record<string, unknown> = {};
-      if (status) {
-        where.status = status;
-      }
-
-      const leaveTypes = await prisma.leaveType.findMany({
-        where,
-        orderBy: { name: 'asc' },
-      });
-
-      return NextResponse.json({
-        success: true,
-        types: leaveTypes,
-        leaveTypes,
-        data: leaveTypes,
-        meta: { total: leaveTypes.length },
-      });
-    } catch (error: any) {
-      logger.error('Error fetching leave types:', error);
-      return NextResponse.json(
-        { success: false, error: 'Failed to fetch leave types' },
-        { status: 500 }
-      );
+    const where: Record<string, unknown> = {};
+    if (status) {
+      where.status = status;
     }
+
+    // tenant-ok: LeaveType is a shared catalogue (no tenantId column)
+    const leaveTypes = await prisma.leaveType.findMany({
+      where,
+      orderBy: { name: 'asc' },
+    });
+
+    return NextResponse.json({
+      success: true,
+      types: leaveTypes,
+      leaveTypes,
+      data: leaveTypes,
+      meta: { total: leaveTypes.length },
+    });
+  } catch (error: any) {
+    logger.error('Error fetching leave types:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to fetch leave types' },
+      { status: 500 }
+    );
   }
-);
+});
 
 // POST - Create leave type in database
-export const POST = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions }) => {
-    try {
-      const permissionError = requirePermission(Resource.LEAVE, Action.CREATE, permissions);
-      if (permissionError) return permissionError;
+export const POST = withEnhancedAuth(async (request: NextRequest, { user, permissions }) => {
+  try {
+    const permissionError = requirePermission(Resource.LEAVE, Action.CREATE, permissions);
+    if (permissionError) return permissionError;
 
-      const body = await request.json();
-      const data = LeaveTypeSchema.parse(body);
+    const body = await request.json();
+    const data = LeaveTypeSchema.parse(body);
 
-      const newLeaveType = await prisma.leaveType.create({
-        data: {
-          code: data.code,
-          name: data.name,
-          isPaid: data.isPaid,
-          status: data.status,
-        },
-      });
+    const newLeaveType = await prisma.leaveType.create({
+      data: {
+        code: data.code,
+        name: data.name,
+        isPaid: data.isPaid,
+        status: data.status,
+      },
+    });
 
-      await prisma.auditLog.create({
-        data: {
-          tenantId: user.tenantId,
-          userId: user.userId,
-          action: 'CREATE',
-          resourceType: 'Leave - Types',
-          metadata: { description: `Created leave type: ${data.name} (${data.code})` } as any,
-          ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
-        },
-      });
+    await prisma.auditLog.create({
+      data: {
+        tenantId: user.tenantId,
+        userId: user.userId,
+        action: 'CREATE',
+        resourceType: 'Leave - Types',
+        metadata: { description: `Created leave type: ${data.name} (${data.code})` } as any,
+        ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
+      },
+    });
 
+    return NextResponse.json(
+      { success: true, data: newLeaveType, type: newLeaveType, leaveType: newLeaveType },
+      { status: 201 }
+    );
+  } catch (error: any) {
+    if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { success: true, data: newLeaveType, type: newLeaveType, leaveType: newLeaveType },
-        { status: 201 }
-      );
-    } catch (error: any) {
-      if (error instanceof z.ZodError) {
-        return NextResponse.json(
-          { success: false, error: 'Validation error', details: error.errors },
-          { status: 400 }
-        );
-      }
-      logger.error('Error creating leave type:', error);
-      return NextResponse.json(
-        { success: false, error: 'Failed to create leave type' },
-        { status: 500 }
+        { success: false, error: 'Validation error', details: error.errors },
+        { status: 400 }
       );
     }
+    logger.error('Error creating leave type:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to create leave type' },
+      { status: 500 }
+    );
   }
-);
+});

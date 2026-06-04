@@ -1,4 +1,4 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth/enhanced-middleware';
@@ -31,6 +31,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
     }
 
     // Fetch all permissions
+    // tenant-ok: shared / config catalog or tenant-scoped via local where
     const allPermissions = await prisma.permission.findMany({
       where,
       select: {
@@ -54,11 +55,14 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
         groupedPermissions[perm.resource].push(perm);
       }
 
-      logger.info({
-        userId: user.userId,
-        resources: Object.keys(groupedPermissions).length,
-        total: allPermissions.length,
-      }, 'Permissions fetched successfully (grouped)');
+      logger.info(
+        {
+          userId: user.userId,
+          resources: Object.keys(groupedPermissions).length,
+          total: allPermissions.length,
+        },
+        'Permissions fetched successfully (grouped)'
+      );
 
       return NextResponse.json({
         success: true,
@@ -70,10 +74,13 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
       });
     }
 
-    logger.info({
-      userId: user.userId,
-      count: allPermissions.length,
-    }, 'Permissions fetched successfully');
+    logger.info(
+      {
+        userId: user.userId,
+        count: allPermissions.length,
+      },
+      'Permissions fetched successfully'
+    );
 
     return NextResponse.json({
       success: true,

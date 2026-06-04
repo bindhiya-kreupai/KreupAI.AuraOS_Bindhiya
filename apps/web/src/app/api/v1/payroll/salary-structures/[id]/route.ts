@@ -100,6 +100,7 @@ export const PUT = withAudit(
         if (!existing) return notFound();
 
         const body = await request.json();
+        // tenant-ok: id-based op preceded by tenant-scoped findFirst above
         const updated = await prisma.salaryStructure.update({
           where: { id },
           data: {
@@ -159,6 +160,7 @@ export const DELETE = withAudit(
         });
         if (!existing) return notFound();
 
+        // tenant-ok: id-based op preceded by tenant-scoped findFirst above
         await prisma.salaryStructure.update({
           where: { id },
           data: { isDeleted: true, deletedAt: new Date(), status: 'Archived', updatedBy: user.id },

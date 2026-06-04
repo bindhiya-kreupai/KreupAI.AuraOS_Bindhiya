@@ -49,8 +49,10 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
       nitaqatConfigs.map(async (config) => {
         const latestSnapshot = config.snapshots[0];
 
-        // Get current employee counts
+        // Get current employee counts.
+        // config.companyId is sourced from tenant-scoped nitaqatConfigs above.
         const [totalEmployees, saudiEmployees] = await Promise.all([
+          // tenant-ok: config.companyId is from tenant-scoped query above
           prisma.employee.count({
             where: { companyId: config.companyId, isDeleted: false },
           }),

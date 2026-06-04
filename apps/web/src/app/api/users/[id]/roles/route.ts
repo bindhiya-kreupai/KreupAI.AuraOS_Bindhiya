@@ -1,4 +1,4 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
@@ -43,10 +43,7 @@ export const GET = withEnhancedAuth(
       });
 
       if (!targetUser) {
-        return NextResponse.json(
-          { success: false, error: 'User not found' },
-          { status: 404 }
-        );
+        return NextResponse.json({ success: false, error: 'User not found' }, { status: 404 });
       }
 
       // Fetch user roles with full details
@@ -75,18 +72,24 @@ export const GET = withEnhancedAuth(
         orderBy: { assignedAt: 'desc' },
       });
 
-      logger.info({
-        userId: user.userId,
-        targetUserId: userId,
-        rolesCount: userRoles.length,
-      }, 'User roles fetched successfully');
+      logger.info(
+        {
+          userId: user.userId,
+          targetUserId: userId,
+          rolesCount: userRoles.length,
+        },
+        'User roles fetched successfully'
+      );
 
       return NextResponse.json({
         success: true,
         data: userRoles,
       });
     } catch (error: any) {
-      logger.error({ error, userId: user.userId, targetUserId: params.id }, 'Error fetching user roles');
+      logger.error(
+        { error, userId: user.userId, targetUserId: params.id },
+        'Error fetching user roles'
+      );
       return NextResponse.json(
         { success: false, error: 'Failed to fetch user roles' },
         { status: 500 }
@@ -122,10 +125,7 @@ export const POST = withEnhancedAuth(
       });
 
       if (!targetUser) {
-        return NextResponse.json(
-          { success: false, error: 'User not found' },
-          { status: 404 }
-        );
+        return NextResponse.json({ success: false, error: 'User not found' }, { status: 404 });
       }
 
       // Verify role exists and belongs to tenant
@@ -145,6 +145,7 @@ export const POST = withEnhancedAuth(
       }
 
       // Check if user already has this role
+      // tenant-ok: id from authenticated JWT or tenant-scoped lookup above
       const existingAssignment = await prisma.userRole.findUnique({
         where: {
           userId_roleId: {
@@ -196,18 +197,23 @@ export const POST = withEnhancedAuth(
           userId: user.userId,
           action: 'CREATE',
           resourceType: 'User Role Assignment',
-          metadata: { description: `Assigned role ${role.code} (${role.name}) to user ${targetUser.email}${validatedData.expiresAt ? ` (expires: ${validatedData.expiresAt})` : ''}` } as any,
+          metadata: {
+            description: `Assigned role ${role.code} (${role.name}) to user ${targetUser.email}${validatedData.expiresAt ? ` (expires: ${validatedData.expiresAt})` : ''}`,
+          } as any,
           ipAddress,
         },
       });
 
-      logger.info({
-        userId: user.userId,
-        targetUserId: userId,
-        roleId: role.id,
-        roleCode: role.code,
-        expiresAt: validatedData.expiresAt,
-      }, 'Role assigned to user successfully');
+      logger.info(
+        {
+          userId: user.userId,
+          targetUserId: userId,
+          roleId: role.id,
+          roleCode: role.code,
+          expiresAt: validatedData.expiresAt,
+        },
+        'Role assigned to user successfully'
+      );
 
       return NextResponse.json(
         {
@@ -225,11 +231,11 @@ export const POST = withEnhancedAuth(
         );
       }
 
-      logger.error({ error, userId: user.userId, targetUserId: params.id }, 'Error assigning role to user');
-      return NextResponse.json(
-        { success: false, error: 'Failed to assign role' },
-        { status: 500 }
+      logger.error(
+        { error, userId: user.userId, targetUserId: params.id },
+        'Error assigning role to user'
       );
+      return NextResponse.json({ success: false, error: 'Failed to assign role' }, { status: 500 });
     }
   }
 );
@@ -261,13 +267,11 @@ export const DELETE = withEnhancedAuth(
       });
 
       if (!targetUser) {
-        return NextResponse.json(
-          { success: false, error: 'User not found' },
-          { status: 404 }
-        );
+        return NextResponse.json({ success: false, error: 'User not found' }, { status: 404 });
       }
 
       // Verify role assignment exists
+      // tenant-ok: id from authenticated JWT or tenant-scoped lookup above
       const userRole = await prisma.userRole.findUnique({
         where: {
           userId_roleId: {
@@ -323,17 +327,22 @@ export const DELETE = withEnhancedAuth(
           userId: user.userId,
           action: 'DELETE',
           resourceType: 'User Role Assignment',
-          metadata: { description: `Removed role ${userRole.role.code} (${userRole.role.name}) from user ${targetUser.email}` } as any,
+          metadata: {
+            description: `Removed role ${userRole.role.code} (${userRole.role.name}) from user ${targetUser.email}`,
+          } as any,
           ipAddress,
         },
       });
 
-      logger.info({
-        userId: user.userId,
-        targetUserId: userId,
-        roleId: validatedData.roleId,
-        roleCode: userRole.role.code,
-      }, 'Role removed from user successfully');
+      logger.info(
+        {
+          userId: user.userId,
+          targetUserId: userId,
+          roleId: validatedData.roleId,
+          roleCode: userRole.role.code,
+        },
+        'Role removed from user successfully'
+      );
 
       return NextResponse.json({
         success: true,
@@ -347,11 +356,11 @@ export const DELETE = withEnhancedAuth(
         );
       }
 
-      logger.error({ error, userId: user.userId, targetUserId: params.id }, 'Error removing role from user');
-      return NextResponse.json(
-        { success: false, error: 'Failed to remove role' },
-        { status: 500 }
+      logger.error(
+        { error, userId: user.userId, targetUserId: params.id },
+        'Error removing role from user'
       );
+      return NextResponse.json({ success: false, error: 'Failed to remove role' }, { status: 500 });
     }
   }
 );

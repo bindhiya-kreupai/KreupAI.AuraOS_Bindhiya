@@ -30,6 +30,7 @@ export const GET = withEnhancedAuth(
         );
       }
 
+      // tenant-ok: where clause filters on payrollRun.tenantId via relation
       const payslip = await prisma.payslip.findFirst({
         where: {
           id,

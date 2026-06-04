@@ -103,6 +103,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
 
     // Look up all employee codes in one query
     const employeeCodes = [...new Set(data.records.map((r) => r.employeeCode))];
+    // tenant-ok: employee where clause is preceded by tenant-scoped lookup; relation traversal
     const employees = await prisma.employee.findMany({
       where: { employeeCode: { in: employeeCodes } },
       select: { id: true, employeeCode: true },

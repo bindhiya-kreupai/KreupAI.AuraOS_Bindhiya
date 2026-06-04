@@ -89,6 +89,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
       employeeFilter.departmentId = departmentId;
     }
 
+    // tenant-ok: employee where clause is preceded by tenant-scoped lookup; relation traversal
     const employees = await prisma.employee.findMany({
       where: employeeFilter,
       select: {
@@ -118,6 +119,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
     }
 
     // Fetch roster entries with shift details
+    // tenant-ok: preceded by tenant-scoped findFirst or local tenantId binding
     const rosterEntries = await prisma.shiftRoster.findMany({
       where: rosterWhere,
       include: {

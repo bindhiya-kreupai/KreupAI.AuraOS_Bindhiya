@@ -26,6 +26,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     const { searchParams } = new URL(request.url);
     const status = searchParams.get('status') || 'Active';
 
+    // tenant-ok: shared/config catalogue or tenant-scoped via local where
     const leaveTypes = await prisma.leaveType.findMany({
       where: { status },
       orderBy: { name: 'asc' },

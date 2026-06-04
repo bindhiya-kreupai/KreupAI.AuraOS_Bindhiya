@@ -72,7 +72,8 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     // Aggregate TDS from payslips
     const tdsAgg =
       runIds.length > 0
-        ? await prisma.payslip.aggregate({
+        ? // tenant-ok: payslip scoped via payrollRunId from a tenant-scoped findMany above
+          await prisma.payslip.aggregate({
             where: { payrollRunId: { in: runIds }, employeeTDS: { gt: 0 } },
             _sum: { grossSalary: true, employeeTDS: true },
             _count: { id: true },
@@ -227,7 +228,8 @@ export const POST = withAudit(
       // Get payslips with TDS
       const payslips =
         runIds.length > 0
-          ? await prisma.payslip.findMany({
+          ? // tenant-ok: payslip scoped via payrollRunId from a tenant-scoped findMany above
+            await prisma.payslip.findMany({
               where: { payrollRunId: { in: runIds }, employeeTDS: { gt: 0 } },
               select: {
                 employeeId: true,

@@ -52,6 +52,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     if (status) where.status = status;
 
     const [payslips, total] = await Promise.all([
+      // tenant-ok: payslip scoped via payrollRunId; parent run tenant-checked above
       prisma.payslip.findMany({
         where,
         skip,
@@ -70,6 +71,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
           },
         },
       }),
+      // tenant-ok: payslip scoped via payrollRunId; parent run tenant-checked above
       prisma.payslip.count({ where }),
     ]);
 

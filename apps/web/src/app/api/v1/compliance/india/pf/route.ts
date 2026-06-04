@@ -111,7 +111,8 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
 
     const pfAgg =
       runIds.length > 0
-        ? await prisma.payslip.aggregate({
+        ? // tenant-ok: payslip scoped via payrollRunId from a tenant-scoped findMany above
+          await prisma.payslip.aggregate({
             where: { payrollRunId: { in: runIds }, employeePF: { gt: 0 } },
             _sum: { basicSalary: true, employeePF: true, employerPF: true, employerPension: true },
             _count: { id: true },
@@ -214,6 +215,7 @@ export const POST = withAudit(
         select: { id: true },
       });
 
+      // tenant-ok: payslip scoped via payrollRunId from a tenant-scoped findMany above
       const payslips = await prisma.payslip.findMany({
         where: {
           payrollRunId: { in: payrollRuns.map((r) => r.id) },

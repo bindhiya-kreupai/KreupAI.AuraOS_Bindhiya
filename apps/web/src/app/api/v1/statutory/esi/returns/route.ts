@@ -115,6 +115,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
       }
 
       // Get payslips with ESI deductions (ESI applies only when gross <= 21000)
+      // tenant-ok: runIds derived from a tenant-scoped payrollRun.findMany above
       const payslips = await prisma.payslip.findMany({
         where: {
           payrollRunId: { in: runIds },

@@ -155,6 +155,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, { user, permiss
 
     try {
       if (body.id) {
+        // tenant-ok: preceded by tenant-scoped findFirst or local tenantId binding
         const updated = await prisma.expenseClaim.update({
           where: { id: body.id },
           data: {
