@@ -321,6 +321,16 @@ export type BenefitsStackParamList = {
   SubmitClaim: undefined;
 };
 
+export type ExpenseStackParamList = {
+  ExpenseHome: undefined;
+  SubmitExpense: undefined;
+  ExpenseApprovals: undefined;
+};
+
+export type OnboardingStackParamList = {
+  OnboardingTasks: undefined;
+};
+
 export type MoreStackParamList = {
   MoreHome: undefined;
   Profile: undefined;
