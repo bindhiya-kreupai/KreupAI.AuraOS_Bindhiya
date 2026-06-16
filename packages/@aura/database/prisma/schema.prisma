@@ -400,6 +400,103 @@ model EmploymentType {
   @@map("aura_employment_type")
 }
 
+model EmployeeNumberSequence {
+  id          String   @id @default(uuid())
+  tenantId    String
+  companyId   String
+  prefix      String
+  nextNumber  Int      @default(1)
+  padding     Int      @default(5)
+  createdBy   String?
+  updatedBy   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@unique([tenantId, companyId])
+  @@index([tenantId])
+  @@index([companyId])
+  @@map("aura_employee_number_sequence")
+}
+
+model EmployeeMasterDataDraft {
+  id                    String   @id @default(uuid())
+  tenantId              String
+  onboardingInstanceId  String?
+  offerId               String?
+  employeeId            String?
+  status                String   @default("DRAFT") // DRAFT | SUBMITTED | APPROVED | ACTIVATED | REJECTED
+  masterData            Json
+  validationSnapshot    Json
+  duplicateSnapshot     Json?
+  submittedBy           String?
+  submittedAt           DateTime?
+  approvedBy            String?
+  approvedAt            DateTime?
+  activatedBy           String?
+  activatedAt           DateTime?
+  rejectionReason       String?  @db.Text
+  createdBy             String
+  updatedBy             String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  isDeleted             Boolean  @default(false)
+  deletedAt             DateTime?
+
+  @@index([tenantId])
+  @@index([onboardingInstanceId])
+  @@index([offerId])
+  @@index([employeeId])
+  @@index([status])
+  @@map("aura_employee_master_data_draft")
+}
+
+model EmployeeIdentification {
+  id             String   @id @default(uuid())
+  tenantId       String
+  employeeId     String
+  countryCode    String
+  identifierType String   // PASSPORT | EMIRATES_ID | IQAMA | CPR | QID | NATIONAL_ID | CIVIL_ID
+  identifierValue String
+  issueDate      DateTime?
+  expiryDate     DateTime?
+  isPrimary      Boolean  @default(false)
+  sourceDraftId  String?
+  createdBy      String?
+  updatedBy      String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  isDeleted      Boolean  @default(false)
+  deletedAt      DateTime?
+
+  @@unique([tenantId, identifierType, identifierValue])
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([countryCode])
+  @@index([identifierType])
+  @@map("aura_employee_identification")
+}
+
+model EmployeeLifecycleEvent {
+  id             String    @id @default(uuid())
+  tenantId       String
+  employeeId     String
+  eventType      String
+  payload        Json
+  status         String    @default("PENDING") // PENDING | PUBLISHED | FAILED
+  publishedAt    DateTime?
+  failedAt       DateTime?
+  errorMessage   String?   @db.Text
+  createdBy      String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([eventType])
+  @@index([status])
+  @@map("aura_employee_lifecycle_event")
+}
+
 // ============================================================================
 // 5. SYSTEM / AUTH
 // ============================================================================
@@ -2584,6 +2681,38 @@ model EmployeeComplianceDetails {
   @@map("aura_employee_compliance_details")
 }
 
+model SocialInsuranceRegistration {
+  id                  String   @id @default(uuid())
+  tenantId            String
+  employeeId          String
+  onboardingInstanceId String?
+  countryCode         String
+  nationality         String?
+  authority           String
+  scheme              String
+  contributionWage    Decimal  @db.Decimal(12, 2)
+  currency            String
+  registrationReference String?
+  status              String   @default("PENDING") // PENDING, IN_PROGRESS, REGISTERED, WAIVED, BLOCKED
+  mandatory           Boolean  @default(true)
+  deadlineAt          DateTime
+  registeredAt        DateTime?
+  ruleVersion         String
+  ruleSnapshot        Json?
+  notes               String?
+  createdBy           String?
+  updatedBy           String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@unique([tenantId, employeeId, authority, scheme])
+  @@index([tenantId, employeeId])
+  @@index([tenantId, status])
+  @@index([tenantId, deadlineAt])
+  @@index([countryCode, authority])
+  @@map("aura_social_insurance_registration")
+}
+
 // ============================================================================
 // 26. PAYROLL CONFIGURATION & PROCESSING
 // ============================================================================
@@ -2786,6 +2915,58 @@ model EmployeeSalaryStructure {
   @@index([effectiveFrom])
   @@index([isActive])
   @@map("aura_employee_salary_structure")
+}
+
+model EmployeePayrollProfile {
+  id                         String   @id @default(uuid())
+  tenantId                   String
+  employeeId                 String
+  companyId                  String
+  payrollConfigId            String?
+  countryCode                String
+  onboardingInstanceId       String?
+  salaryStructureId          String?
+  salaryComponents           Json
+  bankName                   String?
+  bankAccountNumber          String?
+  bankIBAN                   String?
+  bankRoutingCode            String?
+  wpsAgentCode               String?
+  wpsEmployerCode            String?
+  wpsPersonCode              String?
+  labourCardNumber           String?
+  costCenterCode             String?
+  prorationBasis             String   @default("CALENDAR_DAYS")
+  joiningDate                DateTime
+  firstPayrollMonth          String
+  firstPeriodStart           DateTime
+  firstPeriodEnd             DateTime
+  firstPeriodPaidDays        Decimal  @db.Decimal(8, 2)
+  firstPeriodCalendarDays    Int
+  firstPeriodProrationFactor Decimal  @db.Decimal(8, 6)
+  firstPeriodGrossProrated   Decimal  @db.Decimal(12, 2)
+  firstPayDueAt              DateTime
+  readinessStatus            String   @default("BLOCKED")
+  blockReasons               Json
+  alertReasons               Json?
+  approvalStatus             String   @default("PENDING_APPROVAL")
+  approvedBy                 String?
+  approvedAt                 DateTime?
+  createdBy                  String
+  updatedBy                  String?
+  createdAt                  DateTime @default(now())
+  updatedAt                  DateTime @updatedAt
+  isDeleted                  Boolean  @default(false)
+  deletedAt                  DateTime?
+
+  @@unique([tenantId, employeeId])
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([companyId])
+  @@index([countryCode])
+  @@index([readinessStatus])
+  @@index([firstPayrollMonth])
+  @@map("aura_employee_payroll_profile")
 }
 
 // Employee Benefits - Insurance, medical, etc.
@@ -5088,6 +5269,11 @@ model BenefitEnrollment {
   enrollmentDate      DateTime                @default(now())
   approvedBy          String?
   approvedDate        DateTime?
+  onboardingInstanceId String?
+  vendorReference     String?
+  vendorEnrollmentFile Json?
+  insuranceCardStatus String                  @default("PENDING")
+  insuranceCardIssuedAt DateTime?
   qualifyingEventId   String?
   qualifyingEventType QualifyingEventType?
   previousPlanId      String?
@@ -5109,6 +5295,8 @@ model BenefitEnrollment {
   @@index([employeeId])
   @@index([planId])
   @@index([status])
+  @@index([insuranceCardStatus])
+  @@index([onboardingInstanceId])
   @@index([effectiveFrom])
   @@map("aura_benefit_enrollment")
 }
@@ -6215,6 +6403,171 @@ model OnboardingProgram {
   @@map("aura_onboarding_program")
 }
 
+model CountryOnboardingRule {
+  id            String   @id @default(uuid())
+  tenantId      String
+  countryCode   String
+  ruleCode      String
+  version       String
+  status        String   @default("ACTIVE")
+  effectiveFrom DateTime @default(now())
+  effectiveTo   DateTime?
+  ruleSet       Json
+  createdBy     String?
+  updatedBy     String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  isDeleted     Boolean  @default(false)
+  deletedAt     DateTime?
+
+  @@unique([tenantId, countryCode, version])
+  @@index([tenantId])
+  @@index([countryCode])
+  @@index([status])
+  @@index([effectiveFrom])
+  @@map("aura_country_onboarding_rule")
+}
+
+model OnboardingGovernanceTemplate {
+  id            String   @id @default(uuid())
+  tenantId      String
+  countryCode   String
+  legalEntityId String?
+  employmentType String?
+  version       String
+  status        String   @default("ACTIVE")
+  stageConfig   Json
+  checklistTemplate Json?
+  createdBy     String?
+  updatedBy     String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  isDeleted     Boolean  @default(false)
+  deletedAt     DateTime?
+
+  @@unique([tenantId, countryCode, legalEntityId, employmentType, version])
+  @@index([tenantId])
+  @@index([countryCode])
+  @@index([legalEntityId])
+  @@index([employmentType])
+  @@index([status])
+  @@map("aura_onboarding_governance_template")
+}
+
+model OnboardingCase {
+  id                  String   @id @default(uuid())
+  tenantId            String
+  offerId             String?
+  onboardingInstanceId String?
+  employeeId          String?
+  candidateName       String?
+  candidateEmail      String?
+  countryCode         String
+  legalEntityId       String
+  employmentType      String
+  targetJoinDate      DateTime
+  currentStage        String   @default("PRE_JOINING")
+  status              String   @default("OPEN") // OPEN | BLOCKED | ESCALATED | COMPLETED | CANCELLED
+  stageOwnerRole      String
+  escalationRole      String?
+  governanceTemplateId String?
+  governanceVersion   String?
+  governanceSnapshot  Json
+  checklistSnapshot   Json?
+  blockingItems       Json     @default("[]")
+  slaDueAt            DateTime?
+  escalatedAt         DateTime?
+  escalatedToRole     String?
+  createdBy           String?
+  updatedBy           String?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  isDeleted           Boolean  @default(false)
+  deletedAt           DateTime?
+
+  histories OnboardingStageHistory[]
+
+  @@unique([tenantId, offerId])
+  @@index([tenantId])
+  @@index([offerId])
+  @@index([employeeId])
+  @@index([countryCode])
+  @@index([legalEntityId])
+  @@index([currentStage])
+  @@index([status])
+  @@index([slaDueAt])
+  @@map("aura_onboarding_case")
+}
+
+model OnboardingStageHistory {
+  id          String   @id @default(uuid())
+  tenantId    String
+  caseId      String
+  case        OnboardingCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  fromStage   String?
+  toStage     String
+  actorId     String
+  reason      String?
+  blockingItems Json?
+  createdAt   DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([caseId])
+  @@index([toStage])
+  @@index([createdAt])
+  @@map("aura_onboarding_stage_history")
+}
+
+model OnboardingGuidanceContent {
+  id             String   @id @default(uuid())
+  tenantId       String
+  contentKey     String
+  countryCode    String
+  version        Int
+  status         String   @default("DRAFT") // DRAFT | PUBLISHED | ARCHIVED
+  title          String
+  introduction   String   @db.Text
+  objectives     Json
+  keyTakeaways   Json
+  obligations    Json?
+  publishedAt    DateTime?
+  archivedAt     DateTime?
+  createdBy      String
+  updatedBy      String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  isDeleted      Boolean  @default(false)
+  deletedAt      DateTime?
+
+  @@unique([tenantId, contentKey, countryCode, version])
+  @@index([tenantId])
+  @@index([contentKey])
+  @@index([countryCode])
+  @@index([status])
+  @@map("aura_onboarding_guidance_content")
+}
+
+model OnboardingGuidanceViewLog {
+  id              String   @id @default(uuid())
+  tenantId        String
+  contentId       String
+  contentKey      String
+  countryCode     String
+  version         Int
+  onboardingCaseId String?
+  userId          String?
+  stage           String?
+  viewedAt        DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([contentId])
+  @@index([contentKey])
+  @@index([countryCode])
+  @@index([onboardingCaseId])
+  @@index([userId])
+  @@map("aura_onboarding_guidance_view_log")
+}
+
 model OnboardingInstance {
   id             String    @id @default(uuid())
   tenantId       String
@@ -6231,6 +6584,10 @@ model OnboardingInstance {
   completedTasks Int       @default(0)
   overdueTasks   Int       @default(0)
   currentPhase   String?
+  countryCode    String?
+  countryRuleId  String?
+  countryRuleVersion String?
+  countryRuleSnapshot Json?
   notes          String?
   createdBy      String?
   createdAt      DateTime  @default(now())
@@ -6242,6 +6599,8 @@ model OnboardingInstance {
   @@index([tenantId])
   @@index([employeeId])
   @@index([status])
+  @@index([countryCode])
+  @@index([countryRuleId])
   @@map("aura_onboarding_instance")
 }
 
@@ -6253,6 +6612,10 @@ model OnboardingTask {
   category         String
   phase            String?
   responsibleParty String?
+  ruleTaskCode     String?
+  documentRequirements Json?
+  downstreamTrigger String?
+  blockingStage    String?
   assignedTo       String?
   priority         String    @default("medium")
   status           String    @default("pending")
@@ -6271,6 +6634,7 @@ model OnboardingTask {
 
   @@index([instanceId])
   @@index([status])
+  @@index([ruleTaskCode])
 
   @@map("aura_onboarding_task")
 }
