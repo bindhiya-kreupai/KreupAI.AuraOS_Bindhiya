@@ -11073,3 +11073,205 @@ model GpssaEvent {
   @@index([employeeId])
   @@map("aura_gpssa_event")
 }
+
+// ============================================================================
+// 28. SIO COMPLIANCE — BAHRAIN SOCIAL INSURANCE (EPIC-15)
+// ============================================================================
+
+model SioEstablishment {
+  id                String   @id(map: "aura_sio_establishment_pkey") @default(uuid())
+  tenantId          String
+  legalEntityId     String?
+  sioNumber         String
+  crNumber          String?
+  establishmentName String
+  isInScope         Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  registrations SioEmployeeRegistration[]
+  submissions   SioPeriodSubmission[]
+
+  @@unique([tenantId, sioNumber], map: "aura_sio_establishment_unique")
+  @@map("aura_sio_establishment")
+}
+
+model SioBranchConfig {
+  id        String   @id(map: "aura_sio_branch_config_pkey") @default(uuid())
+  tenantId  String
+  branch    String
+  appliesTo String[] @default([])
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, branch], map: "aura_sio_branch_config_unique")
+  @@map("aura_sio_branch_config")
+}
+
+model SioContributionRate {
+  id               String    @id(map: "aura_sio_contribution_rate_pkey") @default(uuid())
+  tenantId         String
+  branch           String
+  nationalityClass String
+  employerPct      Decimal   @db.Decimal(7, 4)
+  employeePct      Decimal   @db.Decimal(7, 4)
+  wageFloor        Decimal?  @db.Decimal(14, 2)
+  wageCeiling      Decimal?  @db.Decimal(14, 2)
+  effectiveFrom    DateTime
+  effectiveTo      DateTime?
+  status           String    @default("ACTIVE")
+  citation         String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  createdBy        String?
+
+  @@index([tenantId, branch, nationalityClass, effectiveFrom], map: "aura_sio_contribution_rate_lookup_idx")
+  @@map("aura_sio_contribution_rate")
+}
+
+model SioEmployeeRegistration {
+  id                   String           @id(map: "aura_sio_employee_registration_pkey") @default(uuid())
+  tenantId             String
+  employeeId           String
+  establishmentId      String
+  establishment        SioEstablishment @relation(fields: [establishmentId], references: [id])
+  nationalityClass     String
+  sioPersonalNumber    String?
+  cpr                  String?
+  registrationDate     DateTime
+  status               String           @default("ACTIVE")
+  deregistrationDate   DateTime?
+  deregistrationReason String?
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+  createdBy            String?
+  updatedBy            String?
+
+  @@unique([tenantId, employeeId], map: "aura_sio_employee_registration_unique")
+  @@index([status])
+  @@map("aura_sio_employee_registration")
+}
+
+model SioContributionWage {
+  id                 String   @id(map: "aura_sio_contribution_wage_pkey") @default(uuid())
+  tenantId           String
+  employeeId         String
+  period             String
+  basicWage          Decimal  @db.Decimal(14, 2)
+  housingAllowance   Decimal  @default(0) @db.Decimal(14, 2)
+  otherAllowances    Decimal  @default(0) @db.Decimal(14, 2)
+  contributionWage   Decimal  @db.Decimal(14, 2)
+  salaryStructureRef String?
+  effectiveFrom      DateTime
+  salaryChangeId     String?
+  createdAt          DateTime @default(now())
+
+  @@unique([tenantId, employeeId, period], map: "aura_sio_contribution_wage_unique")
+  @@map("aura_sio_contribution_wage")
+}
+
+model SioContribution {
+  id                   String   @id(map: "aura_sio_contribution_pkey") @default(uuid())
+  tenantId             String
+  employeeId           String
+  establishmentId      String
+  period               String
+  nationalityClass     String
+  contributionWage     Decimal  @db.Decimal(14, 2)
+  insuranceEmployer    Decimal  @default(0) @db.Decimal(14, 2)
+  insuranceEmployee    Decimal  @default(0) @db.Decimal(14, 2)
+  unemploymentEmployer Decimal  @default(0) @db.Decimal(14, 2)
+  unemploymentEmployee Decimal  @default(0) @db.Decimal(14, 2)
+  totalEmployer        Decimal  @db.Decimal(14, 2)
+  totalEmployee        Decimal  @db.Decimal(14, 2)
+  rateRefs             Json     @default("{}")
+  computedAt           DateTime @default(now())
+
+  @@unique([tenantId, employeeId, period], map: "aura_sio_contribution_unique")
+  @@map("aura_sio_contribution")
+}
+
+model SioPeriodSubmission {
+  id              String           @id(map: "aura_sio_period_submission_pkey") @default(uuid())
+  tenantId        String
+  establishmentId String
+  establishment   SioEstablishment @relation(fields: [establishmentId], references: [id])
+  period          String
+  status          String           @default("DRAFT")
+  totalEmployees  Int              @default(0)
+  totalEmployer   Decimal          @default(0) @db.Decimal(18, 2)
+  totalEmployee   Decimal          @default(0) @db.Decimal(18, 2)
+  filePath        String?
+  fileHash        String?
+  dueDate         DateTime?
+  submittedAt     DateTime?
+  acknowledgedAt  DateTime?
+  ackReference    String?
+  errors          Json             @default("[]")
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+  createdBy       String?
+  updatedBy       String?
+
+  @@unique([tenantId, establishmentId, period], map: "aura_sio_period_submission_unique")
+  @@map("aura_sio_period_submission")
+}
+
+model SioVariance {
+  id              String   @id(map: "aura_sio_variance_pkey") @default(uuid())
+  tenantId        String
+  employeeId      String?
+  establishmentId String
+  period          String
+  type            String
+  expected        Decimal? @db.Decimal(14, 2)
+  actual          Decimal? @db.Decimal(14, 2)
+  difference      Decimal? @db.Decimal(14, 2)
+  severity        String   @default("MEDIUM")
+  ownerRole       String   @default("PAYROLL_OFFICER")
+  status          String   @default("OPEN")
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([period])
+  @@index([status])
+  @@map("aura_sio_variance")
+}
+
+model SioCertificate {
+  id                     String    @id(map: "aura_sio_certificate_pkey") @default(uuid())
+  tenantId               String
+  period                 String
+  status                 String    @default("DRAFT")
+  submissionsCount       Int       @default(0)
+  openVariancesCount     Int       @default(0)
+  criticalVariancesCount Int       @default(0)
+  lateSubmissionsCount   Int       @default(0)
+  gatingReason           String?
+  attestationsJson       Json      @default("[]")
+  generatedAt            DateTime?
+  signedAt               DateTime?
+  signedBy               String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  @@unique([tenantId, period], map: "aura_sio_certificate_unique")
+  @@map("aura_sio_certificate")
+}
+
+model SioEvent {
+  id         String   @id(map: "aura_sio_event_pkey") @default(uuid())
+  tenantId   String
+  employeeId String
+  eventType  String
+  period     String?
+  payload    Json     @default("{}")
+  createdAt  DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@map("aura_sio_event")
+}
