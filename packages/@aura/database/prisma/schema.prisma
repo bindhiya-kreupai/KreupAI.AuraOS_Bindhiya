@@ -10264,3 +10264,201 @@ model CalendarCertificate {
   @@unique([tenantId, period], map: "aura_calendar_certificate_unique")
   @@map("aura_calendar_certificate")
 }
+
+// ============================================================================
+// 24. COMPLIANCE CHECKLIST & RED-FLAG ENGINE (EPIC-37)
+// ============================================================================
+
+model ChecklistTemplate {
+  id            String    @id @default(uuid())
+  tenantId      String
+  code          String
+  name          String
+  domain        String
+  appendixRef   String?
+  description   String
+  ownerRole     String
+  approverRole  String
+  scope         Json      @default("{}")
+  version       Int       @default(1)
+  status        String    @default("DRAFT")
+  reviewCadence String    @default("ANNUAL")
+  approvedAt    DateTime?
+  approvedBy    String?
+  supersededBy  String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  createdBy     String?
+  updatedBy     String?
+
+  items ChecklistTemplateItem[]
+  runs  ChecklistRun[]
+
+  @@unique([tenantId, code, version], map: "aura_checklist_template_unique")
+  @@index([domain])
+  @@index([status])
+  @@map("aura_checklist_template")
+}
+
+model ChecklistTemplateItem {
+  id               String            @id @default(uuid())
+  templateId       String
+  template         ChecklistTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  ordering         Int
+  code             String
+  controlObjective String
+  description      String
+  evidenceRequired Boolean           @default(true)
+  isMandatory      Boolean           @default(true)
+  weighting        Int               @default(1)
+  redFlagRuleCode  String?
+
+  @@unique([templateId, code], map: "aura_checklist_item_unique")
+  @@index([templateId])
+  @@map("aura_checklist_item")
+}
+
+model RedFlagRule {
+  id            String   @id @default(uuid())
+  tenantId      String
+  code          String
+  name          String
+  domain        String
+  expression    String
+  thresholdJson Json     @default("{}")
+  countryCode   String?
+  severity      String   @default("HIGH")
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  createdBy     String?
+  updatedBy     String?
+
+  @@unique([tenantId, code], map: "aura_red_flag_rule_unique")
+  @@index([domain])
+  @@map("aura_red_flag_rule")
+}
+
+model ChecklistRun {
+  id                String            @id @default(uuid())
+  tenantId          String
+  templateId        String
+  template          ChecklistTemplate @relation(fields: [templateId], references: [id])
+  templateCode      String
+  period            String
+  countryCode       String?
+  legalEntityId     String?
+  employeeId        String?
+  ownerRole         String
+  preparerId        String?
+  approverId        String?
+  status            String            @default("OPEN")
+  totalItems        Int               @default(0)
+  compliantItems    Int               @default(0)
+  nonCompliantItems Int               @default(0)
+  naItems           Int               @default(0)
+  weightedScore     Decimal?          @db.Decimal(6, 2)
+  submittedAt       DateTime?
+  approvedAt        DateTime?
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+
+  items ChecklistRunItem[]
+
+  @@unique([tenantId, templateCode, period, legalEntityId, employeeId], map: "aura_checklist_run_unique")
+  @@index([tenantId])
+  @@index([period])
+  @@index([status])
+  @@index([templateId])
+  @@map("aura_checklist_run")
+}
+
+model ChecklistRunItem {
+  id               String       @id @default(uuid())
+  runId            String
+  run              ChecklistRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+  itemCode         String
+  controlObjective String
+  weighting        Int          @default(1)
+  status           String       @default("PENDING")
+  evidenceUrl      String?
+  reason           String?
+  reviewerId       String?
+  reviewedAt       DateTime?
+  autoEvaluated    Boolean      @default(false)
+  redFlagId        String?
+
+  @@unique([runId, itemCode], map: "aura_checklist_run_item_unique")
+  @@index([runId])
+  @@index([status])
+  @@map("aura_checklist_run_item")
+}
+
+model RedFlagInstance {
+  id             String    @id @default(uuid())
+  tenantId       String
+  ruleCode       String
+  domain         String
+  severity       String
+  sourceType     String
+  sourceId       String
+  checklistRunId String?
+  details        Json      @default("{}")
+  raisedAt       DateTime  @default(now())
+  clearedAt      DateTime?
+  status         String    @default("OPEN")
+
+  @@unique([tenantId, ruleCode, sourceType, sourceId, raisedAt], map: "aura_red_flag_instance_unique")
+  @@index([tenantId])
+  @@index([severity])
+  @@index([status])
+  @@map("aura_red_flag_instance")
+}
+
+model ComplianceException {
+  id           String    @id @default(uuid())
+  tenantId     String
+  domain       String
+  registerCode String
+  sourceType   String
+  sourceId     String
+  title        String
+  description  String
+  severity     String
+  ownerRole    String
+  ownerUserId  String?
+  dueDate      DateTime?
+  status       String    @default("OPEN")
+  closedAt     DateTime?
+  redFlagId    String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([tenantId])
+  @@index([domain])
+  @@index([status])
+  @@index([registerCode])
+  @@map("aura_compliance_exception")
+}
+
+model ChecklistCertificate {
+  id                     String    @id @default(uuid())
+  tenantId               String
+  scope                  String
+  period                 String
+  status                 String    @default("DRAFT")
+  runsExecuted           Int       @default(0)
+  criticalRedFlags       Int       @default(0)
+  openCriticalExceptions Int       @default(0)
+  gatingReason           String?
+  attestationsJson       Json      @default("[]")
+  generatedAt            DateTime?
+  signedAt               DateTime?
+  signedBy               String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  @@unique([tenantId, scope, period], map: "aura_checklist_certificate_unique")
+  @@index([status])
+  @@map("aura_checklist_certificate")
+}
