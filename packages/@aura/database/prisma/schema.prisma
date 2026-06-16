@@ -10668,3 +10668,206 @@ model WpsMonthlyCertificate {
   @@unique([tenantId, period], map: "aura_wps_monthly_certificate_unique")
   @@map("aura_wps_monthly_certificate")
 }
+
+// ============================================================================
+// 26. GOSI COMPLIANCE — KSA SOCIAL INSURANCE (EPIC-13)
+// ============================================================================
+
+model GosiEstablishment {
+  id                String   @id @default(uuid())
+  tenantId          String
+  legalEntityId     String?
+  gosiNumber        String
+  establishmentName String
+  isInScope         Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  registrations GosiEmployeeRegistration[]
+  submissions   GosiPeriodSubmission[]
+
+  @@unique([tenantId, gosiNumber], map: "aura_gosi_establishment_unique")
+  @@map("aura_gosi_establishment")
+}
+
+model GosiBranchConfig {
+  id        String   @id @default(uuid())
+  tenantId  String
+  branch    String
+  appliesTo String[] @default([])
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, branch], map: "aura_gosi_branch_config_unique")
+  @@map("aura_gosi_branch_config")
+}
+
+model GosiContributionRate {
+  id               String    @id @default(uuid())
+  tenantId         String
+  branch           String
+  nationalityClass String
+  employerPct      Decimal   @db.Decimal(7, 4)
+  employeePct      Decimal   @db.Decimal(7, 4)
+  wageFloor        Decimal?  @db.Decimal(14, 2)
+  wageCeiling      Decimal?  @db.Decimal(14, 2)
+  effectiveFrom    DateTime
+  effectiveTo      DateTime?
+  status           String    @default("ACTIVE")
+  citation         String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  createdBy        String?
+
+  @@index([tenantId, branch, nationalityClass, effectiveFrom], map: "aura_gosi_contribution_rate_lookup_idx")
+  @@index([status])
+  @@map("aura_gosi_contribution_rate")
+}
+
+model GosiEmployeeRegistration {
+  id                   String            @id @default(uuid())
+  tenantId             String
+  employeeId           String
+  establishmentId      String
+  establishment        GosiEstablishment @relation(fields: [establishmentId], references: [id])
+  nationalityClass     String
+  gosiPersonalNumber   String?
+  registrationDate     DateTime
+  status               String            @default("ACTIVE")
+  deregistrationDate   DateTime?
+  deregistrationReason String?
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+  createdBy            String?
+  updatedBy            String?
+
+  @@unique([tenantId, employeeId], map: "aura_gosi_employee_registration_unique")
+  @@index([status])
+  @@map("aura_gosi_employee_registration")
+}
+
+model GosiContributionWage {
+  id                 String   @id @default(uuid())
+  tenantId           String
+  employeeId         String
+  period             String
+  basicWage          Decimal  @db.Decimal(14, 2)
+  housingAllowance   Decimal  @default(0) @db.Decimal(14, 2)
+  otherAllowances    Decimal  @default(0) @db.Decimal(14, 2)
+  contributionWage   Decimal  @db.Decimal(14, 2)
+  salaryStructureRef String?
+  effectiveFrom      DateTime
+  salaryChangeId     String?
+  createdAt          DateTime @default(now())
+
+  @@unique([tenantId, employeeId, period], map: "aura_gosi_contribution_wage_unique")
+  @@index([period])
+  @@map("aura_gosi_contribution_wage")
+}
+
+model GosiContribution {
+  id                 String   @id @default(uuid())
+  tenantId           String
+  employeeId         String
+  establishmentId    String
+  period             String
+  nationalityClass   String
+  contributionWage   Decimal  @db.Decimal(14, 2)
+  annuitiesEmployer  Decimal  @default(0) @db.Decimal(14, 2)
+  annuitiesEmployee  Decimal  @default(0) @db.Decimal(14, 2)
+  ohEmployer         Decimal  @default(0) @db.Decimal(14, 2)
+  totalEmployer      Decimal  @db.Decimal(14, 2)
+  totalEmployee      Decimal  @db.Decimal(14, 2)
+  rateRefs           Json     @default("{}")
+  computedAt         DateTime @default(now())
+
+  @@unique([tenantId, employeeId, period], map: "aura_gosi_contribution_unique")
+  @@index([period])
+  @@map("aura_gosi_contribution")
+}
+
+model GosiPeriodSubmission {
+  id                   String            @id(map: "aura_gosi_period_submission_pkey") @default(uuid())
+  tenantId             String
+  establishmentId      String
+  establishment        GosiEstablishment @relation(fields: [establishmentId], references: [id])
+  period               String
+  status               String            @default("DRAFT")
+  totalEmployees       Int               @default(0)
+  totalEmployerAmount  Decimal           @default(0) @db.Decimal(18, 2)
+  totalEmployeeAmount  Decimal           @default(0) @db.Decimal(18, 2)
+  filePath             String?
+  fileHash             String?
+  dueDate              DateTime?
+  submittedAt          DateTime?
+  acknowledgedAt       DateTime?
+  ackReference         String?
+  errors               Json              @default("[]")
+  createdAt            DateTime          @default(now())
+  updatedAt            DateTime          @updatedAt
+  createdBy            String?
+  updatedBy            String?
+
+  @@unique([tenantId, establishmentId, period], map: "aura_gosi_period_submission_unique")
+  @@map("aura_gosi_period_submission")
+}
+
+model GosiVariance {
+  id              String   @id @default(uuid())
+  tenantId        String
+  employeeId      String?
+  establishmentId String
+  period          String
+  type            String
+  expected        Decimal? @db.Decimal(14, 2)
+  actual          Decimal? @db.Decimal(14, 2)
+  difference      Decimal? @db.Decimal(14, 2)
+  severity        String   @default("MEDIUM")
+  ownerRole       String   @default("PAYROLL_OFFICER")
+  status          String   @default("OPEN")
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([period])
+  @@index([status])
+  @@map("aura_gosi_variance")
+}
+
+model GosiCertificate {
+  id                     String    @id @default(uuid())
+  tenantId               String
+  period                 String
+  status                 String    @default("DRAFT")
+  submissionsCount       Int       @default(0)
+  openVariancesCount     Int       @default(0)
+  criticalVariancesCount Int       @default(0)
+  lateSubmissionsCount   Int       @default(0)
+  gatingReason           String?
+  attestationsJson       Json      @default("[]")
+  generatedAt            DateTime?
+  signedAt               DateTime?
+  signedBy               String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  @@unique([tenantId, period], map: "aura_gosi_certificate_unique")
+  @@map("aura_gosi_certificate")
+}
+
+model GosiEvent {
+  id         String   @id @default(uuid())
+  tenantId   String
+  employeeId String
+  eventType  String
+  period     String?
+  payload    Json     @default("{}")
+  createdAt  DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([eventType])
+  @@map("aura_gosi_event")
+}
