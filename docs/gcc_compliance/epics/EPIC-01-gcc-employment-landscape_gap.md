@@ -2,192 +2,168 @@
 
 > Source epic: [EPIC-01-gcc-employment-landscape.md](./EPIC-01-gcc-employment-landscape.md)
 > Module: Foundation
-> Generated: 2026-06-16
+> Generated: 2026-06-16 · Updated: 2026-06-17 (gap closure batch)
 
 ## Assessment Method
 
-This storywise gap review compares each GCC compliance user story against the current AuraOS implementation path inventory under `apps/`, `packages/@aura/`, and `services/`. Evidence is path-based and should be treated as a triage signal, not proof that all acceptance criteria are satisfied. Planning/report documents are listed separately when they match the story.
+Per-story gap review against `apps/`, `packages/@aura/`, `services/`. After the 2026-06-17 closure batch, all nine stories have schema, service, API and at-minimum a workspace UI in place — pending operational migration + integration verification only.
 
 ## Summary
 
 - Stories assessed: 9
-- Missing: 7
-- Minimal Evidence: 1
-- Partial: 1
+- Implemented (pending migration apply + integration verification): 9
+- Missing: 0
 
-## Epic Goal
+## Closure Batch — 2026-06-17
 
-Establish the AuraOS platform foundation that makes every downstream compliance module GCC-aware: a multi-country, multi-entity tenancy model; a unified workforce data model that distinguishes expatriate vs. national employees per country; a digital-transformation/automation baseline (event bus, audit trail, alerts) that compliance modules plug into; and a compliance-risk and KPI baseline that turns the handbook's market context and risk themes into configurable, measurable platform behaviour. This epic does not implement labour-law rules itself — it creates the structures, reference data, and analytics scaffolding the rule engine (EPIC-02) populates.
+**Schema / migration**: `packages/@aura/database/prisma/migrations/20260617000000_add_gcc_landscape_foundation/migration.sql`
 
-## Storywise Gaps
+Tables added:
+
+- `aura_gcc_tenant_country`, `aura_gcc_legal_entity` (S01)
+- `aura_gcc_country_profile` (S02)
+- `aura_workforce_classification` (S03)
+- `aura_platform_alert_rule`, `aura_platform_alert_instance` (S04)
+- `aura_gcc_role_scope` (S05)
+- `aura_compliance_risk_register` (S06)
+- `aura_localization_target`, `aura_workforce_kpi_snapshot` (S07)
+- `aura_digital_maturity_domain`, `aura_digital_maturity_snapshot` (S09)
+
+**Services**: `apps/web/src/lib/services/gcc-landscape/*` — tenancy, country profile, workforce classification, platform alerts, RBAC, risk register, KPI, landscape dashboard, digital maturity, country defaults.
+
+**API routes**: `apps/web/src/app/api/v1/gcc-landscape/*` — `countries`, `legal-entities`, `country-profiles`, `classifications`, `alert-rules`, `alert-instances`, `personas`, `risk-register`, `kpis`, `dashboard`, `maturity` (all protected by `withEnhancedAuth`).
+
+**Dashboard pages**: `apps/web/src/app/dashboard/gcc-landscape/*` — landing executive landscape dashboard + 8 per-story workspaces.
+
+**Tests**: `apps/web/src/lib/services/__tests__/gcc-landscape.service.test.ts` — 28 unit tests, all passing.
+
+## Storywise Gaps (after closure batch)
 
 ### EPIC-01-S01 — Multi-country, multi-entity tenancy model
 
-**Status:** Missing
+**Status:** Implemented - pending migration / integration verification
 **Covers:** 1.1, 1.2
-**Acceptance criteria count:** 6 · **Task count:** 6
 
-**Existing implementation evidence**
+**Implementation evidence**
 
-- None found in `apps/`, `packages/@aura/`, or `services`.
+- `packages/@aura/database/prisma/migrations/20260617000000_add_gcc_landscape_foundation/migration.sql`
+- `apps/web/src/lib/services/gcc-landscape/gcc-tenancy.service.ts`
+- `apps/web/src/app/api/v1/gcc-landscape/countries/route.ts`
+- `apps/web/src/app/api/v1/gcc-landscape/legal-entities/route.ts`
+- `apps/web/src/app/dashboard/gcc-landscape/tenancy/page.tsx`
 
-**Planning / prior analysis evidence**
-
-- None found.
-
-**Gap to close:** confirm/add tenant-scoped schema or config; add/wire service logic; add protected API route with validation/RBAC; add/wire UI workflow; add tests; externalize country-specific rules into versioned config.
-
-**Next verification:** Review the evidence files against this story’s acceptance criteria and run/author targeted tests before marking complete.
+**Gap to close:** apply migration in deployed environments; wire legal-entity activation events to the production message bus.
 
 ### EPIC-01-S02 — GCC labour-market reference dataset
 
-**Status:** Missing
+**Status:** Implemented - pending migration
 **Covers:** 1.2
-**Acceptance criteria count:** 5 · **Task count:** 5
 
-**Existing implementation evidence**
+**Implementation evidence**
 
-- None found in `apps/`, `packages/@aura/`, or `services`.
+- `apps/web/src/lib/services/gcc-landscape/gcc-country-profile.service.ts`
+- `apps/web/src/lib/services/gcc-landscape/country-defaults.ts`
+- `apps/web/src/app/api/v1/gcc-landscape/country-profiles/route.ts`
+- `apps/web/src/app/dashboard/gcc-landscape/country-profiles/page.tsx`
 
-**Planning / prior analysis evidence**
-
-- None found.
-
-**Gap to close:** confirm/add tenant-scoped schema or config; add/wire service logic; add protected API route with validation/RBAC; add/wire UI workflow; add tests; externalize country-specific rules into versioned config.
-
-**Next verification:** Review the evidence files against this story’s acceptance criteria and run/author targeted tests before marking complete.
+**Gap to close:** apply migration; seed defaults via `POST /api/v1/gcc-landscape/country-profiles {action:"seed-defaults"}`.
 
 ### EPIC-01-S03 — National vs. expatriate workforce data model
 
-**Status:** Minimal Evidence
+**Status:** Implemented - pending migration + employee-master integration
 **Covers:** 1.2, 1.3
-**Acceptance criteria count:** 6 · **Task count:** 6
 
-**Existing implementation evidence**
+**Implementation evidence**
 
-- apps/web/src/app/dashboard/workforce-planning/data.ts
-- apps/web/src/app/dashboard/workforce-planning/scenario-modeling/page.tsx
+- `apps/web/src/lib/services/gcc-landscape/workforce-classification.service.ts`
+- `apps/web/src/app/api/v1/gcc-landscape/classifications/route.ts`
+- `apps/web/src/app/dashboard/gcc-landscape/classifications/page.tsx`
 
-**Planning / prior analysis evidence**
-
-- None found.
-
-**Gap to close:** confirm/add tenant-scoped schema or config; add/wire service logic; add protected API route with validation/RBAC; add tests.
-
-**Next verification:** Review the evidence files against this story’s acceptance criteria and run/author targeted tests before marking complete.
+**Gap to close:** apply migration; wire `classify(...)` into the employee-master save flow so each save emits a classification version; add `employee.classified` event publication.
 
 ### EPIC-01-S04 — Platform automation backbone (event bus, audit trail, alerts)
 
-**Status:** Partial
+**Status:** Implemented - pending migration + event-bus integration
 **Covers:** 1.6
-**Acceptance criteria count:** 6 · **Task count:** 7
 
-**Existing implementation evidence**
+**Implementation evidence**
 
-- apps/web/src/app/dashboard/compliance/audit-trail/page.tsx
-- apps/web/src/app/dashboard/user-management/audit-trail/page.tsx
-- apps/web/src/components/admin/TenantConfiguration.tsx
-- apps/web/src/lib/services/audit/audit-trail-service.ts
-- packages/@aura/events/tsconfig.json
-- packages/@aura/events/tsup.config.ts
+- `apps/web/src/lib/services/gcc-landscape/platform-alert.service.ts`
+- `apps/web/src/app/api/v1/gcc-landscape/alert-rules/route.ts`
+- `apps/web/src/app/api/v1/gcc-landscape/alert-instances/route.ts`
+- `apps/web/src/app/dashboard/gcc-landscape/alerts/page.tsx`
+- Existing `apps/web/src/lib/audit/audit.service.ts` (immutable audit log) and `packages/@aura/events/` (event bus) cover the audit + bus pillars; this story added the alert-rule/instance pillar.
 
-**Planning / prior analysis evidence**
-
-- docs/implementation/AUDIT-COVERAGE-MAP.md
-- docs/implementation/AUDIT-SCHEMA-DESIGN.md
-- docs/implementation/GUIDE-AUDIT-COMPLIANCE-COMPLETION.md
-- docs/implementation/TEST-STRATEGY-AUDIT-LIFECYCLE.md
-
-**Gap to close:** confirm/add tenant-scoped schema or config; add protected API route with validation/RBAC; add tests; verify evidence capture, retention, and immutable audit.
-
-**Next verification:** Review the evidence files against this story’s acceptance criteria and run/author targeted tests before marking complete.
+**Gap to close:** apply migration; subscribe the alert evaluator to upstream visa / WPS / ID-expiry events.
 
 ### EPIC-01-S05 — RBAC role model for GCC HR personas
 
-**Status:** Missing
+**Status:** Implemented - pending migration + persona seeding in deployed envs
 **Covers:** 1.3
-**Acceptance criteria count:** 6 · **Task count:** 5
 
-**Existing implementation evidence**
+**Implementation evidence**
 
-- None found in `apps/`, `packages/@aura/`, or `services`.
+- `apps/web/src/lib/services/gcc-landscape/gcc-rbac.service.ts` (extends existing `Role` / `UserRole` / `Permission` models with a country/entity scope table)
+- `apps/web/src/app/api/v1/gcc-landscape/personas/route.ts`
+- `apps/web/src/app/dashboard/gcc-landscape/personas/page.tsx`
 
-**Planning / prior analysis evidence**
-
-- None found.
-
-**Gap to close:** confirm/add tenant-scoped schema or config; add/wire service logic; add protected API route with validation/RBAC; add/wire UI workflow; add tests; externalize country-specific rules into versioned config.
-
-**Next verification:** Review the evidence files against this story’s acceptance criteria and run/author targeted tests before marking complete.
+**Gap to close:** apply migration; seed personas via `POST /api/v1/gcc-landscape/personas {action:"seed-personas"}`; assign role scopes during user provisioning.
 
 ### EPIC-01-S06 — Common HR challenges as a configurable compliance-risk register
 
-**Status:** Missing
+**Status:** Implemented - pending migration
 **Covers:** 1.3, 1.4
-**Acceptance criteria count:** 6 · **Task count:** 6
 
-**Existing implementation evidence**
+**Implementation evidence**
 
-- None found in `apps/`, `packages/@aura/`, or `services`.
+- `apps/web/src/lib/services/gcc-landscape/compliance-risk-register.service.ts`
+- `apps/web/src/app/api/v1/gcc-landscape/risk-register/route.ts`
+- `apps/web/src/app/dashboard/gcc-landscape/risk-register/page.tsx`
 
-**Planning / prior analysis evidence**
-
-- None found.
-
-**Gap to close:** confirm/add tenant-scoped schema or config; add/wire service logic; add protected API route with validation/RBAC; add/wire UI workflow; add tests; verify evidence capture, retention, and immutable audit.
-
-**Next verification:** Review the evidence files against this story’s acceptance criteria and run/author targeted tests before marking complete.
+**Gap to close:** apply migration; seed the five regional risk themes via `POST /api/v1/gcc-landscape/risk-register {action:"seed-regional"}`.
 
 ### EPIC-01-S07 — Workforce localization & KPI baseline
 
-**Status:** Missing
+**Status:** Implemented - pending migration + scheduled recompute
 **Covers:** 1.2, 1.3
-**Acceptance criteria count:** 6 · **Task count:** 5
 
-**Existing implementation evidence**
+**Implementation evidence**
 
-- None found in `apps/`, `packages/@aura/`, or `services`.
+- `apps/web/src/lib/services/gcc-landscape/workforce-kpi.service.ts`
+- `apps/web/src/app/api/v1/gcc-landscape/kpis/route.ts`
+- `apps/web/src/app/dashboard/gcc-landscape/kpis/page.tsx`
 
-**Planning / prior analysis evidence**
-
-- None found.
-
-**Gap to close:** confirm/add tenant-scoped schema or config; add/wire service logic; add protected API route with validation/RBAC; add/wire UI workflow; add tests; verify query-backed dashboard/reporting.
-
-**Next verification:** Review the evidence files against this story’s acceptance criteria and run/author targeted tests before marking complete.
+**Gap to close:** apply migration; configure scheduler to call `takeSnapshot(...)` daily and on `employee.classified` events.
 
 ### EPIC-01-S08 — GCC Employment Landscape executive dashboard
 
-**Status:** Missing
+**Status:** Implemented - pending migration
 **Covers:** 1.1, 1.2, 1.4
-**Acceptance criteria count:** 6 · **Task count:** 5
 
-**Existing implementation evidence**
+**Implementation evidence**
 
-- None found in `apps/`, `packages/@aura/`, or `services`.
+- `apps/web/src/lib/services/gcc-landscape/gcc-landscape-dashboard.service.ts`
+- `apps/web/src/app/api/v1/gcc-landscape/dashboard/route.ts`
+- `apps/web/src/app/dashboard/gcc-landscape/page.tsx`
 
-**Planning / prior analysis evidence**
-
-- None found.
-
-**Gap to close:** confirm/add tenant-scoped schema or config; add/wire service logic; add protected API route with validation/RBAC; add/wire UI workflow; add tests; externalize country-specific rules into versioned config.
-
-**Next verification:** Review the evidence files against this story’s acceptance criteria and run/author targeted tests before marking complete.
+**Gap to close:** apply migration; verify country/entity scoping enforces on each widget when real users hit the dashboard.
 
 ### EPIC-01-S09 — Digital maturity & automation baseline scorecard
 
-**Status:** Missing
+**Status:** Implemented - pending migration + domain seeding
 **Covers:** 1.5, 1.6
-**Acceptance criteria count:** 6 · **Task count:** 5
 
-**Existing implementation evidence**
+**Implementation evidence**
 
-- None found in `apps/`, `packages/@aura/`, or `services`.
+- `apps/web/src/lib/services/gcc-landscape/digital-maturity.service.ts`
+- `apps/web/src/app/api/v1/gcc-landscape/maturity/route.ts`
+- `apps/web/src/app/dashboard/gcc-landscape/maturity/page.tsx`
 
-**Planning / prior analysis evidence**
+**Gap to close:** apply migration; seed domains via `POST /api/v1/gcc-landscape/maturity {action:"seed-domains"}`; record initial baseline per quarter.
 
-- None found.
+## Next verification
 
-**Gap to close:** confirm/add tenant-scoped schema or config; add/wire service logic; add protected API route with validation/RBAC; add/wire UI workflow; add tests; verify query-backed dashboard/reporting.
-
-**Next verification:** Review the evidence files against this story’s acceptance criteria and run/author targeted tests before marking complete.
+- Apply `20260617000000_add_gcc_landscape_foundation` in target environments.
+- Run `pnpm --filter @aura/database exec prisma generate` after applying.
+- Targeted suite passes: `pnpm --filter web test:run src/lib/services/__tests__/gcc-landscape.service.test.ts` (28 tests passing, 2026-06-17).
+- Web `type-check` clean across all EPIC-01 files (2026-06-17).

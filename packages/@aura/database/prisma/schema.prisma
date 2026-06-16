@@ -9469,3 +9469,293 @@ model AutoNumberSequence {
   @@index([tenantId])
   @@map("aura_auto_number_sequence")
 }
+
+// ============================================================================
+// 20. GCC EMPLOYMENT LANDSCAPE FOUNDATION (EPIC-01)
+// ============================================================================
+
+model GccTenantCountry {
+  id              String    @id @default(uuid())
+  tenantId        String
+  countryCode     String
+  isEnabled       Boolean   @default(true)
+  defaultCurrency String
+  defaultTimezone String
+  enabledAt       DateTime  @default(now())
+  enabledBy       String?
+  disabledAt      DateTime?
+  disabledBy      String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  legalEntities GccLegalEntity[]
+
+  @@unique([tenantId, countryCode])
+  @@index([tenantId])
+  @@index([countryCode])
+  @@index([isEnabled])
+  @@map("aura_gcc_tenant_country")
+}
+
+model GccLegalEntity {
+  id               String           @id @default(uuid())
+  tenantId         String
+  tenantCountryId  String
+  tenantCountry    GccTenantCountry @relation(fields: [tenantCountryId], references: [id])
+  companyId        String?
+  countryCode      String
+  legalName        String
+  registrationRef  String
+  registrationType String
+  currency         String
+  timezone         String
+  isActive         Boolean          @default(true)
+  activatedAt      DateTime?
+  deactivatedAt    DateTime?
+  createdAt        DateTime         @default(now())
+  updatedAt        DateTime         @updatedAt
+  createdBy        String?
+  updatedBy        String?
+
+  @@unique([tenantId, countryCode, registrationRef])
+  @@index([tenantId])
+  @@index([tenantCountryId])
+  @@index([companyId])
+  @@index([countryCode])
+  @@index([isActive])
+  @@map("aura_gcc_legal_entity")
+}
+
+model GccCountryProfile {
+  id                       String    @id @default(uuid())
+  countryCode              String
+  weekendPattern           String
+  statutoryCurrency        String
+  labourAuthority          String
+  socialInsuranceAuthority String
+  nationalizationProgramme String
+  expatProfile             String
+  marketNotes              String
+  authoritiesJson          Json      @default("{}")
+  version                  Int       @default(1)
+  effectiveFrom            DateTime
+  effectiveTo              DateTime?
+  status                   String    @default("ACTIVE")
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+  createdBy                String?
+  updatedBy                String?
+
+  @@unique([countryCode, version])
+  @@index([countryCode])
+  @@index([effectiveFrom])
+  @@index([status])
+  @@map("aura_gcc_country_profile")
+}
+
+model WorkforceClassification {
+  id                      String    @id @default(uuid())
+  tenantId                String
+  employeeId              String
+  nationality             String
+  countryOfEmployment     String
+  isGccNational           Boolean   @default(false)
+  workforceClass          String
+  isEmiratisationEligible Boolean   @default(false)
+  isCrossGccUnified       Boolean   @default(false)
+  classificationVersion   Int       @default(1)
+  effectiveFrom           DateTime  @default(now())
+  effectiveTo             DateTime?
+  reason                  String?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+  createdBy               String?
+  updatedBy               String?
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@index([countryOfEmployment])
+  @@index([workforceClass])
+  @@index([effectiveFrom])
+  @@map("aura_workforce_classification")
+}
+
+model PlatformAlertRule {
+  id             String   @id @default(uuid())
+  tenantId       String
+  code           String
+  name           String
+  description    String?
+  eventType      String
+  countryScope   String[] @default([])
+  entityScope    String[] @default([])
+  thresholds     Json
+  recipientRoles String[] @default([])
+  channels       String[] @default([])
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  createdBy      String?
+  updatedBy      String?
+
+  instances PlatformAlertInstance[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@index([eventType])
+  @@index([isActive])
+  @@map("aura_platform_alert_rule")
+}
+
+model PlatformAlertInstance {
+  id              String            @id @default(uuid())
+  tenantId        String
+  alertRuleId     String
+  alertRule       PlatformAlertRule @relation(fields: [alertRuleId], references: [id], onDelete: Cascade)
+  thresholdDays   Int
+  resourceType    String?
+  resourceId      String?
+  triggeredFor    DateTime
+  firedAt         DateTime          @default(now())
+  channel         String
+  recipientRole   String?
+  recipientUserId String?
+  payload         Json              @default("{}")
+  status          String            @default("FIRED")
+  errorMessage    String?
+
+  @@unique([alertRuleId, thresholdDays, resourceType, resourceId], map: "aura_platform_alert_instance_rule_threshold_resource_key")
+  @@index([tenantId])
+  @@index([alertRuleId])
+  @@index([firedAt])
+  @@index([status])
+  @@map("aura_platform_alert_instance")
+}
+
+model GccRoleScope {
+  id            String   @id @default(uuid())
+  userRoleId    String
+  countryCode   String?
+  legalEntityId String?
+  createdAt     DateTime @default(now())
+  createdBy     String?
+
+  @@unique([userRoleId, countryCode, legalEntityId])
+  @@index([userRoleId])
+  @@index([countryCode])
+  @@index([legalEntityId])
+  @@map("aura_gcc_role_scope")
+}
+
+model ComplianceRiskRegister {
+  id             String    @id @default(uuid())
+  tenantId       String
+  riskCode       String
+  category       String
+  title          String
+  description    String
+  likelihood     Int
+  impact         Int
+  score          Int
+  rating         String
+  ownerRole      String
+  countryScope   String[]  @default([])
+  entityScope    String[]  @default([])
+  mitigation     String?
+  status         String    @default("OPEN")
+  reviewDueAt    DateTime?
+  lastReviewedAt DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  createdBy      String?
+  updatedBy      String?
+
+  @@unique([tenantId, riskCode])
+  @@index([tenantId])
+  @@index([rating])
+  @@index([status])
+  @@index([category])
+  @@map("aura_compliance_risk_register")
+}
+
+model LocalizationTarget {
+  id             String    @id @default(uuid())
+  tenantId       String
+  countryCode    String
+  legalEntityId  String?
+  targetPct      Decimal   @db.Decimal(5, 2)
+  amberThreshold Decimal   @db.Decimal(5, 2)
+  redThreshold   Decimal   @db.Decimal(5, 2)
+  programme      String?
+  effectiveFrom  DateTime
+  effectiveTo    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  createdBy      String?
+  updatedBy      String?
+
+  @@unique([tenantId, countryCode, legalEntityId, effectiveFrom], map: "aura_localization_target_unique_key")
+  @@index([tenantId])
+  @@index([countryCode])
+  @@map("aura_localization_target")
+}
+
+model WorkforceKpiSnapshot {
+  id             String   @id @default(uuid())
+  tenantId       String
+  countryCode    String?
+  legalEntityId  String?
+  snapshotDate   DateTime
+  totalHeadcount Int
+  nationalCount  Int
+  gccOtherCount  Int
+  expatCount     Int
+  nationalPct    Decimal  @db.Decimal(5, 2)
+  targetPct      Decimal? @db.Decimal(5, 2)
+  ragStatus      String?
+  metricsJson    Json     @default("{}")
+  createdAt      DateTime @default(now())
+
+  @@unique([tenantId, countryCode, legalEntityId, snapshotDate], map: "aura_workforce_kpi_snapshot_unique_key")
+  @@index([tenantId])
+  @@index([snapshotDate])
+  @@index([countryCode])
+  @@map("aura_workforce_kpi_snapshot")
+}
+
+model DigitalMaturityDomain {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  description String?
+  ordering    Int      @default(0)
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  snapshots DigitalMaturitySnapshot[]
+
+  @@map("aura_digital_maturity_domain")
+}
+
+model DigitalMaturitySnapshot {
+  id                    String                @id @default(uuid())
+  tenantId              String
+  domainId              String
+  domain                DigitalMaturityDomain @relation(fields: [domainId], references: [id])
+  period                String
+  currentLevel          Int
+  targetLevel           Int
+  gap                   Int
+  notes                 String?
+  isImprovementPriority Boolean               @default(false)
+  createdAt             DateTime              @default(now())
+  updatedAt             DateTime              @updatedAt
+  createdBy             String?
+  updatedBy             String?
+
+  @@unique([tenantId, domainId, period], map: "aura_digital_maturity_snapshot_unique_key")
+  @@index([tenantId])
+  @@index([period])
+  @@map("aura_digital_maturity_snapshot")
+}
