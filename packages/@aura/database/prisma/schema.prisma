@@ -9896,3 +9896,131 @@ model CountryComplianceCertificate {
   @@index([status])
   @@map("aura_country_compliance_certificate")
 }
+
+// ============================================================================
+// 22. COMPLIANCE KPI & SCORECARD LIBRARY (EPIC-38)
+// ============================================================================
+
+model KpiDefinition {
+  id            String    @id @default(uuid())
+  tenantId      String
+  code          String
+  name          String
+  domain        String
+  description   String
+  formula       String
+  dataSource    String
+  lineage       Json      @default("{}")
+  unit          String
+  frequency     String
+  direction     String
+  ownerRole     String
+  version       Int       @default(1)
+  status        String    @default("DRAFT")
+  approvedAt    DateTime?
+  approvedBy    String?
+  reviewDueAt   DateTime?
+  supersededBy  String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  createdBy     String?
+  updatedBy     String?
+
+  @@unique([tenantId, code, version], map: "aura_kpi_definition_unique")
+  @@index([tenantId])
+  @@index([domain])
+  @@index([status])
+  @@map("aura_kpi_definition")
+}
+
+model KpiThreshold {
+  id           String   @id @default(uuid())
+  tenantId     String
+  kpiCode      String
+  countryCode  String?
+  greenMin     Decimal? @db.Decimal(10, 4)
+  greenMax     Decimal? @db.Decimal(10, 4)
+  amberMin     Decimal? @db.Decimal(10, 4)
+  amberMax     Decimal? @db.Decimal(10, 4)
+  redMin       Decimal? @db.Decimal(10, 4)
+  redMax       Decimal? @db.Decimal(10, 4)
+  statutoryRef String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  createdBy    String?
+  updatedBy    String?
+
+  @@unique([tenantId, kpiCode, countryCode], map: "aura_kpi_threshold_unique")
+  @@index([kpiCode])
+  @@map("aura_kpi_threshold")
+}
+
+model KpiValue {
+  id              String   @id @default(uuid())
+  tenantId        String
+  kpiCode         String
+  countryCode     String?
+  legalEntityId   String?
+  period          String
+  value           Decimal  @db.Decimal(14, 4)
+  ragStatus       String?
+  statutoryBreach Boolean  @default(false)
+  dataQualityPass Boolean  @default(false)
+  computedAt      DateTime @default(now())
+  inputsJson      Json     @default("{}")
+
+  @@unique([tenantId, kpiCode, countryCode, legalEntityId, period], map: "aura_kpi_value_unique")
+  @@index([tenantId])
+  @@index([period])
+  @@index([ragStatus])
+  @@map("aura_kpi_value")
+}
+
+model KpiDataQualityCheck {
+  id        String   @id @default(uuid())
+  tenantId  String
+  kpiCode   String
+  period    String
+  checkName String
+  passed    Boolean
+  message   String?
+  checkedAt DateTime @default(now())
+
+  @@index([tenantId, kpiCode, period], map: "aura_kpi_dq_lookup_idx")
+  @@map("aura_kpi_data_quality_check")
+}
+
+model KpiScorecardWeight {
+  id        String   @id @default(uuid())
+  tenantId  String
+  domain    String
+  weight    Int
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, domain], map: "aura_kpi_scorecard_weight_unique")
+  @@map("aura_kpi_scorecard_weight")
+}
+
+model KpiCertificate {
+  id               String    @id @default(uuid())
+  tenantId         String
+  period           String
+  status           String    @default("DRAFT")
+  kpisComputed     Int       @default(0)
+  dqFailures       Int       @default(0)
+  redKpis          Int       @default(0)
+  actionedRedKpis  Int       @default(0)
+  gatingReason     String?
+  attestationsJson Json      @default("[]")
+  generatedAt      DateTime?
+  signedAt         DateTime?
+  signedBy         String?
+  pdfUrl           String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@unique([tenantId, period], map: "aura_kpi_certificate_unique")
+  @@index([status])
+  @@map("aura_kpi_certificate")
+}

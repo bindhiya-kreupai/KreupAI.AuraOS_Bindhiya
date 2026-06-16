@@ -1,0 +1,385 @@
+/**
+ * Authored compliance KPI catalogue (EPIC-38 S02–S05).
+ *
+ * One canonical definition per KPI: formula, data source (table/event),
+ * unit, frequency, direction, owner role and domain.
+ */
+
+export interface KpiDefSeed {
+  code: string;
+  name: string;
+  domain: string;
+  description: string;
+  formula: string;
+  dataSource: string;
+  unit: '%' | 'COUNT' | 'DAYS' | 'RATIO' | 'CURRENCY' | 'SCORE';
+  frequency: 'DAILY' | 'WEEKLY' | 'MONTHLY' | 'QUARTERLY';
+  direction: 'HIGHER_IS_BETTER' | 'LOWER_IS_BETTER' | 'EXACT';
+  ownerRole: string;
+  defaultThreshold?: {
+    greenMin?: number;
+    greenMax?: number;
+    amberMin?: number;
+    amberMax?: number;
+    redMin?: number;
+    redMax?: number;
+    statutoryRef?: string;
+  };
+}
+
+export const KPI_CATALOG_SEED: KpiDefSeed[] = [
+  // Governance
+  {
+    code: 'POLICY_ACK_RATE',
+    name: 'Policy acknowledgement rate',
+    domain: 'GOVERNANCE',
+    description: '% of in-scope employees who acknowledged active policies.',
+    formula: 'acknowledgedCount / inScopeCount * 100',
+    dataSource: 'aura_policy_acknowledgement',
+    unit: '%',
+    frequency: 'MONTHLY',
+    direction: 'HIGHER_IS_BETTER',
+    ownerRole: 'COMPLIANCE_OFFICER',
+    defaultThreshold: { greenMin: 95, amberMin: 85, redMax: 85 },
+  },
+  {
+    code: 'CONTROL_COMPLETION_RATE',
+    name: 'Control completion rate',
+    domain: 'GOVERNANCE',
+    description: '% of compliance controls completed on schedule.',
+    formula: 'completedOnTime / totalDue * 100',
+    dataSource: 'aura_compliance_control_run',
+    unit: '%',
+    frequency: 'MONTHLY',
+    direction: 'HIGHER_IS_BETTER',
+    ownerRole: 'COMPLIANCE_OFFICER',
+    defaultThreshold: { greenMin: 95, amberMin: 85 },
+  },
+  // Workforce
+  {
+    code: 'HEADCOUNT_ACCURACY',
+    name: 'Headcount data accuracy',
+    domain: 'WORKFORCE',
+    description: '% of active employees with mandatory master-data fields complete.',
+    formula: 'completeRecords / activeEmployees * 100',
+    dataSource: 'aura_employee + classification join',
+    unit: '%',
+    frequency: 'MONTHLY',
+    direction: 'HIGHER_IS_BETTER',
+    ownerRole: 'HR_ADMIN',
+    defaultThreshold: { greenMin: 98, amberMin: 95 },
+  },
+  {
+    code: 'ATTRITION_RATE',
+    name: 'Voluntary attrition rate',
+    domain: 'WORKFORCE',
+    description: 'Trailing 12-month voluntary attrition.',
+    formula: 'voluntaryLeavers12m / avgHeadcount * 100',
+    dataSource: 'aura_employee + separation events',
+    unit: '%',
+    frequency: 'MONTHLY',
+    direction: 'LOWER_IS_BETTER',
+    ownerRole: 'HR_MANAGER',
+    defaultThreshold: { greenMax: 12, amberMax: 18 },
+  },
+  // Payroll
+  {
+    code: 'PAYROLL_ON_TIME',
+    name: 'On-time payroll %',
+    domain: 'PAYROLL',
+    description: '% of payroll runs disbursed within statutory window.',
+    formula: 'onTimeRuns / totalRuns * 100',
+    dataSource: 'aura_payroll_run',
+    unit: '%',
+    frequency: 'MONTHLY',
+    direction: 'HIGHER_IS_BETTER',
+    ownerRole: 'PAYROLL_OFFICER',
+    defaultThreshold: { greenMin: 100, amberMin: 98 },
+  },
+  {
+    code: 'PAYROLL_ERROR_RATE',
+    name: 'Payroll error rate',
+    domain: 'PAYROLL',
+    description: '% of payslips with corrections after lock.',
+    formula: 'correctedPayslips / totalPayslips * 100',
+    dataSource: 'aura_payslip + payslip_correction',
+    unit: '%',
+    frequency: 'MONTHLY',
+    direction: 'LOWER_IS_BETTER',
+    ownerRole: 'PAYROLL_OFFICER',
+    defaultThreshold: { greenMax: 0.5, amberMax: 2 },
+  },
+  // WPS
+  {
+    code: 'WPS_ON_TIME_PCT',
+    name: 'WPS submission on-time %',
+    domain: 'WPS',
+    description: '% of WPS files submitted within statutory window.',
+    formula: 'onTimeFiles / totalFiles * 100',
+    dataSource: 'aura_wps_submission',
+    unit: '%',
+    frequency: 'MONTHLY',
+    direction: 'HIGHER_IS_BETTER',
+    ownerRole: 'PAYROLL_OFFICER',
+    defaultThreshold: {
+      greenMin: 100,
+      amberMin: 95,
+      statutoryRef: 'WPS_SALARY_WINDOW_DAYS',
+    },
+  },
+  {
+    code: 'SALARY_DELAY_INCIDENTS',
+    name: 'Salary-delay incidents',
+    domain: 'WPS',
+    description: 'Count of cases where salary credited after statutory window.',
+    formula: 'count(payslip where days_late > 0)',
+    dataSource: 'aura_payslip',
+    unit: 'COUNT',
+    frequency: 'MONTHLY',
+    direction: 'LOWER_IS_BETTER',
+    ownerRole: 'PAYROLL_OFFICER',
+    defaultThreshold: { greenMax: 0, amberMax: 2 },
+  },
+  // Social insurance
+  {
+    code: 'SI_FILING_TIMELINESS',
+    name: 'Social-insurance filing timeliness',
+    domain: 'SOCIAL_INSURANCE',
+    description: '% of GOSI/GPSSA/SIO/PASI/PIFSS/GRSIA filings within window.',
+    formula: 'onTimeFilings / totalFilings * 100',
+    dataSource: 'aura_social_insurance_filing',
+    unit: '%',
+    frequency: 'MONTHLY',
+    direction: 'HIGHER_IS_BETTER',
+    ownerRole: 'PAYROLL_OFFICER',
+    defaultThreshold: { greenMin: 100, amberMin: 98 },
+  },
+  {
+    code: 'SI_CONTRIBUTION_MATCH',
+    name: 'Contribution match %',
+    domain: 'SOCIAL_INSURANCE',
+    description: 'Match between payroll-computed and authority-reconciled SI contributions.',
+    formula: 'reconciledMatching / totalEmployees * 100',
+    dataSource: 'aura_si_reconciliation',
+    unit: '%',
+    frequency: 'MONTHLY',
+    direction: 'HIGHER_IS_BETTER',
+    ownerRole: 'PAYROLL_OFFICER',
+    defaultThreshold: { greenMin: 99, amberMin: 97 },
+  },
+  // Nationalization
+  {
+    code: 'NATIONALIZATION_RATE',
+    name: 'Nationalization rate vs target',
+    domain: 'NATIONALIZATION',
+    description: 'National headcount % per country vs configured target.',
+    formula: 'nationalCount / totalHeadcount * 100',
+    dataSource: 'aura_workforce_classification',
+    unit: '%',
+    frequency: 'MONTHLY',
+    direction: 'HIGHER_IS_BETTER',
+    ownerRole: 'HR_MANAGER',
+    defaultThreshold: {
+      statutoryRef: 'EMIRATISATION_PRIVATE_TARGET / NITAQAT_BANDS',
+    },
+  },
+  {
+    code: 'NITAQAT_BAND',
+    name: 'Nitaqat / nationalization band',
+    domain: 'NATIONALIZATION',
+    description: 'Current band (PLATINUM/GREEN/YELLOW/RED) for KSA-equivalent programmes.',
+    formula: 'derive from current nationalization rate vs country bands',
+    dataSource: 'aura_workforce_kpi_snapshot + country rule pack',
+    unit: 'SCORE',
+    frequency: 'MONTHLY',
+    direction: 'HIGHER_IS_BETTER',
+    ownerRole: 'HR_MANAGER',
+  },
+  // Immigration
+  {
+    code: 'VALID_DOC_PCT',
+    name: 'Valid immigration-document %',
+    domain: 'IMMIGRATION',
+    description: '% of expat employees with valid visa + work permit + ID.',
+    formula: 'validExpats / totalExpats * 100',
+    dataSource: 'aura_employee_document + visa',
+    unit: '%',
+    frequency: 'MONTHLY',
+    direction: 'HIGHER_IS_BETTER',
+    ownerRole: 'PRO_OFFICER',
+    defaultThreshold: { greenMin: 100, amberMin: 98 },
+  },
+  {
+    code: 'EXPIRY_BREACHES',
+    name: 'Immigration-document expiry breaches',
+    domain: 'IMMIGRATION',
+    description: 'Count of visa/permit/ID expiries breached.',
+    formula: 'count(visa where expiry_date < today AND status = ACTIVE)',
+    dataSource: 'aura_visa + work_permit',
+    unit: 'COUNT',
+    frequency: 'WEEKLY',
+    direction: 'LOWER_IS_BETTER',
+    ownerRole: 'PRO_OFFICER',
+    defaultThreshold: { greenMax: 0, amberMax: 0 },
+  },
+  // Leave
+  {
+    code: 'LEAVE_LIABILITY_RATIO',
+    name: 'Leave liability / wage ratio',
+    domain: 'LEAVE',
+    description: 'Outstanding leave liability divided by monthly wage cost.',
+    formula: 'sum(leave_liability) / monthlyWageCost',
+    dataSource: 'aura_leave_balance + payroll',
+    unit: 'RATIO',
+    frequency: 'MONTHLY',
+    direction: 'LOWER_IS_BETTER',
+    ownerRole: 'HR_MANAGER',
+    defaultThreshold: { greenMax: 1.5, amberMax: 2.0 },
+  },
+  // Attendance / OT
+  {
+    code: 'OT_OVER_CAP_PCT',
+    name: 'OT-over-statutory-cap %',
+    domain: 'ATTENDANCE_OT',
+    description: '% of employees who breached statutory monthly OT cap.',
+    formula: 'employeesOverOTCap / totalEmployees * 100',
+    dataSource: 'aura_overtime_record',
+    unit: '%',
+    frequency: 'MONTHLY',
+    direction: 'LOWER_IS_BETTER',
+    ownerRole: 'HR_MANAGER',
+    defaultThreshold: { greenMax: 1, amberMax: 5 },
+  },
+  // Benefits
+  {
+    code: 'MANDATORY_BENEFIT_COVER',
+    name: 'Mandatory benefits coverage %',
+    domain: 'BENEFITS',
+    description: '% of eligible employees with mandatory medical/insurance cover.',
+    formula: 'coveredEligible / totalEligible * 100',
+    dataSource: 'aura_employee_benefit',
+    unit: '%',
+    frequency: 'MONTHLY',
+    direction: 'HIGHER_IS_BETTER',
+    ownerRole: 'HR_ADMIN',
+    defaultThreshold: { greenMin: 100, amberMin: 98 },
+  },
+  // Accommodation
+  {
+    code: 'CAMP_INSPECTION_PCT',
+    name: 'Labour-camp inspection compliance',
+    domain: 'ACCOMMODATION',
+    description: '% of camps inspected on schedule.',
+    formula: 'inspectedOnTime / totalCamps * 100',
+    dataSource: 'aura_camp_inspection',
+    unit: '%',
+    frequency: 'QUARTERLY',
+    direction: 'HIGHER_IS_BETTER',
+    ownerRole: 'COMPLIANCE_OFFICER',
+    defaultThreshold: { greenMin: 100, amberMin: 90 },
+  },
+  // HSE
+  {
+    code: 'LTIFR',
+    name: 'Lost-Time Injury Frequency Rate',
+    domain: 'HSE',
+    description: 'Lost-time injuries per million hours worked.',
+    formula: '(LTI_count * 1_000_000) / hoursWorked',
+    dataSource: 'aura_hse_incident + timesheets',
+    unit: 'RATIO',
+    frequency: 'MONTHLY',
+    direction: 'LOWER_IS_BETTER',
+    ownerRole: 'COMPLIANCE_OFFICER',
+    defaultThreshold: { greenMax: 1, amberMax: 3 },
+  },
+  // ER
+  {
+    code: 'GRIEVANCE_SLA',
+    name: 'Grievance resolution within SLA',
+    domain: 'EMPLOYEE_RELATIONS',
+    description: '% of grievance cases closed within SLA.',
+    formula: 'inSLA / total * 100',
+    dataSource: 'aura_grievance_case',
+    unit: '%',
+    frequency: 'MONTHLY',
+    direction: 'HIGHER_IS_BETTER',
+    ownerRole: 'HR_MANAGER',
+    defaultThreshold: { greenMin: 90, amberMin: 80 },
+  },
+  // Separation
+  {
+    code: 'FINAL_SETTLEMENT_ON_TIME',
+    name: 'Final settlement timeliness',
+    domain: 'SEPARATION',
+    description: '% of separations with final settlement within statutory window.',
+    formula: 'onTimeSettlements / totalSeparations * 100',
+    dataSource: 'aura_separation + payslip',
+    unit: '%',
+    frequency: 'MONTHLY',
+    direction: 'HIGHER_IS_BETTER',
+    ownerRole: 'PAYROLL_OFFICER',
+    defaultThreshold: { greenMin: 100, amberMin: 95 },
+  },
+  // Document retention
+  {
+    code: 'DOC_FILE_COMPLETENESS',
+    name: 'Personnel-file completeness',
+    domain: 'DOCUMENT_RETENTION',
+    description: '% of personnel files with required documents.',
+    formula: 'completeFiles / activeEmployees * 100',
+    dataSource: 'aura_employee_document',
+    unit: '%',
+    frequency: 'MONTHLY',
+    direction: 'HIGHER_IS_BETTER',
+    ownerRole: 'HR_ADMIN',
+    defaultThreshold: { greenMin: 98, amberMin: 95 },
+  },
+  // Audit
+  {
+    code: 'AUDIT_CLOSURE_RATE',
+    name: 'Audit-finding closure rate',
+    domain: 'AUDIT',
+    description: '% of audit findings closed within agreed timeline.',
+    formula: 'closedOnTime / totalFindings * 100',
+    dataSource: 'aura_audit_finding + remediation',
+    unit: '%',
+    frequency: 'MONTHLY',
+    direction: 'HIGHER_IS_BETTER',
+    ownerRole: 'INTERNAL_AUDITOR',
+    defaultThreshold: { greenMin: 90, amberMin: 75 },
+  },
+  // Automation
+  {
+    code: 'AUTOMATION_COVERAGE',
+    name: 'HR automation coverage',
+    domain: 'AUTOMATION',
+    description: '% of compliance processes automated end-to-end.',
+    formula: 'automatedProcesses / totalProcesses * 100',
+    dataSource: 'aura_digital_maturity_snapshot',
+    unit: '%',
+    frequency: 'QUARTERLY',
+    direction: 'HIGHER_IS_BETTER',
+    ownerRole: 'COMPLIANCE_OFFICER',
+    defaultThreshold: { greenMin: 80, amberMin: 60 },
+  },
+];
+
+export const DEFAULT_DOMAIN_WEIGHTS: Record<string, number> = {
+  GOVERNANCE: 10,
+  WORKFORCE: 10,
+  PAYROLL: 12,
+  WPS: 14,
+  SOCIAL_INSURANCE: 10,
+  NATIONALIZATION: 12,
+  IMMIGRATION: 10,
+  LEAVE: 4,
+  ATTENDANCE_OT: 4,
+  BENEFITS: 3,
+  ACCOMMODATION: 2,
+  HSE: 3,
+  EMPLOYEE_RELATIONS: 2,
+  SEPARATION: 2,
+  DOCUMENT_RETENTION: 1,
+  AUDIT: 1,
+  AUTOMATION: 0,
+};
