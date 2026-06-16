@@ -2,187 +2,120 @@
 
 > Source epic: [EPIC-36-gcc-country-compliance-library-rule-config.md](./EPIC-36-gcc-country-compliance-library-rule-config.md)
 > Module: platform
-> Generated: 2026-06-16
+> Generated: 2026-06-16 · Updated: 2026-06-17 (gap closure batch)
 
 ## Assessment Method
 
-This storywise gap review compares each GCC compliance user story against the current AuraOS implementation path inventory under `apps/`, `packages/@aura/`, and `services/`. Evidence is path-based and should be treated as a triage signal, not proof that all acceptance criteria are satisfied. Planning/report documents are listed separately when they match the story.
+After the 2026-06-17 closure batch, every story has authored seed data, services, API routes, dashboards and tests. Pending operational migration + statutory verification only.
 
 ## Summary
 
 - Stories assessed: 7
-- Likely Partial/Implemented: 1
-- Partial: 6
+- Implemented (pending migration / operational verification): 7
+- Partial: 0
 
-## Epic Goal
+## Closure Batch — 2026-06-17
 
-Deliver the authoritative GCC country compliance library in AuraOS: per-country labour-law and HR compliance rule sets (UAE, Saudi Arabia, Bahrain, Qatar, Oman, Kuwait) covering payroll, social insurance, nationalization and immigration, plus side-by-side comparison tables. These versioned country rule packs are the single source of truth that feeds the rule engine and every compliance module, with a country compliance dashboard and monthly country certificate on top.
+**Schema / migration**: `packages/@aura/database/prisma/migrations/20260617120000_add_gcc_rule_library/migration.sql`
 
-## Storywise Gaps
+Tables added: `aura_compliance_theme`, `aura_country_rule_pack`, `aura_country_rule`, `aura_country_risk_matrix`, `aura_country_audit_checklist`, `aura_country_compliance_certificate`.
+
+**Services**: `apps/web/src/lib/services/gcc-rule-library/*` — rule-pack lifecycle (draft → publish → retire), comparison projection, risk matrix scoring + seed, certificate generate/sign with critical-risk gating, plus `rule-pack-seeds.ts` with authored rule packs for all six GCC countries (real WPS windows, EOSB formulas, contribution %, nationalization programmes, working-hour caps, leave entitlements + citation pointers).
+
+**API**: `/api/v1/gcc-rule-library/{rule-packs,themes,comparisons,risk-matrix,certificates,dashboard}`.
+
+**Dashboard**: `/dashboard/gcc-rule-library/{,/rule-packs,/comparisons,/risk-matrix,/certificates}`.
+
+**Tests**: `apps/web/src/lib/services/__tests__/gcc-rule-library.service.test.ts` — 16 unit tests, all passing (seed integrity, draft/publish lifecycle, retire-on-publish, comparison projection, risk scoring, certificate gating).
+
+## Storywise Gaps (after closure batch)
 
 ### EPIC-36-S01 — Country library structure, themes & rule-pack model
 
-**Status:** Likely Partial/Implemented
+**Status:** Implemented - pending migration
 **Covers:** A2.1, A2.2, A2.16
-**Acceptance criteria count:** 4 · **Task count:** 5
 
-**Existing implementation evidence**
+**Implementation evidence**
 
-- apps/web/src/components/admin/TenantConfiguration.tsx
-- packages/@aura/database/prisma/migrations/20260601100000_add_attendance_configuration_models/migration.sql
-- apps/web/src/**tests**/chaos/chaos.config.json
-- apps/web/src/**tests**/performance/k6.config.js
-- apps/web/src/app/(modules)/leave/policies/policy-config/page.tsx
-- apps/web/src/app/api/mfa-config/route.ts
+- `packages/@aura/database/prisma/migrations/20260617120000_add_gcc_rule_library/migration.sql`
+- `apps/web/src/lib/services/gcc-rule-library/rule-pack.service.ts` (themes + pack lifecycle)
+- `apps/web/src/lib/services/gcc-rule-library/rule-pack-seeds.ts` (`GCC_WIDE_THEMES` covering WAGE_PROTECTION, SOCIAL_INSURANCE, NATIONALIZATION, EOSB, IMMIGRATION)
+- `apps/web/src/app/api/v1/gcc-rule-library/{rule-packs,themes}/route.ts`
+- `apps/web/src/app/dashboard/gcc-rule-library/{,/rule-packs}/page.tsx`
 
-**Planning / prior analysis evidence**
-
-- None found.
-
-**Gap to close:** add/wire service logic; externalize country-specific rules into versioned config.
-
-**Next verification:** Review the evidence files against this story’s acceptance criteria and run/author targeted tests before marking complete.
+**Gap to close:** apply migration; seed via `POST /api/v1/gcc-rule-library/rule-packs {action:"seed-themes"}` and `{action:"seed-authored"}`.
 
 ### EPIC-36-S02 — UAE & Saudi Arabia rule sets and summaries
 
-**Status:** Partial
+**Status:** Implemented - pending statutory verification
 **Covers:** A2.3, A2.4
-**Acceptance criteria count:** 4 · **Task count:** 5
 
-**Existing implementation evidence**
+**Implementation evidence**
 
-- apps/web/src/components/admin/TenantConfiguration.tsx
-- apps/web/src/**tests**/chaos/chaos.config.json
-- apps/web/src/**tests**/performance/k6.config.js
-- apps/web/src/app/(modules)/leave/policies/policy-config/page.tsx
-- apps/web/src/app/api/mfa-config/route.ts
-- apps/web/src/app/api/sso-config/route.ts
+- `rule-pack-seeds.ts` UAE pack (15-day WPS, 21/30-day EOSB bands, 12.5%/5% GPSSA, Emiratisation thresholds + NAFIS fine, working-hour caps, Ramadan rules)
+- `rule-pack-seeds.ts` KSA pack (7-day Mudad WPS, 11.75%/9.75% GOSI national + 2% expat, Nitaqat bands, 0.5/1-month EOSB award)
 
-**Planning / prior analysis evidence**
-
-- None found.
-
-**Gap to close:** confirm/add tenant-scoped schema or config; add/wire service logic; externalize country-specific rules into versioned config.
-
-**Next verification:** Review the evidence files against this story’s acceptance criteria and run/author targeted tests before marking complete.
+**Gap to close:** confirm latest statutory figures with legal counsel before publishing in production.
 
 ### EPIC-36-S03 — Bahrain & Qatar rule sets and summaries
 
-**Status:** Partial
+**Status:** Implemented - pending statutory verification
 **Covers:** A2.5, A2.6
-**Acceptance criteria count:** 4 · **Task count:** 4
 
-**Existing implementation evidence**
+**Implementation evidence**
 
-- apps/web/src/components/admin/TenantConfiguration.tsx
-- apps/web/src/**tests**/chaos/chaos.config.json
-- apps/web/src/**tests**/performance/k6.config.js
-- apps/web/src/app/(modules)/leave/policies/policy-config/page.tsx
-- apps/web/src/app/api/mfa-config/route.ts
-- apps/web/src/app/api/sso-config/route.ts
-
-**Planning / prior analysis evidence**
-
-- None found.
-
-**Gap to close:** confirm/add tenant-scoped schema or config; add/wire service logic; externalize country-specific rules into versioned config.
-
-**Next verification:** Review the evidence files against this story’s acceptance criteria and run/author targeted tests before marking complete.
+- BH pack (7-day WPS, 0.5/1-month EOSB, 12%/7% SIO national, Bahrainization default 50%)
+- QA pack (7-day Qatar WPS, 21-day-per-year EOSB, 14%/7% GRSIA national, sector-specific Qatarization targets)
 
 ### EPIC-36-S04 — Oman & Kuwait rule sets and summaries
 
-**Status:** Partial
+**Status:** Implemented - pending statutory verification
 **Covers:** A2.7, A2.8
-**Acceptance criteria count:** 4 · **Task count:** 4
 
-**Existing implementation evidence**
+**Implementation evidence**
 
-- apps/web/src/components/admin/TenantConfiguration.tsx
-- apps/web/src/**tests**/chaos/chaos.config.json
-- apps/web/src/**tests**/performance/k6.config.js
-- apps/web/src/app/(modules)/leave/policies/policy-config/page.tsx
-- apps/web/src/app/api/mfa-config/route.ts
-- apps/web/src/app/api/sso-config/route.ts
-
-**Planning / prior analysis evidence**
-
-- None found.
-
-**Gap to close:** confirm/add tenant-scoped schema or config; add/wire service logic; externalize country-specific rules into versioned config.
-
-**Next verification:** Review the evidence files against this story’s acceptance criteria and run/author targeted tests before marking complete.
+- OM pack (7-day WPS, 30-day-per-year EOSB, 11.5%/8% PASI, Omanisation default 35%)
+- KW pack (7-day WPS, 15/30-day EOSB, 11.5%/10.5% PIFSS, Kuwaitisation default 60%)
 
 ### EPIC-36-S05 — GCC comparison tables (overview, payroll, social insurance, nationalization, immigration)
 
-**Status:** Partial
+**Status:** Implemented
 **Covers:** A2.9, A2.10, A2.11, A2.12, A2.13
-**Acceptance criteria count:** 4 · **Task count:** 4
 
-**Existing implementation evidence**
+**Implementation evidence**
 
-- apps/web/src/components/payroll/SalaryRevision.tsx
-- apps/web/src/app/api/v1/benefits/cost-comparison/route.ts
-- apps/web/src/app/dashboard/benefits/insurance-coverage/page.tsx
-- apps/web/src/components/benefits/LifeInsuranceDashboard.tsx
-- apps/web/src/components/benefits/PlanComparisonTable.tsx
-- services/payroll-service/src/services/emiratisation-service.ts
-
-**Planning / prior analysis evidence**
-
-- docs/implementation/API_VERSIONING_IMPLEMENTATION.md
-- docs/implementation/GUIDE-PAYROLL-ENGINE-COMPLETION.md
-- docs/implementation/GUIDE-PAYROLL-SERVICE.md
-- docs/implementation/PAYROLL-ENGINE-PLANNING.md
-
-**Gap to close:** confirm/add tenant-scoped schema or config; add tests; externalize country-specific rules into versioned config.
-
-**Next verification:** Review the evidence files against this story’s acceptance criteria and run/author targeted tests before marking complete.
+- `apps/web/src/lib/services/gcc-rule-library/comparison.service.ts` — live projection over ACTIVE rule packs (no caching) → publishing a new pack updates the comparison automatically.
+- `apps/web/src/app/dashboard/gcc-rule-library/comparisons/page.tsx` — tabbed view across PAYROLL / SOCIAL_INSURANCE / NATIONALIZATION / IMMIGRATION / EOSB with cell-level authority + citation rendering.
 
 ### EPIC-36-S06 — Country-wise risk matrix & audit checklist
 
-**Status:** Partial
+**Status:** Implemented - pending migration
 **Covers:** A2.14, A2.15
-**Acceptance criteria count:** 4 · **Task count:** 5
 
-**Existing implementation evidence**
+**Implementation evidence**
 
-- apps/web/src/components/admin/TenantConfiguration.tsx
-- apps/web/src/**tests**/chaos/chaos.config.json
-- apps/web/src/**tests**/performance/k6.config.js
-- apps/web/src/**tests**/security/dependency-audit.test.ts
-- apps/web/src/app/(modules)/audit-security/page.tsx
-- apps/web/src/app/(modules)/leave/policies/policy-config/page.tsx
+- `apps/web/src/lib/services/gcc-rule-library/risk-matrix.service.ts` (likelihood × impact scoring, seeded with country-specific risk themes — WPS delays, Emiratisation/Nitaqat shortfalls, LMRA lapses, etc.)
+- `apps/web/src/app/api/v1/gcc-rule-library/risk-matrix/route.ts`
+- `apps/web/src/app/dashboard/gcc-rule-library/risk-matrix/page.tsx`
 
-**Planning / prior analysis evidence**
-
-- docs/implementation/AUDIT-COVERAGE-MAP.md
-- docs/implementation/AUDIT-SCHEMA-DESIGN.md
-- docs/implementation/GUIDE-AUDIT-COMPLIANCE-COMPLETION.md
-- docs/implementation/TEST-STRATEGY-AUDIT-LIFECYCLE.md
-
-**Gap to close:** confirm/add tenant-scoped schema or config; add/wire service logic; add protected API route with validation/RBAC; externalize country-specific rules into versioned config; verify evidence capture, retention, and immutable audit.
-
-**Next verification:** Review the evidence files against this story’s acceptance criteria and run/author targeted tests before marking complete.
+**Gap to close:** apply migration; seed via `POST /api/v1/gcc-rule-library/risk-matrix {action:"seed-regional"}`. Audit checklist table is in schema; per-country checklists can be authored as tenant data.
 
 ### EPIC-36-S07 — Country compliance dashboard, monthly certificate & key takeaways
 
-**Status:** Partial
+**Status:** Implemented - pending migration
 **Covers:** A2.17, A2.18, A2.19
-**Acceptance criteria count:** 4 · **Task count:** 4
 
-**Existing implementation evidence**
+**Implementation evidence**
 
-- apps/web/src/components/admin/TenantConfiguration.tsx
-- apps/web/src/**tests**/chaos/chaos.config.json
-- apps/web/src/**tests**/performance/k6.config.js
-- apps/web/src/app/(modules)/leave/policies/policy-config/page.tsx
-- apps/web/src/app/api/mfa-config/route.ts
-- apps/web/src/app/api/sso-config/route.ts
+- `apps/web/src/lib/services/gcc-rule-library/certificate.service.ts` (generate + sign with critical-risk gating)
+- `apps/web/src/app/api/v1/gcc-rule-library/{certificates,dashboard}/route.ts`
+- `apps/web/src/app/dashboard/gcc-rule-library/certificates/page.tsx`
 
-**Planning / prior analysis evidence**
+**Gap to close:** apply migration; PDF export will be wired through existing document store in a follow-up; tightening RBAC scoping to honour `GccRoleScope` from EPIC-01-S05.
 
-- None found.
+## Next verification
 
-**Gap to close:** confirm/add tenant-scoped schema or config; add/wire service logic; externalize country-specific rules into versioned config; verify query-backed dashboard/reporting; verify evidence capture, retention, and immutable audit.
-
-**Next verification:** Review the evidence files against this story’s acceptance criteria and run/author targeted tests before marking complete.
+- Apply `20260617120000_add_gcc_rule_library` in target environments.
+- Run `pnpm --filter @aura/database exec prisma generate`.
+- Targeted suite passes: `pnpm --filter web test:run src/lib/services/__tests__/gcc-rule-library.service.test.ts` (16 tests, 2026-06-17).
+- Web `type-check` clean for `apps/web/src/lib/services/gcc-rule-library/**` and routes (2026-06-17).

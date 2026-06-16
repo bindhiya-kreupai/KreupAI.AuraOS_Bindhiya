@@ -9759,3 +9759,140 @@ model DigitalMaturitySnapshot {
   @@index([period])
   @@map("aura_digital_maturity_snapshot")
 }
+
+// ============================================================================
+// 21. GCC COUNTRY COMPLIANCE LIBRARY & RULE CONFIG (EPIC-36)
+// ============================================================================
+
+model ComplianceTheme {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  description String?
+  domains     String[] @default([])
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("aura_compliance_theme")
+}
+
+model CountryRulePack {
+  id            String    @id @default(uuid())
+  countryCode   String
+  version       Int
+  status        String    @default("DRAFT")
+  title         String
+  summary       String
+  effectiveFrom DateTime
+  effectiveTo   DateTime?
+  registeredAt  DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  createdBy     String?
+  updatedBy     String?
+
+  rules CountryRule[]
+
+  @@unique([countryCode, version], map: "aura_country_rule_pack_country_version_key")
+  @@index([status])
+  @@index([effectiveFrom])
+  @@map("aura_country_rule_pack")
+}
+
+model CountryRule {
+  id            String          @id @default(uuid())
+  rulePackId    String
+  rulePack      CountryRulePack @relation(fields: [rulePackId], references: [id], onDelete: Cascade)
+  countryCode   String
+  domain        String
+  ruleKey       String
+  value         Json
+  formula       String?
+  authority     String?
+  citation      String?
+  effectiveFrom DateTime
+  effectiveTo   DateTime?
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+
+  @@unique([rulePackId, domain, ruleKey], map: "aura_country_rule_pack_domain_key_unique")
+  @@index([countryCode])
+  @@index([domain])
+  @@index([ruleKey])
+  @@map("aura_country_rule")
+}
+
+model CountryRiskMatrix {
+  id               String    @id @default(uuid())
+  tenantId         String
+  countryCode      String
+  riskCode         String
+  title            String
+  description      String
+  domain           String
+  likelihood       Int
+  impact           Int
+  score            Int
+  rating           String
+  ownerRole        String
+  controlRef       String?
+  status           String    @default("OPEN")
+  remediationDueAt DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  createdBy        String?
+  updatedBy        String?
+
+  @@unique([tenantId, countryCode, riskCode], map: "aura_country_risk_matrix_unique")
+  @@index([tenantId])
+  @@index([countryCode])
+  @@index([rating])
+  @@index([status])
+  @@map("aura_country_risk_matrix")
+}
+
+model CountryAuditChecklist {
+  id                 String   @id @default(uuid())
+  tenantId           String
+  countryCode        String
+  checklistCode      String
+  title              String
+  domain             String
+  items              Json
+  redFlagDefinitions Json     @default("[]")
+  isActive           Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  createdBy          String?
+  updatedBy          String?
+
+  @@unique([tenantId, countryCode, checklistCode], map: "aura_country_audit_checklist_unique")
+  @@index([countryCode])
+  @@map("aura_country_audit_checklist")
+}
+
+model CountryComplianceCertificate {
+  id                String    @id @default(uuid())
+  tenantId          String
+  countryCode       String
+  period            String
+  status            String    @default("DRAFT")
+  domainStatus      Json
+  criticalOpenRisks Int       @default(0)
+  gatingReason      String?
+  attestationsJson  Json      @default("[]")
+  generatedAt       DateTime?
+  signedAt          DateTime?
+  signedBy          String?
+  pdfUrl            String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  createdBy         String?
+  updatedBy         String?
+
+  @@unique([tenantId, countryCode, period], map: "aura_country_compliance_certificate_unique")
+  @@index([period])
+  @@index([status])
+  @@map("aura_country_compliance_certificate")
+}
