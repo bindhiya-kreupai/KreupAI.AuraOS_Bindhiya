@@ -10024,3 +10024,243 @@ model KpiCertificate {
   @@index([status])
   @@map("aura_kpi_certificate")
 }
+
+// ============================================================================
+// 23. COMPLIANCE CALENDAR & SCHEDULING AUTOMATION (EPIC-35)
+// ============================================================================
+
+model CalendarCategory {
+  id             String   @id @default(uuid())
+  tenantId       String
+  code           String
+  name           String
+  ownerRole      String
+  defaultCadence String
+  description    String?
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([tenantId, code], map: "aura_calendar_category_unique")
+  @@map("aura_calendar_category")
+}
+
+model RecurrenceRule {
+  id             String   @id @default(uuid())
+  tenantId       String
+  code           String
+  name           String
+  categoryCode   String
+  countryCode    String?
+  legalEntityId  String?
+  cadence        String
+  dayOfMonth     Int?
+  monthOfYear    Int?
+  weekday        Int?
+  ownerRole      String
+  escalationRole String?
+  leadDays       Int      @default(7)
+  tierAlerts     Json     @default("[]")
+  templateJson   Json     @default("{}")
+  isActive       Boolean  @default(true)
+  shiftOnHoliday String   @default("PREVIOUS_BUSINESS_DAY")
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  createdBy      String?
+  updatedBy      String?
+
+  @@unique([tenantId, code], map: "aura_recurrence_rule_unique")
+  @@index([categoryCode])
+  @@index([countryCode])
+  @@map("aura_recurrence_rule")
+}
+
+model ComplianceTask {
+  id              String    @id @default(uuid())
+  tenantId        String
+  ruleCode        String?
+  categoryCode    String
+  countryCode     String?
+  legalEntityId   String?
+  subject         String
+  ownerRole       String
+  ownerUserId     String?
+  dueDate         DateTime
+  scheduledFor    DateTime
+  originalDueDate DateTime
+  status          String    @default("OPEN")
+  completedAt     DateTime?
+  completedBy     String?
+  evidenceUrl     String?
+  escalatedAt     DateTime?
+  escalatedToRole String?
+  deferReason     String?
+  metadata        Json      @default("{}")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([tenantId, ruleCode, scheduledFor, legalEntityId], map: "aura_compliance_task_unique")
+  @@index([tenantId])
+  @@index([dueDate])
+  @@index([status])
+  @@index([categoryCode])
+  @@map("aura_compliance_task")
+}
+
+model HolidayCalendar {
+  id          String   @id @default(uuid())
+  tenantId    String
+  countryCode String
+  year        Int
+  date        DateTime
+  name        String
+  isPublic    Boolean  @default(true)
+  isRamadan   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+
+  @@unique([tenantId, countryCode, date, name], map: "aura_holiday_calendar_unique")
+  @@index([countryCode, year], map: "aura_holiday_calendar_lookup_idx")
+  @@map("aura_holiday_calendar")
+}
+
+model AuditPlan {
+  id         String    @id @default(uuid())
+  tenantId   String
+  year       Int
+  title      String
+  scope      String
+  areasJson  Json      @default("[]")
+  ownerRole  String
+  status     String    @default("DRAFT")
+  approvedAt DateTime?
+  approvedBy String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  createdBy  String?
+
+  samples     AuditSample[]
+  testResults AuditTestResult[]
+  findings    AuditFinding[]
+
+  @@unique([tenantId, year], map: "aura_audit_plan_unique")
+  @@map("aura_audit_plan")
+}
+
+model AuditSample {
+  id             String    @id @default(uuid())
+  tenantId       String
+  auditPlanId    String
+  auditPlan      AuditPlan @relation(fields: [auditPlanId], references: [id], onDelete: Cascade)
+  area           String
+  method         String
+  populationSize Int
+  sampleSize     Int
+  selectionsJson Json      @default("[]")
+  createdAt      DateTime  @default(now())
+
+  @@index([auditPlanId], map: "aura_audit_sample_planId_idx")
+  @@map("aura_audit_sample")
+}
+
+model AuditTestResult {
+  id          String    @id @default(uuid())
+  tenantId    String
+  auditPlanId String
+  auditPlan   AuditPlan @relation(fields: [auditPlanId], references: [id])
+  area        String
+  testKey     String
+  sampleId    String?
+  passed      Boolean
+  notes       String?
+  evidenceUrl String?
+  performedBy String?
+  performedAt DateTime  @default(now())
+
+  @@index([auditPlanId], map: "aura_audit_test_result_planId_idx")
+  @@index([passed])
+  @@map("aura_audit_test_result")
+}
+
+model AuditFinding {
+  id          String    @id @default(uuid())
+  tenantId    String
+  auditPlanId String
+  auditPlan   AuditPlan @relation(fields: [auditPlanId], references: [id])
+  area        String
+  title       String
+  description String
+  severity    String
+  status      String    @default("OPEN")
+  raisedAt    DateTime  @default(now())
+  closedAt    DateTime?
+  createdBy   String?
+  updatedBy   String?
+
+  correctiveActions CorrectiveAction[]
+
+  @@index([auditPlanId], map: "aura_audit_finding_planId_idx")
+  @@index([status])
+  @@index([severity])
+  @@map("aura_audit_finding")
+}
+
+model CorrectiveAction {
+  id          String       @id @default(uuid())
+  tenantId    String
+  findingId   String
+  finding     AuditFinding @relation(fields: [findingId], references: [id], onDelete: Cascade)
+  description String
+  ownerRole   String
+  ownerUserId String?
+  dueDate     DateTime
+  status      String       @default("OPEN")
+  escalatedAt DateTime?
+  closedAt    DateTime?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([findingId])
+  @@index([status])
+  @@index([dueDate])
+  @@map("aura_corrective_action")
+}
+
+model ManagementReview {
+  id                String    @id @default(uuid())
+  tenantId          String
+  scheduledFor      DateTime
+  period            String
+  status            String    @default("SCHEDULED")
+  agendaJson        Json      @default("[]")
+  openActionsAtTime Int       @default(0)
+  notes             String?
+  completedAt       DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@unique([tenantId, period], map: "aura_management_review_unique")
+  @@index([status])
+  @@map("aura_management_review")
+}
+
+model CalendarCertificate {
+  id               String    @id @default(uuid())
+  tenantId         String
+  period           String
+  status           String    @default("DRAFT")
+  tasksDue         Int       @default(0)
+  tasksCompleted   Int       @default(0)
+  tasksDeferred    Int       @default(0)
+  tasksOverdue     Int       @default(0)
+  criticalOverdue  Int       @default(0)
+  gatingReason     String?
+  attestationsJson Json      @default("[]")
+  generatedAt      DateTime?
+  signedAt         DateTime?
+  signedBy         String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@unique([tenantId, period], map: "aura_calendar_certificate_unique")
+  @@map("aura_calendar_certificate")
+}
