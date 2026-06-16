@@ -10462,3 +10462,209 @@ model ChecklistCertificate {
   @@index([status])
   @@map("aura_checklist_certificate")
 }
+
+// ============================================================================
+// 25. WAGE PROTECTION SYSTEM COMPLIANCE (EPIC-11)
+// ============================================================================
+
+model WpsScheme {
+  id                  String   @id @default(uuid())
+  countryCode         String   @unique
+  name                String
+  authority           String
+  channel             String
+  fileFormat          String
+  statutoryWindowDays Int
+  mandatoryScope      String
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@map("aura_wps_scheme")
+}
+
+model WpsEstablishment {
+  id                String   @id @default(uuid())
+  tenantId          String
+  countryCode       String
+  legalEntityId     String?
+  employerId        String
+  establishmentName String
+  agentBankCode     String?
+  agentBankName     String?
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdBy         String?
+  updatedBy         String?
+
+  submissions WpsPeriodSubmission[]
+
+  @@unique([tenantId, countryCode, employerId], map: "aura_wps_establishment_unique")
+  @@index([tenantId])
+  @@index([countryCode])
+  @@map("aura_wps_establishment")
+}
+
+model WpsPeriodSubmission {
+  id                   String           @id @default(uuid())
+  tenantId             String
+  countryCode          String
+  establishmentId      String
+  establishment        WpsEstablishment @relation(fields: [establishmentId], references: [id])
+  period               String
+  status               String           @default("DRAFT")
+  fileFormat           String
+  fileContent          String?
+  fileHash             String?
+  totalEmployees       Int              @default(0)
+  totalAmount          Decimal          @default(0) @db.Decimal(18, 2)
+  controlTotals        Json             @default("{}")
+  dueDate              DateTime?
+  generatedAt          DateTime?
+  submittedAt          DateTime?
+  acknowledgedAt       DateTime?
+  ackReference         String?
+  reconciledAt         DateTime?
+  reconciliationStatus String?
+  errors               Json             @default("[]")
+  createdAt            DateTime         @default(now())
+  updatedAt            DateTime         @updatedAt
+  createdBy            String?
+  updatedBy            String?
+
+  rows WpsEmployeeRow[]
+
+  @@unique([tenantId, establishmentId, period], map: "aura_wps_period_submission_unique")
+  @@index([tenantId])
+  @@index([status])
+  @@index([period])
+  @@map("aura_wps_period_submission")
+}
+
+model WpsEmployeeRow {
+  id              String              @id @default(uuid())
+  submissionId    String
+  submission      WpsPeriodSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  employeeId      String
+  employeeCode    String
+  nationalId      String?
+  labourCardNumber String?
+  iban            String
+  bankSwift       String?
+  currency        String
+  fixedPay        Decimal             @default(0) @db.Decimal(14, 2)
+  variablePay     Decimal             @default(0) @db.Decimal(14, 2)
+  deductions      Decimal             @default(0) @db.Decimal(14, 2)
+  netPay          Decimal             @db.Decimal(14, 2)
+  daysWorked      Int?
+  rowStatus       String              @default("PENDING")
+  rejectionCode   String?
+  rejectionReason String?
+  paidAt          DateTime?
+
+  @@index([submissionId])
+  @@index([employeeId])
+  @@index([rowStatus])
+  @@map("aura_wps_employee_row")
+}
+
+model WpsException {
+  id           String    @id @default(uuid())
+  tenantId     String
+  submissionId String?
+  employeeId   String?
+  code         String
+  description  String
+  severity     String
+  ownerRole    String
+  dueDate      DateTime?
+  status       String    @default("OPEN")
+  resolvedAt   DateTime?
+  resolvedBy   String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([tenantId])
+  @@index([status])
+  @@map("aura_wps_exception")
+}
+
+model SalaryDelayFlag {
+  id           String    @id @default(uuid())
+  tenantId     String
+  submissionId String?
+  employeeId   String
+  countryCode  String
+  period       String
+  dueDate      DateTime
+  creditedAt   DateTime?
+  daysLate     Int
+  severity     String
+  status       String    @default("OPEN")
+  raisedAt     DateTime  @default(now())
+  resolvedAt   DateTime?
+
+  @@unique([tenantId, employeeId, period], map: "aura_salary_delay_flag_unique")
+  @@index([tenantId])
+  @@index([severity])
+  @@index([status])
+  @@map("aura_salary_delay_flag")
+}
+
+model WpsPenalty {
+  id              String    @id @default(uuid())
+  tenantId        String
+  countryCode     String
+  establishmentId String
+  period          String
+  type            String
+  amount          Decimal?  @db.Decimal(14, 2)
+  currency        String?
+  description     String
+  businessImpact  String?
+  status          String    @default("OPEN")
+  raisedAt        DateTime  @default(now())
+  resolvedAt      DateTime?
+
+  @@index([tenantId])
+  @@index([status])
+  @@map("aura_wps_penalty")
+}
+
+model WpsDocument {
+  id        String   @id @default(uuid())
+  tenantId  String
+  code      String
+  name      String
+  category  String
+  version   Int      @default(1)
+  content   String?
+  url       String?
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, code, version], map: "aura_wps_document_unique")
+  @@map("aura_wps_document")
+}
+
+model WpsMonthlyCertificate {
+  id                  String    @id @default(uuid())
+  tenantId            String
+  period              String
+  status              String    @default("DRAFT")
+  submissionsCount    Int       @default(0)
+  delayFlagsCount     Int       @default(0)
+  openExceptionsCount Int       @default(0)
+  openPenaltiesCount  Int       @default(0)
+  gatingReason        String?
+  attestationsJson    Json      @default("[]")
+  generatedAt         DateTime?
+  signedAt            DateTime?
+  signedBy            String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@unique([tenantId, period], map: "aura_wps_monthly_certificate_unique")
+  @@map("aura_wps_monthly_certificate")
+}
