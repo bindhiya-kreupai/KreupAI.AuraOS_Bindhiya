@@ -10871,3 +10871,205 @@ model GosiEvent {
   @@index([eventType])
   @@map("aura_gosi_event")
 }
+
+// ============================================================================
+// 27. GPSSA COMPLIANCE — UAE SOCIAL INSURANCE (EPIC-14)
+// ============================================================================
+
+model GpssaEstablishment {
+  id                String   @id(map: "aura_gpssa_establishment_pkey") @default(uuid())
+  tenantId          String
+  legalEntityId     String?
+  gpssaNumber       String
+  mohreNumber       String?
+  establishmentName String
+  isInScope         Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  registrations GpssaEmployeeRegistration[]
+  submissions   GpssaPeriodSubmission[]
+
+  @@unique([tenantId, gpssaNumber], map: "aura_gpssa_establishment_unique")
+  @@map("aura_gpssa_establishment")
+}
+
+model GpssaContributionRate {
+  id               String    @id(map: "aura_gpssa_contribution_rate_pkey") @default(uuid())
+  tenantId         String
+  nationalityClass String
+  employerPct      Decimal   @db.Decimal(7, 4)
+  employeePct      Decimal   @db.Decimal(7, 4)
+  governmentPct    Decimal   @default(0) @db.Decimal(7, 4)
+  wageFloor        Decimal?  @db.Decimal(14, 2)
+  wageCeiling      Decimal?  @db.Decimal(14, 2)
+  effectiveFrom    DateTime
+  effectiveTo      DateTime?
+  status           String    @default("ACTIVE")
+  citation         String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  createdBy        String?
+
+  @@index([tenantId, nationalityClass, effectiveFrom], map: "aura_gpssa_contribution_rate_lookup_idx")
+  @@map("aura_gpssa_contribution_rate")
+}
+
+model GpssaEmployeeRegistration {
+  id                   String             @id(map: "aura_gpssa_employee_registration_pkey") @default(uuid())
+  tenantId             String
+  employeeId           String
+  establishmentId      String
+  establishment        GpssaEstablishment @relation(fields: [establishmentId], references: [id])
+  nationalityClass     String
+  gpssaPersonalNumber  String?
+  emiratesId           String?
+  registrationDate     DateTime
+  status               String             @default("ACTIVE")
+  deregistrationDate   DateTime?
+  deregistrationReason String?
+  createdAt            DateTime           @default(now())
+  updatedAt            DateTime           @updatedAt
+  createdBy            String?
+  updatedBy            String?
+
+  @@unique([tenantId, employeeId], map: "aura_gpssa_employee_registration_unique")
+  @@index([status])
+  @@map("aura_gpssa_employee_registration")
+}
+
+model GpssaContributionWage {
+  id                 String   @id(map: "aura_gpssa_contribution_wage_pkey") @default(uuid())
+  tenantId           String
+  employeeId         String
+  period             String
+  basicWage          Decimal  @db.Decimal(14, 2)
+  housingAllowance   Decimal  @default(0) @db.Decimal(14, 2)
+  otherAllowances    Decimal  @default(0) @db.Decimal(14, 2)
+  contributionWage   Decimal  @db.Decimal(14, 2)
+  salaryStructureRef String?
+  effectiveFrom      DateTime
+  salaryChangeId     String?
+  createdAt          DateTime @default(now())
+
+  @@unique([tenantId, employeeId, period], map: "aura_gpssa_contribution_wage_unique")
+  @@map("aura_gpssa_contribution_wage")
+}
+
+model GpssaContribution {
+  id               String   @id(map: "aura_gpssa_contribution_pkey") @default(uuid())
+  tenantId         String
+  employeeId       String
+  establishmentId  String
+  period           String
+  nationalityClass String
+  contributionWage Decimal  @db.Decimal(14, 2)
+  employerAmount   Decimal  @db.Decimal(14, 2)
+  employeeAmount   Decimal  @db.Decimal(14, 2)
+  governmentAmount Decimal  @db.Decimal(14, 2)
+  rateRef          String?
+  computedAt       DateTime @default(now())
+
+  @@unique([tenantId, employeeId, period], map: "aura_gpssa_contribution_unique")
+  @@map("aura_gpssa_contribution")
+}
+
+model GpssaPeriodSubmission {
+  id              String             @id(map: "aura_gpssa_period_submission_pkey") @default(uuid())
+  tenantId        String
+  establishmentId String
+  establishment   GpssaEstablishment @relation(fields: [establishmentId], references: [id])
+  period          String
+  status          String             @default("DRAFT")
+  totalEmployees  Int                @default(0)
+  totalEmployer   Decimal            @default(0) @db.Decimal(18, 2)
+  totalEmployee   Decimal            @default(0) @db.Decimal(18, 2)
+  totalGovernment Decimal            @default(0) @db.Decimal(18, 2)
+  filePath        String?
+  fileHash        String?
+  dueDate         DateTime?
+  submittedAt     DateTime?
+  acknowledgedAt  DateTime?
+  ackReference    String?
+  errors          Json               @default("[]")
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+  createdBy       String?
+  updatedBy       String?
+
+  @@unique([tenantId, establishmentId, period], map: "aura_gpssa_period_submission_unique")
+  @@map("aura_gpssa_period_submission")
+}
+
+model GpssaVariance {
+  id              String   @id(map: "aura_gpssa_variance_pkey") @default(uuid())
+  tenantId        String
+  employeeId      String?
+  establishmentId String
+  period          String
+  type            String
+  expected        Decimal? @db.Decimal(14, 2)
+  actual          Decimal? @db.Decimal(14, 2)
+  difference      Decimal? @db.Decimal(14, 2)
+  severity        String   @default("MEDIUM")
+  ownerRole       String   @default("PAYROLL_OFFICER")
+  status          String   @default("OPEN")
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([tenantId])
+  @@index([period])
+  @@index([status])
+  @@map("aura_gpssa_variance")
+}
+
+model GpssaCertificate {
+  id                     String    @id(map: "aura_gpssa_certificate_pkey") @default(uuid())
+  tenantId               String
+  period                 String
+  status                 String    @default("DRAFT")
+  submissionsCount       Int       @default(0)
+  openVariancesCount     Int       @default(0)
+  criticalVariancesCount Int       @default(0)
+  lateSubmissionsCount   Int       @default(0)
+  gatingReason           String?
+  attestationsJson       Json      @default("[]")
+  generatedAt            DateTime?
+  signedAt               DateTime?
+  signedBy               String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  @@unique([tenantId, period], map: "aura_gpssa_certificate_unique")
+  @@map("aura_gpssa_certificate")
+}
+
+model GpssaTransfer {
+  id                     String   @id(map: "aura_gpssa_transfer_pkey") @default(uuid())
+  tenantId               String
+  employeeId             String
+  fromEstablishmentId    String?
+  toEstablishmentId      String
+  transferDate           DateTime
+  serviceMonthsPreserved Int      @default(0)
+  status                 String   @default("PROCESSED")
+  createdAt              DateTime @default(now())
+
+  @@index([employeeId])
+  @@map("aura_gpssa_transfer")
+}
+
+model GpssaEvent {
+  id         String   @id(map: "aura_gpssa_event_pkey") @default(uuid())
+  tenantId   String
+  employeeId String
+  eventType  String
+  period     String?
+  payload    Json     @default("{}")
+  createdAt  DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@map("aura_gpssa_event")
+}
