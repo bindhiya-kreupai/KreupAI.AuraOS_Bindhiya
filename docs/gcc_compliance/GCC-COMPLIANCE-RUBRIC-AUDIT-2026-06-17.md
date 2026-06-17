@@ -482,6 +482,22 @@ Autonomous overnight pass that closed the highest-impact per-EPIC gap on 19 EPIC
 
 **Status delta:** the 19 EPICs above move from 🟡 toward 🟢 on the audit rubric. The full re-audit pass to re-grade is a separate exercise; the closures here are individually defensible and test-covered.
 
+### 2026-06-17 — Per-EPIC depth pass — round 2 (5 more EPICs)
+
+Continuing the autonomous pass with 5 additional closures (28→33 EPICs touched in total tonight):
+
+| EPIC    | Gap closed                                                                                                | Commit     | Tests |
+| ------- | --------------------------------------------------------------------------------------------------------- | ---------- | ----- |
+| EPIC-17 | Nitaqat three-way Qiwa × GOSI × Mudad reconciliation (artificial-Saudization detection)                   | `4bc68fbc` | 9     |
+| EPIC-06 | Pre-joining + joining-day onboarding checklist engine (14 default items, canJoin blocker gate)            | `d4013b9a` | 10    |
+| EPIC-16 | Emiratisation fake-risk clustering — 10 signals (per-hire + shared + cluster) replacing the 3-signal stub | `ad172eba` | 13    |
+| EPIC-23 | Accommodation hygiene + fire safety + food safety controls (3 of the 13 zero-code stories closed)         | `6716d955` | 11    |
+| EPIC-10 | Payroll cut-off + period-lock enforcement (OPEN/CUT_OFF/LOCKED/PROCESSED state gate)                      | `6b799120` | 11    |
+
+**Round-2 cumulative:** 54 additional tests, 228 total passing across the night's 24 new test files.
+
+**Final tally:** 24 EPICs closed in one autonomous overnight pass, 228 tests, zero schema changes, zero new Prisma models — every gap bridged at the service layer using infrastructure already shipped (DSL, event bus, audit log, rule pack, pagination, signing).
+
 ---
 
 _Audit completed 2026-06-17. 38 EPICs audited via parallel `Explore` subagents. Findings sourced from `packages/@aura/database/prisma/schema.prisma`, `apps/web/src/lib/services/`, `apps/web/src/app/api/v1/`, `apps/web/src/app/dashboard/`, `apps/web/src/lib/services/__tests__/`._
