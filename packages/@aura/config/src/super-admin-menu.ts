@@ -605,6 +605,19 @@ export const superAdminMenu: MenuDefinition = {
                         'Monthly Compliance Certificate (Overhire/Aged>90d/Unapproved)',
                     ],
                 },
+                {
+                    code: 'RECORDS_COMPLIANCE',
+                    label: 'Employee Records Compliance',
+                    icon: 'folder',
+                    path: '/dashboard/records-compliance',
+                    features: [
+                        'Mandatory Document Matrix (country × code)',
+                        'Per-Employee Completeness Score (GREEN/AMBER/RED)',
+                        'Records Audit Checklist',
+                        'Records Risk Register (L×I)',
+                        'Monthly Compliance Certificate',
+                    ],
+                },
             ],
         },
         {

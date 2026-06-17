@@ -1,39 +1,37 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuites name="vitest tests" tests="17" failures="0" errors="0" time="0.008020333">
-    <testsuite name="src/lib/services/__tests__/org-compliance.service.test.ts" timestamp="2026-06-17T09:23:03.261Z" hostname="MacBookPro-2.lan" tests="17" failures="0" errors="0" skipped="0" time="0.008020333">
-        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="headcountVariance &gt; vacant when filled below approved" time="0.001021">
+<testsuites name="vitest tests" tests="16" failures="0" errors="0" time="0.008118208">
+    <testsuite name="src/lib/services/__tests__/records-compliance.service.test.ts" timestamp="2026-06-17T09:36:23.725Z" hostname="MacBookPro-2.lan" tests="16" failures="0" errors="0" skipped="0" time="0.008118208">
+        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="completenessScore &gt; returns 100 GREEN when zero mandatory total" time="0.00104875">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="headcountVariance &gt; overhire when filled above approved" time="0.000218542">
+        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="completenessScore &gt; GREEN when all present" time="0.000241625">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="headcountVariance &gt; clamps both to 0 when equal" time="0.000358334">
+        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="completenessScore &gt; AMBER between 70 and 89" time="0.000359333">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="agingDays &gt; returns integer days" time="0.000338833">
+        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="completenessScore &gt; RED below 70" time="0.000304375">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="agingDays &gt; uses filledAt when present" time="0.000221375">
+        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="completenessScore &gt; expired docs apply 5-point penalty each" time="0.000179666">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="agingDays &gt; never negative" time="0.000169917">
+        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="completenessScore &gt; expiring within 30d adds penalty capped at 10" time="0.000156709">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="orgGatingReason &gt; returns null when clean" time="0.000195584">
+        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="recordsGatingReason &gt; returns null when clean" time="0.000252292">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="orgGatingReason &gt; gates on overhire + aged vacancies" time="0.000294334">
+        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="recordsGatingReason &gt; gates on RED employees + expired docs" time="0.000239042">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="orgGatingReason &gt; gates on HIGH/CRIT checklist + unapproved vacancies" time="0.000396458">
+        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="recordsGatingReason &gt; gates on HIGH/CRIT checklist + overdue + risks" time="0.000320125">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="orgAuditChecklistService.overdueCount &gt; flags items &gt; 35 days since last review" time="0.000412792">
+        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="riskBand &gt; bands 1..25" time="0.000344333">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="orgPositionControlService.upsert &gt; derives vacant + overhire from headcount inputs" time="0.000243458">
+        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="recordsCompletenessService.upsert &gt; derives mandatoryMissing, score and band" time="0.000351667">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="orgVacancyService &gt; refuses to fill unknown vacancy" time="0.000775791">
+        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="recordsCompletenessService.aggregate &gt; aggregates band counts, average score, missing/expired totals" time="0.000303333">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="orgVacancyService &gt; fill sets aging days from raisedAt" time="0.000228959">
+        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="recordsAuditChecklistService.overdueCount &gt; flags items &gt; 35 days" time="0.000229208">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="orgVacancyService &gt; openAged separates aged + unapproved counts" time="0.000475875">
+        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="recordsComplianceCertificateService &gt; refuses to sign while gated" time="0.001014625">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="orgComplianceCertificateService.sign &gt; refuses while gated" time="0.000263083">
+        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="recordsComplianceCertificateService &gt; generates with gating when RED employees and expired docs present" time="0.000365625">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="orgComplianceCertificateService.sign &gt; signs when clean" time="0.000259458">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="ORG_COMPLIANCE_CONSTANTS &gt; covers org structure categories" time="0.000520208">
+        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="RECORDS_COMPLIANCE_CONSTANTS &gt; covers identity, contract, visa, work permit" time="0.000674042">
         </testcase>
     </testsuite>
 </testsuites>
