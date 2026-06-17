@@ -2531,67 +2531,30 @@ enum NitaqatBand {
 // ============================================================================
 // 24. EOSB (END OF SERVICE BENEFITS) / GRATUITY
 // ============================================================================
+//
+// NOTE 2026-06-17: the older `EOSBCalculation` (uppercase) model that
+// used to live here was removed because it shared `@@map("aura_eosb_
+// calculation")` with the newer `EosbCalculation` (lowercase) at
+// ~line 11700 — that duplicate blocked `prisma generate` on a clean
+// clone. App code (apps/web/src/lib/services/eosb-compliance/) reads
+// the lowercase model; the only seed touching the uppercase variant
+// was ported in the same commit (see
+// packages/@aura/database/src/seeds/29-compliance-statutory.seed.ts).
+// The `EOSBCalculationType` and `EOSBStatus` enums were dropped with
+// the model — `TerminationType` is retained because app code consumes
+// it as both a Prisma enum and a TypeScript type.
 
-model EOSBCalculation {
-  id              String              @id @default(uuid())
-  tenantId        String
-  employeeId      String
-  calculationDate DateTime            @default(now())
-  calculationType EOSBCalculationType
-
-  // Employee Details at Calculation
-  countryCode     String
-  joiningDate     DateTime
-  lastWorkingDate DateTime?
-  yearsOfService  Decimal
-  monthsOfService Int
-  daysOfService   Int
-
-  // Salary Details
-  basicSalary Decimal
-  totalSalary Decimal
-  dailyRate   Decimal
-
-  // Calculation Breakdown
-  firstPeriodYears   Decimal @default(0)
-  firstPeriodAmount  Decimal @default(0)
-  secondPeriodYears  Decimal @default(0)
-  secondPeriodAmount Decimal @default(0)
-  grossAmount        Decimal
-
-  // Adjustments
-  terminationType   TerminationType
-  resignationFactor Decimal         @default(1) // 1/3, 2/3, or 1
-  deductions        Decimal         @default(0) // Any deductions
-
-  // Final Amount
-  netAmount Decimal
-  currency  String  @default("AED")
-
-  // Status
-  status     EOSBStatus @default(CALCULATED)
-  approvedBy String?
-  approvedAt DateTime?
-  paidAt     DateTime?
-
-  notes              String?
-  calculationDetails Json? // Detailed breakdown
-
-  createdBy String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([tenantId])
-  @@index([employeeId])
-  @@index([status])
-  @@map("aura_eosb_calculation")
-}
-
-enum EOSBCalculationType {
-  ESTIMATE // For planning/preview
-  FINAL // Final calculation for settlement
-  ADJUSTMENT // Correction to previous calculation
-}
+// The older `EOSBCalculation` model and its `EOSBCalculationType` /
+// `EOSBStatus` enums were removed here on 2026-06-17. They mapped to
+// the same `aura_eosb_calculation` table as the newer `EosbCalculation`
+// (lowercase) model defined further down, which blocked
+// `prisma generate` on a clean clone. The canonical model now lives at
+// ~line 11700; the demo seed that referenced the old model was ported
+// in the same commit (see
+// packages/@aura/database/src/seeds/29-compliance-statutory.seed.ts).
+//
+// `TerminationType` is kept — app code uses it as both a Prisma enum
+// and a TypeScript type.
 
 enum TerminationType {
   RESIGNATION // Employee-initiated
@@ -2604,13 +2567,6 @@ enum TerminationType {
   MUTUAL_AGREEMENT // Mutual termination
 }
 
-enum EOSBStatus {
-  CALCULATED
-  PENDING_APPROVAL
-  APPROVED
-  PAID
-  CANCELLED
-}
 
 // ============================================================================
 // 25. EMPLOYEE COMPLIANCE DETAILS

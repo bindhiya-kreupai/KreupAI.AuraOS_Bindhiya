@@ -369,90 +369,84 @@ export async function seedComplianceStatutory(prisma: PrismaClient, tenantId: st
   }
 
   // ==================================================================
-  // 6. EOSBCalculation — 2 calculations
+  // 6. EosbCalculation — 2 demo calculations
+  //
+  // Ported 2026-06-17 from the older `EOSBCalculation` (uppercase) model
+  // to the current `EosbCalculation` (lowercase). Both models had been
+  // mapped to the same `aura_eosb_calculation` table, which blocked
+  // `prisma generate` on a clean clone (audit 2026-06-17 §9). The old
+  // model is dropped in the same commit; this seed now writes the
+  // canonical shape that apps/web/src/lib/services/eosb-compliance/
+  // consumes.
   // ==================================================================
-  console.log('    - Seeding EOSBCalculation...');
+  console.log('    - Seeding EosbCalculation...');
 
   const empId = employees[0].id;
 
-  const existingEOSB1 = await prisma.eOSBCalculation.findFirst({
-    where: { tenantId, employeeId: empId, calculationType: 'ESTIMATE' },
+  const existingEOSB1 = await prisma.eosbCalculation.findFirst({
+    where: { tenantId, employeeId: empId, lastWorkingDate: new Date('2024-09-30') },
   });
   if (!existingEOSB1) {
-    await prisma.eOSBCalculation.create({
+    await prisma.eosbCalculation.create({
       data: {
         tenantId,
         employeeId: empId,
-        calculationType: 'ESTIMATE',
         countryCode: 'AE',
         joiningDate: new Date('2019-03-15'),
         lastWorkingDate: new Date('2024-09-30'),
-        yearsOfService: 5.54,
-        monthsOfService: 66,
-        daysOfService: 2026,
-        basicSalary: 15000,
-        totalSalary: 22000,
-        dailyRate: 500,
-        firstPeriodYears: 5,
-        firstPeriodAmount: 52500,
-        secondPeriodYears: 0.54,
-        secondPeriodAmount: 8100,
-        grossAmount: 60600,
         terminationType: 'RESIGNATION',
-        resignationFactor: 1,
-        deductions: 0,
-        netAmount: 60600,
+        basicSalary: 15000,
+        totalServiceYears: 5.54,
+        totalServiceMonths: 66,
+        unpaidLeaveDays: 0,
+        dailyRate: 500,
+        gratuityAmount: 60600,
+        socialInsuranceOffset: 0,
+        netPayable: 60600,
         currency: 'AED',
-        status: 'CALCULATED',
-        calculationDetails: {
-          formula: 'UAE Federal Law No. 33 of 2021',
-          firstPeriod: '21 days x 5 years x 500 AED/day = 52,500 AED',
-          secondPeriod: '30 days x 0.54 years x 500 AED/day = 8,100 AED',
-          resignationAdjustment: 'Full entitlement (>5 years)',
-        },
-        createdBy: 'system-seed',
+        law: 'UAE Federal Decree-Law No. 33 of 2021',
+        formula: '(Years ≤ 5) × 21 days × Daily Rate + (Years > 5) × 30 days × Daily Rate',
+        notesJson: [
+          'First period: 21 days × 5 years × 500 AED/day = 52,500 AED',
+          'Second period: 30 days × 0.54 years × 500 AED/day = 8,100 AED',
+          'Full entitlement (>5 years resignation)',
+        ],
+        status: 'DRAFT',
       },
     });
   }
 
-  const existingEOSB2 = await prisma.eOSBCalculation.findFirst({
-    where: { tenantId, employeeId: empId, calculationType: 'FINAL' },
+  const existingEOSB2 = await prisma.eosbCalculation.findFirst({
+    where: { tenantId, employeeId: empId, lastWorkingDate: new Date('2024-12-31') },
   });
   if (!existingEOSB2) {
-    await prisma.eOSBCalculation.create({
+    await prisma.eosbCalculation.create({
       data: {
         tenantId,
         employeeId: empId,
-        calculationType: 'FINAL',
         countryCode: 'SA',
         joiningDate: new Date('2020-06-01'),
         lastWorkingDate: new Date('2024-12-31'),
-        yearsOfService: 4.58,
-        monthsOfService: 55,
-        daysOfService: 1675,
-        basicSalary: 12000,
-        totalSalary: 18000,
-        dailyRate: 400,
-        firstPeriodYears: 4.58,
-        firstPeriodAmount: 27480,
-        secondPeriodYears: 0,
-        secondPeriodAmount: 0,
-        grossAmount: 27480,
         terminationType: 'END_OF_CONTRACT',
-        resignationFactor: 1,
-        deductions: 0,
-        netAmount: 27480,
+        basicSalary: 12000,
+        totalServiceYears: 4.58,
+        totalServiceMonths: 55,
+        unpaidLeaveDays: 0,
+        dailyRate: 400,
+        gratuityAmount: 27480,
+        socialInsuranceOffset: 0,
+        netPayable: 27480,
         currency: 'SAR',
+        law: 'Saudi Labour Law Article 84',
+        formula: '(Years ≤ 5) × 15 days × Daily Rate + (Years > 5) × 30 days × Daily Rate',
+        notesJson: [
+          'First period: 15 days × 4.58 years × 400 SAR/day = 27,480 SAR',
+          'Service under 5 years — second period not applicable',
+          'End of contract — full entitlement',
+        ],
         status: 'APPROVED',
         approvedBy: 'HR Director',
         approvedAt: new Date('2024-12-20'),
-        calculationDetails: {
-          formula: 'KSA Labour Law Article 84',
-          firstPeriod: '15 days x 4.58 years x 400 SAR/day = 27,480 SAR',
-          secondPeriod: 'N/A — service under 5 years',
-          note: 'End of contract — full entitlement',
-        },
-        createdBy: 'system-seed',
       },
     });
   }

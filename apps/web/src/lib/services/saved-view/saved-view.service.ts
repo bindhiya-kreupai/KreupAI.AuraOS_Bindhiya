@@ -7,20 +7,12 @@
  *
  * Scope keys are caller-defined and identify the list page (e.g.
  * "payroll.runs:list", "hr-policies:list"). One view per
- * (tenant, user, scope) may be flagged as the default; promoting a view
- * to default automatically clears the flag on any other default for the
- * same scope.
- *
- * NOTE: This service uses the `TenantSavedView` Prisma model defined in
- * packages/@aura/database/prisma/schema.prisma. Until `prisma generate`
- * is re-run after resolving the pre-existing `EOSBCalculation` vs
- * `EosbCalculation` duplicate `@@map` collision (see
- * GCC-COMPLIANCE-RUBRIC-AUDIT-2026-06-17.md), the typed delegate is
- * accessed via a runtime cast so this file compiles against the stale
- * client. Once the duplicate is resolved and the client regenerated,
- * the cast can be dropped without API changes.
+ * (tenant, user, scope) may be flagged as the default; promoting a
+ * view to default automatically clears the flag on any other default
+ * for the same scope.
  */
 
+import type { Prisma } from '@prisma/client';
 import { BaseService } from '@/lib/services/base.service';
 import { ValidationError } from '@/lib/errors';
 
@@ -59,9 +51,9 @@ export class SavedViewService extends BaseService {
     super('SavedViewService');
   }
 
-  /** Delegate accessor; see file-level note for the cast rationale. */
+  /** Typed Prisma delegate for the tenant_saved_view table. */
   private get delegate() {
-    return (this.prisma as any).tenantSavedView;
+    return this.prisma.tenantSavedView;
   }
 
   /**
@@ -104,7 +96,7 @@ export class SavedViewService extends BaseService {
     const { tenantId, userId, scope, name, filters, isDefault = false, isShared = false } = input;
 
     const created = await this.executeTransaction(async (tx) => {
-      const delegate = (tx as any).tenantSavedView;
+      const delegate = tx.tenantSavedView;
       if (isDefault) {
         await delegate.updateMany({
           where: { tenantId, userId, scope, isDefault: true },
@@ -112,7 +104,15 @@ export class SavedViewService extends BaseService {
         });
       }
       return delegate.create({
-        data: { tenantId, userId, scope, name: name.trim(), filters, isDefault, isShared },
+        data: {
+          tenantId,
+          userId,
+          scope,
+          name: name.trim(),
+          filters: filters as Prisma.InputJsonValue,
+          isDefault,
+          isShared,
+        },
       });
     });
 
@@ -148,7 +148,7 @@ export class SavedViewService extends BaseService {
     }
 
     const updated = await this.executeTransaction(async (tx) => {
-      const delegate = (tx as any).tenantSavedView;
+      const delegate = tx.tenantSavedView;
       if (input.isDefault === true) {
         await delegate.updateMany({
           where: { tenantId, userId, scope: existing.scope, isDefault: true, id: { not: id } },
@@ -159,7 +159,7 @@ export class SavedViewService extends BaseService {
         where: { id },
         data: {
           name: input.name?.trim(),
-          filters: input.filters,
+          filters: input.filters as Prisma.InputJsonValue | undefined,
           isDefault: input.isDefault,
           isShared: input.isShared,
         },
