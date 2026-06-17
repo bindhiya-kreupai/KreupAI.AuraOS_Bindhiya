@@ -468,6 +468,18 @@ export const superAdminMenu: MenuDefinition = {
                         'Monthly Compliance Certificate',
                     ],
                 },
+                {
+                    code: 'ATTENDANCE_COMPLIANCE',
+                    label: 'Attendance (GCC)',
+                    icon: 'leave',
+                    path: '/dashboard/attendance-compliance',
+                    features: [
+                        'Country × Grade Policy (tolerances, SLAs, Ramadan)',
+                        'Fraud Register (BUDDY_PUNCH / GEO_MISMATCH / TIME_DRIFT)',
+                        'Biometric & Geolocation Consent Register',
+                        'Monthly Compliance Certificate',
+                    ],
+                },
             ],
         },
         {

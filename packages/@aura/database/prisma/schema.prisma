@@ -12365,3 +12365,88 @@ model HrFormCertificate {
   @@unique([tenantId, period], map: "aura_hr_form_certificate_unique")
   @@map("aura_hr_form_certificate")
 }
+
+model AttendancePolicy {
+  id                         String    @id(map: "aura_attendance_policy_pkey") @default(uuid())
+  tenantId                   String
+  country                    String
+  grade                      String?
+  isEligible                 Boolean   @default(true)
+  lateToleranceMin           Int       @default(10)
+  earlyDepartureToleranceMin Int       @default(10)
+  missingPunchSlaHours       Int       @default(24)
+  regularizationSlaDays      Int       @default(3)
+  absconding3DayThreshold    Boolean   @default(true)
+  ramadanReducedHours        Decimal   @default(6) @db.Decimal(5, 2)
+  remoteWorkAllowed          Boolean   @default(true)
+  fraudGeofenceRadiusM       Int       @default(200)
+  biometricRequired          Boolean   @default(false)
+  effectiveFrom              DateTime
+  effectiveTo                DateTime?
+  status                     String    @default("ACTIVE")
+  createdAt                  DateTime  @default(now())
+  updatedAt                  DateTime  @updatedAt
+
+  @@unique([tenantId, country, grade, effectiveFrom], map: "aura_attendance_policy_unique")
+  @@map("aura_attendance_policy")
+}
+
+model AttendanceFraudFlag {
+  id              String    @id(map: "aura_attendance_fraud_flag_pkey") @default(uuid())
+  tenantId        String
+  employeeId      String
+  punchDate       DateTime
+  flagType        String
+  severity        String    @default("MEDIUM")
+  score           Int       @default(0)
+  evidenceJson    Json      @default("{}")
+  status          String    @default("OPEN")
+  resolvedAt      DateTime?
+  resolvedBy      String?
+  resolutionNotes String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([tenantId, employeeId], map: "aura_attendance_fraud_flag_employee")
+  @@index([tenantId, status], map: "aura_attendance_fraud_flag_open")
+  @@map("aura_attendance_fraud_flag")
+}
+
+model AttendanceConsent {
+  id          String    @id(map: "aura_attendance_consent_pkey") @default(uuid())
+  tenantId    String
+  employeeId  String
+  consentType String
+  grantedAt   DateTime?
+  revokedAt   DateTime?
+  evidenceUrl String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([tenantId, employeeId, consentType], map: "aura_attendance_consent_unique")
+  @@map("aura_attendance_consent")
+}
+
+model AttendanceCertificate {
+  id                     String    @id(map: "aura_attendance_certificate_pkey") @default(uuid())
+  tenantId               String
+  period                 String
+  status                 String    @default("DRAFT")
+  punchesTotal           Int       @default(0)
+  missingPunchCount      Int       @default(0)
+  lateCount              Int       @default(0)
+  regularizationsPending Int       @default(0)
+  fraudFlagsOpen         Int       @default(0)
+  absconding3DayCount    Int       @default(0)
+  consentMissingCount    Int       @default(0)
+  gatingReason           String?
+  attestationsJson       Json      @default("[]")
+  generatedAt            DateTime?
+  signedAt               DateTime?
+  signedBy               String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  @@unique([tenantId, period], map: "aura_attendance_certificate_unique")
+  @@map("aura_attendance_certificate")
+}
