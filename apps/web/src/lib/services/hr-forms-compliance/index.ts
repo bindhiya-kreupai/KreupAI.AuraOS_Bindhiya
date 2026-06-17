@@ -17,6 +17,7 @@
  */
 
 import { prisma } from '@aura/database';
+import { signWithHmac } from '../signing/hmac-signature.service';
 
 export interface AuthContext {
   tenantId: string;
@@ -343,7 +344,16 @@ export class HrFormSubmissionService {
         signerId: auth.userId,
         action: 'APPROVE',
         comments: input.comments,
-        signatureHash: `hash:${auth.userId}:${Date.now()}`,
+        // Cryptographic HMAC-SHA256 signature (audit Pattern 7) — replaces
+        // the predictable `hash:userId:timestamp` shape so signatures are
+        // tamper-evident and verifiable. See lib/services/signing/.
+        signatureHash: signWithHmac({
+          domain: 'hr-forms:approve',
+          resourceId: input.id,
+          actorId: auth.userId,
+          ipAddress: input.ipAddress,
+          extra: { stage: state.currentStage },
+        }),
         ipAddress: input.ipAddress,
         userAgent: input.userAgent,
       },

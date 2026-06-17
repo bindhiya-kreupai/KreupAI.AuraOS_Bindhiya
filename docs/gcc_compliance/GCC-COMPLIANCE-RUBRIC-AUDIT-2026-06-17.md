@@ -303,6 +303,42 @@ The GOSI / GPSSA wiring lands the _architecture_. The rule-pack hop is a no-op u
 - The full rate shape needed is `GOSI_RATES_<BRANCH>_<CLASS>` → `{ employerPct, employeePct, wageFloor?, wageCeiling? }`. Same for `GPSSA_RATES_<CLASS>` plus `governmentPct`.
 - Once the seeds carry the full rate object, tenants without explicit GOSI/GPSSA config will automatically inherit the regulatory baseline from the rule pack instead of throwing "no rate configured".
 
+### 2026-06-17 — Cross-cutting patterns 7 + 8 closed (commit `<latest>`)
+
+The last two open audit patterns have been closed.
+
+**Pattern 7 — HMAC e-signatures.** New `lib/services/signing/hmac-signature.service.ts`:
+
+- HMAC-SHA256 over a canonical tuple `(domain | resourceId | actorId | timestampMs | ipAddress | extra)`.
+- Server-only secret from `SIGNATURE_HMAC_SECRET` env var; production refuses to start without one ≥ 32 chars. Dev fallback logged on first use.
+- Self-contained `v1:<payload>:<mac>` format — verification works without an out-of-band canonical-tuple lookup.
+- `verifySignature` constant-time compares; tampering with any field (resourceId, actorId, MAC) is detected.
+- Replaces the predictable `hash:${userId}:${Date.now()}` pattern in `hr-forms-compliance/index.ts` (the only site using the weak shape across the codebase).
+- 9 tests.
+
+**Pattern 8 — Safe expression DSL.** New `lib/services/expression-dsl/expression.service.ts`:
+
+- Sandboxed evaluator (no function calls, no member assignment, no dynamic property access).
+- Grammar: literals (number, string, boolean, null), variable paths with dot notation, arithmetic, comparison (with `Date` → epoch ms coercion), `&&` / `||` short-circuit, `!`.
+- `evaluateRule(expression, ctx, onError?)` — EPIC-37 red-flag wrapper; swallows errors and returns `false` so a misbehaving rule never blocks the engine.
+- `evaluateFormula(expression, ctx)` — EPIC-38 KPI wrapper; throws if non-numeric.
+- Validates against the audit's two sample expressions: `"payslip.creditedAt > payslip.dueDate"` (red flag) and `"payslips_corrected / total * 100"` (KPI).
+- Refuses prototype-chain escape (`__proto__`, `constructor`, `prototype` segments). Refuses division/modulo by zero.
+- 27 tests.
+
+After this commit **all 8 audit patterns are closed or have a clear follow-up path**:
+
+| #   | Pattern                              | Status                                                                      |
+| --- | ------------------------------------ | --------------------------------------------------------------------------- |
+| 1   | Rule engine no service consumes      | ✅ Closed (EOSB / Emiratisation / WPS / GOSI / GPSSA / Nitaqat / LabourLaw) |
+| 2   | Event bus declared, not wired        | ✅ Closed (`compliance-events/` with first consumer in recruitment)         |
+| 3   | Hardcoded `take: 500`, no pagination | 🟡 Tier-0 primitives in place; per-EPIC adoption is mechanical              |
+| 4   | Prisma models with no service        | ✅ Closed for the 🔴-RED EPIC surfaces                                      |
+| 5   | Tests SKIPPED in EOSB                | 📝 Documented for follow-up rewrite                                         |
+| 6   | `@ts-nocheck` on production services | ✅ Probation fixed; ESS has all 18 drift sites documented                   |
+| 7   | Cryptographic e-signature weakness   | ✅ Closed (HMAC-SHA256)                                                     |
+| 8   | Rules / formulas stored as TEXT      | ✅ Closed (safe expression DSL)                                             |
+
 ### 2026-06-17 — Tier 2 (🔴 RED EPICs → 🟡)
 
 All four 🔴 RED EPICs from the original audit have been moved to 🟡 by adding the missing compliance layer (Prisma + service + tests). Each EPIC now passes the **P · S · X** columns of the rubric end-to-end.
