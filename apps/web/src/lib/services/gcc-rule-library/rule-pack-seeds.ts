@@ -107,6 +107,25 @@ export const RULE_PACK_SEEDS: SeedRulePack[] = [
         value: 5,
         authority: 'GPSSA',
       },
+      // Structured GPSSA rate object (UAE nationals — GPSSA does not
+      // cover expats; OH for expats is carried by other insurers).
+      // Consumed by GpssaConfigService.resolveRateWithRulePack as the
+      // regulatory baseline when tenant config is missing.
+      // Federal Pensions Law 7/1999: employer 12.5% + employee 5% +
+      // state 2.5% on contribution wage AED 1,000 - 50,000.
+      {
+        domain: 'SOCIAL_INSURANCE',
+        ruleKey: 'GPSSA_RATES_UAE_NATIONAL',
+        value: {
+          employerPct: 12.5,
+          employeePct: 5,
+          governmentPct: 2.5,
+          wageFloor: 1000,
+          wageCeiling: 50000,
+        },
+        authority: 'GPSSA',
+        citation: 'Federal Pensions Law 7/1999 (as amended)',
+      },
       {
         domain: 'NATIONALIZATION',
         ruleKey: 'EMIRATISATION_PRIVATE_TARGET',
@@ -198,12 +217,94 @@ export const RULE_PACK_SEEDS: SeedRulePack[] = [
         value: 2,
         authority: 'GOSI',
       },
+      // Structured GOSI rate objects keyed by branch + NationalityClass.
+      // Consumed by GosiConfigService.resolveRateWithRulePack as the
+      // regulatory baseline when tenant config is missing. Per-tenant
+      // gosi_contribution_rate rows take precedence; these seeds carry
+      // the Social Insurance Law Article 18 figures + Article-18
+      // wage floor / ceiling (SAR 1,500 - 45,000).
+      {
+        domain: 'SOCIAL_INSURANCE',
+        ruleKey: 'GOSI_RATES_ANNUITIES_SAUDI',
+        value: {
+          employerPct: 11.75,
+          employeePct: 9.75,
+          wageFloor: 1500,
+          wageCeiling: 45000,
+        },
+        authority: 'GOSI',
+        citation: 'Social Insurance Law Article 18 (Annuities branch)',
+      },
+      {
+        domain: 'SOCIAL_INSURANCE',
+        ruleKey: 'GOSI_RATES_OCCUPATIONAL_HAZARDS_SAUDI',
+        value: {
+          employerPct: 2,
+          employeePct: 0,
+          wageFloor: 1500,
+          wageCeiling: 45000,
+        },
+        authority: 'GOSI',
+        citation: 'Social Insurance Law Article 18 (OH branch)',
+      },
+      {
+        domain: 'SOCIAL_INSURANCE',
+        ruleKey: 'GOSI_RATES_OCCUPATIONAL_HAZARDS_EXPAT',
+        value: {
+          employerPct: 2,
+          employeePct: 0,
+        },
+        authority: 'GOSI',
+        citation: 'Social Insurance Law — OH branch for expatriate workers',
+      },
+      {
+        domain: 'SOCIAL_INSURANCE',
+        ruleKey: 'GOSI_RATES_OCCUPATIONAL_HAZARDS_GCC_NATIONAL_OTHER',
+        value: {
+          employerPct: 2,
+          employeePct: 0,
+        },
+        authority: 'GOSI',
+      },
       {
         domain: 'NATIONALIZATION',
         ruleKey: 'NITAQAT_BANDS',
         value: ['PLATINUM', 'GREEN', 'YELLOW', 'RED'],
         authority: 'MHRSD/Qiwa',
         citation: 'Nitaqat programme',
+      },
+      // Structured Nitaqat band thresholds per sector + size bracket.
+      // Consumed by NitaqatConfigService.resolveThresholdWithRulePack
+      // as the regulatory baseline when tenant config is missing.
+      // Representative figures aligned with DEFAULT_BAND_THRESHOLDS in
+      // nitaqat-compliance/index.ts; tenants override per-establishment.
+      {
+        domain: 'NATIONALIZATION',
+        ruleKey: 'NITAQAT_BAND_THRESHOLDS_PRIVATE_SMALL',
+        value: { redMaxPct: 4, yellowMaxPct: 7, greenMaxPct: 10 },
+        authority: 'MHRSD/Qiwa',
+        citation: 'Nitaqat programme — Private sector, small bracket',
+      },
+      {
+        domain: 'NATIONALIZATION',
+        ruleKey: 'NITAQAT_BAND_THRESHOLDS_PRIVATE_MEDIUM',
+        value: { redMaxPct: 6, yellowMaxPct: 9, greenMaxPct: 12 },
+        authority: 'MHRSD/Qiwa',
+        citation: 'Nitaqat programme — Private sector, medium bracket',
+      },
+      {
+        domain: 'NATIONALIZATION',
+        ruleKey: 'NITAQAT_BAND_THRESHOLDS_PRIVATE_LARGE',
+        value: { redMaxPct: 8, yellowMaxPct: 12, greenMaxPct: 18 },
+        authority: 'MHRSD/Qiwa',
+        citation: 'Nitaqat programme — Private sector, large bracket',
+      },
+      {
+        domain: 'NATIONALIZATION',
+        ruleKey: 'NITAQAT_BAND_THRESHOLDS_PRIVATE_GIANT',
+        value: { redMaxPct: 10, yellowMaxPct: 15, greenMaxPct: 22 },
+        authority: 'MHRSD/Qiwa',
+        citation: 'Nitaqat programme — Private sector, giant bracket',
       },
       {
         domain: 'IMMIGRATION',

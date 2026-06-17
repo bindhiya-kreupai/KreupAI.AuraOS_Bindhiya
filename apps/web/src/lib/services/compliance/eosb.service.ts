@@ -78,16 +78,16 @@ export class EOSBService {
         result = this.calculateKSA(input, serviceDuration, dailyRate, override);
         break;
       case 'BH':
-        result = this.calculateBahrain(input, serviceDuration, dailyRate);
+        result = this.calculateBahrain(input, serviceDuration, dailyRate, override);
         break;
       case 'QA':
-        result = this.calculateQatar(input, serviceDuration, dailyRate);
+        result = this.calculateQatar(input, serviceDuration, dailyRate, override);
         break;
       case 'OM':
-        result = this.calculateOman(input, serviceDuration, dailyRate);
+        result = this.calculateOman(input, serviceDuration, dailyRate, override);
         break;
       case 'KW':
-        result = this.calculateKuwait(input, serviceDuration, dailyRate);
+        result = this.calculateKuwait(input, serviceDuration, dailyRate, override);
         break;
       case 'IN':
         result = this.calculateIndia(input, serviceDuration, dailyRate);
@@ -104,12 +104,14 @@ export class EOSBService {
    *
    * Resolves `GRATUITY_FORMULA` from the active country rule pack
    * (EPIC-02 / EPIC-36) and overrides the hardcoded gratuity days,
-   * breakpoint, and cap. Falls back to the hardcoded country defaults
-   * for any field the rule pack does not specify, and for any country
-   * not yet wired (BH, QA, OM, KW, IN). Errors talking to the rule
-   * engine are logged and the calculation proceeds with hardcoded
-   * defaults — never blocks a final-settlement run because the rule
-   * service is down.
+   * breakpoint, and cap. All six GCC countries (AE / SA / BH / QA /
+   * OM / KW) honour the override; India retains the statutory
+   * formula (15/26 × salary × years, capped at INR 20 lakh). Falls
+   * back to the hardcoded country defaults for any field the rule
+   * pack does not specify. Errors talking to the rule engine are
+   * logged and the calculation proceeds with hardcoded defaults —
+   * never blocks a final-settlement run because the rule service
+   * is down.
    *
    * This closes EPIC-02 Pattern 1 (audit 2026-06-17): "rule engine no
    * service consumes" for the EOSB code path. The same shape applies
@@ -353,23 +355,33 @@ export class EOSBService {
   }
 
   /**
-   * Bahrain EOSB Calculation
+   * Bahrain EOSB Calculation.
+   *
+   * Hardcoded country defaults (15 days / 30 days / 3y breakpoint) are
+   * used when no `override` is passed. The override shape comes from
+   * the EOSB.GRATUITY_FORMULA rule when callers use
+   * `calculateWithRulePack`.
    */
   private static calculateBahrain(
     input: EOSBCalculationInput,
     duration: ReturnType<typeof EOSBService.calculateServiceDuration>,
-    dailyRate: number
+    dailyRate: number,
+    override?: GratuityFormulaOverride
   ): EOSBCalculationResult {
     const { employeeId, countryCode, basicSalary, terminationType } = input;
     const years = duration.fractionalYears;
 
-    // First 3 years: 15 days per year
-    const firstPeriodYears = Math.min(years, 3);
-    const firstPeriodAmount = firstPeriodYears * 15 * dailyRate;
+    const firstDays = override?.firstPeriodDaysPerYear ?? 15;
+    const secondDays = override?.secondPeriodDaysPerYear ?? 30;
+    const breakpoint = override?.breakpointYears ?? 3;
 
-    // After 3 years: 30 days per year
-    const secondPeriodYears = Math.max(0, years - 3);
-    const secondPeriodAmount = secondPeriodYears * 30 * dailyRate;
+    // First slice (default ≤ 3 years): `firstDays` per year
+    const firstPeriodYears = Math.min(years, breakpoint);
+    const firstPeriodAmount = firstPeriodYears * firstDays * dailyRate;
+
+    // Second slice (default > 3 years): `secondDays` per year
+    const secondPeriodYears = Math.max(0, years - breakpoint);
+    const secondPeriodAmount = secondPeriodYears * secondDays * dailyRate;
 
     const grossAmount = firstPeriodAmount + secondPeriodAmount;
     const netAmount = grossAmount;
@@ -384,10 +396,10 @@ export class EOSBService {
       basicSalary,
       dailyRate,
       firstPeriodYears,
-      firstPeriodDays: Math.round(firstPeriodYears * 15),
+      firstPeriodDays: Math.round(firstPeriodYears * firstDays),
       firstPeriodAmount,
       secondPeriodYears,
-      secondPeriodDays: Math.round(secondPeriodYears * 30),
+      secondPeriodDays: Math.round(secondPeriodYears * secondDays),
       secondPeriodAmount,
       grossAmount,
       terminationType,
@@ -397,7 +409,7 @@ export class EOSBService {
       netAmount,
       calculationDetails: {
         law: 'Bahrain Labour Law No. 36 of 2012',
-        formula: '(Years ≤ 3) × 15 days × Daily Rate + (Years > 3) × 30 days × Daily Rate',
+        formula: `(Years ≤ ${breakpoint}) × ${firstDays} days × Daily Rate + (Years > ${breakpoint}) × ${secondDays} days × Daily Rate`,
         notes: [],
         notesAr: [],
       },
@@ -405,19 +417,25 @@ export class EOSBService {
   }
 
   /**
-   * Qatar EOSB Calculation
+   * Qatar EOSB Calculation.
+   *
+   * Flat-rate (21 days/year) — `firstPeriodDaysPerYear` override
+   * applies when supplied via the rule pack; other override fields
+   * are ignored.
    */
   private static calculateQatar(
     input: EOSBCalculationInput,
     duration: ReturnType<typeof EOSBService.calculateServiceDuration>,
-    dailyRate: number
+    dailyRate: number,
+    override?: GratuityFormulaOverride
   ): EOSBCalculationResult {
     const { employeeId, countryCode, basicSalary, terminationType } = input;
     const years = duration.fractionalYears;
+    const daysPerYear = override?.firstPeriodDaysPerYear ?? 21;
 
-    // 3 weeks (21 days) per year for all years
+    // Flat rate: `daysPerYear` per year of service
     const firstPeriodYears = years;
-    const firstPeriodAmount = years * 21 * dailyRate;
+    const firstPeriodAmount = years * daysPerYear * dailyRate;
 
     const grossAmount = firstPeriodAmount;
     const netAmount = grossAmount;
@@ -432,7 +450,7 @@ export class EOSBService {
       basicSalary,
       dailyRate,
       firstPeriodYears,
-      firstPeriodDays: Math.round(years * 21),
+      firstPeriodDays: Math.round(years * daysPerYear),
       firstPeriodAmount,
       secondPeriodYears: 0,
       secondPeriodDays: 0,
@@ -445,7 +463,7 @@ export class EOSBService {
       netAmount,
       calculationDetails: {
         law: 'Qatar Labour Law No. 14 of 2004',
-        formula: 'Years × 21 days × Daily Rate',
+        formula: `Years × ${daysPerYear} days × Daily Rate`,
         notes: [],
         notesAr: [],
       },
@@ -453,19 +471,23 @@ export class EOSBService {
   }
 
   /**
-   * Oman EOSB Calculation
+   * Oman EOSB Calculation.
+   *
+   * Flat-rate (15 days/year for expats) — `firstPeriodDaysPerYear`
+   * override applies when supplied.
    */
   private static calculateOman(
     input: EOSBCalculationInput,
     duration: ReturnType<typeof EOSBService.calculateServiceDuration>,
-    dailyRate: number
+    dailyRate: number,
+    override?: GratuityFormulaOverride
   ): EOSBCalculationResult {
     const { employeeId, countryCode, basicSalary, terminationType } = input;
     const years = duration.fractionalYears;
+    const daysPerYear = override?.firstPeriodDaysPerYear ?? 15;
 
-    // 15 days per year for expats
     const firstPeriodYears = years;
-    const firstPeriodAmount = years * 15 * dailyRate;
+    const firstPeriodAmount = years * daysPerYear * dailyRate;
 
     const grossAmount = firstPeriodAmount;
     const netAmount = grossAmount;
@@ -480,7 +502,7 @@ export class EOSBService {
       basicSalary,
       dailyRate,
       firstPeriodYears,
-      firstPeriodDays: Math.round(years * 15),
+      firstPeriodDays: Math.round(years * daysPerYear),
       firstPeriodAmount,
       secondPeriodYears: 0,
       secondPeriodDays: 0,
@@ -493,7 +515,7 @@ export class EOSBService {
       netAmount,
       calculationDetails: {
         law: 'Oman Labour Law (Royal Decree 35/2003)',
-        formula: 'Years × 15 days × Daily Rate',
+        formula: `Years × ${daysPerYear} days × Daily Rate`,
         notes: ['Calculation for expatriate employees'],
         notesAr: ['الحساب للموظفين الوافدين'],
       },
@@ -501,26 +523,35 @@ export class EOSBService {
   }
 
   /**
-   * Kuwait EOSB (Indemnity) Calculation
+   * Kuwait EOSB (Indemnity) Calculation.
+   *
+   * Two-period (15 / 30 days @ 5y breakpoint) + 1.5-year salary cap.
+   * Override shape mirrors UAE/KSA.
    */
   private static calculateKuwait(
     input: EOSBCalculationInput,
     duration: ReturnType<typeof EOSBService.calculateServiceDuration>,
-    dailyRate: number
+    dailyRate: number,
+    override?: GratuityFormulaOverride
   ): EOSBCalculationResult {
     const { employeeId, countryCode, basicSalary, terminationType } = input;
     const years = duration.fractionalYears;
 
-    // First 5 years: 15 days per year
-    const firstPeriodYears = Math.min(years, 5);
-    const firstPeriodAmount = firstPeriodYears * 15 * dailyRate;
+    const firstDays = override?.firstPeriodDaysPerYear ?? 15;
+    const secondDays = override?.secondPeriodDaysPerYear ?? 30;
+    const breakpoint = override?.breakpointYears ?? 5;
+    const capYears = override?.capYears ?? 1.5;
 
-    // After 5 years: 1 month (30 days) per year
-    const secondPeriodYears = Math.max(0, years - 5);
-    const secondPeriodAmount = secondPeriodYears * 30 * dailyRate;
+    // First slice (default ≤ 5 years): `firstDays` per year
+    const firstPeriodYears = Math.min(years, breakpoint);
+    const firstPeriodAmount = firstPeriodYears * firstDays * dailyRate;
 
-    // Kuwait: Maximum cap of 1.5 years salary
-    const maxIndemnity = basicSalary * 18;
+    // Second slice (default > 5 years): `secondDays` per year
+    const secondPeriodYears = Math.max(0, years - breakpoint);
+    const secondPeriodAmount = secondPeriodYears * secondDays * dailyRate;
+
+    // Kuwait: cap at `capYears` years salary (default 1.5)
+    const maxIndemnity = basicSalary * capYears * 12;
     let grossAmount = firstPeriodAmount + secondPeriodAmount;
     grossAmount = Math.min(grossAmount, maxIndemnity);
 
@@ -530,8 +561,8 @@ export class EOSBService {
     const notesAr: string[] = [];
 
     if (firstPeriodAmount + secondPeriodAmount > maxIndemnity) {
-      notes.push('Indemnity capped at 1.5 years salary');
-      notesAr.push('تم تحديد سقف التعويض بما يعادل راتب سنة ونصف');
+      notes.push(`Indemnity capped at ${capYears} year${capYears === 1 ? '' : 's'} salary`);
+      notesAr.push('تم تحديد سقف التعويض');
     }
 
     return {
@@ -544,10 +575,10 @@ export class EOSBService {
       basicSalary,
       dailyRate,
       firstPeriodYears,
-      firstPeriodDays: Math.round(firstPeriodYears * 15),
+      firstPeriodDays: Math.round(firstPeriodYears * firstDays),
       firstPeriodAmount,
       secondPeriodYears,
-      secondPeriodDays: Math.round(secondPeriodYears * 30),
+      secondPeriodDays: Math.round(secondPeriodYears * secondDays),
       secondPeriodAmount,
       grossAmount,
       terminationType,
@@ -557,7 +588,7 @@ export class EOSBService {
       netAmount,
       calculationDetails: {
         law: 'Kuwait Labour Law No. 6 of 2010',
-        formula: '(Years ≤ 5) × 15 days × Daily Rate + (Years > 5) × 30 days × Daily Rate',
+        formula: `(Years ≤ ${breakpoint}) × ${firstDays} days × Daily Rate + (Years > ${breakpoint}) × ${secondDays} days × Daily Rate`,
         notes,
         notesAr,
       },

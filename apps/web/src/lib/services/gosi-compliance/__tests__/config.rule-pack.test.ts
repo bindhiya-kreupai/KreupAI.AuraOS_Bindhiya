@@ -54,7 +54,7 @@ describe('GosiConfigService.resolveRateWithRulePack', () => {
     // rule pack should NOT be consulted in this path
     vi.mocked(countryRulePackService.resolveRule).mockResolvedValue(null);
 
-    const rate = await svc.resolveRateWithRulePack('t1', 'ANNUITIES', 'NATIONAL');
+    const rate = await svc.resolveRateWithRulePack('t1', 'ANNUITIES', 'SAUDI');
 
     expect(rate).toEqual({
       id: 'rate-row-1',
@@ -75,7 +75,7 @@ describe('GosiConfigService.resolveRateWithRulePack', () => {
       value: { employerPct: 11.75, employeePct: 10, wageFloor: 1500, wageCeiling: 45000 },
     } as any);
 
-    const rate = await svc.resolveRateWithRulePack('t1', 'ANNUITIES', 'NATIONAL');
+    const rate = await svc.resolveRateWithRulePack('t1', 'ANNUITIES', 'SAUDI');
 
     expect(rate).toEqual({
       id: null, // rule-pack-sourced rates have no row id
@@ -95,7 +95,7 @@ describe('GosiConfigService.resolveRateWithRulePack', () => {
       value: 11.75, // scalar — old-shape seed; not enough for a full rate
     } as any);
 
-    const rate = await svc.resolveRateWithRulePack('t1', 'ANNUITIES', 'NATIONAL');
+    const rate = await svc.resolveRateWithRulePack('t1', 'ANNUITIES', 'SAUDI');
     expect(rate).toBeNull();
   });
 
@@ -116,7 +116,7 @@ describe('GosiConfigService.resolveRateWithRulePack', () => {
     fakePrisma.gosiContributionRate.findMany.mockResolvedValue([]);
     vi.mocked(countryRulePackService.resolveRule).mockResolvedValue(null);
 
-    const rate = await svc.resolveRateWithRulePack('t1', 'ANNUITIES', 'NATIONAL');
+    const rate = await svc.resolveRateWithRulePack('t1', 'ANNUITIES', 'SAUDI');
     expect(rate).toBeNull();
   });
 });

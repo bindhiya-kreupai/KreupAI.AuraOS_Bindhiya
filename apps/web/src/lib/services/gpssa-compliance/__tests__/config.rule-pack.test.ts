@@ -48,7 +48,7 @@ describe('GpssaConfigService.resolveRateWithRulePack', () => {
     ]);
     vi.mocked(countryRulePackService.resolveRule).mockResolvedValue(null);
 
-    const rate = await svc.resolveRateWithRulePack('t1', 'NATIONAL');
+    const rate = await svc.resolveRateWithRulePack('t1', 'UAE_NATIONAL');
 
     expect(rate).toEqual({
       id: 'rate-row-1',
@@ -70,7 +70,7 @@ describe('GpssaConfigService.resolveRateWithRulePack', () => {
       value: { employerPct: 12.5, employeePct: 5, governmentPct: 6 },
     } as any);
 
-    const rate = await svc.resolveRateWithRulePack('t1', 'NATIONAL');
+    const rate = await svc.resolveRateWithRulePack('t1', 'UAE_NATIONAL');
 
     expect(rate).toEqual({
       id: null,
@@ -89,7 +89,7 @@ describe('GpssaConfigService.resolveRateWithRulePack', () => {
       value: { employerPct: 12.5, employeePct: 5 }, // no governmentPct
     } as any);
 
-    const rate = await svc.resolveRateWithRulePack('t1', 'NATIONAL');
+    const rate = await svc.resolveRateWithRulePack('t1', 'UAE_NATIONAL');
     expect(rate?.governmentPct).toBe(0);
   });
 
@@ -97,7 +97,7 @@ describe('GpssaConfigService.resolveRateWithRulePack', () => {
     fakePrisma.gpssaContributionRate.findMany.mockResolvedValue([]);
     vi.mocked(countryRulePackService.resolveRule).mockResolvedValue(null);
 
-    const rate = await svc.resolveRateWithRulePack('t1', 'NATIONAL');
+    const rate = await svc.resolveRateWithRulePack('t1', 'UAE_NATIONAL');
     expect(rate).toBeNull();
   });
 

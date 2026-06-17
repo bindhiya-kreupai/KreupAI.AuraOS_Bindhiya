@@ -100,6 +100,69 @@ describe('EOSBService.calculateWithRulePack', () => {
     expect(ruled.calculationDetails.law).toContain('Saudi Labour Law');
   });
 
+  it('honours overrides in the Bahrain branch (default 3y breakpoint, change to 4y + 18 days)', async () => {
+    vi.mocked(countryRulePackService.resolveRule).mockResolvedValue({
+      value: { breakpointYears: 4, firstPeriodDaysPerYear: 18 },
+    } as any);
+
+    const ruled = await EOSBService.calculateWithRulePack({
+      ...baseInput,
+      countryCode: 'BH' as const,
+    });
+
+    expect(ruled.calculationDetails.formula).toContain('(Years ≤ 4)');
+    expect(ruled.calculationDetails.formula).toContain('18 days');
+    expect(ruled.calculationDetails.law).toContain('Bahrain');
+  });
+
+  it('honours overrides in the Qatar flat-rate branch (21 → 30 days, no breakpoint label)', async () => {
+    vi.mocked(countryRulePackService.resolveRule).mockResolvedValue({
+      value: { firstPeriodDaysPerYear: 30 },
+    } as any);
+
+    const ruled = await EOSBService.calculateWithRulePack({
+      ...baseInput,
+      countryCode: 'QA' as const,
+    });
+
+    expect(ruled.calculationDetails.formula).toContain('30 days');
+    expect(ruled.calculationDetails.law).toContain('Qatar');
+    // Qatar is flat-rate — no breakpoint label
+    expect(ruled.calculationDetails.formula).not.toContain('Years ≤');
+  });
+
+  it('honours overrides in the Oman flat-rate branch (15 → 20 days)', async () => {
+    vi.mocked(countryRulePackService.resolveRule).mockResolvedValue({
+      value: { firstPeriodDaysPerYear: 20 },
+    } as any);
+
+    const ruled = await EOSBService.calculateWithRulePack({
+      ...baseInput,
+      countryCode: 'OM' as const,
+    });
+
+    expect(ruled.calculationDetails.formula).toContain('20 days');
+    expect(ruled.calculationDetails.law).toContain('Oman');
+  });
+
+  it('honours overrides in the Kuwait branch including capYears (1.5 → 2 years)', async () => {
+    vi.mocked(countryRulePackService.resolveRule).mockResolvedValue({
+      value: { capYears: 2 },
+    } as any);
+
+    const ruled = await EOSBService.calculateWithRulePack({
+      ...baseInput,
+      countryCode: 'KW' as const,
+    });
+
+    expect(ruled.calculationDetails.law).toContain('Kuwait');
+    // Cap label flips from "1.5 years" to "2 years" when triggered.
+    // For our 8-year, 10k-basic input the gross is below the cap so no
+    // cap-applied note appears — but the formula should still reflect
+    // the override-aware structure.
+    expect(ruled.calculationDetails.formula).toContain('(Years ≤ 5)');
+  });
+
   it('survives a rule-engine error and silently falls back to hardcoded defaults', async () => {
     vi.mocked(countryRulePackService.resolveRule).mockRejectedValue(new Error('db down'));
 

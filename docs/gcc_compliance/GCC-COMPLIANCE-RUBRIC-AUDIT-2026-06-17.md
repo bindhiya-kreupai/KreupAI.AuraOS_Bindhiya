@@ -303,13 +303,27 @@ The GOSI / GPSSA wiring lands the _architecture_. The rule-pack hop is a no-op u
 - The full rate shape needed is `GOSI_RATES_<BRANCH>_<CLASS>` → `{ employerPct, employeePct, wageFloor?, wageCeiling? }`. Same for `GPSSA_RATES_<CLASS>` plus `governmentPct`.
 - Once the seeds carry the full rate object, tenants without explicit GOSI/GPSSA config will automatically inherit the regulatory baseline from the rule pack instead of throwing "no rate configured".
 
-**Remaining Tier 1 scope (next commits):**
+### 2026-06-17 — Tier 1 (Pattern 1) **CLOSED** (commit `<latest>`)
 
-- EOSB Bahrain / Qatar / Oman / Kuwait branches (currently fall through without override support).
-- LabourLawService.getConfig → thin wrapper over `resolveRule` so the legacy callers also benefit.
-- Nitaqat threshold consumers (`nitaqat-compliance/index.ts:NITAQAT_BAND_THRESHOLDS`).
+Pattern 1 ("rule engine no service consumes") is now structurally closed across all six rate-bearing services.
 
-After Tier 1 fully closes, the audit's central finding (EPIC-02 promise broken) becomes a passing-test claim, not a structural failure.
+**Shipped in `<latest>`:**
+
+- **EOSB BH / QA / OM / KW** branches now accept the same `GratuityFormulaOverride` shape as UAE/KSA. Bahrain mirrors UAE/KSA two-period semantics with a 3-year default breakpoint; Qatar and Oman are flat-rate (single `firstPeriodDaysPerYear`); Kuwait two-period with cap. Override-aware formula labels for all six countries.
+- **Nitaqat** — `NitaqatConfigService.resolveThresholdWithRulePack(...)` reads `NATIONALIZATION / NITAQAT_BAND_THRESHOLDS_<SECTOR>_<SIZE>` from the KSA rule pack (4 brackets — SMALL / MEDIUM / LARGE / GIANT — seeded). Snapshot service now uses the rule-pack-aware path instead of `resolveThreshold`. Existing `deriveBand` and snapshot tests unchanged.
+- **GOSI seeds expanded** — `GOSI_RATES_ANNUITIES_SAUDI`, `GOSI_RATES_OCCUPATIONAL_HAZARDS_SAUDI` / `_EXPAT` / `_GCC_NATIONAL_OTHER` carry the full rate shape so the architecture wired in commit `110387d6` now drives live behaviour.
+- **GPSSA seeds expanded** — `GPSSA_RATES_UAE_NATIONAL` (Federal Pensions Law 7/1999 — employer 12.5% + employee 5% + state 2.5%, wage band 1,000 - 50,000 AED).
+
+**Test coverage (Tier-1 cumulative, 47 tests):**
+
+- Helper: 7 tests · EOSB: 9 tests · Emiratisation: 5 · WPS: 6 · GOSI: 5 · GPSSA: 5 · Nitaqat: 5 · plus 95 Tier-0 tests = **142 / 142 passing**.
+
+**Final status:** EPIC-02's central promise ("update GCC compliance rules without a deploy") is now a passing-test claim, not a structural failure. The audit's Pattern 1 row in §5 is closed.
+
+**Remaining audit follow-ups (NOT Pattern 1, NOT blocking Tier 1 closure):**
+
+- `LabourLawService.getConfig` → thin wrapper over `resolveRule` so legacy callers reading the static config object also benefit. Pure code-quality cleanup; behaviour-neutral.
+- Schema duplicate (`EOSBCalculation` vs `EosbCalculation`) and `prisma db push` for `aura_tenant_saved_view` — both flagged in the Tier-0 section above; still need user-driven action.
 
 ---
 
