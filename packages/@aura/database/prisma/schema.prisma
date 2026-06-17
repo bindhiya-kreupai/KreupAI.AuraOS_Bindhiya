@@ -13806,3 +13806,55 @@ model ImmigrationComplianceCertificate {
   @@unique([tenantId, period], map: "aura_immigration_compliance_certificate_unique")
   @@map("aura_immigration_compliance_certificate")
 }
+
+model BankPaymentFile {
+  id              String    @id(map: "aura_bank_payment_file_pkey") @default(uuid())
+  tenantId        String
+  payrollPeriod   String
+  payrollRunId    String?
+  bankCode        String
+  fileFormat      String    @default("SIF")
+  fileReference   String?
+  currency        String    @default("AED")
+  totalAmount     Decimal   @default(0) @db.Decimal(18, 2)
+  recordCount     Int       @default(0)
+  matchedCount    Int       @default(0)
+  mismatchCount   Int       @default(0)
+  submittedAt     DateTime?
+  submittedBy     String?
+  acknowledgedAt  DateTime?
+  rejectedReason  String?
+  status          String    @default("DRAFT")
+  metadataJson    Json      @default("{}")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([tenantId, payrollPeriod, status], map: "aura_bank_payment_file_period")
+  @@index([tenantId, payrollRunId], map: "aura_bank_payment_file_run")
+  @@map("aura_bank_payment_file")
+}
+
+model GlPosting {
+  id            String    @id(map: "aura_gl_posting_pkey") @default(uuid())
+  tenantId      String
+  payrollRunId  String
+  payrollPeriod String
+  journalRef    String?
+  accountCode   String
+  costCenter    String?
+  debit         Decimal   @default(0) @db.Decimal(18, 2)
+  credit        Decimal   @default(0) @db.Decimal(18, 2)
+  currency      String    @default("AED")
+  narration     String?
+  postedAt      DateTime?
+  postedBy      String?
+  reversedAt    DateTime?
+  status        String    @default("DRAFT")
+  metadataJson  Json      @default("{}")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([tenantId, payrollRunId], map: "aura_gl_posting_run")
+  @@index([tenantId, payrollPeriod, status], map: "aura_gl_posting_period")
+  @@map("aura_gl_posting")
+}
