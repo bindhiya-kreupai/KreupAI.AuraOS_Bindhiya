@@ -35,11 +35,17 @@ const transitionSchema = z.object({ caseId: z.string().min(1), nextStage: z.enum
 export const GET = createProtectedRoute(
   async (request: NextRequest, { auth }) => {
     const { searchParams } = new URL(request.url);
-    const items = await recruitmentCaseService.list({
-      tenantId: (auth as any).tenantId,
-      status: searchParams.get('status') ?? undefined,
-      currentStage: searchParams.get('currentStage') ?? undefined,
-    });
+    const items = await recruitmentCaseService.list(
+      {
+        tenantId: (auth as any).tenantId,
+        status: searchParams.get('status') ?? undefined,
+        currentStage: searchParams.get('currentStage') ?? undefined,
+      },
+      {
+        page: Number(searchParams.get('page') ?? '1'),
+        pageSize: Number(searchParams.get('pageSize') ?? '50'),
+      }
+    );
     return NextResponse.json({ success: true, data: items });
   },
   { requiredPermissions: ['recruitment:read'] } as any

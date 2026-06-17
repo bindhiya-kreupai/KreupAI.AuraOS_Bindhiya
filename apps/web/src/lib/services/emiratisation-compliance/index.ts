@@ -19,6 +19,13 @@
 
 import { prisma } from '@aura/database';
 import { resolveRuleObject } from '../gcc-rule-library/rule-value.helper';
+import {
+  normalisePaging,
+  prismaPageArgs,
+  buildPaginatedResult,
+  type PaginationInput,
+  type PaginatedResult,
+} from '@/lib/services/pagination';
 
 export interface AuthContext {
   tenantId: string;
@@ -279,16 +286,26 @@ export class EmiratisationHireService {
     });
   }
 
-  async list(tenantId: string, filter: { legalEntityId?: string; fakeRiskOnly?: boolean } = {}) {
-    return (prisma as any).emiratisationHire.findMany({
-      where: {
-        tenantId,
-        ...(filter.legalEntityId ? { legalEntityId: filter.legalEntityId } : {}),
-        ...(filter.fakeRiskOnly ? { fakeRiskScore: { gte: FAKE_RISK_THRESHOLD } } : {}),
-      },
-      orderBy: { hireDate: 'desc' },
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { legalEntityId?: string; fakeRiskOnly?: boolean } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.legalEntityId ? { legalEntityId: filter.legalEntityId } : {}),
+      ...(filter.fakeRiskOnly ? { fakeRiskScore: { gte: FAKE_RISK_THRESHOLD } } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).emiratisationHire.findMany({
+        where,
+        orderBy: { hireDate: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).emiratisationHire.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 }
 

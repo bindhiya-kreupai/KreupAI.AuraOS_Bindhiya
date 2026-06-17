@@ -24,17 +24,24 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
       );
     }
     return ok(
-      await nationalisationRetentionService.list(ctx.user.tenantId, {
-        program: url.searchParams.get('program') ?? undefined,
-        eventType: url.searchParams.get('eventType') ?? undefined,
-        isEarlyAttrition:
-          url.searchParams.get('isEarlyAttrition') === null
-            ? undefined
-            : url.searchParams.get('isEarlyAttrition') === 'true',
-        employeeId: url.searchParams.get('employeeId') ?? undefined,
-        from: url.searchParams.get('from') ? new Date(url.searchParams.get('from')!) : undefined,
-        to: url.searchParams.get('to') ? new Date(url.searchParams.get('to')!) : undefined,
-      })
+      await nationalisationRetentionService.list(
+        ctx.user.tenantId,
+        {
+          program: url.searchParams.get('program') ?? undefined,
+          eventType: url.searchParams.get('eventType') ?? undefined,
+          isEarlyAttrition:
+            url.searchParams.get('isEarlyAttrition') === null
+              ? undefined
+              : url.searchParams.get('isEarlyAttrition') === 'true',
+          employeeId: url.searchParams.get('employeeId') ?? undefined,
+          from: url.searchParams.get('from') ? new Date(url.searchParams.get('from')!) : undefined,
+          to: url.searchParams.get('to') ? new Date(url.searchParams.get('to')!) : undefined,
+        },
+        {
+          page: Number(url.searchParams.get('page') ?? '1'),
+          pageSize: Number(url.searchParams.get('pageSize') ?? '50'),
+        }
+      )
     );
   } catch (err) {
     return serverError('Failed to list retention events', err);

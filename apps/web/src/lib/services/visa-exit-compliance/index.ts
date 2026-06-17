@@ -19,6 +19,13 @@
  */
 
 import { prisma } from '@aura/database';
+import {
+  normalisePaging,
+  prismaPageArgs,
+  buildPaginatedResult,
+  type PaginationInput,
+  type PaginatedResult,
+} from '@/lib/services/pagination';
 
 export interface AuthContext {
   tenantId: string;
@@ -190,16 +197,26 @@ export class VisaExitCaseService {
     });
   }
 
-  async list(tenantId: string, filter: { status?: string; scenario?: string } = {}) {
-    return (prisma as any).visaExitCase.findMany({
-      where: {
-        tenantId,
-        ...(filter.status ? { status: filter.status } : {}),
-        ...(filter.scenario ? { scenario: filter.scenario } : {}),
-      },
-      orderBy: { createdAt: 'desc' },
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { status?: string; scenario?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.status ? { status: filter.status } : {}),
+      ...(filter.scenario ? { scenario: filter.scenario } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).visaExitCase.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).visaExitCase.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 
   async get(id: string, tenantId: string) {
@@ -212,16 +229,26 @@ export class VisaExitCaseService {
 export const visaExitCaseService = new VisaExitCaseService();
 
 export class VisaExitProActionService {
-  async list(tenantId: string, filter: { caseId?: string; status?: string } = {}) {
-    return (prisma as any).visaExitProAction.findMany({
-      where: {
-        tenantId,
-        ...(filter.caseId ? { caseId: filter.caseId } : {}),
-        ...(filter.status ? { status: filter.status } : {}),
-      },
-      orderBy: [{ dueDate: 'asc' }, { createdAt: 'asc' }],
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { caseId?: string; status?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.caseId ? { caseId: filter.caseId } : {}),
+      ...(filter.status ? { status: filter.status } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).visaExitProAction.findMany({
+        where,
+        orderBy: [{ dueDate: 'asc' }, { createdAt: 'asc' }],
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).visaExitProAction.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 
   async complete(id: string, notes: string | undefined, auth: AuthContext) {
@@ -311,18 +338,28 @@ export class VisaExitGraceService {
     });
   }
 
-  async list(tenantId: string, filter: { expiringWithinDays?: number } = {}) {
+  async list(
+    tenantId: string,
+    filter: { expiringWithinDays?: number } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
     let dateFilter = {};
     if (filter.expiringWithinDays != null) {
       const cutoff = new Date();
       cutoff.setDate(cutoff.getDate() + filter.expiringWithinDays);
       dateFilter = { expiresAt: { lte: cutoff }, status: 'ACTIVE' };
     }
-    return (prisma as any).visaExitGrace.findMany({
-      where: { tenantId, ...dateFilter },
-      orderBy: { expiresAt: 'asc' },
-      take: 500,
-    });
+    const where = { tenantId, ...dateFilter };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).visaExitGrace.findMany({
+        where,
+        orderBy: { expiresAt: 'asc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).visaExitGrace.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 }
 
@@ -350,12 +387,22 @@ export class VisaExitEvidenceService {
     });
   }
 
-  async list(tenantId: string, caseId?: string) {
-    return (prisma as any).visaExitEvidence.findMany({
-      where: { tenantId, ...(caseId ? { caseId } : {}) },
-      orderBy: { capturedAt: 'desc' },
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    caseId?: string,
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = { tenantId, ...(caseId ? { caseId } : {}) };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).visaExitEvidence.findMany({
+        where,
+        orderBy: { capturedAt: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).visaExitEvidence.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 }
 

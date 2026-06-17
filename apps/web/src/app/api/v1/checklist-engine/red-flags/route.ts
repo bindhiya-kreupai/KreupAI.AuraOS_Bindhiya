@@ -18,12 +18,19 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
       );
     }
     return ok(
-      await redFlagService.list(ctx.user.tenantId, {
-        domain: url.searchParams.get('domain') ?? undefined,
-        severity: url.searchParams.get('severity') ?? undefined,
-        status: url.searchParams.get('status') ?? undefined,
-        sourceId: url.searchParams.get('sourceId') ?? undefined,
-      })
+      await redFlagService.list(
+        ctx.user.tenantId,
+        {
+          domain: url.searchParams.get('domain') ?? undefined,
+          severity: url.searchParams.get('severity') ?? undefined,
+          status: url.searchParams.get('status') ?? undefined,
+          sourceId: url.searchParams.get('sourceId') ?? undefined,
+        },
+        {
+          page: Number(url.searchParams.get('page') ?? '1'),
+          pageSize: Number(url.searchParams.get('pageSize') ?? '50'),
+        }
+      )
     );
   } catch (err) {
     return serverError('Failed to list red flags', err);

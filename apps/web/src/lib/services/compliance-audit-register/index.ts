@@ -9,6 +9,13 @@
 
 import { prisma } from '@aura/database';
 import { DEFAULT_SEEDS, SUPPORTED_DOMAINS, type ChecklistSeed, type RiskSeed } from './seeds';
+import {
+  normalisePaging,
+  prismaPageArgs,
+  buildPaginatedResult,
+  type PaginationInput,
+  type PaginatedResult,
+} from '@/lib/services/pagination';
 
 export interface AuthContext {
   tenantId: string;
@@ -73,19 +80,26 @@ export class ComplianceChecklistService {
       categoryCode?: string;
       status?: ChecklistStatus;
       isMandatory?: boolean;
-    } = {}
-  ) {
-    return (prisma as any).complianceAuditChecklistItem.findMany({
-      where: {
-        tenantId,
-        ...(filter.domainCode ? { domainCode: filter.domainCode } : {}),
-        ...(filter.categoryCode ? { categoryCode: filter.categoryCode } : {}),
-        ...(filter.status ? { status: filter.status } : {}),
-        ...(filter.isMandatory !== undefined ? { isMandatory: filter.isMandatory } : {}),
-      },
-      orderBy: [{ domainCode: 'asc' }, { categoryCode: 'asc' }, { itemCode: 'asc' }],
-      take: 500,
-    });
+    } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.domainCode ? { domainCode: filter.domainCode } : {}),
+      ...(filter.categoryCode ? { categoryCode: filter.categoryCode } : {}),
+      ...(filter.status ? { status: filter.status } : {}),
+      ...(filter.isMandatory !== undefined ? { isMandatory: filter.isMandatory } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).complianceAuditChecklistItem.findMany({
+        where,
+        orderBy: [{ domainCode: 'asc' }, { categoryCode: 'asc' }, { itemCode: 'asc' }],
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).complianceAuditChecklistItem.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 
   async update(
@@ -235,18 +249,25 @@ export class ComplianceRiskService {
       domainCode?: string;
       band?: RiskBand;
       status?: RiskStatus;
-    } = {}
-  ) {
-    return (prisma as any).complianceRiskRegisterEntry.findMany({
-      where: {
-        tenantId,
-        ...(filter.domainCode ? { domainCode: filter.domainCode } : {}),
-        ...(filter.band ? { band: filter.band } : {}),
-        ...(filter.status ? { status: filter.status } : {}),
-      },
-      orderBy: [{ band: 'desc' }, { score: 'desc' }],
-      take: 500,
-    });
+    } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.domainCode ? { domainCode: filter.domainCode } : {}),
+      ...(filter.band ? { band: filter.band } : {}),
+      ...(filter.status ? { status: filter.status } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).complianceRiskRegisterEntry.findMany({
+        where,
+        orderBy: [{ band: 'desc' }, { score: 'desc' }],
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).complianceRiskRegisterEntry.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 
   async review(

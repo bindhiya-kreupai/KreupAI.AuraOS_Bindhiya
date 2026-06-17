@@ -12,9 +12,16 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
     const url = new URL(req.url);
     const within = url.searchParams.get('expiringWithinDays');
     return ok(
-      await visaExitGraceService.list(ctx.user.tenantId, {
-        expiringWithinDays: within ? Number(within) : undefined,
-      })
+      await visaExitGraceService.list(
+        ctx.user.tenantId,
+        {
+          expiringWithinDays: within ? Number(within) : undefined,
+        },
+        {
+          page: Number(url.searchParams.get('page') ?? '1'),
+          pageSize: Number(url.searchParams.get('pageSize') ?? '50'),
+        }
+      )
     );
   } catch (err) {
     return serverError('Failed to list grace records', err);

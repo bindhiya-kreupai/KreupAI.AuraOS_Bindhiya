@@ -3,6 +3,13 @@ import type { AuthContext, Severity } from './types';
 import { checklistRunService } from './run.service';
 import { evaluateRule, type EvaluationContext } from '../expression-dsl/expression.service';
 import { logger } from '@/lib/logger';
+import {
+  normalisePaging,
+  prismaPageArgs,
+  buildPaginatedResult,
+  type PaginationInput,
+  type PaginatedResult,
+} from '@/lib/services/pagination';
 
 export interface RaiseFlagInput {
   ruleCode: string;
@@ -74,19 +81,26 @@ export class RedFlagService {
 
   async list(
     tenantId: string,
-    filter: { domain?: string; severity?: string; status?: string; sourceId?: string } = {}
-  ) {
-    return (prisma as any).redFlagInstance.findMany({
-      where: {
-        tenantId,
-        ...(filter.domain ? { domain: filter.domain } : {}),
-        ...(filter.severity ? { severity: filter.severity } : {}),
-        ...(filter.status ? { status: filter.status } : {}),
-        ...(filter.sourceId ? { sourceId: filter.sourceId } : {}),
-      },
-      orderBy: { raisedAt: 'desc' },
-      take: 500,
-    });
+    filter: { domain?: string; severity?: string; status?: string; sourceId?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.domain ? { domain: filter.domain } : {}),
+      ...(filter.severity ? { severity: filter.severity } : {}),
+      ...(filter.status ? { status: filter.status } : {}),
+      ...(filter.sourceId ? { sourceId: filter.sourceId } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).redFlagInstance.findMany({
+        where,
+        orderBy: { raisedAt: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).redFlagInstance.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 
   /**

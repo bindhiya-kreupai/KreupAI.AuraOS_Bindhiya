@@ -13,7 +13,11 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
     return ok(
       await visaExitEvidenceService.list(
         ctx.user.tenantId,
-        url.searchParams.get('caseId') ?? undefined
+        url.searchParams.get('caseId') ?? undefined,
+        {
+          page: Number(url.searchParams.get('page') ?? '1'),
+          pageSize: Number(url.searchParams.get('pageSize') ?? '50'),
+        }
       )
     );
   } catch (err) {

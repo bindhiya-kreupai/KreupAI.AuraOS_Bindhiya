@@ -11,15 +11,22 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
   try {
     const url = new URL(req.url);
     return ok(
-      await nationalisationRequisitionTagService.list(ctx.user.tenantId, {
-        program: url.searchParams.get('program') ?? undefined,
-        eligibility: url.searchParams.get('eligibility') ?? undefined,
-        isReservedSeat:
-          url.searchParams.get('isReservedSeat') === null
-            ? undefined
-            : url.searchParams.get('isReservedSeat') === 'true',
-        requisitionId: url.searchParams.get('requisitionId') ?? undefined,
-      })
+      await nationalisationRequisitionTagService.list(
+        ctx.user.tenantId,
+        {
+          program: url.searchParams.get('program') ?? undefined,
+          eligibility: url.searchParams.get('eligibility') ?? undefined,
+          isReservedSeat:
+            url.searchParams.get('isReservedSeat') === null
+              ? undefined
+              : url.searchParams.get('isReservedSeat') === 'true',
+          requisitionId: url.searchParams.get('requisitionId') ?? undefined,
+        },
+        {
+          page: Number(url.searchParams.get('page') ?? '1'),
+          pageSize: Number(url.searchParams.get('pageSize') ?? '50'),
+        }
+      )
     );
   } catch (err) {
     return serverError('Failed to list requisition tags', err);

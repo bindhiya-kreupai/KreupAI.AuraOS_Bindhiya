@@ -20,6 +20,13 @@
 
 import { prisma } from '@aura/database';
 import { resolveRuleObject } from '../gcc-rule-library/rule-value.helper';
+import {
+  normalisePaging,
+  prismaPageArgs,
+  buildPaginatedResult,
+  type PaginationInput,
+  type PaginatedResult,
+} from '@/lib/services/pagination';
 
 /**
  * Resolved Nitaqat band threshold, sourced from either tenant config or
@@ -425,15 +432,25 @@ export class NitaqatHireService {
     });
   }
 
-  async list(tenantId: string, filter: { legalEntityId?: string } = {}) {
-    return (prisma as any).nitaqatHire.findMany({
-      where: {
-        tenantId,
-        ...(filter.legalEntityId ? { legalEntityId: filter.legalEntityId } : {}),
-      },
-      orderBy: { hireDate: 'desc' },
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { legalEntityId?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.legalEntityId ? { legalEntityId: filter.legalEntityId } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).nitaqatHire.findMany({
+        where,
+        orderBy: { hireDate: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).nitaqatHire.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 }
 

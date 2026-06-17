@@ -23,6 +23,13 @@
  */
 
 import { prisma } from '@aura/database';
+import {
+  normalisePaging,
+  prismaPageArgs,
+  buildPaginatedResult,
+  type PaginationInput,
+  type PaginatedResult,
+} from '@/lib/services/pagination';
 
 export interface AuthContext {
   tenantId: string;
@@ -238,16 +245,26 @@ export class OtRequestService {
     });
   }
 
-  async list(tenantId: string, filter: { employeeId?: string; status?: string } = {}) {
-    return (prisma as any).otRequest.findMany({
-      where: {
-        tenantId,
-        ...(filter.employeeId ? { employeeId: filter.employeeId } : {}),
-        ...(filter.status ? { status: filter.status } : {}),
-      },
-      orderBy: { requestDate: 'desc' },
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { employeeId?: string; status?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.employeeId ? { employeeId: filter.employeeId } : {}),
+      ...(filter.status ? { status: filter.status } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).otRequest.findMany({
+        where,
+        orderBy: { requestDate: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).otRequest.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 }
 
@@ -420,8 +437,9 @@ export class OtActualService {
       employeeId?: string;
       fraudOnly?: boolean;
       period?: string;
-    } = {}
-  ) {
+    } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
     let dateFilter = {};
     if (filter.period) {
       const [y, m] = filter.period.split('-').map(Number);
@@ -434,16 +452,22 @@ export class OtActualService {
         };
       }
     }
-    return (prisma as any).otActual.findMany({
-      where: {
-        tenantId,
-        ...(filter.employeeId ? { employeeId: filter.employeeId } : {}),
-        ...(filter.fraudOnly ? { fraudScore: { gte: 40 } } : {}),
-        ...dateFilter,
-      },
-      orderBy: { otDate: 'desc' },
-      take: 500,
-    });
+    const where = {
+      tenantId,
+      ...(filter.employeeId ? { employeeId: filter.employeeId } : {}),
+      ...(filter.fraudOnly ? { fraudScore: { gte: 40 } } : {}),
+      ...dateFilter,
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).otActual.findMany({
+        where,
+        orderBy: { otDate: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).otActual.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 }
 

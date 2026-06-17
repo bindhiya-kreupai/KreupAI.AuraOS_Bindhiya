@@ -11,10 +11,17 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
   try {
     const url = new URL(req.url);
     return ok(
-      await otRequestService.list(ctx.user.tenantId, {
-        employeeId: url.searchParams.get('employeeId') ?? undefined,
-        status: url.searchParams.get('status') ?? undefined,
-      })
+      await otRequestService.list(
+        ctx.user.tenantId,
+        {
+          employeeId: url.searchParams.get('employeeId') ?? undefined,
+          status: url.searchParams.get('status') ?? undefined,
+        },
+        {
+          page: Number(url.searchParams.get('page') ?? '1'),
+          pageSize: Number(url.searchParams.get('pageSize') ?? '50'),
+        }
+      )
     );
   } catch (err) {
     return serverError('Failed to list requests', err);

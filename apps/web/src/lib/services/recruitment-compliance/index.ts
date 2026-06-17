@@ -22,6 +22,13 @@
 
 import { prisma } from '@aura/database';
 import { publishComplianceEventAsync } from '../compliance-events';
+import {
+  normalisePaging,
+  prismaPageArgs,
+  buildPaginatedResult,
+  type PaginationInput,
+  type PaginatedResult,
+} from '@/lib/services/pagination';
 
 export interface AuthContext {
   tenantId: string;
@@ -148,16 +155,25 @@ export class RecruitmentCaseService {
     return updated;
   }
 
-  async list(filter: { tenantId: string; status?: string; currentStage?: string }) {
-    return prisma.recruitmentCase.findMany({
-      where: {
-        tenantId: filter.tenantId,
-        ...(filter.status ? { status: filter.status } : {}),
-        ...(filter.currentStage ? { currentStage: filter.currentStage } : {}),
-      },
-      orderBy: { openedAt: 'desc' },
-      take: 500,
-    });
+  async list(
+    filter: { tenantId: string; status?: string; currentStage?: string },
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId: filter.tenantId,
+      ...(filter.status ? { status: filter.status } : {}),
+      ...(filter.currentStage ? { currentStage: filter.currentStage } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      prisma.recruitmentCase.findMany({
+        where,
+        orderBy: { openedAt: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      prisma.recruitmentCase.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 
   private async requireCase(id: string, auth: AuthContext) {
@@ -273,13 +289,22 @@ export class CandidateScreeningService {
     });
   }
 
-  async listBiasFlagged(tenantId: string) {
-    const rows = await prisma.recruitmentCandidateScreening.findMany({
-      where: { tenantId },
-      orderBy: { decidedAt: 'desc' },
-      take: 500,
-    });
-    return rows.filter((r) => (r.protectedFactors ?? []).length > 0);
+  async listBiasFlagged(
+    tenantId: string,
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = { tenantId };
+    const page = normalisePaging(paging);
+    const [rows, total] = await Promise.all([
+      prisma.recruitmentCandidateScreening.findMany({
+        where,
+        orderBy: { decidedAt: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      prisma.recruitmentCandidateScreening.count({ where }),
+    ]);
+    const items = rows.filter((r) => (r.protectedFactors ?? []).length > 0);
+    return buildPaginatedResult(items, total, page);
   }
 }
 

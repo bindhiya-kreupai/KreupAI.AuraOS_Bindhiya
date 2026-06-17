@@ -20,18 +20,17 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
     const period =
       url.searchParams.get('period') ??
       `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
-    const [checklist, overhireTotal, vacancyAged, departmentsCovered, certs, overdue] =
+    const [checklistRes, overhireTotal, vacancyAged, departmentsCovered, certs, overdue] =
       await Promise.all([
-        orgAuditChecklistService.list(tenantId),
+        orgAuditChecklistService.list(tenantId, {}, { page: 1, pageSize: 500 }),
         orgPositionControlService.overhireTotal(tenantId, period),
         orgVacancyService.openAged(tenantId),
         orgPositionControlService.departmentsCovered(tenantId, period),
         orgComplianceCertificateService.list(tenantId),
         orgAuditChecklistService.overdueCount(tenantId),
       ]);
-    const checklistByResult = (checklist as Array<{ lastResult: string | null }>).reduce<
-      Record<string, number>
-    >(
+    const checklist = checklistRes.items as Array<{ lastResult: string | null }>;
+    const checklistByResult = checklist.reduce<Record<string, number>>(
       (acc, c) => ({
         ...acc,
         [c.lastResult ?? 'UNCHECKED']: (acc[c.lastResult ?? 'UNCHECKED'] ?? 0) + 1,

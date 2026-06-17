@@ -24,8 +24,12 @@ const recordSchema = z.object({
 });
 
 export const GET = createProtectedRoute(
-  async (_request: NextRequest, { auth }) => {
-    const flagged = await candidateScreeningService.listBiasFlagged((auth as any).tenantId);
+  async (request: NextRequest, { auth }) => {
+    const { searchParams } = new URL(request.url);
+    const flagged = await candidateScreeningService.listBiasFlagged((auth as any).tenantId, {
+      page: Number(searchParams.get('page') ?? '1'),
+      pageSize: Number(searchParams.get('pageSize') ?? '50'),
+    });
     return NextResponse.json({ success: true, data: flagged });
   },
   { requiredPermissions: ['recruitment:read'] } as any

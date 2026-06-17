@@ -26,16 +26,23 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
       );
     }
     return ok(
-      await nationalisationArtificialRiskService.list(ctx.user.tenantId, {
-        program: url.searchParams.get('program') ?? undefined,
-        riskBand: (url.searchParams.get('riskBand') as any) ?? undefined,
-        isResolved:
-          url.searchParams.get('isResolved') === null
-            ? undefined
-            : url.searchParams.get('isResolved') === 'true',
-        employeeId: url.searchParams.get('employeeId') ?? undefined,
-        evidenceMonth: url.searchParams.get('evidenceMonth') ?? undefined,
-      })
+      await nationalisationArtificialRiskService.list(
+        ctx.user.tenantId,
+        {
+          program: url.searchParams.get('program') ?? undefined,
+          riskBand: (url.searchParams.get('riskBand') as any) ?? undefined,
+          isResolved:
+            url.searchParams.get('isResolved') === null
+              ? undefined
+              : url.searchParams.get('isResolved') === 'true',
+          employeeId: url.searchParams.get('employeeId') ?? undefined,
+          evidenceMonth: url.searchParams.get('evidenceMonth') ?? undefined,
+        },
+        {
+          page: Number(url.searchParams.get('page') ?? '1'),
+          pageSize: Number(url.searchParams.get('pageSize') ?? '50'),
+        }
+      )
     );
   } catch (err) {
     return serverError('Failed to list artificial-risk flags', err);
