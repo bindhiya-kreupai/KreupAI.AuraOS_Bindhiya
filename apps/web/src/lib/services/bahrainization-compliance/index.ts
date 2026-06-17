@@ -20,6 +20,13 @@
  */
 
 import { prisma } from '@aura/database';
+import {
+  normalisePaging,
+  prismaPageArgs,
+  buildPaginatedResult,
+  type PaginationInput,
+  type PaginatedResult,
+} from '@/lib/services/pagination';
 
 export interface AuthContext {
   tenantId: string;
@@ -274,17 +281,24 @@ export class BahrainizationHireService {
 
   async list(
     tenantId: string,
-    filter: { legalEntityId?: string; artificialRiskOnly?: boolean } = {}
-  ) {
-    return (prisma as any).bahrainizationHire.findMany({
-      where: {
-        tenantId,
-        ...(filter.legalEntityId ? { legalEntityId: filter.legalEntityId } : {}),
-        ...(filter.artificialRiskOnly ? { artificialRiskScore: { gte: 50 } } : {}),
-      },
-      orderBy: { hireDate: 'desc' },
-      take: 500,
-    });
+    filter: { legalEntityId?: string; artificialRiskOnly?: boolean } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.legalEntityId ? { legalEntityId: filter.legalEntityId } : {}),
+      ...(filter.artificialRiskOnly ? { artificialRiskScore: { gte: 50 } } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).bahrainizationHire.findMany({
+        where,
+        orderBy: { hireDate: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).bahrainizationHire.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 }
 

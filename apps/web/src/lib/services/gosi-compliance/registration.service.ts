@@ -1,5 +1,12 @@
 import { prisma } from '@aura/database';
 import type { AuthContext, NationalityClass } from './types';
+import {
+  normalisePaging,
+  prismaPageArgs,
+  buildPaginatedResult,
+  type PaginationInput,
+  type PaginatedResult,
+} from '@/lib/services/pagination';
 
 export interface RegistrationInput {
   employeeId: string;
@@ -83,12 +90,22 @@ export class GosiRegistrationService {
     });
   }
 
-  async list(tenantId: string, filter: { status?: string; nationalityClass?: string } = {}) {
-    return (prisma as any).gosiEmployeeRegistration.findMany({
-      where: { tenantId, ...filter },
-      orderBy: { registrationDate: 'desc' },
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { status?: string; nationalityClass?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = { tenantId, ...filter };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).gosiEmployeeRegistration.findMany({
+        where,
+        orderBy: { registrationDate: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).gosiEmployeeRegistration.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 
   async getActive(tenantId: string, employeeId: string) {

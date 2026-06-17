@@ -1,5 +1,12 @@
 import { prisma } from '@aura/database';
 import type { AuthContext } from './types';
+import {
+  normalisePaging,
+  prismaPageArgs,
+  buildPaginatedResult,
+  type PaginationInput,
+  type PaginatedResult,
+} from '@/lib/services/pagination';
 
 export interface WpsExceptionInput {
   submissionId?: string;
@@ -28,23 +35,40 @@ export class WpsExceptionService {
     });
   }
 
-  async list(tenantId: string, filter: { status?: string; severity?: string } = {}) {
-    return (prisma as any).wpsException.findMany({
-      where: { tenantId, ...filter },
-      orderBy: [{ severity: 'asc' }, { createdAt: 'desc' }],
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { status?: string; severity?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = { tenantId, ...filter };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).wpsException.findMany({
+        where,
+        orderBy: [{ severity: 'asc' }, { createdAt: 'desc' }],
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).wpsException.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 
   async listDelayFlags(
     tenantId: string,
-    filter: { status?: string; severity?: string; period?: string } = {}
-  ) {
-    return (prisma as any).salaryDelayFlag.findMany({
-      where: { tenantId, ...filter },
-      orderBy: [{ raisedAt: 'desc' }],
-      take: 500,
-    });
+    filter: { status?: string; severity?: string; period?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = { tenantId, ...filter };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).salaryDelayFlag.findMany({
+        where,
+        orderBy: [{ raisedAt: 'desc' }],
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).salaryDelayFlag.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 
   async resolveDelayFlag(flagId: string) {

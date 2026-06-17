@@ -11,10 +11,17 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
   try {
     const url = new URL(req.url);
     return ok(
-      await bahrainizationHireService.list(ctx.user.tenantId, {
-        legalEntityId: url.searchParams.get('legalEntityId') ?? undefined,
-        artificialRiskOnly: url.searchParams.get('artificialRiskOnly') === 'true',
-      })
+      await bahrainizationHireService.list(
+        ctx.user.tenantId,
+        {
+          legalEntityId: url.searchParams.get('legalEntityId') ?? undefined,
+          artificialRiskOnly: url.searchParams.get('artificialRiskOnly') === 'true',
+        },
+        {
+          page: Number(url.searchParams.get('page') ?? '1'),
+          pageSize: Number(url.searchParams.get('pageSize') ?? '50'),
+        }
+      )
     );
   } catch (err) {
     return serverError('Failed to list hires', err);
