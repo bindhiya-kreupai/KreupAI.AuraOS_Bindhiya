@@ -8,6 +8,13 @@
 
 import { prisma } from '@aura/database';
 import type { AuthContext } from './types';
+import {
+  normalisePaging,
+  prismaPageArgs,
+  buildPaginatedResult,
+  type PaginationInput,
+  type PaginatedResult,
+} from '@/lib/services/pagination';
 
 export type ConnectorKind =
   | 'PAYROLL_BANK'
@@ -30,18 +37,25 @@ const DEFAULT_ROTATION_DAYS = 90;
 export class HrmsConnectorService {
   async list(
     tenantId: string,
-    filter: { kind?: ConnectorKind; isActive?: boolean; health?: ConnectorHealthStatus } = {}
-  ) {
-    return (prisma as any).hrmsConfigConnector.findMany({
-      where: {
-        tenantId,
-        ...(filter.kind ? { kind: filter.kind } : {}),
-        ...(filter.isActive !== undefined ? { isActive: filter.isActive } : {}),
-        ...(filter.health ? { lastHealthStatus: filter.health } : {}),
-      },
-      orderBy: [{ kind: 'asc' }, { connectorCode: 'asc' }],
-      take: 500,
-    });
+    filter: { kind?: ConnectorKind; isActive?: boolean; health?: ConnectorHealthStatus } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.kind ? { kind: filter.kind } : {}),
+      ...(filter.isActive !== undefined ? { isActive: filter.isActive } : {}),
+      ...(filter.health ? { lastHealthStatus: filter.health } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).hrmsConfigConnector.findMany({
+        where,
+        orderBy: [{ kind: 'asc' }, { connectorCode: 'asc' }],
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).hrmsConfigConnector.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 
   async upsert(

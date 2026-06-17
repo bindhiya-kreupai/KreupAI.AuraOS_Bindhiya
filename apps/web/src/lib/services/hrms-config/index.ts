@@ -23,6 +23,13 @@
  */
 
 import { prisma } from '@aura/database';
+import {
+  normalisePaging,
+  prismaPageArgs,
+  buildPaginatedResult,
+  type PaginationInput,
+  type PaginatedResult,
+} from '@/lib/services/pagination';
 
 export type { AuthContext } from './types';
 import type { AuthContext } from './types';
@@ -249,18 +256,25 @@ class CountryRuleSetService {
 
   async list(
     tenantId: string,
-    filter: { country?: string; domain?: string; status?: string } = {}
-  ) {
-    return (prisma as any).countryRuleSet.findMany({
-      where: {
-        tenantId,
-        ...(filter.country ? { country: filter.country } : {}),
-        ...(filter.domain ? { domain: filter.domain } : {}),
-        ...(filter.status ? { status: filter.status } : {}),
-      },
-      orderBy: [{ country: 'asc' }, { domain: 'asc' }, { effectiveFrom: 'desc' }],
-      take: 500,
-    });
+    filter: { country?: string; domain?: string; status?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.country ? { country: filter.country } : {}),
+      ...(filter.domain ? { domain: filter.domain } : {}),
+      ...(filter.status ? { status: filter.status } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).countryRuleSet.findMany({
+        where,
+        orderBy: [{ country: 'asc' }, { domain: 'asc' }, { effectiveFrom: 'desc' }],
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).countryRuleSet.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 
   async active(tenantId: string, country: string, domain: string, at?: Date) {
@@ -319,18 +333,25 @@ class ApprovalWorkflowTemplateService {
 
   async list(
     tenantId: string,
-    filter: { domain?: string; country?: string; isActive?: boolean } = {}
-  ) {
-    return (prisma as any).approvalWorkflowTemplate.findMany({
-      where: {
-        tenantId,
-        ...(filter.domain ? { domain: filter.domain } : {}),
-        ...(filter.country ? { country: filter.country } : {}),
-        ...(filter.isActive !== undefined ? { isActive: filter.isActive } : {}),
-      },
-      orderBy: [{ domain: 'asc' }, { templateCode: 'asc' }],
-      take: 500,
-    });
+    filter: { domain?: string; country?: string; isActive?: boolean } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.domain ? { domain: filter.domain } : {}),
+      ...(filter.country ? { country: filter.country } : {}),
+      ...(filter.isActive !== undefined ? { isActive: filter.isActive } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).approvalWorkflowTemplate.findMany({
+        where,
+        orderBy: [{ domain: 'asc' }, { templateCode: 'asc' }],
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).approvalWorkflowTemplate.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 
   async deactivate(id: string, auth: AuthContext) {
@@ -395,18 +416,25 @@ class NotificationRuleService {
 
   async list(
     tenantId: string,
-    filter: { domain?: string; trigger?: string; isActive?: boolean } = {}
-  ) {
-    return (prisma as any).notificationRule.findMany({
-      where: {
-        tenantId,
-        ...(filter.domain ? { domain: filter.domain } : {}),
-        ...(filter.trigger ? { trigger: filter.trigger } : {}),
-        ...(filter.isActive !== undefined ? { isActive: filter.isActive } : {}),
-      },
-      orderBy: [{ domain: 'asc' }, { ruleCode: 'asc' }],
-      take: 500,
-    });
+    filter: { domain?: string; trigger?: string; isActive?: boolean } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.domain ? { domain: filter.domain } : {}),
+      ...(filter.trigger ? { trigger: filter.trigger } : {}),
+      ...(filter.isActive !== undefined ? { isActive: filter.isActive } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).notificationRule.findMany({
+        where,
+        orderBy: [{ domain: 'asc' }, { ruleCode: 'asc' }],
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).notificationRule.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 
   async deactivate(id: string, auth: AuthContext) {
@@ -460,12 +488,18 @@ class AuditTrailSettingService {
     });
   }
 
-  async list(tenantId: string) {
-    return (prisma as any).auditTrailSetting.findMany({
-      where: { tenantId },
-      orderBy: { domain: 'asc' },
-      take: 500,
-    });
+  async list(tenantId: string, paging?: PaginationInput): Promise<PaginatedResult<unknown>> {
+    const where = { tenantId };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).auditTrailSetting.findMany({
+        where,
+        orderBy: { domain: 'asc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).auditTrailSetting.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 
   async policy(tenantId: string, domain: string): Promise<AuditCapturePolicy> {

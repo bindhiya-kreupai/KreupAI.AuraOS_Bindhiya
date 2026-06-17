@@ -8,6 +8,13 @@
 
 import { prisma } from '@aura/database';
 import type { AuthContext } from './types';
+import {
+  normalisePaging,
+  prismaPageArgs,
+  buildPaginatedResult,
+  type PaginationInput,
+  type PaginatedResult,
+} from '@/lib/services/pagination';
 
 export type ImplementationPhase =
   | 'DISCOVERY'
@@ -167,17 +174,24 @@ export class HrmsImplementationService {
 
   async list(
     tenantId: string,
-    filter: { phase?: ImplementationPhase; status?: ImplementationStatus } = {}
-  ) {
-    return (prisma as any).hrmsImplementationChecklist.findMany({
-      where: {
-        tenantId,
-        ...(filter.phase ? { phase: filter.phase } : {}),
-        ...(filter.status ? { status: filter.status } : {}),
-      },
-      orderBy: [{ phase: 'asc' }, { code: 'asc' }],
-      take: 500,
-    });
+    filter: { phase?: ImplementationPhase; status?: ImplementationStatus } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.phase ? { phase: filter.phase } : {}),
+      ...(filter.status ? { status: filter.status } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).hrmsImplementationChecklist.findMany({
+        where,
+        orderBy: [{ phase: 'asc' }, { code: 'asc' }],
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).hrmsImplementationChecklist.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 
   async update(

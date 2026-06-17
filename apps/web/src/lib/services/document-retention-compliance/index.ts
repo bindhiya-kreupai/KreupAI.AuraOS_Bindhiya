@@ -28,6 +28,13 @@
  */
 
 import { prisma } from '@aura/database';
+import {
+  normalisePaging,
+  prismaPageArgs,
+  buildPaginatedResult,
+  type PaginationInput,
+  type PaginatedResult,
+} from '@/lib/services/pagination';
 
 export interface AuthContext {
   tenantId: string;
@@ -233,22 +240,29 @@ export class HrDocumentService {
       status?: string;
       expiringSoon?: boolean;
       onLitigationHold?: boolean;
-    } = {}
-  ) {
+    } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
     const now = new Date();
     const soon = new Date(now.getTime() + 60 * 24 * 3600 * 1000);
-    return (prisma as any).hrDocument.findMany({
-      where: {
-        tenantId,
-        ...(filter.employeeId ? { employeeId: filter.employeeId } : {}),
-        ...(filter.recordType ? { recordType: filter.recordType } : {}),
-        ...(filter.status ? { status: filter.status } : {}),
-        ...(filter.expiringSoon ? { expiresAt: { gte: now, lte: soon }, status: 'ACTIVE' } : {}),
-        ...(filter.onLitigationHold ? { litigationHoldId: { not: null } } : {}),
-      },
-      orderBy: { createdAt: 'desc' },
-      take: 500,
-    });
+    const where = {
+      tenantId,
+      ...(filter.employeeId ? { employeeId: filter.employeeId } : {}),
+      ...(filter.recordType ? { recordType: filter.recordType } : {}),
+      ...(filter.status ? { status: filter.status } : {}),
+      ...(filter.expiringSoon ? { expiresAt: { gte: now, lte: soon }, status: 'ACTIVE' } : {}),
+      ...(filter.onLitigationHold ? { litigationHoldId: { not: null } } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).hrDocument.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).hrDocument.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 }
 

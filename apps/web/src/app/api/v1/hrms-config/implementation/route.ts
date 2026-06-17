@@ -15,10 +15,17 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
     const phase = url.searchParams.get('phase') ?? undefined;
     const status = url.searchParams.get('status') ?? undefined;
     return ok(
-      await hrmsImplementationService.list(ctx.user.tenantId, {
-        phase: phase as any,
-        status: status as any,
-      })
+      await hrmsImplementationService.list(
+        ctx.user.tenantId,
+        {
+          phase: phase as any,
+          status: status as any,
+        },
+        {
+          page: Number(url.searchParams.get('page') ?? '1'),
+          pageSize: Number(url.searchParams.get('pageSize') ?? '50'),
+        }
+      )
     );
   } catch (err) {
     return serverError('Failed to list implementation items', err);

@@ -11,11 +11,18 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
   try {
     const url = new URL(req.url);
     return ok(
-      await contractorAssignmentService.list(ctx.user.tenantId, {
-        domain: (url.searchParams.get('domain') as any) ?? undefined,
-        status: (url.searchParams.get('status') as any) ?? undefined,
-        siteId: url.searchParams.get('siteId') ?? undefined,
-      })
+      await contractorAssignmentService.list(
+        ctx.user.tenantId,
+        {
+          domain: (url.searchParams.get('domain') as any) ?? undefined,
+          status: (url.searchParams.get('status') as any) ?? undefined,
+          siteId: url.searchParams.get('siteId') ?? undefined,
+        },
+        {
+          page: Number(url.searchParams.get('page') ?? '1'),
+          pageSize: Number(url.searchParams.get('pageSize') ?? '50'),
+        }
+      )
     );
   } catch (err) {
     return serverError('Failed to list contractor assignments', err);

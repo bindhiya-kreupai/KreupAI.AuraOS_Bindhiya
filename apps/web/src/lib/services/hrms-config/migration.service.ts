@@ -9,6 +9,13 @@
 
 import { prisma } from '@aura/database';
 import type { AuthContext } from './types';
+import {
+  normalisePaging,
+  prismaPageArgs,
+  buildPaginatedResult,
+  type PaginationInput,
+  type PaginatedResult,
+} from '@/lib/services/pagination';
 
 export type MigrationStatus = 'PLANNED' | 'RUNNING' | 'COMPLETED' | 'FAILED' | 'ROLLED_BACK';
 
@@ -24,16 +31,26 @@ export interface RunResultInput {
 }
 
 export class HrmsMigrationService {
-  async list(tenantId: string, filter: { domainCode?: string; status?: MigrationStatus } = {}) {
-    return (prisma as any).hrmsConfigMigration.findMany({
-      where: {
-        tenantId,
-        ...(filter.domainCode ? { domainCode: filter.domainCode } : {}),
-        ...(filter.status ? { status: filter.status } : {}),
-      },
-      orderBy: [{ domainCode: 'asc' }, { planCode: 'asc' }],
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { domainCode?: string; status?: MigrationStatus } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.domainCode ? { domainCode: filter.domainCode } : {}),
+      ...(filter.status ? { status: filter.status } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).hrmsConfigMigration.findMany({
+        where,
+        orderBy: [{ domainCode: 'asc' }, { planCode: 'asc' }],
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).hrmsConfigMigration.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 
   async upsert(

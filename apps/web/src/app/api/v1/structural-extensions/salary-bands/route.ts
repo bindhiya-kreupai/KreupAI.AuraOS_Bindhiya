@@ -11,13 +11,20 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
   try {
     const url = new URL(req.url);
     return ok(
-      await salaryGradeBandService.list(ctx.user.tenantId, {
-        country: url.searchParams.get('country') ?? undefined,
-        isActive:
-          url.searchParams.get('isActive') === null
-            ? undefined
-            : url.searchParams.get('isActive') === 'true',
-      })
+      await salaryGradeBandService.list(
+        ctx.user.tenantId,
+        {
+          country: url.searchParams.get('country') ?? undefined,
+          isActive:
+            url.searchParams.get('isActive') === null
+              ? undefined
+              : url.searchParams.get('isActive') === 'true',
+        },
+        {
+          page: Number(url.searchParams.get('page') ?? '1'),
+          pageSize: Number(url.searchParams.get('pageSize') ?? '50'),
+        }
+      )
     );
   } catch (err) {
     return serverError('Failed to list salary bands', err);

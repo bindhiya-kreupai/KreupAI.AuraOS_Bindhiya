@@ -17,6 +17,13 @@
  */
 
 import { prisma } from '@aura/database';
+import {
+  normalisePaging,
+  prismaPageArgs,
+  buildPaginatedResult,
+  type PaginationInput,
+  type PaginatedResult,
+} from '@/lib/services/pagination';
 
 export interface AuthContext {
   tenantId: string;
@@ -45,16 +52,26 @@ export const jobArchitectureService = new JobArchitectureService();
 // =============================================================================
 
 export class SalaryGradeBandService {
-  async list(tenantId: string, filter: { country?: string; isActive?: boolean } = {}) {
-    return (prisma as any).salaryGradeBand.findMany({
-      where: {
-        tenantId,
-        ...(filter.country ? { country: filter.country } : {}),
-        ...(filter.isActive !== undefined ? { isActive: filter.isActive } : {}),
-      },
-      orderBy: [{ country: 'asc' }, { gradeCode: 'asc' }, { effectiveFrom: 'desc' }],
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { country?: string; isActive?: boolean } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.country ? { country: filter.country } : {}),
+      ...(filter.isActive !== undefined ? { isActive: filter.isActive } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).salaryGradeBand.findMany({
+        where,
+        orderBy: [{ country: 'asc' }, { gradeCode: 'asc' }, { effectiveFrom: 'desc' }],
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).salaryGradeBand.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
   async upsert(
     input: {
@@ -120,18 +137,25 @@ export const salaryGradeBandService = new SalaryGradeBandService();
 export class DelegationOfAuthorityService {
   async list(
     tenantId: string,
-    filter: { domain?: string; actionCode?: string; isActive?: boolean } = {}
-  ) {
-    return (prisma as any).delegationOfAuthority.findMany({
-      where: {
-        tenantId,
-        ...(filter.domain ? { domain: filter.domain } : {}),
-        ...(filter.actionCode ? { actionCode: filter.actionCode } : {}),
-        ...(filter.isActive !== undefined ? { isActive: filter.isActive } : {}),
-      },
-      orderBy: [{ domain: 'asc' }, { actionCode: 'asc' }, { level: 'asc' }],
-      take: 500,
-    });
+    filter: { domain?: string; actionCode?: string; isActive?: boolean } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.domain ? { domain: filter.domain } : {}),
+      ...(filter.actionCode ? { actionCode: filter.actionCode } : {}),
+      ...(filter.isActive !== undefined ? { isActive: filter.isActive } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).delegationOfAuthority.findMany({
+        where,
+        orderBy: [{ domain: 'asc' }, { actionCode: 'asc' }, { level: 'asc' }],
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).delegationOfAuthority.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
   async upsert(
     input: {
@@ -274,16 +298,26 @@ export const payrollCalendarControlService = new PayrollCalendarControlService()
 export type VarianceStatus = 'OPEN' | 'EXPLAINED' | 'ACCEPTED' | 'CLOSED';
 
 export class PayrollVarianceService {
-  async list(tenantId: string, filter: { payrollRunId?: string; status?: VarianceStatus } = {}) {
-    return (prisma as any).payrollVarianceEntry.findMany({
-      where: {
-        tenantId,
-        ...(filter.payrollRunId ? { payrollRunId: filter.payrollRunId } : {}),
-        ...(filter.status ? { status: filter.status } : {}),
-      },
-      orderBy: { createdAt: 'desc' },
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { payrollRunId?: string; status?: VarianceStatus } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.payrollRunId ? { payrollRunId: filter.payrollRunId } : {}),
+      ...(filter.status ? { status: filter.status } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).payrollVarianceEntry.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).payrollVarianceEntry.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
   async record(
     input: {
@@ -436,16 +470,26 @@ export const OT_FRAUD_SIGNALS = [
 export type OtFraudSignal = (typeof OT_FRAUD_SIGNALS)[number];
 
 export class OvertimeFraudService {
-  async list(tenantId: string, filter: { signal?: OtFraudSignal; isResolved?: boolean } = {}) {
-    return (prisma as any).overtimeFraudFlag.findMany({
-      where: {
-        tenantId,
-        ...(filter.signal ? { signal: filter.signal } : {}),
-        ...(filter.isResolved !== undefined ? { isResolved: filter.isResolved } : {}),
-      },
-      orderBy: { createdAt: 'desc' },
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { signal?: OtFraudSignal; isResolved?: boolean } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.signal ? { signal: filter.signal } : {}),
+      ...(filter.isResolved !== undefined ? { isResolved: filter.isResolved } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).overtimeFraudFlag.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).overtimeFraudFlag.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
   async raise(
     input: {
@@ -487,12 +531,22 @@ export class OvertimeFraudService {
 export const overtimeFraudService = new OvertimeFraudService();
 
 export class EosSioFundingLinkService {
-  async list(tenantId: string, filter: { employeeId?: string } = {}) {
-    return (prisma as any).eosSioFundingLink.findMany({
-      where: { tenantId, ...(filter.employeeId ? { employeeId: filter.employeeId } : {}) },
-      orderBy: { employeeId: 'asc' },
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { employeeId?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = { tenantId, ...(filter.employeeId ? { employeeId: filter.employeeId } : {}) };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).eosSioFundingLink.findMany({
+        where,
+        orderBy: { employeeId: 'asc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).eosSioFundingLink.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
   async upsert(
     input: {
@@ -537,16 +591,26 @@ export class EosSioFundingLinkService {
 export const eosSioFundingLinkService = new EosSioFundingLinkService();
 
 export class ReturnToWorkPlanService {
-  async list(tenantId: string, filter: { employeeId?: string; status?: string } = {}) {
-    return (prisma as any).returnToWorkPlan.findMany({
-      where: {
-        tenantId,
-        ...(filter.employeeId ? { employeeId: filter.employeeId } : {}),
-        ...(filter.status ? { status: filter.status } : {}),
-      },
-      orderBy: { expectedReturnDate: 'asc' },
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { employeeId?: string; status?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.employeeId ? { employeeId: filter.employeeId } : {}),
+      ...(filter.status ? { status: filter.status } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).returnToWorkPlan.findMany({
+        where,
+        orderBy: { expectedReturnDate: 'asc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).returnToWorkPlan.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
   async create(
     input: {
@@ -728,12 +792,22 @@ export class RedundancyBatchService {
 export const redundancyBatchService = new RedundancyBatchService();
 
 export class SeparationRetentionPolicyService {
-  async list(tenantId: string, filter: { country?: string } = {}) {
-    return (prisma as any).separationRetentionPolicy.findMany({
-      where: { tenantId, ...(filter.country ? { country: filter.country } : {}) },
-      orderBy: [{ country: 'asc' }, { recordType: 'asc' }, { effectiveFrom: 'desc' }],
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { country?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = { tenantId, ...(filter.country ? { country: filter.country } : {}) };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).separationRetentionPolicy.findMany({
+        where,
+        orderBy: [{ country: 'asc' }, { recordType: 'asc' }, { effectiveFrom: 'desc' }],
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).separationRetentionPolicy.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
   async upsert(
     input: {
@@ -782,16 +856,26 @@ export class SeparationRetentionPolicyService {
 export const separationRetentionPolicyService = new SeparationRetentionPolicyService();
 
 export class DocumentPhysicalLocationService {
-  async list(tenantId: string, filter: { warehouseCode?: string; status?: string } = {}) {
-    return (prisma as any).documentPhysicalLocation.findMany({
-      where: {
-        tenantId,
-        ...(filter.warehouseCode ? { warehouseCode: filter.warehouseCode } : {}),
-        ...(filter.status ? { status: filter.status } : {}),
-      },
-      orderBy: [{ warehouseCode: 'asc' }, { documentRef: 'asc' }],
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { warehouseCode?: string; status?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.warehouseCode ? { warehouseCode: filter.warehouseCode } : {}),
+      ...(filter.status ? { status: filter.status } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).documentPhysicalLocation.findMany({
+        where,
+        orderBy: [{ warehouseCode: 'asc' }, { documentRef: 'asc' }],
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).documentPhysicalLocation.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
   async upsert(
     input: {
@@ -863,16 +947,26 @@ export class DocumentPhysicalLocationService {
 export const documentPhysicalLocationService = new DocumentPhysicalLocationService();
 
 export class AuditFindingRiskLinkService {
-  async list(tenantId: string, filter: { findingRef?: string; riskCode?: string } = {}) {
-    return (prisma as any).auditFindingRiskLink.findMany({
-      where: {
-        tenantId,
-        ...(filter.findingRef ? { findingRef: filter.findingRef } : {}),
-        ...(filter.riskCode ? { riskCode: filter.riskCode } : {}),
-      },
-      orderBy: { createdAt: 'desc' },
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { findingRef?: string; riskCode?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.findingRef ? { findingRef: filter.findingRef } : {}),
+      ...(filter.riskCode ? { riskCode: filter.riskCode } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).auditFindingRiskLink.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).auditFindingRiskLink.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
   async link(
     input: {

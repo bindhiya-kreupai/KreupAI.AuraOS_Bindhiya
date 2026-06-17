@@ -13,6 +13,13 @@
 import { prisma } from '@aura/database';
 import type { AuthContext } from './types';
 import { validatePayload } from './validator-registry';
+import {
+  normalisePaging,
+  prismaPageArgs,
+  buildPaginatedResult,
+  type PaginationInput,
+  type PaginatedResult,
+} from '@/lib/services/pagination';
 
 export type ConfigScope = 'GLOBAL' | 'COUNTRY' | 'LEGAL_ENTITY' | 'DOMAIN';
 export type ConfigStatus = 'DRAFT' | 'PENDING_APPROVAL' | 'ACTIVE' | 'RETIRED';
@@ -93,20 +100,27 @@ export class HrmsConfigRegistryService {
       scope?: ConfigScope;
       country?: string;
       objectKey?: string;
-    } = {}
-  ) {
-    return (prisma as any).hrmsConfigObject.findMany({
-      where: {
-        tenantId,
-        ...(filter.domainCode ? { domainCode: filter.domainCode } : {}),
-        ...(filter.status ? { status: filter.status } : {}),
-        ...(filter.scope ? { scope: filter.scope } : {}),
-        ...(filter.country ? { country: filter.country } : {}),
-        ...(filter.objectKey ? { objectKey: filter.objectKey } : {}),
-      },
-      orderBy: [{ domainCode: 'asc' }, { objectKey: 'asc' }, { version: 'desc' }],
-      take: 500,
-    });
+    } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.domainCode ? { domainCode: filter.domainCode } : {}),
+      ...(filter.status ? { status: filter.status } : {}),
+      ...(filter.scope ? { scope: filter.scope } : {}),
+      ...(filter.country ? { country: filter.country } : {}),
+      ...(filter.objectKey ? { objectKey: filter.objectKey } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).hrmsConfigObject.findMany({
+        where,
+        orderBy: [{ domainCode: 'asc' }, { objectKey: 'asc' }, { version: 'desc' }],
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).hrmsConfigObject.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 
   async createDraft(input: ConfigObjectInput, auth: AuthContext) {

@@ -15,10 +15,17 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
     const domainCode = url.searchParams.get('domainCode') ?? undefined;
     const status = url.searchParams.get('status') ?? undefined;
     return ok(
-      await hrmsMigrationService.list(ctx.user.tenantId, {
-        domainCode,
-        status: status as any,
-      })
+      await hrmsMigrationService.list(
+        ctx.user.tenantId,
+        {
+          domainCode,
+          status: status as any,
+        },
+        {
+          page: Number(url.searchParams.get('page') ?? '1'),
+          pageSize: Number(url.searchParams.get('pageSize') ?? '50'),
+        }
+      )
     );
   } catch (err) {
     return serverError('Failed to list migrations', err);

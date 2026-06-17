@@ -11,14 +11,21 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
   try {
     const url = new URL(req.url);
     return ok(
-      await delegationOfAuthorityService.list(ctx.user.tenantId, {
-        domain: url.searchParams.get('domain') ?? undefined,
-        actionCode: url.searchParams.get('actionCode') ?? undefined,
-        isActive:
-          url.searchParams.get('isActive') === null
-            ? undefined
-            : url.searchParams.get('isActive') === 'true',
-      })
+      await delegationOfAuthorityService.list(
+        ctx.user.tenantId,
+        {
+          domain: url.searchParams.get('domain') ?? undefined,
+          actionCode: url.searchParams.get('actionCode') ?? undefined,
+          isActive:
+            url.searchParams.get('isActive') === null
+              ? undefined
+              : url.searchParams.get('isActive') === 'true',
+        },
+        {
+          page: Number(url.searchParams.get('page') ?? '1'),
+          pageSize: Number(url.searchParams.get('pageSize') ?? '50'),
+        }
+      )
     );
   } catch (err) {
     return serverError('Failed to list DoA matrix', err);
