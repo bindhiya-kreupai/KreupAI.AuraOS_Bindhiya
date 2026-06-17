@@ -11934,3 +11934,148 @@ model VisaExitCertificate {
   @@unique([tenantId, period], map: "aura_visa_exit_certificate_unique")
   @@map("aura_visa_exit_certificate")
 }
+
+model DocRetentionSchedule {
+  id             String    @id(map: "aura_doc_retention_schedule_pkey") @default(uuid())
+  tenantId       String
+  countryCode    String?
+  recordType     String
+  retentionYears Int
+  basis          String?
+  classification String    @default("INTERNAL")
+  effectiveFrom  DateTime
+  effectiveTo    DateTime?
+  status         String    @default("ACTIVE")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@unique([tenantId, countryCode, recordType, effectiveFrom], map: "aura_doc_retention_schedule_unique")
+  @@map("aura_doc_retention_schedule")
+}
+
+model HrDocument {
+  id               String    @id(map: "aura_hr_document_pkey") @default(uuid())
+  tenantId         String
+  employeeId       String?
+  recordType       String
+  title            String
+  fileUrl          String?
+  classification   String    @default("INTERNAL")
+  issuedAt         DateTime?
+  expiresAt        DateTime?
+  retentionUntil   DateTime?
+  litigationHoldId String?
+  status           String    @default("ACTIVE")
+  disposedAt       DateTime?
+  disposedBy       String?
+  disposalReason   String?
+  metadataJson     Json      @default("{}")
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([tenantId, employeeId], map: "aura_hr_document_employee")
+  @@index([tenantId, recordType], map: "aura_hr_document_type")
+  @@index([tenantId, expiresAt], map: "aura_hr_document_expiry")
+  @@map("aura_hr_document")
+}
+
+model DocLitigationHold {
+  id           String    @id(map: "aura_doc_litigation_hold_pkey") @default(uuid())
+  tenantId     String
+  caseNumber   String
+  subject      String
+  scopeFilter  Json      @default("{}")
+  startedAt    DateTime
+  startedBy    String?
+  endedAt      DateTime?
+  endedBy      String?
+  status       String    @default("ACTIVE")
+  heldDocCount Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@unique([tenantId, caseNumber], map: "aura_doc_litigation_hold_unique")
+  @@map("aura_doc_litigation_hold")
+}
+
+model DocDisposalRequest {
+  id             String    @id(map: "aura_doc_disposal_request_pkey") @default(uuid())
+  tenantId       String
+  documentIds    Json      @default("[]")
+  reason         String
+  requestedAt    DateTime  @default(now())
+  requestedBy    String?
+  approverId     String?
+  approvedAt     DateTime?
+  executedAt     DateTime?
+  executedBy     String?
+  status         String    @default("PENDING")
+  blockedReason  String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@map("aura_doc_disposal_request")
+}
+
+model HrAuditCycle {
+  id                  String    @id(map: "aura_hr_audit_cycle_pkey") @default(uuid())
+  tenantId            String
+  label               String
+  scopeJson           Json      @default("{}")
+  sampleSize          Int       @default(0)
+  startedAt           DateTime
+  closedAt            DateTime?
+  status              String    @default("OPEN")
+  findingsCount       Int       @default(0)
+  findingsClosedCount Int       @default(0)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@map("aura_hr_audit_cycle")
+}
+
+model HrAuditFinding {
+  id           String    @id(map: "aura_hr_audit_finding_pkey") @default(uuid())
+  tenantId     String
+  auditCycleId String
+  documentId   String?
+  employeeId   String?
+  severity     String
+  category     String
+  title        String
+  description  String?
+  remediation  String?
+  status       String    @default("OPEN")
+  raisedAt     DateTime  @default(now())
+  closedAt     DateTime?
+  closedBy     String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@index([tenantId, auditCycleId], map: "aura_hr_audit_finding_cycle")
+  @@map("aura_hr_audit_finding")
+}
+
+model DocComplianceCertificate {
+  id                    String    @id(map: "aura_doc_compliance_certificate_pkey") @default(uuid())
+  tenantId              String
+  period                String
+  status                String    @default("DRAFT")
+  activeDocs            Int       @default(0)
+  expiringSoonCount     Int       @default(0)
+  expiredCount          Int       @default(0)
+  litigationHoldCount   Int       @default(0)
+  pendingDisposalCount  Int       @default(0)
+  openFindingsCount     Int       @default(0)
+  criticalFindingsCount Int       @default(0)
+  gatingReason          String?
+  attestationsJson      Json      @default("[]")
+  generatedAt           DateTime?
+  signedAt              DateTime?
+  signedBy              String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@unique([tenantId, period], map: "aura_doc_compliance_certificate_unique")
+  @@map("aura_doc_compliance_certificate")
+}

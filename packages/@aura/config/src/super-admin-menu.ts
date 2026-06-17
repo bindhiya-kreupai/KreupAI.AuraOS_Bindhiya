@@ -415,6 +415,20 @@ export const superAdminMenu: MenuDefinition = {
                         'Monthly Compliance Certificate',
                     ],
                 },
+                {
+                    code: 'DOCUMENT_RETENTION_COMPLIANCE',
+                    label: 'Document Retention & HR Audit',
+                    icon: 'reports',
+                    path: '/dashboard/document-retention-compliance',
+                    features: [
+                        'Retention Schedule (per record type × country)',
+                        'HR Document Register (auto retentionUntil)',
+                        'Litigation Holds',
+                        'Disposal Workflow (refuses held / pre-retention docs)',
+                        'HR Audit Cycles & Findings',
+                        'Monthly Compliance Certificate',
+                    ],
+                },
             ],
         },
         {
