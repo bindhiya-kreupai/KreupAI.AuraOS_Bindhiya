@@ -13859,6 +13859,144 @@ model GlPosting {
   @@map("aura_gl_posting")
 }
 
+// Themes E + F + I — Workforce extensions.
+// E: ContractorAssignment used by attendance/holidays/accommodation/HSE.
+// F: EmployeeLoanSchedule (S22-S09), UniformPpeIssuance (S22-S11).
+// I: AccommodationTransportRoute, AccommodationClinic, AccommodationMaintenanceTicket.
+model ContractorAssignment {
+  id           String    @id(map: "aura_contractor_assignment_pkey") @default(uuid())
+  tenantId     String
+  subjectId    String
+  subjectName  String
+  vendorId     String?
+  vendorName   String?
+  contractRef  String?
+  siteId       String?
+  domain       String // ATTENDANCE | HOLIDAYS | ACCOMMODATION | HSE
+  startDate    DateTime
+  endDate      DateTime?
+  status       String    @default("ACTIVE") // ACTIVE | EXPIRED | TERMINATED
+  notes        String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@unique([tenantId, subjectId, domain, startDate], map: "aura_contractor_assignment_unique")
+  @@index([tenantId, domain, status], map: "aura_contractor_assignment_domain")
+  @@map("aura_contractor_assignment")
+}
+
+model EmployeeLoanSchedule {
+  id                String   @id(map: "aura_employee_loan_schedule_pkey") @default(uuid())
+  tenantId          String
+  employeeId        String
+  loanCode          String
+  loanType          String   @default("GENERAL") // GENERAL | SALARY_ADVANCE | EDUCATION | RELOCATION
+  currency          String   @default("AED")
+  principal         Decimal  @db.Decimal(18, 2)
+  interestRatePct   Decimal  @default(0) @db.Decimal(5, 2)
+  installments      Int
+  installmentAmount Decimal  @db.Decimal(18, 2)
+  balance           Decimal  @db.Decimal(18, 2)
+  startDate         DateTime
+  endDate           DateTime?
+  status            String   @default("ACTIVE") // ACTIVE | PAID_OFF | DEFAULTED | WAIVED
+  notes             String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([tenantId, employeeId, loanCode], map: "aura_employee_loan_schedule_unique")
+  @@index([tenantId, status], map: "aura_employee_loan_schedule_status")
+  @@map("aura_employee_loan_schedule")
+}
+
+model UniformPpeIssuance {
+  id          String    @id(map: "aura_uniform_ppe_issuance_pkey") @default(uuid())
+  tenantId    String
+  employeeId  String
+  itemCode    String
+  itemLabel   String
+  category    String    @default("UNIFORM") // UNIFORM | PPE | TOOLS
+  quantity    Int       @default(1)
+  issuedAt    DateTime  @default(now())
+  issuedBy    String?
+  returnedAt  DateTime?
+  returnedBy  String?
+  condition   String?
+  notes       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([tenantId, employeeId], map: "aura_uniform_ppe_issuance_employee")
+  @@index([tenantId, category], map: "aura_uniform_ppe_issuance_category")
+  @@map("aura_uniform_ppe_issuance")
+}
+
+model AccommodationTransportRoute {
+  id                String   @id(map: "aura_accommodation_transport_route_pkey") @default(uuid())
+  tenantId          String
+  siteId            String
+  routeCode         String
+  label             String
+  vehicleType       String   @default("BUS")
+  capacity          Int      @default(0)
+  departureFromSite String?
+  arrivalAtSite     String?
+  worksiteAddress   String?
+  distanceKm        Int?
+  isActive          Boolean  @default(true)
+  notes             String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([tenantId, siteId, routeCode], map: "aura_accommodation_transport_route_unique")
+  @@map("aura_accommodation_transport_route")
+}
+
+model AccommodationClinic {
+  id                        String    @id(map: "aura_accommodation_clinic_pkey") @default(uuid())
+  tenantId                  String
+  siteId                    String
+  clinicCode                String
+  label                     String
+  isOnSite                  Boolean   @default(true)
+  nearestHospital           String?
+  nearestHospitalDistanceKm Int?
+  operatingHours            String?
+  doctorOnCall              Boolean   @default(false)
+  lastInspectionAt          DateTime?
+  lastInspectionResult      String?
+  isActive                  Boolean   @default(true)
+  notes                     String?
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
+
+  @@unique([tenantId, siteId, clinicCode], map: "aura_accommodation_clinic_unique")
+  @@map("aura_accommodation_clinic")
+}
+
+model AccommodationMaintenanceTicket {
+  id              String    @id(map: "aura_accommodation_maintenance_ticket_pkey") @default(uuid())
+  tenantId        String
+  siteId          String
+  ticketCode      String
+  category        String // PLUMBING | ELECTRICAL | HVAC | KITCHEN | FIRE_SAFETY | OTHER
+  severity        String    @default("MEDIUM") // LOW | MEDIUM | HIGH | CRITICAL
+  description     String
+  reportedBy      String?
+  reportedAt      DateTime  @default(now())
+  assignedTo      String?
+  status          String    @default("OPEN") // OPEN | IN_PROGRESS | RESOLVED | CLOSED
+  slaDueAt        DateTime?
+  resolvedAt      DateTime?
+  resolutionNotes String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([tenantId, siteId, ticketCode], map: "aura_accommodation_maintenance_ticket_unique")
+  @@index([tenantId, status, severity], map: "aura_accommodation_maintenance_ticket_status")
+  @@map("aura_accommodation_maintenance_ticket")
+}
+
 // Theme C — Audit checklist + risk matrix register for ER, Disciplinary,
 // Separation, EOSB, Visa-Exit (EPIC-25-S12, EPIC-26-S11, EPIC-27-S17,
 // EPIC-28-S14, EPIC-29-S15). Generic two-table register with

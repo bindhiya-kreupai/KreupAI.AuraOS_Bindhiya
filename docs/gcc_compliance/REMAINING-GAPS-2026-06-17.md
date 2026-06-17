@@ -20,6 +20,14 @@
 > artificial-risk detection with 9 signals banded LOW/MEDIUM/HIGH/CRITICAL,
 > Saudi profession-localisation codes). **53 gaps remain** (was 66).
 >
+> **Update 2026-06-17 (Themes E + F + I closure):** 12 workforce-extension
+> stories shipped via `workforce-extensions` module: ContractorAssignment
+> (E — 4 stories across attendance/holidays/accommodation/HSE),
+> EmployeeLoanSchedule with equal-installment amortization + UniformPpeIssuance
+> register + extended BenefitCatalogue seeds (F — 5 stories), and
+> AccommodationTransportRoute / Clinic / MaintenanceTicket with severity-based
+> SLA (I — 3 stories). **30 gaps remain** (was 42).
+>
 > **Update 2026-06-17 (Themes C + D closure):** 5 audit-checklist + risk
 > register stories (EPIC-25-S12 · EPIC-26-S11 · EPIC-27-S17 · EPIC-28-S14 ·
 > EPIC-29-S15) shipped via the shared `compliance-audit-register` with

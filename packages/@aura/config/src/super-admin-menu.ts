@@ -377,6 +377,18 @@ export const superAdminMenu: MenuDefinition = {
                     ],
                 },
                 {
+                    code: 'WORKFORCE_EXTENSIONS',
+                    label: 'Workforce Extensions',
+                    icon: 'localization',
+                    path: '/dashboard/workforce-extensions',
+                    features: [
+                        'Contractor Assignments (Attendance/Holidays/Accommodation/HSE)',
+                        'Employee Loans + Salary Advances (with amortization)',
+                        'Uniform / PPE / Tools Issuance Register',
+                        'Accommodation Transport Routes · Clinics · Maintenance Tickets',
+                    ],
+                },
+                {
                     code: 'COMPLIANCE_AUDIT_REGISTER',
                     label: 'Audit Checklist + Risk Register',
                     icon: 'reports',
