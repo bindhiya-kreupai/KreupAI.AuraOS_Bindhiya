@@ -13859,6 +13859,173 @@ model GlPosting {
   @@map("aura_gl_posting")
 }
 
+// Themes G + H — HSE sub-domains + visa-exit deep gaps.
+model HseSafetyOfficer {
+  id                     String    @id(map: "aura_hse_safety_officer_pkey") @default(uuid())
+  tenantId               String
+  siteId                 String?
+  employeeId             String
+  name                   String
+  role                   String    @default("SAFETY_OFFICER") // SAFETY_OFFICER | HSE_LEAD | FIRE_MARSHAL
+  certificationCode      String?
+  certificationIssuedAt  DateTime?
+  certificationExpiresAt DateTime?
+  scope                  String    @default("SITE") // SITE | ENTITY | TENANT
+  isPrimary              Boolean   @default(false)
+  status                 String    @default("ACTIVE") // ACTIVE | INACTIVE
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  @@unique([tenantId, employeeId, scope], map: "aura_hse_safety_officer_unique")
+  @@index([tenantId, siteId, status], map: "aura_hse_safety_officer_site")
+  @@map("aura_hse_safety_officer")
+}
+
+model HseHeatStressRule {
+  id                    String    @id(map: "aura_hse_heat_stress_rule_pkey") @default(uuid())
+  tenantId              String
+  country               String
+  month                 Int // 1–12
+  noOutdoorWorkFromHour Int // 0–23
+  noOutdoorWorkToHour   Int // 0–23
+  effectiveFrom         DateTime
+  effectiveTo           DateTime?
+  regulatorRef          String?
+  notes                 String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@unique([tenantId, country, month, effectiveFrom], map: "aura_hse_heat_stress_rule_unique")
+  @@map("aura_hse_heat_stress_rule")
+}
+
+model HseToolboxTalk {
+  id            String   @id(map: "aura_hse_toolbox_talk_pkey") @default(uuid())
+  tenantId      String
+  siteId        String?
+  talkCode      String
+  topic         String
+  deliveredAt   DateTime
+  deliveredBy   String?
+  attendeeCount Int      @default(0)
+  attendeesJson Json?
+  summary       String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([tenantId, siteId, deliveredAt], map: "aura_hse_toolbox_talk_site")
+  @@map("aura_hse_toolbox_talk")
+}
+
+model HseEmergencyDrill {
+  id                    String    @id(map: "aura_hse_emergency_drill_pkey") @default(uuid())
+  tenantId              String
+  siteId                String
+  drillCode             String
+  drillType             String // FIRE | EVACUATION | CHEMICAL | MEDICAL
+  scheduledAt           DateTime
+  conductedAt           DateTime?
+  evacuationTimeSeconds Int?
+  participantCount      Int       @default(0)
+  findingsJson          Json?
+  result                String    @default("PENDING") // PENDING | PASS | FAIL
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@unique([tenantId, siteId, drillCode], map: "aura_hse_emergency_drill_unique")
+  @@map("aura_hse_emergency_drill")
+}
+
+model HseFirstAidStation {
+  id                       String    @id(map: "aura_hse_first_aid_station_pkey") @default(uuid())
+  tenantId                 String
+  siteId                   String
+  stationCode              String
+  label                    String
+  certifiedFirstAiderCount Int       @default(0)
+  lastRestockedAt          DateTime?
+  lastInspectionAt         DateTime?
+  lastInspectionResult     String?
+  isActive                 Boolean   @default(true)
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+
+  @@unique([tenantId, siteId, stationCode], map: "aura_hse_first_aid_station_unique")
+  @@map("aura_hse_first_aid_station")
+}
+
+model HseWelfareInspection {
+  id               String   @id(map: "aura_hse_welfare_inspection_pkey") @default(uuid())
+  tenantId         String
+  siteId           String
+  inspectionCode   String
+  scope            String // SANITATION | KITCHEN | DRINKING_WATER | REST_ROOMS | GROOMING
+  inspectedAt      DateTime
+  inspectedBy      String?
+  findingsJson     Json?
+  criticalFindings Int      @default(0)
+  result           String   @default("PENDING") // PENDING | PASS | FAIL
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([tenantId, siteId, inspectionCode], map: "aura_hse_welfare_inspection_unique")
+  @@map("aura_hse_welfare_inspection")
+}
+
+model VisaExitDependent {
+  id                 String    @id(map: "aura_visa_exit_dependent_pkey") @default(uuid())
+  tenantId           String
+  visaExitCaseId     String
+  dependentName      String
+  relationship       String // SPOUSE | CHILD | PARENT | DOMESTIC_WORKER
+  visaNumber         String?
+  cancellationStatus String    @default("PENDING") // PENDING | IN_PROGRESS | CANCELLED | NOT_REQUIRED
+  cancelledAt        DateTime?
+  evidenceUrl        String?
+  notes              String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@index([tenantId, visaExitCaseId], map: "aura_visa_exit_dependent_case")
+  @@map("aura_visa_exit_dependent")
+}
+
+model VisaExitBenefitsClosure {
+  id              String    @id(map: "aura_visa_exit_benefits_closure_pkey") @default(uuid())
+  tenantId        String
+  visaExitCaseId  String
+  benefitCategory String // INSURANCE | ACCOMMODATION | EOS | LOAN | OTHER
+  status          String    @default("PENDING") // PENDING | IN_PROGRESS | CLOSED | NOT_APPLICABLE
+  closedAt        DateTime?
+  closedBy        String?
+  amountSettled   Decimal?  @db.Decimal(18, 2)
+  notes           String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([tenantId, visaExitCaseId, benefitCategory], map: "aura_visa_exit_benefits_closure_unique")
+  @@map("aura_visa_exit_benefits_closure")
+}
+
+model VisaExitCommTemplate {
+  id            String   @id(map: "aura_visa_exit_comm_template_pkey") @default(uuid())
+  tenantId      String
+  templateCode  String
+  trigger       String // CASE_OPENED | GRACE_STARTED | GRACE_EXPIRING | CANCELLED
+  label         String
+  channelsJson  Json?
+  subjectEn     String?
+  subjectAr     String?
+  bodyEn        String?
+  bodyAr        String?
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([tenantId, templateCode], map: "aura_visa_exit_comm_template_unique")
+  @@map("aura_visa_exit_comm_template")
+}
+
 // Themes E + F + I — Workforce extensions.
 // E: ContractorAssignment used by attendance/holidays/accommodation/HSE.
 // F: EmployeeLoanSchedule (S22-S09), UniformPpeIssuance (S22-S11).

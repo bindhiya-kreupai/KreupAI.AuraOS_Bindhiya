@@ -377,6 +377,19 @@ export const superAdminMenu: MenuDefinition = {
                     ],
                 },
                 {
+                    code: 'HSE_VISA_EXTENSIONS',
+                    label: 'HSE + Visa-Exit Extensions',
+                    icon: 'reports',
+                    path: '/dashboard/hse-visa-extensions',
+                    features: [
+                        'Safety Officer Registry · Heat-Stress Rules · Toolbox Talks',
+                        'Emergency Drill Tracker · First-Aid Stations · Welfare Inspections',
+                        'Visa-Exit Dependents Register (cascade)',
+                        'Visa-Exit Benefits Closure (insurance/accommodation/EOS/loan)',
+                        'Visa-Exit Comm Templates (bilingual) · TRANSFER PRO chain',
+                    ],
+                },
+                {
                     code: 'WORKFORCE_EXTENSIONS',
                     label: 'Workforce Extensions',
                     icon: 'localization',

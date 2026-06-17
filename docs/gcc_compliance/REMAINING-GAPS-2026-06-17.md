@@ -20,6 +20,13 @@
 > artificial-risk detection with 9 signals banded LOW/MEDIUM/HIGH/CRITICAL,
 > Saudi profession-localisation codes). **53 gaps remain** (was 66).
 >
+> **Update 2026-06-17 (Themes G + H closure):** 10 stories shipped via
+> `hse-visa-extensions` module: HSE registers (SafetyOfficer · HeatStressRule
+> with `isOutdoorWorkBanned` helper · ToolboxTalk · EmergencyDrill ·
+> FirstAidStation · WelfareInspection) and visa-exit deep gaps (TRANSFER PRO
+> action chain seeded, per-dependent register, benefits closure cascade
+> with `seedDefaults`, bilingual comm templates). **20 gaps remain** (was 30).
+>
 > **Update 2026-06-17 (Themes E + F + I closure):** 12 workforce-extension
 > stories shipped via `workforce-extensions` module: ContractorAssignment
 > (E — 4 stories across attendance/holidays/accommodation/HSE),
