@@ -11725,3 +11725,101 @@ model OtCertificate {
   @@unique([tenantId, period], map: "aura_ot_certificate_unique")
   @@map("aura_ot_certificate")
 }
+
+model EosbCalculation {
+  id                    String    @id(map: "aura_eosb_calculation_pkey") @default(uuid())
+  tenantId              String
+  employeeId            String
+  countryCode           String
+  joiningDate           DateTime
+  lastWorkingDate       DateTime
+  terminationType       String
+  basicSalary           Decimal   @db.Decimal(14, 2)
+  totalServiceYears     Decimal   @db.Decimal(8, 4)
+  totalServiceMonths    Int
+  unpaidLeaveDays       Int       @default(0)
+  dailyRate             Decimal   @db.Decimal(14, 4)
+  gratuityAmount        Decimal   @db.Decimal(14, 2)
+  socialInsuranceOffset Decimal   @default(0) @db.Decimal(14, 2)
+  netPayable            Decimal   @db.Decimal(14, 2)
+  currency              String
+  law                   String?
+  formula               String?
+  notesJson             Json      @default("[]")
+  status                String    @default("DRAFT")
+  approvedAt            DateTime?
+  approvedBy            String?
+  settledAt             DateTime?
+  paymentReference      String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+
+  @@unique([tenantId, employeeId, lastWorkingDate], map: "aura_eosb_calculation_unique")
+  @@map("aura_eosb_calculation")
+}
+
+model EosbAccrual {
+  id              String   @id(map: "aura_eosb_accrual_pkey") @default(uuid())
+  tenantId        String
+  employeeId      String
+  period          String
+  countryCode     String
+  basicSalary     Decimal  @db.Decimal(14, 2)
+  serviceMonths   Int
+  accruedGratuity Decimal  @db.Decimal(14, 2)
+  monthDelta      Decimal  @db.Decimal(14, 2)
+  currency        String
+  glPosted        Boolean  @default(false)
+  glJournalRef    String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([tenantId, employeeId, period], map: "aura_eosb_accrual_unique")
+  @@map("aura_eosb_accrual")
+}
+
+model EosbDispute {
+  id               String    @id(map: "aura_eosb_dispute_pkey") @default(uuid())
+  tenantId         String
+  employeeId       String
+  calculationId    String?
+  raisedAt         DateTime  @default(now())
+  raisedBy         String?
+  subject          String
+  claimedAmount    Decimal?  @db.Decimal(14, 2)
+  calculatedAmount Decimal?  @db.Decimal(14, 2)
+  currency         String
+  category         String
+  status           String    @default("OPEN")
+  resolutionNotes  String?
+  resolvedAt       DateTime?
+  resolvedBy       String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([tenantId, employeeId], map: "aura_eosb_dispute_employee")
+  @@map("aura_eosb_dispute")
+}
+
+model EosbCertificate {
+  id                  String    @id(map: "aura_eosb_certificate_pkey") @default(uuid())
+  tenantId            String
+  period              String
+  status              String    @default("DRAFT")
+  calcsCount          Int       @default(0)
+  calcsTotalAmount    Decimal   @default(0) @db.Decimal(16, 2)
+  accrualsCount       Int       @default(0)
+  accrualsTotalAmount Decimal   @default(0) @db.Decimal(16, 2)
+  openDisputesCount   Int       @default(0)
+  unsettledCount      Int       @default(0)
+  gatingReason        String?
+  attestationsJson    Json      @default("[]")
+  generatedAt         DateTime?
+  signedAt            DateTime?
+  signedBy            String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@unique([tenantId, period], map: "aura_eosb_certificate_unique")
+  @@map("aura_eosb_certificate")
+}

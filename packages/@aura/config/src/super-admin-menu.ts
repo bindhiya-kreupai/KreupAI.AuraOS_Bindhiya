@@ -390,6 +390,18 @@ export const superAdminMenu: MenuDefinition = {
                         'Monthly Certificate',
                     ],
                 },
+                {
+                    code: 'EOSB_COMPLIANCE',
+                    label: 'End-of-Service Benefits',
+                    icon: 'payroll',
+                    path: '/dashboard/eosb-compliance',
+                    features: [
+                        'Finalized Calculations (DRAFT→APPROVED→SETTLED)',
+                        'Monthly Accruals & GL Posting',
+                        'Dispute Register',
+                        'Monthly Compliance Certificate',
+                    ],
+                },
             ],
         },
         {
