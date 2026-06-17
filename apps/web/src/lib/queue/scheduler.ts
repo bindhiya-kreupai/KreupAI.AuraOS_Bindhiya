@@ -21,6 +21,7 @@ import { logger } from '@/lib/logger';
 import { processLeaveAccruals } from '@/lib/jobs/leaveAccrualJob';
 import { processPayroll } from '@/lib/jobs/payrollProcessingJob';
 import { runComplianceChecks } from '@/lib/jobs/complianceCheckJob';
+import { runGccComplianceMaintenance } from '@/lib/jobs/gccComplianceJob';
 import { enforceDataRetention } from '@/lib/jobs/dataRetentionJob';
 import { sendAnniversaryReminders } from '@/lib/jobs/anniversaryReminderJob';
 import { generateAIRecommendations } from '@/lib/jobs/aiRecommendationJob';
@@ -50,7 +51,9 @@ export interface ScheduledJob {
  * When a scheduled job fires, the corresponding function is called directly.
  * This avoids a hard dependency on RabbitMQ being available.
  */
-type JobExecutor = (data: any) => Promise<{ success: boolean; processedCount: number; errors: string[] }>;
+type JobExecutor = (
+  data: any
+) => Promise<{ success: boolean; processedCount: number; errors: string[] }>;
 
 const JOB_EXECUTORS: Record<string, JobExecutor> = {
   DAILY_PAYROLL_CHECK: async () => {
@@ -96,6 +99,18 @@ const JOB_EXECUTORS: Record<string, JobExecutor> = {
 
   DB_CLEANUP: async () => {
     return await enforceDataRetention();
+  },
+
+  GCC_COMPLIANCE_MAINTENANCE: async () => {
+    // Generates next-3-month compliance tasks per tenant, escalates overdue
+    // tasks to the configured role, and re-derives due dates after holiday
+    // / rule changes. Powers the GCC compliance calendar workspace.
+    const result = await runGccComplianceMaintenance();
+    return {
+      success: result.success,
+      processedCount: result.processedCount,
+      errors: result.errors,
+    };
   },
 };
 
@@ -438,6 +453,18 @@ export class JobScheduler {
       cronExpression: '0 3 * * *', // Every day at 3 AM
       queue: QUEUE_NAMES.SCHEDULED_JOBS,
       jobType: 'DB_CLEANUP',
+      data: {},
+      enabled: true,
+    });
+
+    // GCC compliance maintenance (daily at 4 AM) — materialises upcoming
+    // compliance calendar tasks, escalates overdues, re-derives due dates.
+    this.schedule({
+      id: 'daily-gcc-compliance-maintenance',
+      name: 'Daily GCC Compliance Maintenance',
+      cronExpression: '0 4 * * *', // Every day at 4 AM
+      queue: QUEUE_NAMES.SCHEDULED_JOBS,
+      jobType: 'GCC_COMPLIANCE_MAINTENANCE',
       data: {},
       enabled: true,
     });

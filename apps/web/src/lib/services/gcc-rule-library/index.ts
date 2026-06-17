@@ -20,3 +20,9 @@ export {
 export type { DomainStatus, DomainStatusInput, AttestationInput } from './certificate.service';
 export { GCC_WIDE_THEMES, RULE_PACK_SEEDS, COMPARISON_DIMENSIONS } from './rule-pack-seeds';
 export type { SeedRule, SeedRulePack } from './rule-pack-seeds';
+export { ruleChangeRequestService, RuleChangeRequestService } from './rule-change-request.service';
+export type {
+  RequestChangeInput,
+  RuleChangeAction,
+  RuleChangeStatus,
+} from './rule-change-request.service';

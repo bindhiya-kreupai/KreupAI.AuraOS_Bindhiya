@@ -78,6 +78,7 @@ async function registerQueueHandlers(): Promise<void> {
   const { processLeaveAccruals } = await import('@/lib/jobs/leaveAccrualJob');
   const { processPayroll } = await import('@/lib/jobs/payrollProcessingJob');
   const { runComplianceChecks } = await import('@/lib/jobs/complianceCheckJob');
+  const { runGccComplianceMaintenance } = await import('@/lib/jobs/gccComplianceJob');
   const { enforceDataRetention } = await import('@/lib/jobs/dataRetentionJob');
   const { sendAnniversaryReminders } = await import('@/lib/jobs/anniversaryReminderJob');
   const { generateAIRecommendations } = await import('@/lib/jobs/aiRecommendationJob');
@@ -133,5 +134,10 @@ async function registerQueueHandlers(): Promise<void> {
     return { success: result.success, data: result };
   });
 
-  logger.info('Queue-side job handlers registered for all 8 scheduled job types');
+  queueService.registerHandler('GCC_COMPLIANCE_MAINTENANCE', async (job) => {
+    const result = await runGccComplianceMaintenance();
+    return { success: result.success, data: result };
+  });
+
+  logger.info('Queue-side job handlers registered for all 9 scheduled job types');
 }

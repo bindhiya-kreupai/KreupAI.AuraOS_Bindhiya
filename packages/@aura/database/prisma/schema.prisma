@@ -13858,3 +13858,37 @@ model GlPosting {
   @@index([tenantId, payrollPeriod, status], map: "aura_gl_posting_period")
   @@map("aura_gl_posting")
 }
+
+// EPIC-02-S02: rule pack change governance — maker-checker, rationale,
+// source reference, and rollback action log. Wraps the existing
+// CountryRulePack DRAFT/ACTIVE/RETIRED lifecycle so the publish action
+// requires an approver distinct from the requester.
+model RuleChangeRequest {
+  id              String    @id(map: "aura_rule_change_request_pkey") @default(uuid())
+  tenantId        String
+  rulePackId      String
+  action          String // PUBLISH | RETIRE | ROLLBACK
+  status          String    @default("PENDING_APPROVAL") // PENDING_APPROVAL | APPROVED | REJECTED | ROLLED_BACK
+  rationale       String
+  sourceReference String
+  diffSummary     Json?
+  effectiveFrom   DateTime?
+  requestedBy     String
+  requestedAt     DateTime  @default(now())
+  approvedBy      String?
+  approvedAt      DateTime?
+  rejectedBy      String?
+  rejectedAt      DateTime?
+  rejectionReason String?
+  rolledBackBy    String?
+  rolledBackAt    DateTime?
+  rollbackReason  String?
+  previousVersion Int?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([tenantId, status], map: "aura_rule_change_request_tenant_status")
+  @@index([rulePackId], map: "aura_rule_change_request_pack")
+  @@index([tenantId, action, status], map: "aura_rule_change_request_action")
+  @@map("aura_rule_change_request")
+}

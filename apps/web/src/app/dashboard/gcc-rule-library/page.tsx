@@ -81,6 +81,10 @@ export default function GccRuleLibraryHomePage() {
     { href: '/dashboard/gcc-rule-library/comparisons', label: 'GCC Comparison Tables (S05)' },
     { href: '/dashboard/gcc-rule-library/risk-matrix', label: 'Country Risk Matrix (S06)' },
     { href: '/dashboard/gcc-rule-library/certificates', label: 'Monthly Certificates (S07)' },
+    {
+      href: '/dashboard/gcc-rule-library/change-requests',
+      label: 'Change Requests · Maker-Checker (EPIC-02-S02)',
+    },
   ];
 
   return (

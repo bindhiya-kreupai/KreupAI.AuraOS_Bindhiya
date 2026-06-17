@@ -260,6 +260,7 @@ export const superAdminMenu: MenuDefinition = {
                         'GCC Comparison Tables',
                         'Country Risk Matrix',
                         'Monthly Country Certificate',
+                        'Rule Change Requests (Maker-Checker, Rollback)',
                     ],
                 },
                 {
