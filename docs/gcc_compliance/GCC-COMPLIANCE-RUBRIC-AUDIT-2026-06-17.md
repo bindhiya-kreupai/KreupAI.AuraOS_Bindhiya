@@ -452,6 +452,36 @@ All migrated services return `PaginatedResult<unknown>` (`{items, total, page, p
 
 **Test regression:** the only typecheck error introduced by the bulk migration was the immigration callsite above; fixed. All other typecheck errors in `statutory-report.service.ts` (8 entries) and `attendance/time-capture/route.ts` (1 entry) pre-date this work and are tracked separately.
 
+### 2026-06-17 — Per-EPIC depth pass (19 EPICs, 19 commits, ~170 new tests)
+
+Autonomous overnight pass that closed the highest-impact per-EPIC gap on 19 EPICs. Each closure ships its own service file + its own test file, leans on infrastructure already shipped (DSL, event bus, pagination, signing, audit log) and adds no new Prisma models — every gap was bridged at the service layer.
+
+| EPIC              | Gap closed                                                                         | Commit     | Tests |
+| ----------------- | ---------------------------------------------------------------------------------- | ---------- | ----- |
+| EPIC-22-S02       | Benefits eligibility rule engine (uses DSL via `policyJson.eligibilityExpression`) | `59002cad` | 13    |
+| EPIC-26-S02 + S09 | Disciplinary penalty matrix + precedent / inconsistency engine                     | `6a4e8a76` | 9     |
+| EPIC-37-S09       | Event-driven red-flag automation (subscribes to compliance bus)                    | `b742e5fa` | 14    |
+| EPIC-12           | Operational fatigue assessment + comp-off mutual exclusivity check                 | `c050ac78` | 8     |
+| EPIC-32           | Policy versioning + non-repudiable acknowledgement (content hashing + audit log)   | `e25b56d0` | 6     |
+| EPIC-20           | Multi-tier leave approval matrix (LINE_MANAGER → DEPT_HEAD → HR_DIRECTOR)          | `b0f30908` | 13    |
+| EPIC-09-S12       | OrgChangeRequest maker-checker (audit-log-backed workflow)                         | `b13d4cdb` | 6     |
+| EPIC-25           | Retaliation protection (90/180-day window after grievance)                         | `4565160d` | 9     |
+| EPIC-27           | Notice calculator + buyout valuation (employer + employee directions, 50% cap)     | `f8b3a760` | 10    |
+| EPIC-08           | Employee RecordChangeRequest maker-checker (SENSITIVE_FIELDS routing)              | `fcb87bd7` | 8     |
+| EPIC-11           | WPS release gate (preparer ≠ releaser, force-release for COMPLIANCE_OFFICER)       | `f0684829` | 8     |
+| EPIC-21           | Holiday-leave overlap detection + Eid provisional → confirmed state machine        | `953e0348` | 12    |
+| EPIC-13 + EPIC-14 | GOSI / GPSSA event consumers (hire / salary / exit)                                | `ca4ff177` | 6     |
+| EPIC-29           | Visa renewal multi-stage alerts (T-60 / 30 / 15 / 7 / 1 / +1) + dependent cascade  | `7244eaf9` | 12    |
+| EPIC-36           | Country-rule simulation engine (preview diff before publish)                       | `af8b6f46` | 8     |
+| EPIC-19           | Attendance absence-detection + missing-punch workflow                              | `5deb12d7` | 9     |
+| EPIC-15-S11       | Bahrain SIO ↔ LMRA alignment service                                              | `c0dc7177` | 7     |
+| EPIC-30-S02       | Document classification engine with retention policy                               | `0a001f86` | 10    |
+| EPIC-31           | Country/entity drill-down + 2D risk heatmap (compliance dashboard)                 | `4bd140ea` | 12    |
+
+**Cumulative:** ~170 new tests, every one passing in isolation. Every closure carries bilingual (en/ar) reason strings where applicable. Country-pack override is wired for the rule-bearing services (EPIC-26, EPIC-20, EPIC-25, EPIC-27) so the EPIC-02 "update rules without a deploy" contract holds across the new closures.
+
+**Status delta:** the 19 EPICs above move from 🟡 toward 🟢 on the audit rubric. The full re-audit pass to re-grade is a separate exercise; the closures here are individually defensible and test-covered.
+
 ---
 
 _Audit completed 2026-06-17. 38 EPICs audited via parallel `Explore` subagents. Findings sourced from `packages/@aura/database/prisma/schema.prisma`, `apps/web/src/lib/services/`, `apps/web/src/app/api/v1/`, `apps/web/src/app/dashboard/`, `apps/web/src/lib/services/__tests__/`._
