@@ -5,6 +5,12 @@
 > are wholesale stale; **~86% of the stories they flagged "Partial" are
 > shipped**. This document lists only the ~14% that remain true gaps,
 > grouped by theme so they can be planned, batched, and worked together.
+>
+> **Update 2026-06-17 (Theme A closure):** all 25 EPIC-34 HRMS Configuration
+> workspaces (S01, S03–S20, S24–S29) shipped via the generic
+> `HrmsConfigObject` registry + 22 per-domain workspaces + implementation
+> checklist + connectors + migrations + monthly/go-live certificate.
+> **66 gaps remain** (was 91). Themes B–K are unchanged.
 
 ## Source of truth
 
@@ -33,13 +39,30 @@ remaining work — **25 of the 91 gaps**.
 
 ## Remaining gaps grouped by theme
 
-### Theme A — EPIC-34 HRMS Configuration workspaces (25 stories)
+### Theme A — EPIC-34 HRMS Configuration workspaces (25 stories) — ✅ CLOSED 2026-06-17
 
-Original epic shipped only 4 of 29 stories (`CountryRuleSet`,
-`ApprovalWorkflowTemplate`, `NotificationRule`, `AuditTrailSetting`).
-Each remaining story is a per-domain config workspace under
-`hrms-config` that exposes existing per-domain models for governance,
-versioning, and effective-dating.
+Closed in commit batching the generic `HrmsConfigObject` registry
+(scope: GLOBAL → COUNTRY → LEGAL_ENTITY → DOMAIN; lifecycle DRAFT →
+PENDING_APPROVAL → ACTIVE → RETIRED with maker-checker); 22 per-domain
+workspaces (LEGAL_ENTITY, EMPLOYEE_DATA_DICTIONARY, POSITION_RULES,
+CONTRACT_TEMPLATE, PAYROLL_COMPONENT, PAYROLL_CALENDAR, PRORATION_RULE,
+GL_MAPPING, WPS_MAPPING, SOCIAL_INSURANCE, NATIONALISATION, IMMIGRATION,
+LEAVE, ATTENDANCE, BENEFITS, ACCOMMODATION, HSE, ER_MATRIX, SEPARATION,
+EOSB_FORMULA, DOCUMENT_RETENTION, RBAC_SCOPE); implementation checklist
+(S27); connector / secret-rotation registry (S25); data-migration plans
+(S26); monthly + go-live certificate with gating on
+`MAKER_CHECKER_PENDING | CONNECTOR_HEALTH | MIGRATION_FAILED |
+IMPLEMENTATION_OPEN` (S28, S29).
+
+Files:
+
+- migration `20260704000000_add_hrms_config_workspaces`
+- `apps/web/src/lib/services/hrms-config/{registry,workspaces,implementation,connector,migration,certificate}.service.ts`
+- API `/api/v1/hrms-config/{config-objects,workspaces,implementation,connectors,migrations,certificates}`
+- Dashboards `/dashboard/hrms-config/{config-objects,implementation,connectors,migrations,certificate}`
+- 17 Vitest covering scope priority, maker-checker, gating, rotation
+
+Original (pre-closure) detail kept below for traceability.
 
 | Story  | Missing                                                                                                 |
 | ------ | ------------------------------------------------------------------------------------------------------- |

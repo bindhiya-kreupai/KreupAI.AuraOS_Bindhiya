@@ -580,6 +580,11 @@ export const superAdminMenu: MenuDefinition = {
                         'Approval Workflow Templates',
                         'Notification Rules (multi-channel, bilingual)',
                         'Audit Trail Capture Policy per Domain',
+                        'Config Objects Registry · Maker-Checker (21 domains)',
+                        'Implementation Checklist · Go-Live Control Sheet',
+                        'Integration Connectors · Health + Secret Rotation',
+                        'Data Migration Plans · Run Validation',
+                        'Monthly + Go-Live Certificate (with gating)',
                     ],
                 },
                 {

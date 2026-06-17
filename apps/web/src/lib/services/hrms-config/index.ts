@@ -24,10 +24,48 @@
 
 import { prisma } from '@aura/database';
 
-export interface AuthContext {
-  tenantId: string;
-  userId: string;
-}
+export type { AuthContext } from './types';
+import type { AuthContext } from './types';
+
+// EPIC-34-S01 + S03–S20 + S24
+export { hrmsConfigRegistryService, HrmsConfigRegistryService } from './registry.service';
+export type {
+  ConfigScope,
+  ConfigStatus,
+  ConfigObjectInput,
+  ScopeResolveInput,
+} from './registry.service';
+export { HRMS_WORKSPACES, findWorkspaceByDomain } from './workspaces';
+export type { WorkspaceDescriptor } from './workspaces';
+
+// EPIC-34-S27
+export {
+  hrmsImplementationService,
+  HrmsImplementationService,
+  DEFAULT_CHECKLIST,
+} from './implementation.service';
+export type {
+  ImplementationPhase,
+  ImplementationStatus,
+  ChecklistSeed,
+} from './implementation.service';
+
+// EPIC-34-S25
+export { hrmsConnectorService, HrmsConnectorService } from './connector.service';
+export type {
+  ConnectorKind,
+  ConnectorDirection,
+  ConnectorAuthType,
+  ConnectorHealthStatus,
+} from './connector.service';
+
+// EPIC-34-S26
+export { hrmsMigrationService, HrmsMigrationService } from './migration.service';
+export type { MigrationStatus, RunResultInput } from './migration.service';
+
+// EPIC-34-S28 + S29
+export { hrmsConfigCertificateService, HrmsConfigCertificateService } from './certificate.service';
+export type { CertificateType, CertificateStatus, DashboardSummary } from './certificate.service';
 
 export type RuleSetStatus = 'DRAFT' | 'PUBLISHED' | 'SUPERSEDED';
 

@@ -108,6 +108,40 @@ export default function HrmsConfigHome() {
                 Audit Trail Settings (S23)
               </a>
             </li>
+            <li>
+              <a
+                href="/dashboard/hrms-config/config-objects"
+                className="text-blue-700 hover:underline"
+              >
+                Config Objects · Maker-Checker (S01, S03–S20, S24)
+              </a>
+            </li>
+            <li>
+              <a
+                href="/dashboard/hrms-config/implementation"
+                className="text-blue-700 hover:underline"
+              >
+                Implementation Checklist (S27)
+              </a>
+            </li>
+            <li>
+              <a href="/dashboard/hrms-config/connectors" className="text-blue-700 hover:underline">
+                Connectors / Integration Endpoints (S25)
+              </a>
+            </li>
+            <li>
+              <a href="/dashboard/hrms-config/migrations" className="text-blue-700 hover:underline">
+                Data Migration Plans (S26)
+              </a>
+            </li>
+            <li>
+              <a
+                href="/dashboard/hrms-config/certificate"
+                className="text-blue-700 hover:underline"
+              >
+                Monthly + Go-Live Certificate (S28, S29)
+              </a>
+            </li>
           </ul>
         </section>
       </div>

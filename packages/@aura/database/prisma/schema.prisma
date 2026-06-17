@@ -13859,6 +13859,147 @@ model GlPosting {
   @@map("aura_gl_posting")
 }
 
+// EPIC-34 HRMS Configuration — 25 remaining workspaces (S01, S03–S20,
+// S24–S29). Generic config registry plus monthly + go-live certificate,
+// implementation checklist (S27), integration connectors (S25),
+// data-migration plans (S26).
+model HrmsConfigObject {
+  id              String    @id(map: "aura_hrms_config_object_pkey") @default(uuid())
+  tenantId        String
+  domainCode      String // LEAVE, ATTENDANCE, PAYROLL, BENEFITS, HSE, EOSB, etc.
+  objectType      String // POLICY | RULE_SET | MATRIX | TEMPLATE | MAPPING | CALENDAR | REGISTRY
+  objectKey       String
+  label           String
+  scope           String    @default("GLOBAL") // GLOBAL | COUNTRY | LEGAL_ENTITY | DOMAIN
+  scopeRef        String?
+  country         String?
+  legalEntityId   String?
+  version         Int       @default(1)
+  status          String    @default("DRAFT") // DRAFT | PENDING_APPROVAL | ACTIVE | RETIRED
+  effectiveFrom   DateTime
+  effectiveTo     DateTime?
+  payload         Json
+  targetModel     String?
+  targetRecordId  String?
+  rationale       String?
+  sourceReference String?
+  requestedBy     String
+  requestedAt     DateTime  @default(now())
+  approvedBy      String?
+  approvedAt      DateTime?
+  retiredBy       String?
+  retiredAt       DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([tenantId, domainCode, objectKey, version], map: "aura_hrms_config_object_unique")
+  @@index([tenantId, domainCode, status], map: "aura_hrms_config_object_status")
+  @@index([tenantId, scope, scopeRef], map: "aura_hrms_config_object_scope")
+  @@index([tenantId, domainCode, effectiveFrom, effectiveTo], map: "aura_hrms_config_object_effective")
+  @@map("aura_hrms_config_object")
+}
+
+model HrmsConfigCertificate {
+  id                      String    @id(map: "aura_hrms_config_certificate_pkey") @default(uuid())
+  tenantId                String
+  period                  String
+  certificateType         String    @default("MONTHLY") // MONTHLY | GO_LIVE
+  status                  String    @default("DRAFT") // DRAFT | READY_TO_SIGN | SIGNED | GATED
+  domainsCovered          String[]  @default([])
+  totalConfigObjects      Int       @default(0)
+  activeConfigObjects     Int       @default(0)
+  pendingApprovalCount    Int       @default(0)
+  openImplementationItems Int       @default(0)
+  failingConnectors       Int       @default(0)
+  failingMigrations       Int       @default(0)
+  gatingReason            String?
+  signedBy                String?
+  signedAt                DateTime?
+  attestationsJson        Json?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+
+  @@unique([tenantId, period, certificateType], map: "aura_hrms_config_certificate_unique")
+  @@index([tenantId, status], map: "aura_hrms_config_certificate_status")
+  @@map("aura_hrms_config_certificate")
+}
+
+model HrmsImplementationChecklist {
+  id           String    @id(map: "aura_hrms_implementation_checklist_pkey") @default(uuid())
+  tenantId     String
+  phase        String // DISCOVERY | DESIGN | BUILD | TEST | GO_LIVE | POST_GO_LIVE
+  category     String
+  code         String
+  label        String
+  owner        String?
+  ownerRole    String?
+  status       String    @default("OPEN") // OPEN | IN_PROGRESS | COMPLETED | WAIVED
+  isMandatory  Boolean   @default(true)
+  dueDate      DateTime?
+  completedAt  DateTime?
+  completedBy  String?
+  evidenceUrl  String?
+  notes        String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@unique([tenantId, code], map: "aura_hrms_implementation_checklist_unique")
+  @@index([tenantId, phase, status], map: "aura_hrms_implementation_checklist_phase")
+  @@map("aura_hrms_implementation_checklist")
+}
+
+model HrmsConfigConnector {
+  id                String    @id(map: "aura_hrms_config_connector_pkey") @default(uuid())
+  tenantId          String
+  connectorCode     String
+  label             String
+  kind              String // PAYROLL_BANK | GOSI | GPSSA | SIO | MOHRE | QIWA | MUDAD | LMRA | GL | OTHER
+  direction         String    @default("OUTBOUND") // INBOUND | OUTBOUND | BIDIRECTIONAL
+  endpointUrl       String?
+  authType          String    @default("NONE") // OAUTH2 | API_KEY | MTLS | NONE
+  secretRef         String?
+  configJson        Json?
+  lastRotatedAt     DateTime?
+  rotationDueAt     DateTime?
+  lastHealthCheckAt DateTime?
+  lastHealthStatus  String? // PASS | FAIL | UNKNOWN
+  lastHealthMessage String?
+  isActive          Boolean   @default(true)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@unique([tenantId, connectorCode], map: "aura_hrms_config_connector_unique")
+  @@index([tenantId, lastHealthStatus], map: "aura_hrms_config_connector_health")
+  @@map("aura_hrms_config_connector")
+}
+
+model HrmsConfigMigration {
+  id                 String    @id(map: "aura_hrms_config_migration_pkey") @default(uuid())
+  tenantId           String
+  planCode           String
+  label              String
+  domainCode         String
+  sourceSystem       String
+  targetEntity       String
+  expectedRows       Int?
+  status             String    @default("PLANNED") // PLANNED | RUNNING | COMPLETED | FAILED | ROLLED_BACK
+  lastRunAt          DateTime?
+  lastRunResult      String?
+  lastRunInserted    Int       @default(0)
+  lastRunUpdated     Int       @default(0)
+  lastRunSkipped     Int       @default(0)
+  lastRunErrors      Int       @default(0)
+  validationsPassed  Boolean   @default(false)
+  validationsJson    Json?
+  notes              String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@unique([tenantId, planCode], map: "aura_hrms_config_migration_unique")
+  @@index([tenantId, status], map: "aura_hrms_config_migration_status")
+  @@map("aura_hrms_config_migration")
+}
+
 // EPIC-02-S02: rule pack change governance — maker-checker, rationale,
 // source reference, and rollback action log. Wraps the existing
 // CountryRulePack DRAFT/ACTIVE/RETIRED lifecycle so the publish action
