@@ -46,9 +46,17 @@ export class EOSBService {
     override?: GratuityFormulaOverride
   ): EOSBCalculationResult {
     const { countryCode, joiningDate, lastWorkingDate, basicSalary, terminationType } = input;
+    const unpaidLeaveDays = Math.max(0, Math.round(input.unpaidLeaveDays ?? 0));
 
-    // Calculate service duration
-    const serviceDuration = this.calculateServiceDuration(joiningDate, lastWorkingDate);
+    // Calculate service duration. EPIC-28-S09: subtract unpaid-leave days
+    // from total service so the gratuity period reflects PAID service
+    // only. Per UAE Federal Decree-Law 33 (Art. 51) and KSA Labour Law
+    // (Art. 84) unpaid leave does not count toward gratuity accrual.
+    const serviceDuration = this.calculateServiceDuration(
+      joiningDate,
+      lastWorkingDate,
+      unpaidLeaveDays
+    );
 
     // Get country-specific configuration
     const config = LabourLawService.getConfig(countryCode);
@@ -129,11 +137,19 @@ export class EOSBService {
   }
 
   /**
-   * Calculate service duration between two dates
+   * Calculate service duration between two dates, optionally deducting
+   * `unpaidLeaveDays` from the total before deriving the paid-service
+   * year/month split.
+   *
+   * Note: the calendar-month rollup (years/months/days) reflects total
+   * elapsed time; the gratuity-relevant figures (`totalDays`,
+   * `totalMonths`, `fractionalYears`) are reduced by `unpaidLeaveDays`
+   * so downstream slice calculations use paid service only.
    */
   private static calculateServiceDuration(
     startDate: Date,
-    endDate: Date
+    endDate: Date,
+    unpaidLeaveDays: number = 0
   ): {
     years: number;
     months: number;
@@ -146,7 +162,7 @@ export class EOSBService {
     const end = new Date(endDate);
 
     const diffTime = Math.abs(end.getTime() - start.getTime());
-    const totalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const calendarTotalDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 
     let years = end.getFullYear() - start.getFullYear();
     let months = end.getMonth() - start.getMonth();
@@ -163,10 +179,14 @@ export class EOSBService {
       months += 12;
     }
 
-    const totalMonths = years * 12 + months;
-    const fractionalYears = totalDays / 365.25;
+    // EPIC-28-S09: deduct unpaid leave from the gratuity-eligible
+    // totals only (calendar year/month/day fields stay as-is so the
+    // employment dates remain intact for display).
+    const paidDays = Math.max(0, calendarTotalDays - unpaidLeaveDays);
+    const totalMonths = Math.floor(paidDays / 30.4375);
+    const fractionalYears = paidDays / 365.25;
 
-    return { years, months, days, totalMonths, totalDays, fractionalYears };
+    return { years, months, days, totalMonths, totalDays: paidDays, fractionalYears };
   }
 
   /**
@@ -231,6 +251,13 @@ export class EOSBService {
     if (grossAmount >= maxGratuity) {
       notes.push(`Gratuity capped at ${capYears} year${capYears === 1 ? '' : 's'} salary`);
       notesAr.push('تم تحديد سقف المكافأة');
+    }
+
+    if ((input.unpaidLeaveDays ?? 0) > 0) {
+      notes.push(
+        `${input.unpaidLeaveDays} unpaid-leave day${input.unpaidLeaveDays === 1 ? '' : 's'} excluded from service`
+      );
+      notesAr.push(`تم استبعاد أيام الإجازة بدون أجر من الخدمة`);
     }
 
     return {

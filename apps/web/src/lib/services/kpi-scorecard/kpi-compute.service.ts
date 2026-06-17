@@ -3,6 +3,7 @@ import type { AuthContext } from './types';
 import { kpiCatalogService } from './kpi-catalog.service';
 import { kpiThresholdService } from './kpi-threshold.service';
 import { kpiDataQualityService } from './kpi-data-quality.service';
+import { evaluateFormula, type EvaluationContext } from '../expression-dsl/expression.service';
 
 export interface RecordValueInput {
   kpiCode: string;
@@ -114,6 +115,33 @@ export class KpiComputeService {
       throw new Error(`data-quality failed for ${input.kpiCode}`);
     }
     return this.record({ ...input, dataQualityPass: true }, auth);
+  }
+
+  /**
+   * Compute a KPI value from its stored formula expression instead of
+   * accepting a pre-computed number. The active catalogue definition
+   * supplies the formula (KpiDefinition.formula). The supplied `inputs`
+   * object becomes the evaluation context.
+   *
+   * (audit Pattern 8 closure: KPI formulas used to be inert TEXT that
+   * external code had to parse; now they're executed by the safe DSL.)
+   *
+   * Throws if the catalogue definition is missing or its `formula`
+   * field is empty.
+   */
+  async computeFromFormula(
+    input: Omit<RecordValueInput, 'value'> & { inputs: EvaluationContext },
+    auth: AuthContext
+  ) {
+    const def = await kpiCatalogService.getActive(auth.tenantId, input.kpiCode);
+    if (!def) {
+      throw new Error(`KPI ${input.kpiCode} has no ACTIVE definition; approve a draft first`);
+    }
+    if (!def.formula || typeof def.formula !== 'string' || def.formula.trim().length === 0) {
+      throw new Error(`KPI ${input.kpiCode} has no formula expression to compute from`);
+    }
+    const value = evaluateFormula(def.formula, input.inputs);
+    return this.record({ ...input, value, inputs: input.inputs as Record<string, unknown> }, auth);
   }
 }
 

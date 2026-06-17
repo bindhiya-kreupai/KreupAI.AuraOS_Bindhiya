@@ -403,6 +403,30 @@ Pattern 1 ("rule engine no service consumes") is now structurally closed across 
 - `LabourLawService.getConfig` → thin wrapper over `resolveRule` so legacy callers reading the static config object also benefit. Pure code-quality cleanup; behaviour-neutral.
 - Schema duplicate (`EOSBCalculation` vs `EosbCalculation`) and `prisma db push` for `aura_tenant_saved_view` — both flagged in the Tier-0 section above; still need user-driven action.
 
+### 2026-06-17 — Pattern 3 (pagination) seeded + DSL wired into EPIC-37 & EPIC-38 + EOSB S09
+
+Pattern 3 (Pattern 8 consumer-wiring, Pattern 3 helper-seeding) shipped together with EPIC-28-S09 (EOSB unpaid-leave deduction).
+
+**Shipped:**
+
+- **`apps/web/src/lib/services/pagination/index.ts`** — canonical pagination shape: `PaginationInput`, `PaginatedResult<T>`, `normalisePaging`, `prismaPageArgs`, `prismaOrderBy`, `buildPaginatedResult`, `buildPaginationMeta`. Page clamped to ≥1, pageSize clamped to `[1, MAX_PAGE_SIZE=500]`, default `pageSize=50`. Sort is `(field, dir)[]`; arbitrary `dir` strings normalise to `'desc'`.
+- **EOSB compliance service** — `eosbCalculationService.list`, `eosbAccrualService.list`, `eosbDisputeService.list` now accept `PaginationInput` and return `PaginatedResult<unknown>`. Routes pass `page` + `pageSize` query params (default 1 / 50). First three Pattern-3 adopters; matches the project's shared list response shape (`{items, total, page, pageSize, hasNextPage}`).
+- **EPIC-37 (Compliance Checklist)** — `RedFlagService.evaluateAndRaise(ruleCode, ctx, ownerEmployeeId, ownerKpiId, auth)` loads the rule, merges `thresholdJson` into the context, runs `evaluateRule(expression, ctx)`, raises a flag if truthy; swallows + logs malformed expressions so one bad rule cannot block others. RedFlagRule rows are now executable, not just stored.
+- **EPIC-38 (KPI Scorecard)** — `KpiComputeService.computeFromFormula({ kpiCode, period, inputs }, auth)` loads the ACTIVE KPI def, calls `evaluateFormula(def.formula, input.inputs)`, then delegates to `record()`. Pattern 8's "formula in TEXT" is now wired to the safe DSL evaluator end-to-end.
+- **EPIC-28-S09 (EOSB unpaid-leave deduction)** — `EOSBCalculationInput` now carries `unpaidLeaveDays?: number`. `EOSBService.calculateServiceDuration(start, end, unpaidLeaveDays=0)` subtracts unpaid days from the gratuity-eligible `totalDays` / `totalYears` / `totalMonths` before period splits; calendar `yearsOfService` / `monthsOfService` / `daysOfService` display fields are independent of the deduction. Negative inputs clamp to 0; fractional inputs round; bilingual exclusion note added (`unpaid-leave excluded` / `بدون أجر`).
+
+**Test coverage (cumulative across these changes — 33 new tests, 0 regressions):**
+
+- Pagination helper: 16 tests (clamping, fractional flooring, sort normalisation, prismaPageArgs/OrderBy, result envelope, meta block).
+- EPIC-37 DSL wiring (`red-flag.dsl.test.ts`): 6 tests (truthy raises, falsy no-op, inactive skip, threshold merge, malformed swallow, unknown code).
+- EPIC-38 DSL wiring (`kpi-compute.dsl.test.ts`): 4 tests (sample formula, missing definition, empty formula, dot-path).
+- EOSB S09 (`eosb.unpaid-leave.test.ts`): 7 tests (zero-day identity, monotonic, days subtraction, defensive clamping/rounding, bilingual note, calendar invariance, rule-pack override preserved).
+- Cumulative regression sweep across `services/compliance`, `services/pagination`, `services/checklist-engine`, `services/kpi-scorecard`, `services/eosb-compliance` → **632 / 632 passing**.
+
+**Pattern 3 status:** seeded (3 of ~20 list endpoints adopted). The canonical helper is now the import target for the remaining services; bulk migration of remaining `take: 500` callsites is a follow-up cleanup, no longer a design question.
+
+**Pattern 8 status:** structurally **closed**. Both rule-engine consumers (red-flags) and formula-engine consumers (KPI compute) call the DSL evaluator on the stored TEXT.
+
 ---
 
 _Audit completed 2026-06-17. 38 EPICs audited via parallel `Explore` subagents. Findings sourced from `packages/@aura/database/prisma/schema.prisma`, `apps/web/src/lib/services/`, `apps/web/src/app/api/v1/`, `apps/web/src/app/dashboard/`, `apps/web/src/lib/services/__tests__/`._

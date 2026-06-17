@@ -1,6 +1,8 @@
 import { prisma } from '@aura/database';
 import type { AuthContext, Severity } from './types';
 import { checklistRunService } from './run.service';
+import { evaluateRule, type EvaluationContext } from '../expression-dsl/expression.service';
+import { logger } from '@/lib/logger';
 
 export interface RaiseFlagInput {
   ruleCode: string;
@@ -85,6 +87,72 @@ export class RedFlagService {
       orderBy: { raisedAt: 'desc' },
       take: 500,
     });
+  }
+
+  /**
+   * Evaluate a stored RedFlagRule against a runtime context.
+   * (audit Pattern 8 closure: rules used to be inert TEXT strings;
+   * now `RedFlagRule.expression` is executed through the safe
+   * expression DSL.)
+   *
+   * Returns the raised flag when the expression is truthy, or `null`
+   * when it is falsy / the rule is inactive / the rule is not found.
+   *
+   * The rule's `thresholdJson` is merged into the evaluation context
+   * so authors can write `payslip.daysLate > thresholds.criticalDays`
+   * without hardcoding the threshold in the expression text.
+   */
+  async evaluateAndRaise(
+    input: {
+      ruleCode: string;
+      sourceType: string;
+      sourceId: string;
+      context: EvaluationContext;
+      checklistRunId?: string;
+      itemCode?: string;
+      details?: Record<string, unknown>;
+    },
+    auth: AuthContext
+  ) {
+    const rule = await (prisma as any).redFlagRule.findUnique({
+      where: {
+        aura_red_flag_rule_unique: { tenantId: auth.tenantId, code: input.ruleCode },
+      } as any,
+    });
+    if (!rule || !rule.isActive) return null;
+
+    const mergedContext: EvaluationContext = {
+      ...input.context,
+      thresholds: rule.thresholdJson ?? {},
+    };
+
+    let fired = false;
+    try {
+      fired = evaluateRule(rule.expression, mergedContext, (err) => {
+        logger.warn(
+          { err, ruleCode: input.ruleCode, expression: rule.expression },
+          'red-flag rule expression failed to evaluate'
+        );
+      });
+    } catch {
+      // evaluateRule already swallows; defensive guard.
+      fired = false;
+    }
+    if (!fired) return null;
+
+    return this.raiseFlag(
+      {
+        ruleCode: input.ruleCode,
+        domain: rule.domain,
+        severity: rule.severity as Severity,
+        sourceType: input.sourceType,
+        sourceId: input.sourceId,
+        checklistRunId: input.checklistRunId,
+        itemCode: input.itemCode,
+        details: input.details,
+      },
+      auth
+    );
   }
 }
 
