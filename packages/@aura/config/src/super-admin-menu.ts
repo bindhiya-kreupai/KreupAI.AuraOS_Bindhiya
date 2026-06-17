@@ -429,6 +429,19 @@ export const superAdminMenu: MenuDefinition = {
                         'Monthly Compliance Certificate',
                     ],
                 },
+                {
+                    code: 'BENEFITS_COMPLIANCE',
+                    label: 'Employee Benefits (GCC)',
+                    icon: 'benefits',
+                    path: '/dashboard/benefits-compliance',
+                    features: [
+                        'Benefit Catalogue (medical, life, ticket, housing, etc.)',
+                        'Coverage Register + Renewal + Accrual',
+                        'Vendor Management & DPA Tracking',
+                        'Exceptions & Mandatory-Gap Detection',
+                        'Monthly Compliance Certificate',
+                    ],
+                },
             ],
         },
         {

@@ -12079,3 +12079,121 @@ model DocComplianceCertificate {
   @@unique([tenantId, period], map: "aura_doc_compliance_certificate_unique")
   @@map("aura_doc_compliance_certificate")
 }
+
+model BenefitCatalogue {
+  id                String    @id(map: "aura_benefit_catalogue_pkey") @default(uuid())
+  tenantId          String
+  benefitCode       String
+  benefitType       String
+  label             String
+  countryCode       String?
+  isMandatory       Boolean   @default(false)
+  minGrade          String?
+  valuationBasis    String    @default("FIXED")
+  annualValue       Decimal   @default(0) @db.Decimal(14, 2)
+  currency          String    @default("AED")
+  frequencyMonths   Int       @default(12)
+  dependantsAllowed Boolean   @default(false)
+  vendorRequired    Boolean   @default(false)
+  policyJson        Json      @default("{}")
+  effectiveFrom     DateTime
+  effectiveTo       DateTime?
+  status            String    @default("ACTIVE")
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@unique([tenantId, benefitCode, effectiveFrom], map: "aura_benefit_catalogue_unique")
+  @@map("aura_benefit_catalogue")
+}
+
+model BenefitVendor {
+  id            String    @id(map: "aura_benefit_vendor_pkey") @default(uuid())
+  tenantId      String
+  name          String
+  vendorType    String
+  country       String?
+  contactEmail  String?
+  contactPhone  String?
+  contractRef   String?
+  contractStart DateTime?
+  contractEnd   DateTime?
+  dpaSigned     Boolean   @default(false)
+  dpaSignedAt   DateTime?
+  status        String    @default("ACTIVE")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([tenantId], map: "aura_benefit_vendor_tenant")
+  @@map("aura_benefit_vendor")
+}
+
+model BenefitCoverage {
+  id                 String    @id(map: "aura_benefit_coverage_pkey") @default(uuid())
+  tenantId           String
+  employeeId         String
+  benefitCatalogueId String
+  vendorId           String?
+  policyNumber       String?
+  startedAt          DateTime
+  endsAt             DateTime?
+  expiresAt          DateTime?
+  lastRenewedAt      DateTime?
+  actualAnnualValue  Decimal?  @db.Decimal(14, 2)
+  currency           String    @default("AED")
+  dependantsCount    Int       @default(0)
+  status             String    @default("ACTIVE")
+  lastAccruedAt      DateTime?
+  accruedBalance     Decimal   @default(0) @db.Decimal(14, 2)
+  metadataJson       Json      @default("{}")
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@unique([tenantId, employeeId, benefitCatalogueId, startedAt], map: "aura_benefit_coverage_unique")
+  @@index([tenantId, expiresAt], map: "aura_benefit_coverage_expiry")
+  @@map("aura_benefit_coverage")
+}
+
+model BenefitException {
+  id            String    @id(map: "aura_benefit_exception_pkey") @default(uuid())
+  tenantId      String
+  employeeId    String
+  benefitCode   String
+  exceptionType String
+  reason        String?
+  raisedAt      DateTime  @default(now())
+  raisedBy      String?
+  approverId    String?
+  approvedAt    DateTime?
+  expiresAt     DateTime?
+  status        String    @default("OPEN")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([tenantId, employeeId], map: "aura_benefit_exception_employee")
+  @@map("aura_benefit_exception")
+}
+
+model BenefitCertificate {
+  id                     String    @id(map: "aura_benefit_certificate_pkey") @default(uuid())
+  tenantId               String
+  period                 String
+  status                 String    @default("DRAFT")
+  activeEnrollments      Int       @default(0)
+  mandatoryCoverGapCount Int       @default(0)
+  expiringSoonCount      Int       @default(0)
+  expiredCount           Int       @default(0)
+  openExceptionsCount    Int       @default(0)
+  vendorsWithoutDpa      Int       @default(0)
+  totalAccruedLiability  Decimal   @default(0) @db.Decimal(16, 2)
+  currency               String    @default("AED")
+  gatingReason           String?
+  attestationsJson       Json      @default("[]")
+  generatedAt            DateTime?
+  signedAt               DateTime?
+  signedBy               String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  @@unique([tenantId, period], map: "aura_benefit_certificate_unique")
+  @@map("aura_benefit_certificate")
+}
