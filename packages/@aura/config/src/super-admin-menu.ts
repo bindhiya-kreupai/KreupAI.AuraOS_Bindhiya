@@ -377,6 +377,20 @@ export const superAdminMenu: MenuDefinition = {
                     ],
                 },
                 {
+                    code: 'STRUCTURAL_EXTENSIONS',
+                    label: 'Structural Extensions',
+                    icon: 'organization',
+                    path: '/dashboard/structural-extensions',
+                    features: [
+                        'Job Architecture · Salary Bands · DoA Matrix',
+                        'Payroll Calendar Control · Variance Register',
+                        'Fatigue Rules · OT Fraud Detection',
+                        'EOS↔SIO Funding · Return-to-Work Plans',
+                        'Holiday Change-Management · Redundancy Batches',
+                        'Separation Retention · Physical Locations · Finding-Risk Links',
+                    ],
+                },
+                {
                     code: 'HSE_VISA_EXTENSIONS',
                     label: 'HSE + Visa-Exit Extensions',
                     icon: 'reports',

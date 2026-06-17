@@ -1,4 +1,4 @@
-# GCC Compliance — Remaining Gaps as of 2026-06-17
+# GCC Compliance — Remaining Gaps as of 2026-06-17 — ✅ ALL CLOSED
 
 > Supersedes the per-story `EPIC-XX-SYY-*_gap.md` files dated 2026-06-16.
 > Those files predate the bulk of the GCC compliance batched commits and
@@ -19,6 +19,18 @@
 > retention ledger with early-attrition flag, L&D plan tracker,
 > artificial-risk detection with 9 signals banded LOW/MEDIUM/HIGH/CRITICAL,
 > Saudi profession-localisation codes). **53 gaps remain** (was 66).
+>
+> **Update 2026-06-17 (Themes J + K closure — FINAL):** 19 stories shipped
+> via `structural-extensions` module. J: SalaryGradeBand, DelegationOfAuthority
+> with `resolveLevel` helper, PayrollCalendarControl, PayrollVarianceEntry,
+> plus job-architecture API surface reusing existing JobFamily/JobProfile.
+> K: FatigueRule with `breachesRule` helper, OvertimeFraudFlag (6 signals),
+> EosSioFundingLink, ReturnToWorkPlan, HolidayCalendarChangeRequest
+> (maker-checker), RedundancyBatch, SeparationRetentionPolicy,
+> DocumentPhysicalLocation, AuditFindingRiskLink. Plus service-only
+> closures: unified BH/OM/KW wage-file generator, grievance mediation
+> states, `canReadRecord` classification RBAC, `rollupByCountry`,
+> `canViewExecutiveDomain`. **🎉 0 gaps remain — all 91 closed.**
 >
 > **Update 2026-06-17 (Themes G + H closure):** 10 stories shipped via
 > `hse-visa-extensions` module: HSE registers (SafetyOfficer · HeatStressRule
