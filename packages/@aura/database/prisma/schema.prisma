@@ -11396,3 +11396,102 @@ model EmiratisationCertificate {
   @@unique([tenantId, period], map: "aura_emiratisation_certificate_unique")
   @@map("aura_emiratisation_certificate")
 }
+
+// ============================================================================
+// 30. NITAQAT / SAUDIZATION COMPLIANCE — KSA NATIONALIZATION (EPIC-17)
+// ============================================================================
+
+model NitaqatConfig {
+  id                String   @id(map: "aura_nitaqat_config_pkey") @default(uuid())
+  tenantId          String
+  legalEntityId     String?
+  establishmentName String
+  sector            String
+  sizeBracket       String
+  saudiHeadcount    Int      @default(0)
+  totalHeadcount    Int      @default(0)
+  qiwaNumber        String?
+  isInScope         Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([tenantId, legalEntityId], map: "aura_nitaqat_config_unique")
+  @@map("aura_nitaqat_config")
+}
+
+model NitaqatBandThreshold {
+  id            String    @id(map: "aura_nitaqat_band_threshold_pkey") @default(uuid())
+  tenantId      String
+  sector        String
+  sizeBracket   String
+  redMaxPct     Decimal   @db.Decimal(5, 2)
+  yellowMaxPct  Decimal   @db.Decimal(5, 2)
+  greenMaxPct   Decimal   @db.Decimal(5, 2)
+  effectiveFrom DateTime
+  effectiveTo   DateTime?
+  status        String    @default("ACTIVE")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([tenantId, sector, sizeBracket, effectiveFrom], map: "aura_nitaqat_band_threshold_unique")
+  @@map("aura_nitaqat_band_threshold")
+}
+
+model NitaqatBandSnapshot {
+  id                   String   @id(map: "aura_nitaqat_band_snapshot_pkey") @default(uuid())
+  tenantId             String
+  legalEntityId        String?
+  snapshotDate         DateTime
+  saudiHeadcount       Int
+  totalHeadcount       Int
+  saudizationPct       Decimal  @db.Decimal(5, 2)
+  band                 String
+  redMaxPct            Decimal  @db.Decimal(5, 2)
+  yellowMaxPct         Decimal  @db.Decimal(5, 2)
+  greenMaxPct          Decimal  @db.Decimal(5, 2)
+  platinumThresholdPct Decimal? @db.Decimal(5, 2)
+  ptToNextBandHires    Int      @default(0)
+  privilegesJson       Json     @default("{}")
+  createdAt            DateTime @default(now())
+
+  @@unique([tenantId, legalEntityId, snapshotDate], map: "aura_nitaqat_band_snapshot_unique")
+  @@map("aura_nitaqat_band_snapshot")
+}
+
+model NitaqatHire {
+  id              String   @id(map: "aura_nitaqat_hire_pkey") @default(uuid())
+  tenantId        String
+  legalEntityId   String?
+  employeeId      String
+  hireDate        DateTime
+  qiwaContractRef String?
+  gosiRegistered  Boolean  @default(false)
+  mudadCovered    Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([tenantId, employeeId], map: "aura_nitaqat_hire_unique")
+  @@map("aura_nitaqat_hire")
+}
+
+model NitaqatCertificate {
+  id               String    @id(map: "aura_nitaqat_certificate_pkey") @default(uuid())
+  tenantId         String
+  period           String
+  status           String    @default("DRAFT")
+  entitiesInScope  Int       @default(0)
+  platinumCount    Int       @default(0)
+  greenCount       Int       @default(0)
+  yellowCount      Int       @default(0)
+  redCount         Int       @default(0)
+  gatingReason     String?
+  attestationsJson Json      @default("[]")
+  generatedAt      DateTime?
+  signedAt         DateTime?
+  signedBy         String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@unique([tenantId, period], map: "aura_nitaqat_certificate_unique")
+  @@map("aura_nitaqat_certificate")
+}
