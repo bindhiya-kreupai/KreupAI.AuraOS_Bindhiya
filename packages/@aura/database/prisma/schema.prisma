@@ -13215,3 +13215,78 @@ model ExecutiveComplianceCertificate {
   @@unique([tenantId, period], map: "aura_executive_compliance_certificate_unique")
   @@map("aura_executive_compliance_certificate")
 }
+
+model CountryRuleSet {
+  id              String    @id(map: "aura_country_rule_set_pkey") @default(uuid())
+  tenantId        String
+  country         String
+  domain          String
+  version         String
+  effectiveFrom   DateTime
+  effectiveTo     DateTime?
+  rulesJson       Json      @default("{}")
+  publishedAt     DateTime?
+  publishedBy     String?
+  supersededById  String?
+  status          String    @default("DRAFT")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([tenantId, country, domain, version], map: "aura_country_rule_set_unique")
+  @@map("aura_country_rule_set")
+}
+
+model ApprovalWorkflowTemplate {
+  id              String   @id(map: "aura_approval_workflow_template_pkey") @default(uuid())
+  tenantId        String
+  templateCode    String
+  label           String
+  domain          String
+  country         String?
+  stagesJson      Json     @default("[]")
+  escalationHours Int      @default(24)
+  autoApproveWhen String?
+  isActive        Boolean  @default(true)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([tenantId, templateCode], map: "aura_approval_workflow_template_unique")
+  @@map("aura_approval_workflow_template")
+}
+
+model NotificationRule {
+  id             String   @id(map: "aura_notification_rule_pkey") @default(uuid())
+  tenantId       String
+  ruleCode       String
+  label          String
+  domain         String
+  trigger        String
+  channelsJson   Json     @default("[]")
+  recipientRoles Json     @default("[]")
+  templateText   String?
+  templateTextAr String?
+  severity       String   @default("INFO")
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([tenantId, ruleCode], map: "aura_notification_rule_unique")
+  @@map("aura_notification_rule")
+}
+
+model AuditTrailSetting {
+  id                 String   @id(map: "aura_audit_trail_setting_pkey") @default(uuid())
+  tenantId           String
+  domain             String
+  captureReads       Boolean  @default(false)
+  captureWrites      Boolean  @default(true)
+  captureExports     Boolean  @default(true)
+  retentionYears     Int      @default(7)
+  piiClassification  String   @default("CONFIDENTIAL")
+  isActive           Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@unique([tenantId, domain], map: "aura_audit_trail_setting_unique")
+  @@map("aura_audit_trail_setting")
+}

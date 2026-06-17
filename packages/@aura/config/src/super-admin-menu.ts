@@ -569,6 +569,18 @@ export const superAdminMenu: MenuDefinition = {
                         'Monthly Compliance Certificate',
                     ],
                 },
+                {
+                    code: 'HRMS_CONFIG',
+                    label: 'HRMS Configuration',
+                    icon: 'settings',
+                    path: '/dashboard/hrms-config',
+                    features: [
+                        'Versioned Country Rule Sets',
+                        'Approval Workflow Templates',
+                        'Notification Rules (multi-channel, bilingual)',
+                        'Audit Trail Capture Policy per Domain',
+                    ],
+                },
             ],
         },
         {
