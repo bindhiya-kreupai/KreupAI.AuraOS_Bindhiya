@@ -12737,3 +12737,121 @@ model AccommodationCertificate {
   @@unique([tenantId, period], map: "aura_accommodation_certificate_unique")
   @@map("aura_accommodation_certificate")
 }
+
+model HseRiskAssessment {
+  id                String    @id(map: "aura_hse_risk_assessment_pkey") @default(uuid())
+  tenantId          String
+  title             String
+  location          String?
+  category          String
+  hazardDescription String?
+  likelihood        Int
+  severity          Int
+  inherentRisk      Int
+  residualRisk      Int
+  controlsJson      Json      @default("[]")
+  reviewedAt        DateTime?
+  reviewedBy        String?
+  nextReviewAt      DateTime?
+  status            String    @default("OPEN")
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([tenantId], map: "aura_hse_risk_assessment_tenant")
+  @@map("aura_hse_risk_assessment")
+}
+
+model HseIncident {
+  id                String    @id(map: "aura_hse_incident_pkey") @default(uuid())
+  tenantId          String
+  incidentNumber    String
+  incidentDate      DateTime
+  incidentType      String
+  severity          String
+  location          String?
+  employeeId        String?
+  contractorId      String?
+  description       String?
+  rootCause         String?
+  correctiveActions Json      @default("[]")
+  lostTimeDays      Int       @default(0)
+  gosiNotified      Boolean   @default(false)
+  authorityNotified Boolean   @default(false)
+  status            String    @default("OPEN")
+  closedAt          DateTime?
+  closedBy          String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@unique([tenantId, incidentNumber], map: "aura_hse_incident_unique")
+  @@map("aura_hse_incident")
+}
+
+model HsePermitToWork {
+  id               String    @id(map: "aura_hse_permit_to_work_pkey") @default(uuid())
+  tenantId         String
+  permitNumber     String
+  workType         String
+  location         String
+  startAt          DateTime
+  endAt            DateTime
+  issuerId         String?
+  supervisorId     String?
+  ppeChecklistJson Json      @default("[]")
+  isolationsJson   Json      @default("[]")
+  ramsAttached     Boolean   @default(false)
+  status           String    @default("OPEN")
+  closedAt         DateTime?
+  closedBy         String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@unique([tenantId, permitNumber], map: "aura_hse_permit_to_work_unique")
+  @@map("aura_hse_permit_to_work")
+}
+
+model HseTrainingRecord {
+  id             String    @id(map: "aura_hse_training_record_pkey") @default(uuid())
+  tenantId       String
+  employeeId     String
+  trainingCode   String
+  trainingType   String
+  completedAt    DateTime
+  validUntil     DateTime?
+  trainerName    String?
+  certificateUrl String?
+  score          Int?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([tenantId, employeeId], map: "aura_hse_training_record_employee")
+  @@index([tenantId, validUntil], map: "aura_hse_training_record_expiry")
+  @@map("aura_hse_training_record")
+}
+
+model HseCertificate {
+  id                   String    @id(map: "aura_hse_certificate_pkey") @default(uuid())
+  tenantId             String
+  period               String
+  status               String    @default("DRAFT")
+  openRiskAssessments  Int       @default(0)
+  highRiskCount        Int       @default(0)
+  incidentsOpen        Int       @default(0)
+  lostTimeIncidents    Int       @default(0)
+  fatalitiesCount      Int       @default(0)
+  permitsActive        Int       @default(0)
+  permitsOverdue       Int       @default(0)
+  trainingExpiringSoon Int       @default(0)
+  trainingExpired      Int       @default(0)
+  ltifr                Decimal   @default(0) @db.Decimal(8, 2)
+  gatingReason         String?
+  attestationsJson     Json      @default("[]")
+  generatedAt          DateTime?
+  signedAt             DateTime?
+  signedBy             String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  @@unique([tenantId, period], map: "aura_hse_certificate_unique")
+  @@map("aura_hse_certificate")
+}

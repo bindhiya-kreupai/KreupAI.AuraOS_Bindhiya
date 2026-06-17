@@ -517,6 +517,19 @@ export const superAdminMenu: MenuDefinition = {
                         'Monthly Compliance Certificate',
                     ],
                 },
+                {
+                    code: 'HSE_COMPLIANCE',
+                    label: 'Health, Safety & Welfare',
+                    icon: 'reports',
+                    path: '/dashboard/hse-compliance',
+                    features: [
+                        'Risk Assessments (L × S → residual band)',
+                        'Incident Register (NEAR_MISS → FATALITY + GOSI notify)',
+                        'Permit-to-Work (HOT_WORK / CONFINED_SPACE / WAH)',
+                        'Training Register with Expiry',
+                        'Monthly Compliance Certificate (LTIFR)',
+                    ],
+                },
             ],
         },
         {
