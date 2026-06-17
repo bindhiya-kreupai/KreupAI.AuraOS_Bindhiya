@@ -3,15 +3,30 @@
  * Calculates termination benefits for GCC countries and India
  */
 
-import type {
-  EOSBCalculationInput,
-  EOSBCalculationResult,
-  SupportedCountryCode} from './types';
-import {
-  TerminationType,
-  COUNTRY_CURRENCIES,
-} from './types';
+import type { EOSBCalculationInput, EOSBCalculationResult, SupportedCountryCode } from './types';
+import { TerminationType, COUNTRY_CURRENCIES } from './types';
 import { LabourLawService } from './labour-law.service';
+import { resolveRuleObject } from '../gcc-rule-library/rule-value.helper';
+
+/**
+ * Per-country gratuity formula override. Populated by the rule engine
+ * (EPIC-02 / EPIC-36) under domain "EOSB" / ruleKey "GRATUITY_FORMULA".
+ * Any missing field falls back to the hardcoded country defaults so the
+ * sync `calculate()` and historical behaviour are never regressed.
+ *
+ * Field semantics intentionally match the seeded rule shape — see
+ * lib/services/gcc-rule-library/rule-pack-seeds.ts.
+ */
+export interface GratuityFormulaOverride {
+  /** Days credited per year for the first-period slice (typically years ≤ 5). */
+  firstPeriodDaysPerYear?: number;
+  /** Days credited per year for the second-period slice (years > breakpoint). */
+  secondPeriodDaysPerYear?: number;
+  /** Year breakpoint between the two slices (UAE/KSA/Kuwait = 5; Bahrain = 3). */
+  breakpointYears?: number;
+  /** Cap expressed in years of basic salary (e.g. UAE 2, Kuwait 1.5). */
+  capYears?: number;
+}
 
 // ============================================================================
 // EOSB SERVICE
@@ -19,9 +34,17 @@ import { LabourLawService } from './labour-law.service';
 
 export class EOSBService {
   /**
-   * Calculate End of Service Benefits for an employee
+   * Calculate End of Service Benefits for an employee.
+   *
+   * Synchronous path — uses hardcoded country defaults from
+   * LabourLawService. Backwards-compatible; never blocks on I/O.
+   * For rule-engine-driven calculation use
+   * `calculateWithRulePack(input)`.
    */
-  static calculate(input: EOSBCalculationInput): EOSBCalculationResult {
+  static calculate(
+    input: EOSBCalculationInput,
+    override?: GratuityFormulaOverride
+  ): EOSBCalculationResult {
     const { countryCode, joiningDate, lastWorkingDate, basicSalary, terminationType } = input;
 
     // Calculate service duration
@@ -49,10 +72,10 @@ export class EOSBService {
 
     switch (countryCode) {
       case 'AE':
-        result = this.calculateUAE(input, serviceDuration, dailyRate);
+        result = this.calculateUAE(input, serviceDuration, dailyRate, override);
         break;
       case 'SA':
-        result = this.calculateKSA(input, serviceDuration, dailyRate);
+        result = this.calculateKSA(input, serviceDuration, dailyRate, override);
         break;
       case 'BH':
         result = this.calculateBahrain(input, serviceDuration, dailyRate);
@@ -77,9 +100,39 @@ export class EOSBService {
   }
 
   /**
+   * Async, rule-engine-aware variant of `calculate`.
+   *
+   * Resolves `GRATUITY_FORMULA` from the active country rule pack
+   * (EPIC-02 / EPIC-36) and overrides the hardcoded gratuity days,
+   * breakpoint, and cap. Falls back to the hardcoded country defaults
+   * for any field the rule pack does not specify, and for any country
+   * not yet wired (BH, QA, OM, KW, IN). Errors talking to the rule
+   * engine are logged and the calculation proceeds with hardcoded
+   * defaults — never blocks a final-settlement run because the rule
+   * service is down.
+   *
+   * This closes EPIC-02 Pattern 1 (audit 2026-06-17): "rule engine no
+   * service consumes" for the EOSB code path. The same shape applies
+   * to WPS / GOSI / GPSSA / Emiratisation.
+   */
+  static async calculateWithRulePack(input: EOSBCalculationInput): Promise<EOSBCalculationResult> {
+    const override = await resolveRuleObject<GratuityFormulaOverride>(
+      input.countryCode,
+      'EOSB',
+      'GRATUITY_FORMULA',
+      {},
+      { source: 'eosb.calculateWithRulePack' }
+    );
+    return this.calculate(input, override);
+  }
+
+  /**
    * Calculate service duration between two dates
    */
-  private static calculateServiceDuration(startDate: Date, endDate: Date): {
+  private static calculateServiceDuration(
+    startDate: Date,
+    endDate: Date
+  ): {
     years: number;
     months: number;
     days: number;
@@ -117,27 +170,38 @@ export class EOSBService {
   /**
    * UAE EOSB Calculation
    * Based on Federal Decree-Law No. 33 of 2021
+   *
+   * Hardcoded country defaults (21 days / 30 days / 5y breakpoint /
+   * 2y cap) are used when no `override` is passed. The override
+   * shape comes from the EOSB.GRATUITY_FORMULA rule when callers use
+   * `calculateWithRulePack`.
    */
   private static calculateUAE(
     input: EOSBCalculationInput,
     duration: ReturnType<typeof EOSBService.calculateServiceDuration>,
-    dailyRate: number
+    dailyRate: number,
+    override?: GratuityFormulaOverride
   ): EOSBCalculationResult {
     const { employeeId, countryCode, basicSalary, terminationType } = input;
     const years = duration.fractionalYears;
 
-    // First 5 years: 21 days per year
-    const firstPeriodYears = Math.min(years, 5);
-    const firstPeriodAmount = firstPeriodYears * 21 * dailyRate;
+    const firstDays = override?.firstPeriodDaysPerYear ?? 21;
+    const secondDays = override?.secondPeriodDaysPerYear ?? 30;
+    const breakpoint = override?.breakpointYears ?? 5;
+    const capYears = override?.capYears ?? 2;
 
-    // After 5 years: 30 days per year
-    const secondPeriodYears = Math.max(0, years - 5);
-    const secondPeriodAmount = secondPeriodYears * 30 * dailyRate;
+    // First slice (default ≤ 5 years): `firstDays` per year
+    const firstPeriodYears = Math.min(years, breakpoint);
+    const firstPeriodAmount = firstPeriodYears * firstDays * dailyRate;
+
+    // Second slice (default > 5 years): `secondDays` per year
+    const secondPeriodYears = Math.max(0, years - breakpoint);
+    const secondPeriodAmount = secondPeriodYears * secondDays * dailyRate;
 
     let grossAmount = firstPeriodAmount + secondPeriodAmount;
 
-    // Cap at 2 years salary
-    const maxGratuity = basicSalary * 24;
+    // Cap at `capYears` years salary (default 2)
+    const maxGratuity = basicSalary * capYears * 12;
     grossAmount = Math.min(grossAmount, maxGratuity);
 
     // Resignation factor
@@ -163,8 +227,8 @@ export class EOSBService {
     }
 
     if (grossAmount >= maxGratuity) {
-      notes.push('Gratuity capped at 2 years salary');
-      notesAr.push('تم تحديد سقف المكافأة بما يعادل راتب سنتين');
+      notes.push(`Gratuity capped at ${capYears} year${capYears === 1 ? '' : 's'} salary`);
+      notesAr.push('تم تحديد سقف المكافأة');
     }
 
     return {
@@ -177,10 +241,10 @@ export class EOSBService {
       basicSalary,
       dailyRate,
       firstPeriodYears,
-      firstPeriodDays: Math.round(firstPeriodYears * 21),
+      firstPeriodDays: Math.round(firstPeriodYears * firstDays),
       firstPeriodAmount,
       secondPeriodYears,
-      secondPeriodDays: Math.round(secondPeriodYears * 30),
+      secondPeriodDays: Math.round(secondPeriodYears * secondDays),
       secondPeriodAmount,
       grossAmount,
       terminationType,
@@ -190,7 +254,7 @@ export class EOSBService {
       netAmount,
       calculationDetails: {
         law: 'UAE Federal Decree-Law No. 33 of 2021',
-        formula: '(Years ≤ 5) × 21 days × Daily Rate + (Years > 5) × 30 days × Daily Rate',
+        formula: `(Years ≤ ${breakpoint}) × ${firstDays} days × Daily Rate + (Years > ${breakpoint}) × ${secondDays} days × Daily Rate`,
         notes,
         notesAr,
       },
@@ -199,23 +263,33 @@ export class EOSBService {
 
   /**
    * KSA EOSB Calculation
-   * Based on Saudi Labour Law
+   * Based on Saudi Labour Law.
+   *
+   * Hardcoded country defaults (15 days / 30 days / 5y breakpoint)
+   * apply when no `override` is passed. The override shape comes from
+   * the EOSB.GRATUITY_FORMULA rule when callers use
+   * `calculateWithRulePack`.
    */
   private static calculateKSA(
     input: EOSBCalculationInput,
     duration: ReturnType<typeof EOSBService.calculateServiceDuration>,
-    dailyRate: number
+    dailyRate: number,
+    override?: GratuityFormulaOverride
   ): EOSBCalculationResult {
     const { employeeId, countryCode, basicSalary, terminationType } = input;
     const years = duration.fractionalYears;
 
-    // First 5 years: Half month (15 days) per year
-    const firstPeriodYears = Math.min(years, 5);
-    const firstPeriodAmount = firstPeriodYears * 15 * dailyRate;
+    const firstDays = override?.firstPeriodDaysPerYear ?? 15;
+    const secondDays = override?.secondPeriodDaysPerYear ?? 30;
+    const breakpoint = override?.breakpointYears ?? 5;
 
-    // After 5 years: Full month (30 days) per year
-    const secondPeriodYears = Math.max(0, years - 5);
-    const secondPeriodAmount = secondPeriodYears * 30 * dailyRate;
+    // First slice (default ≤ 5 years): `firstDays` per year (half month default)
+    const firstPeriodYears = Math.min(years, breakpoint);
+    const firstPeriodAmount = firstPeriodYears * firstDays * dailyRate;
+
+    // Second slice (default > 5 years): `secondDays` per year (full month default)
+    const secondPeriodYears = Math.max(0, years - breakpoint);
+    const secondPeriodAmount = secondPeriodYears * secondDays * dailyRate;
 
     const grossAmount = firstPeriodAmount + secondPeriodAmount;
 
@@ -258,10 +332,10 @@ export class EOSBService {
       basicSalary,
       dailyRate,
       firstPeriodYears,
-      firstPeriodDays: Math.round(firstPeriodYears * 15),
+      firstPeriodDays: Math.round(firstPeriodYears * firstDays),
       firstPeriodAmount,
       secondPeriodYears,
-      secondPeriodDays: Math.round(secondPeriodYears * 30),
+      secondPeriodDays: Math.round(secondPeriodYears * secondDays),
       secondPeriodAmount,
       grossAmount,
       terminationType,
@@ -271,7 +345,7 @@ export class EOSBService {
       netAmount,
       calculationDetails: {
         law: 'Saudi Labour Law (Royal Decree No. M/51)',
-        formula: '(Years ≤ 5) × 15 days × Daily Rate + (Years > 5) × 30 days × Daily Rate',
+        formula: `(Years ≤ ${breakpoint}) × ${firstDays} days × Daily Rate + (Years > ${breakpoint}) × ${secondDays} days × Daily Rate`,
         notes,
         notesAr,
       },
@@ -516,7 +590,10 @@ export class EOSBService {
     }
 
     // Round up to complete years (6 months or more counts as full year)
-    const years = duration.months >= 6 ? Math.ceil(duration.fractionalYears) : Math.floor(duration.fractionalYears);
+    const years =
+      duration.months >= 6
+        ? Math.ceil(duration.fractionalYears)
+        : Math.floor(duration.fractionalYears);
 
     // Formula: (15 × Last Drawn Salary × Years) / 26
     const gratuityAmount = (15 * basicSalary * years) / 26;
@@ -617,7 +694,7 @@ export class EOSBService {
     });
 
     // Project for 6, 12, 24, 36 months
-    const projections = [6, 12, 24, 36].map(months => {
+    const projections = [6, 12, 24, 36].map((months) => {
       const futureDate = new Date(today);
       futureDate.setMonth(futureDate.getMonth() + months);
 

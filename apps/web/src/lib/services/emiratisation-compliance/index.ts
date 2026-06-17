@@ -18,6 +18,7 @@
  */
 
 import { prisma } from '@aura/database';
+import { resolveRuleObject } from '../gcc-rule-library/rule-value.helper';
 
 export interface AuthContext {
   tenantId: string;
@@ -27,13 +28,55 @@ export interface AuthContext {
 export type Checkpoint = 'MID_YEAR' | 'YEAR_END';
 export type RagStatus = 'GREEN' | 'AMBER' | 'RED';
 
+/**
+ * Hardcoded fallbacks for the UAE EMIRATISATION_PRIVATE_TARGET rule. The
+ * canonical values live in the country rule pack (EPIC-02 / EPIC-36)
+ * and are resolved at runtime by `EmiratisationConfigService.getDefaults()`
+ * — these constants are only used when no active rule pack is seeded
+ * for UAE. Keep them in sync with rule-pack-seeds.ts so historical
+ * behaviour is preserved.
+ */
 const APPLICABILITY_THRESHOLD = 50;
 const DEFAULT_HALF_YEAR_TARGET_PCT = 2;
 const DEFAULT_YEAR_END_TARGET_PCT = 4;
 const DEFAULT_FINE_PER_HIRE = 7000;
 const FAKE_RISK_THRESHOLD = 50;
 
+interface EmiratisationDefaults {
+  /** Skilled workforce headcount threshold above which Emiratisation applies. */
+  appliesAt: number;
+  /** Mid-year hire target as % of skilled workforce. */
+  halfYearTargetPct: number;
+  /** Year-end hire target as % of skilled workforce. */
+  yearEndTargetPct: number;
+  /** Fine per missed Emiratisation hire (AED). */
+  finePerMissedHire: number;
+}
+
+const HARDCODED_DEFAULTS: EmiratisationDefaults = {
+  appliesAt: APPLICABILITY_THRESHOLD,
+  halfYearTargetPct: DEFAULT_HALF_YEAR_TARGET_PCT,
+  yearEndTargetPct: DEFAULT_YEAR_END_TARGET_PCT,
+  finePerMissedHire: DEFAULT_FINE_PER_HIRE,
+};
+
 export class EmiratisationConfigService {
+  /**
+   * Resolve the canonical Emiratisation defaults from the active UAE
+   * rule pack (EPIC-02 / EPIC-36). Any field not present in the rule
+   * pack falls back to the hardcoded constant — historical behaviour
+   * is preserved for tenants without a seeded UAE rule pack.
+   */
+  async getDefaults(): Promise<EmiratisationDefaults> {
+    return resolveRuleObject<EmiratisationDefaults>(
+      'AE',
+      'NATIONALIZATION',
+      'EMIRATISATION_PRIVATE_TARGET',
+      HARDCODED_DEFAULTS,
+      { source: 'emiratisation.getDefaults' }
+    );
+  }
+
   async upsertConfig(
     input: {
       legalEntityId?: string;
@@ -43,6 +86,7 @@ export class EmiratisationConfigService {
     },
     auth: AuthContext
   ) {
+    const { appliesAt } = await this.getDefaults();
     return (prisma as any).emiratisationConfig.upsert({
       where: {
         aura_emiratisation_config_unique: {
@@ -54,7 +98,7 @@ export class EmiratisationConfigService {
         establishmentName: input.establishmentName,
         skilledWorkforceCount: input.skilledWorkforceCount,
         sector: input.sector,
-        isInScope: input.skilledWorkforceCount >= APPLICABILITY_THRESHOLD,
+        isInScope: input.skilledWorkforceCount >= appliesAt,
       },
       create: {
         tenantId: auth.tenantId,
@@ -62,14 +106,26 @@ export class EmiratisationConfigService {
         establishmentName: input.establishmentName,
         skilledWorkforceCount: input.skilledWorkforceCount,
         sector: input.sector,
-        isInScope: input.skilledWorkforceCount >= APPLICABILITY_THRESHOLD,
+        isInScope: input.skilledWorkforceCount >= appliesAt,
       },
     });
   }
 
-  /** EPIC-16-S02: applicability check. */
+  /**
+   * EPIC-16-S02: applicability check.
+   *
+   * Synchronous variant uses the hardcoded threshold (50) — kept for
+   * callers that cannot await (e.g. snapshot rendering helpers).
+   * For rule-engine-driven behaviour use `isApplicableAsync`.
+   */
   isApplicable(skilledWorkforceCount: number) {
     return skilledWorkforceCount >= APPLICABILITY_THRESHOLD;
+  }
+
+  /** Rule-engine-aware applicability check (preferred). */
+  async isApplicableAsync(skilledWorkforceCount: number) {
+    const { appliesAt } = await this.getDefaults();
+    return skilledWorkforceCount >= appliesAt;
   }
 
   async listConfigs(tenantId: string) {
@@ -89,6 +145,7 @@ export class EmiratisationConfigService {
     },
     auth: AuthContext
   ) {
+    const defaults = await this.getDefaults();
     return (prisma as any).emiratisationTarget.upsert({
       where: {
         aura_emiratisation_target_unique: {
@@ -98,17 +155,17 @@ export class EmiratisationConfigService {
         },
       },
       update: {
-        halfYearTargetPct: input.halfYearTargetPct ?? DEFAULT_HALF_YEAR_TARGET_PCT,
-        yearEndTargetPct: input.yearEndTargetPct ?? DEFAULT_YEAR_END_TARGET_PCT,
-        finePerMissedHire: input.finePerMissedHire ?? DEFAULT_FINE_PER_HIRE,
+        halfYearTargetPct: input.halfYearTargetPct ?? defaults.halfYearTargetPct,
+        yearEndTargetPct: input.yearEndTargetPct ?? defaults.yearEndTargetPct,
+        finePerMissedHire: input.finePerMissedHire ?? defaults.finePerMissedHire,
       },
       create: {
         tenantId: auth.tenantId,
         legalEntityId: input.legalEntityId ?? null,
         year: input.year,
-        halfYearTargetPct: input.halfYearTargetPct ?? DEFAULT_HALF_YEAR_TARGET_PCT,
-        yearEndTargetPct: input.yearEndTargetPct ?? DEFAULT_YEAR_END_TARGET_PCT,
-        finePerMissedHire: input.finePerMissedHire ?? DEFAULT_FINE_PER_HIRE,
+        halfYearTargetPct: input.halfYearTargetPct ?? defaults.halfYearTargetPct,
+        yearEndTargetPct: input.yearEndTargetPct ?? defaults.yearEndTargetPct,
+        finePerMissedHire: input.finePerMissedHire ?? defaults.finePerMissedHire,
         effectiveFrom: new Date(input.year, 0, 1),
         createdBy: auth.userId,
       },
