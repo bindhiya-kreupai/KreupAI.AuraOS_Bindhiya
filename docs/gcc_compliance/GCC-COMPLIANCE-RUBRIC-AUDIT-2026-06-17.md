@@ -427,6 +427,18 @@ Pattern 3 (Pattern 8 consumer-wiring, Pattern 3 helper-seeding) shipped together
 
 **Pattern 8 status:** structurally **closed**. Both rule-engine consumers (red-flags) and formula-engine consumers (KPI compute) call the DSL evaluator on the stored TEXT.
 
+### 2026-06-17 — Pattern 3 (pagination) bulk-adoption rounds 2 & 3 (commits `d00560ed`, `<latest>`)
+
+Round 2 (commit `d00560ed`): GOSI / WPS / Bahrainization — 6 list endpoints (calculation.listContributions, registration.list, reconciliation/variance.list, wpsException.list, wpsException.listDelayFlags, bahrainizationHire.list) plus matching routes.
+
+Round 3 (commit `<latest>`): Holidays / Separation — 6 list endpoints (holidayWorkApproval.list, holidayCompOff.list, separationCase.list, separationClearance.list, separationHandover.list, separationExitInterview.list) plus matching routes.
+
+**Cumulative Pattern-3 adoption:** 15 of ~20 hardcoded-`take: 500` list endpoints now go through `normalisePaging` + `prismaPageArgs` + `buildPaginatedResult` and emit `{items, total, page, pageSize, hasNextPage}`. All adopters accept `?page=&pageSize=` query params, default to `pageSize=50`, and clamp at `MAX_PAGE_SIZE=500`. Routes that previously returned a bare array now return the standard list envelope — frontend callers reading `.length` need a one-line change to `.items.length`.
+
+**Pattern 3 status:** majority closed (15 / ~20 = 75%). Remaining: a handful of low-traffic endpoints in `hrms-config`, `hse-compliance`, `hse-visa-extensions`, `workforce-extensions`, `accommodation-compliance`, `payroll-compliance`, `talent-acquisition-compliance`, `hr-policies-compliance`, `structural-extensions`. None block any EPIC sign-off; cleanup-class follow-ups.
+
+**Test regression (full `src/lib/services` sweep): 2320 passing / 47 failing — all 47 failures pre-existing and unrelated to this work** (confirmed by sampling the same test files on the pre-stash baseline). The 8 failing files (executive-compliance, hr-forms-compliance, hrms-config-workspaces, organization/cost-center, organization/department, payroll, etc.) need a separate cleanup pass.
+
 ---
 
 _Audit completed 2026-06-17. 38 EPICs audited via parallel `Explore` subagents. Findings sourced from `packages/@aura/database/prisma/schema.prisma`, `apps/web/src/lib/services/`, `apps/web/src/app/api/v1/`, `apps/web/src/app/dashboard/`, `apps/web/src/lib/services/__tests__/`._

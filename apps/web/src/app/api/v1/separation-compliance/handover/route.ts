@@ -14,19 +14,31 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
   try {
     const url = new URL(req.url);
     const resource = url.searchParams.get('resource') ?? 'handover';
+    const paging = {
+      page: Number(url.searchParams.get('page') ?? '1'),
+      pageSize: Number(url.searchParams.get('pageSize') ?? '50'),
+    };
     if (resource === 'exit-interview') {
       return ok(
-        await separationExitInterviewService.list(ctx.user.tenantId, {
-          caseId: url.searchParams.get('caseId') ?? undefined,
-          status: url.searchParams.get('status') ?? undefined,
-        })
+        await separationExitInterviewService.list(
+          ctx.user.tenantId,
+          {
+            caseId: url.searchParams.get('caseId') ?? undefined,
+            status: url.searchParams.get('status') ?? undefined,
+          },
+          paging
+        )
       );
     }
     return ok(
-      await separationHandoverService.list(ctx.user.tenantId, {
-        caseId: url.searchParams.get('caseId') ?? undefined,
-        status: url.searchParams.get('status') ?? undefined,
-      })
+      await separationHandoverService.list(
+        ctx.user.tenantId,
+        {
+          caseId: url.searchParams.get('caseId') ?? undefined,
+          status: url.searchParams.get('status') ?? undefined,
+        },
+        paging
+      )
     );
   } catch (err) {
     return serverError('Failed to list handover/exit-interview', err);
