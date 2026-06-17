@@ -20,20 +20,21 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
     const period =
       url.searchParams.get('period') ??
       `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
-    const [controls, findings, risks, certs, controlsOverdue] = await Promise.all([
-      payrollGovernanceService.list(tenantId),
-      payrollAuditFindingService.list(tenantId, { period }),
-      payrollRiskService.list(tenantId, { status: 'OPEN' }),
+    const [controlsRes, findingsRes, risksRes, certs, controlsOverdue] = await Promise.all([
+      payrollGovernanceService.list(tenantId, {}, { page: 1, pageSize: 500 }),
+      payrollAuditFindingService.list(tenantId, { period }, { page: 1, pageSize: 500 }),
+      payrollRiskService.list(tenantId, { status: 'OPEN' }, { page: 1, pageSize: 500 }),
       payrollComplianceCertificateService.list(tenantId),
       payrollGovernanceService.overdueCount(tenantId),
     ]);
-    const findingsBySev = (findings as Array<{ severity: string; status: string }>).reduce<
-      Record<string, number>
-    >((acc, f) => {
+    const controls = controlsRes.items as Array<unknown>;
+    const findings = findingsRes.items as Array<{ severity: string; status: string }>;
+    const risks = risksRes.items as Array<{ band: string }>;
+    const findingsBySev = findings.reduce<Record<string, number>>((acc, f) => {
       if (f.status !== 'OPEN') return acc;
       return { ...acc, [f.severity]: (acc[f.severity] ?? 0) + 1 };
     }, {});
-    const risksByBand = (risks as Array<{ band: string }>).reduce<Record<string, number>>(
+    const risksByBand = risks.reduce<Record<string, number>>(
       (acc, r) => ({ ...acc, [r.band]: (acc[r.band] ?? 0) + 1 }),
       {}
     );

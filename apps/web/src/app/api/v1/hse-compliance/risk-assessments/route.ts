@@ -11,10 +11,17 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
     const url = new URL(req.url);
     const min = url.searchParams.get('minResidualRisk');
     return ok(
-      await hseRiskService.list(ctx.user.tenantId, {
-        status: url.searchParams.get('status') ?? undefined,
-        minResidualRisk: min ? Number(min) : undefined,
-      })
+      await hseRiskService.list(
+        ctx.user.tenantId,
+        {
+          status: url.searchParams.get('status') ?? undefined,
+          minResidualRisk: min ? Number(min) : undefined,
+        },
+        {
+          page: Number(url.searchParams.get('page') ?? '1'),
+          pageSize: Number(url.searchParams.get('pageSize') ?? '50'),
+        }
+      )
     );
   } catch (err) {
     return serverError('Failed to list risk assessments', err);

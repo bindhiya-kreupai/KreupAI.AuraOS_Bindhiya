@@ -23,6 +23,13 @@
  */
 
 import { prisma } from '@aura/database';
+import {
+  normalisePaging,
+  prismaPageArgs,
+  buildPaginatedResult,
+  type PaginationInput,
+  type PaginatedResult,
+} from '@/lib/services/pagination';
 
 export interface AuthContext {
   tenantId: string;
@@ -140,17 +147,27 @@ class PayrollGovernanceService {
     });
   }
 
-  async list(tenantId: string, filter: { category?: string; country?: string } = {}) {
-    return (prisma as any).payrollGovernanceControl.findMany({
-      where: {
-        tenantId,
-        status: 'ACTIVE',
-        ...(filter.category ? { category: filter.category } : {}),
-        ...(filter.country ? { country: filter.country } : {}),
-      },
-      orderBy: [{ category: 'asc' }, { controlCode: 'asc' }],
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { category?: string; country?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      status: 'ACTIVE',
+      ...(filter.category ? { category: filter.category } : {}),
+      ...(filter.country ? { country: filter.country } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).payrollGovernanceControl.findMany({
+        where,
+        orderBy: [{ category: 'asc' }, { controlCode: 'asc' }],
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).payrollGovernanceControl.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 
   /** Count controls past their review cadence (≥ 35 days since lastReviewedAt). */
@@ -219,18 +236,25 @@ class PayrollAuditFindingService {
 
   async list(
     tenantId: string,
-    filter: { period?: string; status?: string; severity?: string } = {}
-  ) {
-    return (prisma as any).payrollAuditFinding.findMany({
-      where: {
-        tenantId,
-        ...(filter.period ? { period: filter.period } : {}),
-        ...(filter.status ? { status: filter.status } : {}),
-        ...(filter.severity ? { severity: filter.severity } : {}),
-      },
-      orderBy: { createdAt: 'desc' },
-      take: 500,
-    });
+    filter: { period?: string; status?: string; severity?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.period ? { period: filter.period } : {}),
+      ...(filter.status ? { status: filter.status } : {}),
+      ...(filter.severity ? { severity: filter.severity } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).payrollAuditFinding.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).payrollAuditFinding.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 }
 
@@ -272,16 +296,26 @@ class PayrollRiskService {
     });
   }
 
-  async list(tenantId: string, filter: { status?: string; band?: string } = {}) {
-    return (prisma as any).payrollRiskEntry.findMany({
-      where: {
-        tenantId,
-        ...(filter.status ? { status: filter.status } : {}),
-        ...(filter.band ? { band: filter.band } : {}),
-      },
-      orderBy: { score: 'desc' },
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { status?: string; band?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.status ? { status: filter.status } : {}),
+      ...(filter.band ? { band: filter.band } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).payrollRiskEntry.findMany({
+        where,
+        orderBy: { score: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).payrollRiskEntry.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 }
 
