@@ -12625,3 +12625,115 @@ model HolidayCertificate {
   @@unique([tenantId, period], map: "aura_holiday_certificate_unique")
   @@map("aura_holiday_certificate")
 }
+
+model AccommodationSite {
+  id                String    @id(map: "aura_accommodation_site_pkey") @default(uuid())
+  tenantId          String
+  name              String
+  siteType          String
+  country           String
+  address           String?
+  totalCapacity     Int       @default(0)
+  currentOccupancy  Int       @default(0)
+  managerId         String?
+  contractorId      String?
+  femaleOnly        Boolean   @default(false)
+  familyAllowed     Boolean   @default(false)
+  lastInspectionAt  DateTime?
+  nextInspectionAt  DateTime?
+  status            String    @default("ACTIVE")
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@index([tenantId], map: "aura_accommodation_site_tenant")
+  @@map("aura_accommodation_site")
+}
+
+model AccommodationAssignment {
+  id               String    @id(map: "aura_accommodation_assignment_pkey") @default(uuid())
+  tenantId         String
+  siteId           String
+  employeeId       String
+  roomNumber       String?
+  bedNumber        String?
+  checkInAt        DateTime
+  checkOutAt       DateTime?
+  status           String    @default("ACTIVE")
+  monthlyAllowance Decimal?  @db.Decimal(12, 2)
+  currency         String    @default("AED")
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([tenantId, siteId], map: "aura_accommodation_assignment_site")
+  @@index([tenantId, employeeId], map: "aura_accommodation_assignment_employee")
+  @@map("aura_accommodation_assignment")
+}
+
+model AccommodationInspection {
+  id               String    @id(map: "aura_accommodation_inspection_pkey") @default(uuid())
+  tenantId         String
+  siteId           String
+  inspectionDate   DateTime
+  inspectorId      String?
+  category         String
+  score            Int       @default(0)
+  criticalFindings Int       @default(0)
+  majorFindings    Int       @default(0)
+  minorFindings    Int       @default(0)
+  findingsJson     Json      @default("[]")
+  status           String    @default("OPEN")
+  closedAt         DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@index([tenantId, siteId], map: "aura_accommodation_inspection_site")
+  @@map("aura_accommodation_inspection")
+}
+
+model AccommodationComplaint {
+  id              String    @id(map: "aura_accommodation_complaint_pkey") @default(uuid())
+  tenantId        String
+  siteId          String
+  employeeId      String?
+  category        String
+  severity        String    @default("MEDIUM")
+  subject         String
+  description     String?
+  raisedAt        DateTime  @default(now())
+  raisedBy        String?
+  assigneeId      String?
+  slaHours        Int       @default(48)
+  status          String    @default("OPEN")
+  resolvedAt      DateTime?
+  resolvedBy      String?
+  resolutionNotes String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([tenantId, siteId], map: "aura_accommodation_complaint_site")
+  @@map("aura_accommodation_complaint")
+}
+
+model AccommodationCertificate {
+  id                     String    @id(map: "aura_accommodation_certificate_pkey") @default(uuid())
+  tenantId               String
+  period                 String
+  status                 String    @default("DRAFT")
+  sitesTotal             Int       @default(0)
+  sitesOvercapacity      Int       @default(0)
+  inspectionsDue         Int       @default(0)
+  openCriticalFindings   Int       @default(0)
+  openComplaints         Int       @default(0)
+  complaintsSlaBreached  Int       @default(0)
+  averageInspectionScore Decimal   @default(0) @db.Decimal(5, 2)
+  gatingReason           String?
+  attestationsJson       Json      @default("[]")
+  generatedAt            DateTime?
+  signedAt               DateTime?
+  signedBy               String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  @@unique([tenantId, period], map: "aura_accommodation_certificate_unique")
+  @@map("aura_accommodation_certificate")
+}

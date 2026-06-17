@@ -504,6 +504,19 @@ export const superAdminMenu: MenuDefinition = {
                         'Monthly Compliance Certificate',
                     ],
                 },
+                {
+                    code: 'ACCOMMODATION_COMPLIANCE',
+                    label: 'Accommodation & Labour Camps',
+                    icon: 'benefits',
+                    path: '/dashboard/accommodation-compliance',
+                    features: [
+                        'Site Master (DORMITORY / LABOUR_CAMP / VILLA)',
+                        'Assignment Register (capacity gated)',
+                        'Inspection Register (CRITICAL/MAJOR/MINOR findings)',
+                        'Complaint Register (48h default SLA)',
+                        'Monthly Compliance Certificate',
+                    ],
+                },
             ],
         },
         {
