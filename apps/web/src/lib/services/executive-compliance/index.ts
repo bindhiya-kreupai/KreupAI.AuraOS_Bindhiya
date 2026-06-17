@@ -51,6 +51,11 @@ export const DOMAIN_INVENTORY: DomainConfig[] = [
   { domain: 'SEPARATION', model: 'separationCertificate', label: 'Separation' },
   { domain: 'EOSB', model: 'eosbCertificate', label: 'EOSB' },
   { domain: 'VISA_EXIT', model: 'visaExitCertificate', label: 'Visa / Immigration Exit' },
+  {
+    domain: 'IMMIGRATION',
+    model: 'immigrationComplianceCertificate',
+    label: 'Immigration & Work Authorization',
+  },
   { domain: 'DOCUMENT_RETENTION', model: 'docComplianceCertificate', label: 'Document Retention' },
   { domain: 'HR_POLICIES', model: 'hrPolicyCertificate', label: 'HR Policies' },
   { domain: 'HR_FORMS', model: 'hrFormCertificate', label: 'HR Forms' },

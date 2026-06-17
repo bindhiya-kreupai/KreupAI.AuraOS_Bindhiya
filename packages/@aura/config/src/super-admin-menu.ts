@@ -630,6 +630,19 @@ export const superAdminMenu: MenuDefinition = {
                         'Monthly TA Compliance Certificate',
                     ],
                 },
+                {
+                    code: 'IMMIGRATION_COMPLIANCE',
+                    label: 'Immigration & Work Authorization',
+                    icon: 'passport',
+                    path: '/dashboard/immigration-compliance',
+                    features: [
+                        'Country Authorization Matrix (MOHRE/ICP/GDRFA/MHRSD/Qiwa/LMRA/PAM)',
+                        'Renewal Alert Ladder (60/30/7-day + EXPIRED)',
+                        'Transfer & Mobility Cases (REQUESTED → APPROVED → COMPLETED)',
+                        'Immigration Audit Checklist & Risk Register',
+                        'Monthly Compliance Certificate',
+                    ],
+                },
             ],
         },
         {

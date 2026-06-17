@@ -1,27 +1,59 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuites name="vitest tests" tests="11" failures="0" errors="0" time="0.006621541">
-    <testsuite name="src/lib/services/__tests__/talent-acquisition-compliance.service.test.ts" timestamp="2026-06-17T09:42:42.060Z" hostname="MacBookPro-2.lan" tests="11" failures="0" errors="0" skipped="0" time="0.006621541">
-        <testcase classname="src/lib/services/__tests__/talent-acquisition-compliance.service.test.ts" name="riskBand &gt; maps to bands" time="0.000942667">
+<testsuites name="vitest tests" tests="27" failures="0" errors="0" time="0.013488083">
+    <testsuite name="src/lib/services/__tests__/immigration-compliance.service.test.ts" timestamp="2026-06-17T10:50:40.414Z" hostname="MacBookPro-2.lan" tests="27" failures="0" errors="0" skipped="0" time="0.013488083">
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="alertWindow ladder &gt; returns EXPIRED for negative days" time="0.001102083">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/talent-acquisition-compliance.service.test.ts" name="taGatingReason &gt; null when clean" time="0.00019625">
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="alertWindow ladder &gt; returns WINDOW_7 inside 7 days" time="0.000376542">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/talent-acquisition-compliance.service.test.ts" name="taGatingReason &gt; gates when any signal is non-zero" time="0.000348584">
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="alertWindow ladder &gt; returns WINDOW_30 between 8 and 30 days" time="0.000325834">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/talent-acquisition-compliance.service.test.ts" name="taAuditChecklistService.overdueCount &gt; flags items &gt; 35 days" time="0.000272625">
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="alertWindow ladder &gt; returns WINDOW_60 between 31 and 60 days" time="0.000348125">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/talent-acquisition-compliance.service.test.ts" name="taAuditChecklistService.stageBreakdown &gt; groups by stage and counts PASS/FAIL/OBSERVATION/unchecked" time="0.000829791">
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="alertWindow ladder &gt; returns null beyond 60 days" time="0.00022325">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/talent-acquisition-compliance.service.test.ts" name="taRiskService.upsert &gt; clamps L/I and derives score+band" time="0.000224958">
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="daysToExpiry &gt; returns integer day difference" time="0.000207">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/talent-acquisition-compliance.service.test.ts" name="taComplianceCertificateService &gt; refuses to sign while gated" time="0.000804167">
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="daysToExpiry &gt; returns negative for past dates" time="0.00025325">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/talent-acquisition-compliance.service.test.ts" name="taComplianceCertificateService &gt; signs when clean" time="0.000204291">
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="riskBand &gt; bands 1..25" time="0.00031125">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/talent-acquisition-compliance.service.test.ts" name="taComplianceCertificateService &gt; generate writes stage breakdown into the certificate" time="0.000417708">
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="immigrationGatingReason &gt; returns null when clean" time="0.000426792">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/talent-acquisition-compliance.service.test.ts" name="TA_COMPLIANCE_CONSTANTS &gt; covers all 5 lifecycle stages" time="0.000242875">
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="immigrationGatingReason &gt; gates on expired + 7d window + overdue transfers" time="0.000283916">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/talent-acquisition-compliance.service.test.ts" name="TA_COMPLIANCE_CONSTANTS &gt; covers EPIC-03/04/05 categories" time="0.000531083">
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="immigrationGatingReason &gt; gates on checklist + risk signals" time="0.000215959">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="renewalAlertService.raise &gt; skips when document is beyond 60-day window" time="0.000351958">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="renewalAlertService.raise &gt; writes EXPIRED window for past expiry" time="0.000301667">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="renewalAlertService.raise &gt; writes WINDOW_7 for expiry within 7 days" time="0.000405">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="renewalAlertService.raise &gt; is idempotent — upsert keyed by (subject, document, expiresAt, window)" time="0.000696833">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="renewalAlertService.openCountsByWindow &gt; counts only OPEN alerts grouped by window" time="0.000360208">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="transferCaseService.complete &gt; refuses to complete from REQUESTED (must be APPROVED)" time="0.000827666">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="transferCaseService.complete &gt; refuses cross-tenant" time="0.000330625">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="transferCaseService.complete &gt; completes from APPROVED" time="0.000251917">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="transferCaseService.openOverdueCount &gt; flags cases older than 60 days from requestedAt" time="0.000271083">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="immigrationAuditChecklistService.overdueCount &gt; flags items &gt; 35 days since review" time="0.000308">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="immigrationRiskService.upsert &gt; clamps L/I and derives score+band" time="0.000631334">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="immigrationComplianceCertificateService &gt; refuses to sign while gated" time="0.000646292">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="immigrationComplianceCertificateService &gt; signs when clean" time="0.000350875">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="immigrationComplianceCertificateService &gt; generate gates when expired + 7d alerts present" time="0.000765792">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="IMMIGRATION_COMPLIANCE_CONSTANTS &gt; covers all 6 GCC countries" time="0.000304125">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="IMMIGRATION_COMPLIANCE_CONSTANTS &gt; covers entry/work/residence/dependent visa categories" time="0.000738125">
         </testcase>
     </testsuite>
 </testsuites>

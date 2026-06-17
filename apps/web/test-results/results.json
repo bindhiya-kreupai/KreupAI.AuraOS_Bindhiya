@@ -1,10 +1,10 @@
 {
-  "numTotalTestSuites": 8,
-  "numPassedTestSuites": 8,
+  "numTotalTestSuites": 13,
+  "numPassedTestSuites": 13,
   "numFailedTestSuites": 0,
   "numPendingTestSuites": 0,
-  "numTotalTests": 11,
-  "numPassedTests": 11,
+  "numTotalTests": 27,
+  "numPassedTests": 27,
   "numFailedTests": 0,
   "numPendingTests": 0,
   "numTodoTests": 0,
@@ -24,116 +24,260 @@
     "updated": 0,
     "didUpdate": false
   },
-  "startTime": 1781689361813,
+  "startTime": 1781693440111,
   "success": true,
   "testResults": [
     {
       "assertionResults": [
         {
+          "ancestorTitles": ["alertWindow ladder"],
+          "fullName": "alertWindow ladder returns EXPIRED for negative days",
+          "status": "passed",
+          "title": "returns EXPIRED for negative days",
+          "duration": 1.1020829999999933,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["alertWindow ladder"],
+          "fullName": "alertWindow ladder returns WINDOW_7 inside 7 days",
+          "status": "passed",
+          "title": "returns WINDOW_7 inside 7 days",
+          "duration": 0.3765419999999722,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["alertWindow ladder"],
+          "fullName": "alertWindow ladder returns WINDOW_30 between 8 and 30 days",
+          "status": "passed",
+          "title": "returns WINDOW_30 between 8 and 30 days",
+          "duration": 0.3258340000000999,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["alertWindow ladder"],
+          "fullName": "alertWindow ladder returns WINDOW_60 between 31 and 60 days",
+          "status": "passed",
+          "title": "returns WINDOW_60 between 31 and 60 days",
+          "duration": 0.3481250000000955,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["alertWindow ladder"],
+          "fullName": "alertWindow ladder returns null beyond 60 days",
+          "status": "passed",
+          "title": "returns null beyond 60 days",
+          "duration": 0.22325000000000728,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["daysToExpiry"],
+          "fullName": "daysToExpiry returns integer day difference",
+          "status": "passed",
+          "title": "returns integer day difference",
+          "duration": 0.20699999999999363,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["daysToExpiry"],
+          "fullName": "daysToExpiry returns negative for past dates",
+          "status": "passed",
+          "title": "returns negative for past dates",
+          "duration": 0.2532500000000937,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
           "ancestorTitles": ["riskBand"],
-          "fullName": "riskBand maps to bands",
+          "fullName": "riskBand bands 1..25",
           "status": "passed",
-          "title": "maps to bands",
-          "duration": 0.9426670000000286,
+          "title": "bands 1..25",
+          "duration": 0.3112499999999727,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["taGatingReason"],
-          "fullName": "taGatingReason null when clean",
+          "ancestorTitles": ["immigrationGatingReason"],
+          "fullName": "immigrationGatingReason returns null when clean",
           "status": "passed",
-          "title": "null when clean",
-          "duration": 0.19624999999996362,
+          "title": "returns null when clean",
+          "duration": 0.4267920000000913,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["taGatingReason"],
-          "fullName": "taGatingReason gates when any signal is non-zero",
+          "ancestorTitles": ["immigrationGatingReason"],
+          "fullName": "immigrationGatingReason gates on expired + 7d window + overdue transfers",
           "status": "passed",
-          "title": "gates when any signal is non-zero",
-          "duration": 0.3485840000000735,
+          "title": "gates on expired + 7d window + overdue transfers",
+          "duration": 0.2839159999999765,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["taAuditChecklistService.overdueCount"],
-          "fullName": "taAuditChecklistService.overdueCount flags items > 35 days",
+          "ancestorTitles": ["immigrationGatingReason"],
+          "fullName": "immigrationGatingReason gates on checklist + risk signals",
           "status": "passed",
-          "title": "flags items > 35 days",
-          "duration": 0.27262500000006185,
+          "title": "gates on checklist + risk signals",
+          "duration": 0.215958999999998,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["taAuditChecklistService.stageBreakdown"],
-          "fullName": "taAuditChecklistService.stageBreakdown groups by stage and counts PASS/FAIL/OBSERVATION/unchecked",
+          "ancestorTitles": ["renewalAlertService.raise"],
+          "fullName": "renewalAlertService.raise skips when document is beyond 60-day window",
           "status": "passed",
-          "title": "groups by stage and counts PASS/FAIL/OBSERVATION/unchecked",
-          "duration": 0.8297910000000002,
+          "title": "skips when document is beyond 60-day window",
+          "duration": 0.3519579999999678,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["taRiskService.upsert"],
-          "fullName": "taRiskService.upsert clamps L/I and derives score+band",
+          "ancestorTitles": ["renewalAlertService.raise"],
+          "fullName": "renewalAlertService.raise writes EXPIRED window for past expiry",
+          "status": "passed",
+          "title": "writes EXPIRED window for past expiry",
+          "duration": 0.30166699999995217,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["renewalAlertService.raise"],
+          "fullName": "renewalAlertService.raise writes WINDOW_7 for expiry within 7 days",
+          "status": "passed",
+          "title": "writes WINDOW_7 for expiry within 7 days",
+          "duration": 0.4049999999999727,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["renewalAlertService.raise"],
+          "fullName": "renewalAlertService.raise is idempotent — upsert keyed by (subject, document, expiresAt, window)",
+          "status": "passed",
+          "title": "is idempotent — upsert keyed by (subject, document, expiresAt, window)",
+          "duration": 0.6968329999999696,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["renewalAlertService.openCountsByWindow"],
+          "fullName": "renewalAlertService.openCountsByWindow counts only OPEN alerts grouped by window",
+          "status": "passed",
+          "title": "counts only OPEN alerts grouped by window",
+          "duration": 0.3602080000000569,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["transferCaseService.complete"],
+          "fullName": "transferCaseService.complete refuses to complete from REQUESTED (must be APPROVED)",
+          "status": "passed",
+          "title": "refuses to complete from REQUESTED (must be APPROVED)",
+          "duration": 0.827666000000022,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["transferCaseService.complete"],
+          "fullName": "transferCaseService.complete refuses cross-tenant",
+          "status": "passed",
+          "title": "refuses cross-tenant",
+          "duration": 0.33062500000005457,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["transferCaseService.complete"],
+          "fullName": "transferCaseService.complete completes from APPROVED",
+          "status": "passed",
+          "title": "completes from APPROVED",
+          "duration": 0.2519169999999349,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["transferCaseService.openOverdueCount"],
+          "fullName": "transferCaseService.openOverdueCount flags cases older than 60 days from requestedAt",
+          "status": "passed",
+          "title": "flags cases older than 60 days from requestedAt",
+          "duration": 0.271082999999976,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["immigrationAuditChecklistService.overdueCount"],
+          "fullName": "immigrationAuditChecklistService.overdueCount flags items > 35 days since review",
+          "status": "passed",
+          "title": "flags items > 35 days since review",
+          "duration": 0.3079999999999927,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["immigrationRiskService.upsert"],
+          "fullName": "immigrationRiskService.upsert clamps L/I and derives score+band",
           "status": "passed",
           "title": "clamps L/I and derives score+band",
-          "duration": 0.2249580000000151,
+          "duration": 0.631334000000038,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["taComplianceCertificateService"],
-          "fullName": "taComplianceCertificateService refuses to sign while gated",
+          "ancestorTitles": ["immigrationComplianceCertificateService"],
+          "fullName": "immigrationComplianceCertificateService refuses to sign while gated",
           "status": "passed",
           "title": "refuses to sign while gated",
-          "duration": 0.8041670000000067,
+          "duration": 0.6462920000000167,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["taComplianceCertificateService"],
-          "fullName": "taComplianceCertificateService signs when clean",
+          "ancestorTitles": ["immigrationComplianceCertificateService"],
+          "fullName": "immigrationComplianceCertificateService signs when clean",
           "status": "passed",
           "title": "signs when clean",
-          "duration": 0.204291000000012,
+          "duration": 0.3508749999999736,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["taComplianceCertificateService"],
-          "fullName": "taComplianceCertificateService generate writes stage breakdown into the certificate",
+          "ancestorTitles": ["immigrationComplianceCertificateService"],
+          "fullName": "immigrationComplianceCertificateService generate gates when expired + 7d alerts present",
           "status": "passed",
-          "title": "generate writes stage breakdown into the certificate",
-          "duration": 0.4177079999999478,
+          "title": "generate gates when expired + 7d alerts present",
+          "duration": 0.7657920000000331,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["TA_COMPLIANCE_CONSTANTS"],
-          "fullName": "TA_COMPLIANCE_CONSTANTS covers all 5 lifecycle stages",
+          "ancestorTitles": ["IMMIGRATION_COMPLIANCE_CONSTANTS"],
+          "fullName": "IMMIGRATION_COMPLIANCE_CONSTANTS covers all 6 GCC countries",
           "status": "passed",
-          "title": "covers all 5 lifecycle stages",
-          "duration": 0.24287500000002638,
+          "title": "covers all 6 GCC countries",
+          "duration": 0.3041249999999991,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["TA_COMPLIANCE_CONSTANTS"],
-          "fullName": "TA_COMPLIANCE_CONSTANTS covers EPIC-03/04/05 categories",
+          "ancestorTitles": ["IMMIGRATION_COMPLIANCE_CONSTANTS"],
+          "fullName": "IMMIGRATION_COMPLIANCE_CONSTANTS covers entry/work/residence/dependent visa categories",
           "status": "passed",
-          "title": "covers EPIC-03/04/05 categories",
-          "duration": 0.5310829999999669,
+          "title": "covers entry/work/residence/dependent visa categories",
+          "duration": 0.7381249999999682,
           "failureMessages": [],
           "meta": {}
         }
       ],
-      "startTime": 1781689362038,
-      "endTime": 1781689362043.531,
+      "startTime": 1781693440383,
+      "endTime": 1781693440395.738,
       "status": "passed",
       "message": "",
-      "name": "/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/lib/services/__tests__/talent-acquisition-compliance.service.test.ts"
+      "name": "/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/lib/services/__tests__/immigration-compliance.service.test.ts"
     }
   ]
 }

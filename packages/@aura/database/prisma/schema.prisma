@@ -13665,3 +13665,144 @@ model TaComplianceCertificate {
   @@unique([tenantId, period], map: "aura_ta_compliance_certificate_unique")
   @@map("aura_ta_compliance_certificate")
 }
+
+model ImmigrationAuthorizationMatrix {
+  id              String   @id(map: "aura_immigration_authorization_matrix_pkey") @default(uuid())
+  tenantId        String
+  country         String
+  documentCode    String
+  label           String
+  issuer          String?
+  appliesTo       String   @default("EMPLOYEE")
+  isMandatory     Boolean  @default(true)
+  validityMonths  Int?
+  renewalLeadDays Int      @default(60)
+  regulatorRef    String?
+  notes           String?
+  status          String   @default("ACTIVE")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([tenantId, country, documentCode, appliesTo], map: "aura_immigration_authorization_matrix_unique")
+  @@map("aura_immigration_authorization_matrix")
+}
+
+model ImmigrationRenewalAlert {
+  id             String    @id(map: "aura_immigration_renewal_alert_pkey") @default(uuid())
+  tenantId       String
+  subjectType    String    @default("EMPLOYEE")
+  subjectId      String
+  country        String
+  documentCode   String
+  permitId       String?
+  expiresAt      DateTime
+  window         String
+  raisedAt       DateTime  @default(now())
+  acknowledgedAt DateTime?
+  acknowledgedBy String?
+  renewedAt      DateTime?
+  renewedBy      String?
+  status         String    @default("OPEN")
+  notes          String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@unique([tenantId, subjectId, documentCode, expiresAt, window], map: "aura_immigration_renewal_alert_unique")
+  @@index([tenantId, status, window], map: "aura_immigration_renewal_alert_status")
+  @@map("aura_immigration_renewal_alert")
+}
+
+model ImmigrationTransferCase {
+  id           String    @id(map: "aura_immigration_transfer_case_pkey") @default(uuid())
+  tenantId     String
+  caseNumber   String
+  employeeId   String
+  transferType String
+  fromCountry  String?
+  toCountry    String?
+  fromEntity   String?
+  toEntity     String?
+  fromLocation String?
+  toLocation   String?
+  requestedAt  DateTime  @default(now())
+  approvedAt   DateTime?
+  approvedBy   String?
+  completedAt  DateTime?
+  notes        String?
+  status       String    @default("REQUESTED")
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  @@unique([tenantId, caseNumber], map: "aura_immigration_transfer_case_unique")
+  @@map("aura_immigration_transfer_case")
+}
+
+model ImmigrationAuditChecklistItem {
+  id             String    @id(map: "aura_immigration_audit_checklist_item_pkey") @default(uuid())
+  tenantId       String
+  itemCode       String
+  label          String
+  category       String
+  country        String?
+  expectation    String?
+  severity       String    @default("MEDIUM")
+  lastReviewedAt DateTime?
+  lastReviewedBy String?
+  lastResult     String?
+  notes          String?
+  status         String    @default("ACTIVE")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@unique([tenantId, itemCode], map: "aura_immigration_audit_checklist_item_unique")
+  @@map("aura_immigration_audit_checklist_item")
+}
+
+model ImmigrationRiskEntry {
+  id         String   @id(map: "aura_immigration_risk_entry_pkey") @default(uuid())
+  tenantId   String
+  riskCode   String
+  title      String
+  category   String
+  country    String?
+  likelihood Int
+  impact     Int
+  score      Int
+  band       String
+  ownerId    String?
+  mitigation String?
+  status     String   @default("OPEN")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([tenantId, riskCode], map: "aura_immigration_risk_entry_unique")
+  @@map("aura_immigration_risk_entry")
+}
+
+model ImmigrationComplianceCertificate {
+  id                   String    @id(map: "aura_immigration_compliance_certificate_pkey") @default(uuid())
+  tenantId             String
+  period               String
+  status               String    @default("DRAFT")
+  expiredDocsTotal     Int       @default(0)
+  alerts7dOpen         Int       @default(0)
+  alerts30dOpen        Int       @default(0)
+  alerts60dOpen        Int       @default(0)
+  transfersOpenOverdue Int       @default(0)
+  checklistTotal       Int       @default(0)
+  checklistFailing     Int       @default(0)
+  checklistOverdue     Int       @default(0)
+  criticalRisksOpen    Int       @default(0)
+  countriesCovered     Int       @default(0)
+  metricsJson          Json      @default("{}")
+  gatingReason         String?
+  attestationsJson     Json      @default("[]")
+  generatedAt          DateTime?
+  signedAt             DateTime?
+  signedBy             String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  @@unique([tenantId, period], map: "aura_immigration_compliance_certificate_unique")
+  @@map("aura_immigration_compliance_certificate")
+}
