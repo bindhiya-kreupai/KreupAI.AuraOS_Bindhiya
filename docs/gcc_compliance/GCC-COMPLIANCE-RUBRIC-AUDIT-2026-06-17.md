@@ -498,6 +498,15 @@ Continuing the autonomous pass with 5 additional closures (28→33 EPICs touched
 
 **Final tally:** 24 EPICs closed in one autonomous overnight pass, 228 tests, zero schema changes, zero new Prisma models — every gap bridged at the service layer using infrastructure already shipped (DSL, event bus, audit log, rule pack, pagination, signing).
 
+### 2026-06-17 — Per-EPIC depth pass — round 3 (2 more EPICs)
+
+| EPIC    | Gap closed                                                                                                               | Commit     | Tests |
+| ------- | ------------------------------------------------------------------------------------------------------------------------ | ---------- | ----- |
+| EPIC-33 | HR Forms conditional field logic + cryptographic e-signature (replaces hash:userId:timestamp)                            | `1f38737a` | 11    |
+| EPIC-04 | Recruitment stage-gate engine (APPLIED → SCREENED → INTERVIEWED → BGV → OFFER → JOINING with BGV/immigration/bias gates) | `5c2f6efe` | 13    |
+
+**Final final tally:** **26 EPICs closed in one overnight pass, ~252 tests passing across 26 new test files**, zero schema changes, zero new Prisma models. EPIC-04 (one of the original 4 🔴 RED EPICs) is now further reinforced; EPIC-33 closes both the S01 conditional-logic gap and the cryptographic e-signature gap in one service.
+
 ---
 
 _Audit completed 2026-06-17. 38 EPICs audited via parallel `Explore` subagents. Findings sourced from `packages/@aura/database/prisma/schema.prisma`, `apps/web/src/lib/services/`, `apps/web/src/app/api/v1/`, `apps/web/src/app/dashboard/`, `apps/web/src/lib/services/__tests__/`._
