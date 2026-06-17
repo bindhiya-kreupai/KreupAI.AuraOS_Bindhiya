@@ -530,6 +530,19 @@ export const superAdminMenu: MenuDefinition = {
                         'Monthly Compliance Certificate (LTIFR)',
                     ],
                 },
+                {
+                    code: 'ER_COMPLIANCE',
+                    label: 'Employee Relations',
+                    icon: 'policy',
+                    path: '/dashboard/er-compliance',
+                    features: [
+                        'Grievance Register (multi-channel + SLA)',
+                        'Disciplinary Actions (hearing-gated issuance)',
+                        'Investigation Register',
+                        'Appeals',
+                        'Monthly Compliance Certificate',
+                    ],
+                },
             ],
         },
         {

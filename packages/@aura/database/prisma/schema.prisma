@@ -12855,3 +12855,132 @@ model HseCertificate {
   @@unique([tenantId, period], map: "aura_hse_certificate_unique")
   @@map("aura_hse_certificate")
 }
+
+model ErGrievanceCase {
+  id                 String    @id(map: "aura_er_grievance_case_pkey") @default(uuid())
+  tenantId           String
+  caseNumber         String
+  channel            String
+  grievanceType      String
+  severity           String    @default("MEDIUM")
+  subject            String
+  description        String?
+  complainantId      String?
+  respondentId       String?
+  isWhistleblower    Boolean   @default(false)
+  country            String?
+  assigneeId         String?
+  raisedAt           DateTime  @default(now())
+  slaDays            Int       @default(30)
+  status             String    @default("OPEN")
+  outcome            String?
+  resolvedAt         DateTime?
+  resolvedBy         String?
+  labourAuthorityRef String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  @@unique([tenantId, caseNumber], map: "aura_er_grievance_case_unique")
+  @@index([tenantId, status], map: "aura_er_grievance_case_status")
+  @@map("aura_er_grievance_case")
+}
+
+model ErDisciplinaryAction {
+  id                  String    @id(map: "aura_er_disciplinary_action_pkey") @default(uuid())
+  tenantId            String
+  actionNumber        String
+  employeeId          String
+  linkedGrievanceId   String?
+  misconductType      String
+  severity            String    @default("MEDIUM")
+  actionType          String
+  warningCount        Int       @default(0)
+  suspensionDays      Int       @default(0)
+  salaryDeductionDays Int       @default(0)
+  salaryDeductionPct  Decimal   @default(0) @db.Decimal(5, 2)
+  hearingHeld         Boolean   @default(false)
+  hearingDate         DateTime?
+  responseRecorded    Boolean   @default(false)
+  evidenceCount       Int       @default(0)
+  country             String?
+  issuedBy            String?
+  issuedAt            DateTime?
+  status              String    @default("DRAFT")
+  effectiveFrom       DateTime?
+  effectiveTo         DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@unique([tenantId, actionNumber], map: "aura_er_disciplinary_action_unique")
+  @@index([tenantId, employeeId], map: "aura_er_disciplinary_action_employee")
+  @@map("aura_er_disciplinary_action")
+}
+
+model ErInvestigation {
+  id                   String    @id(map: "aura_er_investigation_pkey") @default(uuid())
+  tenantId             String
+  investigationNumber  String
+  grievanceCaseId      String?
+  disciplinaryActionId String?
+  investigatorId       String?
+  scope                String?
+  interviewCount       Int       @default(0)
+  evidenceCount        Int       @default(0)
+  findings             String?
+  recommendation       String?
+  startedAt            DateTime
+  completedAt          DateTime?
+  status               String    @default("OPEN")
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  @@unique([tenantId, investigationNumber], map: "aura_er_investigation_unique")
+  @@map("aura_er_investigation")
+}
+
+model ErAppeal {
+  id            String    @id(map: "aura_er_appeal_pkey") @default(uuid())
+  tenantId      String
+  appealNumber  String
+  subjectType   String
+  subjectId     String
+  appellantId   String
+  reason        String?
+  filedAt       DateTime
+  decisionDueAt DateTime?
+  outcome       String?
+  decidedAt     DateTime?
+  decidedBy     String?
+  status        String    @default("OPEN")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([tenantId, appealNumber], map: "aura_er_appeal_unique")
+  @@map("aura_er_appeal")
+}
+
+model ErCertificate {
+  id                        String    @id(map: "aura_er_certificate_pkey") @default(uuid())
+  tenantId                  String
+  period                    String
+  status                    String    @default("DRAFT")
+  grievancesOpened          Int       @default(0)
+  grievancesClosed          Int       @default(0)
+  grievancesSlaBreached     Int       @default(0)
+  highSeverityOpen          Int       @default(0)
+  disciplinaryActionsIssued Int       @default(0)
+  actionsWithoutHearing     Int       @default(0)
+  appealsOpen               Int       @default(0)
+  labourAuthorityReferrals  Int       @default(0)
+  retaliationFlags          Int       @default(0)
+  gatingReason              String?
+  attestationsJson          Json      @default("[]")
+  generatedAt               DateTime?
+  signedAt                  DateTime?
+  signedBy                  String?
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
+
+  @@unique([tenantId, period], map: "aura_er_certificate_unique")
+  @@map("aura_er_certificate")
+}
