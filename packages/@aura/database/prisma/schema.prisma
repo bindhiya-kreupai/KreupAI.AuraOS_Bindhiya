@@ -12258,3 +12258,110 @@ model HrPolicyCertificate {
   @@unique([tenantId, period], map: "aura_hr_policy_certificate_unique")
   @@map("aura_hr_policy_certificate")
 }
+
+model HrFormTemplate {
+  id              String    @id(map: "aura_hr_form_template_pkey") @default(uuid())
+  tenantId        String
+  templateCode    String
+  formGroup       String
+  label           String
+  version         String    @default("1.0")
+  schemaJson      Json      @default("{}")
+  writebackTarget String?
+  isMandatory     Boolean   @default(false)
+  countryCode     String?
+  status          String    @default("DRAFT")
+  publishedAt     DateTime?
+  supersededById  String?
+  createdBy       String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([tenantId, templateCode, version], map: "aura_hr_form_template_unique")
+  @@map("aura_hr_form_template")
+}
+
+model HrFormRouting {
+  id           String   @id(map: "aura_hr_form_routing_pkey") @default(uuid())
+  tenantId     String
+  templateId   String
+  stageOrder   Int
+  stageLabel   String
+  approverRole String?
+  approverId   String?
+  slaHours     Int      @default(48)
+  isParallel   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([tenantId, templateId, stageOrder], map: "aura_hr_form_routing_unique")
+  @@map("aura_hr_form_routing")
+}
+
+model HrFormSubmissionState {
+  id              String    @id(map: "aura_hr_form_submission_state_pkey") @default(uuid())
+  tenantId        String
+  templateId      String
+  submissionRef   String
+  employeeId      String
+  payloadJson     Json      @default("{}")
+  currentStage    Int       @default(0)
+  totalStages     Int       @default(0)
+  status          String    @default("DRAFT")
+  submittedAt     DateTime?
+  approvedAt      DateTime?
+  rejectedAt      DateTime?
+  rejectionReason String?
+  writebackStatus String    @default("PENDING")
+  writebackRef    String?
+  writebackAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@unique([tenantId, submissionRef], map: "aura_hr_form_submission_state_unique")
+  @@index([tenantId, templateId], map: "aura_hr_form_submission_state_template")
+  @@map("aura_hr_form_submission_state")
+}
+
+model HrFormSignature {
+  id                String   @id(map: "aura_hr_form_signature_pkey") @default(uuid())
+  tenantId          String
+  submissionStateId String
+  stageOrder        Int
+  signerRole        String?
+  signerId          String
+  signedAt          DateTime @default(now())
+  action            String
+  comments          String?
+  signatureHash     String?
+  ipAddress         String?
+  userAgent         String?
+  createdAt         DateTime @default(now())
+
+  @@index([tenantId, submissionStateId], map: "aura_hr_form_signature_state")
+  @@map("aura_hr_form_signature")
+}
+
+model HrFormCertificate {
+  id                  String    @id(map: "aura_hr_form_certificate_pkey") @default(uuid())
+  tenantId            String
+  period              String
+  status              String    @default("DRAFT")
+  templatesPublished  Int       @default(0)
+  submissionsTotal    Int       @default(0)
+  submissionsApproved Int       @default(0)
+  submissionsRejected Int       @default(0)
+  submissionsPending  Int       @default(0)
+  writebackFailures   Int       @default(0)
+  slaBreachCount      Int       @default(0)
+  gatingReason        String?
+  attestationsJson    Json      @default("[]")
+  generatedAt         DateTime?
+  signedAt            DateTime?
+  signedBy            String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@unique([tenantId, period], map: "aura_hr_form_certificate_unique")
+  @@map("aura_hr_form_certificate")
+}

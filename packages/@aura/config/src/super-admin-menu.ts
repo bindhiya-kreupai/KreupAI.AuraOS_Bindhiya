@@ -455,6 +455,19 @@ export const superAdminMenu: MenuDefinition = {
                         'Monthly Compliance Certificate',
                     ],
                 },
+                {
+                    code: 'HR_FORMS_COMPLIANCE',
+                    label: 'HR Forms & Templates',
+                    icon: 'reports',
+                    path: '/dashboard/hr-forms-compliance',
+                    features: [
+                        'Template Catalogue (8 lifecycle groups, versioned)',
+                        'Routing & SLA Config',
+                        'Submissions + Approval + E-Signature',
+                        'Writeback Status & SLA Breach Detection',
+                        'Monthly Compliance Certificate',
+                    ],
+                },
             ],
         },
         {
