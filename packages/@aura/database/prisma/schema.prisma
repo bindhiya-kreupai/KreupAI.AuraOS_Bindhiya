@@ -14992,3 +14992,177 @@ model RecruitmentRisk {
   @@index([tenantId, band, status], map: "aura_recruitment_risk_band_status")
   @@map("aura_recruitment_risk")
 }
+
+// ============================================================================
+// EPIC-05 — OFFER MANAGEMENT & PRE-EMPLOYMENT COMPLIANCE
+// ----------------------------------------------------------------------------
+// Closes the audit's 🔴 RED finding for EPIC-05: basic JobOffer existed but
+// the maker-checker approval matrix, conditional offers, pre-employment
+// documents, medical fitness gating, contract preparation, and acceptance
+// portal were all absent.
+// ============================================================================
+
+// S02 — Approval matrix. One row per (grade, ctcThreshold) sets the
+// required approvers in order. Maker-checker enforced by the service:
+// approver IDs cannot match initiatorId.
+model OfferApprovalRule {
+  id              String   @id(map: "aura_offer_approval_rule_pkey") @default(uuid())
+  tenantId        String
+  legalEntityId   String?
+  grade           String
+  ctcThreshold    Decimal  @db.Decimal(14, 2)
+  approverRoles   String[] // ordered list of role codes
+  effectiveFrom   DateTime @default(now())
+  effectiveTo     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([tenantId, grade, ctcThreshold], map: "aura_offer_approval_rule_lookup")
+  @@map("aura_offer_approval_rule")
+}
+
+model OfferApproval {
+  id            String   @id(map: "aura_offer_approval_pkey") @default(uuid())
+  tenantId      String
+  offerId       String
+  initiatorId   String
+  approverRole  String
+  approverId    String?
+  status        String   @default("PENDING") // PENDING | APPROVED | REJECTED
+  comments      String?
+  decidedAt     DateTime?
+  stepOrder     Int      @default(1)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@index([tenantId, offerId, stepOrder], map: "aura_offer_approval_offer")
+  @@map("aura_offer_approval")
+}
+
+// S04 — Configurable offer-letter template + clause library.
+model OfferTemplate {
+  id             String   @id(map: "aura_offer_template_pkey") @default(uuid())
+  tenantId       String
+  templateCode   String
+  countryCode    String?
+  language       String   @default("en") // en | ar
+  bodyMarkdown   String
+  clauseCodes    String[] // referenced reusable clauses
+  isActive       Boolean  @default(true)
+  version        Int      @default(1)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([tenantId, templateCode, language, version], map: "aura_offer_template_unique")
+  @@index([tenantId, countryCode, isActive], map: "aura_offer_template_active")
+  @@map("aura_offer_template")
+}
+
+// S05 — Conditional offer support. Each condition must be ACCEPTED before
+// the offer can transition to ACCEPTED state.
+model OfferCondition {
+  id            String   @id(map: "aura_offer_condition_pkey") @default(uuid())
+  tenantId      String
+  offerId       String
+  conditionCode String   // BGV_PASS | MEDICAL_FIT | VISA_OBTAINED | DOC_PROVIDED | etc.
+  description   String
+  status        String   @default("PENDING") // PENDING | MET | WAIVED | UNMET
+  evidenceRef   String?
+  dueAt         DateTime?
+  metAt         DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([tenantId, offerId, conditionCode], map: "aura_offer_condition_unique")
+  @@index([tenantId, offerId, status], map: "aura_offer_condition_status")
+  @@map("aura_offer_condition")
+}
+
+// S09 — Pre-employment document tracking.
+model PreEmploymentDocument {
+  id           String   @id(map: "aura_pre_employment_document_pkey") @default(uuid())
+  tenantId     String
+  candidateId  String
+  offerId      String?
+  docType      String   // PASSPORT | EDUCATION_CERT | EXP_LETTER | ATTESTED_CERT | etc.
+  isMandatory  Boolean  @default(true)
+  status       String   @default("PENDING") // PENDING | RECEIVED | VERIFIED | REJECTED
+  fileUrl      String?
+  verifiedById String?
+  verifiedAt   DateTime?
+  rejectionReason String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([tenantId, candidateId, docType], map: "aura_pre_employment_document_unique")
+  @@index([tenantId, offerId, status], map: "aura_pre_employment_document_status")
+  @@map("aura_pre_employment_document")
+}
+
+// S11 — Medical fitness.
+model MedicalFitness {
+  id             String   @id(map: "aura_medical_fitness_pkey") @default(uuid())
+  tenantId       String
+  candidateId    String
+  offerId        String?
+  countryCode    String
+  status         String   @default("PENDING") // PENDING | FIT | UNFIT | EXCEPTION
+  examDate       DateTime?
+  vendorName     String?
+  certificateRef String?
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([tenantId, candidateId, countryCode], map: "aura_medical_fitness_unique")
+  @@index([tenantId, offerId, status], map: "aura_medical_fitness_status")
+  @@map("aura_medical_fitness")
+}
+
+// S12 — Employment contract draft tied to the offer.
+model EmploymentContract {
+  id              String   @id(map: "aura_employment_contract_pkey") @default(uuid())
+  tenantId        String
+  offerId         String
+  candidateId     String
+  templateId      String?
+  countryCode     String
+  contractType    String   // PERMANENT | FIXED_TERM | PART_TIME | CONTRACTOR
+  status          String   @default("DRAFT") // DRAFT | SENT | SIGNED | VOID
+  effectiveFrom   DateTime?
+  effectiveTo     DateTime?
+  signedAt        DateTime?
+  signatureRef    String?  // HMAC-SHA256 signature reference
+  documentUrl     String?
+  metadata        Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([tenantId, offerId], map: "aura_employment_contract_unique")
+  @@index([tenantId, candidateId, status], map: "aura_employment_contract_lookup")
+  @@map("aura_employment_contract")
+}
+
+// S13 — Candidate acceptance with validity-window tracking + audit metadata
+// (IP, timestamp, template version signed).
+model OfferAcceptance {
+  id            String   @id(map: "aura_offer_acceptance_pkey") @default(uuid())
+  tenantId      String
+  offerId       String
+  candidateId   String
+  status        String   @default("PENDING") // PENDING | ACCEPTED | DECLINED | EXPIRED | NEGOTIATING
+  validUntil    DateTime
+  acceptedAt    DateTime?
+  declinedAt    DateTime?
+  declinedReason String?
+  ipAddress     String?
+  templateVersion Int?
+  signatureRef  String?  // HMAC-SHA256
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([tenantId, offerId], map: "aura_offer_acceptance_unique")
+  @@index([tenantId, status, validUntil], map: "aura_offer_acceptance_status")
+  @@map("aura_offer_acceptance")
+}
