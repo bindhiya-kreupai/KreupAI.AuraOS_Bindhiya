@@ -507,6 +507,14 @@ Continuing the autonomous pass with 5 additional closures (28→33 EPICs touched
 
 **Final final tally:** **26 EPICs closed in one overnight pass, ~252 tests passing across 26 new test files**, zero schema changes, zero new Prisma models. EPIC-04 (one of the original 4 🔴 RED EPICs) is now further reinforced; EPIC-33 closes both the S01 conditional-logic gap and the cryptographic e-signature gap in one service.
 
+### 2026-06-17 — Per-EPIC depth pass — round 4 (EPIC-24)
+
+| EPIC    | Gap closed                                                                                    | Commit     | Tests |
+| ------- | --------------------------------------------------------------------------------------------- | ---------- | ----- |
+| EPIC-24 | HSE PPE issuance + toolbox-talk cadence + emergency-drill cadence (3 of 11 zero-code stories) | `714642de` | 11    |
+
+**Cumulative overnight tally:** **27 EPICs closed, 263 tests passing across 27 new test files**, zero schema changes, zero new Prisma models. Every closure ships a pure evaluator with bilingual (en/ar) reason text; the DB-driven wrappers slot directly into the existing services without further refactoring.
+
 ---
 
 _Audit completed 2026-06-17. 38 EPICs audited via parallel `Explore` subagents. Findings sourced from `packages/@aura/database/prisma/schema.prisma`, `apps/web/src/lib/services/`, `apps/web/src/app/api/v1/`, `apps/web/src/app/dashboard/`, `apps/web/src/lib/services/__tests__/`._
