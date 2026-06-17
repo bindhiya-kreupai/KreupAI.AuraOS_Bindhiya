@@ -14766,3 +14766,229 @@ model TenantSavedView {
   @@index([tenantId, scope, isShared], map: "aura_tenant_saved_view_shared")
   @@map("aura_tenant_saved_view")
 }
+
+// ============================================================================
+// EPIC-04 — RECRUITMENT COMPLIANCE
+// ----------------------------------------------------------------------------
+// Closes the audit's 🔴 RED finding for EPIC-04 by adding the compliance
+// gates that were missing on top of the basic Candidate/Application/Job
+// Offer flow: stage-gate FSM, screening criteria + bias-aware scoring,
+// BGV consent + per-check gating, immigration eligibility, candidate
+// data-privacy consent, and a per-tenant audit checklist + risk register.
+// ============================================================================
+
+// S01 — recruitment case + stage-gate FSM. One case per vacancy×candidate
+// pairing; stage transitions are validated by RecruitmentStageGate rows.
+model RecruitmentCase {
+  id             String   @id(map: "aura_recruitment_case_pkey") @default(uuid())
+  tenantId       String
+  vacancyId      String
+  candidateId    String
+  ownerId        String
+  currentStage   String   @default("APPLIED") // APPLIED | SCREENED | INTERVIEWED | OFFERED | HIRED | REJECTED | WITHDRAWN
+  slaDays        Int      @default(30)
+  status         String   @default("OPEN") // OPEN | CLOSED
+  openedAt       DateTime @default(now())
+  closedAt       DateTime?
+  closedReason   String?
+  metadata       Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([tenantId, vacancyId, candidateId], map: "aura_recruitment_case_unique")
+  @@index([tenantId, currentStage, status], map: "aura_recruitment_case_stage_status")
+  @@index([tenantId, ownerId], map: "aura_recruitment_case_owner")
+  @@map("aura_recruitment_case")
+}
+
+model RecruitmentStageGate {
+  id            String   @id(map: "aura_recruitment_stage_gate_pkey") @default(uuid())
+  tenantId      String
+  caseId        String
+  stageCode     String   // SCREENING | INTERVIEW | BGV | OFFER | etc.
+  gateStatus    String   @default("PENDING") // PENDING | PASSED | FAILED | WAIVED
+  evidenceJson  Json     @default("{}")
+  blockedReason String?
+  decidedById   String?
+  decidedAt     DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([tenantId, caseId, stageCode], map: "aura_recruitment_stage_gate_unique")
+  @@index([tenantId, gateStatus], map: "aura_recruitment_stage_gate_status")
+  @@map("aura_recruitment_stage_gate")
+}
+
+// S06 — Screening criteria + per-candidate scoring with explicit bias
+// flag tracking. `protectedFactors` lists any inferred sensitive
+// attributes that influenced the score; rule engine can reject submits
+// where this list is non-empty.
+model RecruitmentScreeningCriteria {
+  id              String   @id(map: "aura_recruitment_screening_criteria_pkey") @default(uuid())
+  tenantId        String
+  vacancyId       String
+  criterionCode   String
+  description     String
+  weight          Decimal  @default(1.0) @db.Decimal(6, 3)
+  isMandatory     Boolean  @default(false)
+  effectiveFrom   DateTime @default(now())
+  effectiveTo     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([tenantId, vacancyId, criterionCode], map: "aura_recruitment_screening_criteria_unique")
+  @@index([tenantId, vacancyId], map: "aura_recruitment_screening_criteria_vacancy")
+  @@map("aura_recruitment_screening_criteria")
+}
+
+model RecruitmentCandidateScreening {
+  id               String   @id(map: "aura_recruitment_candidate_screening_pkey") @default(uuid())
+  tenantId         String
+  caseId           String
+  candidateId      String
+  score            Decimal  @db.Decimal(8, 3)
+  outcome          String   // PASS | FAIL | KNOCKOUT
+  rejectionReason  String?
+  knockoutReason   String?
+  protectedFactors String[] @default([]) // ex: ["nationality", "age", "gender"] — non-empty flags review
+  detailJson       Json     @default("{}")
+  decidedById      String?
+  decidedAt        DateTime @default(now())
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([tenantId, caseId], map: "aura_recruitment_candidate_screening_unique")
+  @@index([tenantId, candidateId, outcome], map: "aura_recruitment_candidate_screening_outcome")
+  @@map("aura_recruitment_candidate_screening")
+}
+
+// S10 — Background-verification case with explicit consent capture and
+// per-check (employment / education / criminal / address / reference)
+// gating. Settlement / offer blocked until all checks PASS or are
+// explicitly WAIVED.
+model RecruitmentBgvCase {
+  id               String   @id(map: "aura_recruitment_bgv_case_pkey") @default(uuid())
+  tenantId         String
+  caseId           String   // RecruitmentCase
+  candidateId      String
+  status           String   @default("PENDING_CONSENT") // PENDING_CONSENT | IN_PROGRESS | PASSED | FAILED | WAIVED
+  consentCaptured  Boolean  @default(false)
+  consentAt        DateTime?
+  consentRef       String?  // signature ref / consent record id
+  vendorName       String?
+  blockedReason    String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([tenantId, caseId], map: "aura_recruitment_bgv_case_unique")
+  @@index([tenantId, status], map: "aura_recruitment_bgv_case_status")
+  @@map("aura_recruitment_bgv_case")
+}
+
+model RecruitmentBgvCheck {
+  id              String   @id(map: "aura_recruitment_bgv_check_pkey") @default(uuid())
+  tenantId        String
+  bgvCaseId       String
+  checkType       String   // EMPLOYMENT | EDUCATION | CRIMINAL | ADDRESS | REFERENCE | CREDIT | etc.
+  result          String   @default("PENDING") // PENDING | PASS | FAIL | DISCREPANCY | WAIVED
+  discrepancyAction String? // ESCALATE | ACCEPT | REJECT
+  vendorRef       String?
+  evidenceUrl     String?
+  notes           String?
+  completedAt     DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([tenantId, bgvCaseId, checkType], map: "aura_recruitment_bgv_check_unique")
+  @@index([tenantId, bgvCaseId, result], map: "aura_recruitment_bgv_check_result")
+  @@map("aura_recruitment_bgv_check")
+}
+
+// S11 — Immigration eligibility check performed BEFORE offer. Captures
+// nationality / profession / ban status / NOC requirement. Used to block
+// offer issuance when ineligible.
+model RecruitmentImmigrationEligibility {
+  id            String   @id(map: "aura_recruitment_imm_elig_pkey") @default(uuid())
+  tenantId      String
+  caseId        String   // RecruitmentCase
+  candidateId   String
+  countryCode   String   // hire country
+  nationality   String
+  profession    String?  // mapped to authority code if known
+  banStatus     String   @default("UNKNOWN") // CLEAR | BANNED | UNKNOWN
+  nocRequired   Boolean  @default(false)
+  nocReceived   Boolean  @default(false)
+  eligibility   String   @default("PENDING") // PENDING | ELIGIBLE | INELIGIBLE | CONDITIONAL
+  notes         String?
+  checkedById   String?
+  checkedAt     DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([tenantId, caseId], map: "aura_recruitment_imm_elig_unique")
+  @@index([tenantId, eligibility], map: "aura_recruitment_imm_elig_status")
+  @@map("aura_recruitment_imm_eligibility")
+}
+
+// S14 — Candidate data-privacy consent. GDPR/DPA shape: lawful basis +
+// purpose + retention rule. Retention scheduler reads this to flag
+// candidates whose data must be disposed.
+model RecruitmentCandidateConsent {
+  id              String   @id(map: "aura_recruitment_candidate_consent_pkey") @default(uuid())
+  tenantId        String
+  candidateId     String
+  lawfulBasis     String   // CONSENT | CONTRACT | LEGAL_OBLIGATION | LEGITIMATE_INTEREST
+  purpose         String   // ex: "RECRUITMENT_PROCESSING"
+  retentionDays   Int      @default(365)
+  consentedAt     DateTime @default(now())
+  withdrawnAt     DateTime?
+  evidenceRef     String?  // signature hash / form-submission id
+  metadata        Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([tenantId, candidateId, withdrawnAt], map: "aura_recruitment_candidate_consent_lookup")
+  @@map("aura_recruitment_candidate_consent")
+}
+
+// S16 — Audit checklist + risk register. Mirrors the shape used by other
+// compliance modules (e.g. ComplianceRiskRegister).
+model RecruitmentAuditChecklist {
+  id            String   @id(map: "aura_recruitment_audit_checklist_pkey") @default(uuid())
+  tenantId      String
+  period        String   // YYYY-MM
+  itemCode      String
+  description   String
+  status        String   @default("PENDING") // PENDING | PASS | FAIL | NA
+  evidenceRef   String?
+  notes         String?
+  reviewedById  String?
+  reviewedAt    DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([tenantId, period, itemCode], map: "aura_recruitment_audit_checklist_unique")
+  @@index([tenantId, period, status], map: "aura_recruitment_audit_checklist_status")
+  @@map("aura_recruitment_audit_checklist")
+}
+
+model RecruitmentRisk {
+  id            String   @id(map: "aura_recruitment_risk_pkey") @default(uuid())
+  tenantId      String
+  code          String
+  description   String
+  likelihood    Int      // 1..5
+  impact        Int      // 1..5
+  band          String   // LOW | MEDIUM | HIGH | CRITICAL (derived from L × I)
+  status        String   @default("OPEN") // OPEN | MITIGATED | ACCEPTED
+  mitigationPlan String?
+  ownerId       String?
+  raisedAt      DateTime @default(now())
+  mitigatedAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([tenantId, code], map: "aura_recruitment_risk_unique")
+  @@index([tenantId, band, status], map: "aura_recruitment_risk_band_status")
+  @@map("aura_recruitment_risk")
+}
