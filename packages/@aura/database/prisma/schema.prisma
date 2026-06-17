@@ -11597,3 +11597,131 @@ model BahrainizationCertificate {
   @@unique([tenantId, period], map: "aura_bahrainization_certificate_unique")
   @@map("aura_bahrainization_certificate")
 }
+
+model OtPolicy {
+  id                  String    @id(map: "aura_ot_policy_pkey") @default(uuid())
+  tenantId            String
+  country             String
+  grade               String?
+  isEligible          Boolean   @default(true)
+  standardDailyHours  Decimal   @default(8) @db.Decimal(5, 2)
+  standardWeeklyHours Decimal   @default(48) @db.Decimal(5, 2)
+  maxDailyOtHours     Decimal   @default(2) @db.Decimal(5, 2)
+  maxMonthlyOtHours   Decimal   @default(40) @db.Decimal(6, 2)
+  requiresPreApproval Boolean   @default(true)
+  allowsCompOff       Boolean   @default(true)
+  ramadanDailyHours   Decimal   @default(6) @db.Decimal(5, 2)
+  effectiveFrom       DateTime
+  effectiveTo         DateTime?
+  status              String    @default("ACTIVE")
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@unique([tenantId, country, grade, effectiveFrom], map: "aura_ot_policy_unique")
+  @@map("aura_ot_policy")
+}
+
+model OtRateCard {
+  id            String    @id(map: "aura_ot_rate_card_pkey") @default(uuid())
+  tenantId      String
+  country       String
+  otType        String
+  multiplier    Decimal   @db.Decimal(5, 2)
+  basis         String    @default("BASIC")
+  effectiveFrom DateTime
+  effectiveTo   DateTime?
+  status        String    @default("ACTIVE")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([tenantId, country, otType, effectiveFrom], map: "aura_ot_rate_card_unique")
+  @@map("aura_ot_rate_card")
+}
+
+model OtRequest {
+  id              String    @id(map: "aura_ot_request_pkey") @default(uuid())
+  tenantId        String
+  employeeId      String
+  country         String
+  requestDate     DateTime
+  plannedHours    Decimal   @db.Decimal(5, 2)
+  otType          String
+  reason          String?
+  costCenterId    String?
+  status          String    @default("PENDING")
+  approverId      String?
+  approvedAt      DateTime?
+  rejectionReason String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([tenantId, employeeId, requestDate], map: "aura_ot_request_employee_date")
+  @@map("aura_ot_request")
+}
+
+model OtActual {
+  id                  String    @id(map: "aura_ot_actual_pkey") @default(uuid())
+  tenantId            String
+  employeeId          String
+  country             String
+  otDate              DateTime
+  otType              String
+  actualHours         Decimal   @db.Decimal(5, 2)
+  multiplier          Decimal?  @db.Decimal(5, 2)
+  hourlyRate          Decimal?  @db.Decimal(12, 4)
+  computedAmount      Decimal?  @db.Decimal(12, 2)
+  currency            String    @default("AED")
+  requestId           String?
+  fraudScore          Int       @default(0)
+  fraudFlags          Json      @default("[]")
+  compOffHoursGranted Decimal   @default(0) @db.Decimal(5, 2)
+  payrollPosted       Boolean   @default(false)
+  payrollPostedAt     DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@unique([tenantId, employeeId, otDate, otType], map: "aura_ot_actual_unique")
+  @@map("aura_ot_actual")
+}
+
+model OtBudget {
+  id           String   @id(map: "aura_ot_budget_pkey") @default(uuid())
+  tenantId     String
+  period       String
+  costCenterId String?
+  country      String?
+  budgetHours  Decimal  @db.Decimal(8, 2)
+  budgetAmount Decimal  @db.Decimal(14, 2)
+  currency     String   @default("AED")
+  actualHours  Decimal  @default(0) @db.Decimal(8, 2)
+  actualAmount Decimal  @default(0) @db.Decimal(14, 2)
+  status       String   @default("OPEN")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@unique([tenantId, period, costCenterId], map: "aura_ot_budget_unique")
+  @@map("aura_ot_budget")
+}
+
+model OtCertificate {
+  id                String    @id(map: "aura_ot_certificate_pkey") @default(uuid())
+  tenantId          String
+  period            String
+  status            String    @default("DRAFT")
+  totalHours        Decimal   @default(0) @db.Decimal(10, 2)
+  totalAmount       Decimal   @default(0) @db.Decimal(14, 2)
+  currency          String    @default("AED")
+  exceedsCount      Int       @default(0)
+  fraudCount        Int       @default(0)
+  budgetBreachCount Int       @default(0)
+  gatingReason      String?
+  attestationsJson  Json      @default("[]")
+  generatedAt       DateTime?
+  signedAt          DateTime?
+  signedBy          String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@unique([tenantId, period], map: "aura_ot_certificate_unique")
+  @@map("aura_ot_certificate")
+}

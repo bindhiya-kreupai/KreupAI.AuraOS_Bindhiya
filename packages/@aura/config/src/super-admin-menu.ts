@@ -376,6 +376,20 @@ export const superAdminMenu: MenuDefinition = {
                         'Monthly Certificate',
                     ],
                 },
+                {
+                    code: 'OVERTIME_COMPLIANCE',
+                    label: 'Overtime (GCC)',
+                    icon: 'leave',
+                    path: '/dashboard/overtime-compliance',
+                    features: [
+                        'OT Policies (country × grade)',
+                        'Rate Cards (country × OT type)',
+                        'Requests & Approval',
+                        'Actuals & Fraud Detection',
+                        'Budget Control',
+                        'Monthly Certificate',
+                    ],
+                },
             ],
         },
         {
