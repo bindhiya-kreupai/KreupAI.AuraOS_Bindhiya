@@ -12,6 +12,7 @@
 
 import { prisma } from '@aura/database';
 import type { AuthContext } from './types';
+import { validatePayload } from './validator-registry';
 
 export type ConfigScope = 'GLOBAL' | 'COUNTRY' | 'LEGAL_ENTITY' | 'DOMAIN';
 export type ConfigStatus = 'DRAFT' | 'PENDING_APPROVAL' | 'ACTIVE' | 'RETIRED';
@@ -109,6 +110,14 @@ export class HrmsConfigRegistryService {
   }
 
   async createDraft(input: ConfigObjectInput, auth: AuthContext) {
+    // Validate the payload against the per-domain Zod schema (if any
+    // is registered). Domains without a registered schema accept the
+    // payload as-is so existing tenants are never blocked when new
+    // schemas are introduced. The validated payload is the canonical
+    // shape that persists. (audit 2026-06-17 EPIC-34 — fixes the
+    // "78% of domain logic missing" finding.)
+    const validatedPayload = validatePayload(input.domainCode, input.payload);
+
     const prior = await (prisma as any).hrmsConfigObject.findFirst({
       where: {
         tenantId: auth.tenantId,
@@ -133,7 +142,7 @@ export class HrmsConfigRegistryService {
         status: 'DRAFT' as ConfigStatus,
         effectiveFrom: input.effectiveFrom,
         effectiveTo: input.effectiveTo ?? null,
-        payload: input.payload as any,
+        payload: validatedPayload as any,
         targetModel: input.targetModel ?? null,
         targetRecordId: input.targetRecordId ?? null,
         rationale: input.rationale ?? null,

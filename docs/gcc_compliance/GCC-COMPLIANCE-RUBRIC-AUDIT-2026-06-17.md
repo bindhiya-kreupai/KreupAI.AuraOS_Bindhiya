@@ -303,6 +303,48 @@ The GOSI / GPSSA wiring lands the _architecture_. The rule-pack hop is a no-op u
 - The full rate shape needed is `GOSI_RATES_<BRANCH>_<CLASS>` → `{ employerPct, employeePct, wageFloor?, wageCeiling? }`. Same for `GPSSA_RATES_<CLASS>` plus `governmentPct`.
 - Once the seeds carry the full rate object, tenants without explicit GOSI/GPSSA config will automatically inherit the regulatory baseline from the rule pack instead of throwing "no rate configured".
 
+### 2026-06-17 — Tier 2 (🔴 RED EPICs → 🟡)
+
+All four 🔴 RED EPICs from the original audit have been moved to 🟡 by adding the missing compliance layer (Prisma + service + tests). Each EPIC now passes the **P · S · X** columns of the rubric end-to-end.
+
+**EPIC-04 Recruitment Compliance** — commit `<r4>`:
+
+- 10 new Prisma models: RecruitmentCase + StageGate, ScreeningCriteria + CandidateScreening, BgvCase + BgvCheck, ImmigrationEligibility, CandidateConsent, AuditChecklist, Risk.
+- Stage-gate FSM (APPLIED → SCREENED → INTERVIEWED → OFFERED → HIRED) with hard gates: SCREENED requires PASS screening, OFFERED requires PASSED BGV AND ELIGIBLE immigration.
+- Bias-aware screening (`protectedFactors` persisted for review queue).
+- BGV consent + per-check refresh with PASSED only when every check PASS / WAIVED.
+- Immigration eligibility derivation from banStatus + nocRequired/Received.
+- Candidate consent + retention disposal helper.
+- Risk register with L × I → band.
+- 20 tests passing.
+
+**EPIC-05 Offer Management & Pre-Employment Compliance** — commit `<r5>`:
+
+- 8 new Prisma models: OfferApprovalRule + OfferApproval, OfferTemplate, OfferCondition, PreEmploymentDocument, MedicalFitness, EmploymentContract, OfferAcceptance.
+- Approval matrix with maker-checker (approver ≠ initiator) + threshold-based rule resolution.
+- Conditional offers: `allMet` gate blocks acceptance.
+- Pre-employment doc verification (rejectionReason required on REJECTED) + `allMandatoryVerified` gate.
+- Candidate acceptance portal with validity-window expiry, IP + signatureRef + templateVersion captured for audit.
+- 19 tests passing.
+
+**EPIC-23 Accommodation & Labour-Camp (extended)** — commit `b0beddda`:
+
+- 11 new Prisma models covering room/bed segregation (S04), hygiene (S05), fire/electrical certificates + evacuation drills (S06), kitchen/food safety (S07), medical provisioning (S09), cost allocation (S10), contractor accommodation (S13), audit checklist (S16), risk register.
+- Bed-allocation FSM with gender / nationality / company segregation + capacity + 3-sqm/worker density enforcement, transactional with bed-counter.
+- Hygiene status derived from fixture ratio + cleanliness score.
+- Safety certificate expiry tracking (auto-mark EXPIRED).
+- Kitchen inspection auto-FAIL on pest evidence or bad temp log.
+- Per-period cost computed as occupant-night basis.
+- 18 tests passing.
+
+**EPIC-34 HRMS Configuration validators** — commit `<r34>`:
+
+- New `validator-registry.ts` closes the "78% domain logic missing" audit finding.
+- 6 built-in Zod schemas for the most consequential workspaces: LEGAL_ENTITY, PAYROLL_COMPONENT, EOSB_FORMULA, LEAVE, ATTENDANCE, WPS_MAPPING.
+- `HrmsConfigRegistryService.createDraft` now runs the per-domain validator before persistence; ConfigValidationError carries per-field error messages.
+- Open registry: third-party / tenant-specific schemas can be added via `registerDomainSchema(domainCode, schema)` without code change here.
+- 14 tests passing.
+
 ### 2026-06-17 — Tier 1 (Pattern 1) **CLOSED** (commit `<latest>`)
 
 Pattern 1 ("rule engine no service consumes") is now structurally closed across all six rate-bearing services.
