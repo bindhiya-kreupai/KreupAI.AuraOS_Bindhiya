@@ -15166,3 +15166,230 @@ model OfferAcceptance {
   @@index([tenantId, status, validUntil], map: "aura_offer_acceptance_status")
   @@map("aura_offer_acceptance")
 }
+
+// ============================================================================
+// EPIC-23 — ACCOMMODATION & LABOUR-CAMP COMPLIANCE
+// ----------------------------------------------------------------------------
+// Closes the audit's 🔴 RED finding (5/18 stories with zero code). Adds
+// the 12 sub-domain registers that GCC labour-camp inspections look for
+// — hygiene, fire / electrical, food / kitchen, medical, cost allocation,
+// contractor accommodation, female / family segregation, audit
+// checklist + risk register — sitting alongside the existing
+// AccommodationSite / Inspection / Complaint flow.
+// ============================================================================
+
+// S04 — Room / Bed allocation with segregation rules.
+model AccommodationRoom {
+  id              String   @id(map: "aura_accommodation_room_pkey") @default(uuid())
+  tenantId        String
+  siteId          String
+  roomCode        String
+  totalBeds       Int
+  occupiedBeds    Int      @default(0)
+  genderRestriction String? // MALE | FEMALE | MIXED | FAMILY
+  nationalityGroup String?  // optional segregation key
+  companyGroup    String?
+  areaSqm         Decimal? @db.Decimal(8, 2)
+  status          String   @default("ACTIVE") // ACTIVE | INACTIVE | UNDER_MAINTENANCE
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([tenantId, siteId, roomCode], map: "aura_accommodation_room_unique")
+  @@index([tenantId, siteId, status], map: "aura_accommodation_room_status")
+  @@map("aura_accommodation_room")
+}
+
+model AccommodationBedAssignment {
+  id            String   @id(map: "aura_accommodation_bed_assignment_pkey") @default(uuid())
+  tenantId      String
+  roomId        String
+  employeeId    String
+  bedNumber     Int
+  occupiedFrom  DateTime @default(now())
+  occupiedTo    DateTime?
+  gender        String?
+  nationality   String?
+  company       String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([tenantId, roomId, bedNumber, occupiedTo], map: "aura_accommodation_bed_assignment_unique")
+  @@index([tenantId, employeeId, occupiedTo], map: "aura_accommodation_bed_assignment_employee")
+  @@map("aura_accommodation_bed_assignment")
+}
+
+// S05 — Hygiene / Sanitation.
+model AccommodationHygieneCheck {
+  id              String   @id(map: "aura_accommodation_hygiene_check_pkey") @default(uuid())
+  tenantId        String
+  siteId          String
+  checkDate       DateTime
+  inspectorId     String?
+  toiletShowerRatio Decimal? @db.Decimal(6, 2) // 1:N (e.g. 1:8)
+  cleanlinessScore Int?     // 1..5
+  pestControlDate DateTime?
+  potableWaterCertRef String?
+  issues          String[]  @default([])
+  status          String   @default("PASS") // PASS | FAIL | PENDING
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([tenantId, siteId, checkDate], map: "aura_accommodation_hygiene_check_lookup")
+  @@map("aura_accommodation_hygiene_check")
+}
+
+// S06 — Fire / Electrical safety certificates.
+model AccommodationSafetyCertificate {
+  id              String   @id(map: "aura_accommodation_safety_certificate_pkey") @default(uuid())
+  tenantId        String
+  siteId          String
+  certType        String   // CIVIL_DEFENCE | ELECTRICAL_DEWA | FIRE_DEPT
+  certNumber      String
+  issuedDate      DateTime
+  expiryDate      DateTime
+  status          String   @default("ACTIVE") // ACTIVE | EXPIRED | REVOKED
+  documentUrl     String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([tenantId, siteId, certType, certNumber], map: "aura_accommodation_safety_certificate_unique")
+  @@index([tenantId, siteId, expiryDate], map: "aura_accommodation_safety_certificate_expiry")
+  @@map("aura_accommodation_safety_certificate")
+}
+
+model AccommodationEvacuationDrill {
+  id              String   @id(map: "aura_accommodation_evac_drill_pkey") @default(uuid())
+  tenantId        String
+  siteId          String
+  drillDate       DateTime
+  participants    Int
+  durationMinutes Int?
+  outcome         String   // SUCCESSFUL | PARTIAL | FAILED
+  observations    String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([tenantId, siteId, drillDate], map: "aura_accommodation_evac_drill_lookup")
+  @@map("aura_accommodation_evac_drill")
+}
+
+// S07 — Kitchen / food safety.
+model AccommodationKitchenInspection {
+  id              String   @id(map: "aura_accommodation_kitchen_inspection_pkey") @default(uuid())
+  tenantId        String
+  siteId          String
+  inspectionDate  DateTime
+  cateringLicenseRef String?
+  foodHandlersCertified Int @default(0)
+  tempLogOk       Boolean  @default(true)
+  pestEvidence    Boolean  @default(false)
+  outcome         String   @default("PASS") // PASS | FAIL | PENDING
+  issues          String[] @default([])
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([tenantId, siteId, inspectionDate], map: "aura_accommodation_kitchen_inspection_lookup")
+  @@map("aura_accommodation_kitchen_inspection")
+}
+
+// S09 — Medical / Emergency.
+model AccommodationMedicalProvision {
+  id              String   @id(map: "aura_accommodation_medical_provision_pkey") @default(uuid())
+  tenantId        String
+  siteId          String
+  firstAidersCount Int     @default(0)
+  clinicOnSite    Boolean  @default(false)
+  nearestHospitalKm Decimal? @db.Decimal(6, 2)
+  emergencyPlanRef String?
+  firstAidKitExpiry DateTime?
+  status          String   @default("ADEQUATE") // ADEQUATE | INSUFFICIENT
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([tenantId, siteId], map: "aura_accommodation_medical_provision_unique")
+  @@map("aura_accommodation_medical_provision")
+}
+
+// S10 — Cost allocation per occupant-night.
+model AccommodationCost {
+  id              String   @id(map: "aura_accommodation_cost_pkey") @default(uuid())
+  tenantId        String
+  siteId          String
+  period          String   // YYYY-MM
+  rentAmount      Decimal  @db.Decimal(14, 2)
+  utilitiesAmount Decimal  @db.Decimal(14, 2)
+  maintenanceAmount Decimal @db.Decimal(14, 2)
+  totalCost       Decimal  @db.Decimal(14, 2)
+  occupantNights  Int
+  costPerNight    Decimal  @db.Decimal(10, 4)
+  currency        String   @default("AED")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([tenantId, siteId, period], map: "aura_accommodation_cost_unique")
+  @@index([tenantId, period], map: "aura_accommodation_cost_period")
+  @@map("aura_accommodation_cost")
+}
+
+// S13 — Contractor accommodation tracking.
+model ContractorAccommodation {
+  id              String   @id(map: "aura_contractor_accommodation_pkey") @default(uuid())
+  tenantId        String
+  contractorId    String
+  siteId          String
+  contractStartDate DateTime
+  contractEndDate DateTime?
+  rooms           Int      @default(0)
+  beds            Int      @default(0)
+  complianceStatus String  @default("COMPLIANT") // COMPLIANT | NON_COMPLIANT | UNDER_REVIEW
+  notes           String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([tenantId, contractorId, siteId], map: "aura_contractor_accommodation_unique")
+  @@index([tenantId, complianceStatus], map: "aura_contractor_accommodation_status")
+  @@map("aura_contractor_accommodation")
+}
+
+// S16 — Accommodation audit checklist + risk register.
+model AccommodationAuditChecklist {
+  id            String   @id(map: "aura_accommodation_audit_checklist_pkey") @default(uuid())
+  tenantId      String
+  siteId        String
+  period        String   // YYYY-MM
+  itemCode      String
+  description   String
+  status        String   @default("PENDING") // PENDING | PASS | FAIL | NA
+  evidenceRef   String?
+  notes         String?
+  reviewedById  String?
+  reviewedAt    DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([tenantId, siteId, period, itemCode], map: "aura_accommodation_audit_checklist_unique")
+  @@index([tenantId, siteId, period, status], map: "aura_accommodation_audit_checklist_status")
+  @@map("aura_accommodation_audit_checklist")
+}
+
+model AccommodationRisk {
+  id            String   @id(map: "aura_accommodation_risk_pkey") @default(uuid())
+  tenantId      String
+  siteId        String?
+  code          String
+  description   String
+  likelihood    Int
+  impact        Int
+  band          String
+  status        String   @default("OPEN")
+  mitigationPlan String?
+  ownerId       String?
+  raisedAt      DateTime @default(now())
+  mitigatedAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([tenantId, code], map: "aura_accommodation_risk_unique")
+  @@index([tenantId, band, status], map: "aura_accommodation_risk_band")
+  @@map("aura_accommodation_risk")
+}
