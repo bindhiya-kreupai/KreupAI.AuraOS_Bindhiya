@@ -2,6 +2,13 @@ import { prisma } from '@aura/database';
 import type { AuthContext, NationalityClass } from './types';
 import { gpssaConfigService } from './config.service';
 import { gpssaRegistrationService } from './registration.service';
+import {
+  normalisePaging,
+  prismaPageArgs,
+  buildPaginatedResult,
+  type PaginationInput,
+  type PaginatedResult,
+} from '@/lib/services/pagination';
 
 export interface ContributionWageInput {
   employeeId: string;
@@ -139,12 +146,22 @@ export class GpssaCalculationService {
     });
   }
 
-  async listContributions(tenantId: string, filter: { period?: string } = {}) {
-    return (prisma as any).gpssaContribution.findMany({
-      where: { tenantId, ...filter },
-      orderBy: [{ period: 'desc' }, { employeeId: 'asc' }],
-      take: 500,
-    });
+  async listContributions(
+    tenantId: string,
+    filter: { period?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = { tenantId, ...filter };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).gpssaContribution.findMany({
+        where,
+        orderBy: [{ period: 'desc' }, { employeeId: 'asc' }],
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).gpssaContribution.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 }
 

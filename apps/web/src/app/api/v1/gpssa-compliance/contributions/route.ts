@@ -10,9 +10,14 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
   try {
     const url = new URL(req.url);
     return ok(
-      await gpssaCalculationService.listContributions(ctx.user.tenantId, {
-        period: url.searchParams.get('period') ?? undefined,
-      })
+      await gpssaCalculationService.listContributions(
+        ctx.user.tenantId,
+        { period: url.searchParams.get('period') ?? undefined },
+        {
+          page: Number(url.searchParams.get('page') ?? '1'),
+          pageSize: Number(url.searchParams.get('pageSize') ?? '50'),
+        }
+      )
     );
   } catch (err) {
     return serverError('Failed to list contributions', err);
