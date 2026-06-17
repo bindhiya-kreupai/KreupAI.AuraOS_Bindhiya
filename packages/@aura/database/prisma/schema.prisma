@@ -13103,3 +13103,115 @@ model SeparationCertificate {
   @@unique([tenantId, period], map: "aura_separation_certificate_unique")
   @@map("aura_separation_certificate")
 }
+
+model ComplianceKpiSnapshot {
+  id                      String   @id(map: "aura_compliance_kpi_snapshot_pkey") @default(uuid())
+  tenantId                String
+  period                  String
+  domain                  String
+  score                   Decimal  @default(0) @db.Decimal(5, 2)
+  ragStatus               String   @default("GREEN")
+  openIssues              Int      @default(0)
+  blockingIssues          Int      @default(0)
+  certificateStatus       String?
+  certificateGatingReason String?
+  metricsJson             Json     @default("{}")
+  createdAt               DateTime @default(now())
+  updatedAt               DateTime @updatedAt
+
+  @@unique([tenantId, period, domain], map: "aura_compliance_kpi_snapshot_unique")
+  @@map("aura_compliance_kpi_snapshot")
+}
+
+model ComplianceRiskEntry {
+  id              String    @id(map: "aura_compliance_risk_entry_pkey") @default(uuid())
+  tenantId        String
+  title           String
+  domain          String
+  country         String?
+  likelihood      Int
+  impact          Int
+  score           Int
+  band            String
+  ownerId         String?
+  lastReviewedAt  DateTime?
+  nextReviewAt    DateTime?
+  mitigationNotes String?
+  status          String    @default("OPEN")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([tenantId], map: "aura_compliance_risk_entry_tenant")
+  @@map("aura_compliance_risk_entry")
+}
+
+model ComplianceCorrectiveAction {
+  id                String    @id(map: "aura_compliance_corrective_action_pkey") @default(uuid())
+  tenantId          String
+  actionNumber      String
+  sourceDomain      String
+  sourceRef         String?
+  title             String
+  description       String?
+  rootCause         String?
+  severity          String    @default("MEDIUM")
+  ownerId           String?
+  raisedAt          DateTime  @default(now())
+  raisedBy          String?
+  dueAt             DateTime?
+  completedAt       DateTime?
+  completedBy       String?
+  verificationNotes String?
+  status            String    @default("OPEN")
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@unique([tenantId, actionNumber], map: "aura_compliance_corrective_action_unique")
+  @@map("aura_compliance_corrective_action")
+}
+
+model ComplianceReviewCalendarItem {
+  id              String    @id(map: "aura_compliance_review_calendar_item_pkey") @default(uuid())
+  tenantId        String
+  title           String
+  domain          String
+  category        String?
+  ownerId         String?
+  dueAt           DateTime
+  frequency       String    @default("MONTHLY")
+  lastCompletedAt DateTime?
+  status          String    @default("PENDING")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([tenantId, dueAt], map: "aura_compliance_review_calendar_item_tenant")
+  @@map("aura_compliance_review_calendar_item")
+}
+
+model ExecutiveComplianceCertificate {
+  id                       String    @id(map: "aura_executive_compliance_certificate_pkey") @default(uuid())
+  tenantId                 String
+  period                   String
+  status                   String    @default("DRAFT")
+  domainCount              Int       @default(0)
+  greenDomains             Int       @default(0)
+  amberDomains             Int       @default(0)
+  redDomains               Int       @default(0)
+  blockingIssuesTotal      Int       @default(0)
+  criticalRisksOpen        Int       @default(0)
+  correctiveActionsOpen    Int       @default(0)
+  correctiveActionsOverdue Int       @default(0)
+  reviewItemsOverdue       Int       @default(0)
+  averageScore             Decimal   @default(0) @db.Decimal(5, 2)
+  domainBreakdownJson      Json      @default("[]")
+  gatingReason             String?
+  attestationsJson         Json      @default("[]")
+  generatedAt              DateTime?
+  signedAt                 DateTime?
+  signedBy                 String?
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+
+  @@unique([tenantId, period], map: "aura_executive_compliance_certificate_unique")
+  @@map("aura_executive_compliance_certificate")
+}

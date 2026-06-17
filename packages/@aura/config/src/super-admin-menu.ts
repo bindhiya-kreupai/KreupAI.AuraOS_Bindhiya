@@ -221,6 +221,19 @@ export const superAdminMenu: MenuDefinition = {
             ],
             items: [
                 {
+                    code: 'EXECUTIVE_COMPLIANCE',
+                    label: 'Executive Compliance Rollup',
+                    icon: 'dashboard',
+                    path: '/dashboard/executive-compliance',
+                    features: [
+                        '21-Domain RAG Status Grid',
+                        'Compliance Risk Heatmap (L × I)',
+                        'Corrective Action Register',
+                        'Compliance Review Calendar',
+                        'Executive Monthly Certificate',
+                    ],
+                },
+                {
                     code: 'GCC_LANDSCAPE',
                     label: 'GCC Landscape',
                     icon: 'dashboard',
