@@ -12541,3 +12541,87 @@ model LeaveCertificate {
   @@unique([tenantId, period], map: "aura_leave_certificate_unique")
   @@map("aura_leave_certificate")
 }
+
+model HolidayPayRule {
+  id                  String    @id(map: "aura_holiday_pay_rule_pkey") @default(uuid())
+  tenantId            String
+  country             String
+  holidayClass        String
+  baseMultiplier      Decimal   @default(1) @db.Decimal(5, 2)
+  otMultiplier        Decimal   @default(2) @db.Decimal(5, 2)
+  compOffDaysAccrued  Decimal   @default(1) @db.Decimal(5, 2)
+  isPaid              Boolean   @default(true)
+  ramadanReducedHours Decimal?  @db.Decimal(5, 2)
+  effectiveFrom       DateTime
+  effectiveTo         DateTime?
+  status              String    @default("ACTIVE")
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@unique([tenantId, country, holidayClass, effectiveFrom], map: "aura_holiday_pay_rule_unique")
+  @@map("aura_holiday_pay_rule")
+}
+
+model HolidayWorkApproval {
+  id              String    @id(map: "aura_holiday_work_approval_pkey") @default(uuid())
+  tenantId        String
+  employeeId      String
+  holidayDate     DateTime
+  holidayLabel    String?
+  holidayClass    String
+  country         String
+  plannedHours    Decimal   @db.Decimal(5, 2)
+  reason          String?
+  status          String    @default("PENDING")
+  requestedAt     DateTime  @default(now())
+  requestedBy     String?
+  approverId      String?
+  approvedAt      DateTime?
+  rejectionReason String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([tenantId, employeeId], map: "aura_holiday_work_approval_employee")
+  @@map("aura_holiday_work_approval")
+}
+
+model HolidayCompOff {
+  id             String    @id(map: "aura_holiday_comp_off_pkey") @default(uuid())
+  tenantId       String
+  employeeId     String
+  workApprovalId String?
+  earnedDate     DateTime
+  daysAccrued    Decimal   @db.Decimal(5, 2)
+  daysConsumed   Decimal   @default(0) @db.Decimal(5, 2)
+  expiresAt      DateTime?
+  status         String    @default("AVAILABLE")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([tenantId, employeeId], map: "aura_holiday_comp_off_employee")
+  @@map("aura_holiday_comp_off")
+}
+
+model HolidayCertificate {
+  id                         String    @id(map: "aura_holiday_certificate_pkey") @default(uuid())
+  tenantId                   String
+  period                     String
+  status                     String    @default("DRAFT")
+  publishedHolidaysCount     Int       @default(0)
+  provisionalCount           Int       @default(0)
+  workApprovalsTotal         Int       @default(0)
+  workApprovalsPending       Int       @default(0)
+  compOffAvailableDays       Decimal   @default(0) @db.Decimal(10, 2)
+  compOffExpiringSoon        Int       @default(0)
+  unapprovedHolidayWorkCount Int       @default(0)
+  gatingReason               String?
+  attestationsJson           Json      @default("[]")
+  generatedAt                DateTime?
+  signedAt                   DateTime?
+  signedBy                   String?
+  createdAt                  DateTime  @default(now())
+  updatedAt                  DateTime  @updatedAt
+
+  @@unique([tenantId, period], map: "aura_holiday_certificate_unique")
+  @@map("aura_holiday_certificate")
+}

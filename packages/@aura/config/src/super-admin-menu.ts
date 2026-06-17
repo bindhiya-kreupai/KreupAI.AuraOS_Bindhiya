@@ -492,6 +492,18 @@ export const superAdminMenu: MenuDefinition = {
                         'Monthly Compliance Certificate',
                     ],
                 },
+                {
+                    code: 'HOLIDAYS_COMPLIANCE',
+                    label: 'Holidays (GCC)',
+                    icon: 'leave',
+                    path: '/dashboard/holidays-compliance',
+                    features: [
+                        'Country × Holiday Class Pay Rules (base × + OT ×)',
+                        'Holiday Work Approval (auto comp-off accrual)',
+                        'Comp-Off Ledger (6-month expiry)',
+                        'Monthly Compliance Certificate',
+                    ],
+                },
             ],
         },
         {
