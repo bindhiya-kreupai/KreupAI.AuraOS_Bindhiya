@@ -1,5 +1,7 @@
 # Gap Analysis: EPIC-22-S08 — Education assistance
 
+> **🟠 TRUE GAP — confirmed 2026-06-17.** This story remains incomplete. See [`docs/gcc_compliance/REMAINING-GAPS-2026-06-17.md`](../REMAINING-GAPS-2026-06-17.md) for the consolidated punch list, theme grouping, and pattern-reuse guidance. This file is the original 2026-06-16 audit snapshot.
+
 > Source epic: [EPIC-22-chapter-22-employee-benefits-compliance.md](./EPIC-22-chapter-22-employee-benefits-compliance.md)
 > Parent epic: EPIC-22: Chapter 22 – Employee Benefits Compliance
 > Module: Benefits

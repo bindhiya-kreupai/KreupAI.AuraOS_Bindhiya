@@ -1,5 +1,7 @@
 # Gap Analysis: EPIC-05-S17 — Offer management audit checklist & risk register
 
+> **⚠️ STALE — superseded 2026-06-17.** This story is SHIPPED. Full stack present (Prisma + service + API + dashboard + menu + Vitest). See [`docs/gcc_compliance/REMAINING-GAPS-2026-06-17.md`](../REMAINING-GAPS-2026-06-17.md) for the canonical remaining-gap list. This file is preserved as a 2026-06-16 audit snapshot only.
+
 > Source epic: [EPIC-05-chapter-5-offer-management-pre-employment-.md](./EPIC-05-chapter-5-offer-management-pre-employment-.md)
 > Parent epic: EPIC-05: Chapter 5 – Offer Management & Pre-Employment Compliance
 > Module: Recruitment

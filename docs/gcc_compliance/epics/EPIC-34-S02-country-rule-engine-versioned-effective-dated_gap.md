@@ -1,5 +1,7 @@
 # Gap Analysis: EPIC-34-S02 — Country rule engine (versioned, effective-dated)
 
+> **⚠️ STALE — superseded 2026-06-17.** This story is SHIPPED. Full stack present (Prisma + service + API + dashboard + menu + Vitest). See [`docs/gcc_compliance/REMAINING-GAPS-2026-06-17.md`](../REMAINING-GAPS-2026-06-17.md) for the canonical remaining-gap list. This file is preserved as a 2026-06-16 audit snapshot only.
+
 > Source epic: [EPIC-34-chapter-34-hrms-configuration-for-gcc-comp.md](./EPIC-34-chapter-34-hrms-configuration-for-gcc-comp.md)
 > Parent epic: EPIC-34: Chapter 34 – HRMS Configuration for GCC Compliance
 > Module: platform

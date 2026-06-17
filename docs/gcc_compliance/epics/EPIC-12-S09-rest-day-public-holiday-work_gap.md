@@ -1,5 +1,7 @@
 # Gap Analysis: EPIC-12-S09 — Rest-day & public-holiday work
 
+> **⚠️ STALE — superseded 2026-06-17.** This story is SHIPPED. Full stack present (Prisma + service + API + dashboard + menu + Vitest). See [`docs/gcc_compliance/REMAINING-GAPS-2026-06-17.md`](../REMAINING-GAPS-2026-06-17.md) for the canonical remaining-gap list. This file is preserved as a 2026-06-16 audit snapshot only.
+
 > Source epic: [EPIC-12-chapter-12-overtime-compliance.md](./EPIC-12-chapter-12-overtime-compliance.md)
 > Parent epic: EPIC-12: Chapter 12 – Overtime Compliance
 > Module: Time & Attendance

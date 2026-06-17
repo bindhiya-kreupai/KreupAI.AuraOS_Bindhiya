@@ -1,5 +1,7 @@
 # Gap Analysis: EPIC-11-S08 — WPS exception management
 
+> **⚠️ STALE — superseded 2026-06-17.** This story is SHIPPED. Full stack present (Prisma + service + API + dashboard + menu + Vitest). See [`docs/gcc_compliance/REMAINING-GAPS-2026-06-17.md`](../REMAINING-GAPS-2026-06-17.md) for the canonical remaining-gap list. This file is preserved as a 2026-06-16 audit snapshot only.
+
 > Source epic: [EPIC-11-chapter-11-wage-protection-system-complian.md](./EPIC-11-chapter-11-wage-protection-system-complian.md)
 > Parent epic: EPIC-11: Chapter 11 – Wage Protection System Compliance
 > Module: Payroll / WPS

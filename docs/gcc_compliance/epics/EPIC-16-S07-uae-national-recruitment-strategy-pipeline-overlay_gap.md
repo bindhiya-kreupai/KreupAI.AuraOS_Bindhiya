@@ -1,5 +1,7 @@
 # Gap Analysis: EPIC-16-S07 — UAE national recruitment strategy & pipeline overlay
 
+> **🟠 TRUE GAP — confirmed 2026-06-17.** This story remains incomplete. See [`docs/gcc_compliance/REMAINING-GAPS-2026-06-17.md`](../REMAINING-GAPS-2026-06-17.md) for the consolidated punch list, theme grouping, and pattern-reuse guidance. This file is the original 2026-06-16 audit snapshot.
+
 > Source epic: [EPIC-16-chapter-16-emiratisation-compliance.md](./EPIC-16-chapter-16-emiratisation-compliance.md)
 > Parent epic: EPIC-16: Chapter 16 – Emiratisation Compliance
 > Module: Nationalization

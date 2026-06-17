@@ -1,5 +1,7 @@
 # Gap Analysis: EPIC-07-S04 — Job title & occupation classification compliance
 
+> **⚠️ STALE — superseded 2026-06-17.** This story is SHIPPED. Full stack present (Prisma + service + API + dashboard + menu + Vitest). See [`docs/gcc_compliance/REMAINING-GAPS-2026-06-17.md`](../REMAINING-GAPS-2026-06-17.md) for the canonical remaining-gap list. This file is preserved as a 2026-06-16 audit snapshot only.
+
 > Source epic: [EPIC-07-chapter-7-immigration-work-authorization-c.md](./EPIC-07-chapter-7-immigration-work-authorization-c.md)
 > Parent epic: EPIC-07: Chapter 7 – Immigration & Work Authorization Compliance
 > Module: Immigration

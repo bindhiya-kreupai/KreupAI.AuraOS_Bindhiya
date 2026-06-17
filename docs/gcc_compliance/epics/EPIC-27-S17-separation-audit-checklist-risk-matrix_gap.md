@@ -1,5 +1,7 @@
 # Gap Analysis: EPIC-27-S17 — Separation Audit Checklist & Risk Matrix
 
+> **🟠 TRUE GAP — confirmed 2026-06-17.** This story remains incomplete. See [`docs/gcc_compliance/REMAINING-GAPS-2026-06-17.md`](../REMAINING-GAPS-2026-06-17.md) for the consolidated punch list, theme grouping, and pattern-reuse guidance. This file is the original 2026-06-16 audit snapshot.
+
 > Source epic: [EPIC-27-chapter-27-termination-and-separation-comp.md](./EPIC-27-chapter-27-termination-and-separation-comp.md)
 > Parent epic: EPIC-27: Chapter 27 – Termination and Separation Compliance
 > Module: Separation

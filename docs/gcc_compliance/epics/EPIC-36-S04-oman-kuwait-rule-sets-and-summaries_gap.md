@@ -1,5 +1,7 @@
 # Gap Analysis: EPIC-36-S04 — Oman & Kuwait rule sets and summaries
 
+> **⚠️ STALE — superseded 2026-06-17.** This story is SHIPPED. Full stack present (Prisma + service + API + dashboard + menu + Vitest). See [`docs/gcc_compliance/REMAINING-GAPS-2026-06-17.md`](../REMAINING-GAPS-2026-06-17.md) for the canonical remaining-gap list. This file is preserved as a 2026-06-16 audit snapshot only.
+
 > Source epic: [EPIC-36-gcc-country-compliance-library-rule-config.md](./EPIC-36-gcc-country-compliance-library-rule-config.md)
 > Parent epic: EPIC-36: GCC Country Compliance Library & Rule Config
 > Module: platform

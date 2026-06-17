@@ -1,5 +1,7 @@
 # Gap Analysis: EPIC-02-S16 — Qatar labour framework & WPS rule set + file
 
+> **⚠️ STALE — superseded 2026-06-17.** This story is SHIPPED. Full stack present (Prisma + service + API + dashboard + menu + Vitest). See [`docs/gcc_compliance/REMAINING-GAPS-2026-06-17.md`](../REMAINING-GAPS-2026-06-17.md) for the canonical remaining-gap list. This file is preserved as a 2026-06-16 audit snapshot only.
+
 > Source epic: [EPIC-02-chapter-2-regulatory-framework.md](./EPIC-02-chapter-2-regulatory-framework.md)
 > Parent epic: EPIC-02: Chapter 2 – Regulatory Framework
 > Module: Platform / Country Rule Engine

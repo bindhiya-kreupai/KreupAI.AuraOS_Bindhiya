@@ -1,5 +1,7 @@
 # Gap Analysis: EPIC-13-S11 — GOSI Audit Checklist & Risk Matrix
 
+> **⚠️ STALE — superseded 2026-06-17.** This story is SHIPPED. Full stack present (Prisma + service + API + dashboard + menu + Vitest). See [`docs/gcc_compliance/REMAINING-GAPS-2026-06-17.md`](../REMAINING-GAPS-2026-06-17.md) for the canonical remaining-gap list. This file is preserved as a 2026-06-16 audit snapshot only.
+
 > Source epic: [EPIC-13-chapter-13-gosi-compliance.md](./EPIC-13-chapter-13-gosi-compliance.md)
 > Parent epic: EPIC-13: Chapter 13 – GOSI Compliance
 > Module: Social Insurance

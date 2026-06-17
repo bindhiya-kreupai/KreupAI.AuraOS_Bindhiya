@@ -1,5 +1,7 @@
 # Gap Analysis: EPIC-21-S12 — Holiday communication & calendar change management
 
+> **🟠 TRUE GAP — confirmed 2026-06-17.** This story remains incomplete. See [`docs/gcc_compliance/REMAINING-GAPS-2026-06-17.md`](../REMAINING-GAPS-2026-06-17.md) for the consolidated punch list, theme grouping, and pattern-reuse guidance. This file is the original 2026-06-16 audit snapshot.
+
 > Source epic: [EPIC-21-chapter-21-public-holidays-and-religious-h.md](./EPIC-21-chapter-21-public-holidays-and-religious-h.md)
 > Parent epic: EPIC-21: Chapter 21 – Public Holidays and Religious Holidays Compliance
 > Module: Time & Attendance

@@ -1,5 +1,7 @@
 # Gap Analysis: EPIC-22-S15 — Benefits ↔ payroll & EOSB integration
 
+> **⚠️ STALE — superseded 2026-06-17.** This story is SHIPPED. Full stack present (Prisma + service + API + dashboard + menu + Vitest). See [`docs/gcc_compliance/REMAINING-GAPS-2026-06-17.md`](../REMAINING-GAPS-2026-06-17.md) for the canonical remaining-gap list. This file is preserved as a 2026-06-16 audit snapshot only.
+
 > Source epic: [EPIC-22-chapter-22-employee-benefits-compliance.md](./EPIC-22-chapter-22-employee-benefits-compliance.md)
 > Parent epic: EPIC-22: Chapter 22 – Employee Benefits Compliance
 > Module: Benefits

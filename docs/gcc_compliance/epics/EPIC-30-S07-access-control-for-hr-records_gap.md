@@ -1,5 +1,7 @@
 # Gap Analysis: EPIC-30-S07 — Access Control for HR Records
 
+> **🟠 TRUE GAP — confirmed 2026-06-17.** This story remains incomplete. See [`docs/gcc_compliance/REMAINING-GAPS-2026-06-17.md`](../REMAINING-GAPS-2026-06-17.md) for the consolidated punch list, theme grouping, and pattern-reuse guidance. This file is the original 2026-06-16 audit snapshot.
+
 > Source epic: [EPIC-30-chapter-30-document-retention-and-hr-audit.md](./EPIC-30-chapter-30-document-retention-and-hr-audit.md)
 > Parent epic: EPIC-30: Chapter 30 – Document Retention and HR Audit Compliance
 > Module: Compliance / Audit

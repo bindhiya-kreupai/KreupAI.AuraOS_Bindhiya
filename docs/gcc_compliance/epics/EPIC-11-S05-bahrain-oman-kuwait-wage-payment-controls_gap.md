@@ -1,5 +1,7 @@
 # Gap Analysis: EPIC-11-S05 — Bahrain, Oman & Kuwait wage-payment controls
 
+> **🟠 TRUE GAP — confirmed 2026-06-17.** This story remains incomplete. See [`docs/gcc_compliance/REMAINING-GAPS-2026-06-17.md`](../REMAINING-GAPS-2026-06-17.md) for the consolidated punch list, theme grouping, and pattern-reuse guidance. This file is the original 2026-06-16 audit snapshot.
+
 > Source epic: [EPIC-11-chapter-11-wage-protection-system-complian.md](./EPIC-11-chapter-11-wage-protection-system-complian.md)
 > Parent epic: EPIC-11: Chapter 11 – Wage Protection System Compliance
 > Module: Payroll / WPS

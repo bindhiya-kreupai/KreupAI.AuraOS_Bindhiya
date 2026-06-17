@@ -1,5 +1,7 @@
 # Gap Analysis: EPIC-31-S14 — Compliance automation design & dashboard access control
 
+> **🟠 TRUE GAP — confirmed 2026-06-17.** This story remains incomplete. See [`docs/gcc_compliance/REMAINING-GAPS-2026-06-17.md`](../REMAINING-GAPS-2026-06-17.md) for the consolidated punch list, theme grouping, and pattern-reuse guidance. This file is the original 2026-06-16 audit snapshot.
+
 > Source epic: [EPIC-31-chapter-31-hr-compliance-dashboard-and-con.md](./EPIC-31-chapter-31-hr-compliance-dashboard-and-con.md)
 > Parent epic: EPIC-31: Chapter 31 – HR Compliance Dashboard and Controls
 > Module: Analytics

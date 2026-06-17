@@ -1,5 +1,7 @@
 # Gap Analysis: EPIC-20-S16 — Notice-period & long-term leave / return-to-work
 
+> **🟠 TRUE GAP — confirmed 2026-06-17.** This story remains incomplete. See [`docs/gcc_compliance/REMAINING-GAPS-2026-06-17.md`](../REMAINING-GAPS-2026-06-17.md) for the consolidated punch list, theme grouping, and pattern-reuse guidance. This file is the original 2026-06-16 audit snapshot.
+
 > Source epic: [EPIC-20-chapter-20-leave-management-compliance.md](./EPIC-20-chapter-20-leave-management-compliance.md)
 > Parent epic: EPIC-20: Chapter 20 – Leave Management Compliance
 > Module: Time & Attendance

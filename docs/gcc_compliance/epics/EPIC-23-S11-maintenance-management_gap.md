@@ -1,5 +1,7 @@
 # Gap Analysis: EPIC-23-S11 — Maintenance management
 
+> **🟠 TRUE GAP — confirmed 2026-06-17.** This story remains incomplete. See [`docs/gcc_compliance/REMAINING-GAPS-2026-06-17.md`](../REMAINING-GAPS-2026-06-17.md) for the consolidated punch list, theme grouping, and pattern-reuse guidance. This file is the original 2026-06-16 audit snapshot.
+
 > Source epic: [EPIC-23-chapter-23-accommodation-and-labour-camp-c.md](./EPIC-23-chapter-23-accommodation-and-labour-camp-c.md)
 > Parent epic: EPIC-23: Chapter 23 – Accommodation and Labour Camp Compliance
 > Module: Welfare

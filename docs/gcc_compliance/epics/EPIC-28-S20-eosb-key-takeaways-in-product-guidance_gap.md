@@ -1,5 +1,7 @@
 # Gap Analysis: EPIC-28-S20 — EOSB Key Takeaways & In-Product Guidance
 
+> **⚠️ STALE — superseded 2026-06-17.** This story is SHIPPED. Full stack present (Prisma + service + API + dashboard + menu + Vitest). See [`docs/gcc_compliance/REMAINING-GAPS-2026-06-17.md`](../REMAINING-GAPS-2026-06-17.md) for the canonical remaining-gap list. This file is preserved as a 2026-06-16 audit snapshot only.
+
 > Source epic: [EPIC-28-chapter-28-end-of-service-benefits-complia.md](./EPIC-28-chapter-28-end-of-service-benefits-complia.md)
 > Parent epic: EPIC-28: Chapter 28 – End-of-Service Benefits Compliance
 > Module: Separation

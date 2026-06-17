@@ -1,5 +1,7 @@
 # Gap Analysis: EPIC-15-S09 — Expatriate End-of-Service Gratuity Funding
 
+> **🟠 TRUE GAP — confirmed 2026-06-17.** This story remains incomplete. See [`docs/gcc_compliance/REMAINING-GAPS-2026-06-17.md`](../REMAINING-GAPS-2026-06-17.md) for the consolidated punch list, theme grouping, and pattern-reuse guidance. This file is the original 2026-06-16 audit snapshot.
+
 > Source epic: [EPIC-15-chapter-15-bahrain-sio-compliance.md](./EPIC-15-chapter-15-bahrain-sio-compliance.md)
 > Parent epic: EPIC-15: Chapter 15 – Bahrain SIO Compliance
 > Module: Social Insurance

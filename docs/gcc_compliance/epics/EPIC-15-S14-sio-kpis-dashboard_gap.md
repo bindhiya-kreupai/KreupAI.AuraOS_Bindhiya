@@ -1,5 +1,7 @@
 # Gap Analysis: EPIC-15-S14 — SIO KPIs & Dashboard
 
+> **⚠️ STALE — superseded 2026-06-17.** This story is SHIPPED. Full stack present (Prisma + service + API + dashboard + menu + Vitest). See [`docs/gcc_compliance/REMAINING-GAPS-2026-06-17.md`](../REMAINING-GAPS-2026-06-17.md) for the canonical remaining-gap list. This file is preserved as a 2026-06-16 audit snapshot only.
+
 > Source epic: [EPIC-15-chapter-15-bahrain-sio-compliance.md](./EPIC-15-chapter-15-bahrain-sio-compliance.md)
 > Parent epic: EPIC-15: Chapter 15 – Bahrain SIO Compliance
 > Module: Social Insurance

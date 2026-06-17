@@ -1,5 +1,7 @@
 # Gap Analysis: EPIC-31-S03 — Executive HR Compliance Dashboard
 
+> **⚠️ STALE — superseded 2026-06-17.** This story is SHIPPED. Full stack present (Prisma + service + API + dashboard + menu + Vitest). See [`docs/gcc_compliance/REMAINING-GAPS-2026-06-17.md`](../REMAINING-GAPS-2026-06-17.md) for the canonical remaining-gap list. This file is preserved as a 2026-06-16 audit snapshot only.
+
 > Source epic: [EPIC-31-chapter-31-hr-compliance-dashboard-and-con.md](./EPIC-31-chapter-31-hr-compliance-dashboard-and-con.md)
 > Parent epic: EPIC-31: Chapter 31 – HR Compliance Dashboard and Controls
 > Module: Analytics

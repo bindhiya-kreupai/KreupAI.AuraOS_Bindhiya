@@ -1,5 +1,7 @@
 # Gap Analysis: EPIC-03-S05 — Manpower Requisition with maker-checker approval workflow
 
+> **⚠️ STALE — superseded 2026-06-17.** This story is SHIPPED. Full stack present (Prisma + service + API + dashboard + menu + Vitest). See [`docs/gcc_compliance/REMAINING-GAPS-2026-06-17.md`](../REMAINING-GAPS-2026-06-17.md) for the canonical remaining-gap list. This file is preserved as a 2026-06-16 audit snapshot only.
+
 > Source epic: [EPIC-03-chapter-3-workforce-planning-manpower-comp.md](./EPIC-03-chapter-3-workforce-planning-manpower-comp.md)
 > Parent epic: EPIC-03: Chapter 3 – Workforce Planning & Manpower Compliance
 > Module: Core HR

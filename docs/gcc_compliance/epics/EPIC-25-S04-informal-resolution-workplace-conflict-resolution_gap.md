@@ -1,5 +1,7 @@
 # Gap Analysis: EPIC-25-S04 — Informal Resolution & Workplace Conflict Resolution
 
+> **🟠 TRUE GAP — confirmed 2026-06-17.** This story remains incomplete. See [`docs/gcc_compliance/REMAINING-GAPS-2026-06-17.md`](../REMAINING-GAPS-2026-06-17.md) for the consolidated punch list, theme grouping, and pattern-reuse guidance. This file is the original 2026-06-16 audit snapshot.
+
 > Source epic: [EPIC-25-chapter-25-employee-relations-and-grievanc.md](./EPIC-25-chapter-25-employee-relations-and-grievanc.md)
 > Parent epic: EPIC-25: Chapter 25 – Employee Relations and Grievance Compliance
 > Module: Employee Relations

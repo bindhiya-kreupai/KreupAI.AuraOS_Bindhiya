@@ -1,5 +1,7 @@
 # Gap Analysis: EPIC-24-S12 — First aid & medical support
 
+> **🟠 TRUE GAP — confirmed 2026-06-17.** This story remains incomplete. See [`docs/gcc_compliance/REMAINING-GAPS-2026-06-17.md`](../REMAINING-GAPS-2026-06-17.md) for the consolidated punch list, theme grouping, and pattern-reuse guidance. This file is the original 2026-06-16 audit snapshot.
+
 > Source epic: [EPIC-24-chapter-24-health-safety-and-welfare-compl.md](./EPIC-24-chapter-24-health-safety-and-welfare-compl.md)
 > Parent epic: EPIC-24: Chapter 24 – Health, Safety and Welfare Compliance
 > Module: HSE

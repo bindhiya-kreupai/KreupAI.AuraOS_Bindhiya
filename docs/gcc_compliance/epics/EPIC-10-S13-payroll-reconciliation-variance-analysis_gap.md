@@ -1,5 +1,7 @@
 # Gap Analysis: EPIC-10-S13 — Payroll reconciliation & variance analysis
 
+> **🟠 TRUE GAP — confirmed 2026-06-17.** This story remains incomplete. See [`docs/gcc_compliance/REMAINING-GAPS-2026-06-17.md`](../REMAINING-GAPS-2026-06-17.md) for the consolidated punch list, theme grouping, and pattern-reuse guidance. This file is the original 2026-06-16 audit snapshot.
+
 > Source epic: [EPIC-10-chapter-10-payroll-management-processing.md](./EPIC-10-chapter-10-payroll-management-processing.md)
 > Parent epic: EPIC-10: Chapter 10 – Payroll Management & Processing
 > Module: Payroll

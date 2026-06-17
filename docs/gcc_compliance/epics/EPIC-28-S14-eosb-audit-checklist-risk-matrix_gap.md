@@ -1,5 +1,7 @@
 # Gap Analysis: EPIC-28-S14 — EOSB Audit Checklist & Risk Matrix
 
+> **🟠 TRUE GAP — confirmed 2026-06-17.** This story remains incomplete. See [`docs/gcc_compliance/REMAINING-GAPS-2026-06-17.md`](../REMAINING-GAPS-2026-06-17.md) for the consolidated punch list, theme grouping, and pattern-reuse guidance. This file is the original 2026-06-16 audit snapshot.
+
 > Source epic: [EPIC-28-chapter-28-end-of-service-benefits-complia.md](./EPIC-28-chapter-28-end-of-service-benefits-complia.md)
 > Parent epic: EPIC-28: Chapter 28 – End-of-Service Benefits Compliance
 > Module: Separation

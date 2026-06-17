@@ -1,5 +1,7 @@
 # Gap Analysis: EPIC-25-S03 — Initial Risk Assessment & Triage Routing
 
+> **⚠️ STALE — superseded 2026-06-17.** This story is SHIPPED. Full stack present (Prisma + service + API + dashboard + menu + Vitest). See [`docs/gcc_compliance/REMAINING-GAPS-2026-06-17.md`](../REMAINING-GAPS-2026-06-17.md) for the canonical remaining-gap list. This file is preserved as a 2026-06-16 audit snapshot only.
+
 > Source epic: [EPIC-25-chapter-25-employee-relations-and-grievanc.md](./EPIC-25-chapter-25-employee-relations-and-grievanc.md)
 > Parent epic: EPIC-25: Chapter 25 – Employee Relations and Grievance Compliance
 > Module: Employee Relations

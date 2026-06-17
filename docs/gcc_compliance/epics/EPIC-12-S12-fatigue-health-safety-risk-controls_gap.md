@@ -1,5 +1,7 @@
 # Gap Analysis: EPIC-12-S12 — Fatigue & health-&-safety risk controls
 
+> **🟠 TRUE GAP — confirmed 2026-06-17.** This story remains incomplete. See [`docs/gcc_compliance/REMAINING-GAPS-2026-06-17.md`](../REMAINING-GAPS-2026-06-17.md) for the consolidated punch list, theme grouping, and pattern-reuse guidance. This file is the original 2026-06-16 audit snapshot.
+
 > Source epic: [EPIC-12-chapter-12-overtime-compliance.md](./EPIC-12-chapter-12-overtime-compliance.md)
 > Parent epic: EPIC-12: Chapter 12 – Overtime Compliance
 > Module: Time & Attendance

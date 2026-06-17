@@ -1,5 +1,7 @@
 # Gap Analysis: EPIC-23-S06 — Fire, life & electrical/utility safety
 
+> **⚠️ STALE — superseded 2026-06-17.** This story is SHIPPED. Full stack present (Prisma + service + API + dashboard + menu + Vitest). See [`docs/gcc_compliance/REMAINING-GAPS-2026-06-17.md`](../REMAINING-GAPS-2026-06-17.md) for the canonical remaining-gap list. This file is preserved as a 2026-06-16 audit snapshot only.
+
 > Source epic: [EPIC-23-chapter-23-accommodation-and-labour-camp-c.md](./EPIC-23-chapter-23-accommodation-and-labour-camp-c.md)
 > Parent epic: EPIC-23: Chapter 23 – Accommodation and Labour Camp Compliance
 > Module: Welfare

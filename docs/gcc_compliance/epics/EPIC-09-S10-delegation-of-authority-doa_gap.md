@@ -1,5 +1,7 @@
 # Gap Analysis: EPIC-09-S10 — Delegation of authority (DoA)
 
+> **🟠 TRUE GAP — confirmed 2026-06-17.** This story remains incomplete. See [`docs/gcc_compliance/REMAINING-GAPS-2026-06-17.md`](../REMAINING-GAPS-2026-06-17.md) for the consolidated punch list, theme grouping, and pattern-reuse guidance. This file is the original 2026-06-16 audit snapshot.
+
 > Source epic: [EPIC-09-chapter-9-organization-position-management.md](./EPIC-09-chapter-9-organization-position-management.md)
 > Parent epic: EPIC-09: Chapter 9 – Organization & Position Management
 > Module: Core HR

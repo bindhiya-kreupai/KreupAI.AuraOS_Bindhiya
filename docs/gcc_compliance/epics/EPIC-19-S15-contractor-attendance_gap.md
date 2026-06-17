@@ -1,5 +1,7 @@
 # Gap Analysis: EPIC-19-S15 — Contractor attendance
 
+> **🟠 TRUE GAP — confirmed 2026-06-17.** This story remains incomplete. See [`docs/gcc_compliance/REMAINING-GAPS-2026-06-17.md`](../REMAINING-GAPS-2026-06-17.md) for the consolidated punch list, theme grouping, and pattern-reuse guidance. This file is the original 2026-06-16 audit snapshot.
+
 > Source epic: [EPIC-19-chapter-19-attendance-compliance.md](./EPIC-19-chapter-19-attendance-compliance.md)
 > Parent epic: EPIC-19: Chapter 19 – Attendance Compliance
 > Module: Time & Attendance

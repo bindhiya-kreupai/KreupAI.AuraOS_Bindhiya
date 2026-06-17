@@ -1,5 +1,7 @@
 # Gap Analysis: EPIC-21-S07 — Compensatory off for holiday work
 
+> **⚠️ STALE — superseded 2026-06-17.** This story is SHIPPED. Full stack present (Prisma + service + API + dashboard + menu + Vitest). See [`docs/gcc_compliance/REMAINING-GAPS-2026-06-17.md`](../REMAINING-GAPS-2026-06-17.md) for the canonical remaining-gap list. This file is preserved as a 2026-06-16 audit snapshot only.
+
 > Source epic: [EPIC-21-chapter-21-public-holidays-and-religious-h.md](./EPIC-21-chapter-21-public-holidays-and-religious-h.md)
 > Parent epic: EPIC-21: Chapter 21 – Public Holidays and Religious Holidays Compliance
 > Module: Time & Attendance
