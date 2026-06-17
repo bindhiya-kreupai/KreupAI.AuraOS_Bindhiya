@@ -21,6 +21,7 @@
  */
 
 import { prisma } from '@aura/database';
+import { publishComplianceEventAsync } from '../compliance-events';
 
 export interface AuthContext {
   tenantId: string;
@@ -118,7 +119,7 @@ export class RecruitmentCaseService {
 
     const isTerminal =
       nextStage === 'HIRED' || nextStage === 'REJECTED' || nextStage === 'WITHDRAWN';
-    return prisma.recruitmentCase.update({
+    const updated = await prisma.recruitmentCase.update({
       where: { id: caseId },
       data: {
         currentStage: nextStage,
@@ -127,6 +128,24 @@ export class RecruitmentCaseService {
         closedReason: nextStage === 'HIRED' ? 'HIRED' : nextStage,
       },
     });
+
+    // Emit canonical compliance event so downstream services (analytics,
+    // notifications, etc.) can react without coupling. See
+    // lib/services/compliance-events/ for the catalogue.
+    publishComplianceEventAsync({
+      type: 'recruitment.case.transitioned',
+      tenantId: auth.tenantId,
+      actorId: auth.userId,
+      correlationId: caseId,
+      payload: {
+        caseId,
+        candidateId: c.candidateId,
+        fromStage: c.currentStage,
+        toStage: nextStage,
+      },
+    });
+
+    return updated;
   }
 
   async list(filter: { tenantId: string; status?: string; currentStage?: string }) {

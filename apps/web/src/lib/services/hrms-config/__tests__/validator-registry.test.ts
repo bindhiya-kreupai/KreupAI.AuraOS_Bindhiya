@@ -162,14 +162,200 @@ describe('hrms-config validator-registry', () => {
       }
     });
 
-    it('listValidatedDomains includes the built-in domains', () => {
+    it('listValidatedDomains includes all 11 built-in domains', () => {
       const domains = listValidatedDomains();
-      expect(domains).toContain('LEGAL_ENTITY');
-      expect(domains).toContain('PAYROLL_COMPONENT');
-      expect(domains).toContain('EOSB_FORMULA');
-      expect(domains).toContain('LEAVE');
-      expect(domains).toContain('ATTENDANCE');
-      expect(domains).toContain('WPS_MAPPING');
+      expect(domains).toEqual(
+        expect.arrayContaining([
+          'LEGAL_ENTITY',
+          'PAYROLL_COMPONENT',
+          'PAYROLL_CALENDAR',
+          'EOSB_FORMULA',
+          'LEAVE',
+          'ATTENDANCE',
+          'WPS_MAPPING',
+          'SOCIAL_INSURANCE',
+          'NATIONALISATION',
+          'IMMIGRATION',
+          'BENEFITS',
+        ])
+      );
+    });
+  });
+
+  describe('PAYROLL_CALENDAR', () => {
+    it('rejects endDate before startDate', () => {
+      expect(() =>
+        validatePayload('PAYROLL_CALENDAR', {
+          calendarCode: 'MONTHLY',
+          periodLabel: 'July 2026',
+          startDate: '2026-07-15',
+          endDate: '2026-07-01',
+          payDate: '2026-08-05',
+          cutoffDate: '2026-07-01',
+        })
+      ).toThrow(ConfigValidationError);
+    });
+
+    it('rejects cutoffDate after endDate', () => {
+      expect(() =>
+        validatePayload('PAYROLL_CALENDAR', {
+          calendarCode: 'MONTHLY',
+          periodLabel: 'July 2026',
+          startDate: '2026-07-01',
+          endDate: '2026-07-31',
+          payDate: '2026-08-05',
+          cutoffDate: '2026-08-01',
+        })
+      ).toThrow(ConfigValidationError);
+    });
+
+    it('accepts a valid calendar', () => {
+      const out = validatePayload<{ calendarCode: string }>('PAYROLL_CALENDAR', {
+        calendarCode: 'MONTHLY',
+        periodLabel: 'July 2026',
+        startDate: '2026-07-01',
+        endDate: '2026-07-31',
+        payDate: '2026-08-05',
+        cutoffDate: '2026-07-25',
+      });
+      expect(out.calendarCode).toBe('MONTHLY');
+    });
+  });
+
+  describe('SOCIAL_INSURANCE', () => {
+    it('rejects employerPct over 50', () => {
+      expect(() =>
+        validatePayload('SOCIAL_INSURANCE', {
+          schemeCode: 'GOSI_SAUDI',
+          countryCode: 'SA',
+          applicableTo: 'SAUDI',
+          employerPct: 51,
+          employeePct: 9.75,
+          effectiveFrom: '2026-01-01',
+        })
+      ).toThrow(ConfigValidationError);
+    });
+
+    it('accepts a valid GOSI Saudi scheme', () => {
+      const out = validatePayload<{ schemeCode: string }>('SOCIAL_INSURANCE', {
+        schemeCode: 'GOSI_SAUDI',
+        countryCode: 'SA',
+        applicableTo: 'SAUDI',
+        employerPct: 11.75,
+        employeePct: 9.75,
+        wageFloor: 1500,
+        wageCeiling: 45000,
+        effectiveFrom: '2026-01-01',
+      });
+      expect(out.schemeCode).toBe('GOSI_SAUDI');
+    });
+  });
+
+  describe('NATIONALISATION', () => {
+    it('accepts a valid Emiratisation target', () => {
+      const out = validatePayload<{ programmeCode: string; targetPct: number }>('NATIONALISATION', {
+        programmeCode: 'EMIRATISATION',
+        countryCode: 'AE',
+        effectiveYear: 2026,
+        targetPct: 4,
+        appliesAtHeadcount: 50,
+        finePerMissedHire: 7000,
+        finePerMissedHireCurrency: 'AED',
+      });
+      expect(out.programmeCode).toBe('EMIRATISATION');
+      expect(out.targetPct).toBe(4);
+    });
+
+    it('rejects targetPct over 100', () => {
+      expect(() =>
+        validatePayload('NATIONALISATION', {
+          programmeCode: 'NITAQAT',
+          countryCode: 'SA',
+          effectiveYear: 2026,
+          targetPct: 150,
+        })
+      ).toThrow(ConfigValidationError);
+    });
+
+    it('rejects unknown programme code', () => {
+      expect(() =>
+        validatePayload('NATIONALISATION', {
+          programmeCode: 'GENERIC',
+          countryCode: 'AE',
+          effectiveYear: 2026,
+          targetPct: 5,
+        })
+      ).toThrow(ConfigValidationError);
+    });
+  });
+
+  describe('IMMIGRATION', () => {
+    it('accepts a valid work-permit visa category', () => {
+      const out = validatePayload<{ visaCategory: string }>('IMMIGRATION', {
+        visaCategory: 'WORK_PERMIT_STANDARD',
+        countryCode: 'AE',
+        sponsor: 'EMPLOYER',
+        durationMonths: 24,
+        authorityCode: 'MOHRE',
+      });
+      expect(out.visaCategory).toBe('WORK_PERMIT_STANDARD');
+    });
+
+    it('rejects sponsor outside the enum', () => {
+      expect(() =>
+        validatePayload('IMMIGRATION', {
+          visaCategory: 'WORK_PERMIT',
+          countryCode: 'AE',
+          sponsor: 'AGENCY',
+          durationMonths: 12,
+          authorityCode: 'MOHRE',
+        })
+      ).toThrow(ConfigValidationError);
+    });
+
+    it('rejects negative duration', () => {
+      expect(() =>
+        validatePayload('IMMIGRATION', {
+          visaCategory: 'WORK_PERMIT',
+          countryCode: 'AE',
+          sponsor: 'EMPLOYER',
+          durationMonths: 0,
+          authorityCode: 'MOHRE',
+        })
+      ).toThrow(ConfigValidationError);
+    });
+  });
+
+  describe('BENEFITS', () => {
+    it('accepts a valid medical plan', () => {
+      const out = validatePayload<{ planCode: string }>('BENEFITS', {
+        planCode: 'GULF_MEDICAL_GOLD',
+        category: 'MEDICAL',
+        eligibility: 'ALL',
+        dependentsCovered: true,
+      });
+      expect(out.planCode).toBe('GULF_MEDICAL_GOLD');
+    });
+
+    it('rejects unknown category', () => {
+      expect(() =>
+        validatePayload('BENEFITS', {
+          planCode: 'X',
+          category: 'CRYPTO',
+          eligibility: 'ALL',
+        })
+      ).toThrow(ConfigValidationError);
+    });
+
+    it('rejects malformed currency code (must be ISO-4217)', () => {
+      expect(() =>
+        validatePayload('BENEFITS', {
+          planCode: 'AIR_TICKET_HOME',
+          category: 'TICKET',
+          eligibility: 'GRADE_BASED',
+          currency: 'dollars', // not 3-letter
+        })
+      ).toThrow(ConfigValidationError);
     });
   });
 

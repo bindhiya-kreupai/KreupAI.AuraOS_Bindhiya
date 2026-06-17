@@ -102,6 +102,93 @@ const WpsMappingSchema = z.object({
   bankAccountIban: z.string().regex(/^[A-Z]{2}\d{2}[A-Z0-9]{11,30}$/, 'iban must match ISO-13616'),
 });
 
+/** S07b PAYROLL_CALENDAR — period definition. */
+const PayrollCalendarSchema = z
+  .object({
+    calendarCode: z.string().regex(/^[A-Z][A-Z0-9_]{1,30}$/),
+    periodLabel: z.string().min(1).max(120),
+    startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'startDate must be YYYY-MM-DD'),
+    endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'endDate must be YYYY-MM-DD'),
+    payDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'payDate must be YYYY-MM-DD'),
+    cutoffDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'cutoffDate must be YYYY-MM-DD'),
+    locked: z.boolean().default(false),
+  })
+  .refine(
+    (v) => new Date(v.endDate).getTime() >= new Date(v.startDate).getTime(),
+    'endDate must be on or after startDate'
+  )
+  .refine(
+    (v) => new Date(v.cutoffDate).getTime() <= new Date(v.endDate).getTime(),
+    'cutoffDate cannot be after endDate'
+  );
+
+/** S09 SOCIAL_INSURANCE — per-country contribution scheme. */
+const SocialInsuranceSchema = z.object({
+  schemeCode: z.string().regex(/^[A-Z][A-Z0-9_]{1,30}$/),
+  countryCode: z.string().regex(/^[A-Z]{2}$/),
+  applicableTo: z.enum(['SAUDI', 'UAE_NATIONAL', 'GCC_NATIONAL_OTHER', 'EXPAT', 'ALL']),
+  employerPct: z.number().nonnegative().max(50),
+  employeePct: z.number().nonnegative().max(50),
+  wageFloor: z.number().nonnegative().optional(),
+  wageCeiling: z.number().positive().optional(),
+  effectiveFrom: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+});
+
+/** S10 NATIONALISATION — quota target per programme. */
+const NationalisationTargetSchema = z.object({
+  programmeCode: z.enum([
+    'EMIRATISATION',
+    'NITAQAT',
+    'BAHRAINISATION',
+    'OMANISATION',
+    'QATARISATION',
+    'KUWAITISATION',
+  ]),
+  countryCode: z.string().regex(/^[A-Z]{2}$/),
+  effectiveYear: z.number().int().min(2020).max(2100),
+  targetPct: z.number().nonnegative().max(100),
+  appliesAtHeadcount: z.number().int().positive().max(100_000).optional(),
+  finePerMissedHire: z.number().nonnegative().optional(),
+  finePerMissedHireCurrency: z
+    .string()
+    .regex(/^[A-Z]{3}$/)
+    .optional(),
+});
+
+/** S11 IMMIGRATION — visa category configuration. */
+const ImmigrationVisaSchema = z.object({
+  visaCategory: z.string().regex(/^[A-Z][A-Z0-9_]{1,40}$/),
+  countryCode: z.string().regex(/^[A-Z]{2}$/),
+  sponsor: z.enum(['EMPLOYER', 'GOVERNMENT', 'FAMILY']),
+  durationMonths: z.number().int().positive().max(120),
+  renewable: z.boolean().default(true),
+  authorityCode: z.string().regex(/^[A-Z][A-Z0-9_]{1,30}$/),
+  noticeWindowDays: z.number().int().nonnegative().max(365).default(30),
+});
+
+/** S14 BENEFITS — benefit plan configuration. */
+const BenefitsPlanSchema = z.object({
+  planCode: z.string().regex(/^[A-Z][A-Z0-9_]{1,30}$/),
+  category: z.enum([
+    'MEDICAL',
+    'LIFE',
+    'TICKET',
+    'HOUSING',
+    'TRANSPORT',
+    'EDUCATION',
+    'LOAN',
+    'WELLNESS',
+    'PPE',
+  ]),
+  eligibility: z.enum(['ALL', 'NATIONAL_ONLY', 'GRADE_BASED', 'CONTRACT_BASED']),
+  amountFormula: z.string().max(1000).optional(),
+  currency: z
+    .string()
+    .regex(/^[A-Z]{3}$/)
+    .optional(),
+  dependentsCovered: z.boolean().default(false),
+});
+
 // ----------------------------------------------------------------------------
 // Registry
 // ----------------------------------------------------------------------------
@@ -109,10 +196,15 @@ const WpsMappingSchema = z.object({
 const DEFAULT_SCHEMAS: Record<string, ZodSchema> = {
   LEGAL_ENTITY: LegalEntityProfileSchema,
   PAYROLL_COMPONENT: PayrollComponentSchema,
+  PAYROLL_CALENDAR: PayrollCalendarSchema,
   EOSB_FORMULA: EosbFormulaSchema,
   LEAVE: LeaveTypeSchema,
   ATTENDANCE: ShiftSchema,
   WPS_MAPPING: WpsMappingSchema,
+  SOCIAL_INSURANCE: SocialInsuranceSchema,
+  NATIONALISATION: NationalisationTargetSchema,
+  IMMIGRATION: ImmigrationVisaSchema,
+  BENEFITS: BenefitsPlanSchema,
 };
 
 const registry = new Map<string, ZodSchema>(Object.entries(DEFAULT_SCHEMAS));
