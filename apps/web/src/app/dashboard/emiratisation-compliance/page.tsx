@@ -69,6 +69,60 @@ export default function EmiratisationHome() {
         </section>
 
         <section className="rounded-lg border border-slate-200 bg-white p-4">
+          <h2 className="text-base font-semibold">Workspaces</h2>
+          <ul className="mt-2 grid gap-2 text-sm md:grid-cols-2">
+            <li>
+              <a
+                href="/dashboard/emiratisation-compliance/config"
+                className="text-blue-700 hover:underline"
+              >
+                Establishment Scope (S01–S02)
+              </a>
+            </li>
+            <li>
+              <a
+                href="/dashboard/emiratisation-compliance/targets"
+                className="text-blue-700 hover:underline"
+              >
+                Annual Targets &amp; Fines (S03 / S05)
+              </a>
+            </li>
+            <li>
+              <a
+                href="/dashboard/emiratisation-compliance/hires"
+                className="text-blue-700 hover:underline"
+              >
+                UAE National Hires &amp; Fake-Risk (S06 / S07 / S10 / S11)
+              </a>
+            </li>
+            <li>
+              <a
+                href="/dashboard/emiratisation-compliance/snapshots"
+                className="text-blue-700 hover:underline"
+              >
+                Checkpoint Snapshots (S04 / S05 / S14)
+              </a>
+            </li>
+            <li>
+              <a
+                href="/dashboard/emiratisation-compliance/fines"
+                className="text-blue-700 hover:underline"
+              >
+                Fines: Projected → Incurred → Resolved (S05)
+              </a>
+            </li>
+            <li>
+              <a
+                href="/dashboard/emiratisation-compliance/certificate"
+                className="text-blue-700 hover:underline"
+              >
+                Monthly Certificate (S20 / S21)
+              </a>
+            </li>
+          </ul>
+        </section>
+
+        <section className="rounded-lg border border-slate-200 bg-white p-4">
           <h2 className="text-base font-semibold">API</h2>
           <ul className="mt-2 list-disc pl-5 text-sm text-slate-700">
             <li>POST /api/v1/emiratisation-compliance/config — set establishment scope</li>

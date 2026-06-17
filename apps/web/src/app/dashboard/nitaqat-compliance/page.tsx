@@ -73,6 +73,52 @@ export default function NitaqatHome() {
         ) : null}
 
         <section className="rounded-lg border border-slate-200 bg-white p-4">
+          <h2 className="text-base font-semibold">Workspaces</h2>
+          <ul className="mt-2 grid gap-2 text-sm md:grid-cols-2">
+            <li>
+              <a
+                href="/dashboard/nitaqat-compliance/config"
+                className="text-blue-700 hover:underline"
+              >
+                Establishment Scope &amp; Headcount (S01 / S02)
+              </a>
+            </li>
+            <li>
+              <a
+                href="/dashboard/nitaqat-compliance/thresholds"
+                className="text-blue-700 hover:underline"
+              >
+                Band Thresholds (S03 / S04)
+              </a>
+            </li>
+            <li>
+              <a
+                href="/dashboard/nitaqat-compliance/hires"
+                className="text-blue-700 hover:underline"
+              >
+                Saudi Hires &amp; Evidence (S07 / S08)
+              </a>
+            </li>
+            <li>
+              <a
+                href="/dashboard/nitaqat-compliance/snapshots"
+                className="text-blue-700 hover:underline"
+              >
+                Band Snapshots (S05 / S09 / S14)
+              </a>
+            </li>
+            <li>
+              <a
+                href="/dashboard/nitaqat-compliance/certificate"
+                className="text-blue-700 hover:underline"
+              >
+                Monthly Certificate (S20 / S21)
+              </a>
+            </li>
+          </ul>
+        </section>
+
+        <section className="rounded-lg border border-slate-200 bg-white p-4">
           <h2 className="text-base font-semibold">Band Privileges</h2>
           <table className="mt-3 w-full text-left text-sm">
             <thead className="border-b border-slate-200 text-xs uppercase text-slate-500">

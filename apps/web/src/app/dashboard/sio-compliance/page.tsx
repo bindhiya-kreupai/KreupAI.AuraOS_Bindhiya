@@ -93,6 +93,33 @@ export default function SioHome() {
             reconciliation gates the monthly certificate.
           </p>
         </section>
+
+        <section className="rounded-lg border border-slate-200 bg-white p-4">
+          <h2 className="text-base font-semibold">Workspaces</h2>
+          <ul className="mt-3 grid gap-2 md:grid-cols-2 lg:grid-cols-4">
+            {[
+              {
+                href: '/dashboard/sio-compliance/registrations',
+                label: 'Registrations (S04, S09)',
+              },
+              {
+                href: '/dashboard/sio-compliance/contributions',
+                label: 'Wages & Contributions (S05–S08)',
+              },
+              { href: '/dashboard/sio-compliance/reconciliation', label: 'Reconciliation (S11)' },
+              { href: '/dashboard/sio-compliance/certificate', label: 'Monthly Certificate (S19)' },
+            ].map((t) => (
+              <li key={t.href}>
+                <a
+                  href={t.href}
+                  className="block rounded-md border border-slate-200 px-3 py-2 text-sm hover:border-slate-900 hover:bg-slate-50"
+                >
+                  {t.label}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
       </div>
     </main>
   );
