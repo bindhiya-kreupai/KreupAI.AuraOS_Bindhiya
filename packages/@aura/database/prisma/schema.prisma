@@ -11275,3 +11275,124 @@ model SioEvent {
   @@index([employeeId])
   @@map("aura_sio_event")
 }
+
+// ============================================================================
+// 29. EMIRATISATION COMPLIANCE — UAE NATIONALIZATION (EPIC-16)
+// ============================================================================
+
+model EmiratisationConfig {
+  id                    String   @id(map: "aura_emiratisation_config_pkey") @default(uuid())
+  tenantId              String
+  legalEntityId         String?
+  establishmentName     String
+  isInScope             Boolean  @default(true)
+  skilledWorkforceCount Int      @default(0)
+  sector                String?
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+
+  @@unique([tenantId, legalEntityId], map: "aura_emiratisation_config_unique")
+  @@map("aura_emiratisation_config")
+}
+
+model EmiratisationTarget {
+  id                String    @id(map: "aura_emiratisation_target_pkey") @default(uuid())
+  tenantId          String
+  legalEntityId     String?
+  year              Int
+  halfYearTargetPct Decimal   @db.Decimal(5, 2)
+  yearEndTargetPct  Decimal   @db.Decimal(5, 2)
+  finePerMissedHire Decimal   @default(7000) @db.Decimal(14, 2)
+  currency          String    @default("AED")
+  effectiveFrom     DateTime
+  effectiveTo       DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  createdBy         String?
+
+  @@unique([tenantId, legalEntityId, year], map: "aura_emiratisation_target_unique")
+  @@map("aura_emiratisation_target")
+}
+
+model EmiratisationSnapshot {
+  id               String   @id(map: "aura_emiratisation_snapshot_pkey") @default(uuid())
+  tenantId         String
+  legalEntityId    String?
+  checkpointDate   DateTime
+  checkpoint       String
+  skilledHeadcount Int
+  uaeNationalCount Int
+  actualPct        Decimal  @db.Decimal(5, 2)
+  targetPct        Decimal  @db.Decimal(5, 2)
+  gapPct           Decimal  @db.Decimal(5, 2)
+  missedHires      Int      @default(0)
+  projectedFine    Decimal  @default(0) @db.Decimal(14, 2)
+  ragStatus        String
+  createdAt        DateTime @default(now())
+
+  @@unique([tenantId, legalEntityId, checkpointDate], map: "aura_emiratisation_snapshot_unique")
+  @@map("aura_emiratisation_snapshot")
+}
+
+model EmiratisationHire {
+  id              String   @id(map: "aura_emiratisation_hire_pkey") @default(uuid())
+  tenantId        String
+  legalEntityId   String?
+  employeeId      String
+  hireDate        DateTime
+  jobLevel        String?
+  isSkilled       Boolean  @default(true)
+  nafisReference  String?
+  gpssaRegistered Boolean  @default(false)
+  wpsCovered      Boolean  @default(false)
+  fakeRiskScore   Int      @default(0)
+  fakeRiskFlags   Json     @default("[]")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@unique([tenantId, employeeId], map: "aura_emiratisation_hire_unique")
+  @@index([legalEntityId], map: "aura_emiratisation_hire_legal_entity_idx")
+  @@map("aura_emiratisation_hire")
+}
+
+model EmiratisationFine {
+  id            String    @id(map: "aura_emiratisation_fine_pkey") @default(uuid())
+  tenantId      String
+  legalEntityId String?
+  year          Int
+  checkpoint    String
+  missedHires   Int
+  amount        Decimal   @db.Decimal(14, 2)
+  currency      String    @default("AED")
+  status        String    @default("PROJECTED")
+  incurredAt    DateTime?
+  resolvedAt    DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([tenantId])
+  @@index([status])
+  @@map("aura_emiratisation_fine")
+}
+
+model EmiratisationCertificate {
+  id                   String    @id(map: "aura_emiratisation_certificate_pkey") @default(uuid())
+  tenantId             String
+  period               String
+  status               String    @default("DRAFT")
+  entitiesInScope      Int       @default(0)
+  entitiesAtTarget     Int       @default(0)
+  totalMissedHires     Int       @default(0)
+  totalProjectedFines  Decimal   @default(0) @db.Decimal(14, 2)
+  fakeRiskCount        Int       @default(0)
+  gatingReason         String?
+  attestationsJson     Json      @default("[]")
+  generatedAt          DateTime?
+  signedAt             DateTime?
+  signedBy             String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  @@unique([tenantId, period], map: "aura_emiratisation_certificate_unique")
+  @@map("aura_emiratisation_certificate")
+}
