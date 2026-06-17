@@ -14788,3 +14788,25 @@ model RuleChangeRequest {
   @@index([tenantId, action, status], map: "aura_rule_change_request_action")
   @@map("aura_rule_change_request")
 }
+
+// Tenant-scoped, per-user "saved view" used by shared FilterPanel /
+// DataPage to persist sort, filter, search, and column-visibility state
+// across sessions. `scope` identifies the list page the view applies to
+// (e.g. "payroll.runs:list"). One view per (tenant, user, scope) can be
+// marked the default.
+model TenantSavedView {
+  id        String   @id(map: "aura_tenant_saved_view_pkey") @default(uuid())
+  tenantId  String
+  userId    String
+  scope     String
+  name      String
+  filters   Json
+  isDefault Boolean  @default(false)
+  isShared  Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([tenantId, userId, scope], map: "aura_tenant_saved_view_owner")
+  @@index([tenantId, scope, isShared], map: "aura_tenant_saved_view_shared")
+  @@map("aura_tenant_saved_view")
+}

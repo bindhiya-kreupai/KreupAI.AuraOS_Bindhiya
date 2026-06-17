@@ -75,6 +75,11 @@ export interface DataPageProps<T> {
         label: string;
         value: string;
     }[];
+    /**
+     * Extra controls (e.g. ExportMenu, ImportDialog trigger, SavedView dropdown)
+     * rendered in the DataTable toolbar after the built-in icon buttons.
+     */
+    toolbarSlot?: React.ReactNode;
 }
 
 export function DataPage<T extends { id: string | number }>({
@@ -106,6 +111,7 @@ export function DataPage<T extends { id: string | number }>({
     enableColumnVisibility,
     addButtonText,
     filterParams,
+    toolbarSlot,
 }: DataPageProps<T>) {
     const [isSheetOpen, setIsSheetOpen] = useState(false);
     const [currentRecord, setCurrentRecord] = useState<Partial<T>>(defaultValues);
@@ -282,6 +288,7 @@ export function DataPage<T extends { id: string | number }>({
                     onExport={onExport}
                     onImport={onImport}
                     onFilter={onFilter}
+                    toolbarSlot={toolbarSlot}
                     className="h-full"
                 />
             </div>
