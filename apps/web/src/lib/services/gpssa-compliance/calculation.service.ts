@@ -94,7 +94,9 @@ export class GpssaCalculationService {
     if (!wageRow) throw new Error('contribution wage not recorded for this period');
 
     const cls = reg.nationalityClass as NationalityClass;
-    const rate = await gpssaConfigService.resolveRate(auth.tenantId, cls);
+    // Tenant config first; country rule pack as the regulatory baseline
+    // when tenant config is missing. (audit 2026-06-17 Pattern 1)
+    const rate = await gpssaConfigService.resolveRateWithRulePack(auth.tenantId, cls);
     if (!rate) throw new Error(`no GPSSA rate configured for ${cls}`);
 
     let wage = Number(wageRow.contributionWage);

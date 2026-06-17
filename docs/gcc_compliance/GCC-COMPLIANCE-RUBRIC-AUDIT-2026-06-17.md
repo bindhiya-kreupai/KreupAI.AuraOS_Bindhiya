@@ -254,4 +254,63 @@ The previous `REMAINING-GAPS-2026-06-17.md` is **superseded by this document** f
 
 ---
 
+## 9. Progress log
+
+### 2026-06-17 — Tier 0 shipped (commit `7956565f`)
+
+Six shared UI primitives + the saved-view stack landed (51 tests pass). The `T` column of the rubric is now mechanically achievable across all 38 EPICs:
+
+- `StatusBadge`, `ExportMenu`, `ImportDialog`, `AttachmentUploader`, `EmailRecipientPicker`, `FilterPanel` (with embedded saved-view dropdown)
+- `DataTable` / `DataPage` accept a `toolbarSlot` for backward-compatible adoption
+- `POST /api/v1/share/email` + `SavedViewService` + `/api/v1/saved-views` + `TenantSavedView` Prisma model
+
+**Outstanding before adoption can begin at scale:**
+
+- `prisma db push` to create `aura_tenant_saved_view` (sandbox blocked the direct push; awaits explicit run)
+- Pre-existing schema duplicate: `EOSBCalculation` (Dec 23) and `EosbCalculation` (Jun 17) both `@@map("aura_eosb_calculation")`. Blocks `prisma generate` on a clean clone. Codebase has been running with a stale generated client. Only `EOSBCalculation` is referenced in app code (and only as a TypeScript interface in `pensionEosbService.ts`); the lowercase `EosbCalculation` is the intended new model. Suggested fix: drop the older `EOSBCalculation` model.
+
+### 2026-06-17 — Tier 1 (Pattern 1) partial close (commits `514a741c`, `<next>`)
+
+Pattern 1 ("rule engine no service consumes") is being closed in two commits.
+
+**Shipped in `514a741c`:**
+
+- `resolveRuleValue<T>(country, domain, key, fallback)` + `resolveRuleObject<T>(...)` helper in `lib/services/gcc-rule-library/rule-value.helper.ts` — one-liner rule resolution with hardcoded fallback + rule-engine error tolerance.
+- `EOSBService.calculateWithRulePack(input)` — UAE + KSA branches read `EOSB.GRATUITY_FORMULA` (days, breakpoint, cap) from the active country rule pack. Sync `calculate(input)` unchanged.
+- `EmiratisationConfigService.getDefaults()` + `isApplicableAsync()` — UAE NATIONALIZATION / EMIRATISATION_PRIVATE_TARGET (appliesAt, halfYearTargetPct, yearEndTargetPct, finePerMissedHire). `upsertConfig` and `setTarget` consume the defaults.
+
+**Shipped in `<next>` (this commit):**
+
+- `WpsSubmissionService.submit()` — reads PAYROLL / WPS_SALARY_WINDOW_DAYS from the rule pack for the late-payroll severity threshold (KSA 7 vs UAE 15). Hardcoded 15-day fallback survives if no pack is seeded or the rule engine is unreachable.
+- `GosiConfigService.resolveRateWithRulePack(...)` — tenant config first; falls back to SOCIAL*INSURANCE / GOSI_RATES*<BRANCH>\_<CLASS> from the rule pack. Returns a `GosiResolvedRate` tagged with `source: 'tenant-config' | 'rule-pack'`.
+- `GpssaConfigService.resolveRateWithRulePack(...)` — same shape, with the additional `governmentPct` field for the three-way GPSSA split.
+- Calculation services (`gosi-compliance/calculation.service.ts`, `gpssa-compliance/calculation.service.ts`) now call the new `resolveRateWithRulePack` instead of the original `resolveRate`.
+
+**Test coverage (all rule-pack tests, 33 total):**
+
+- Helper: 7 tests
+- EOSB: 5 tests (rule pack override / fallback / partial / KSA routing / rule-engine outage)
+- Emiratisation: 5 tests (full override / partial / async vs sync isApplicable)
+- WPS: 6 tests (KSA 7 vs UAE 15 / HIGH vs CRITICAL / fallback / outage / country-scoped)
+- GOSI: 5 tests (tenant wins / rule-pack fallback / scalar-only-seed treated as null / key construction / dual null)
+- GPSSA: 5 tests (tenant wins / rule-pack fallback / missing governmentPct → 0 / dual null / key construction)
+
+**Seed-expansion follow-up (NOT done — this is a separate, smaller PR):**
+
+The GOSI / GPSSA wiring lands the _architecture_. The rule-pack hop is a no-op until `lib/services/gcc-rule-library/rule-pack-seeds.ts` is expanded:
+
+- Today's seeds carry only `GOSI_EMPLOYER_PCT_NATIONAL = 11.75` (a scalar).
+- The full rate shape needed is `GOSI_RATES_<BRANCH>_<CLASS>` → `{ employerPct, employeePct, wageFloor?, wageCeiling? }`. Same for `GPSSA_RATES_<CLASS>` plus `governmentPct`.
+- Once the seeds carry the full rate object, tenants without explicit GOSI/GPSSA config will automatically inherit the regulatory baseline from the rule pack instead of throwing "no rate configured".
+
+**Remaining Tier 1 scope (next commits):**
+
+- EOSB Bahrain / Qatar / Oman / Kuwait branches (currently fall through without override support).
+- LabourLawService.getConfig → thin wrapper over `resolveRule` so the legacy callers also benefit.
+- Nitaqat threshold consumers (`nitaqat-compliance/index.ts:NITAQAT_BAND_THRESHOLDS`).
+
+After Tier 1 fully closes, the audit's central finding (EPIC-02 promise broken) becomes a passing-test claim, not a structural failure.
+
+---
+
 _Audit completed 2026-06-17. 38 EPICs audited via parallel `Explore` subagents. Findings sourced from `packages/@aura/database/prisma/schema.prisma`, `apps/web/src/lib/services/`, `apps/web/src/app/api/v1/`, `apps/web/src/app/dashboard/`, `apps/web/src/lib/services/__tests__/`._

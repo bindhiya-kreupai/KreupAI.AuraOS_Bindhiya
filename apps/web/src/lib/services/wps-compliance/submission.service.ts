@@ -6,6 +6,21 @@ import {
   type WpsHeaderContext,
 } from './file-generator.service';
 import { wpsSchemeService } from './scheme.service';
+import { resolveRuleValue } from '../gcc-rule-library/rule-value.helper';
+
+/**
+ * Hardcoded fall-through for the WPS regulatory salary window (days
+ * after the pay-period end at which an unpaid salary becomes
+ * "critically late"). The canonical value lives in the active country
+ * rule pack under PAYROLL / WPS_SALARY_WINDOW_DAYS (EPIC-02 / EPIC-36)
+ * — this constant is only used when no active rule pack is seeded for
+ * the country, or when the rule engine is unreachable. Keep in sync
+ * with rule-pack-seeds.ts.
+ *
+ *   UAE  (MOHRE / WPS):    15 days
+ *   KSA  (MHRSD / Mudad):   7 days  (governed by the rule pack)
+ */
+const FALLBACK_WPS_SEVERITY_THRESHOLD_DAYS = 15;
 
 export interface BuildSubmissionInput {
   countryCode: string;
@@ -170,10 +185,21 @@ export class WpsSubmissionService {
       where: { id: submissionId },
       data: { status: 'SUBMITTED', submittedAt, updatedBy: auth.userId },
     });
-    // Raise salary-delay flags if submitted late
+    // Raise salary-delay flags if submitted late. The CRITICAL vs HIGH
+    // boundary tracks the regulatory salary window per country (UAE 15d,
+    // KSA 7d). Read from the active rule pack so compliance officers can
+    // edit the threshold without a deploy; fall back to a safe default
+    // when no rule pack is seeded or the rule engine is unreachable.
     const due = sub.dueDate ? new Date(sub.dueDate) : null;
     if (due && submittedAt.getTime() > due.getTime()) {
       const daysLate = Math.ceil((submittedAt.getTime() - due.getTime()) / (24 * 3600 * 1000));
+      const severityThreshold = await resolveRuleValue<number>(
+        sub.countryCode,
+        'PAYROLL',
+        'WPS_SALARY_WINDOW_DAYS',
+        FALLBACK_WPS_SEVERITY_THRESHOLD_DAYS,
+        { source: 'wps.submit.raiseSalaryDelay' }
+      );
       const rows = await (prisma as any).wpsEmployeeRow.findMany({
         where: { submissionId: sub.id },
       });
@@ -188,7 +214,7 @@ export class WpsSubmissionService {
               period: sub.period,
               dueDate: due,
               daysLate,
-              severity: daysLate > 15 ? 'CRITICAL' : 'HIGH',
+              severity: daysLate > severityThreshold ? 'CRITICAL' : 'HIGH',
               status: 'OPEN',
             },
           });
