@@ -12984,3 +12984,122 @@ model ErCertificate {
   @@unique([tenantId, period], map: "aura_er_certificate_unique")
   @@map("aura_er_certificate")
 }
+
+model SeparationCase {
+  id                        String    @id(map: "aura_separation_case_pkey") @default(uuid())
+  tenantId                  String
+  caseNumber                String
+  employeeId                String
+  country                   String
+  separationType            String
+  reason                    String?
+  noticeRequiredDays        Int       @default(30)
+  noticeServedDays          Int       @default(0)
+  noticeBuyout              Boolean   @default(false)
+  noticeBuyoutAmount        Decimal   @default(0) @db.Decimal(12, 2)
+  gardenLeave               Boolean   @default(false)
+  abandonmentDays           Int       @default(0)
+  lastWorkingDate           DateTime?
+  submittedAt               DateTime?
+  approvedAt                DateTime?
+  approverId                String?
+  settlementAgreementSigned Boolean   @default(false)
+  settlementAmount          Decimal?  @db.Decimal(14, 2)
+  eosbCalculationId         String?
+  visaExitCaseId            String?
+  siClosureRef              String?
+  itAccessRevoked           Boolean   @default(false)
+  itAccessRevokedAt         DateTime?
+  deathInService            Boolean   @default(false)
+  status                    String    @default("DRAFT")
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
+
+  @@unique([tenantId, caseNumber], map: "aura_separation_case_unique")
+  @@index([tenantId, employeeId], map: "aura_separation_case_employee")
+  @@map("aura_separation_case")
+}
+
+model SeparationClearance {
+  id             String    @id(map: "aura_separation_clearance_pkey") @default(uuid())
+  tenantId       String
+  caseId         String
+  department     String
+  checklistJson  Json      @default("[]")
+  completedItems Int       @default(0)
+  totalItems     Int       @default(0)
+  ownerId        String?
+  clearedAt      DateTime?
+  clearedBy      String?
+  blockerNotes   String?
+  status         String    @default("PENDING")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@unique([tenantId, caseId, department], map: "aura_separation_clearance_unique")
+  @@map("aura_separation_clearance")
+}
+
+model SeparationHandover {
+  id              String    @id(map: "aura_separation_handover_pkey") @default(uuid())
+  tenantId        String
+  caseId          String
+  itemDescription String
+  itemType        String
+  successorId     String?
+  completedAt     DateTime?
+  completedBy     String?
+  evidenceUrl     String?
+  status          String    @default("PENDING")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([tenantId, caseId], map: "aura_separation_handover_case")
+  @@map("aura_separation_handover")
+}
+
+model SeparationExitInterview {
+  id                String    @id(map: "aura_separation_exit_interview_pkey") @default(uuid())
+  tenantId          String
+  caseId            String
+  conductedAt       DateTime?
+  conductedBy       String?
+  satisfactionScore Int?
+  reasonCode        String?
+  reasonDetail      String?
+  willingToRehire   Boolean?
+  feedbackJson      Json      @default("{}")
+  status            String    @default("PENDING")
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  @@unique([tenantId, caseId], map: "aura_separation_exit_interview_unique")
+  @@map("aura_separation_exit_interview")
+}
+
+model SeparationCertificate {
+  id                     String    @id(map: "aura_separation_certificate_pkey") @default(uuid())
+  tenantId               String
+  period                 String
+  status                 String    @default("DRAFT")
+  casesOpened            Int       @default(0)
+  casesClosed            Int       @default(0)
+  casesByType            Json      @default("{}")
+  averageNoticeServed    Decimal   @default(0) @db.Decimal(6, 2)
+  abandonmentCases       Int       @default(0)
+  clearancesPending      Int       @default(0)
+  handoverPending        Int       @default(0)
+  exitInterviewMissing   Int       @default(0)
+  itAccessOpenAfterClose Int       @default(0)
+  deathInServiceCount    Int       @default(0)
+  gatingReason           String?
+  attestationsJson       Json      @default("[]")
+  generatedAt            DateTime?
+  signedAt               DateTime?
+  signedBy               String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  @@unique([tenantId, period], map: "aura_separation_certificate_unique")
+  @@map("aura_separation_certificate")
+}

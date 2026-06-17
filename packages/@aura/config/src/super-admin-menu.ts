@@ -543,6 +543,19 @@ export const superAdminMenu: MenuDefinition = {
                         'Monthly Compliance Certificate',
                     ],
                 },
+                {
+                    code: 'SEPARATION_COMPLIANCE',
+                    label: 'Termination & Separation',
+                    icon: 'policy',
+                    path: '/dashboard/separation-compliance',
+                    features: [
+                        'Separation Case Orchestration (10 types)',
+                        'Exit Clearance Checklist (HR/IT/FIN/SEC/LM/ADMIN)',
+                        'Handover & Exit Interview',
+                        'Notice / Garden Leave / Buyout Tracking',
+                        'Monthly Compliance Certificate',
+                    ],
+                },
             ],
         },
         {
