@@ -11495,3 +11495,105 @@ model NitaqatCertificate {
   @@unique([tenantId, period], map: "aura_nitaqat_certificate_unique")
   @@map("aura_nitaqat_certificate")
 }
+
+model BahrainizationConfig {
+  id                         String   @id(map: "aura_bahrainization_config_pkey") @default(uuid())
+  tenantId                   String
+  legalEntityId              String?
+  establishmentName          String
+  sector                     String
+  sizeBracket                String
+  bahrainiHeadcount          Int      @default(0)
+  totalHeadcount             Int      @default(0)
+  lmraEstablishmentId        String?
+  isInScope                  Boolean  @default(true)
+  isGovernmentTenderEligible Boolean  @default(false)
+  createdAt                  DateTime @default(now())
+  updatedAt                  DateTime @updatedAt
+
+  @@unique([tenantId, legalEntityId], map: "aura_bahrainization_config_unique")
+  @@map("aura_bahrainization_config")
+}
+
+model BahrainizationTarget {
+  id                      String    @id(map: "aura_bahrainization_target_pkey") @default(uuid())
+  tenantId                String
+  sector                  String
+  sizeBracket             String
+  targetRatioPct          Decimal   @db.Decimal(5, 2)
+  tenderEligibilityMinPct Decimal?  @db.Decimal(5, 2)
+  effectiveFrom           DateTime
+  effectiveTo             DateTime?
+  status                  String    @default("ACTIVE")
+  basis                   String?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+
+  @@unique([tenantId, sector, sizeBracket, effectiveFrom], map: "aura_bahrainization_target_unique")
+  @@map("aura_bahrainization_target")
+}
+
+model BahrainizationHire {
+  id                  String   @id(map: "aura_bahrainization_hire_pkey") @default(uuid())
+  tenantId            String
+  legalEntityId       String?
+  employeeId          String
+  hireDate            DateTime
+  jobLevel            String?
+  isBahraini          Boolean  @default(true)
+  cprNumber           String?
+  sioRegistered       Boolean  @default(false)
+  wageEvidenceLinked  Boolean  @default(false)
+  tamkeenSupported    Boolean  @default(false)
+  artificialRiskScore Int      @default(0)
+  artificialRiskFlags Json     @default("[]")
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@unique([tenantId, employeeId], map: "aura_bahrainization_hire_unique")
+  @@map("aura_bahrainization_hire")
+}
+
+model BahrainizationSnapshot {
+  id                String   @id(map: "aura_bahrainization_snapshot_pkey") @default(uuid())
+  tenantId          String
+  legalEntityId     String?
+  snapshotDate      DateTime
+  bahrainiHeadcount Int
+  totalHeadcount    Int
+  ratioPct          Decimal  @db.Decimal(5, 2)
+  targetRatioPct    Decimal  @db.Decimal(5, 2)
+  gapPct            Decimal  @db.Decimal(6, 2)
+  ragStatus         String
+  missedHires       Int      @default(0)
+  lmraGated         Boolean  @default(false)
+  tenderEligible    Boolean  @default(false)
+  evidenceJson      Json     @default("{}")
+  createdAt         DateTime @default(now())
+
+  @@unique([tenantId, legalEntityId, snapshotDate], map: "aura_bahrainization_snapshot_unique")
+  @@map("aura_bahrainization_snapshot")
+}
+
+model BahrainizationCertificate {
+  id                     String    @id(map: "aura_bahrainization_certificate_pkey") @default(uuid())
+  tenantId               String
+  period                 String
+  status                 String    @default("DRAFT")
+  entitiesInScope        Int       @default(0)
+  entitiesAtTarget       Int       @default(0)
+  entitiesLmraGated      Int       @default(0)
+  entitiesTenderEligible Int       @default(0)
+  totalMissedHires       Int       @default(0)
+  artificialRiskCount    Int       @default(0)
+  gatingReason           String?
+  attestationsJson       Json      @default("[]")
+  generatedAt            DateTime?
+  signedAt               DateTime?
+  signedBy               String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  @@unique([tenantId, period], map: "aura_bahrainization_certificate_unique")
+  @@map("aura_bahrainization_certificate")
+}

@@ -362,6 +362,20 @@ export const superAdminMenu: MenuDefinition = {
                         'Monthly Certificate',
                     ],
                 },
+                {
+                    code: 'BAHRAINIZATION_COMPLIANCE',
+                    label: 'Bahrainization',
+                    icon: 'localization',
+                    path: '/dashboard/bahrainization-compliance',
+                    features: [
+                        'Establishment Scope',
+                        'Sector × Size Targets',
+                        'Bahraini Hires & Artificial-Risk',
+                        'Ratio Snapshots & LMRA Gating',
+                        'Tender Eligibility',
+                        'Monthly Certificate',
+                    ],
+                },
             ],
         },
         {
