@@ -377,6 +377,18 @@ export const superAdminMenu: MenuDefinition = {
                     ],
                 },
                 {
+                    code: 'COMPLIANCE_AUDIT_REGISTER',
+                    label: 'Audit Checklist + Risk Register',
+                    icon: 'reports',
+                    path: '/dashboard/compliance-audit-register',
+                    features: [
+                        'Checklist Items (ER · Disciplinary · Separation · EOSB · Visa-Exit)',
+                        'Risk Register with L × I → band auto-derivation',
+                        'Per-domain default seeds',
+                        'Mandatory item completion enforcement',
+                    ],
+                },
+                {
                     code: 'NATIONALISATION_OVERLAY',
                     label: 'Nationalisation Overlays',
                     icon: 'localization',

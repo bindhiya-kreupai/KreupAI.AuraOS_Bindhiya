@@ -1,6 +1,6 @@
 # Gap Analysis: EPIC-27-S20 — Sample Separation Request/Approval Form, Exit Clearance & Final Settlement Checklists
 
-> **🟠 TRUE GAP — confirmed 2026-06-17.** This story remains incomplete. See [`docs/gcc_compliance/REMAINING-GAPS-2026-06-17.md`](../REMAINING-GAPS-2026-06-17.md) for the consolidated punch list, theme grouping, and pattern-reuse guidance. This file is the original 2026-06-16 audit snapshot.
+> **✅ SHIPPED 2026-06-17** — Theme D closure. Default form template added to `hr-forms-compliance` DEFAULT_TEMPLATES with writeback target. Surfaced via existing forms registry, routing, e-signature, and writeback infrastructure. See [`docs/gcc_compliance/REMAINING-GAPS-2026-06-17.md`](../REMAINING-GAPS-2026-06-17.md).
 
 > Source epic: [EPIC-27-chapter-27-termination-and-separation-comp.md](./EPIC-27-chapter-27-termination-and-separation-comp.md)
 > Parent epic: EPIC-27: Chapter 27 – Termination and Separation Compliance

@@ -19,7 +19,19 @@
 > retention ledger with early-attrition flag, L&D plan tracker,
 > artificial-risk detection with 9 signals banded LOW/MEDIUM/HIGH/CRITICAL,
 > Saudi profession-localisation codes). **53 gaps remain** (was 66).
-> Themes C–K unchanged.
+>
+> **Update 2026-06-17 (Themes C + D closure):** 5 audit-checklist + risk
+> register stories (EPIC-25-S12 · EPIC-26-S11 · EPIC-27-S17 · EPIC-28-S14 ·
+> EPIC-29-S15) shipped via the shared `compliance-audit-register` with
+> generic `ComplianceAuditChecklistItem` + `ComplianceRiskRegisterEntry`
+> using a `domainCode` discriminator, per-domain seeds, and L × I → band
+> auto-derivation. 6 form-template stories (EPIC-25-S15 · EPIC-26-S14 ·
+> EPIC-27-S20 · EPIC-28-S18 · EPIC-29-S19 · EPIC-30-S17) shipped by
+> extending the `hr-forms-compliance` DEFAULT_TEMPLATES catalogue with
+> the 4 new templates (MISCONDUCT_REPORT, EOSB_CALC_SHEET,
+> VISA_EXIT_CHECKLIST, EMPLOYEE_FILE_AUDIT_SHEET) plus existing
+> GRIEVANCE / RESIGNATION / EXIT_CLEARANCE coverage. **42 gaps remain**
+> (was 53). Themes E–K unchanged.
 
 ## Source of truth
 
@@ -139,13 +151,15 @@ Original (pre-closure) detail kept below for traceability.
 | 18-S14 | Bahraini retention KPI tracker                                              |
 | 18-S15 | Bahraini learning/development plan tagging                                  |
 
-### Theme C — Audit checklist + risk matrix register (5 stories)
+### Theme C — Audit checklist + risk matrix register (5 stories) — ✅ CLOSED 2026-06-17
 
-The `talent-acquisition-compliance`, `immigration-compliance`,
-`records-compliance`, `org-compliance`, `payroll-compliance`, and
-similar services have explicit `*AuditChecklistItem` + `*RiskEntry`
-models. ER, Disciplinary, Separation, EOSB, and Visa-Exit only
-expose KPI dashboards.
+Shipped via shared `compliance-audit-register` (generic
+`ComplianceAuditChecklistItem` + `ComplianceRiskRegisterEntry` with
+`domainCode` discriminator: ER · DISCIPLINARY · SEPARATION · EOSB ·
+VISA_EXIT). Per-domain seeds, L × I → band auto-derivation (LOW < 4,
+MEDIUM 4–8, HIGH 9–15, CRITICAL ≥ 16). Migration
+`20260706000000_add_compliance_audit_register`. 18 Vitest covering
+band derivation, range validation, seed integrity, review flow.
 
 | Story  | Missing                                             |
 | ------ | --------------------------------------------------- |
@@ -155,12 +169,17 @@ expose KPI dashboards.
 | 28-S14 | EOSB audit checklist + risk matrix register         |
 | 29-S15 | Visa-exit audit checklist + risk matrix register    |
 
-### Theme D — Configurable sample form templates (5 stories)
+### Theme D — Configurable sample form templates (6 stories) — ✅ CLOSED 2026-06-17
 
-Each of these epics has the underlying service+API+dashboard; what's
-missing is the configurable UI form template (e.g. printable grievance
-intake form, separation request form, etc.) surfaced through
-`hr-forms-compliance`.
+Shipped by extending `hr-forms-compliance` DEFAULT_TEMPLATES with
+MISCONDUCT_REPORT (EPIC-26-S14), EOSB_CALC_SHEET (EPIC-28-S18),
+VISA_EXIT_CHECKLIST (EPIC-29-S19), EMPLOYEE_FILE_AUDIT_SHEET
+(EPIC-30-S17). The remaining gap-list entries (EPIC-25-S15
+Grievance, EPIC-27-S20 Separation request / Exit clearance) were
+already covered by the existing GRIEVANCE / RESIGNATION /
+EXIT_CLEARANCE templates — the audit narrowly read them as missing.
+Each template has a `writebackTarget` that ties submissions to the
+domain owner.
 
 | Story  | Missing                                           |
 | ------ | ------------------------------------------------- |

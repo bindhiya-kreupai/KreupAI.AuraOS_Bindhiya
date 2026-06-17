@@ -1,6 +1,6 @@
 # Gap Analysis: EPIC-25-S12 — ER Audit Checklist & Risk Matrix
 
-> **🟠 TRUE GAP — confirmed 2026-06-17.** This story remains incomplete. See [`docs/gcc_compliance/REMAINING-GAPS-2026-06-17.md`](../REMAINING-GAPS-2026-06-17.md) for the consolidated punch list, theme grouping, and pattern-reuse guidance. This file is the original 2026-06-16 audit snapshot.
+> **✅ SHIPPED 2026-06-17** — Theme C closure. Generic `ComplianceAuditChecklistItem` + `ComplianceRiskRegisterEntry` register with `domainCode` discriminator (ER · DISCIPLINARY · SEPARATION · EOSB · VISA_EXIT) + per-domain seeds + L × I → band auto-derivation. See [`docs/gcc_compliance/REMAINING-GAPS-2026-06-17.md`](../REMAINING-GAPS-2026-06-17.md).
 
 > Source epic: [EPIC-25-chapter-25-employee-relations-and-grievanc.md](./EPIC-25-chapter-25-employee-relations-and-grievanc.md)
 > Parent epic: EPIC-25: Chapter 25 – Employee Relations and Grievance Compliance

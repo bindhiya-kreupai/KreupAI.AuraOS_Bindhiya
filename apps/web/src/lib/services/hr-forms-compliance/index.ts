@@ -143,6 +143,35 @@ export const DEFAULT_TEMPLATES: Array<{
     writebackTarget: 'policy.acknowledgement',
     isMandatory: true,
   },
+  // Theme D — sample/template forms missing per audit 2026-06-17.
+  {
+    templateCode: 'MISCONDUCT_REPORT',
+    formGroup: 'EMPLOYEE_RELATIONS',
+    label: 'Misconduct Report (EPIC-26-S14)',
+    writebackTarget: 'er.disciplinary',
+    isMandatory: false,
+  },
+  {
+    templateCode: 'EOSB_CALC_SHEET',
+    formGroup: 'SEPARATION',
+    label: 'EOSB Calculation Sheet (EPIC-28-S18)',
+    writebackTarget: 'eosb.calculation',
+    isMandatory: true,
+  },
+  {
+    templateCode: 'VISA_EXIT_CHECKLIST',
+    formGroup: 'SEPARATION',
+    label: 'Visa-Exit Checklist (EPIC-29-S19)',
+    writebackTarget: 'visa-exit.case',
+    isMandatory: true,
+  },
+  {
+    templateCode: 'EMPLOYEE_FILE_AUDIT_SHEET',
+    formGroup: 'COMPLIANCE',
+    label: 'Employee File Audit Sheet (EPIC-30-S17)',
+    writebackTarget: 'records.audit',
+    isMandatory: true,
+  },
 ];
 
 export class HrFormTemplateService {

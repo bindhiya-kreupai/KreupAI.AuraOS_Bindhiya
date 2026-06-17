@@ -1,6 +1,6 @@
 # Gap Analysis: EPIC-26-S11 — Disciplinary Audit Checklist & Risk Matrix
 
-> **🟠 TRUE GAP — confirmed 2026-06-17.** This story remains incomplete. See [`docs/gcc_compliance/REMAINING-GAPS-2026-06-17.md`](../REMAINING-GAPS-2026-06-17.md) for the consolidated punch list, theme grouping, and pattern-reuse guidance. This file is the original 2026-06-16 audit snapshot.
+> **✅ SHIPPED 2026-06-17** — Theme C closure. Generic `ComplianceAuditChecklistItem` + `ComplianceRiskRegisterEntry` register with `domainCode` discriminator (ER · DISCIPLINARY · SEPARATION · EOSB · VISA_EXIT) + per-domain seeds + L × I → band auto-derivation. See [`docs/gcc_compliance/REMAINING-GAPS-2026-06-17.md`](../REMAINING-GAPS-2026-06-17.md).
 
 > Source epic: [EPIC-26-chapter-26-disciplinary-action-compliance.md](./EPIC-26-chapter-26-disciplinary-action-compliance.md)
 > Parent epic: EPIC-26: Chapter 26 – Disciplinary Action Compliance
