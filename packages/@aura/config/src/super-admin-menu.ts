@@ -480,6 +480,18 @@ export const superAdminMenu: MenuDefinition = {
                         'Monthly Compliance Certificate',
                     ],
                 },
+                {
+                    code: 'LEAVE_COMPLIANCE',
+                    label: 'Leave (GCC)',
+                    icon: 'leave',
+                    path: '/dashboard/leave-compliance',
+                    features: [
+                        'Country × Leave Code Entitlement (annual/sick/maternity/Hajj)',
+                        'Misuse Register (Monday/Friday pattern, medical forgery)',
+                        'Medical Evidence Vault (RESTRICTED + retention)',
+                        'Monthly Compliance Certificate',
+                    ],
+                },
             ],
         },
         {

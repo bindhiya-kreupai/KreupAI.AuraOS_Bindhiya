@@ -12450,3 +12450,94 @@ model AttendanceCertificate {
   @@unique([tenantId, period], map: "aura_attendance_certificate_unique")
   @@map("aura_attendance_certificate")
 }
+
+model LeaveEntitlementRule {
+  id                        String    @id(map: "aura_leave_entitlement_rule_pkey") @default(uuid())
+  tenantId                  String
+  country                   String
+  leaveCode                 String
+  annualDays                Decimal   @db.Decimal(6, 2)
+  accrualBasis              String    @default("MONTHLY")
+  maxCarryForwardDays       Decimal   @default(0) @db.Decimal(6, 2)
+  encashableDays            Decimal   @default(0) @db.Decimal(6, 2)
+  isPaid                    Boolean   @default(true)
+  isMedicalEvidenceRequired Boolean   @default(false)
+  minServiceMonths          Int       @default(0)
+  maxConsecutiveDays        Decimal   @default(365) @db.Decimal(6, 2)
+  noticePeriodDays          Int       @default(0)
+  effectiveFrom             DateTime
+  effectiveTo               DateTime?
+  status                    String    @default("ACTIVE")
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
+
+  @@unique([tenantId, country, leaveCode, effectiveFrom], map: "aura_leave_entitlement_rule_unique")
+  @@map("aura_leave_entitlement_rule")
+}
+
+model LeaveMisuseFlag {
+  id              String    @id(map: "aura_leave_misuse_flag_pkey") @default(uuid())
+  tenantId        String
+  employeeId      String
+  leaveRequestId  String?
+  flagType        String
+  severity        String    @default("MEDIUM")
+  score           Int       @default(0)
+  evidenceJson    Json      @default("{}")
+  status          String    @default("OPEN")
+  resolvedAt      DateTime?
+  resolvedBy      String?
+  resolutionNotes String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([tenantId, employeeId], map: "aura_leave_misuse_flag_employee")
+  @@index([tenantId, status], map: "aura_leave_misuse_flag_open")
+  @@map("aura_leave_misuse_flag")
+}
+
+model LeaveMedicalEvidence {
+  id             String    @id(map: "aura_leave_medical_evidence_pkey") @default(uuid())
+  tenantId       String
+  leaveRequestId String
+  employeeId     String
+  evidenceType   String
+  fileUrl        String?
+  issuedBy       String?
+  issuedAt       DateTime?
+  classification String    @default("RESTRICTED")
+  retentionUntil DateTime?
+  verifiedAt     DateTime?
+  verifiedBy     String?
+  fraudFlagged   Boolean   @default(false)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@index([tenantId, leaveRequestId], map: "aura_leave_medical_evidence_request")
+  @@map("aura_leave_medical_evidence")
+}
+
+model LeaveCertificate {
+  id                          String    @id(map: "aura_leave_certificate_pkey") @default(uuid())
+  tenantId                    String
+  period                      String
+  status                      String    @default("DRAFT")
+  requestsTotal               Int       @default(0)
+  requestsApproved            Int       @default(0)
+  requestsPending             Int       @default(0)
+  encashmentsCount            Int       @default(0)
+  carryForwardsCount          Int       @default(0)
+  openMisuseFlags             Int       @default(0)
+  missingMedicalEvidenceCount Int       @default(0)
+  unpaidLeaveDays             Decimal   @default(0) @db.Decimal(8, 2)
+  gatingReason                String?
+  attestationsJson            Json      @default("[]")
+  generatedAt                 DateTime?
+  signedAt                    DateTime?
+  signedBy                    String?
+  createdAt                   DateTime  @default(now())
+  updatedAt                   DateTime  @updatedAt
+
+  @@unique([tenantId, period], map: "aura_leave_certificate_unique")
+  @@map("aura_leave_certificate")
+}
