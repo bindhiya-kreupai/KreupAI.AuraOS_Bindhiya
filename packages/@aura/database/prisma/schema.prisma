@@ -13290,3 +13290,102 @@ model AuditTrailSetting {
   @@unique([tenantId, domain], map: "aura_audit_trail_setting_unique")
   @@map("aura_audit_trail_setting")
 }
+
+model PayrollGovernanceControl {
+  id               String    @id(map: "aura_payroll_governance_control_pkey") @default(uuid())
+  tenantId         String
+  controlCode      String
+  label            String
+  category         String
+  country          String?
+  description      String?
+  requiredEvidence String?
+  owner            String?
+  frequency        String    @default("MONTHLY")
+  lastReviewedAt   DateTime?
+  lastReviewedBy   String?
+  status           String    @default("ACTIVE")
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@unique([tenantId, controlCode], map: "aura_payroll_governance_control_unique")
+  @@map("aura_payroll_governance_control")
+}
+
+model PayrollAuditFinding {
+  id             String    @id(map: "aura_payroll_audit_finding_pkey") @default(uuid())
+  tenantId       String
+  findingNumber  String
+  period         String
+  country        String?
+  category       String
+  controlCode    String?
+  title          String
+  description    String?
+  severity       String    @default("MEDIUM")
+  evidence       String?
+  ownerId        String?
+  dueAt          DateTime?
+  remediation    String?
+  remediatedAt   DateTime?
+  remediatedBy   String?
+  status         String    @default("OPEN")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@unique([tenantId, findingNumber], map: "aura_payroll_audit_finding_unique")
+  @@index([tenantId, period], map: "aura_payroll_audit_finding_period")
+  @@map("aura_payroll_audit_finding")
+}
+
+model PayrollRiskEntry {
+  id             String    @id(map: "aura_payroll_risk_entry_pkey") @default(uuid())
+  tenantId       String
+  riskCode       String
+  title          String
+  category       String
+  country        String?
+  likelihood     Int
+  impact         Int
+  score          Int
+  band           String
+  controlCode    String?
+  ownerId        String?
+  lastReviewedAt DateTime?
+  mitigation     String?
+  status         String    @default("OPEN")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@unique([tenantId, riskCode], map: "aura_payroll_risk_entry_unique")
+  @@map("aura_payroll_risk_entry")
+}
+
+model PayrollComplianceCertificate {
+  id                          String    @id(map: "aura_payroll_compliance_certificate_pkey") @default(uuid())
+  tenantId                    String
+  period                      String
+  status                      String    @default("DRAFT")
+  runsCount                   Int       @default(0)
+  runsLocked                  Int       @default(0)
+  runsApproved                Int       @default(0)
+  runsMakerCheckerBreaches    Int       @default(0)
+  openFindingsCritical        Int       @default(0)
+  openFindingsHigh            Int       @default(0)
+  criticalRisksOpen           Int       @default(0)
+  controlsOverdue             Int       @default(0)
+  reconciliationVariancePct   Decimal   @default(0) @db.Decimal(8, 4)
+  bankFileMismatches          Int       @default(0)
+  glPostingsMissing           Int       @default(0)
+  metricsJson                 Json      @default("{}")
+  gatingReason                String?
+  attestationsJson            Json      @default("[]")
+  generatedAt                 DateTime?
+  signedAt                    DateTime?
+  signedBy                    String?
+  createdAt                   DateTime  @default(now())
+  updatedAt                   DateTime  @updatedAt
+
+  @@unique([tenantId, period], map: "aura_payroll_compliance_certificate_unique")
+  @@map("aura_payroll_compliance_certificate")
+}

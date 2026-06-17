@@ -581,6 +581,18 @@ export const superAdminMenu: MenuDefinition = {
                         'Audit Trail Capture Policy per Domain',
                     ],
                 },
+                {
+                    code: 'PAYROLL_GOVERNANCE_COMPLIANCE',
+                    label: 'Payroll Governance & Compliance',
+                    icon: 'payroll',
+                    path: '/dashboard/payroll-compliance',
+                    features: [
+                        'Governance Controls (8 categories)',
+                        'Audit Findings Register',
+                        'Payroll Risk Register (L×I bands)',
+                        'Monthly Compliance Certificate (Recon/Bank-File/GL)',
+                    ],
+                },
             ],
         },
         {

@@ -1,35 +1,31 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuites name="vitest tests" tests="15" failures="0" errors="0" time="0.00761875">
-    <testsuite name="src/lib/services/__tests__/hrms-config.service.test.ts" timestamp="2026-06-17T09:05:48.500Z" hostname="MacBookPro-2.lan" tests="15" failures="0" errors="0" skipped="0" time="0.00761875">
-        <testcase classname="src/lib/services/__tests__/hrms-config.service.test.ts" name="resolveActiveRuleSet &gt; returns null when none published" time="0.000755625">
+<testsuites name="vitest tests" tests="13" failures="0" errors="0" time="0.007392166">
+    <testsuite name="src/lib/services/__tests__/payroll-compliance.service.test.ts" timestamp="2026-06-17T09:15:53.669Z" hostname="MacBookPro-2.lan" tests="13" failures="0" errors="0" skipped="0" time="0.007392166">
+        <testcase classname="src/lib/services/__tests__/payroll-compliance.service.test.ts" name="riskBand &gt; maps score to band" time="0.000989375">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/hrms-config.service.test.ts" name="resolveActiveRuleSet &gt; picks the latest effectiveFrom among published rows" time="0.000215042">
+        <testcase classname="src/lib/services/__tests__/payroll-compliance.service.test.ts" name="payrollGatingReason &gt; returns null when clean" time="0.000243459">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/hrms-config.service.test.ts" name="resolveActiveRuleSet &gt; excludes rows with effectiveTo in the past" time="0.000237625">
+        <testcase classname="src/lib/services/__tests__/payroll-compliance.service.test.ts" name="payrollGatingReason &gt; gates on unapproved run" time="0.00028675">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/hrms-config.service.test.ts" name="nextStage &gt; returns first unmet stage" time="0.000390625">
+        <testcase classname="src/lib/services/__tests__/payroll-compliance.service.test.ts" name="payrollGatingReason &gt; gates on maker-checker breach + critical findings + variance" time="0.000359334">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/hrms-config.service.test.ts" name="auditCapturePolicy &gt; returns defaults when no row" time="0.000254542">
+        <testcase classname="src/lib/services/__tests__/payroll-compliance.service.test.ts" name="payrollGatingReason &gt; does not gate at 0.5% variance threshold edge" time="0.000174958">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/hrms-config.service.test.ts" name="auditCapturePolicy &gt; honours per-domain override" time="0.000195459">
+        <testcase classname="src/lib/services/__tests__/payroll-compliance.service.test.ts" name="payrollGatingReason &gt; gates on bank-file mismatch and missing GL postings" time="0.000266667">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/hrms-config.service.test.ts" name="auditCapturePolicy &gt; ignores inactive rows" time="0.000207708">
+        <testcase classname="src/lib/services/__tests__/payroll-compliance.service.test.ts" name="payrollGovernanceService.overdueCount &gt; flags MONTHLY controls older than 35 days" time="0.000292042">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/hrms-config.service.test.ts" name="countryRuleSetService.publish &gt; refuses to publish a non-DRAFT row" time="0.00088825">
+        <testcase classname="src/lib/services/__tests__/payroll-compliance.service.test.ts" name="payrollGovernanceService.overdueCount &gt; uses cadence-specific thresholds" time="0.000212542">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/hrms-config.service.test.ts" name="countryRuleSetService.publish &gt; refuses cross-tenant" time="0.000379625">
+        <testcase classname="src/lib/services/__tests__/payroll-compliance.service.test.ts" name="payrollRiskService.upsert &gt; clamps L/I to 1..5 and derives score+band" time="0.000445583">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/hrms-config.service.test.ts" name="countryRuleSetService.publish &gt; supersedes prior PUBLISHED rows for same (country,domain)" time="0.000621625">
+        <testcase classname="src/lib/services/__tests__/payroll-compliance.service.test.ts" name="payrollComplianceCertificateService &gt; refuses to sign while gated" time="0.001129708">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/hrms-config.service.test.ts" name="approvalWorkflowTemplateService.upsert &gt; saves with defaults when minimal input" time="0.00022875">
+        <testcase classname="src/lib/services/__tests__/payroll-compliance.service.test.ts" name="payrollComplianceCertificateService &gt; signs when clean" time="0.000258709">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/hrms-config.service.test.ts" name="notificationRuleService.upsert &gt; captures bilingual templates and channel array" time="0.000472459">
+        <testcase classname="src/lib/services/__tests__/payroll-compliance.service.test.ts" name="payrollComplianceCertificateService &gt; generate computes reconciliationVariancePct from runs" time="0.000760708">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/hrms-config.service.test.ts" name="auditTrailSettingService.policy &gt; falls back to default when no setting for domain" time="0.000178541">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/hrms-config.service.test.ts" name="auditTrailSettingService.policy &gt; returns configured policy when present" time="0.000411167">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/hrms-config.service.test.ts" name="HRMS_CONFIG_CONSTANTS &gt; covers GCC countries and shipped compliance domains" time="0.00050925">
+        <testcase classname="src/lib/services/__tests__/payroll-compliance.service.test.ts" name="PAYROLL_COMPLIANCE_CONSTANTS &gt; covers SOD, period lock and GL posting categories" time="0.000570292">
         </testcase>
     </testsuite>
 </testsuites>
