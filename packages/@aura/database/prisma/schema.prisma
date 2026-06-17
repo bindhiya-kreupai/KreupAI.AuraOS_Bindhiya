@@ -11823,3 +11823,114 @@ model EosbCertificate {
   @@unique([tenantId, period], map: "aura_eosb_certificate_unique")
   @@map("aura_eosb_certificate")
 }
+
+model VisaExitCase {
+  id                   String    @id(map: "aura_visa_exit_case_pkey") @default(uuid())
+  tenantId             String
+  employeeId           String
+  countryCode          String
+  scenario             String
+  visaNumber           String?
+  workPermitNumber     String?
+  passportNumber       String?
+  lastWorkingDate      DateTime?
+  cancellationDate     DateTime?
+  graceExpiresAt       DateTime?
+  ownerId              String?
+  proAssigneeId        String?
+  status               String    @default("OPEN")
+  subStatus            String?
+  dependentsCount      Int       @default(0)
+  ticketRequired       Boolean   @default(false)
+  ticketIssued         Boolean   @default(false)
+  finalSettlementId    String?
+  siClosureRef         String?
+  absconding           Boolean   @default(false)
+  abscondingReportedAt DateTime?
+  notes                String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  @@index([tenantId, employeeId], map: "aura_visa_exit_case_employee")
+  @@index([tenantId, status], map: "aura_visa_exit_case_status")
+  @@map("aura_visa_exit_case")
+}
+
+model VisaExitProAction {
+  id          String    @id(map: "aura_visa_exit_pro_action_pkey") @default(uuid())
+  tenantId    String
+  caseId      String
+  actionCode  String
+  label       String
+  authority   String?
+  assigneeId  String?
+  dueDate     DateTime?
+  status      String    @default("OPEN")
+  completedAt DateTime?
+  completedBy String?
+  notes       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@index([tenantId, caseId], map: "aura_visa_exit_pro_action_case")
+  @@map("aura_visa_exit_pro_action")
+}
+
+model VisaExitGrace {
+  id             String    @id(map: "aura_visa_exit_grace_pkey") @default(uuid())
+  tenantId       String
+  caseId         String
+  grantedAt      DateTime
+  expiresAt      DateTime
+  daysGranted    Int
+  graceType      String
+  status         String    @default("ACTIVE")
+  extensionCount Int       @default(0)
+  closedAt       DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@unique([tenantId, caseId], map: "aura_visa_exit_grace_unique")
+  @@map("aura_visa_exit_grace")
+}
+
+model VisaExitEvidence {
+  id              String    @id(map: "aura_visa_exit_evidence_pkey") @default(uuid())
+  tenantId        String
+  caseId          String
+  portal          String
+  referenceNumber String?
+  evidenceType    String
+  fileUrl         String?
+  capturedAt      DateTime  @default(now())
+  capturedBy      String?
+  validUntil      DateTime?
+  notes           String?
+  createdAt       DateTime  @default(now())
+
+  @@index([tenantId, caseId], map: "aura_visa_exit_evidence_case")
+  @@map("aura_visa_exit_evidence")
+}
+
+model VisaExitCertificate {
+  id                   String    @id(map: "aura_visa_exit_certificate_pkey") @default(uuid())
+  tenantId             String
+  period               String
+  status               String    @default("DRAFT")
+  casesOpened          Int       @default(0)
+  casesClosed          Int       @default(0)
+  casesAbsconding      Int       @default(0)
+  graceExpiringCount   Int       @default(0)
+  overduePoActions     Int       @default(0)
+  missingEvidenceCount Int       @default(0)
+  gatingReason         String?
+  attestationsJson     Json      @default("[]")
+  generatedAt          DateTime?
+  signedAt             DateTime?
+  signedBy             String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+
+  @@unique([tenantId, period], map: "aura_visa_exit_certificate_unique")
+  @@map("aura_visa_exit_certificate")
+}

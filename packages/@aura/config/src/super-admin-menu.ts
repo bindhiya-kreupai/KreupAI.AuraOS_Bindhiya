@@ -402,6 +402,19 @@ export const superAdminMenu: MenuDefinition = {
                         'Monthly Compliance Certificate',
                     ],
                 },
+                {
+                    code: 'VISA_EXIT_COMPLIANCE',
+                    label: 'Visa / Immigration Exit',
+                    icon: 'policy',
+                    path: '/dashboard/visa-exit-compliance',
+                    features: [
+                        'Exit Case Orchestration (auto-seed PRO actions)',
+                        'PRO Action Register',
+                        'Grace Period Register',
+                        'Authority Portal Evidence',
+                        'Monthly Compliance Certificate',
+                    ],
+                },
             ],
         },
         {
