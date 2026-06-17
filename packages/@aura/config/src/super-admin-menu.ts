@@ -442,6 +442,19 @@ export const superAdminMenu: MenuDefinition = {
                         'Monthly Compliance Certificate',
                     ],
                 },
+                {
+                    code: 'HR_POLICIES_COMPLIANCE',
+                    label: 'HR Policies',
+                    icon: 'policy',
+                    path: '/dashboard/hr-policies-compliance',
+                    features: [
+                        'Policy Lifecycle (publish auto-creates 12-month review)',
+                        'Acknowledgement Coverage (≥90% required)',
+                        'Exception Register',
+                        'Scheduled Reviews',
+                        'Monthly Compliance Certificate',
+                    ],
+                },
             ],
         },
         {

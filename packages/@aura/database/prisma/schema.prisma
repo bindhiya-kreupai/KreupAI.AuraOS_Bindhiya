@@ -12197,3 +12197,64 @@ model BenefitCertificate {
   @@unique([tenantId, period], map: "aura_benefit_certificate_unique")
   @@map("aura_benefit_certificate")
 }
+
+model HrPolicyException {
+  id         String    @id(map: "aura_hr_policy_exception_pkey") @default(uuid())
+  tenantId   String
+  policyId   String
+  employeeId String?
+  scopeLabel String?
+  reason     String
+  raisedAt   DateTime  @default(now())
+  raisedBy   String?
+  approverId String?
+  approvedAt DateTime?
+  expiresAt  DateTime?
+  status     String    @default("PENDING")
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([tenantId, policyId], map: "aura_hr_policy_exception_policy")
+  @@map("aura_hr_policy_exception")
+}
+
+model HrPolicyReview {
+  id             String    @id(map: "aura_hr_policy_review_pkey") @default(uuid())
+  tenantId       String
+  policyId       String
+  dueAt          DateTime
+  intervalMonths Int       @default(12)
+  lastReviewedAt DateTime?
+  lastReviewedBy String?
+  reviewerNotes  String?
+  outcome        String?
+  status         String    @default("OPEN")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@unique([tenantId, policyId], map: "aura_hr_policy_review_unique")
+  @@map("aura_hr_policy_review")
+}
+
+model HrPolicyCertificate {
+  id                     String    @id(map: "aura_hr_policy_certificate_pkey") @default(uuid())
+  tenantId               String
+  period                 String
+  status                 String    @default("DRAFT")
+  publishedCount         Int       @default(0)
+  draftCount             Int       @default(0)
+  overdueReviewsCount    Int       @default(0)
+  pendingExceptionsCount Int       @default(0)
+  ackCoveragePct         Decimal   @default(0) @db.Decimal(5, 2)
+  ackBelowThresholdCount Int       @default(0)
+  gatingReason           String?
+  attestationsJson       Json      @default("[]")
+  generatedAt            DateTime?
+  signedAt               DateTime?
+  signedBy               String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  @@unique([tenantId, period], map: "aura_hr_policy_certificate_unique")
+  @@map("aura_hr_policy_certificate")
+}
