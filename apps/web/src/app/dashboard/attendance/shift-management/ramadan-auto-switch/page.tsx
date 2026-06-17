@@ -1,0 +1,400 @@
+'use client';
+
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
+import {
+  ArrowLeft,
+  Moon,
+  CalendarDays,
+  Globe2,
+  Loader2,
+  AlertCircle,
+  CheckCircle2,
+  Save,
+} from 'lucide-react';
+
+type Country = 'AE' | 'SA' | 'BH' | 'QA' | 'OM' | 'KW';
+
+const COUNTRY_NAMES: Record<Country, string> = {
+  AE: 'United Arab Emirates',
+  SA: 'Saudi Arabia',
+  BH: 'Bahrain',
+  QA: 'Qatar',
+  OM: 'Oman',
+  KW: 'Kuwait',
+};
+
+type RamadanStatus = {
+  isRamadan: boolean;
+  daysRemaining: number;
+  daysUntilNextRamadan: number;
+};
+
+type WorkingHoursConfig = {
+  countryCode: Country;
+  dailyHours: number;
+  scheduleConfig?: {
+    standardHoursPerDay?: number;
+    standardHoursPerWeek?: number;
+    ramadanHoursPerDay?: number | null;
+    ramadanHoursPerWeek?: number | null;
+  };
+};
+
+type Shift = {
+  id: string;
+  code: string;
+  name: string;
+  startTime: string;
+  endTime: string;
+  workHours: number;
+  isActive: boolean;
+};
+
+const MAPPING_STORAGE_KEY = 'auraos.shiftManagement.ramadanMapping.v1';
+const ENABLED_STORAGE_KEY = 'auraos.shiftManagement.ramadanEnabled.v1';
+
+async function fetchJson<T>(url: string): Promise<T | null> {
+  try {
+    const res = await fetch(url);
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok || json?.success === false) return null;
+    return (json?.data ?? json) as T;
+  } catch {
+    return null;
+  }
+}
+
+export default function RamadanAutoSwitchPage() {
+  const [country, setCountry] = useState<Country>('AE');
+  const [status, setStatus] = useState<RamadanStatus | null>(null);
+  const [config, setConfig] = useState<WorkingHoursConfig | null>(null);
+  const [shifts, setShifts] = useState<Shift[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  const [enabled, setEnabled] = useState(true);
+  const [mapping, setMapping] = useState<Record<string, string>>({});
+  const [savedAt, setSavedAt] = useState<number | null>(null);
+
+  useEffect(() => {
+    try {
+      const m = localStorage.getItem(MAPPING_STORAGE_KEY);
+      if (m) setMapping(JSON.parse(m));
+      const e = localStorage.getItem(ENABLED_STORAGE_KEY);
+      if (e !== null) setEnabled(e === 'true');
+    } catch {
+      /* ignore */
+    }
+  }, []);
+
+  const refresh = useCallback(async () => {
+    setLoading(true);
+    const [statusRes, configRes, shiftsRes] = await Promise.all([
+      fetchJson<RamadanStatus>('/api/compliance/hijri-calendar?action=isRamadan'),
+      fetchJson<WorkingHoursConfig>(`/api/compliance/working-hours?countryCode=${country}`),
+      fetchJson<Shift[]>('/api/v1/shifts?limit=200'),
+    ]);
+    setStatus(statusRes);
+    setConfig(configRes);
+    setShifts(shiftsRes || []);
+    setLoading(false);
+  }, [country]);
+
+  useEffect(() => {
+    refresh();
+  }, [refresh]);
+
+  const regularShifts = useMemo(
+    () => shifts.filter((s) => s.isActive && !/ramadan/i.test(s.name)),
+    [shifts]
+  );
+
+  const ramadanShifts = useMemo(
+    () => shifts.filter((s) => s.isActive && /ramadan/i.test(s.name)),
+    [shifts]
+  );
+
+  const ramadanHoursPerDay = config?.scheduleConfig?.ramadanHoursPerDay ?? null;
+  const standardHoursPerDay = config?.scheduleConfig?.standardHoursPerDay ?? null;
+
+  const handleMappingChange = (regularId: string, ramadanId: string) => {
+    setMapping((prev) => {
+      const next = { ...prev };
+      if (ramadanId) next[regularId] = ramadanId;
+      else delete next[regularId];
+      return next;
+    });
+    setSavedAt(null);
+  };
+
+  const handleSave = () => {
+    try {
+      localStorage.setItem(MAPPING_STORAGE_KEY, JSON.stringify(mapping));
+      localStorage.setItem(ENABLED_STORAGE_KEY, String(enabled));
+      setSavedAt(Date.now());
+    } catch (e: any) {
+      alert(`Could not save: ${e?.message || 'storage unavailable'}`);
+    }
+  };
+
+  return (
+    <div className="space-y-4 pb-6">
+      <div className="flex items-start justify-between gap-3 flex-wrap">
+        <div>
+          <Link
+            href="/dashboard/attendance/shift-management"
+            className="inline-flex items-center gap-1 text-sm text-silver-mist hover:text-indigo-500 transition-colors mb-1"
+          >
+            <ArrowLeft className="w-4 h-4" /> Back to Shift Management
+          </Link>
+          <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
+            <Moon className="w-6 h-6 text-indigo-500" />
+            Ramadan Auto-switch
+          </h1>
+          <p className="text-silver-mist text-sm mt-1 max-w-2xl">
+            During Ramadan, GCC labour law requires reduced working hours. Map each regular shift to
+            its Ramadan equivalent so the roster automatically uses the shorter shift while the
+            Hijri month is active.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Globe2 className="w-4 h-4 text-silver-mist" />
+          <select
+            value={country}
+            onChange={(e) => setCountry(e.target.value as Country)}
+            className="px-3 py-2 rounded-lg border border-cloud dark:border-nebula-purple/50 bg-white dark:bg-stellar-blue text-sm"
+          >
+            {(Object.keys(COUNTRY_NAMES) as Country[]).map((c) => (
+              <option key={c} value={c}>
+                {c} — {COUNTRY_NAMES[c]}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* Status row */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+        <StatusCard
+          tone={status?.isRamadan ? 'active' : 'idle'}
+          icon={<Moon className="h-7 w-7" />}
+          label="Current Ramadan status"
+          value={
+            loading
+              ? 'Loading…'
+              : status?.isRamadan
+                ? `In Ramadan — ${status.daysRemaining} days left`
+                : status
+                  ? `Not in Ramadan — next in ${status.daysUntilNextRamadan} days`
+                  : 'Unknown'
+          }
+        />
+        <StatusCard
+          tone="info"
+          icon={<CalendarDays className="h-7 w-7" />}
+          label={`${country} standard hours`}
+          value={
+            loading
+              ? 'Loading…'
+              : standardHoursPerDay !== null
+                ? `${standardHoursPerDay}h / day`
+                : 'Not configured'
+          }
+        />
+        <StatusCard
+          tone="info"
+          icon={<CalendarDays className="h-7 w-7" />}
+          label={`${country} Ramadan hours`}
+          value={
+            loading
+              ? 'Loading…'
+              : ramadanHoursPerDay !== null
+                ? `${ramadanHoursPerDay}h / day`
+                : 'Not reduced'
+          }
+        />
+      </div>
+
+      {/* Toggle */}
+      <div className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm p-4 flex items-center justify-between gap-3 flex-wrap">
+        <div>
+          <p className="font-semibold text-ink-black dark:text-pearl">Auto-switch enabled</p>
+          <p className="text-xs text-silver-mist mt-0.5">
+            When on and Hijri calendar reports the month of Ramadan, roster generation prefers the
+            mapped Ramadan shift over the regular one.
+          </p>
+        </div>
+        <label className="inline-flex items-center gap-2 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={enabled}
+            onChange={(e) => {
+              setEnabled(e.target.checked);
+              setSavedAt(null);
+            }}
+            className="sr-only peer"
+          />
+          <span className="relative inline-block w-11 h-6 bg-slate-200 dark:bg-slate-700 rounded-full peer-checked:bg-indigo-600 transition-colors">
+            <span
+              className={`absolute left-0.5 top-0.5 w-5 h-5 bg-white rounded-full transition-transform ${
+                enabled ? 'translate-x-5' : ''
+              }`}
+            />
+          </span>
+          <span className="text-sm font-medium">{enabled ? 'On' : 'Off'}</span>
+        </label>
+      </div>
+
+      {/* Mapping */}
+      <div className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
+        <div className="px-4 py-3 border-b border-cloud dark:border-nebula-purple/40 flex items-center justify-between gap-3 flex-wrap">
+          <div>
+            <h2 className="font-semibold text-ink-black dark:text-pearl">Shift mapping</h2>
+            <p className="text-xs text-silver-mist mt-0.5">
+              Pair each regular shift with its Ramadan equivalent.
+            </p>
+          </div>
+          <div className="flex items-center gap-3">
+            {savedAt && (
+              <span className="inline-flex items-center gap-1 text-xs text-emerald-700 dark:text-emerald-300">
+                <CheckCircle2 className="w-4 h-4" /> Saved
+              </span>
+            )}
+            <button
+              onClick={handleSave}
+              className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
+            >
+              <Save className="w-4 h-4" /> Save mapping
+            </button>
+          </div>
+        </div>
+
+        {loading ? (
+          <div className="p-8 flex items-center justify-center text-silver-mist">
+            <Loader2 className="w-5 h-5 animate-spin mr-2" /> Loading shifts…
+          </div>
+        ) : regularShifts.length === 0 ? (
+          <EmptyHint>
+            No regular shifts found.{' '}
+            <Link
+              href="/dashboard/attendance/shift-management"
+              className="text-indigo-500 hover:underline"
+            >
+              Create a shift first
+            </Link>
+            .
+          </EmptyHint>
+        ) : ramadanShifts.length === 0 ? (
+          <EmptyHint>
+            No Ramadan-tagged shifts found.{' '}
+            <Link
+              href="/dashboard/attendance/shift-management/shift-templates"
+              className="text-indigo-500 hover:underline"
+            >
+              Create one from the &quot;Ramadan-reduced&quot; template
+            </Link>{' '}
+            (any shift whose name contains &quot;Ramadan&quot; is treated as a Ramadan shift).
+          </EmptyHint>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm">
+              <thead className="bg-slate-50 dark:bg-slate-900/50 text-left text-xs font-semibold uppercase text-silver-mist">
+                <tr>
+                  <th className="px-4 py-2.5">Regular shift</th>
+                  <th className="px-4 py-2.5">Timing</th>
+                  <th className="px-4 py-2.5">Hours</th>
+                  <th className="px-4 py-2.5">Ramadan equivalent</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-cloud dark:divide-nebula-purple/30">
+                {regularShifts.map((shift) => {
+                  const mapped = mapping[shift.id] || '';
+                  return (
+                    <tr key={shift.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/30">
+                      <td className="px-4 py-3">
+                        <div className="font-medium">{shift.name}</div>
+                        <div className="text-xs font-mono text-silver-mist">{shift.code}</div>
+                      </td>
+                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300">
+                        {shift.startTime} – {shift.endTime}
+                      </td>
+                      <td className="px-4 py-3 text-slate-600 dark:text-slate-300">
+                        {shift.workHours}h
+                      </td>
+                      <td className="px-4 py-3">
+                        <select
+                          value={mapped}
+                          onChange={(e) => handleMappingChange(shift.id, e.target.value)}
+                          className="w-full px-2 py-1.5 rounded-md border border-cloud dark:border-nebula-purple/50 bg-white dark:bg-stellar-blue text-sm"
+                        >
+                          <option value="">— not mapped —</option>
+                          {ramadanShifts.map((r) => (
+                            <option key={r.id} value={r.id}>
+                              {r.name} ({r.workHours}h)
+                            </option>
+                          ))}
+                        </select>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </div>
+
+      <div className="rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-800 px-4 py-3 text-xs text-amber-800 dark:text-amber-200 flex gap-2">
+        <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+        <p>
+          Mapping is currently stored per-browser. Roster generation reads Ramadan-reduced hours
+          from the country-level{' '}
+          <code className="px-1 bg-amber-100 dark:bg-amber-900/40 rounded">LabourLawConfig</code>{' '}
+          via the working-hours engine. A tenant-wide persisted mapping table can be added once the
+          schema is migrated.
+        </p>
+      </div>
+    </div>
+  );
+}
+
+function StatusCard({
+  tone,
+  icon,
+  label,
+  value,
+}: {
+  tone: 'active' | 'idle' | 'info';
+  icon: React.ReactNode;
+  label: string;
+  value: string;
+}) {
+  const toneClass =
+    tone === 'active'
+      ? 'from-emerald-50 to-emerald-100 dark:from-emerald-900/40 dark:to-emerald-800/40 text-emerald-700 dark:text-emerald-200'
+      : tone === 'idle'
+        ? 'from-slate-50 to-slate-100 dark:from-slate-900/40 dark:to-slate-800/40 text-slate-700 dark:text-slate-200'
+        : 'from-indigo-50 to-indigo-100 dark:from-indigo-900/40 dark:to-indigo-800/40 text-indigo-700 dark:text-indigo-200';
+  return (
+    <div
+      className={`bg-gradient-to-br ${toneClass} p-5 rounded-xl shadow-sm border border-white/40 dark:border-white/10`}
+    >
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-xs font-medium opacity-80">{label}</p>
+          <p className="text-base font-bold mt-1">{value}</p>
+        </div>
+        {icon}
+      </div>
+    </div>
+  );
+}
+
+function EmptyHint({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="p-6 text-sm text-silver-mist flex items-start gap-2">
+      <AlertCircle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+      <p>{children}</p>
+    </div>
+  );
+}
