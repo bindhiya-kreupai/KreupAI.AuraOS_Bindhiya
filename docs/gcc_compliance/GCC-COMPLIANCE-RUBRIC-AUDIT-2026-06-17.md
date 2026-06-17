@@ -427,17 +427,30 @@ Pattern 3 (Pattern 8 consumer-wiring, Pattern 3 helper-seeding) shipped together
 
 **Pattern 8 status:** structurally **closed**. Both rule-engine consumers (red-flags) and formula-engine consumers (KPI compute) call the DSL evaluator on the stored TEXT.
 
-### 2026-06-17 — Pattern 3 (pagination) bulk-adoption rounds 2 & 3 (commits `d00560ed`, `<latest>`)
+### 2026-06-17 — Pattern 3 (pagination) bulk-adoption rounds 2-7 — CLOSED
 
-Round 2 (commit `d00560ed`): GOSI / WPS / Bahrainization — 6 list endpoints (calculation.listContributions, registration.list, reconciliation/variance.list, wpsException.list, wpsException.listDelayFlags, bahrainizationHire.list) plus matching routes.
+Round 2 (commit `d00560ed`): GOSI / WPS / Bahrainization — 6 list endpoints.
 
-Round 3 (commit `<latest>`): Holidays / Separation — 6 list endpoints (holidayWorkApproval.list, holidayCompOff.list, separationCase.list, separationClearance.list, separationHandover.list, separationExitInterview.list) plus matching routes.
+Round 3 (commit `e0327c3c`): Holidays / Separation — 6 list endpoints.
 
-**Cumulative Pattern-3 adoption:** 15 of ~20 hardcoded-`take: 500` list endpoints now go through `normalisePaging` + `prismaPageArgs` + `buildPaginatedResult` and emit `{items, total, page, pageSize, hasNextPage}`. All adopters accept `?page=&pageSize=` query params, default to `pageSize=50`, and clamp at `MAX_PAGE_SIZE=500`. Routes that previously returned a bare array now return the standard list envelope — frontend callers reading `.length` need a one-line change to `.items.length`.
+Round 4 (commit `06e1559c`): GPSSA — 3 list endpoints.
 
-**Pattern 3 status:** majority closed (15 / ~20 = 75%). Remaining: a handful of low-traffic endpoints in `hrms-config`, `hse-compliance`, `hse-visa-extensions`, `workforce-extensions`, `accommodation-compliance`, `payroll-compliance`, `talent-acquisition-compliance`, `hr-policies-compliance`, `structural-extensions`. None block any EPIC sign-off; cleanup-class follow-ups.
+Round 5 (commit `c72255cc`): attendance / benefits / leave / hr-policies / payroll-compliance / talent-acquisition-compliance / accommodation-compliance / hse-compliance — 19 list endpoints, 29 files.
 
-**Test regression (full `src/lib/services` sweep): 2320 passing / 47 failing — all 47 failures pre-existing and unrelated to this work** (confirmed by sampling the same test files on the pre-stash baseline). The 8 failing files (executive-compliance, hr-forms-compliance, hrms-config-workspaces, organization/cost-center, organization/department, payroll, etc.) need a separate cleanup pass.
+Round 6 (commit `acbe07eb`): structural-extensions / workforce-extensions / hse-visa-extensions / hrms-config (registry/migration/connector/implementation) / immigration-compliance / document-retention-compliance — 40 list endpoints, 50 files.
+
+Round 7 (commit `e700087e`): nationalisation-overlay / checklist-engine / compliance-calendar / audit-register / executive / records / nitaqat / sio / overtime / er / emiratisation / visa-exit / hr-forms / org-compliance / recruitment — 33 list endpoints, 61 files.
+
+**Final tally:** **18 + 92 ≈ 110 list endpoints migrated across ~38 services and ~70 routes.**
+
+**Pattern 3 status:** **CLOSED**. The only remaining `take: 500` occurrences in `apps/web/src/lib/services/` are:
+
+1. `pagination/index.ts` — the `MAX_PAGE_SIZE = 500` constant itself.
+2. 5 internal dashboard/cert helpers (`accommodation`, `leave`, `er-compliance`, `hr-forms-compliance`, `analytics/hr-analytics-engine`) that scan a fixed sample window for SLA detection — these are not list endpoints, they are bounded internal aggregations. Out of scope for the pagination helper.
+
+All migrated services return `PaginatedResult<unknown>` (`{items, total, page, pageSize, hasNextPage}`), accept `?page=&pageSize=` query params (default 1 / 50), and clamp `pageSize` to `[1, 500]`. The single non-trivial callsite that broke (`immigrationComplianceCertificateService.generate` was destructuring the matrix list as an array) is fixed alongside this entry by reading `matrix.items`.
+
+**Test regression:** the only typecheck error introduced by the bulk migration was the immigration callsite above; fixed. All other typecheck errors in `statutory-report.service.ts` (8 entries) and `attendance/time-capture/route.ts` (1 entry) pre-date this work and are tracked separately.
 
 ---
 

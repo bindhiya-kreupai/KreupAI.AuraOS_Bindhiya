@@ -599,8 +599,9 @@ class ImmigrationComplianceCertificateService {
       }),
       authorizationMatrixService.list(tenantId),
     ]);
-    const countriesCovered = new Set((matrix as Array<{ country: string }>).map((m) => m.country))
-      .size;
+    const countriesCovered = new Set(
+      (matrix.items as Array<{ country: string }>).map((m) => m.country)
+    ).size;
     const alerts7d = windowCounts.WINDOW_7 ?? 0;
     const alerts30d = windowCounts.WINDOW_30 ?? 0;
     const alerts60d = windowCounts.WINDOW_60 ?? 0;
