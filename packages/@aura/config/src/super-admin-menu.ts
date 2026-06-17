@@ -593,6 +593,18 @@ export const superAdminMenu: MenuDefinition = {
                         'Monthly Compliance Certificate (Recon/Bank-File/GL)',
                     ],
                 },
+                {
+                    code: 'ORG_COMPLIANCE',
+                    label: 'Org & Position Compliance',
+                    icon: 'organization',
+                    path: '/dashboard/org-compliance',
+                    features: [
+                        'Org Audit Checklist (13 categories)',
+                        'Position Control & Headcount Budget',
+                        'Vacancy Register (raise/approve/fill with ageing)',
+                        'Monthly Compliance Certificate (Overhire/Aged>90d/Unapproved)',
+                    ],
+                },
             ],
         },
         {

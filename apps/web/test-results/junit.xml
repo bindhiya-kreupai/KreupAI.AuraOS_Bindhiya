@@ -1,31 +1,39 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuites name="vitest tests" tests="13" failures="0" errors="0" time="0.007392166">
-    <testsuite name="src/lib/services/__tests__/payroll-compliance.service.test.ts" timestamp="2026-06-17T09:15:53.669Z" hostname="MacBookPro-2.lan" tests="13" failures="0" errors="0" skipped="0" time="0.007392166">
-        <testcase classname="src/lib/services/__tests__/payroll-compliance.service.test.ts" name="riskBand &gt; maps score to band" time="0.000989375">
+<testsuites name="vitest tests" tests="17" failures="0" errors="0" time="0.008020333">
+    <testsuite name="src/lib/services/__tests__/org-compliance.service.test.ts" timestamp="2026-06-17T09:23:03.261Z" hostname="MacBookPro-2.lan" tests="17" failures="0" errors="0" skipped="0" time="0.008020333">
+        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="headcountVariance &gt; vacant when filled below approved" time="0.001021">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/payroll-compliance.service.test.ts" name="payrollGatingReason &gt; returns null when clean" time="0.000243459">
+        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="headcountVariance &gt; overhire when filled above approved" time="0.000218542">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/payroll-compliance.service.test.ts" name="payrollGatingReason &gt; gates on unapproved run" time="0.00028675">
+        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="headcountVariance &gt; clamps both to 0 when equal" time="0.000358334">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/payroll-compliance.service.test.ts" name="payrollGatingReason &gt; gates on maker-checker breach + critical findings + variance" time="0.000359334">
+        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="agingDays &gt; returns integer days" time="0.000338833">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/payroll-compliance.service.test.ts" name="payrollGatingReason &gt; does not gate at 0.5% variance threshold edge" time="0.000174958">
+        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="agingDays &gt; uses filledAt when present" time="0.000221375">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/payroll-compliance.service.test.ts" name="payrollGatingReason &gt; gates on bank-file mismatch and missing GL postings" time="0.000266667">
+        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="agingDays &gt; never negative" time="0.000169917">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/payroll-compliance.service.test.ts" name="payrollGovernanceService.overdueCount &gt; flags MONTHLY controls older than 35 days" time="0.000292042">
+        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="orgGatingReason &gt; returns null when clean" time="0.000195584">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/payroll-compliance.service.test.ts" name="payrollGovernanceService.overdueCount &gt; uses cadence-specific thresholds" time="0.000212542">
+        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="orgGatingReason &gt; gates on overhire + aged vacancies" time="0.000294334">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/payroll-compliance.service.test.ts" name="payrollRiskService.upsert &gt; clamps L/I to 1..5 and derives score+band" time="0.000445583">
+        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="orgGatingReason &gt; gates on HIGH/CRIT checklist + unapproved vacancies" time="0.000396458">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/payroll-compliance.service.test.ts" name="payrollComplianceCertificateService &gt; refuses to sign while gated" time="0.001129708">
+        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="orgAuditChecklistService.overdueCount &gt; flags items &gt; 35 days since last review" time="0.000412792">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/payroll-compliance.service.test.ts" name="payrollComplianceCertificateService &gt; signs when clean" time="0.000258709">
+        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="orgPositionControlService.upsert &gt; derives vacant + overhire from headcount inputs" time="0.000243458">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/payroll-compliance.service.test.ts" name="payrollComplianceCertificateService &gt; generate computes reconciliationVariancePct from runs" time="0.000760708">
+        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="orgVacancyService &gt; refuses to fill unknown vacancy" time="0.000775791">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/payroll-compliance.service.test.ts" name="PAYROLL_COMPLIANCE_CONSTANTS &gt; covers SOD, period lock and GL posting categories" time="0.000570292">
+        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="orgVacancyService &gt; fill sets aging days from raisedAt" time="0.000228959">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="orgVacancyService &gt; openAged separates aged + unapproved counts" time="0.000475875">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="orgComplianceCertificateService.sign &gt; refuses while gated" time="0.000263083">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="orgComplianceCertificateService.sign &gt; signs when clean" time="0.000259458">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="ORG_COMPLIANCE_CONSTANTS &gt; covers org structure categories" time="0.000520208">
         </testcase>
     </testsuite>
 </testsuites>

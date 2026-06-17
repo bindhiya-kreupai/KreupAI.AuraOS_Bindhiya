@@ -13389,3 +13389,96 @@ model PayrollComplianceCertificate {
   @@unique([tenantId, period], map: "aura_payroll_compliance_certificate_unique")
   @@map("aura_payroll_compliance_certificate")
 }
+
+model OrgAuditChecklistItem {
+  id             String    @id(map: "aura_org_audit_checklist_item_pkey") @default(uuid())
+  tenantId       String
+  itemCode       String
+  label          String
+  category       String
+  country        String?
+  expectation    String?
+  evidence       String?
+  owner          String?
+  severity       String    @default("MEDIUM")
+  lastReviewedAt DateTime?
+  lastReviewedBy String?
+  lastResult     String?
+  notes          String?
+  status         String    @default("ACTIVE")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@unique([tenantId, itemCode], map: "aura_org_audit_checklist_item_unique")
+  @@map("aura_org_audit_checklist_item")
+}
+
+model OrgPositionControl {
+  id                String   @id(map: "aura_org_position_control_pkey") @default(uuid())
+  tenantId          String
+  period            String
+  departmentId      String?
+  positionId        String?
+  country           String?
+  budgetedHeadcount Int      @default(0)
+  approvedHeadcount Int      @default(0)
+  filledHeadcount   Int      @default(0)
+  vacantHeadcount   Int      @default(0)
+  overhireCount     Int      @default(0)
+  frozenCount       Int      @default(0)
+  notes             String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([tenantId, period, departmentId, positionId], map: "aura_org_position_control_unique")
+  @@map("aura_org_position_control")
+}
+
+model OrgVacancy {
+  id            String    @id(map: "aura_org_vacancy_pkey") @default(uuid())
+  tenantId      String
+  vacancyNumber String
+  positionId    String?
+  departmentId  String?
+  country       String?
+  raisedAt      DateTime  @default(now())
+  approvedAt    DateTime?
+  approvedBy    String?
+  filledAt      DateTime?
+  candidateId   String?
+  agingDays     Int       @default(0)
+  status        String    @default("OPEN")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@unique([tenantId, vacancyNumber], map: "aura_org_vacancy_unique")
+  @@index([tenantId, status], map: "aura_org_vacancy_status")
+  @@map("aura_org_vacancy")
+}
+
+model OrgComplianceCertificate {
+  id                  String    @id(map: "aura_org_compliance_certificate_pkey") @default(uuid())
+  tenantId            String
+  period              String
+  status              String    @default("DRAFT")
+  checklistTotal      Int       @default(0)
+  checklistFailing    Int       @default(0)
+  checklistOverdue    Int       @default(0)
+  overhireTotal       Int       @default(0)
+  frozenTotal         Int       @default(0)
+  vacanciesOpen       Int       @default(0)
+  vacanciesAgedOver90 Int       @default(0)
+  unapprovedVacancies Int       @default(0)
+  departmentsCovered  Int       @default(0)
+  metricsJson         Json      @default("{}")
+  gatingReason        String?
+  attestationsJson    Json      @default("[]")
+  generatedAt         DateTime?
+  signedAt            DateTime?
+  signedBy            String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@unique([tenantId, period], map: "aura_org_compliance_certificate_unique")
+  @@map("aura_org_compliance_certificate")
+}
