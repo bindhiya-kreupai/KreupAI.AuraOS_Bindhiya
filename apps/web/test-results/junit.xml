@@ -1,37 +1,27 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuites name="vitest tests" tests="16" failures="0" errors="0" time="0.008118208">
-    <testsuite name="src/lib/services/__tests__/records-compliance.service.test.ts" timestamp="2026-06-17T09:36:23.725Z" hostname="MacBookPro-2.lan" tests="16" failures="0" errors="0" skipped="0" time="0.008118208">
-        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="completenessScore &gt; returns 100 GREEN when zero mandatory total" time="0.00104875">
+<testsuites name="vitest tests" tests="11" failures="0" errors="0" time="0.006621541">
+    <testsuite name="src/lib/services/__tests__/talent-acquisition-compliance.service.test.ts" timestamp="2026-06-17T09:42:42.060Z" hostname="MacBookPro-2.lan" tests="11" failures="0" errors="0" skipped="0" time="0.006621541">
+        <testcase classname="src/lib/services/__tests__/talent-acquisition-compliance.service.test.ts" name="riskBand &gt; maps to bands" time="0.000942667">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="completenessScore &gt; GREEN when all present" time="0.000241625">
+        <testcase classname="src/lib/services/__tests__/talent-acquisition-compliance.service.test.ts" name="taGatingReason &gt; null when clean" time="0.00019625">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="completenessScore &gt; AMBER between 70 and 89" time="0.000359333">
+        <testcase classname="src/lib/services/__tests__/talent-acquisition-compliance.service.test.ts" name="taGatingReason &gt; gates when any signal is non-zero" time="0.000348584">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="completenessScore &gt; RED below 70" time="0.000304375">
+        <testcase classname="src/lib/services/__tests__/talent-acquisition-compliance.service.test.ts" name="taAuditChecklistService.overdueCount &gt; flags items &gt; 35 days" time="0.000272625">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="completenessScore &gt; expired docs apply 5-point penalty each" time="0.000179666">
+        <testcase classname="src/lib/services/__tests__/talent-acquisition-compliance.service.test.ts" name="taAuditChecklistService.stageBreakdown &gt; groups by stage and counts PASS/FAIL/OBSERVATION/unchecked" time="0.000829791">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="completenessScore &gt; expiring within 30d adds penalty capped at 10" time="0.000156709">
+        <testcase classname="src/lib/services/__tests__/talent-acquisition-compliance.service.test.ts" name="taRiskService.upsert &gt; clamps L/I and derives score+band" time="0.000224958">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="recordsGatingReason &gt; returns null when clean" time="0.000252292">
+        <testcase classname="src/lib/services/__tests__/talent-acquisition-compliance.service.test.ts" name="taComplianceCertificateService &gt; refuses to sign while gated" time="0.000804167">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="recordsGatingReason &gt; gates on RED employees + expired docs" time="0.000239042">
+        <testcase classname="src/lib/services/__tests__/talent-acquisition-compliance.service.test.ts" name="taComplianceCertificateService &gt; signs when clean" time="0.000204291">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="recordsGatingReason &gt; gates on HIGH/CRIT checklist + overdue + risks" time="0.000320125">
+        <testcase classname="src/lib/services/__tests__/talent-acquisition-compliance.service.test.ts" name="taComplianceCertificateService &gt; generate writes stage breakdown into the certificate" time="0.000417708">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="riskBand &gt; bands 1..25" time="0.000344333">
+        <testcase classname="src/lib/services/__tests__/talent-acquisition-compliance.service.test.ts" name="TA_COMPLIANCE_CONSTANTS &gt; covers all 5 lifecycle stages" time="0.000242875">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="recordsCompletenessService.upsert &gt; derives mandatoryMissing, score and band" time="0.000351667">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="recordsCompletenessService.aggregate &gt; aggregates band counts, average score, missing/expired totals" time="0.000303333">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="recordsAuditChecklistService.overdueCount &gt; flags items &gt; 35 days" time="0.000229208">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="recordsComplianceCertificateService &gt; refuses to sign while gated" time="0.001014625">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="recordsComplianceCertificateService &gt; generates with gating when RED employees and expired docs present" time="0.000365625">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="RECORDS_COMPLIANCE_CONSTANTS &gt; covers identity, contract, visa, work permit" time="0.000674042">
+        <testcase classname="src/lib/services/__tests__/talent-acquisition-compliance.service.test.ts" name="TA_COMPLIANCE_CONSTANTS &gt; covers EPIC-03/04/05 categories" time="0.000531083">
         </testcase>
     </testsuite>
 </testsuites>

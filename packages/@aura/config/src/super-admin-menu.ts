@@ -618,6 +618,18 @@ export const superAdminMenu: MenuDefinition = {
                         'Monthly Compliance Certificate',
                     ],
                 },
+                {
+                    code: 'TA_COMPLIANCE',
+                    label: 'Talent Acquisition Compliance',
+                    icon: 'recruitment',
+                    path: '/dashboard/talent-acquisition-compliance',
+                    features: [
+                        'Lifecycle Audit Checklist (5 stages, 25 categories)',
+                        'TA Risk Register (L×I bands)',
+                        'Stage Breakdown (PLANNING/SOURCING/SELECTION/OFFER/PRE-EMPLOYMENT)',
+                        'Monthly TA Compliance Certificate',
+                    ],
+                },
             ],
         },
         {

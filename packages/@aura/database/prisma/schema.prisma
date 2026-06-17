@@ -13596,3 +13596,72 @@ model RecordsComplianceCertificate {
   @@unique([tenantId, period], map: "aura_records_compliance_certificate_unique")
   @@map("aura_records_compliance_certificate")
 }
+
+model TaAuditChecklistItem {
+  id             String    @id(map: "aura_ta_audit_checklist_item_pkey") @default(uuid())
+  tenantId       String
+  itemCode       String
+  label          String
+  stage          String
+  category       String
+  country        String?
+  expectation    String?
+  severity       String    @default("MEDIUM")
+  lastReviewedAt DateTime?
+  lastReviewedBy String?
+  lastResult     String?
+  notes          String?
+  status         String    @default("ACTIVE")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  @@unique([tenantId, itemCode], map: "aura_ta_audit_checklist_item_unique")
+  @@index([tenantId, stage], map: "aura_ta_audit_checklist_item_stage")
+  @@map("aura_ta_audit_checklist_item")
+}
+
+model TaRiskEntry {
+  id         String   @id(map: "aura_ta_risk_entry_pkey") @default(uuid())
+  tenantId   String
+  riskCode   String
+  title      String
+  stage      String
+  category   String
+  country    String?
+  likelihood Int
+  impact     Int
+  score      Int
+  band       String
+  ownerId    String?
+  mitigation String?
+  status     String   @default("OPEN")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([tenantId, riskCode], map: "aura_ta_risk_entry_unique")
+  @@map("aura_ta_risk_entry")
+}
+
+model TaComplianceCertificate {
+  id                  String    @id(map: "aura_ta_compliance_certificate_pkey") @default(uuid())
+  tenantId            String
+  period              String
+  status              String    @default("DRAFT")
+  checklistTotal      Int       @default(0)
+  checklistFailing    Int       @default(0)
+  checklistOverdue    Int       @default(0)
+  criticalRisksOpen   Int       @default(0)
+  stagesCovered       Int       @default(0)
+  stageBreakdownJson  Json      @default("[]")
+  metricsJson         Json      @default("{}")
+  gatingReason        String?
+  attestationsJson    Json      @default("[]")
+  generatedAt         DateTime?
+  signedAt            DateTime?
+  signedBy            String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  @@unique([tenantId, period], map: "aura_ta_compliance_certificate_unique")
+  @@map("aura_ta_compliance_certificate")
+}
