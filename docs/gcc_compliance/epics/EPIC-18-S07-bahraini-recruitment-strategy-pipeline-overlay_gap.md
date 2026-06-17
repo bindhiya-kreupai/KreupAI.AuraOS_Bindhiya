@@ -1,6 +1,6 @@
 # Gap Analysis: EPIC-18-S07 — Bahraini recruitment strategy & pipeline overlay
 
-> **🟠 TRUE GAP — confirmed 2026-06-17.** This story remains incomplete. See [`docs/gcc_compliance/REMAINING-GAPS-2026-06-17.md`](../REMAINING-GAPS-2026-06-17.md) for the consolidated punch list, theme grouping, and pattern-reuse guidance. This file is the original 2026-06-16 audit snapshot.
+> **✅ SHIPPED 2026-06-17** — Theme B closure. Shared `nationalisation-overlay` registry: requisition tags (TA pipeline), job/position tags, retention ledger with early-attrition flag, L&D plan tracker, artificial-risk detection (9 signals, banded LOW/MEDIUM/HIGH/CRITICAL), Saudi profession-localisation codes. Consumed by emiratisation-, nitaqat-, bahrainization-compliance services. See [`docs/gcc_compliance/REMAINING-GAPS-2026-06-17.md`](../REMAINING-GAPS-2026-06-17.md).
 
 > Source epic: [EPIC-18-chapter-18-bahrainization-compliance.md](./EPIC-18-chapter-18-bahrainization-compliance.md)
 > Parent epic: EPIC-18: Chapter 18 – Bahrainization Compliance

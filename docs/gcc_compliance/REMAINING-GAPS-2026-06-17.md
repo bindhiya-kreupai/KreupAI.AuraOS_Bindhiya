@@ -10,7 +10,16 @@
 > workspaces (S01, S03–S20, S24–S29) shipped via the generic
 > `HrmsConfigObject` registry + 22 per-domain workspaces + implementation
 > checklist + connectors + migrations + monthly/go-live certificate.
-> **66 gaps remain** (was 91). Themes B–K are unchanged.
+> **66 gaps remain** (was 91).
+>
+> **Update 2026-06-17 (Theme B closure):** all 13 nationalisation overlay
+> stories (EPIC-16 S06/S07/S08/S12/S13 + EPIC-17 S09/S11/S12/S13 +
+> EPIC-18 S07/S08/S14/S15) shipped via the shared
+> `nationalisation-overlay` registry (requisition tags, job tags,
+> retention ledger with early-attrition flag, L&D plan tracker,
+> artificial-risk detection with 9 signals banded LOW/MEDIUM/HIGH/CRITICAL,
+> Saudi profession-localisation codes). **53 gaps remain** (was 66).
+> Themes C–K unchanged.
 
 ## Source of truth
 
@@ -92,12 +101,27 @@ Original (pre-closure) detail kept below for traceability.
 | 34-S28 | HRMS-config KPI compute + risk-matrix service (dashboard scaffold present)                              |
 | 34-S29 | `HrmsConfigCertificate` model + go-live sign-off flow                                                   |
 
-### Theme B — Nationalisation pipeline / retention / L&D overlays (8 stories)
+### Theme B — Nationalisation pipeline / retention / L&D overlays (13 stories) — ✅ CLOSED 2026-06-17
 
-Nationalisation engines (Nitaqat / Emiratisation / Bahrainisation) ship
-the ratio math, snapshots, hire register, and monthly certificate but
-miss the recruitment-pipeline overlay, retention KPIs, and L&D
-tagging on the talent-acquisition side.
+Shipped via `nationalisation-overlay` shared registry. New tables:
+`NationalisationRequisitionTag`, `NationalisationJobTag`,
+`NationalisationRetentionEvent` (with `isEarlyAttrition` flag derived
+from `daysFromHire < threshold`), `NationalisationDevelopmentPlan`,
+`NationalisationArtificialRiskFlag` (9 signal codes, banded by count),
+`SaudiProfessionLocalization`. Consumed by emiratisation-, nitaqat-,
+bahrainization-compliance services. Migration
+`20260705000000_add_nationalisation_overlay`.
+
+Files:
+
+- 7 services in `apps/web/src/lib/services/nationalisation-overlay/`
+- 7 API routes under `/api/v1/nationalisation-overlay/`
+- 7 dashboard pages under `/dashboard/nationalisation-overlay/`
+- Menu: `NATIONALISATION_OVERLAY` under `GCC_COMPLIANCE`
+- 25 Vitest covering helpers, validation, retention KPIs, risk bands,
+  scope resolution
+
+Original (pre-closure) detail kept below for traceability.
 
 | Story  | Missing                                                                     |
 | ------ | --------------------------------------------------------------------------- |

@@ -13859,6 +13859,136 @@ model GlPosting {
   @@map("aura_gl_posting")
 }
 
+// Theme B — Nationalisation overlays (EPIC-16 S06/S07/S08/S12/S13,
+// EPIC-17 S09/S11/S12/S13, EPIC-18 S07/S08/S14/S15). Cross-program
+// registry used by emiratisation-, nitaqat- and bahrainization-
+// compliance services.
+model NationalisationRequisitionTag {
+  id                   String   @id(map: "aura_nationalisation_requisition_tag_pkey") @default(uuid())
+  tenantId             String
+  requisitionId        String
+  program              String // EMIRATISATION | NITAQAT | BAHRAINIZATION | OMANISATION | QATARISATION
+  eligibility          String   @default("PREFERRED") // MANDATORY | PREFERRED | NEUTRAL | EXCLUDED
+  isReservedSeat       Boolean  @default(false)
+  targetShareNationals Int?
+  sourceChannel        String?
+  notes                String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  @@unique([tenantId, requisitionId, program], map: "aura_nationalisation_requisition_tag_unique")
+  @@index([tenantId, program, eligibility], map: "aura_nationalisation_requisition_tag_program")
+  @@map("aura_nationalisation_requisition_tag")
+}
+
+model NationalisationJobTag {
+  id             String   @id(map: "aura_nationalisation_job_tag_pkey") @default(uuid())
+  tenantId       String
+  targetType     String // POSITION | JOB_PROFILE | JOB_FAMILY
+  targetId       String
+  program        String
+  eligibility    String   @default("PREFERRED")
+  reservedSeats  Int      @default(0)
+  professionCode String?
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([tenantId, targetType, targetId, program], map: "aura_nationalisation_job_tag_unique")
+  @@index([tenantId, program, eligibility], map: "aura_nationalisation_job_tag_program")
+  @@map("aura_nationalisation_job_tag")
+}
+
+model NationalisationRetentionEvent {
+  id                          String    @id(map: "aura_nationalisation_retention_event_pkey") @default(uuid())
+  tenantId                    String
+  employeeId                  String
+  program                     String
+  nationalityFlag             String // NATIONAL | EXPAT | MIXED
+  eventType                   String // HIRED | CONFIRMED | RESIGNED | TERMINATED | TRANSFERRED
+  eventDate                   DateTime
+  hireDate                    DateTime?
+  daysFromHire                Int?
+  earlyAttritionThresholdDays Int?      @default(365)
+  isEarlyAttrition            Boolean   @default(false)
+  reasonCode                  String?
+  notes                       String?
+  createdAt                   DateTime  @default(now())
+  updatedAt                   DateTime  @updatedAt
+
+  @@index([tenantId, program, eventType], map: "aura_nationalisation_retention_event_program")
+  @@index([tenantId, employeeId], map: "aura_nationalisation_retention_event_employee")
+  @@index([tenantId, program, isEarlyAttrition], map: "aura_nationalisation_retention_event_early")
+  @@map("aura_nationalisation_retention_event")
+}
+
+model NationalisationDevelopmentPlan {
+  id                     String    @id(map: "aura_nationalisation_development_plan_pkey") @default(uuid())
+  tenantId               String
+  employeeId             String
+  program                String
+  planCode               String
+  label                  String
+  status                 String    @default("PLANNED") // PLANNED | ACTIVE | COMPLETED | CANCELLED
+  targetCompetenciesJson Json?
+  milestonesJson         Json?
+  startDate              DateTime?
+  targetEndDate          DateTime?
+  completedAt            DateTime?
+  completionPct          Int       @default(0)
+  ownerRole              String?
+  notes                  String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+
+  @@unique([tenantId, employeeId, program, planCode], map: "aura_nationalisation_development_plan_unique")
+  @@index([tenantId, program, status], map: "aura_nationalisation_development_plan_status")
+  @@map("aura_nationalisation_development_plan")
+}
+
+model NationalisationArtificialRiskFlag {
+  id               String    @id(map: "aura_nationalisation_artificial_risk_flag_pkey") @default(uuid())
+  tenantId         String
+  employeeId       String
+  program          String
+  evidenceMonth    String
+  signalsJson      Json
+  signalCount      Int       @default(0)
+  riskBand         String    @default("LOW") // LOW | MEDIUM | HIGH | CRITICAL
+  isResolved       Boolean   @default(false)
+  resolvedBy       String?
+  resolvedAt       DateTime?
+  resolutionReason String?
+  notes            String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+
+  @@unique([tenantId, employeeId, program, evidenceMonth], map: "aura_nationalisation_artificial_risk_flag_unique")
+  @@index([tenantId, program, riskBand, isResolved], map: "aura_nationalisation_artificial_risk_flag_band")
+  @@map("aura_nationalisation_artificial_risk_flag")
+}
+
+model SaudiProfessionLocalization {
+  id                        String    @id(map: "aura_saudi_profession_localization_pkey") @default(uuid())
+  tenantId                  String
+  isicCode                  String?
+  professionCode            String
+  professionNameEn          String
+  professionNameAr          String?
+  reservedForSaudis         Boolean   @default(false)
+  minimumNationalisationPct Int?
+  effectiveFrom             DateTime
+  effectiveTo               DateTime?
+  regulatorRef              String?
+  notes                     String?
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
+
+  @@unique([tenantId, professionCode, effectiveFrom], map: "aura_saudi_profession_localization_unique")
+  @@index([tenantId, reservedForSaudis], map: "aura_saudi_profession_localization_reserved")
+  @@map("aura_saudi_profession_localization")
+}
+
 // EPIC-34 HRMS Configuration — 25 remaining workspaces (S01, S03–S20,
 // S24–S29). Generic config registry plus monthly + go-live certificate,
 // implementation checklist (S27), integration connectors (S25),

@@ -377,6 +377,19 @@ export const superAdminMenu: MenuDefinition = {
                     ],
                 },
                 {
+                    code: 'NATIONALISATION_OVERLAY',
+                    label: 'Nationalisation Overlays',
+                    icon: 'localization',
+                    path: '/dashboard/nationalisation-overlay',
+                    features: [
+                        'TA Pipeline Tags · Requisition + Job/Position',
+                        'Retention Ledger · Early-Attrition Tracker',
+                        'National L&D Plans',
+                        'Fake / Artificial Detection (GPSSA × Payroll × WPS)',
+                        'Saudi Profession-Localisation Codes (S09)',
+                    ],
+                },
+                {
                     code: 'BAHRAINIZATION_COMPLIANCE',
                     label: 'Bahrainization',
                     icon: 'localization',
