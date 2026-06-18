@@ -11,4 +11,6 @@ export * from "./attachment-uploader";
 export * from "./email-recipient-picker";
 export * from "./filter-panel";
 export * from "./data-page-with-toolbar";
+export * from "./risk-heatmap";
+export * from "./drill-down-tree";
 export { DataPage, type DataPageProps, type FormField } from "./data-page";
