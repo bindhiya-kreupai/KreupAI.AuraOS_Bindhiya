@@ -7,11 +7,16 @@
  */
 
 import type { NextRequest } from 'next/server';
+import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
 import { visaRenewalAlertService } from '@/lib/services/visa-exit-compliance/renewal-alerts.service';
-import { forbidden, hasAny, ok, serverError, type RouteContext } from '../_shared';
+import { badRequest, forbidden, hasAny, ok, serverError, type RouteContext } from '../_shared';
 
 export const dynamic = 'force-dynamic';
+
+const querySchema = z.object({
+  asOf: z.string().datetime().optional().nullable(),
+});
 
 export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) => {
   if (!hasAny(ctx.permissions, 'visa:read', 'dashboard:read', 'employee:read')) {
@@ -19,8 +24,11 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
   }
   try {
     const url = new URL(req.url);
-    const asOfRaw = url.searchParams.get('asOf');
-    const asOf = asOfRaw ? new Date(asOfRaw) : new Date();
+    const parsed = querySchema.safeParse({ asOf: url.searchParams.get('asOf') });
+    if (!parsed.success) {
+      return badRequest('Invalid input', { issues: parsed.error.flatten() });
+    }
+    const asOf = parsed.data.asOf ? new Date(parsed.data.asOf) : new Date();
     const alerts = await visaRenewalAlertService.scanTenantForAlerts(ctx.user.tenantId, asOf);
     return ok({
       alerts,

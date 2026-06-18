@@ -8,6 +8,7 @@
  */
 
 import type { NextRequest } from 'next/server';
+import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
 import {
   detectLeaveHolidayOverlap,
@@ -17,28 +18,47 @@ import { badRequest, forbidden, hasAny, ok, serverError, type RouteContext } fro
 
 export const dynamic = 'force-dynamic';
 
+const inputSchema = z.object({
+  leave: z.object({
+    startDate: z.string().datetime(),
+    endDate: z.string().datetime(),
+    halfDayStart: z.boolean().optional(),
+    halfDayEnd: z.boolean().optional(),
+  }),
+  holidays: z.array(
+    z.object({
+      date: z.string().datetime(),
+      label: z.string().optional(),
+      labelAr: z.string().optional(),
+      holidayClass: z.string().optional(),
+      state: z.enum(['CONFIRMED', 'PROVISIONAL']).optional(),
+    })
+  ),
+});
+
 export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) => {
   if (!hasAny(ctx.permissions, 'leave:read', 'tenant:read', 'dashboard:read')) {
     return forbidden();
   }
   try {
-    const body = await req.json();
-    if (!body.leave?.startDate || !body.leave?.endDate) {
-      return badRequest('leave.startDate and leave.endDate required');
+    const raw = await req.json();
+    const parsed = inputSchema.safeParse(raw);
+    if (!parsed.success) {
+      return badRequest('Invalid input', { issues: parsed.error.flatten() });
     }
-    if (!Array.isArray(body.holidays)) return badRequest('holidays (array) required');
+    const body = parsed.data;
     const leave = {
       startDate: new Date(body.leave.startDate),
       endDate: new Date(body.leave.endDate),
       halfDayStart: body.leave.halfDayStart === true,
       halfDayEnd: body.leave.halfDayEnd === true,
     };
-    const holidays = body.holidays.map((h: any) => ({
+    const holidays = body.holidays.map((h) => ({
       date: new Date(h.date),
-      label: String(h.label ?? ''),
+      label: h.label ?? '',
       labelAr: h.labelAr,
-      holidayClass: String(h.holidayClass ?? 'PUBLIC'),
-      state: h.state === 'PROVISIONAL' ? 'PROVISIONAL' : 'CONFIRMED',
+      holidayClass: h.holidayClass ?? 'PUBLIC',
+      state: h.state === 'PROVISIONAL' ? ('PROVISIONAL' as const) : ('CONFIRMED' as const),
     }));
     const totalDays = leaveTotalDays(leave);
     const result = detectLeaveHolidayOverlap(leave, holidays);

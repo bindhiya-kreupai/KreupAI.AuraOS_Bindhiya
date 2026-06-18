@@ -12,15 +12,22 @@
  */
 
 import type { NextRequest } from 'next/server';
+import { z } from 'zod';
 import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
 import {
   buildRiskHeatmap,
   type FlagSnapshot,
 } from '@/lib/services/executive-compliance/drill-down.service';
-import { forbidden, hasAny, ok, serverError, type RouteContext } from '../_shared';
+import { badRequest, forbidden, hasAny, ok, serverError, type RouteContext } from '../_shared';
 
 export const dynamic = 'force-dynamic';
+
+const querySchema = z.object({
+  domain: z.string().optional().nullable(),
+  country: z.string().optional().nullable(),
+  status: z.string().optional().nullable(),
+});
 
 function snapshotFromRow(row: any): FlagSnapshot {
   const details = (row.details ?? {}) as Record<string, unknown>;
@@ -45,9 +52,15 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
   if (!hasAny(ctx.permissions, 'compliance_kpi:read', 'dashboard:read')) return forbidden();
   try {
     const url = new URL(req.url);
-    const domain = url.searchParams.get('domain') ?? undefined;
-    const country = url.searchParams.get('country') ?? undefined;
-    const status = url.searchParams.get('status') ?? undefined;
+    const parsed = querySchema.safeParse({
+      domain: url.searchParams.get('domain'),
+      country: url.searchParams.get('country'),
+      status: url.searchParams.get('status'),
+    });
+    if (!parsed.success) {
+      return badRequest('Invalid input', { issues: parsed.error.flatten() });
+    }
+    const { domain, country, status } = parsed.data;
 
     const rows = await (prisma as any).redFlagInstance.findMany({
       where: {
