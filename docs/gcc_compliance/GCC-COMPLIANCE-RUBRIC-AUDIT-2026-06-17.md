@@ -637,6 +637,59 @@ What's NOT done (would need separate effort beyond enterprise depth):
 - E2E / integration tests beyond unit
 - Service-layer type tightening flagged by the Zod pass (penalty matrix misconductType, safety controls inputs, rule simulation value type) — these are documented as follow-ups in the Zod commit messages
 
+### 2026-06-17 — Enterprise depth pass round 2 (recheck-driven follow-ups)
+
+After the prior depth pass landed, the user asked to "go on to complete the remaining pending tasks". The 4 items flagged as NOT-done in the previous section were all closed:
+
+**1. Type tightening for the 3 flagged services** (commit `56ab6242`)
+
+- `penalty-matrix.service.ts` — exports a `MisconductType` union plus a runtime `MISCONDUCT_TYPES` const. Every input parameter (`evaluatePenaltyMatrix`, `countPriors`, `recommend`, `findInconsistentPrecedents`, the matrix rule itself) is now typed as `MisconductType | (string & {})` — the canonical enum with an explicit escape hatch for country-pack overrides. The penalty-matrix route's Zod schema accepts the same union.
+- `accommodation-compliance/safety-controls` and `hse-compliance/safety-management` routes — three `z.record(z.unknown())` placeholders replaced with full Zod schemas that mirror `HygieneInput / FireSafetyInput / FoodSafetyInput` and `PpeCoverageInput / ToolboxCoverageInput / DrillCadenceInput`. Field-level Zod errors now surface (e.g. cleanlinessScore out of 1-5 range) instead of a generic 500 from the evaluator.
+- `gcc-rule-library/simulate` route — `value: z.unknown()` replaced with `z.union([number, string, boolean, array, record])` so null/undefined are rejected at the boundary.
+- `DrillCadenceInput.cadence` retyped from `Record<...>` to `Partial<Record<...>>` to match the evaluator's actual merge-with-DEFAULT behaviour.
+
+**2. Loading skeletons replace "Loading…" text** (commit `59c02db3`)
+
+- New `Skeleton` primitive (`@aura/ui`) with 7 variants (text / title / card / avatar / table-row / pill / block), configurable width / height / row count, multi-row "paragraph" rendering with a narrower last-row fallback.
+- Two convenience compositions: `SkeletonForm` and `SkeletonVerdict`.
+- `EvaluatorPage` renders `<SkeletonVerdict />` while the API response is pending. 12 new tests; 139 / 139 ui-primitives tests still passing.
+
+**3. `ErrorState` primitive — field-level Zod errors surface in the UI** (commit `6000ba82`)
+
+- The bare red-text error banner in `EvaluatorPage` is replaced by an `<ErrorState>` card with role="alert", bilingual title/message, optional retry button, and a collapsed `<details>` disclosure that lists the per-field errors from the Zod-flattened error shape (`formErrors[]` + `fieldErrors{}`).
+- `EvaluatorPage` now extracts `json.error.details.issues` from the API response and feeds it to the disclosure, so users see exactly which field failed validation (e.g. `employeeId: must be a uuid`) instead of a generic "Invalid input".
+- 12 new tests; the EvaluatorPage tests + 11 page tests still pass — backward-compatible.
+
+**4. Bulk test coverage — remaining 17 routes + 20 pages** (commits `f915ee48`, `973caaa1`)
+
+The previous depth pass covered 10 representative routes + 10 representative pages. The remaining 17 routes + 20 pages now have direct tests (+128 tests across 37 new files). Subagent dispatched in the background while I worked on type tightening + skeletons + error states.
+
+**Follow-up fix** (commit `77a6edb4`)
+
+The `Record<string, unknown>` widening from the StructuredArrayEditor commit caused 8 pages with local `safeParse(s: string)` helpers to fail tsc. Each helper widened to accept `unknown` and coerce via `String(input ?? '')`.
+
+**Final regression sweep:** **601 / 601 tests passing across 99 test files** (27 service test suites + 26 ui-primitives + 30 ui-pages + 27 api-route smoke tests + 4 ad-hoc). Dashboard typecheck clean.
+
+**Enterprise-depth status (updated):**
+
+- Service evaluators: ✓ 27 tested
+- Prisma: ✓ no schema changes needed
+- API routes: ✓ all 27 have Zod validation + permission checks
+- API route tests: ✓ all 27 routes covered (10 from round 1, 17 from round 2)
+- Pages: ✓ all 30 evaluator pages render + submit + verdict
+- Page tests: ✓ all 30 pages covered (10 from round 1, 20 from round 2)
+- Menu: ✓ 28 leaf items wired with explicit paths
+- Bilingual: ✓ every page renders title + reason in en + ar
+- JSON-textarea hacks: ✓ 3 replaced with typed structured editors
+- Loading skeletons: ✓ replaced "Loading…" text with `SkeletonVerdict`
+- Field-level error surfacing: ✓ Zod issues collapsed under a disclosure inside `ErrorState`
+- Service-layer type tightening: ✓ 3 flagged areas all promoted to exported types
+
+Only items not addressed (separately tracked):
+
+- Browser-verified flow for every page (requires the user in front of a dev server)
+- True E2E / integration tests (requires Playwright runner setup beyond unit scope)
+
 ---
 
 _Audit completed 2026-06-17._
