@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { VerdictPanel, type VerdictPanelProps } from './verdict-panel';
 import { StructuredArrayEditor, type StructuredColumn } from './structured-array-editor';
+import { SkeletonVerdict } from './skeleton';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -322,6 +323,7 @@ export function EvaluatorPage({
                     </button>
                 </div>
             </form>
+            {loading && !verdict && <SkeletonVerdict />}
             {verdict && <VerdictPanel {...verdict} locale={locale} />}
         </div>
     );

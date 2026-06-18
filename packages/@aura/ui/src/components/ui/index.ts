@@ -17,4 +17,5 @@ export * from "./alert-timeline";
 export * from "./verdict-panel";
 export * from "./evaluator-page";
 export * from "./structured-array-editor";
+export * from "./skeleton";
 export { DataPage, type DataPageProps, type FormField } from "./data-page";
