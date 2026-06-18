@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { VerdictPanel, type VerdictPanelProps } from './verdict-panel';
+import { StructuredArrayEditor, type StructuredColumn } from './structured-array-editor';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -49,7 +50,8 @@ export type EvaluatorFieldType =
     | 'date'
     | 'datetime-local'
     | 'select'
-    | 'boolean';
+    | 'boolean'
+    | 'structured-array';
 
 export interface EvaluatorField {
     name: string;
@@ -59,11 +61,18 @@ export interface EvaluatorField {
     required?: boolean;
     placeholder?: string;
     options?: Array<{ value: string; label: string }>;
-    /** Default value (string form). */
+    /** Default value (string form for scalar fields). */
     defaultValue?: string;
     /** Help text shown under the field. */
     helpText?: string;
     helpTextAr?: string;
+    /** Column definitions for 'structured-array' fields. */
+    columns?: StructuredColumn[];
+    /** Default rows for 'structured-array' fields. */
+    defaultRows?: Array<Record<string, unknown>>;
+    /** Minimum / maximum row counts for 'structured-array' fields. */
+    minRows?: number;
+    maxRows?: number;
 }
 
 export interface EvaluatorEndpoint {
@@ -79,12 +88,16 @@ export interface EvaluatorPageProps {
     descriptionAr?: string;
     fields: EvaluatorField[];
     endpoint: EvaluatorEndpoint;
-    /** Transforms form values into the request body. */
-    buildPayload: (values: Record<string, string>) => unknown;
+    /**
+     * Transforms form values into the request body. For scalar fields the
+     * value is a string; for `structured-array` fields it is an array of
+     * row records.
+     */
+    buildPayload: (values: Record<string, unknown>) => unknown;
     /** Transforms the API response data into a VerdictPanelProps shape. */
     buildVerdict: (data: unknown) => VerdictPanelProps | null;
     /** Optional GET-style URL builder for endpoints that take query params. */
-    buildQuery?: (values: Record<string, string>) => string;
+    buildQuery?: (values: Record<string, unknown>) => string;
     /** Optional submit-button label. */
     submitLabel?: string;
     submitLabelAr?: string;
@@ -107,9 +120,15 @@ export function EvaluatorPage({
     locale = 'en',
     className,
 }: EvaluatorPageProps) {
-    const [values, setValues] = useState<Record<string, string>>(() => {
-        const out: Record<string, string> = {};
-        for (const f of fields) out[f.name] = f.defaultValue ?? '';
+    const [values, setValues] = useState<Record<string, unknown>>(() => {
+        const out: Record<string, unknown> = {};
+        for (const f of fields) {
+            if (f.type === 'structured-array') {
+                out[f.name] = f.defaultRows ?? [];
+            } else {
+                out[f.name] = f.defaultValue ?? '';
+            }
+        }
         return out;
     });
     const [verdict, setVerdict] = useState<VerdictPanelProps | null>(null);
@@ -124,7 +143,7 @@ export function EvaluatorPage({
             ? submitLabelAr
             : (submitLabel ?? (locale === 'ar' ? 'تقييم' : 'Evaluate'));
 
-    function onChange(name: string, value: string) {
+    function onChange(name: string, value: unknown) {
         setValues((prev) => ({ ...prev, [name]: value }));
     }
 
@@ -134,7 +153,14 @@ export function EvaluatorPage({
         setError(null);
         // Light required validation.
         for (const f of fields) {
-            if (f.required && !values[f.name]) {
+            if (!f.required) continue;
+            const v = values[f.name];
+            const missing =
+                v === undefined ||
+                v === null ||
+                v === '' ||
+                (Array.isArray(v) && v.length === 0);
+            if (missing) {
                 setError(
                     locale === 'ar'
                         ? `الحقل "${f.labelAr ?? f.label}" مطلوب`
@@ -202,6 +228,29 @@ export function EvaluatorPage({
                     const id = `evaluator-field-${f.name}`;
                     const label = locale === 'ar' && f.labelAr ? f.labelAr : f.label;
                     const help = locale === 'ar' && f.helpTextAr ? f.helpTextAr : f.helpText;
+
+                    if (f.type === 'structured-array') {
+                        const rows = (values[f.name] as Array<Record<string, unknown>>) ?? [];
+                        return (
+                            <div key={f.name} className="space-y-1">
+                                <StructuredArrayEditor
+                                    columns={f.columns ?? []}
+                                    value={rows}
+                                    onChange={(next) => onChange(f.name, next)}
+                                    label={f.label}
+                                    labelAr={f.labelAr}
+                                    helpText={f.helpText}
+                                    helpTextAr={f.helpTextAr}
+                                    minRows={f.minRows}
+                                    maxRows={f.maxRows}
+                                    locale={locale}
+                                />
+                            </div>
+                        );
+                    }
+
+                    const stringValue = (values[f.name] as string) ?? '';
+
                     return (
                         <div key={f.name} className="space-y-1">
                             <label
@@ -220,7 +269,7 @@ export function EvaluatorPage({
                                 <select
                                     id={id}
                                     className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm bg-white"
-                                    value={values[f.name]}
+                                    value={stringValue}
                                     onChange={(e) => onChange(f.name, e.target.value)}
                                     required={f.required}
                                 >
@@ -235,7 +284,7 @@ export function EvaluatorPage({
                                 <select
                                     id={id}
                                     className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm bg-white"
-                                    value={values[f.name]}
+                                    value={stringValue}
                                     onChange={(e) => onChange(f.name, e.target.value)}
                                 >
                                     <option value="">{locale === 'ar' ? 'اختر…' : 'Select…'}</option>
@@ -247,7 +296,7 @@ export function EvaluatorPage({
                                     id={id}
                                     type={f.type}
                                     className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm"
-                                    value={values[f.name]}
+                                    value={stringValue}
                                     onChange={(e) => onChange(f.name, e.target.value)}
                                     placeholder={f.placeholder}
                                     required={f.required}

@@ -4,6 +4,10 @@
  * EPIC-17 Nitaqat / GOSI / Mudad three-way reconciliation page.
  *
  * Calls POST /api/v1/nitaqat-compliance/three-way-recon.
+ *
+ * Each of the three source registers (Qiwa, GOSI, Mudad) is captured
+ * via a StructuredArrayEditor — one row per worker. Replaces the
+ * prior "paste a JSON array" textarea hack.
  */
 
 import { EvaluatorPage } from '@aura/ui/components/ui';
@@ -17,33 +21,126 @@ export default function ThreeWayReconPage() {
       descriptionAr="مطابقة بيانات قِوى والتأمينات ومدد للكشف عن السعودة الوهمية."
       fields={[
         {
-          name: 'qiwaJson',
-          label: 'Qiwa records (JSON array)',
-          type: 'text',
+          name: 'qiwa',
+          label: 'Qiwa records (declared roster)',
+          labelAr: 'سجلات قِوى',
+          type: 'structured-array',
           required: true,
-          placeholder: '[{"nationalId":"...","declaredWageSar":4000,"status":"ACTIVE"}]',
+          minRows: 1,
+          columns: [
+            {
+              key: 'nationalId',
+              label: 'National ID',
+              labelAr: 'رقم الهوية',
+              type: 'text',
+              required: true,
+              widthClass: 'w-40',
+            },
+            {
+              key: 'declaredWageSar',
+              label: 'Declared wage (SAR)',
+              labelAr: 'الأجر المُعلن',
+              type: 'number',
+              required: true,
+              widthClass: 'w-36',
+            },
+            {
+              key: 'status',
+              label: 'Status',
+              labelAr: 'الحالة',
+              type: 'select',
+              options: [
+                { value: 'ACTIVE', label: 'Active' },
+                { value: 'INACTIVE', label: 'Inactive' },
+              ],
+              widthClass: 'w-28',
+            },
+          ],
         },
         {
-          name: 'gosiJson',
-          label: 'GOSI records (JSON array)',
-          type: 'text',
+          name: 'gosi',
+          label: 'GOSI records (insurance roster)',
+          labelAr: 'سجلات التأمينات',
+          type: 'structured-array',
           required: true,
-          placeholder: '[{"nationalId":"...","contributionWageSar":4000,"status":"ACTIVE"}]',
+          minRows: 1,
+          columns: [
+            {
+              key: 'nationalId',
+              label: 'National ID',
+              labelAr: 'رقم الهوية',
+              type: 'text',
+              required: true,
+              widthClass: 'w-40',
+            },
+            {
+              key: 'contributionWageSar',
+              label: 'Contribution wage (SAR)',
+              labelAr: 'أجر الاشتراك',
+              type: 'number',
+              required: true,
+              widthClass: 'w-36',
+            },
+            {
+              key: 'status',
+              label: 'Status',
+              labelAr: 'الحالة',
+              type: 'select',
+              options: [
+                { value: 'ACTIVE', label: 'Active' },
+                { value: 'INACTIVE', label: 'Inactive' },
+              ],
+              widthClass: 'w-28',
+            },
+          ],
         },
         {
-          name: 'mudadJson',
-          label: 'Mudad records (JSON array)',
-          type: 'text',
+          name: 'mudad',
+          label: 'Mudad records (payroll roster)',
+          labelAr: 'سجلات مدد',
+          type: 'structured-array',
           required: true,
-          placeholder: '[{"nationalId":"...","paidWageSar":4000,"paidThisPeriod":true}]',
+          minRows: 1,
+          columns: [
+            {
+              key: 'nationalId',
+              label: 'National ID',
+              labelAr: 'رقم الهوية',
+              type: 'text',
+              required: true,
+              widthClass: 'w-40',
+            },
+            {
+              key: 'paidWageSar',
+              label: 'Paid wage (SAR)',
+              labelAr: 'الأجر المدفوع',
+              type: 'number',
+              required: true,
+              widthClass: 'w-36',
+            },
+            {
+              key: 'paidThisPeriod',
+              label: 'Paid this period',
+              labelAr: 'مدفوع هذه الدورة',
+              type: 'boolean',
+              widthClass: 'w-28',
+            },
+          ],
         },
-        { name: 'wageToleranceSar', label: 'Wage tolerance (SAR)', type: 'number' },
+        {
+          name: 'wageToleranceSar',
+          label: 'Wage tolerance (SAR)',
+          labelAr: 'هامش تفاوت الأجر',
+          type: 'number',
+          helpText: 'Differences within this tolerance are ignored.',
+          helpTextAr: 'تجاهل الفروق التي ضمن هذا الهامش.',
+        },
       ]}
       endpoint={{ method: 'POST', url: '/api/v1/nitaqat-compliance/three-way-recon' }}
       buildPayload={(v) => ({
-        qiwa: safeParse(v.qiwaJson),
-        gosi: safeParse(v.gosiJson),
-        mudad: safeParse(v.mudadJson),
+        qiwa: (v.qiwa as unknown[]) ?? [],
+        gosi: (v.gosi as unknown[]) ?? [],
+        mudad: (v.mudad as unknown[]) ?? [],
         wageToleranceSar: v.wageToleranceSar ? Number(v.wageToleranceSar) : undefined,
       })}
       buildVerdict={(data: any) => {
@@ -70,12 +167,4 @@ export default function ThreeWayReconPage() {
       }}
     />
   );
-}
-
-function safeParse(s: string): unknown {
-  try {
-    return JSON.parse(s);
-  } catch {
-    return [];
-  }
 }

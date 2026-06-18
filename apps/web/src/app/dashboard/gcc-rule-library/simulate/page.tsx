@@ -4,6 +4,9 @@
  * EPIC-36 Rule-pack simulation evaluator page.
  *
  * Calls POST /api/v1/gcc-rule-library/simulate.
+ *
+ * The proposedOverrides input is a structured array editor (one row
+ * per override) — replaces the prior "paste JSON" textarea hack.
  */
 
 import { EvaluatorPage } from '@aura/ui/components/ui';
@@ -19,34 +22,67 @@ export default function RuleSimulationPage() {
         {
           name: 'countryCode',
           label: 'Country code',
+          labelAr: 'رمز الدولة',
           type: 'text',
           required: true,
           defaultValue: 'AE',
+          placeholder: 'AE / SA / BH / QA / OM / KW',
         },
         {
-          name: 'overridesJson',
-          label: 'Proposed overrides (JSON array)',
-          type: 'text',
-          required: true,
-          placeholder: '[{"domain":"GOSI","ruleKey":"EMPLOYER_RATE","value":0.115}]',
-          helpText: 'Each entry: { domain, ruleKey, value, effectiveFrom? }',
+          name: 'sampleSize',
+          label: 'Sample size (optional)',
+          labelAr: 'حجم العينة (اختياري)',
+          type: 'number',
+          placeholder: '50',
         },
-        { name: 'sampleSize', label: 'Sample size (optional)', type: 'number' },
+        {
+          name: 'proposedOverrides',
+          label: 'Proposed overrides',
+          labelAr: 'التجاوزات المقترحة',
+          type: 'structured-array',
+          required: true,
+          helpText:
+            'Each row is one (domain, ruleKey, value) tuple. The simulator compares each against the currently-active rule pack.',
+          helpTextAr:
+            'كل صف هو زوج (نطاق، مفتاح، قيمة). يقارن المحاكي كل واحد بالحزمة النشطة حالياً.',
+          minRows: 1,
+          defaultRows: [{ domain: 'GOSI', ruleKey: 'EMPLOYER_RATE', value: 0.115 }],
+          columns: [
+            {
+              key: 'domain',
+              label: 'Domain',
+              labelAr: 'النطاق',
+              type: 'text',
+              required: true,
+              placeholder: 'GOSI / WPS / EOSB / EMIRATISATION',
+              widthClass: 'w-40',
+            },
+            {
+              key: 'ruleKey',
+              label: 'Rule key',
+              labelAr: 'مفتاح القاعدة',
+              type: 'text',
+              required: true,
+              placeholder: 'EMPLOYER_RATE',
+              widthClass: 'w-56',
+            },
+            {
+              key: 'value',
+              label: 'Proposed value',
+              labelAr: 'القيمة المقترحة',
+              type: 'number',
+              required: true,
+              widthClass: 'w-32',
+            },
+          ],
+        },
       ]}
       endpoint={{ method: 'POST', url: '/api/v1/gcc-rule-library/simulate' }}
-      buildPayload={(v) => {
-        let overrides: unknown = [];
-        try {
-          overrides = JSON.parse(v.overridesJson);
-        } catch {
-          overrides = [];
-        }
-        return {
-          countryCode: v.countryCode,
-          proposedOverrides: overrides,
-          scope: v.sampleSize ? { sampleSize: Number(v.sampleSize) } : undefined,
-        };
-      }}
+      buildPayload={(v) => ({
+        countryCode: v.countryCode,
+        proposedOverrides: (v.proposedOverrides as unknown[]) ?? [],
+        scope: v.sampleSize ? { sampleSize: Number(v.sampleSize) } : undefined,
+      })}
       buildVerdict={(data: any) => {
         const r = data?.result;
         if (!r) return null;
