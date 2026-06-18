@@ -7,6 +7,7 @@
  */
 
 import type { NextRequest } from 'next/server';
+import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
 import {
   evaluateFireSafety,
@@ -17,27 +18,35 @@ import { badRequest, forbidden, hasAny, ok, serverError, type RouteContext } fro
 
 export const dynamic = 'force-dynamic';
 
+const inputSchema = z.discriminatedUnion('action', [
+  z.object({ action: z.literal('hygiene'), input: z.record(z.unknown()) }),
+  z.object({ action: z.literal('fire'), input: z.record(z.unknown()) }),
+  z.object({ action: z.literal('food'), input: z.record(z.unknown()) }),
+]);
+
 export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) => {
   if (!hasAny(ctx.permissions, 'accommodation:read', 'hse:read', 'dashboard:read')) {
     return forbidden();
   }
   try {
-    const body = await req.json();
-    if (!body.input) return badRequest('input required');
+    const raw = await req.json();
+    const parsed = inputSchema.safeParse(raw);
+    if (!parsed.success) {
+      return badRequest('Invalid input', { issues: parsed.error.flatten() });
+    }
+    const body = parsed.data;
 
     if (body.action === 'hygiene') {
-      const verdict = evaluateHygiene(body.input);
+      const verdict = evaluateHygiene(body.input as any);
       return ok({ verdict });
     }
     if (body.action === 'fire') {
-      const verdict = evaluateFireSafety(body.input);
+      const verdict = evaluateFireSafety(body.input as any);
       return ok({ verdict });
     }
-    if (body.action === 'food') {
-      const verdict = evaluateFoodSafety(body.input);
-      return ok({ verdict });
-    }
-    return badRequest('action must be one of hygiene | fire | food');
+    // food
+    const verdict = evaluateFoodSafety(body.input as any);
+    return ok({ verdict });
   } catch (err) {
     return serverError('Failed to evaluate accommodation safety controls', err);
   }

@@ -9,11 +9,30 @@
  */
 
 import type { NextRequest } from 'next/server';
+import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
 import { employeeRecordChangeRequestService } from '@/lib/services/ess/record-change-request.service';
 import { badRequest, forbidden, hasAny, ok, serverError, type RouteContext } from '../_shared';
 
 export const dynamic = 'force-dynamic';
+
+const inputSchema = z.discriminatedUnion('action', [
+  z.object({
+    action: z.literal('propose'),
+    employeeId: z.string().min(1),
+    changes: z.array(z.record(z.unknown())).min(1),
+    justification: z.string().min(1),
+  }),
+  z.object({
+    action: z.literal('approve'),
+    requestId: z.string().min(1),
+  }),
+  z.object({
+    action: z.literal('reject'),
+    requestId: z.string().min(1),
+    reason: z.string().min(1),
+  }),
+]);
 
 export const GET = withEnhancedAuth(async (_req: NextRequest, ctx: RouteContext) => {
   if (!hasAny(ctx.permissions, 'employee:read', 'dashboard:read')) {
@@ -32,7 +51,12 @@ export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext)
     return forbidden();
   }
   try {
-    const body = await req.json();
+    const raw = await req.json();
+    const parsed = inputSchema.safeParse(raw);
+    if (!parsed.success) {
+      return badRequest('Invalid input', { issues: parsed.error.flatten() });
+    }
+    const body = parsed.data;
     const auth = {
       tenantId: ctx.user.tenantId,
       userId: ctx.user.id,
@@ -40,15 +64,10 @@ export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext)
     };
 
     if (body.action === 'propose') {
-      if (!body.employeeId) return badRequest('employeeId required');
-      if (!Array.isArray(body.changes) || body.changes.length === 0) {
-        return badRequest('changes (non-empty array) required');
-      }
-      if (!body.justification) return badRequest('justification required');
       const record = await employeeRecordChangeRequestService.propose(
         {
           employeeId: body.employeeId,
-          changes: body.changes,
+          changes: body.changes as any,
           justification: body.justification,
         },
         auth
@@ -57,23 +76,17 @@ export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext)
     }
 
     if (body.action === 'approve') {
-      if (!body.requestId) return badRequest('requestId required');
       const record = await employeeRecordChangeRequestService.approve(body.requestId, auth);
       return ok({ record });
     }
 
-    if (body.action === 'reject') {
-      if (!body.requestId) return badRequest('requestId required');
-      if (!body.reason) return badRequest('reason required');
-      const record = await employeeRecordChangeRequestService.reject(
-        body.requestId,
-        body.reason,
-        auth
-      );
-      return ok({ record });
-    }
-
-    return badRequest('unknown action');
+    // reject
+    const record = await employeeRecordChangeRequestService.reject(
+      body.requestId,
+      body.reason,
+      auth
+    );
+    return ok({ record });
   } catch (err) {
     return serverError('Failed to evaluate record change request action', err);
   }

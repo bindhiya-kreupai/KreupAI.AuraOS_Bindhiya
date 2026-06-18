@@ -7,6 +7,7 @@
  */
 
 import type { NextRequest } from 'next/server';
+import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
 import {
   evaluateDrillCadence,
@@ -17,6 +18,12 @@ import { badRequest, forbidden, hasAny, ok, serverError, type RouteContext } fro
 
 export const dynamic = 'force-dynamic';
 
+const inputSchema = z.discriminatedUnion('action', [
+  z.object({ action: z.literal('ppe'), input: z.record(z.unknown()) }),
+  z.object({ action: z.literal('toolbox'), input: z.record(z.unknown()) }),
+  z.object({ action: z.literal('drill'), input: z.record(z.unknown()) }),
+]);
+
 function hydrateAsOf(input: any) {
   return { ...input, asOf: input.asOf ? new Date(input.asOf) : new Date() };
 }
@@ -26,8 +33,12 @@ export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext)
     return forbidden();
   }
   try {
-    const body = await req.json();
-    if (!body.input) return badRequest('input required');
+    const raw = await req.json();
+    const parsed = inputSchema.safeParse(raw);
+    if (!parsed.success) {
+      return badRequest('Invalid input', { issues: parsed.error.flatten() });
+    }
+    const body = parsed.data;
 
     if (body.action === 'ppe') {
       const input = hydrateAsOf(body.input);
@@ -48,16 +59,14 @@ export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext)
       const verdict = evaluateToolboxCoverage(input);
       return ok({ verdict });
     }
-    if (body.action === 'drill') {
-      const input = hydrateAsOf(body.input);
-      input.drills = (input.drills ?? []).map((d: any) => ({
-        ...d,
-        conductedAt: new Date(d.conductedAt),
-      }));
-      const verdict = evaluateDrillCadence(input);
-      return ok({ verdict });
-    }
-    return badRequest('action must be one of ppe | toolbox | drill');
+    // drill
+    const input = hydrateAsOf(body.input);
+    input.drills = (input.drills ?? []).map((d: any) => ({
+      ...d,
+      conductedAt: new Date(d.conductedAt),
+    }));
+    const verdict = evaluateDrillCadence(input);
+    return ok({ verdict });
   } catch (err) {
     return serverError('Failed to evaluate HSE safety management', err);
   }

@@ -18,6 +18,7 @@
  */
 
 import type { NextRequest } from 'next/server';
+import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
 import { PolicyVersioningService } from '@/lib/services/hr-policies-compliance/policy-versioning.service';
 import { badRequest, forbidden, hasAny, ok, serverError, type RouteContext } from '../_shared';
@@ -26,12 +27,39 @@ export const dynamic = 'force-dynamic';
 
 const service = new PolicyVersioningService();
 
+const inputSchema = z.discriminatedUnion('action', [
+  z.object({
+    action: z.literal('publish'),
+    policyId: z.string().min(1),
+    version: z.string().min(1),
+    contentMarkdown: z.string().optional(),
+    effectiveDate: z.string().datetime().optional(),
+  }),
+  z.object({
+    action: z.literal('acknowledge'),
+    policyId: z.string().min(1),
+    employeeId: z.string().min(1),
+    ipAddress: z.string().optional(),
+    userAgent: z.string().optional(),
+  }),
+  z.object({
+    action: z.literal('verifyAcknowledgement'),
+    policyId: z.string().min(1),
+    employeeId: z.string().min(1),
+  }),
+]);
+
 export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) => {
   if (!hasAny(ctx.permissions, 'policy:read', 'policy:manage', 'dashboard:read')) {
     return forbidden();
   }
   try {
-    const body = await req.json();
+    const raw = await req.json();
+    const parsed = inputSchema.safeParse(raw);
+    if (!parsed.success) {
+      return badRequest('Invalid input', { issues: parsed.error.flatten() });
+    }
+    const body = parsed.data;
     const auth = {
       tenantId: ctx.user.tenantId,
       userId: ctx.user.id,
@@ -39,8 +67,6 @@ export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext)
     };
 
     if (body.action === 'publish') {
-      if (!body.policyId) return badRequest('policyId required');
-      if (!body.version) return badRequest('version required');
       const record = await service.publish(
         {
           policyId: body.policyId,
@@ -54,8 +80,6 @@ export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext)
     }
 
     if (body.action === 'acknowledge') {
-      if (!body.policyId) return badRequest('policyId required');
-      if (!body.employeeId) return badRequest('employeeId required');
       const record = await service.acknowledge(
         {
           policyId: body.policyId,
@@ -68,18 +92,13 @@ export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext)
       return ok({ record });
     }
 
-    if (body.action === 'verifyAcknowledgement') {
-      if (!body.policyId) return badRequest('policyId required');
-      if (!body.employeeId) return badRequest('employeeId required');
-      const verdict = await service.verifyAcknowledgement({
-        policyId: body.policyId,
-        employeeId: body.employeeId,
-        tenantId: ctx.user.tenantId,
-      });
-      return ok({ verdict });
-    }
-
-    return badRequest('unknown action');
+    // verifyAcknowledgement
+    const verdict = await service.verifyAcknowledgement({
+      policyId: body.policyId,
+      employeeId: body.employeeId,
+      tenantId: ctx.user.tenantId,
+    });
+    return ok({ verdict });
   } catch (err) {
     return serverError('Failed to evaluate policy versioning action', err);
   }

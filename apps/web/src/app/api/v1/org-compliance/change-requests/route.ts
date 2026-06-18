@@ -11,14 +11,32 @@
  */
 
 import type { NextRequest } from 'next/server';
+import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
 import { orgChangeRequestService } from '@/lib/services/organization/org-change-request.service';
 import { badRequest, forbidden, hasAny, ok, serverError, type RouteContext } from '../_shared';
 
 export const dynamic = 'force-dynamic';
 
-const VALID_ENTITIES = new Set(['department', 'position']);
-const VALID_OPERATIONS = new Set(['CREATE', 'UPDATE', 'DELETE']);
+const inputSchema = z.discriminatedUnion('action', [
+  z.object({
+    action: z.literal('propose'),
+    entity: z.enum(['department', 'position']),
+    operation: z.enum(['CREATE', 'UPDATE', 'DELETE']),
+    payload: z.record(z.unknown()),
+    justification: z.string().min(1),
+    effectiveFrom: z.string().datetime().optional(),
+  }),
+  z.object({
+    action: z.literal('approve'),
+    requestId: z.string().min(1),
+  }),
+  z.object({
+    action: z.literal('reject'),
+    requestId: z.string().min(1),
+    reason: z.string().min(1),
+  }),
+]);
 
 export const GET = withEnhancedAuth(async (_req: NextRequest, ctx: RouteContext) => {
   if (!hasAny(ctx.permissions, 'organization:read', 'org:read', 'dashboard:read')) {
@@ -37,7 +55,12 @@ export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext)
     return forbidden();
   }
   try {
-    const body = await req.json();
+    const raw = await req.json();
+    const parsed = inputSchema.safeParse(raw);
+    if (!parsed.success) {
+      return badRequest('Invalid input', { issues: parsed.error.flatten() });
+    }
+    const body = parsed.data;
     const auth = {
       tenantId: ctx.user.tenantId,
       userId: ctx.user.id,
@@ -45,14 +68,6 @@ export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext)
     };
 
     if (body.action === 'propose') {
-      if (!VALID_ENTITIES.has(body.entity)) {
-        return badRequest('entity must be one of ' + [...VALID_ENTITIES].join(', '));
-      }
-      if (!VALID_OPERATIONS.has(body.operation)) {
-        return badRequest('operation must be one of ' + [...VALID_OPERATIONS].join(', '));
-      }
-      if (!body.payload) return badRequest('payload required');
-      if (!body.justification) return badRequest('justification required');
       const record = await orgChangeRequestService.propose(
         {
           entity: body.entity,
@@ -67,19 +82,13 @@ export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext)
     }
 
     if (body.action === 'approve') {
-      if (!body.requestId) return badRequest('requestId required');
       const record = await orgChangeRequestService.approve(body.requestId, auth);
       return ok({ record });
     }
 
-    if (body.action === 'reject') {
-      if (!body.requestId) return badRequest('requestId required');
-      if (!body.reason) return badRequest('reason required');
-      const record = await orgChangeRequestService.reject(body.requestId, body.reason, auth);
-      return ok({ record });
-    }
-
-    return badRequest('unknown action');
+    // reject
+    const record = await orgChangeRequestService.reject(body.requestId, body.reason, auth);
+    return ok({ record });
   } catch (err) {
     return serverError('Failed to evaluate org change request action', err);
   }

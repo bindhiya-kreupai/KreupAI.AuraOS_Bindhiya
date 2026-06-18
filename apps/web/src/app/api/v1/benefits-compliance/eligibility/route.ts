@@ -20,43 +20,76 @@
  */
 
 import type { NextRequest } from 'next/server';
+import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
 import { benefitEligibilityService } from '@/lib/services/benefits-compliance/eligibility.service';
 import { badRequest, forbidden, hasAny, ok, serverError, type RouteContext } from '../_shared';
 
 export const dynamic = 'force-dynamic';
 
+const employeeContextSchema = z
+  .object({
+    employee: z
+      .object({
+        id: z.string().min(1),
+      })
+      .passthrough(),
+  })
+  .passthrough();
+
+const inputSchema = z.discriminatedUnion('action', [
+  z.object({
+    action: z.literal('evaluate'),
+    benefitCode: z.string().min(1),
+    context: employeeContextSchema,
+    asOf: z.string().datetime().optional(),
+  }),
+  z.object({
+    action: z.literal('evaluateAll'),
+    context: employeeContextSchema,
+    asOf: z.string().datetime().optional(),
+    filter: z
+      .object({
+        countryCode: z.string().optional(),
+        benefitType: z.string().optional(),
+      })
+      .optional(),
+  }),
+  z.object({
+    action: z.literal('findMandatoryGaps'),
+    employeeId: z.string().min(1),
+    context: employeeContextSchema,
+    asOf: z.string().datetime().optional(),
+  }),
+]);
+
 export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) => {
   if (!hasAny(ctx.permissions, 'employee:read', 'benefits:read', 'dashboard:read')) {
     return forbidden();
   }
   try {
-    const body = await req.json();
+    const raw = await req.json();
+    const parsed = inputSchema.safeParse(raw);
+    if (!parsed.success) {
+      return badRequest('Invalid input', { issues: parsed.error.flatten() });
+    }
+    const body = parsed.data;
     const asOf = body.asOf ? new Date(body.asOf) : new Date();
 
     if (body.action === 'evaluate') {
-      if (!body.benefitCode || typeof body.benefitCode !== 'string') {
-        return badRequest('benefitCode required');
-      }
-      if (!body.context?.employee?.id) {
-        return badRequest('context.employee.id required');
-      }
       const verdict = await benefitEligibilityService.evaluate(
         ctx.user.tenantId,
         body.benefitCode,
-        body.context,
+        body.context as any,
         asOf
       );
       return ok({ verdict });
     }
 
     if (body.action === 'evaluateAll') {
-      if (!body.context?.employee?.id) {
-        return badRequest('context.employee.id required');
-      }
       const verdicts = await benefitEligibilityService.evaluateAllForEmployee(
         ctx.user.tenantId,
-        body.context,
+        body.context as any,
         asOf,
         body.filter ?? {}
       );
@@ -70,21 +103,14 @@ export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext)
       });
     }
 
-    if (body.action === 'findMandatoryGaps') {
-      if (!body.employeeId) return badRequest('employeeId required');
-      if (!body.context?.employee?.id) {
-        return badRequest('context.employee.id required');
-      }
-      const result = await benefitEligibilityService.findMandatoryGaps(
-        ctx.user.tenantId,
-        body.employeeId,
-        body.context,
-        asOf
-      );
-      return ok(result);
-    }
-
-    return badRequest('unknown action');
+    // findMandatoryGaps
+    const result = await benefitEligibilityService.findMandatoryGaps(
+      ctx.user.tenantId,
+      body.employeeId,
+      body.context as any,
+      asOf
+    );
+    return ok(result);
   } catch (err) {
     return serverError('Failed to evaluate benefits eligibility', err);
   }

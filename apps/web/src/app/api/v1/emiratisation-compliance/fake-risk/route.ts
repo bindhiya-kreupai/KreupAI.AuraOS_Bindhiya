@@ -10,6 +10,7 @@
  */
 
 import type { NextRequest } from 'next/server';
+import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
 import {
   DEFAULT_CLUSTERING_CONFIG,
@@ -20,15 +21,43 @@ import { badRequest, forbidden, hasAny, ok, serverError, type RouteContext } fro
 
 export const dynamic = 'force-dynamic';
 
-function hydrateHire(h: any) {
-  if (!h.employeeId) throw new Error('hire.employeeId required');
+const hireSnapshotSchema = z.object({
+  employeeId: z.string().min(1),
+  basicSalary: z.number().optional(),
+  currency: z.string().optional(),
+  bankAccountIban: z.string().optional(),
+  permanentAddress: z.string().optional(),
+  hiredOn: z.string().datetime().optional(),
+  recruiterId: z.string().optional(),
+  costCenterId: z.string().optional(),
+  hasVisaOnFile: z.boolean().optional(),
+  isOnRoster: z.boolean().optional(),
+  attendanceDaysLast30: z.number().optional(),
+  familyLinkedToHr: z.boolean().optional(),
+});
+
+const inputSchema = z.discriminatedUnion('action', [
+  z.object({
+    action: z.literal('profileHire'),
+    hire: hireSnapshotSchema,
+    cohort: z.array(hireSnapshotSchema),
+    config: z.record(z.unknown()).optional(),
+  }),
+  z.object({
+    action: z.literal('profileCohort'),
+    cohort: z.array(hireSnapshotSchema),
+    config: z.record(z.unknown()).optional(),
+  }),
+]);
+
+function hydrateHire(h: z.infer<typeof hireSnapshotSchema>) {
   return {
-    employeeId: String(h.employeeId),
+    employeeId: h.employeeId,
     basicSalary: Number(h.basicSalary ?? 0),
-    currency: String(h.currency ?? 'AED'),
+    currency: h.currency ?? 'AED',
     bankAccountIban: h.bankAccountIban,
     permanentAddress: h.permanentAddress,
-    hiredOn: new Date(h.hiredOn ?? Date.now()),
+    hiredOn: h.hiredOn ? new Date(h.hiredOn) : new Date(),
     recruiterId: h.recruiterId,
     costCenterId: h.costCenterId,
     hasVisaOnFile: h.hasVisaOnFile === true,
@@ -43,19 +72,25 @@ export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext)
     return forbidden();
   }
   try {
-    const body = await req.json();
-    if (!Array.isArray(body.cohort)) return badRequest('cohort (array) required');
-    const config = { ...DEFAULT_CLUSTERING_CONFIG, ...(body.config ?? {}) };
+    const raw = await req.json();
+    // Default action when missing → profileCohort (preserve prior behaviour)
+    const withAction =
+      raw && typeof raw === 'object' && raw.action ? raw : { ...raw, action: 'profileCohort' };
+    const parsed = inputSchema.safeParse(withAction);
+    if (!parsed.success) {
+      return badRequest('Invalid input', { issues: parsed.error.flatten() });
+    }
+    const body = parsed.data;
+    const config = { ...DEFAULT_CLUSTERING_CONFIG, ...((body.config as any) ?? {}) };
     const cohort = body.cohort.map(hydrateHire);
 
     if (body.action === 'profileHire') {
-      if (!body.hire) return badRequest('hire required for profileHire');
       const hire = hydrateHire(body.hire);
       const result = profileHireRisk(hire, cohort, config);
       return ok({ result });
     }
 
-    // default: profileCohort
+    // profileCohort
     const result = profileCohort(cohort, config);
     return ok({ result, total: result.length });
   } catch (err) {
