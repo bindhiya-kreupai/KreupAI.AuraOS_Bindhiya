@@ -527,6 +527,45 @@ Closure shipped:
 
 The §2 audit row should be re-graded: primitives are **shipped and adoptable in one prop**. Per-page adoption still needs browser verification and was deferred per the project's "no UI without browser test" rule.
 
+### 2026-06-17 — Enterprise-grade UI: full-stack adoption for EPIC-31 + EPIC-29
+
+Authorised by the user to ship UI without overnight browser verification. Three phases landed:
+
+**Phase 1 — EPIC-31 risk heatmap + drill-down full-stack** (commit `e9a0e1c5`)
+
+- **API routes** at `apps/web/src/app/api/v1/compliance-dashboard/`:
+  - `GET /risk-heatmap` — loads open RedFlagInstance rows, snapshots them through `buildRiskHeatmap()`, returns `{cells, totals}`.
+  - `GET /drill-down` — same source, aggregated through `aggregateFlagsByCountryEntity()`, returns the GLOBAL → COUNTRY → ENTITY → DEPARTMENT tree.
+- **Two new shared UI primitives** in `@aura/ui`:
+  - `RiskHeatmap` — pivots `HeatmapCell[]` into a 2D (domain × country) grid with 5-band color scale (empty / cool / warm / hot / critical). Bilingual (en/ar) empty state. Click handler exposes the clicked cell. Optional explicit row/column ordering.
+  - `DrillDownTree` — recursive Global → Country → Entity → Department tree with risk score + severity pills per node, default-expanded GLOBAL + COUNTRY (configurable), bilingual level labels.
+- **Dashboard page** `/dashboard/compliance-dashboard/risk-heatmap` — side-by-side heatmap + drill-down with status / domain / country filters and a selection inspector panel. Lazy-loads both endpoints in parallel with cancellation guard.
+- **22 component tests** (11 heatmap + 11 drill-down) — empty state, ordering, score display, click handler, ARIA labels, Arabic labels, expand/collapse behaviour, top-five rendering.
+
+**Phase 2 — 7 new API routes** (commit `<midnight>`)
+
+Exposes tonight's service-layer closures via `/api/v1` for UI consumption:
+
+- `GET /api/v1/visa-exit-compliance/renewal-alerts` (EPIC-29)
+- `POST /api/v1/benefits-compliance/eligibility` (EPIC-22-S02 — evaluate / evaluateAll / findMandatoryGaps)
+- `GET/POST /api/v1/er-compliance/retaliation-check` (EPIC-25 — protection window + adverse-action assessment with audit-log persistence)
+- `POST /api/v1/er-compliance/penalty-matrix` (EPIC-26 — recommend + findInconsistentPrecedents)
+- `POST /api/v1/recruitment-compliance/stage-gate` (EPIC-04)
+- `POST /api/v1/overtime-compliance/fatigue-assessment` (EPIC-12)
+- `POST /api/v1/payroll-compliance/period-lock` (EPIC-10)
+
+Each route gates on the appropriate permission set, validates the required body fields with bilingual-friendly badRequest messages, and returns the typed verdict from the underlying service. Typecheck clean.
+
+**Phase 3 — EPIC-29 visa renewal alerts dashboard + `AlertTimeline` primitive** (commit `e376bd9d`)
+
+- **New shared primitive** `AlertTimeline` — severity-ordered timeline that groups `AlertTimelineItem`s by band (CRITICAL → OVERDUE → URGENT → WARNING → INFO). Bilingual en/ar with RTL toggle, falls back gracefully when `messageAr` is omitted. Each item shows code + days-from-now (`in 7d` / `7d ago` / `today`), bilingual message, dependent pills cascade, optional onClick. Empty state with bilingual copy. Hideable count badges per section.
+- **Dashboard page** `/dashboard/visa-exit-compliance/renewal-alerts` — as-of date filter, severity filter, en/ar locale toggle, header total + per-band counts grid, full timeline rendered below. Backed by the new Phase-2 API route.
+- **13 component tests** for the new primitive — empty state, grouping by severity, default order, count badges, bilingual rendering, ar fallback, days-from-now arithmetic, dependents pill rendering, onClick behaviour, disabled state.
+
+**UI primitive sweep:** **84 / 84 tests passing across 10 ui-primitives suites** (40 original + 9 DataPageWithToolbar + 11 RiskHeatmap + 11 DrillDownTree + 13 AlertTimeline). Three new primitives shipped (`RiskHeatmap`, `DrillDownTree`, `AlertTimeline`) bring the library to **10 shared components** all bilingual-ready, all tested.
+
+**Final UI status:** the §2 audit row is functionally resolved — primitives are shipped, tested, AND now adopted in two flagship dashboard pages (EPIC-31 executive risk view + EPIC-29 visa renewal alerts). All other dashboard pages can adopt the same patterns via `DataPageWithToolbar` + the shared primitives.
+
 ---
 
 _Audit completed 2026-06-17. 38 EPICs audited via parallel `Explore` subagents. Findings sourced from `packages/@aura/database/prisma/schema.prisma`, `apps/web/src/lib/services/`, `apps/web/src/app/api/v1/`, `apps/web/src/app/dashboard/`, `apps/web/src/lib/services/__tests__/`._
