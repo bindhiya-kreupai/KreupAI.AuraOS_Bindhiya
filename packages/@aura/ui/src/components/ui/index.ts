@@ -14,4 +14,6 @@ export * from "./data-page-with-toolbar";
 export * from "./risk-heatmap";
 export * from "./drill-down-tree";
 export * from "./alert-timeline";
+export * from "./verdict-panel";
+export * from "./evaluator-page";
 export { DataPage, type DataPageProps, type FormField } from "./data-page";
