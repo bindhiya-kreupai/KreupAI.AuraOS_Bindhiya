@@ -33,7 +33,7 @@ export default function HolidayLeaveOverlapPage() {
       buildPayload={(v) => {
         let holidays: unknown = [];
         try {
-          holidays = JSON.parse(v.holidaysJson);
+          holidays = JSON.parse(String(v.holidaysJson ?? ''));
         } catch {
           holidays = [];
         }

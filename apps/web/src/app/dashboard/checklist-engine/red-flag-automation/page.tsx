@@ -69,17 +69,17 @@ export default function RedFlagAutomationPage() {
   );
 }
 
-function safeParse(s: string): unknown {
+function safeParse(input: unknown): unknown {
   try {
-    return JSON.parse(s);
+    return JSON.parse(String(input ?? ''));
   } catch {
     return [];
   }
 }
 
-function safeParseObject(s: string): Record<string, unknown> {
+function safeParseObject(input: unknown): Record<string, unknown> {
   try {
-    const r = JSON.parse(s);
+    const r = JSON.parse(String(input ?? ''));
     return r && typeof r === 'object' ? r : {};
   } catch {
     return {};

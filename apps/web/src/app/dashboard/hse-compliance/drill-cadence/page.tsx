@@ -56,9 +56,9 @@ export default function DrillCadencePage() {
   );
 }
 
-function safeParse(s: string): unknown {
+function safeParse(input: unknown): unknown {
   try {
-    return JSON.parse(s);
+    return JSON.parse(String(input ?? ''));
   } catch {
     return [];
   }

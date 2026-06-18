@@ -59,11 +59,12 @@ export default function OrgChangeRequestPage() {
       endpoint={{ method: 'POST', url: '/api/v1/org-compliance/change-requests' }}
       buildPayload={(v) => {
         let data: unknown;
-        if (v.dataJson) {
+        const dataJsonStr = String(v.dataJson ?? '');
+        if (dataJsonStr) {
           try {
-            data = JSON.parse(v.dataJson);
+            data = JSON.parse(dataJsonStr);
           } catch {
-            data = { _parseError: v.dataJson };
+            data = { _parseError: dataJsonStr };
           }
         }
         return {
