@@ -9,36 +9,47 @@
  */
 
 import type { NextRequest } from 'next/server';
+import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
 import { alignSioLmra } from '@/lib/services/sio-compliance/lmra-alignment.service';
 import { badRequest, forbidden, hasAny, ok, serverError, type RouteContext } from '../_shared';
 
 export const dynamic = 'force-dynamic';
 
-function normaliseRecord(r: any) {
-  if (!r.cpr) throw new Error('record.cpr required');
-  if (typeof r.declaredWageBhd !== 'number') throw new Error('declaredWageBhd (number) required');
-  return {
-    cpr: String(r.cpr),
-    fullName: r.fullName,
-    declaredWageBhd: r.declaredWageBhd,
-    status: r.status === 'INACTIVE' ? ('INACTIVE' as const) : ('ACTIVE' as const),
-  };
-}
+const recordSchema = z.object({
+  cpr: z.string().min(1),
+  fullName: z.string().optional(),
+  declaredWageBhd: z.number(),
+  status: z.enum(['ACTIVE', 'INACTIVE']).optional(),
+});
+
+const inputSchema = z.object({
+  sioRecords: z.array(recordSchema),
+  lmraRecords: z.array(recordSchema),
+  wageToleranceBhd: z.number().optional(),
+});
 
 export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) => {
   if (!hasAny(ctx.permissions, 'tenant:read', 'compliance:read', 'dashboard:read')) {
     return forbidden();
   }
   try {
-    const body = await req.json();
-    if (!Array.isArray(body.sioRecords)) return badRequest('sioRecords (array) required');
-    if (!Array.isArray(body.lmraRecords)) return badRequest('lmraRecords (array) required');
+    const raw = await req.json();
+    const parsed = inputSchema.safeParse(raw);
+    if (!parsed.success) {
+      return badRequest('Invalid input', { issues: parsed.error.flatten() });
+    }
+    const body = parsed.data;
+    const normalise = (r: z.infer<typeof recordSchema>) => ({
+      cpr: r.cpr,
+      fullName: r.fullName,
+      declaredWageBhd: r.declaredWageBhd,
+      status: r.status === 'INACTIVE' ? ('INACTIVE' as const) : ('ACTIVE' as const),
+    });
     const result = alignSioLmra({
-      sioRecords: body.sioRecords.map(normaliseRecord),
-      lmraRecords: body.lmraRecords.map(normaliseRecord),
-      wageToleranceBhd:
-        typeof body.wageToleranceBhd === 'number' ? body.wageToleranceBhd : undefined,
+      sioRecords: body.sioRecords.map(normalise),
+      lmraRecords: body.lmraRecords.map(normalise),
+      wageToleranceBhd: body.wageToleranceBhd,
     });
     return ok({ result });
   } catch (err) {

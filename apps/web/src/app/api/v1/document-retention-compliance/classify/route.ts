@@ -8,6 +8,7 @@
  */
 
 import type { NextRequest } from 'next/server';
+import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
 import {
   classifyDocument,
@@ -17,15 +18,27 @@ import { badRequest, forbidden, hasAny, ok, serverError, type RouteContext } fro
 
 export const dynamic = 'force-dynamic';
 
+const inputSchema = z.object({
+  filename: z.string().min(1),
+  mimeType: z.string().optional(),
+  source: z.string().optional(),
+  createdAt: z.string().datetime().optional(),
+  separationDate: z.string().datetime().optional(),
+});
+
 export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) => {
   if (!hasAny(ctx.permissions, 'document:read', 'tenant:read', 'dashboard:read')) {
     return forbidden();
   }
   try {
-    const body = await req.json();
-    if (!body.filename) return badRequest('filename required');
+    const raw = await req.json();
+    const parsed = inputSchema.safeParse(raw);
+    if (!parsed.success) {
+      return badRequest('Invalid input', { issues: parsed.error.flatten() });
+    }
+    const body = parsed.data;
     const result = classifyDocument({
-      filename: String(body.filename),
+      filename: body.filename,
       mimeType: body.mimeType,
       source: body.source,
     });

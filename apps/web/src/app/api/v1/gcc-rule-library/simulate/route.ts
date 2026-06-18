@@ -9,33 +9,51 @@
  */
 
 import type { NextRequest } from 'next/server';
+import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
 import { ruleSimulationService } from '@/lib/services/gcc-rule-library/rule-simulation.service';
 import { badRequest, forbidden, hasAny, ok, serverError, type RouteContext } from '../_shared';
 
 export const dynamic = 'force-dynamic';
 
+const inputSchema = z.object({
+  countryCode: z.string().min(1),
+  proposedOverrides: z
+    .array(
+      z.object({
+        domain: z.string().min(1),
+        ruleKey: z.string().min(1),
+        value: z.unknown(),
+        effectiveFrom: z.string().datetime().optional(),
+      })
+    )
+    .min(1),
+  scope: z
+    .object({
+      sampleSize: z.number().optional(),
+      since: z.string().datetime().optional(),
+      asOf: z.string().datetime().optional(),
+    })
+    .optional(),
+});
+
 export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) => {
   if (!hasAny(ctx.permissions, 'rule_library:read', 'config:read', 'dashboard:read')) {
     return forbidden();
   }
   try {
-    const body = await req.json();
-    if (!body.countryCode) return badRequest('countryCode required');
-    if (!Array.isArray(body.proposedOverrides) || body.proposedOverrides.length === 0) {
-      return badRequest('proposedOverrides (non-empty array) required');
+    const raw = await req.json();
+    const parsed = inputSchema.safeParse(raw);
+    if (!parsed.success) {
+      return badRequest('Invalid input', { issues: parsed.error.flatten() });
     }
-    const overrides = body.proposedOverrides.map((o: any) => {
-      if (!o.domain || !o.ruleKey) {
-        throw new Error('each proposedOverride needs domain + ruleKey');
-      }
-      return {
-        domain: String(o.domain),
-        ruleKey: String(o.ruleKey),
-        value: o.value,
-        effectiveFrom: o.effectiveFrom ? new Date(o.effectiveFrom) : undefined,
-      };
-    });
+    const body = parsed.data;
+    const overrides = body.proposedOverrides.map((o) => ({
+      domain: o.domain,
+      ruleKey: o.ruleKey,
+      value: o.value,
+      effectiveFrom: o.effectiveFrom ? new Date(o.effectiveFrom) : undefined,
+    }));
     const scope = body.scope
       ? {
           sampleSize: body.scope.sampleSize,
@@ -44,7 +62,7 @@ export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext)
         }
       : undefined;
     const result = await ruleSimulationService.simulate({
-      countryCode: String(body.countryCode),
+      countryCode: body.countryCode,
       proposedOverrides: overrides,
       scope,
     });

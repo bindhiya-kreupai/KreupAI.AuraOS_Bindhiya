@@ -10,6 +10,7 @@
  */
 
 import type { NextRequest } from 'next/server';
+import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
 import {
   detectDayAbsence,
@@ -19,20 +20,40 @@ import { badRequest, forbidden, hasAny, ok, serverError, type RouteContext } fro
 
 export const dynamic = 'force-dynamic';
 
+const daySchema = z.object({
+  employeeId: z.string().min(1),
+  date: z.string().datetime(),
+  isScheduled: z.boolean().optional(),
+  isHoliday: z.boolean().optional(),
+  isWeekoff: z.boolean().optional(),
+  hasApprovedLeave: z.boolean().optional(),
+  attendance: z
+    .object({
+      status: z.string().optional(),
+      clockIn: z.string().datetime().optional().nullable(),
+      clockOut: z.string().datetime().optional().nullable(),
+    })
+    .optional(),
+});
+
+const inputSchema = z.object({
+  days: z.array(daySchema).min(1),
+});
+
 export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) => {
   if (!hasAny(ctx.permissions, 'attendance:read', 'tenant:read', 'dashboard:read')) {
     return forbidden();
   }
   try {
-    const body = await req.json();
-    if (!Array.isArray(body.days) || body.days.length === 0) {
-      return badRequest('days (non-empty array) required');
+    const raw = await req.json();
+    const parsed = inputSchema.safeParse(raw);
+    if (!parsed.success) {
+      return badRequest('Invalid input', { issues: parsed.error.flatten() });
     }
-    const verdicts = body.days.map((d: any) => {
-      if (!d.employeeId) throw new Error('day.employeeId required');
-      if (!d.date) throw new Error('day.date required');
-      return detectDayAbsence({
-        employeeId: String(d.employeeId),
+    const body = parsed.data;
+    const verdicts = body.days.map((d) =>
+      detectDayAbsence({
+        employeeId: d.employeeId,
         date: new Date(d.date),
         isScheduled: d.isScheduled === true,
         isHoliday: d.isHoliday === true,
@@ -40,13 +61,13 @@ export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext)
         hasApprovedLeave: d.hasApprovedLeave === true,
         attendance: d.attendance
           ? {
-              status: String(d.attendance.status ?? ''),
+              status: d.attendance.status ?? '',
               clockIn: d.attendance.clockIn ? new Date(d.attendance.clockIn) : null,
               clockOut: d.attendance.clockOut ? new Date(d.attendance.clockOut) : null,
             }
           : undefined,
-      });
-    });
+      })
+    );
     const summary = summariseVerdicts(verdicts);
     return ok({ verdicts, summary });
   } catch (err) {

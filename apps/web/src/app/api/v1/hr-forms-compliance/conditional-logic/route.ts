@@ -8,6 +8,7 @@
  */
 
 import type { NextRequest } from 'next/server';
+import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
 import {
   findMissingRequiredFields,
@@ -17,15 +18,24 @@ import { badRequest, forbidden, hasAny, ok, serverError, type RouteContext } fro
 
 export const dynamic = 'force-dynamic';
 
+const inputSchema = z.object({
+  fields: z.array(z.record(z.unknown())),
+  values: z.record(z.unknown()).optional(),
+});
+
 export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) => {
   if (!hasAny(ctx.permissions, 'hr_form:read', 'tenant:read', 'dashboard:read')) {
     return forbidden();
   }
   try {
-    const body = await req.json();
-    if (!Array.isArray(body.fields)) return badRequest('fields (array) required');
-    const values = body.values && typeof body.values === 'object' ? body.values : {};
-    const render = renderForm(body.fields, values);
+    const raw = await req.json();
+    const parsed = inputSchema.safeParse(raw);
+    if (!parsed.success) {
+      return badRequest('Invalid input', { issues: parsed.error.flatten() });
+    }
+    const body = parsed.data;
+    const values = body.values ?? {};
+    const render = renderForm(body.fields as any, values);
     const missingRequired = findMissingRequiredFields(render, values);
     return ok({ verdict: { render, missingRequired } });
   } catch (err) {
