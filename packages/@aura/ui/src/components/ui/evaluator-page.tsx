@@ -5,6 +5,7 @@ import { Loader2 } from 'lucide-react';
 import { VerdictPanel, type VerdictPanelProps } from './verdict-panel';
 import { StructuredArrayEditor, type StructuredColumn } from './structured-array-editor';
 import { SkeletonVerdict } from './skeleton';
+import { ErrorState, type ZodFlattenedShape } from './error-state';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -134,6 +135,7 @@ export function EvaluatorPage({
     });
     const [verdict, setVerdict] = useState<VerdictPanelProps | null>(null);
     const [error, setError] = useState<string | null>(null);
+    const [errorIssues, setErrorIssues] = useState<ZodFlattenedShape | null>(null);
     const [loading, setLoading] = useState(false);
 
     const displayTitle = locale === 'ar' && titleAr ? titleAr : title;
@@ -152,6 +154,7 @@ export function EvaluatorPage({
         e.preventDefault();
         setVerdict(null);
         setError(null);
+        setErrorIssues(null);
         // Light required validation.
         for (const f of fields) {
             if (!f.required) continue;
@@ -193,6 +196,16 @@ export function EvaluatorPage({
                     json.error?.message ??
                         (locale === 'ar' ? 'فشل التقييم' : 'Evaluation failed'),
                 );
+                // Surface Zod-validation field issues when the API returned them.
+                const details = json.error?.details?.issues;
+                if (
+                    details &&
+                    typeof details === 'object' &&
+                    'fieldErrors' in details &&
+                    'formErrors' in details
+                ) {
+                    setErrorIssues(details as ZodFlattenedShape);
+                }
                 return;
             }
             const v = buildVerdict(json.data);
@@ -308,9 +321,13 @@ export function EvaluatorPage({
                     );
                 })}
                 {error && (
-                    <div className="rounded-md border border-rose-200 bg-rose-50 p-3 text-sm text-rose-800">
-                        {error}
-                    </div>
+                    <ErrorState
+                        title={locale === 'ar' ? 'فشل التقييم' : 'Could not evaluate'}
+                        titleAr="فشل التقييم"
+                        message={error}
+                        issues={errorIssues}
+                        locale={locale}
+                    />
                 )}
                 <div className="flex items-center gap-3">
                     <button
