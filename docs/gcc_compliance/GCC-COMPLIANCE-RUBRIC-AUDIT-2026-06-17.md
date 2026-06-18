@@ -566,6 +566,31 @@ Each route gates on the appropriate permission set, validates the required body 
 
 **Final UI status:** the §2 audit row is functionally resolved — primitives are shipped, tested, AND now adopted in two flagship dashboard pages (EPIC-31 executive risk view + EPIC-29 visa renewal alerts). All other dashboard pages can adopt the same patterns via `DataPageWithToolbar` + the shared primitives.
 
+### 2026-06-17 — UI completion: all 27 evaluator services wired end-to-end
+
+Per the user's authorisation to ship enterprise-grade UI without overnight browser verification, the remaining 25 service evaluators (the ones beyond EPIC-31 and EPIC-29 that already had UI) are now adopted end-to-end. Two new shared primitives + 18 new API routes + 28 new dashboard pages + 28 new menu entries.
+
+**Adoption factory primitives** (commit `13a870e7`)
+
+- `VerdictPanel` — renders any service verdict (outcome PASS / FAIL / WARN / INFO) with bilingual title, reason, optional severity pill, structured breakdown list, meta pills. `role="status"` for accessibility. Tone derives from outcome or can be overridden. 11 tests.
+- `EvaluatorPage` — generic page template for the "form → API → verdict" pattern. Each adopter is a 30-line config wrapper passing fields, endpoint, payload builder, and verdict mapper. Supports text / number / date / select / boolean fields, GET + POST endpoints, bilingual labels, RTL. 8 tests.
+
+**18 new API routes** (commit `7f9f18d1`)
+
+`POST /api/v1/separation-compliance/notice-buyout`, `/hr-policies-compliance/policy-versioning`, `/leave-compliance/approval-matrix`, `/org-compliance/change-requests`, `/employee/record-change-requests`, `/wps-compliance/release-gate`, `/holidays-compliance/leave-overlap`, `/gcc-rule-library/simulate`, `/attendance-compliance/absence-detection`, `/sio-compliance/lmra-alignment`, `/document-retention-compliance/classify`, `/nitaqat-compliance/three-way-recon`, `/onboarding/checklist`, `/emiratisation-compliance/fake-risk`, `/accommodation-compliance/safety-controls` (multi-action: hygiene/fire/food), `/hse-compliance/safety-management` (multi-action: ppe/toolbox/drill), `/hr-forms-compliance/conditional-logic`, `/checklist-engine/red-flag-automation/test`. Each gates on the appropriate permission set and returns the typed service verdict.
+
+**28 evaluator pages** (commits `733f1c41` + `a822ca93`)
+
+Six are page-only wrappers for APIs shipped previously (`benefits-compliance/eligibility`, `er-compliance/penalty-matrix`, `er-compliance/retaliation-check`, `overtime-compliance/fatigue-assessment`, `payroll-compliance/period-lock`, `recruitment-compliance/stage-gate`). 22 wire to the new routes above. All are thin `<EvaluatorPage>` config wrappers (~30 lines each) with bilingual titles and reason rendering. Accommodation and HSE each split into 3 sub-pages (hygiene/fire/food + ppe/toolbox/drill) to keep each form focused.
+
+**Menu wiring** (commit `0ef13aad`)
+
+A new `COMPLIANCE_EVALUATORS` sub-module is inserted at the top of the GCC Compliance section of `super-admin-menu.ts`. It contains 28 leaf items, each with an explicit `path` pointing to its evaluator page — using explicit paths rather than feature-slug derivation so paths that don't share a parent module's base (e.g. `/dashboard/compliance-dashboard/risk-heatmap`) still render correctly.
+
+**Final regression sweep:** **366 / 366 tests passing across 39 test files** (27 service test suites + 12 ui-primitives suites). Typecheck clean for all new files. 18 pre-existing typecheck errors in `statutory-report.service.ts`, `attendance/time-capture/route.ts`, and audit-log `metadata` typings predate this work and are tracked separately.
+
+**Status:** every one of tonight's 27 service closures now has menu + API + UI. The complete chain is testable in the browser when the user is back — open the sidebar → "Compliance Evaluators" → click any leaf → form renders → submit → VerdictPanel shows the typed service result in bilingual en/ar.
+
 ---
 
 _Audit completed 2026-06-17. 38 EPICs audited via parallel `Explore` subagents. Findings sourced from `packages/@aura/database/prisma/schema.prisma`, `apps/web/src/lib/services/`, `apps/web/src/app/api/v1/`, `apps/web/src/app/dashboard/`, `apps/web/src/lib/services/__tests__/`._
