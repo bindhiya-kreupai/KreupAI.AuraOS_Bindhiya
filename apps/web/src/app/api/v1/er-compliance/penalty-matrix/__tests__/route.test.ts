@@ -6,6 +6,16 @@ vi.mock('@/lib/services/er-compliance/penalty-matrix.service', () => ({
     recommend: vi.fn(),
     findInconsistentPrecedents: vi.fn(),
   },
+  MISCONDUCT_TYPES: [
+    'THEFT',
+    'VIOLENCE',
+    'FRAUD',
+    'DRUGS_ALCOHOL',
+    'SAFETY_VIOLATION',
+    'ABSENTEEISM',
+    'INSUBORDINATION',
+    'POLICY_VIOLATION',
+  ] as const,
 }));
 
 vi.mock('@/lib/auth', () => ({
