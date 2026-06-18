@@ -15,12 +15,21 @@
 import type { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
-import { penaltyMatrixService } from '@/lib/services/er-compliance/penalty-matrix.service';
+import {
+  penaltyMatrixService,
+  MISCONDUCT_TYPES,
+} from '@/lib/services/er-compliance/penalty-matrix.service';
 import { badRequest, forbidden, hasAny, ok, serverError, type RouteContext } from '../_shared';
 
 export const dynamic = 'force-dynamic';
 
 const severityEnum = z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']);
+/**
+ * Misconduct type accepts the canonical enum OR a free-form string —
+ * country rule-packs may introduce custom misconduct codes that the
+ * default matrix doesn't list, and the API should not reject those.
+ */
+const misconductTypeSchema = z.union([z.enum(MISCONDUCT_TYPES), z.string().min(1)]);
 const actionEnum = z.enum([
   'VERBAL_WARNING',
   'WRITTEN_WARNING',
@@ -36,14 +45,14 @@ const inputSchema = z.discriminatedUnion('action', [
   z.object({
     action: z.literal('recommend'),
     employeeId: z.string().min(1),
-    misconductType: z.string().min(1),
+    misconductType: misconductTypeSchema,
     severity: severityEnum.optional(),
     countryCode: z.string().optional(),
     asOf: z.string().datetime().optional(),
   }),
   z.object({
     action: z.literal('findInconsistentPrecedents'),
-    misconductType: z.string().min(1),
+    misconductType: misconductTypeSchema,
     severity: severityEnum.optional(),
     recommended: actionEnum,
     lookbackMonths: z.number().optional(),

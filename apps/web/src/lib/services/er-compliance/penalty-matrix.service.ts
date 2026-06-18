@@ -39,8 +39,36 @@ export type ActionType =
 
 export type Severity = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
+/**
+ * Recognised misconduct categories. The penalty matrix is keyed by
+ * this union — country rule-packs that override the matrix may add
+ * new types, but the typed evaluator (and the Zod schema on the API
+ * route) treat these as the canonical set.
+ */
+export type MisconductType =
+  | 'THEFT'
+  | 'VIOLENCE'
+  | 'FRAUD'
+  | 'DRUGS_ALCOHOL'
+  | 'SAFETY_VIOLATION'
+  | 'ABSENTEEISM'
+  | 'INSUBORDINATION'
+  | 'POLICY_VIOLATION';
+
+export const MISCONDUCT_TYPES = [
+  'THEFT',
+  'VIOLENCE',
+  'FRAUD',
+  'DRUGS_ALCOHOL',
+  'SAFETY_VIOLATION',
+  'ABSENTEEISM',
+  'INSUBORDINATION',
+  'POLICY_VIOLATION',
+] as const;
+
 export interface PenaltyMatrixRule {
-  misconductType: string;
+  /** Typed union; rule-pack overrides MAY introduce custom strings. */
+  misconductType: MisconductType | (string & {});
   severity?: Severity;
   /** Minimum number of similar prior actions for this rule to apply. */
   priorCount?: number;
@@ -213,7 +241,7 @@ const NULL_RECOMMENDATION: PenaltyRecommendation = {
 export function evaluatePenaltyMatrix(
   matrix: PenaltyMatrixRule[],
   input: {
-    misconductType: string;
+    misconductType: MisconductType | (string & {});
     severity?: Severity;
     priorCount: number;
   }
@@ -261,7 +289,7 @@ export class PenaltyMatrixService {
   async countPriors(
     tenantId: string,
     employeeId: string,
-    misconductType: string,
+    misconductType: MisconductType | (string & {}),
     asOf: Date = new Date()
   ): Promise<number> {
     const total = await (prisma as any).erDisciplinaryAction.count({
@@ -285,7 +313,7 @@ export class PenaltyMatrixService {
     tenantId: string,
     input: {
       employeeId: string;
-      misconductType: string;
+      misconductType: MisconductType | (string & {});
       severity?: Severity;
       countryCode?: string;
       asOf?: Date;
@@ -313,7 +341,7 @@ export class PenaltyMatrixService {
   async findInconsistentPrecedents(
     tenantId: string,
     input: {
-      misconductType: string;
+      misconductType: MisconductType | (string & {});
       severity?: Severity;
       recommended: ActionType;
       lookbackMonths?: number;

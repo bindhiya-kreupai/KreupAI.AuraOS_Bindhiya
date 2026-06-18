@@ -16,21 +16,36 @@ import { badRequest, forbidden, hasAny, ok, serverError, type RouteContext } fro
 
 export const dynamic = 'force-dynamic';
 
+/**
+ * `value` of an override is whatever the underlying rule pack stores —
+ * it can be a number (rate, days), string (cohort code), boolean
+ * (flag), array (rate bands), or object (structured config). Reject
+ * undefined/null at the boundary so we never let the simulator
+ * silently fall through; everything else is admissible.
+ */
+const overrideValueSchema = z.union([
+  z.number(),
+  z.string(),
+  z.boolean(),
+  z.array(z.unknown()),
+  z.record(z.unknown()),
+]);
+
 const inputSchema = z.object({
-  countryCode: z.string().min(1),
+  countryCode: z.string().min(2).max(3),
   proposedOverrides: z
     .array(
       z.object({
         domain: z.string().min(1),
         ruleKey: z.string().min(1),
-        value: z.unknown(),
+        value: overrideValueSchema,
         effectiveFrom: z.string().datetime().optional(),
       })
     )
     .min(1),
   scope: z
     .object({
-      sampleSize: z.number().optional(),
+      sampleSize: z.number().int().positive().optional(),
       since: z.string().datetime().optional(),
       asOf: z.string().datetime().optional(),
     })

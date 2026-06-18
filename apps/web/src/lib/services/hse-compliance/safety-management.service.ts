@@ -214,8 +214,12 @@ export interface DrillRecord {
 
 export interface DrillCadenceInput {
   drills: DrillRecord[];
-  /** Required cadence per drill type, in days. */
-  cadence?: Record<DrillRecord['drillType'], number>;
+  /**
+   * Required cadence per drill type, in days. Caller may override
+   * any subset of types; missing entries fall back to
+   * `DEFAULT_DRILL_CADENCE`.
+   */
+  cadence?: Partial<Record<DrillRecord['drillType'], number>>;
   asOf: Date;
 }
 
