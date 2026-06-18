@@ -10,4 +10,5 @@ export * from "./import-dialog";
 export * from "./attachment-uploader";
 export * from "./email-recipient-picker";
 export * from "./filter-panel";
+export * from "./data-page-with-toolbar";
 export { DataPage, type DataPageProps, type FormField } from "./data-page";

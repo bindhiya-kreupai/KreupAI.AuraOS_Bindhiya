@@ -515,6 +515,18 @@ Continuing the autonomous pass with 5 additional closures (28→33 EPICs touched
 
 **Cumulative overnight tally:** **27 EPICs closed, 263 tests passing across 27 new test files**, zero schema changes, zero new Prisma models. Every closure ships a pure evaluator with bilingual (en/ar) reason text; the DB-driven wrappers slot directly into the existing services without further refactoring.
 
+### 2026-06-17 — UI primitives adoption layer (DataPageWithToolbar)
+
+The §2 audit table lists 6 shared UI primitives as "missing" and notes they would unblock the `T` (table features) column across every EPIC. Re-surveying tonight: **all 6 primitives already ship in `@aura/ui` with 40 passing tests** (`apps/web/src/__tests__/ui-primitives/`) — but **0 dashboard pages import them**. The real gap is adoption, not implementation.
+
+Closure shipped:
+
+- **`DataPageWithToolbar`** (`packages/@aura/ui/src/components/ui/data-page-with-toolbar.tsx`) — wraps `DataPage` and composes `ExportMenu`, `ImportDialog`, and `FilterPanel`+`SavedView` into the existing `toolbarSlot` based on three typed configs: `exportConfig`, `importConfig`, `filterConfig`. Pages that pass only the configs they need get a clean toolbar with no boilerplate; the raw `toolbarSlot` is still available for bespoke controls and gets merged in.
+- **9 new tests** for the wrapper (`apps/web/src/__tests__/ui-primitives/data-page-with-toolbar.test.tsx`): plain wrap, hidden when no config, visible when supplied, import dialog open-on-click, custom trigger label, custom toolbar merge, data forwarding.
+- **49 / 49** tests passing across all 7 ui-primitives suites (existing 40 + new 9).
+
+The §2 audit row should be re-graded: primitives are **shipped and adoptable in one prop**. Per-page adoption still needs browser verification and was deferred per the project's "no UI without browser test" rule.
+
 ---
 
 _Audit completed 2026-06-17. 38 EPICs audited via parallel `Explore` subagents. Findings sourced from `packages/@aura/database/prisma/schema.prisma`, `apps/web/src/lib/services/`, `apps/web/src/app/api/v1/`, `apps/web/src/app/dashboard/`, `apps/web/src/lib/services/__tests__/`._
