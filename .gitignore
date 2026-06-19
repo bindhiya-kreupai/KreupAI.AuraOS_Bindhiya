@@ -75,3 +75,10 @@ apps/web/matches.txt
 /ui_typecheck_output*.txt
 /web_typecheck_output*.txt
 /web_typecheck_final_result.txt
+
+# Environment files
+.env
+.env.local
+.env.*.local
+**/.env
+!.env.example
