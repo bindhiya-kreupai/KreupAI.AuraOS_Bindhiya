@@ -31,6 +31,7 @@ model Tenant {
   wpsSubmissions    WPSSubmission[]
   wpsRecords        WPSRecord[]
   wpsAuditLogs      WPSAuditLog[]
+
   @@map("aura_tenant")
 }
 
@@ -56,7 +57,6 @@ model Company {
 
   @@unique([tenantId, code])
   @@index([tenantId])
-
   @@map("aura_company")
 }
 
@@ -140,7 +140,6 @@ model City {
   addresses Address[]
 
   @@index([stateId])
-
   @@map("aura_city")
 }
 
@@ -222,6 +221,7 @@ model JobFamily {
   name       String // e.g., "Software Development"
 
   jobProfiles JobProfile[]
+
   @@map("aura_job_family")
 }
 
@@ -247,7 +247,6 @@ model JobProfile {
   @@index([familyId])
   @@index([gradeId])
   @@index([status])
-
   @@map("aura_job_profile")
 }
 
@@ -325,7 +324,7 @@ model Employee {
 
   // Relations to other modules
   employeeLifeEvents   EmployeeLifeEvent[]   @relation("EmployeeLifeEvents")
-  employmentHistory    EmploymentHistory[]    @relation("EmployeeHistory")
+  employmentHistory    EmploymentHistory[]   @relation("EmployeeHistory")
   idcards              IDCard[]              @relation("EmployeeIDCards")
   letters              Letter[]              @relation("EmployeeLetters")
   exitRequests         ExitRequest[]         @relation("EmployeeExits")
@@ -401,16 +400,16 @@ model EmploymentType {
 }
 
 model EmployeeNumberSequence {
-  id          String   @id @default(uuid())
-  tenantId    String
-  companyId   String
-  prefix      String
-  nextNumber  Int      @default(1)
-  padding     Int      @default(5)
-  createdBy   String?
-  updatedBy   String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String   @id @default(uuid())
+  tenantId   String
+  companyId  String
+  prefix     String
+  nextNumber Int      @default(1)
+  padding    Int      @default(5)
+  createdBy  String?
+  updatedBy  String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@unique([tenantId, companyId])
   @@index([tenantId])
@@ -419,28 +418,28 @@ model EmployeeNumberSequence {
 }
 
 model EmployeeMasterDataDraft {
-  id                    String   @id @default(uuid())
-  tenantId              String
-  onboardingInstanceId  String?
-  offerId               String?
-  employeeId            String?
-  status                String   @default("DRAFT") // DRAFT | SUBMITTED | APPROVED | ACTIVATED | REJECTED
-  masterData            Json
-  validationSnapshot    Json
-  duplicateSnapshot     Json?
-  submittedBy           String?
-  submittedAt           DateTime?
-  approvedBy            String?
-  approvedAt            DateTime?
-  activatedBy           String?
-  activatedAt           DateTime?
-  rejectionReason       String?  @db.Text
-  createdBy             String
-  updatedBy             String?
-  createdAt             DateTime @default(now())
-  updatedAt             DateTime @updatedAt
-  isDeleted             Boolean  @default(false)
-  deletedAt             DateTime?
+  id                   String    @id @default(uuid())
+  tenantId             String
+  onboardingInstanceId String?
+  offerId              String?
+  employeeId           String?
+  status               String    @default("DRAFT") // DRAFT | SUBMITTED | APPROVED | ACTIVATED | REJECTED
+  masterData           Json
+  validationSnapshot   Json
+  duplicateSnapshot    Json?
+  submittedBy          String?
+  submittedAt          DateTime?
+  approvedBy           String?
+  approvedAt           DateTime?
+  activatedBy          String?
+  activatedAt          DateTime?
+  rejectionReason      String?   @db.Text
+  createdBy            String
+  updatedBy            String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  isDeleted            Boolean   @default(false)
+  deletedAt            DateTime?
 
   @@index([tenantId])
   @@index([onboardingInstanceId])
@@ -451,22 +450,22 @@ model EmployeeMasterDataDraft {
 }
 
 model EmployeeIdentification {
-  id             String   @id @default(uuid())
-  tenantId       String
-  employeeId     String
-  countryCode    String
-  identifierType String   // PASSPORT | EMIRATES_ID | IQAMA | CPR | QID | NATIONAL_ID | CIVIL_ID
+  id              String    @id @default(uuid())
+  tenantId        String
+  employeeId      String
+  countryCode     String
+  identifierType  String // PASSPORT | EMIRATES_ID | IQAMA | CPR | QID | NATIONAL_ID | CIVIL_ID
   identifierValue String
-  issueDate      DateTime?
-  expiryDate     DateTime?
-  isPrimary      Boolean  @default(false)
-  sourceDraftId  String?
-  createdBy      String?
-  updatedBy      String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  isDeleted      Boolean  @default(false)
-  deletedAt      DateTime?
+  issueDate       DateTime?
+  expiryDate      DateTime?
+  isPrimary       Boolean   @default(false)
+  sourceDraftId   String?
+  createdBy       String?
+  updatedBy       String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  isDeleted       Boolean   @default(false)
+  deletedAt       DateTime?
 
   @@unique([tenantId, identifierType, identifierValue])
   @@index([tenantId])
@@ -477,18 +476,18 @@ model EmployeeIdentification {
 }
 
 model EmployeeLifecycleEvent {
-  id             String    @id @default(uuid())
-  tenantId       String
-  employeeId     String
-  eventType      String
-  payload        Json
-  status         String    @default("PENDING") // PENDING | PUBLISHED | FAILED
-  publishedAt    DateTime?
-  failedAt       DateTime?
-  errorMessage   String?   @db.Text
-  createdBy      String?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  id           String    @id @default(uuid())
+  tenantId     String
+  employeeId   String
+  eventType    String
+  payload      Json
+  status       String    @default("PENDING") // PENDING | PUBLISHED | FAILED
+  publishedAt  DateTime?
+  failedAt     DateTime?
+  errorMessage String?   @db.Text
+  createdBy    String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   @@index([tenantId])
   @@index([employeeId])
@@ -595,7 +594,6 @@ model UserRole {
   @@index([roleId])
   @@index([tenantId])
   @@index([expiresAt])
-
   @@map("aura_user_role")
 }
 
@@ -629,7 +627,6 @@ model RolePermission {
   @@unique([roleId, permissionId])
   @@index([roleId])
   @@index([permissionId])
-
   @@map("aura_role_permission")
 }
 
@@ -667,7 +664,6 @@ model MFASecret {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@index([userId])
-
   @@map("aura_mfa_secret")
 }
 
@@ -718,6 +714,7 @@ model DocumentType {
   isRequired  Boolean            @default(false)
   status      String             @default("Active")
   documents   EmployeeDocument[]
+
   @@map("aura_document_type")
 }
 
@@ -761,6 +758,7 @@ model Skill {
   deletedAt   DateTime?
   createdBy   String?
   updatedBy   String?
+
   @@map("aura_skill")
 }
 
@@ -799,6 +797,7 @@ model ShiftType {
   startTime String
   endTime   String
   status    String @default("Active")
+
   @@map("aura_shift_type")
 }
 
@@ -978,7 +977,6 @@ model ShiftAssignment {
   @@index([employeeId])
   @@index([shiftId])
   @@index([effectiveFrom])
-
   @@map("aura_shift_assignment")
 }
 
@@ -1191,6 +1189,7 @@ model Bank {
   branchName  String?
   countryCode String? // ISO codde e.g. AE, IN (Optional for migration safety, backfill later)
   status      String  @default("Active")
+
   @@map("aura_bank")
 }
 
@@ -1223,6 +1222,7 @@ model EducationLevel {
   name        String  @unique
   description String?
   status      String  @default("Active")
+
   @@map("aura_education_level")
 }
 
@@ -1272,6 +1272,7 @@ model PasswordPolicy {
   lockoutAttempts     Int      @default(3)
   createdAt           DateTime @default(now())
   updatedAt           DateTime @updatedAt
+
   @@map("aura_password_policy")
 }
 
@@ -1428,48 +1429,48 @@ enum AuditSeverity {
 }
 
 model AuditLog {
-  id         String         @id @default(uuid())
+  id String @id @default(uuid())
 
   // Tenant & Company Context
-  tenantId   String
-  companyId  String?
+  tenantId  String
+  companyId String?
 
   // Actor
-  userId     String?
-  user       User?          @relation(fields: [userId], references: [id])
-  userEmail  String?
+  userId    String?
+  user      User?   @relation(fields: [userId], references: [id])
+  userEmail String?
 
   // Action
-  action     AuditAction
-  severity   AuditSeverity  @default(LOW)
+  action   AuditAction
+  severity AuditSeverity @default(LOW)
 
   // Resource
-  resourceType  String?
-  resourceId    String?
+  resourceType String?
+  resourceId   String?
 
   // Outcome
-  success       Boolean     @default(true)
-  errorMessage  String?
+  success      Boolean @default(true)
+  errorMessage String?
 
   // Change Tracking
-  beforeValues  Json?
-  afterValues   Json?
+  beforeValues Json?
+  afterValues  Json?
 
   // Context & Metadata
-  ipAddress  String?
-  userAgent  String?
-  metadata   Json?
+  ipAddress String?
+  userAgent String?
+  metadata  Json?
 
   // Timestamps
-  timestamp  DateTime  @default(now())
+  timestamp DateTime @default(now())
 
   // Soft-delete
-  isDeleted  Boolean   @default(false)
-  deletedAt  DateTime?
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
 
   // Provenance
-  createdBy  String?
-  updatedBy  String?
+  createdBy String?
+  updatedBy String?
 
   // Backward compatibility (deprecated — use resourceType/resourceId)
   entityType String?
@@ -1493,32 +1494,31 @@ model AuditLog {
 }
 
 model AuditLogArchive {
-  id            String         @id
-  tenantId      String
-  companyId     String?
-  userId        String?
-  userEmail     String?
-  action        AuditAction
-  severity      AuditSeverity  @default(LOW)
-  resourceType  String
-  resourceId    String?
-  success       Boolean        @default(true)
-  errorMessage  String?
-  beforeValues  Json?
-  afterValues   Json?
-  ipAddress     String?
-  userAgent     String?
-  metadata      Json?
-  timestamp     DateTime
-  archivedAt    DateTime       @default(now())
-  createdBy     String?
+  id           String        @id
+  tenantId     String
+  companyId    String?
+  userId       String?
+  userEmail    String?
+  action       AuditAction
+  severity     AuditSeverity @default(LOW)
+  resourceType String
+  resourceId   String?
+  success      Boolean       @default(true)
+  errorMessage String?
+  beforeValues Json?
+  afterValues  Json?
+  ipAddress    String?
+  userAgent    String?
+  metadata     Json?
+  timestamp    DateTime
+  archivedAt   DateTime      @default(now())
+  createdBy    String?
 
   @@index([tenantId, timestamp])
   @@index([tenantId, companyId, timestamp])
   @@index([userId, timestamp])
   @@index([resourceType, resourceId])
   @@index([archivedAt])
-
   @@map("aura_audit_log_archive")
 }
 
@@ -1576,6 +1576,7 @@ model MFAConfig {
   gracePeriodDays  Int      @default(7)
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+
   @@map("aura_mfa_config")
 }
 
@@ -1711,7 +1712,6 @@ model CompetencyRelation {
   createdAt           DateTime          @default(now())
 
   @@unique([sourceCompetencyId, relatedCompetencyId])
-
   @@map("aura_competency_relation")
 }
 
@@ -1723,7 +1723,6 @@ model CompetencyRoleMapping {
   createdAt    DateTime          @default(now())
 
   @@unique([competencyId, roleName])
-
   @@map("aura_competency_role_mapping")
 }
 
@@ -1734,6 +1733,7 @@ model CompetencyAssessmentCriteria {
   criteria     String
   sortOrder    Int               @default(0)
   createdAt    DateTime          @default(now())
+
   @@map("aura_competency_assessment_criteria")
 }
 
@@ -1768,6 +1768,7 @@ model ProficiencyFramework {
   updatedAt   DateTime @updatedAt
 
   levels ProficiencyLevel[]
+
   @@map("aura_proficiency_framework")
 }
 
@@ -1792,7 +1793,6 @@ model ProficiencyLevel {
 
   @@unique([frameworkId, levelNumber])
   @@unique([frameworkId, code])
-
   @@map("aura_proficiency_level")
 }
 
@@ -1813,6 +1813,7 @@ model JobRole {
 
   competencyMappings JobCompetencyMapping[]
   skillAssessments   SkillAssessment[]
+
   @@map("aura_job_role")
 }
 
@@ -1832,7 +1833,6 @@ model JobCompetencyMapping {
   updatedAt       DateTime          @updatedAt
 
   @@unique([jobRoleId, competencyId])
-
   @@map("aura_job_competency_mapping")
 }
 
@@ -1861,6 +1861,7 @@ model SkillAssessment {
 
   competencies SkillAssessmentCompetency[]
   results      SkillAssessmentResult[]
+
   @@map("aura_skill_assessment")
 }
 
@@ -1874,7 +1875,6 @@ model SkillAssessmentCompetency {
   createdAt    DateTime          @default(now())
 
   @@unique([assessmentId, competencyId])
-
   @@map("aura_skill_assessment_competency")
 }
 
@@ -1982,6 +1982,7 @@ model DevelopmentActivity {
   sortOrder         Int             @default(0)
   createdAt         DateTime        @default(now())
   updatedAt         DateTime        @updatedAt
+
   @@map("aura_development_activity")
 }
 
@@ -2515,7 +2516,6 @@ model NitaqatSnapshot {
 
   @@index([configId])
   @@index([snapshotDate])
-
   @@map("aura_nitaqat_snapshot")
 }
 
@@ -2532,67 +2532,6 @@ enum NitaqatBand {
 // 24. EOSB (END OF SERVICE BENEFITS) / GRATUITY
 // ============================================================================
 
-model EOSBCalculation {
-  id              String              @id @default(uuid())
-  tenantId        String
-  employeeId      String
-  calculationDate DateTime            @default(now())
-  calculationType EOSBCalculationType
-
-  // Employee Details at Calculation
-  countryCode     String
-  joiningDate     DateTime
-  lastWorkingDate DateTime?
-  yearsOfService  Decimal
-  monthsOfService Int
-  daysOfService   Int
-
-  // Salary Details
-  basicSalary Decimal
-  totalSalary Decimal
-  dailyRate   Decimal
-
-  // Calculation Breakdown
-  firstPeriodYears   Decimal @default(0)
-  firstPeriodAmount  Decimal @default(0)
-  secondPeriodYears  Decimal @default(0)
-  secondPeriodAmount Decimal @default(0)
-  grossAmount        Decimal
-
-  // Adjustments
-  terminationType   TerminationType
-  resignationFactor Decimal         @default(1) // 1/3, 2/3, or 1
-  deductions        Decimal         @default(0) // Any deductions
-
-  // Final Amount
-  netAmount Decimal
-  currency  String  @default("AED")
-
-  // Status
-  status     EOSBStatus @default(CALCULATED)
-  approvedBy String?
-  approvedAt DateTime?
-  paidAt     DateTime?
-
-  notes              String?
-  calculationDetails Json? // Detailed breakdown
-
-  createdBy String
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-
-  @@index([tenantId])
-  @@index([employeeId])
-  @@index([status])
-  @@map("aura_eosb_calculation")
-}
-
-enum EOSBCalculationType {
-  ESTIMATE // For planning/preview
-  FINAL // Final calculation for settlement
-  ADJUSTMENT // Correction to previous calculation
-}
-
 enum TerminationType {
   RESIGNATION // Employee-initiated
   TERMINATION // Employer-initiated (with cause)
@@ -2602,14 +2541,6 @@ enum TerminationType {
   DEATH // Death of employee
   DISABILITY // Permanent disability
   MUTUAL_AGREEMENT // Mutual termination
-}
-
-enum EOSBStatus {
-  CALCULATED
-  PENDING_APPROVAL
-  APPROVED
-  PAID
-  CANCELLED
 }
 
 // ============================================================================
@@ -2682,28 +2613,28 @@ model EmployeeComplianceDetails {
 }
 
 model SocialInsuranceRegistration {
-  id                  String   @id @default(uuid())
-  tenantId            String
-  employeeId          String
-  onboardingInstanceId String?
-  countryCode         String
-  nationality         String?
-  authority           String
-  scheme              String
-  contributionWage    Decimal  @db.Decimal(12, 2)
-  currency            String
+  id                    String    @id @default(uuid())
+  tenantId              String
+  employeeId            String
+  onboardingInstanceId  String?
+  countryCode           String
+  nationality           String?
+  authority             String
+  scheme                String
+  contributionWage      Decimal   @db.Decimal(12, 2)
+  currency              String
   registrationReference String?
-  status              String   @default("PENDING") // PENDING, IN_PROGRESS, REGISTERED, WAIVED, BLOCKED
-  mandatory           Boolean  @default(true)
-  deadlineAt          DateTime
-  registeredAt        DateTime?
-  ruleVersion         String
-  ruleSnapshot        Json?
-  notes               String?
-  createdBy           String?
-  updatedBy           String?
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  status                String    @default("PENDING") // PENDING, IN_PROGRESS, REGISTERED, WAIVED, BLOCKED
+  mandatory             Boolean   @default(true)
+  deadlineAt            DateTime
+  registeredAt          DateTime?
+  ruleVersion           String
+  ruleSnapshot          Json?
+  notes                 String?
+  createdBy             String?
+  updatedBy             String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
 
   @@unique([tenantId, employeeId, authority, scheme])
   @@index([tenantId, employeeId])
@@ -2918,7 +2849,7 @@ model EmployeeSalaryStructure {
 }
 
 model EmployeePayrollProfile {
-  id                         String   @id @default(uuid())
+  id                         String    @id @default(uuid())
   tenantId                   String
   employeeId                 String
   companyId                  String
@@ -2936,27 +2867,27 @@ model EmployeePayrollProfile {
   wpsPersonCode              String?
   labourCardNumber           String?
   costCenterCode             String?
-  prorationBasis             String   @default("CALENDAR_DAYS")
+  prorationBasis             String    @default("CALENDAR_DAYS")
   joiningDate                DateTime
   firstPayrollMonth          String
   firstPeriodStart           DateTime
   firstPeriodEnd             DateTime
-  firstPeriodPaidDays        Decimal  @db.Decimal(8, 2)
+  firstPeriodPaidDays        Decimal   @db.Decimal(8, 2)
   firstPeriodCalendarDays    Int
-  firstPeriodProrationFactor Decimal  @db.Decimal(8, 6)
-  firstPeriodGrossProrated   Decimal  @db.Decimal(12, 2)
+  firstPeriodProrationFactor Decimal   @db.Decimal(8, 6)
+  firstPeriodGrossProrated   Decimal   @db.Decimal(12, 2)
   firstPayDueAt              DateTime
-  readinessStatus            String   @default("BLOCKED")
+  readinessStatus            String    @default("BLOCKED")
   blockReasons               Json
   alertReasons               Json?
-  approvalStatus             String   @default("PENDING_APPROVAL")
+  approvalStatus             String    @default("PENDING_APPROVAL")
   approvedBy                 String?
   approvedAt                 DateTime?
   createdBy                  String
   updatedBy                  String?
-  createdAt                  DateTime @default(now())
-  updatedAt                  DateTime @updatedAt
-  isDeleted                  Boolean  @default(false)
+  createdAt                  DateTime  @default(now())
+  updatedAt                  DateTime  @updatedAt
+  isDeleted                  Boolean   @default(false)
   deletedAt                  DateTime?
 
   @@unique([tenantId, employeeId])
@@ -3502,7 +3433,6 @@ model Translation {
   @@unique([tenantId, locale, namespace, key])
   @@index([locale])
   @@index([namespace])
-
   @@map("aura_translation")
 }
 
@@ -3958,7 +3888,6 @@ model IndiaProfessionalTaxDeduction {
   @@unique([employeeId, deductionMonth])
   @@index([tenantId])
   @@index([deductionMonth])
-
   @@map("aura_india_professional_tax_deduction")
 }
 
@@ -4277,11 +4206,11 @@ model EmploymentHistory {
   newEmploymentType String?
 
   // Flexible before/after snapshots (for non-FK data like allowances, custom fields)
-  beforeValues  Json?
-  afterValues   Json?
+  beforeValues Json?
+  afterValues  Json?
 
   // Actor (who recorded the event)
-  actorId  String?
+  actorId String?
 
   // Approval Workflow
   requestedBy String?
@@ -4290,9 +4219,9 @@ model EmploymentHistory {
   status      String    @default("COMPLETED") // PENDING, APPROVED, REJECTED, COMPLETED
 
   // Provenance
-  sourceType     String?  @default("MANUAL") // MANUAL, SYSTEM_TRIGGER, IMPORT, MIGRATION, API, WORKFLOW
+  sourceType     String? @default("MANUAL") // MANUAL, SYSTEM_TRIGGER, IMPORT, MIGRATION, API, WORKFLOW
   sourceMetadata Json?
-  isBackfilled   Boolean  @default(false)
+  isBackfilled   Boolean @default(false)
 
   // Metadata
   isAutoGenerated Boolean   @default(false) // True if created by system trigger
@@ -4667,7 +4596,6 @@ model LetterTemplate {
 
   @@unique([tenantId, name])
   @@index([tenantId])
-
   @@map("aura_letter_template")
 }
 
@@ -4714,7 +4642,6 @@ model ExitRequest {
 
   @@index([tenantId])
   @@index([employeeId])
-
   @@map("aura_exit_request")
 }
 
@@ -4755,7 +4682,6 @@ model ProbationTracking {
 
   @@index([tenantId])
   @@index([employeeId])
-
   @@map("aura_probation_tracking")
 }
 
@@ -4793,7 +4719,6 @@ model ConfirmationRequest {
 
   @@index([tenantId])
   @@index([employeeId])
-
   @@map("aura_confirmation_request")
 }
 
@@ -5013,7 +4938,6 @@ model AIAgentConversation {
   @@index([tenantId])
   @@index([userId])
   @@index([sessionId])
-
   @@map("aura_ai_agent_conversation")
 }
 
@@ -5063,7 +4987,6 @@ model AnalyticsCache {
   @@unique([tenantId, cacheKey])
   @@index([tenantId])
   @@index([expiresAt])
-
   @@map("aura_analytics_cache")
 }
 
@@ -5248,44 +5171,44 @@ model BenefitPlan {
 
 // Benefit Enrollments - Employee enrollment in benefit plans
 model BenefitEnrollment {
-  id                  String                  @id @default(uuid())
-  tenantId            String
-  employeeId          String
-  employeeName        String
-  employeeCode        String
-  departmentId        String?
-  departmentName      String?
-  planId              String
-  coverageLevel       CoverageLevel
-  enrollmentType      BenefitEnrollmentType
-  status              BenefitEnrollmentStatus @default(DRAFT)
-  effectiveFrom       DateTime
-  effectiveTo         DateTime?
-  employeePremium     Float
-  employerPremium     Float
-  totalPremium        Float
-  paymentFrequency    PremiumPaymentFrequency @default(MONTHLY)
-  enrolledDependents  Json? // Array of dependent IDs
-  enrollmentDate      DateTime                @default(now())
-  approvedBy          String?
-  approvedDate        DateTime?
-  onboardingInstanceId String?
-  vendorReference     String?
-  vendorEnrollmentFile Json?
-  insuranceCardStatus String                  @default("PENDING")
+  id                    String                  @id @default(uuid())
+  tenantId              String
+  employeeId            String
+  employeeName          String
+  employeeCode          String
+  departmentId          String?
+  departmentName        String?
+  planId                String
+  coverageLevel         CoverageLevel
+  enrollmentType        BenefitEnrollmentType
+  status                BenefitEnrollmentStatus @default(DRAFT)
+  effectiveFrom         DateTime
+  effectiveTo           DateTime?
+  employeePremium       Float
+  employerPremium       Float
+  totalPremium          Float
+  paymentFrequency      PremiumPaymentFrequency @default(MONTHLY)
+  enrolledDependents    Json? // Array of dependent IDs
+  enrollmentDate        DateTime                @default(now())
+  approvedBy            String?
+  approvedDate          DateTime?
+  onboardingInstanceId  String?
+  vendorReference       String?
+  vendorEnrollmentFile  Json?
+  insuranceCardStatus   String                  @default("PENDING")
   insuranceCardIssuedAt DateTime?
-  qualifyingEventId   String?
-  qualifyingEventType QualifyingEventType?
-  previousPlanId      String?
-  cancellationReason  String?
-  cancellationDate    DateTime?
-  notes               String?                 @db.Text
-  createdAt           DateTime                @default(now())
-  updatedAt           DateTime                @updatedAt
-  isDeleted           Boolean                 @default(false)
-  deletedAt           DateTime?
-  createdBy           String?
-  updatedBy           String?
+  qualifyingEventId     String?
+  qualifyingEventType   QualifyingEventType?
+  previousPlanId        String?
+  cancellationReason    String?
+  cancellationDate      DateTime?
+  notes                 String?                 @db.Text
+  createdAt             DateTime                @default(now())
+  updatedAt             DateTime                @updatedAt
+  isDeleted             Boolean                 @default(false)
+  deletedAt             DateTime?
+  createdBy             String?
+  updatedBy             String?
 
   plan              BenefitPlan        @relation(fields: [planId], references: [id])
   claims            BenefitClaim[]
@@ -5436,7 +5359,6 @@ model QualifyingEvent {
   @@index([employeeId])
   @@index([eventType])
   @@index([eventDate])
-
   @@map("aura_qualifying_event")
 }
 
@@ -5484,7 +5406,6 @@ model PremiumRate {
   @@index([tenantId])
   @@index([planId])
   @@index([effectiveFrom])
-
   @@map("aura_premium_rate")
 }
 
@@ -5539,7 +5460,6 @@ model TaxDocument {
   @@index([tenantId])
   @@index([employeeId])
   @@index([taxYear])
-
   @@map("aura_tax_document")
 }
 
@@ -5582,7 +5502,6 @@ model Recognition {
   @@index([giverId])
   @@index([receiverId])
   @@index([createdAt])
-
   @@map("aura_recognition")
 }
 
@@ -5623,7 +5542,6 @@ model OneOnOneNote {
   meeting OneOnOneMeeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
 
   @@index([meetingId])
-
   @@map("aura_one_on_one_note")
 }
 
@@ -5666,7 +5584,6 @@ model LearningPath {
 
   @@index([tenantId])
   @@index([isPublished])
-
   @@map("aura_learning_path")
 }
 
@@ -5708,7 +5625,6 @@ model LearningProgress {
   @@index([tenantId])
   @@index([employeeId])
   @@index([contentId])
-
   @@map("aura_learning_progress")
 }
 
@@ -5752,7 +5668,6 @@ model AssessmentSubmission {
 
   @@index([assessmentId])
   @@index([employeeId])
-
   @@map("aura_assessment_submission")
 }
 
@@ -5796,7 +5711,6 @@ model WebhookLog {
   @@index([webhookId])
   @@index([createdAt])
   @@index([success])
-
   @@map("aura_webhook_log")
 }
 
@@ -5846,7 +5760,6 @@ model WorkflowDefinition {
   @@index([tenantId])
   @@index([isActive])
   @@index([trigger])
-
   @@map("aura_workflow_definition")
 }
 
@@ -5896,7 +5809,6 @@ model ProjectTimeEntry {
   @@index([employeeId])
   @@index([projectId])
   @@index([date])
-
   @@map("aura_project_time_entry")
 }
 
@@ -5921,30 +5833,30 @@ model GeofenceLocation {
 // Expense Claims (report-style with multiple line items).
 // State machine: DRAFT → SUBMITTED → APPROVED → PAID (with REJECTED, CANCELED).
 model ExpenseClaim {
-  id              String    @id @default(uuid())
+  id              String         @id @default(uuid())
   tenantId        String
   employeeId      String
   title           String
   // Legacy single-amount/category/date fields kept for backward compat.
   // Multi-line claims should use `items` and `totalAmount`.
-  amount          Float     @default(0)
-  totalAmount     Decimal   @default(0)
-  currency        String    @default("USD")
-  category        String?   // MEALS, TRANSPORT, TRAINING, SUPPLIES, OTHER (single-line mode)
-  date            DateTime? @db.Date
+  amount          Float          @default(0)
+  totalAmount     Decimal        @default(0)
+  currency        String         @default("USD")
+  category        String? // MEALS, TRANSPORT, TRAINING, SUPPLIES, OTHER (single-line mode)
+  date            DateTime?      @db.Date
   receiptUrl      String?
-  description     String?   @db.Text
-  status          String    @default("DRAFT") // DRAFT, SUBMITTED, APPROVED, REJECTED, PAID, CANCELED
+  description     String?        @db.Text
+  status          String         @default("DRAFT") // DRAFT, SUBMITTED, APPROVED, REJECTED, PAID, CANCELED
   policyId        String?
   policy          ExpensePolicy? @relation(fields: [policyId], references: [id])
   submittedAt     DateTime?
   approvedBy      String?
   approvedAt      DateTime?
   paidAt          DateTime?
-  paidReference   String?    // payroll / payment-rail ref once paid
+  paidReference   String? // payroll / payment-rail ref once paid
   rejectionReason String?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
   createdBy       String?
   updatedBy       String?
 
@@ -5960,19 +5872,19 @@ model ExpenseClaim {
 
 // Per-line item on an expense claim. Each receipt or per-diem segment is a row.
 model ExpenseLineItem {
-  id            String     @id @default(uuid())
-  claimId       String
-  claim         ExpenseClaim @relation(fields: [claimId], references: [id], onDelete: Cascade)
-  category      String
-  description   String?
-  amount        Decimal
-  currency      String     @default("USD")
-  expenseDate   DateTime
-  receiptUrl    String?
-  merchant      String?
-  metadata      Json       @default("{}")
-  createdAt     DateTime   @default(now())
-  updatedAt     DateTime   @updatedAt
+  id          String       @id @default(uuid())
+  claimId     String
+  claim       ExpenseClaim @relation(fields: [claimId], references: [id], onDelete: Cascade)
+  category    String
+  description String?
+  amount      Decimal
+  currency    String       @default("USD")
+  expenseDate DateTime
+  receiptUrl  String?
+  merchant    String?
+  metadata    Json         @default("{}")
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
 
   @@index([claimId])
   @@index([category])
@@ -5982,25 +5894,25 @@ model ExpenseLineItem {
 
 // Per-tenant expense policy: category caps, receipt-required threshold, etc.
 model ExpensePolicy {
-  id                   String   @id @default(uuid())
-  tenantId             String
-  name                 String
-  description          String?
-  countryCode          String?  // optional jurisdictional override
-  categoryCaps         Json     @default("{}") // { MEALS: 50, TRANSPORT: 200, ... }
-  receiptRequiredOver  Decimal  @default(25)
-  requiresManagerOver  Decimal  @default(100)
-  requiresFinanceOver  Decimal  @default(1000)
-  perDiemRates         Json     @default("{}") // { city: rate }
-  isActive             Boolean  @default(true)
-  effectiveFrom        DateTime @default(now())
-  effectiveTo          DateTime?
-  createdBy            String?
-  updatedBy            String?
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
-  isDeleted            Boolean  @default(false)
-  deletedAt            DateTime?
+  id                  String    @id @default(uuid())
+  tenantId            String
+  name                String
+  description         String?
+  countryCode         String? // optional jurisdictional override
+  categoryCaps        Json      @default("{}") // { MEALS: 50, TRANSPORT: 200, ... }
+  receiptRequiredOver Decimal   @default(25)
+  requiresManagerOver Decimal   @default(100)
+  requiresFinanceOver Decimal   @default(1000)
+  perDiemRates        Json      @default("{}") // { city: rate }
+  isActive            Boolean   @default(true)
+  effectiveFrom       DateTime  @default(now())
+  effectiveTo         DateTime?
+  createdBy           String?
+  updatedBy           String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  isDeleted           Boolean   @default(false)
+  deletedAt           DateTime?
 
   claims ExpenseClaim[]
 
@@ -6055,7 +5967,6 @@ model EmergencyContact {
 
   @@index([tenantId])
   @@index([employeeId])
-
   @@map("aura_emergency_contact")
 }
 
@@ -6138,7 +6049,6 @@ model HSAFSATransaction {
 
   @@index([accountId])
   @@index([date])
-
   @@map("aura_hsa_fsa_transaction")
 }
 
@@ -6168,6 +6078,7 @@ model Candidate {
   updatedBy   String?
 
   applications CandidateApplication[]
+
   @@map("aura_candidate")
 }
 
@@ -6196,7 +6107,6 @@ model CandidateApplication {
   @@index([candidateId])
   @@index([jobPostingId])
   @@index([status])
-
   @@map("aura_candidate_application")
 }
 
@@ -6241,7 +6151,6 @@ model InterviewFeedback {
   interview Interview @relation(fields: [interviewId], references: [id])
 
   @@index([interviewId])
-
   @@map("aura_interview_feedback")
 }
 
@@ -6301,7 +6210,6 @@ model BackgroundCheck {
   @@index([tenantId])
   @@index([applicationId])
   @@index([status])
-
   @@map("aura_background_check")
 }
 
@@ -6336,32 +6244,32 @@ model JobRequisition {
 }
 
 model RecruitmentVendor {
-  id                   String   @id @default(uuid())
-  tenantId             String
-  vendorCode           String
-  name                 String
-  category             String
-  status               String   @default("under_review")
-  contactPersonName    String?
-  contactEmail         String?
-  contactPhone         String?
-  location             String?
-  rating               Float?
-  activePlacements     Int      @default(0)
-  totalPlacements      Int      @default(0)
-  totalHires           Int      @default(0)
+  id                    String    @id @default(uuid())
+  tenantId              String
+  vendorCode            String
+  name                  String
+  category              String
+  status                String    @default("under_review")
+  contactPersonName     String?
+  contactEmail          String?
+  contactPhone          String?
+  location              String?
+  rating                Float?
+  activePlacements      Int       @default(0)
+  totalPlacements       Int       @default(0)
+  totalHires            Int       @default(0)
   averageTimeToFillDays Int?
-  monthlySpend         Float    @default(0)
-  currency             String   @default("USD")
-  complianceStatus     String   @default("not_reviewed")
-  contractStartDate    DateTime?
-  contractEndDate      DateTime?
-  specialties          String[]
-  notes                String?
-  createdBy            String?
-  updatedBy            String?
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  monthlySpend          Float     @default(0)
+  currency              String    @default("USD")
+  complianceStatus      String    @default("not_reviewed")
+  contractStartDate     DateTime?
+  contractEndDate       DateTime?
+  specialties           String[]
+  notes                 String?
+  createdBy             String?
+  updatedBy             String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
 
   @@unique([tenantId, vendorCode])
   @@index([tenantId])
@@ -6404,20 +6312,20 @@ model OnboardingProgram {
 }
 
 model CountryOnboardingRule {
-  id            String   @id @default(uuid())
+  id            String    @id @default(uuid())
   tenantId      String
   countryCode   String
   ruleCode      String
   version       String
-  status        String   @default("ACTIVE")
-  effectiveFrom DateTime @default(now())
+  status        String    @default("ACTIVE")
+  effectiveFrom DateTime  @default(now())
   effectiveTo   DateTime?
   ruleSet       Json
   createdBy     String?
   updatedBy     String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  isDeleted     Boolean  @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  isDeleted     Boolean   @default(false)
   deletedAt     DateTime?
 
   @@unique([tenantId, countryCode, version])
@@ -6429,21 +6337,21 @@ model CountryOnboardingRule {
 }
 
 model OnboardingGovernanceTemplate {
-  id            String   @id @default(uuid())
-  tenantId      String
-  countryCode   String
-  legalEntityId String?
-  employmentType String?
-  version       String
-  status        String   @default("ACTIVE")
-  stageConfig   Json
+  id                String    @id @default(uuid())
+  tenantId          String
+  countryCode       String
+  legalEntityId     String?
+  employmentType    String?
+  version           String
+  status            String    @default("ACTIVE")
+  stageConfig       Json
   checklistTemplate Json?
-  createdBy     String?
-  updatedBy     String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  isDeleted     Boolean  @default(false)
-  deletedAt     DateTime?
+  createdBy         String?
+  updatedBy         String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  isDeleted         Boolean   @default(false)
+  deletedAt         DateTime?
 
   @@unique([tenantId, countryCode, legalEntityId, employmentType, version])
   @@index([tenantId])
@@ -6455,35 +6363,35 @@ model OnboardingGovernanceTemplate {
 }
 
 model OnboardingCase {
-  id                  String   @id @default(uuid())
-  tenantId            String
-  offerId             String?
+  id                   String    @id @default(uuid())
+  tenantId             String
+  offerId              String?
   onboardingInstanceId String?
-  employeeId          String?
-  candidateName       String?
-  candidateEmail      String?
-  countryCode         String
-  legalEntityId       String
-  employmentType      String
-  targetJoinDate      DateTime
-  currentStage        String   @default("PRE_JOINING")
-  status              String   @default("OPEN") // OPEN | BLOCKED | ESCALATED | COMPLETED | CANCELLED
-  stageOwnerRole      String
-  escalationRole      String?
+  employeeId           String?
+  candidateName        String?
+  candidateEmail       String?
+  countryCode          String
+  legalEntityId        String
+  employmentType       String
+  targetJoinDate       DateTime
+  currentStage         String    @default("PRE_JOINING")
+  status               String    @default("OPEN") // OPEN | BLOCKED | ESCALATED | COMPLETED | CANCELLED
+  stageOwnerRole       String
+  escalationRole       String?
   governanceTemplateId String?
-  governanceVersion   String?
-  governanceSnapshot  Json
-  checklistSnapshot   Json?
-  blockingItems       Json     @default("[]")
-  slaDueAt            DateTime?
-  escalatedAt         DateTime?
-  escalatedToRole     String?
-  createdBy           String?
-  updatedBy           String?
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-  isDeleted           Boolean  @default(false)
-  deletedAt           DateTime?
+  governanceVersion    String?
+  governanceSnapshot   Json
+  checklistSnapshot    Json?
+  blockingItems        Json      @default("[]")
+  slaDueAt             DateTime?
+  escalatedAt          DateTime?
+  escalatedToRole      String?
+  createdBy            String?
+  updatedBy            String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  isDeleted            Boolean   @default(false)
+  deletedAt            DateTime?
 
   histories OnboardingStageHistory[]
 
@@ -6500,16 +6408,16 @@ model OnboardingCase {
 }
 
 model OnboardingStageHistory {
-  id          String   @id @default(uuid())
-  tenantId    String
-  caseId      String
-  case        OnboardingCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
-  fromStage   String?
-  toStage     String
-  actorId     String
-  reason      String?
+  id            String         @id @default(uuid())
+  tenantId      String
+  caseId        String
+  case          OnboardingCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  fromStage     String?
+  toStage       String
+  actorId       String
+  reason        String?
   blockingItems Json?
-  createdAt   DateTime @default(now())
+  createdAt     DateTime       @default(now())
 
   @@index([tenantId])
   @@index([caseId])
@@ -6519,25 +6427,25 @@ model OnboardingStageHistory {
 }
 
 model OnboardingGuidanceContent {
-  id             String   @id @default(uuid())
-  tenantId       String
-  contentKey     String
-  countryCode    String
-  version        Int
-  status         String   @default("DRAFT") // DRAFT | PUBLISHED | ARCHIVED
-  title          String
-  introduction   String   @db.Text
-  objectives     Json
-  keyTakeaways   Json
-  obligations    Json?
-  publishedAt    DateTime?
-  archivedAt     DateTime?
-  createdBy      String
-  updatedBy      String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
-  isDeleted      Boolean  @default(false)
-  deletedAt      DateTime?
+  id           String    @id @default(uuid())
+  tenantId     String
+  contentKey   String
+  countryCode  String
+  version      Int
+  status       String    @default("DRAFT") // DRAFT | PUBLISHED | ARCHIVED
+  title        String
+  introduction String    @db.Text
+  objectives   Json
+  keyTakeaways Json
+  obligations  Json?
+  publishedAt  DateTime?
+  archivedAt   DateTime?
+  createdBy    String
+  updatedBy    String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  isDeleted    Boolean   @default(false)
+  deletedAt    DateTime?
 
   @@unique([tenantId, contentKey, countryCode, version])
   @@index([tenantId])
@@ -6548,16 +6456,16 @@ model OnboardingGuidanceContent {
 }
 
 model OnboardingGuidanceViewLog {
-  id              String   @id @default(uuid())
-  tenantId        String
-  contentId       String
-  contentKey      String
-  countryCode     String
-  version         Int
+  id               String   @id @default(uuid())
+  tenantId         String
+  contentId        String
+  contentKey       String
+  countryCode      String
+  version          Int
   onboardingCaseId String?
-  userId          String?
-  stage           String?
-  viewedAt        DateTime @default(now())
+  userId           String?
+  stage            String?
+  viewedAt         DateTime @default(now())
 
   @@index([tenantId])
   @@index([contentId])
@@ -6569,29 +6477,29 @@ model OnboardingGuidanceViewLog {
 }
 
 model OnboardingInstance {
-  id             String    @id @default(uuid())
-  tenantId       String
-  employeeId     String
-  programId      String?
-  status         String    @default("not_started")
-  startDate      DateTime?
-  completionDate DateTime?
-  hireDate       DateTime?
-  managerId      String?
-  buddyId        String?
-  progress       Int       @default(0)
-  totalTasks     Int       @default(0)
-  completedTasks Int       @default(0)
-  overdueTasks   Int       @default(0)
-  currentPhase   String?
-  countryCode    String?
-  countryRuleId  String?
-  countryRuleVersion String?
+  id                  String    @id @default(uuid())
+  tenantId            String
+  employeeId          String
+  programId           String?
+  status              String    @default("not_started")
+  startDate           DateTime?
+  completionDate      DateTime?
+  hireDate            DateTime?
+  managerId           String?
+  buddyId             String?
+  progress            Int       @default(0)
+  totalTasks          Int       @default(0)
+  completedTasks      Int       @default(0)
+  overdueTasks        Int       @default(0)
+  currentPhase        String?
+  countryCode         String?
+  countryRuleId       String?
+  countryRuleVersion  String?
   countryRuleSnapshot Json?
-  notes          String?
-  createdBy      String?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  notes               String?
+  createdBy           String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 
   program OnboardingProgram? @relation(fields: [programId], references: [id])
   tasks   OnboardingTask[]
@@ -6605,37 +6513,36 @@ model OnboardingInstance {
 }
 
 model OnboardingTask {
-  id               String    @id @default(uuid())
-  instanceId       String
-  taskName         String
-  description      String?
-  category         String
-  phase            String?
-  responsibleParty String?
-  ruleTaskCode     String?
+  id                   String    @id @default(uuid())
+  instanceId           String
+  taskName             String
+  description          String?
+  category             String
+  phase                String?
+  responsibleParty     String?
+  ruleTaskCode         String?
   documentRequirements Json?
-  downstreamTrigger String?
-  blockingStage    String?
-  assignedTo       String?
-  priority         String    @default("medium")
-  status           String    @default("pending")
-  dueDate          DateTime?
-  completedDate    DateTime?
-  completedBy      String?
-  isMandatory      Boolean   @default(false)
-  requiresApproval Boolean   @default(false)
-  approvedBy       String?
-  approvedAt       DateTime?
-  notes            String?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
+  downstreamTrigger    String?
+  blockingStage        String?
+  assignedTo           String?
+  priority             String    @default("medium")
+  status               String    @default("pending")
+  dueDate              DateTime?
+  completedDate        DateTime?
+  completedBy          String?
+  isMandatory          Boolean   @default(false)
+  requiresApproval     Boolean   @default(false)
+  approvedBy           String?
+  approvedAt           DateTime?
+  notes                String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
 
   instance OnboardingInstance @relation(fields: [instanceId], references: [id])
 
   @@index([instanceId])
   @@index([status])
   @@index([ruleTaskCode])
-
   @@map("aura_onboarding_task")
 }
 
@@ -6700,7 +6607,6 @@ model ReviewCycle {
 
   @@index([tenantId])
   @@index([status])
-
   @@map("aura_review_cycle")
 }
 
@@ -6756,7 +6662,6 @@ model CalibrationSession {
 
   @@index([tenantId])
   @@index([status])
-
   @@map("aura_calibration_session")
 }
 
@@ -6791,15 +6696,15 @@ model SalaryComponent {
 model StatutoryReport {
   id                  String    @id @default(uuid())
   tenantId            String
-  code                String    // UAE_MOHRE | UAE_WPS_RECON | KSA_GOSI_RECON | IND_FORM_16 | IND_PF_ECR | ...
-  countryCode         String    // ISO-3166-1 alpha-2
+  code                String // UAE_MOHRE | UAE_WPS_RECON | KSA_GOSI_RECON | IND_FORM_16 | IND_PF_ECR | ...
+  countryCode         String // ISO-3166-1 alpha-2
   periodStart         DateTime
   periodEnd           DateTime
-  format              String    @default("json")  // json | excel | pdf | csv | sif | fvu
+  format              String    @default("json") // json | excel | pdf | csv | sif | fvu
   status              String    @default("DRAFT") // DRAFT | GENERATED | SUBMITTED | ACKNOWLEDGED | FAILED
   payload             Json      @default("{}")
   fileUrl             String?
-  submissionReference String?   // real authority-issued reference, NOT a placeholder
+  submissionReference String? // real authority-issued reference, NOT a placeholder
   errorMessage        String?   @db.Text
   generatedAt         DateTime?
   submittedAt         DateTime?
@@ -6808,12 +6713,12 @@ model StatutoryReport {
   submittedById       String?
   metadata            Json      @default("{}")
 
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
-  createdBy           String?
-  updatedBy           String?
-  isDeleted           Boolean   @default(false)
-  deletedAt           DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  createdBy String?
+  updatedBy String?
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
 
   @@index([tenantId])
   @@index([code])
@@ -6830,25 +6735,25 @@ model StatutoryReport {
 // continue health coverage. Default 18-month coverage (longer for some
 // secondary events). State machine on the enrollment row tracks the lifecycle.
 model CobraQualifyingEvent {
-  id                  String    @id @default(uuid())
-  tenantId            String
-  employeeId          String
-  exitRequestId       String?
-  eventType           String    // TERMINATION | REDUCED_HOURS | DIVORCE | DEPENDENT_LOSS | DEATH | MEDICARE_ELIGIBILITY
-  qualifyingDate      DateTime
-  electionDeadline    DateTime  // qualifyingDate + 60 days
-  maxCoverageEndDate  DateTime  // typically qualifyingDate + 18 months (or 36 for non-termination events)
-  noticeIssuedAt      DateTime?
-  noticeReference     String?
-  notes               String?   @db.Text
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
-  createdBy           String?
-  updatedBy           String?
-  isDeleted           Boolean   @default(false)
-  deletedAt           DateTime?
+  id                 String    @id @default(uuid())
+  tenantId           String
+  employeeId         String
+  exitRequestId      String?
+  eventType          String // TERMINATION | REDUCED_HOURS | DIVORCE | DEPENDENT_LOSS | DEATH | MEDICARE_ELIGIBILITY
+  qualifyingDate     DateTime
+  electionDeadline   DateTime // qualifyingDate + 60 days
+  maxCoverageEndDate DateTime // typically qualifyingDate + 18 months (or 36 for non-termination events)
+  noticeIssuedAt     DateTime?
+  noticeReference    String?
+  notes              String?   @db.Text
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  createdBy          String?
+  updatedBy          String?
+  isDeleted          Boolean   @default(false)
+  deletedAt          DateTime?
 
-  enrollments         CobraEnrollment[]
+  enrollments CobraEnrollment[]
 
   @@index([tenantId])
   @@index([employeeId])
@@ -6858,25 +6763,25 @@ model CobraQualifyingEvent {
 }
 
 model CobraEnrollment {
-  id                  String                @id @default(uuid())
+  id                  String               @id @default(uuid())
   tenantId            String
   qualifyingEventId   String
-  qualifyingEvent     CobraQualifyingEvent  @relation(fields: [qualifyingEventId], references: [id])
+  qualifyingEvent     CobraQualifyingEvent @relation(fields: [qualifyingEventId], references: [id])
   employeeId          String
   benefitPlanId       String
-  monthlyPremium      Decimal               // includes the 2% admin uplift
-  status              String                @default("PENDING_ELECTION")
+  monthlyPremium      Decimal // includes the 2% admin uplift
+  status              String               @default("PENDING_ELECTION")
   // PENDING_ELECTION | ELECTED | ACTIVE | TERMINATED_NONPAYMENT | EXPIRED | DECLINED | CANCELED
   electedAt           DateTime?
   coverageStart       DateTime?
   coverageEnd         DateTime?
   premiumsPaidThrough DateTime?
-  totalPremiumsPaid   Decimal               @default(0)
+  totalPremiumsPaid   Decimal              @default(0)
   declineReason       String?
   terminationReason   String?
-  notes               String?               @db.Text
-  createdAt           DateTime              @default(now())
-  updatedAt           DateTime              @updatedAt
+  notes               String?              @db.Text
+  createdAt           DateTime             @default(now())
+  updatedAt           DateTime             @updatedAt
   createdBy           String?
   updatedBy           String?
 
@@ -6896,29 +6801,29 @@ model CobraEnrollment {
 // SubmissionAdapter knows whether to format SIF (UAE WPS), CSV (Mudad /
 // GOSI batch), JSON (HRSD APIs), or FVU (India TDS).
 model LabourMinistrySubmission {
-  id              String   @id @default(uuid())
+  id              String    @id @default(uuid())
   tenantId        String
-  countryCode     String   // ISO-3166-1 alpha-2
-  authority       String   // MOHRE | MUDAD | GOSI | HRSD | EPFO | PFRDA | ESIC
-  submissionType  String   // WPS | EOSB | NITAQAT_REPORT | SAUDIZATION_QUOTA | EPFO_KYC | ...
+  countryCode     String // ISO-3166-1 alpha-2
+  authority       String // MOHRE | MUDAD | GOSI | HRSD | EPFO | PFRDA | ESIC
+  submissionType  String // WPS | EOSB | NITAQAT_REPORT | SAUDIZATION_QUOTA | EPFO_KYC | ...
   periodStart     DateTime
   periodEnd       DateTime
-  payload         Json     @default("{}")
-  payloadHash     String?  // sha256 for tamper detection
-  format          String   // SIF | CSV | XML | JSON | XBRL | FVU
-  status          String   @default("DRAFT") // DRAFT | READY | SUBMITTED | ACKNOWLEDGED | REJECTED | RESUBMITTED
-  authorityRef    String?  // real reference returned by the ministry portal
+  payload         Json      @default("{}")
+  payloadHash     String? // sha256 for tamper detection
+  format          String // SIF | CSV | XML | JSON | XBRL | FVU
+  status          String    @default("DRAFT") // DRAFT | READY | SUBMITTED | ACKNOWLEDGED | REJECTED | RESUBMITTED
+  authorityRef    String? // real reference returned by the ministry portal
   submittedAt     DateTime?
   acknowledgedAt  DateTime?
   rejectedAt      DateTime?
-  rejectionReason String?  @db.Text
+  rejectionReason String?   @db.Text
   fileUrl         String?
-  metadata        Json     @default("{}")
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  metadata        Json      @default("{}")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
   createdBy       String?
   updatedBy       String?
-  isDeleted       Boolean  @default(false)
+  isDeleted       Boolean   @default(false)
 
   @@index([tenantId])
   @@index([countryCode])
@@ -6932,23 +6837,23 @@ model LabourMinistrySubmission {
 // country, identifier-type) so an employee on rotation can have multiple
 // GOSI + Emirates ID rows.
 model StatutoryIdentifier {
-  id              String   @id @default(uuid())
-  tenantId        String
-  employeeId      String
-  countryCode     String   // AE | SA | IN | OM | BH | QA | KW
-  identifierType  String   // EMIRATES_ID | IQAMA | GOSI_NUMBER | UAN | AADHAAR | PAN | NPSAN | ...
-  identifierValue String
-  issuedDate      DateTime?
-  expiryDate      DateTime?
+  id               String    @id @default(uuid())
+  tenantId         String
+  employeeId       String
+  countryCode      String // AE | SA | IN | OM | BH | QA | KW
+  identifierType   String // EMIRATES_ID | IQAMA | GOSI_NUMBER | UAN | AADHAAR | PAN | NPSAN | ...
+  identifierValue  String
+  issuedDate       DateTime?
+  expiryDate       DateTime?
   issuingAuthority String?
-  validated       Boolean  @default(false)
-  validatedAt     DateTime?
-  metadata        Json     @default("{}")
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  createdBy       String?
-  updatedBy       String?
-  isDeleted       Boolean  @default(false)
+  validated        Boolean   @default(false)
+  validatedAt      DateTime?
+  metadata         Json      @default("{}")
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  createdBy        String?
+  updatedBy        String?
+  isDeleted        Boolean   @default(false)
 
   @@unique([tenantId, employeeId, countryCode, identifierType])
   @@index([tenantId])
@@ -6966,23 +6871,23 @@ model StatutoryIdentifier {
 // prediction, succession-readiness, time-to-hire forecasting. Linked
 // back to AIModelCard for full reproducibility under EU AI Act audits.
 model PredictionResult {
-  id              String   @id @default(uuid())
-  tenantId        String
-  modelCardId     String?
-  modelCode       String   // ATTRITION_RISK | PERF_FORECAST | PROMOTION_READINESS | TIME_TO_HIRE | SOURCING_FUNNEL
-  subjectType     String   // EMPLOYEE | CANDIDATE | REQUISITION | TEAM | DEPARTMENT
-  subjectId       String
-  scoredAt        DateTime @default(now())
-  scoreValue      Float    // 0-1 risk for classifiers; raw forecast for regressors
-  scoreBand       String?  // LOW | MEDIUM | HIGH | CRITICAL — derived bucket
-  features        Json     @default("{}") // input features captured for reproducibility
-  explanations    Json     @default("{}") // SHAP / feature-importance values per feature
-  confidence      Float?
+  id                 String    @id @default(uuid())
+  tenantId           String
+  modelCardId        String?
+  modelCode          String // ATTRITION_RISK | PERF_FORECAST | PROMOTION_READINESS | TIME_TO_HIRE | SOURCING_FUNNEL
+  subjectType        String // EMPLOYEE | CANDIDATE | REQUISITION | TEAM | DEPARTMENT
+  subjectId          String
+  scoredAt           DateTime  @default(now())
+  scoreValue         Float // 0-1 risk for classifiers; raw forecast for regressors
+  scoreBand          String? // LOW | MEDIUM | HIGH | CRITICAL — derived bucket
+  features           Json      @default("{}") // input features captured for reproducibility
+  explanations       Json      @default("{}") // SHAP / feature-importance values per feature
+  confidence         Float?
   confidenceInterval Json? // {lo, hi}
-  modelVersion    String
-  active          Boolean  @default(true) // false = superseded by a fresher prediction
-  expiresAt       DateTime?
-  metadata        Json     @default("{}")
+  modelVersion       String
+  active             Boolean   @default(true) // false = superseded by a fresher prediction
+  expiresAt          DateTime?
+  metadata           Json      @default("{}")
 
   @@index([tenantId])
   @@index([modelCode])
@@ -6996,26 +6901,26 @@ model PredictionResult {
 // Recommendation surfaced by the AI agent — distinct from a raw prediction
 // because a recommendation is actionable (with a CTA).
 model AIRecommendation {
-  id              String   @id @default(uuid())
-  tenantId        String
-  category        String   // ATTRITION_INTERVENTION | LEARNING_PATH | INTERNAL_MOBILITY | TASK_AUTOMATION | INSIGHT
-  subjectType     String
-  subjectId       String
-  title           String
-  rationale       String   @db.Text
-  recommendedAction Json   @default("{}")
-  priority        String   @default("MEDIUM") // LOW | MEDIUM | HIGH | CRITICAL
-  status          String   @default("OPEN") // OPEN | ACCEPTED | DISMISSED | EXPIRED
-  acceptedAt      DateTime?
-  acceptedById    String?
-  dismissedAt     DateTime?
-  dismissedById   String?
-  dismissReason   String?
+  id                    String    @id @default(uuid())
+  tenantId              String
+  category              String // ATTRITION_INTERVENTION | LEARNING_PATH | INTERNAL_MOBILITY | TASK_AUTOMATION | INSIGHT
+  subjectType           String
+  subjectId             String
+  title                 String
+  rationale             String    @db.Text
+  recommendedAction     Json      @default("{}")
+  priority              String    @default("MEDIUM") // LOW | MEDIUM | HIGH | CRITICAL
+  status                String    @default("OPEN") // OPEN | ACCEPTED | DISMISSED | EXPIRED
+  acceptedAt            DateTime?
+  acceptedById          String?
+  dismissedAt           DateTime?
+  dismissedById         String?
+  dismissReason         String?
   generatingModelCardId String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  expiresAt       DateTime?
-  isDeleted       Boolean  @default(false)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  expiresAt             DateTime?
+  isDeleted             Boolean   @default(false)
 
   @@index([tenantId])
   @@index([category])
@@ -7032,20 +6937,20 @@ model AIRecommendation {
 // Per-tenant data residency. The platform routes Prisma queries to the
 // corresponding regional cluster based on tenant.regionConfig.primaryRegion.
 model TenantRegionConfig {
-  id              String   @id @default(uuid())
-  tenantId        String   @unique
-  primaryRegion   String   // us-east-1 | ap-south-1 | eu-west-1 | me-south-1 | ...
-  replicaRegions  String[] @default([])
-  dataResidency   String   // STRICT | RELAXED | PROHIBITED_REGIONS
-  prohibitedRegions String[] @default([])
-  encryptionKeyArn String?  // tenant-specific CMK ARN for cross-region encryption
-  effectiveFrom   DateTime @default(now())
-  lastVerifiedAt  DateTime?
-  notes           String?  @db.Text
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  createdBy       String?
-  updatedBy       String?
+  id                String    @id @default(uuid())
+  tenantId          String    @unique
+  primaryRegion     String // us-east-1 | ap-south-1 | eu-west-1 | me-south-1 | ...
+  replicaRegions    String[]  @default([])
+  dataResidency     String // STRICT | RELAXED | PROHIBITED_REGIONS
+  prohibitedRegions String[]  @default([])
+  encryptionKeyArn  String? // tenant-specific CMK ARN for cross-region encryption
+  effectiveFrom     DateTime  @default(now())
+  lastVerifiedAt    DateTime?
+  notes             String?   @db.Text
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  createdBy         String?
+  updatedBy         String?
 
   @@index([primaryRegion])
   @@index([dataResidency])
@@ -7056,19 +6961,19 @@ model TenantRegionConfig {
 // Lives independently of the cloud provider's billing because chargeback /
 // showback per-tenant requires our own attribution model.
 model CloudCostRecord {
-  id              String   @id @default(uuid())
-  tenantId        String?
-  region          String
-  service         String   // COMPUTE | STORAGE | DB | NETWORK | OBSERVABILITY | ML | LICENSE
-  resourceTag     String?
-  day             DateTime @db.Date
-  costAmount      Decimal
-  currency        String   @default("USD")
-  unitsConsumed   Float?
-  unitMeasure     String?  // vCPU-hours | GB-month | GB-egress | requests | tokens
-  provider        String   // AWS | GCP | AZURE | SUPABASE | DATADOG | OPENAI
-  metadata        Json     @default("{}")
-  createdAt       DateTime @default(now())
+  id            String   @id @default(uuid())
+  tenantId      String?
+  region        String
+  service       String // COMPUTE | STORAGE | DB | NETWORK | OBSERVABILITY | ML | LICENSE
+  resourceTag   String?
+  day           DateTime @db.Date
+  costAmount    Decimal
+  currency      String   @default("USD")
+  unitsConsumed Float?
+  unitMeasure   String? // vCPU-hours | GB-month | GB-egress | requests | tokens
+  provider      String // AWS | GCP | AZURE | SUPABASE | DATADOG | OPENAI
+  metadata      Json     @default("{}")
+  createdAt     DateTime @default(now())
 
   @@index([tenantId])
   @@index([region])
@@ -7081,22 +6986,22 @@ model CloudCostRecord {
 
 // Budget alert — fires when actual or forecast spend exceeds threshold.
 model CostBudget {
-  id              String   @id @default(uuid())
-  tenantId        String?
-  name            String
-  scope           String   // TENANT | SERVICE | REGION | PLATFORM
-  scopeValue      String?
-  monthlyBudget   Decimal
-  currency        String   @default("USD")
-  alertThresholdPct Int    @default(80)
-  forecastThresholdPct Int @default(100)
-  ownerEmail      String?
-  isActive        Boolean  @default(true)
-  metadata        Json     @default("{}")
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  createdBy       String?
-  updatedBy       String?
+  id                   String   @id @default(uuid())
+  tenantId             String?
+  name                 String
+  scope                String // TENANT | SERVICE | REGION | PLATFORM
+  scopeValue           String?
+  monthlyBudget        Decimal
+  currency             String   @default("USD")
+  alertThresholdPct    Int      @default(80)
+  forecastThresholdPct Int      @default(100)
+  ownerEmail           String?
+  isActive             Boolean  @default(true)
+  metadata             Json     @default("{}")
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  createdBy            String?
+  updatedBy            String?
 
   @@index([tenantId])
   @@index([scope, scopeValue])
@@ -7110,26 +7015,26 @@ model CostBudget {
 // Recorded outcome of a DR drill (restore + smoke + cutover). Drives the
 // RPO/RTO scorecard and certifies that backups are actually restorable.
 model DRDrill {
-  id              String   @id @default(uuid())
-  tenantId        String?
-  name            String
-  scope           String   // FULL | PARTIAL | RUNBOOK_TEST | TABLETOP
-  rpoTargetMin    Int      // recovery point objective (minutes of data loss tolerated)
-  rtoTargetMin    Int      // recovery time objective (minutes to restore)
-  actualRpoMin    Int?     // observed
-  actualRtoMin    Int?     // observed
-  startedAt       DateTime
-  completedAt     DateTime?
-  outcome         String   @default("PLANNED") // PLANNED | IN_PROGRESS | PASS | FAIL | INCONCLUSIVE
-  notes           String?  @db.Text
-  runbookVersion  String?
-  ownerUserId     String?
-  metadata        Json     @default("{}")
+  id             String    @id @default(uuid())
+  tenantId       String?
+  name           String
+  scope          String // FULL | PARTIAL | RUNBOOK_TEST | TABLETOP
+  rpoTargetMin   Int // recovery point objective (minutes of data loss tolerated)
+  rtoTargetMin   Int // recovery time objective (minutes to restore)
+  actualRpoMin   Int? // observed
+  actualRtoMin   Int? // observed
+  startedAt      DateTime
+  completedAt    DateTime?
+  outcome        String    @default("PLANNED") // PLANNED | IN_PROGRESS | PASS | FAIL | INCONCLUSIVE
+  notes          String?   @db.Text
+  runbookVersion String?
+  ownerUserId    String?
+  metadata       Json      @default("{}")
 
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  createdBy       String?
-  updatedBy       String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
 
   @@index([tenantId])
   @@index([scope])
@@ -7141,20 +7046,20 @@ model DRDrill {
 // Backup metadata — per-job evidence record. Worker writes one row per
 // successful backup; restore drills reference these by id.
 model BackupRun {
-  id              String   @id @default(uuid())
-  tenantId        String?  // null = platform-wide backup
-  jobName         String   // db-full | db-wal | redis-rdb | objectstore-sync | etc.
-  status          String   @default("SUCCESS") // SUCCESS | FAILED | PARTIAL
+  id              String    @id @default(uuid())
+  tenantId        String? // null = platform-wide backup
+  jobName         String // db-full | db-wal | redis-rdb | objectstore-sync | etc.
+  status          String    @default("SUCCESS") // SUCCESS | FAILED | PARTIAL
   startedAt       DateTime
   finishedAt      DateTime?
   durationSec     Int?
   sizeBytes       BigInt?
   checksum        String?
-  storageLocation String?  // s3://... or gs://...
+  storageLocation String? // s3://... or gs://...
   expiresAt       DateTime?
   errorMessage    String?
-  metadata        Json     @default("{}")
-  createdAt       DateTime @default(now())
+  metadata        Json      @default("{}")
+  createdAt       DateTime  @default(now())
 
   @@index([tenantId])
   @@index([jobName])
@@ -7170,28 +7075,28 @@ model BackupRun {
 // DSAR — Data Subject Access Request (GDPR Art. 15, CCPA, UAE PDPL).
 // Captures the request, the response artifact, and the SLA clock.
 model DSARRequest {
-  id            String   @id @default(uuid())
-  tenantId      String
-  subjectType   String   @default("EMPLOYEE") // EMPLOYEE | CANDIDATE | DEPENDENT | EX_EMPLOYEE | OTHER
-  subjectId     String?
-  subjectEmail  String
-  requestType   String   // ACCESS | DELETION | RECTIFICATION | PORTABILITY | OBJECTION | RESTRICTION
-  status        String   @default("RECEIVED") // RECEIVED | VERIFYING | IN_PROGRESS | FULFILLED | REJECTED | EXTENDED
-  legalBasis    String?  // GDPR_ART_15 | CCPA | UAE_PDPL_ART_18 | KSA_PDPL_ART_X | ...
-  receivedAt    DateTime @default(now())
-  dueBy         DateTime // SLA deadline (jurisdiction-specific; GDPR 30 days)
-  fulfilledAt   DateTime?
-  extendedAt    DateTime?
+  id              String    @id @default(uuid())
+  tenantId        String
+  subjectType     String    @default("EMPLOYEE") // EMPLOYEE | CANDIDATE | DEPENDENT | EX_EMPLOYEE | OTHER
+  subjectId       String?
+  subjectEmail    String
+  requestType     String // ACCESS | DELETION | RECTIFICATION | PORTABILITY | OBJECTION | RESTRICTION
+  status          String    @default("RECEIVED") // RECEIVED | VERIFYING | IN_PROGRESS | FULFILLED | REJECTED | EXTENDED
+  legalBasis      String? // GDPR_ART_15 | CCPA | UAE_PDPL_ART_18 | KSA_PDPL_ART_X | ...
+  receivedAt      DateTime  @default(now())
+  dueBy           DateTime // SLA deadline (jurisdiction-specific; GDPR 30 days)
+  fulfilledAt     DateTime?
+  extendedAt      DateTime?
   extensionReason String?
   rejectionReason String?
-  artifactUrl   String?  // signed link to the export package
-  reviewedById  String?
-  notes         String?  @db.Text
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  createdBy     String?
-  updatedBy     String?
-  isDeleted     Boolean  @default(false)
+  artifactUrl     String? // signed link to the export package
+  reviewedById    String?
+  notes           String?   @db.Text
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  createdBy       String?
+  updatedBy       String?
+  isDeleted       Boolean   @default(false)
 
   @@index([tenantId])
   @@index([status])
@@ -7203,21 +7108,21 @@ model DSARRequest {
 // Consent record — for processing personal data under each legal basis.
 // Versioned: each new privacy policy version requires a fresh consent row.
 model ConsentRecord {
-  id              String   @id @default(uuid())
-  tenantId        String
-  subjectId       String
-  subjectType     String   @default("EMPLOYEE")
-  purpose         String   // PAYROLL | RECRUITMENT | MARKETING | ANALYTICS | THIRD_PARTY_SHARING
-  policyVersion   String
-  legalBasis      String   // CONSENT | CONTRACT | LEGAL_OBLIGATION | LEGITIMATE_INTERESTS | VITAL_INTERESTS | PUBLIC_TASK
-  granted         Boolean
-  grantedAt       DateTime?
-  revokedAt       DateTime?
-  ipAddress       String?
-  userAgent       String?  @db.Text
-  notes           String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id            String    @id @default(uuid())
+  tenantId      String
+  subjectId     String
+  subjectType   String    @default("EMPLOYEE")
+  purpose       String // PAYROLL | RECRUITMENT | MARKETING | ANALYTICS | THIRD_PARTY_SHARING
+  policyVersion String
+  legalBasis    String // CONSENT | CONTRACT | LEGAL_OBLIGATION | LEGITIMATE_INTERESTS | VITAL_INTERESTS | PUBLIC_TASK
+  granted       Boolean
+  grantedAt     DateTime?
+  revokedAt     DateTime?
+  ipAddress     String?
+  userAgent     String?   @db.Text
+  notes         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   @@index([tenantId])
   @@index([subjectId])
@@ -7230,27 +7135,27 @@ model ConsentRecord {
 // Required by GDPR Art. 28 for any third party processing personal data
 // on the controller's behalf.
 model DataProcessingAgreement {
-  id              String   @id @default(uuid())
-  tenantId        String
-  vendorName      String
-  vendorCountry   String?
-  scope           String   @db.Text // what personal data is processed
-  signedAt        DateTime?
-  effectiveFrom   DateTime
-  effectiveTo     DateTime?
-  status          String   @default("ACTIVE") // DRAFT | ACTIVE | EXPIRED | TERMINATED
-  documentUrl     String?
-  isSubProcessor  Boolean  @default(false)
-  jurisdiction    String?
+  id                String    @id @default(uuid())
+  tenantId          String
+  vendorName        String
+  vendorCountry     String?
+  scope             String    @db.Text // what personal data is processed
+  signedAt          DateTime?
+  effectiveFrom     DateTime
+  effectiveTo       DateTime?
+  status            String    @default("ACTIVE") // DRAFT | ACTIVE | EXPIRED | TERMINATED
+  documentUrl       String?
+  isSubProcessor    Boolean   @default(false)
+  jurisdiction      String?
   transferMechanism String? // SCC_2021_914 | BCR | ADEQUACY | NONE
-  reviewedAt      DateTime?
-  reviewedById    String?
-  notes           String?  @db.Text
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  createdBy       String?
-  updatedBy       String?
-  isDeleted       Boolean  @default(false)
+  reviewedAt        DateTime?
+  reviewedById      String?
+  notes             String?   @db.Text
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  createdBy         String?
+  updatedBy         String?
+  isDeleted         Boolean   @default(false)
 
   @@index([tenantId])
   @@index([status])
@@ -7266,23 +7171,23 @@ model DataProcessingAgreement {
 // Burn-down rates and alert routing live in the observability platform;
 // this row is the source of truth for the target.
 model ServiceLevelObjective {
-  id              String   @id @default(uuid())
-  tenantId        String?  // null = platform-wide SLO
-  serviceName     String   // payroll-engine | leave-engine | attendance-api | ...
-  indicatorType   String   // LATENCY_P95 | LATENCY_P99 | ERROR_RATE | AVAILABILITY | THROUGHPUT
-  routePattern    String?  // optional: GET /api/v1/employees/:id
-  targetValue     Float    // 99.95 for availability; 250 for p95 ms latency
-  unit            String   // PCT | MS | RPS | COUNT
+  id                String   @id @default(uuid())
+  tenantId          String? // null = platform-wide SLO
+  serviceName       String // payroll-engine | leave-engine | attendance-api | ...
+  indicatorType     String // LATENCY_P95 | LATENCY_P99 | ERROR_RATE | AVAILABILITY | THROUGHPUT
+  routePattern      String? // optional: GET /api/v1/employees/:id
+  targetValue       Float // 99.95 for availability; 250 for p95 ms latency
+  unit              String // PCT | MS | RPS | COUNT
   errorBudgetWindow String   @default("30d") // 7d | 30d | 90d
-  ownerTeam       String
-  runbookUrl      String?
-  alertChannel    String?
-  description     String?  @db.Text
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  createdBy       String?
-  updatedBy       String?
-  isDeleted       Boolean  @default(false)
+  ownerTeam         String
+  runbookUrl        String?
+  alertChannel      String?
+  description       String?  @db.Text
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdBy         String?
+  updatedBy         String?
+  isDeleted         Boolean  @default(false)
 
   @@index([tenantId])
   @@index([serviceName])
@@ -7293,26 +7198,26 @@ model ServiceLevelObjective {
 // Incident record. Captures every SEV-1/2 paging event for postmortem.
 // Closes the loop between an SLO burn and the postmortem doc.
 model Incident {
-  id              String   @id @default(uuid())
-  tenantId        String?
-  incidentNumber  String   // INC-2026-001
-  title           String
-  severity        String   // SEV1 | SEV2 | SEV3 | SEV4
-  status          String   @default("OPEN") // OPEN | INVESTIGATING | MITIGATED | RESOLVED | POSTMORTEM_PUBLISHED
-  detectedAt      DateTime
-  acknowledgedAt  DateTime?
-  mitigatedAt     DateTime?
-  resolvedAt      DateTime?
-  postmortemUrl   String?
-  commanderUserId String?
-  rootCause       String?  @db.Text
-  affectedServices String[] @default([])
-  customerImpact  String?
-  metadata        Json     @default("{}")
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  createdBy       String?
-  updatedBy       String?
+  id               String    @id @default(uuid())
+  tenantId         String?
+  incidentNumber   String // INC-2026-001
+  title            String
+  severity         String // SEV1 | SEV2 | SEV3 | SEV4
+  status           String    @default("OPEN") // OPEN | INVESTIGATING | MITIGATED | RESOLVED | POSTMORTEM_PUBLISHED
+  detectedAt       DateTime
+  acknowledgedAt   DateTime?
+  mitigatedAt      DateTime?
+  resolvedAt       DateTime?
+  postmortemUrl    String?
+  commanderUserId  String?
+  rootCause        String?   @db.Text
+  affectedServices String[]  @default([])
+  customerImpact   String?
+  metadata         Json      @default("{}")
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  createdBy        String?
+  updatedBy        String?
 
   @@unique([tenantId, incidentNumber])
   @@index([tenantId])
@@ -7330,31 +7235,31 @@ model Incident {
 // (hiring, promotion, comp, performance prediction, attrition risk).
 // Stored versioned: each retrain creates a new ModelCard row.
 model AIModelCard {
-  id              String   @id @default(uuid())
-  tenantId        String?  // null = platform-wide model
-  modelName       String   // attrition-risk-v3 | resume-parser | promotion-recommender | ...
-  modelVersion    String   // semver
-  modelType       String   // CLASSIFIER | REGRESSOR | LLM | EMBEDDING | RANKER
-  riskTier        String   @default("HIGH") // UNACCEPTABLE | HIGH | LIMITED | MINIMAL (per EU AI Act Annex III)
-  intendedUse     String   @db.Text
-  prohibitedUse   String?  @db.Text
-  trainingData    Json     @default("{}") // data sources, date range, license
-  performanceMetrics Json  @default("{}") // {accuracy, f1, auc, ...}
-  fairnessMetrics Json     @default("{}") // {demographic_parity, equal_opp, ...}
-  knownLimitations String? @db.Text
-  validatorUserId String?
-  validatedAt     DateTime?
-  publishedAt     DateTime?
-  deprecatedAt    DateTime?
-  status          String   @default("DRAFT") // DRAFT | UNDER_REVIEW | PUBLISHED | DEPRECATED | RECALLED
-  cardUrl         String?  // signed link to the full PDF
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
-  createdBy       String?
-  updatedBy       String?
-  isDeleted       Boolean  @default(false)
+  id                 String    @id @default(uuid())
+  tenantId           String? // null = platform-wide model
+  modelName          String // attrition-risk-v3 | resume-parser | promotion-recommender | ...
+  modelVersion       String // semver
+  modelType          String // CLASSIFIER | REGRESSOR | LLM | EMBEDDING | RANKER
+  riskTier           String    @default("HIGH") // UNACCEPTABLE | HIGH | LIMITED | MINIMAL (per EU AI Act Annex III)
+  intendedUse        String    @db.Text
+  prohibitedUse      String?   @db.Text
+  trainingData       Json      @default("{}") // data sources, date range, license
+  performanceMetrics Json      @default("{}") // {accuracy, f1, auc, ...}
+  fairnessMetrics    Json      @default("{}") // {demographic_parity, equal_opp, ...}
+  knownLimitations   String?   @db.Text
+  validatorUserId    String?
+  validatedAt        DateTime?
+  publishedAt        DateTime?
+  deprecatedAt       DateTime?
+  status             String    @default("DRAFT") // DRAFT | UNDER_REVIEW | PUBLISHED | DEPRECATED | RECALLED
+  cardUrl            String? // signed link to the full PDF
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  createdBy          String?
+  updatedBy          String?
+  isDeleted          Boolean   @default(false)
 
-  biasAudits      AIBiasAudit[]
+  biasAudits AIBiasAudit[]
 
   @@unique([tenantId, modelName, modelVersion])
   @@index([tenantId])
@@ -7368,22 +7273,22 @@ model AIModelCard {
 // AND on a recurring schedule per EU AI Act § 14 (human oversight) +
 // § 15 (accuracy, robustness, cybersecurity).
 model AIBiasAudit {
-  id              String   @id @default(uuid())
+  id              String      @id @default(uuid())
   tenantId        String?
   modelCardId     String
   modelCard       AIModelCard @relation(fields: [modelCardId], references: [id])
   auditDate       DateTime
-  auditor         String   // user, vendor, or internal team
-  cohorts         Json     @default("[]") // [{name: "gender:F", n: 1024, positiveRate: 0.32}, ...]
-  metric          String   // DEMOGRAPHIC_PARITY | EQUAL_OPPORTUNITY | DISPARATE_IMPACT_RATIO | CALIBRATION
+  auditor         String // user, vendor, or internal team
+  cohorts         Json        @default("[]") // [{name: "gender:F", n: 1024, positiveRate: 0.32}, ...]
+  metric          String // DEMOGRAPHIC_PARITY | EQUAL_OPPORTUNITY | DISPARATE_IMPACT_RATIO | CALIBRATION
   passed          Boolean
-  worstCohortGap  Float?   // largest absolute disparity between cohorts
-  threshold       Float?   // configured fail threshold (e.g., 0.8 for 4/5ths rule)
-  findings        String?  @db.Text
-  remediationPlan String?  @db.Text
+  worstCohortGap  Float? // largest absolute disparity between cohorts
+  threshold       Float? // configured fail threshold (e.g., 0.8 for 4/5ths rule)
+  findings        String?     @db.Text
+  remediationPlan String?     @db.Text
   reportUrl       String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
   createdBy       String?
 
   @@index([modelCardId])
@@ -7401,21 +7306,21 @@ model AIBiasAudit {
 // because the heavy data lives in the SIEM; this is just the index for
 // joining incidents.
 model SecurityEvent {
-  id              String   @id @default(uuid())
-  tenantId        String?
-  source          String   // WAF | SIEM | CLOUDTRAIL | IDS | AUTH | API_GATEWAY
-  eventType       String   // SQL_INJECTION | XSS | RATE_LIMIT_HIT | LOGIN_ANOMALY | PRIV_ESCAL
-  severity        String   // INFO | LOW | MEDIUM | HIGH | CRITICAL
-  detectedAt      DateTime
-  sourceIp        String?
-  userId          String?
-  resourceId      String?
-  ruleId          String?
-  blocked         Boolean  @default(false)
-  incidentId      String?  // link to Incident if escalated
-  rawPayload      Json     @default("{}")
-  metadata        Json     @default("{}")
-  createdAt       DateTime @default(now())
+  id         String   @id @default(uuid())
+  tenantId   String?
+  source     String // WAF | SIEM | CLOUDTRAIL | IDS | AUTH | API_GATEWAY
+  eventType  String // SQL_INJECTION | XSS | RATE_LIMIT_HIT | LOGIN_ANOMALY | PRIV_ESCAL
+  severity   String // INFO | LOW | MEDIUM | HIGH | CRITICAL
+  detectedAt DateTime
+  sourceIp   String?
+  userId     String?
+  resourceId String?
+  ruleId     String?
+  blocked    Boolean  @default(false)
+  incidentId String? // link to Incident if escalated
+  rawPayload Json     @default("{}")
+  metadata   Json     @default("{}")
+  createdAt  DateTime @default(now())
 
   @@index([tenantId])
   @@index([source])
@@ -7434,51 +7339,51 @@ model SecurityEvent {
 // same state machine via the `framework` discriminator.
 
 model FMLACase {
-  id                  String   @id @default(uuid())
+  id                  String  @id @default(uuid())
   tenantId            String
   employeeId          String
-  framework           String   @default("FMLA") // FMLA | CFRA | OFLA | PFML | INTL_EQUIVALENT
-  reason              String   // BIRTH | ADOPTION | FOSTER_CARE | SELF_SERIOUS | FAMILY_SERIOUS | MILITARY_EXIGENCY | MILITARY_CAREGIVER
+  framework           String  @default("FMLA") // FMLA | CFRA | OFLA | PFML | INTL_EQUIVALENT
+  reason              String // BIRTH | ADOPTION | FOSTER_CARE | SELF_SERIOUS | FAMILY_SERIOUS | MILITARY_EXIGENCY | MILITARY_CAREGIVER
   // Eligibility snapshot at request time — captured because eligibility
   // criteria depend on tenure (≥1yr) + hours worked (≥1,250) at the moment
   // of request. Stored to make audit reproducible.
-  hoursWorkedPrev12Mo Int?     // employer hours-worked threshold check (1,250)
-  tenureMonths        Int?     // 12-month employment check
-  eligible            Boolean  @default(true)
+  hoursWorkedPrev12Mo Int? // employer hours-worked threshold check (1,250)
+  tenureMonths        Int? // 12-month employment check
+  eligible            Boolean @default(true)
   ineligibilityReason String?
 
   // 12-month tracking method (per US DOL § 825.200(b))
-  trackingMethod      String   @default("ROLLING_BACKWARD")
+  trackingMethod String   @default("ROLLING_BACKWARD")
   // CALENDAR_YEAR | FIXED_FISCAL | EMPLOYEE_ANNIVERSARY | ROLLING_FORWARD | ROLLING_BACKWARD
-  periodStart         DateTime
-  periodEnd           DateTime
+  periodStart    DateTime
+  periodEnd      DateTime
 
   // Entitlement accounting (in hours — work the math in hours to handle
   // both continuous and intermittent leave uniformly)
-  entitlementHours    Int      @default(480)  // standard 12 work-weeks × 40h
-  usedHours           Int      @default(0)
-  remainingHours      Int      @default(480)
+  entitlementHours Int @default(480) // standard 12 work-weeks × 40h
+  usedHours        Int @default(0)
+  remainingHours   Int @default(480)
 
-  requestedAt         DateTime @default(now())
-  startDate           DateTime
-  expectedEndDate     DateTime?
-  actualEndDate       DateTime?
-  status              String   @default("DRAFT") // DRAFT | NOTICE_SENT | CERTIFIED | APPROVED | ACTIVE | INTERMITTENT | EXHAUSTED | COMPLETED | DENIED | CANCELED
-  certificationDueBy  DateTime?
+  requestedAt           DateTime  @default(now())
+  startDate             DateTime
+  expectedEndDate       DateTime?
+  actualEndDate         DateTime?
+  status                String    @default("DRAFT") // DRAFT | NOTICE_SENT | CERTIFIED | APPROVED | ACTIVE | INTERMITTENT | EXHAUSTED | COMPLETED | DENIED | CANCELED
+  certificationDueBy    DateTime?
   certificationReceived DateTime?
-  noticeIssuedAt      DateTime?
-  noticeReference     String?
-  denialReason        String?
-  notes               String?  @db.Text
+  noticeIssuedAt        DateTime?
+  noticeReference       String?
+  denialReason          String?
+  notes                 String?   @db.Text
 
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
-  createdBy           String?
-  updatedBy           String?
-  isDeleted           Boolean  @default(false)
-  deletedAt           DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  createdBy String?
+  updatedBy String?
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
 
-  usages              FMLAUsage[]
+  usages FMLAUsage[]
 
   @@index([tenantId])
   @@index([employeeId])
@@ -7492,20 +7397,20 @@ model FMLACase {
 // continuous and intermittent patterns. The sum of hours across usages
 // equals the case's usedHours.
 model FMLAUsage {
-  id            String   @id @default(uuid())
-  caseId        String
-  case          FMLACase @relation(fields: [caseId], references: [id], onDelete: Cascade)
-  tenantId      String
-  employeeId    String
-  usageDate     DateTime @db.Date
-  hours         Int      // hours of FMLA used on this date (typically ≤ 8)
-  pattern       String   @default("CONTINUOUS") // CONTINUOUS | INTERMITTENT | REDUCED_SCHEDULE
-  leaveRequestId String?  // optional link back to the underlying LeaveRequest
-  notes         String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  createdBy     String?
-  updatedBy     String?
+  id             String   @id @default(uuid())
+  caseId         String
+  case           FMLACase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  tenantId       String
+  employeeId     String
+  usageDate      DateTime @db.Date
+  hours          Int // hours of FMLA used on this date (typically ≤ 8)
+  pattern        String   @default("CONTINUOUS") // CONTINUOUS | INTERMITTENT | REDUCED_SCHEDULE
+  leaveRequestId String? // optional link back to the underlying LeaveRequest
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  createdBy      String?
+  updatedBy      String?
 
   @@index([caseId])
   @@index([tenantId, employeeId, usageDate])
@@ -7520,27 +7425,27 @@ model FMLAUsage {
 // Chart of accounts entry. Per-tenant, hierarchical via parentId.
 // Drives GL journal posting from payroll runs and expense claims.
 model GLAccount {
-  id            String   @id @default(uuid())
-  tenantId      String
-  code          String   // e.g., "6100", "2200"
-  name          String   // e.g., "Salaries — Operations", "Income Tax Payable"
-  type          String   // ASSET | LIABILITY | EQUITY | REVENUE | EXPENSE
-  category      String?  // SALARY | TAX | BENEFITS | DEDUCTION | EMPLOYER_COST | PAYABLE
-  parentId      String?
-  parent        GLAccount? @relation("GLAccountHierarchy", fields: [parentId], references: [id])
-  children      GLAccount[] @relation("GLAccountHierarchy")
-  countryCode   String?  // optional jurisdictional scoping
-  isActive      Boolean  @default(true)
-  externalId    String?  // ID in the downstream accounting system (QB / Xero / SAP / Tally)
-  metadata      Json     @default("{}")
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  createdBy     String?
-  updatedBy     String?
-  isDeleted     Boolean  @default(false)
+  id          String      @id @default(uuid())
+  tenantId    String
+  code        String // e.g., "6100", "2200"
+  name        String // e.g., "Salaries — Operations", "Income Tax Payable"
+  type        String // ASSET | LIABILITY | EQUITY | REVENUE | EXPENSE
+  category    String? // SALARY | TAX | BENEFITS | DEDUCTION | EMPLOYER_COST | PAYABLE
+  parentId    String?
+  parent      GLAccount?  @relation("GLAccountHierarchy", fields: [parentId], references: [id])
+  children    GLAccount[] @relation("GLAccountHierarchy")
+  countryCode String? // optional jurisdictional scoping
+  isActive    Boolean     @default(true)
+  externalId  String? // ID in the downstream accounting system (QB / Xero / SAP / Tally)
+  metadata    Json        @default("{}")
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  isDeleted   Boolean     @default(false)
 
-  mappings      PayrollAccountMapping[]
-  journalLines  GLJournalLine[]
+  mappings     PayrollAccountMapping[]
+  journalLines GLJournalLine[]
 
   @@unique([tenantId, code])
   @@index([tenantId])
@@ -7553,24 +7458,24 @@ model GLAccount {
 // Maps a payroll/expense component code → debit/credit GL account.
 // Per-country override supported via countryCode.
 model PayrollAccountMapping {
-  id            String   @id @default(uuid())
-  tenantId      String
-  componentCode String   // BASIC | HRA | DA | PF | TDS | OT | BONUS | EXPENSE_REIMB | etc.
-  componentKind String   // earning | deduction | employer_cost | reimbursement
+  id              String    @id @default(uuid())
+  tenantId        String
+  componentCode   String // BASIC | HRA | DA | PF | TDS | OT | BONUS | EXPENSE_REIMB | etc.
+  componentKind   String // earning | deduction | employer_cost | reimbursement
   debitAccountId  String
   debitAccount    GLAccount @relation(fields: [debitAccountId], references: [id])
   creditAccountId String?
   // (creditAccount relation omitted to avoid Prisma's "Ambiguous relation" detection — second FK lookup done via service)
-  countryCode   String?
-  costCenterId  String?
-  effectiveFrom DateTime @default(now())
-  effectiveTo   DateTime?
-  notes         String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  createdBy     String?
-  updatedBy     String?
-  isDeleted     Boolean  @default(false)
+  countryCode     String?
+  costCenterId    String?
+  effectiveFrom   DateTime  @default(now())
+  effectiveTo     DateTime?
+  notes           String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  createdBy       String?
+  updatedBy       String?
+  isDeleted       Boolean   @default(false)
 
   @@unique([tenantId, componentCode, countryCode, effectiveFrom])
   @@index([tenantId])
@@ -7582,33 +7487,33 @@ model PayrollAccountMapping {
 // One journal entry per source event (payroll run, F&F, expense pay, etc.).
 // Header rows. The line items live in GLJournalLine.
 model GLJournalEntry {
-  id            String   @id @default(uuid())
-  tenantId      String
-  countryCode   String
-  currency      String   @default("USD")
-  entryDate     DateTime
-  reference     String   // e.g., "PAYROLL-AE-2026-05"
-  description   String?
-  sourceType    String   // PAYROLL_RUN | FULL_FINAL | EXPENSE_PAY | ARREARS | BONUS_PAYOUT
-  sourceId      String
-  status        String   @default("DRAFT") // DRAFT | POSTED | EXPORTED | REVERSED
-  totalDebit    Decimal  @default(0)
-  totalCredit   Decimal  @default(0)
-  postedAt      DateTime?
-  postedById    String?
-  exportedAt    DateTime?
+  id               String    @id @default(uuid())
+  tenantId         String
+  countryCode      String
+  currency         String    @default("USD")
+  entryDate        DateTime
+  reference        String // e.g., "PAYROLL-AE-2026-05"
+  description      String?
+  sourceType       String // PAYROLL_RUN | FULL_FINAL | EXPENSE_PAY | ARREARS | BONUS_PAYOUT
+  sourceId         String
+  status           String    @default("DRAFT") // DRAFT | POSTED | EXPORTED | REVERSED
+  totalDebit       Decimal   @default(0)
+  totalCredit      Decimal   @default(0)
+  postedAt         DateTime?
+  postedById       String?
+  exportedAt       DateTime?
   exportedToSystem String? // QUICKBOOKS | XERO | SAP | TALLY | ZOHO_BOOKS
   exportReference  String? // real ID returned by the downstream accounting system
-  reversalOfId  String?
-  metadata      Json     @default("{}")
+  reversalOfId     String?
+  metadata         Json      @default("{}")
 
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  createdBy     String?
-  updatedBy     String?
-  isDeleted     Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  createdBy String?
+  updatedBy String?
+  isDeleted Boolean  @default(false)
 
-  lines         GLJournalLine[]
+  lines GLJournalLine[]
 
   @@index([tenantId])
   @@index([status])
@@ -7619,19 +7524,19 @@ model GLJournalEntry {
 }
 
 model GLJournalLine {
-  id            String   @id @default(uuid())
-  entryId       String
-  entry         GLJournalEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
-  accountId     String
-  account       GLAccount @relation(fields: [accountId], references: [id])
-  costCenterId  String?
-  departmentId  String?
-  description   String?
-  debit         Decimal  @default(0)
-  credit        Decimal  @default(0)
-  currency      String   @default("USD")
-  metadata      Json     @default("{}")
-  createdAt     DateTime @default(now())
+  id           String         @id @default(uuid())
+  entryId      String
+  entry        GLJournalEntry @relation(fields: [entryId], references: [id], onDelete: Cascade)
+  accountId    String
+  account      GLAccount      @relation(fields: [accountId], references: [id])
+  costCenterId String?
+  departmentId String?
+  description  String?
+  debit        Decimal        @default(0)
+  credit       Decimal        @default(0)
+  currency     String         @default("USD")
+  metadata     Json           @default("{}")
+  createdAt    DateTime       @default(now())
 
   @@index([entryId])
   @@index([accountId])
@@ -7643,21 +7548,21 @@ model GLJournalLine {
 // Captures the result of a Pay Equity Analyzer run against a job grade /
 // gender / ethnicity / location cohort.
 model PayEquityFinding {
-  id             String   @id @default(uuid())
+  id             String    @id @default(uuid())
   tenantId       String
-  analysisId     String   // ties findings to one analyzer run
-  cohortKey      String   // e.g., "grade:L4|gender:F|country:US"
+  analysisId     String // ties findings to one analyzer run
+  cohortKey      String // e.g., "grade:L4|gender:F|country:US"
   populationSize Int
   medianPay      Decimal
   meanPay        Decimal
-  benchmarkPay   Decimal  // comparable cohort median
-  payGapPct      Float    // (medianPay - benchmarkPay) / benchmarkPay * 100
-  status         String   @default("OPEN") // OPEN | UNDER_REVIEW | REMEDIATED | DISMISSED
-  notes          String?  @db.Text
+  benchmarkPay   Decimal // comparable cohort median
+  payGapPct      Float // (medianPay - benchmarkPay) / benchmarkPay * 100
+  status         String    @default("OPEN") // OPEN | UNDER_REVIEW | REMEDIATED | DISMISSED
+  notes          String?   @db.Text
   remediatedAt   DateTime?
   remediatedById String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   @@index([tenantId])
   @@index([analysisId])
@@ -7670,16 +7575,16 @@ model PayEquityFinding {
 model CustomField {
   id              String   @id @default(uuid())
   tenantId        String
-  entityType      String   // Employee | Department | Position | LeaveRequest | ExpenseReport
+  entityType      String // Employee | Department | Position | LeaveRequest | ExpenseReport
   fieldName       String
   fieldLabel      String
-  fieldType       String   // TEXT | NUMBER | DATE | BOOLEAN | SELECT | MULTI_SELECT | FILE | TEXTAREA
+  fieldType       String // TEXT | NUMBER | DATE | BOOLEAN | SELECT | MULTI_SELECT | FILE | TEXTAREA
   isRequired      Boolean  @default(false)
   isActive        Boolean  @default(true)
   defaultValue    String?
   placeholder     String?
   helpText        String?
-  options         Json?    // for SELECT / MULTI_SELECT
+  options         Json? // for SELECT / MULTI_SELECT
   validationRules Json?
   displayOrder    Int      @default(0)
   section         String   @default("General")
@@ -7723,29 +7628,29 @@ model FeatureFlag {
 // Emirates IDs, Iqamas, work permits, labor cards, medical certificates.
 // Drives expiry alerts and renewal workflows.
 model VisaPermit {
-  id                String    @id @default(uuid())
-  tenantId          String
-  employeeId        String
-  documentType      String    // passport | visa | emirates_id | iqama | work_permit | labor_card | medical | residence_permit
-  documentNumber    String
-  countryCode       String    // ISO-3166-1 alpha-2 — issuing country
-  issuingAuthority  String?
-  issueDate         DateTime
-  expiryDate        DateTime
-  category          String?   // employment / family / visit / business / etc.
-  status            String    @default("ACTIVE") // ACTIVE | EXPIRED | CANCELED | RENEWED | REVOKED
-  attachmentIds     Json      @default("[]")
-  notes             String?   @db.Text
-  metadata          Json      @default("{}")  // sponsor, visa class, etc.
+  id               String   @id @default(uuid())
+  tenantId         String
+  employeeId       String
+  documentType     String // passport | visa | emirates_id | iqama | work_permit | labor_card | medical | residence_permit
+  documentNumber   String
+  countryCode      String // ISO-3166-1 alpha-2 — issuing country
+  issuingAuthority String?
+  issueDate        DateTime
+  expiryDate       DateTime
+  category         String? // employment / family / visit / business / etc.
+  status           String   @default("ACTIVE") // ACTIVE | EXPIRED | CANCELED | RENEWED | REVOKED
+  attachmentIds    Json     @default("[]")
+  notes            String?  @db.Text
+  metadata         Json     @default("{}") // sponsor, visa class, etc.
 
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  createdBy         String?
-  updatedBy         String?
-  isDeleted         Boolean   @default(false)
-  deletedAt         DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  createdBy String?
+  updatedBy String?
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
 
-  renewals          VisaRenewal[]
+  renewals VisaRenewal[]
 
   @@index([tenantId])
   @@index([employeeId])
@@ -7757,12 +7662,12 @@ model VisaPermit {
 }
 
 model VisaRenewal {
-  id                String    @id @default(uuid())
+  id                String     @id @default(uuid())
   tenantId          String
   visaPermitId      String
   visaPermit        VisaPermit @relation(fields: [visaPermitId], references: [id])
   employeeId        String
-  status            String    @default("REQUESTED") // REQUESTED | IN_PROGRESS | COMPLETED | REJECTED | CANCELED
+  status            String     @default("REQUESTED") // REQUESTED | IN_PROGRESS | COMPLETED | REJECTED | CANCELED
   requestedBy       String
   assignedTo        String?
   newDocumentNumber String?
@@ -7771,15 +7676,15 @@ model VisaRenewal {
   estimatedCost     Decimal?
   actualCost        Decimal?
   vendorName        String?
-  startedAt         DateTime  @default(now())
+  startedAt         DateTime   @default(now())
   completedAt       DateTime?
-  notes             String?   @db.Text
-  metadata          Json      @default("{}")
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  notes             String?    @db.Text
+  metadata          Json       @default("{}")
+  createdAt         DateTime   @default(now())
+  updatedAt         DateTime   @updatedAt
   createdBy         String?
   updatedBy         String?
-  isDeleted         Boolean   @default(false)
+  isDeleted         Boolean    @default(false)
   deletedAt         DateTime?
 
   @@index([tenantId])
@@ -7794,48 +7699,48 @@ model VisaRenewal {
 // breakdown holds the explicit line items: unpaid salary, leave encashment,
 // EOSB/gratuity, bonus pro-rata, loan recovery, notice period, tax.
 model FullFinalSettlement {
-  id              String    @id @default(uuid())
-  tenantId        String
-  employeeId      String
-  exitRequestId   String?
-  countryCode     String    // ISO-3166-1 alpha-2, drives jurisdiction rules
-  lastWorkingDay  DateTime
-  joiningDate     DateTime
-  serviceMonths   Int
-  basicSalary     Decimal
-  grossSalary     Decimal
-  currency        String    @default("USD")
+  id             String   @id @default(uuid())
+  tenantId       String
+  employeeId     String
+  exitRequestId  String?
+  countryCode    String // ISO-3166-1 alpha-2, drives jurisdiction rules
+  lastWorkingDay DateTime
+  joiningDate    DateTime
+  serviceMonths  Int
+  basicSalary    Decimal
+  grossSalary    Decimal
+  currency       String   @default("USD")
 
   // Line items
-  unpaidSalary    Decimal   @default(0)
-  leaveEncashment Decimal   @default(0)
-  gratuity        Decimal   @default(0)
-  bonusProRata    Decimal   @default(0)
-  loanRecovery    Decimal   @default(0)
-  noticeRecovery  Decimal   @default(0)
-  otherEarnings   Decimal   @default(0)
-  otherDeductions Decimal   @default(0)
-  taxAmount       Decimal   @default(0)
+  unpaidSalary    Decimal @default(0)
+  leaveEncashment Decimal @default(0)
+  gratuity        Decimal @default(0)
+  bonusProRata    Decimal @default(0)
+  loanRecovery    Decimal @default(0)
+  noticeRecovery  Decimal @default(0)
+  otherEarnings   Decimal @default(0)
+  otherDeductions Decimal @default(0)
+  taxAmount       Decimal @default(0)
 
-  grossPayable    Decimal   @default(0)
-  totalDeductions Decimal   @default(0)
-  netPayable      Decimal   @default(0)
+  grossPayable    Decimal @default(0)
+  totalDeductions Decimal @default(0)
+  netPayable      Decimal @default(0)
 
-  breakdown       Json      @default("[]")  // [{ code, label, kind: "earning"|"deduction"|"tax", amount, source }]
-  notes           String?   @db.Text
-  status          String    @default("DRAFT") // DRAFT | CALCULATED | APPROVED | PROCESSED | CANCELED
-  calculatedAt    DateTime?
-  approvedById    String?
-  approvedAt      DateTime?
-  processedAt     DateTime?
-  payrollRunId    String?
+  breakdown    Json      @default("[]") // [{ code, label, kind: "earning"|"deduction"|"tax", amount, source }]
+  notes        String?   @db.Text
+  status       String    @default("DRAFT") // DRAFT | CALCULATED | APPROVED | PROCESSED | CANCELED
+  calculatedAt DateTime?
+  approvedById String?
+  approvedAt   DateTime?
+  processedAt  DateTime?
+  payrollRunId String?
 
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  createdBy       String?
-  updatedBy       String?
-  isDeleted       Boolean   @default(false)
-  deletedAt       DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  createdBy String?
+  updatedBy String?
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
 
   @@index([tenantId])
   @@index([employeeId])
@@ -7854,8 +7759,8 @@ model ProfileChangeRequest {
   tenantId      String
   employeeId    String
   requestedById String
-  category      String    // bank | address | emergency_contact | dependent | personal | tax
-  fieldPath     String?   // dotted field path inside category, optional
+  category      String // bank | address | emergency_contact | dependent | personal | tax
+  fieldPath     String? // dotted field path inside category, optional
   beforeValues  Json      @default("{}")
   afterValues   Json      @default("{}")
   justification String?   @db.Text
@@ -7931,7 +7836,6 @@ model CompensationBand {
   updatedAt     DateTime  @updatedAt
 
   @@index([tenantId])
-
   @@map("aura_compensation_band")
 }
 
@@ -8007,7 +7911,6 @@ model NotificationRecipient {
   @@index([isRead])
   @@index([userId, isRead])
   @@index([createdAt])
-
   @@map("aura_notification_recipient")
 }
 
@@ -8046,7 +7949,6 @@ model NotificationPreference {
   @@unique([userId, category])
   @@index([userId])
   @@index([tenantId])
-
   @@map("aura_notification_preference")
 }
 
@@ -8073,35 +7975,35 @@ model DeviceToken {
 // ============================================================================
 
 model Course {
-  id              String   @id @default(uuid())
-  tenantId        String
-  title           String
-  description     String?  @db.Text
-  category        String?
-  level           String   @default("beginner")
-  type            String   @default("online")
-  duration        Int?
-  durationHours   Float?   // Required for compliance reporting (SOC 2, OSHA)
-  instructor      String?
-  thumbnailUrl    String?
-  contentUrl      String?
-  modules         Json?
-  skills          String[]
-  prerequisites   String[]
-  maxEnrollment   Int?
-  status          String   @default("draft")
-  rating          Float?
-  enrollmentCount Int      @default(0)
-  completionRate  Float?
+  id                       String   @id @default(uuid())
+  tenantId                 String
+  title                    String
+  description              String?  @db.Text
+  category                 String?
+  level                    String   @default("beginner")
+  type                     String   @default("online")
+  duration                 Int?
+  durationHours            Float? // Required for compliance reporting (SOC 2, OSHA)
+  instructor               String?
+  thumbnailUrl             String?
+  contentUrl               String?
+  modules                  Json?
+  skills                   String[]
+  prerequisites            String[]
+  maxEnrollment            Int?
+  status                   String   @default("draft")
+  rating                   Float?
+  enrollmentCount          Int      @default(0)
+  completionRate           Float?
   // Compliance training extension (#110)
   isMandatory              Boolean  @default(false)
-  complianceCategory       String?  // SOX | HIPAA | OSHA | GDPR | PDPL | CODE_OF_CONDUCT
-  certificationValidMonths Int?     // null = perpetual; otherwise expires after N months
+  complianceCategory       String? // SOX | HIPAA | OSHA | GDPR | PDPL | CODE_OF_CONDUCT
+  certificationValidMonths Int? // null = perpetual; otherwise expires after N months
   requiredForRoles         String[] @default([])
   requiredForCountries     String[] @default([])
-  createdBy       String
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdBy                String
+  createdAt                DateTime @default(now())
+  updatedAt                DateTime @updatedAt
 
   enrollments CourseEnrollment[]
 
@@ -8127,11 +8029,11 @@ model CourseEnrollment {
   certificateId String?
 
   // Compliance training extension (#110)
-  isMandatory   Boolean   @default(false)
-  dueDate       DateTime?
-  expiresAt     DateTime? // Set on completion = completedAt + course.certificationValidMonths
-  assignedBy    String?
-  assignedAt    DateTime?
+  isMandatory Boolean   @default(false)
+  dueDate     DateTime?
+  expiresAt   DateTime? // Set on completion = completedAt + course.certificationValidMonths
+  assignedBy  String?
+  assignedAt  DateTime?
 
   course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
@@ -8190,7 +8092,6 @@ model SessionAttendee {
   @@unique([sessionId, employeeId])
   @@index([sessionId])
   @@index([employeeId])
-
   @@map("aura_session_attendee")
 }
 
@@ -8238,7 +8139,6 @@ model MentoringProgram {
   @@index([mentorId])
   @@index([menteeId])
   @@index([status])
-
   @@map("aura_mentoring_program")
 }
 
@@ -8377,7 +8277,7 @@ model GeofenceConfig {
   radiusMeters Int
   address      String?
   strictMode   Boolean   @default(false)
-  config       Json?     // optional allowedEmployees/Departments/Designations
+  config       Json? // optional allowedEmployees/Departments/Designations
   isActive     Boolean   @default(true)
   version      Int       @default(1)
   createdAt    DateTime  @default(now())
@@ -8483,9 +8383,9 @@ model FieldForceConfig {
 // ============================================================================
 
 model IndustryAviationSettings {
-  id          String    @id @default(uuid())
-  tenantId    String
-  companyId   String? // null = tenant-wide default; company-specific overrides tenant-wide
+  id        String  @id @default(uuid())
+  tenantId  String
+  companyId String? // null = tenant-wide default; company-specific overrides tenant-wide
 
   // Identity codes
   airlineCode String // operational code, e.g. "KAI"
@@ -8533,7 +8433,7 @@ model IndustryAviationSettings {
 model TenantSetting {
   id        String   @id @default(uuid())
   tenantId  String
-  module    String   // 'coreHr' | 'finance' | 'helpdesk' | 'health-safety' | …
+  module    String // 'coreHr' | 'finance' | 'helpdesk' | 'health-safety' | …
   key       String
   value     Json
   updatedBy String?
@@ -8555,24 +8455,24 @@ model TenantSetting {
 
 // ---- Policy management ----
 model PolicyDocument {
-  id                       String   @id @default(uuid())
+  id                       String    @id @default(uuid())
   tenantId                 String
   title                    String
   category                 String
-  version                  String   @default("1.0")
-  status                   String   @default("DRAFT") // DRAFT | PUBLISHED | ARCHIVED
-  applicableTo             String   @default("ALL_EMPLOYEES")
-  summary                  String?  @db.Text
-  contentMarkdown          String?  @db.Text
-  acknowledgementsRequired Boolean  @default(true)
+  version                  String    @default("1.0")
+  status                   String    @default("DRAFT") // DRAFT | PUBLISHED | ARCHIVED
+  applicableTo             String    @default("ALL_EMPLOYEES")
+  summary                  String?   @db.Text
+  contentMarkdown          String?   @db.Text
+  acknowledgementsRequired Boolean   @default(true)
   effectiveDate            DateTime?
   reviewDate               DateTime?
   publishedAt              DateTime?
   ownerId                  String
   ownerName                String?
   createdBy                String
-  createdAt                DateTime @default(now())
-  updatedAt                DateTime @updatedAt
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
 
   acknowledgements PolicyAcknowledgement[]
 
@@ -8582,14 +8482,14 @@ model PolicyDocument {
 }
 
 model PolicyAcknowledgement {
-  id           String   @id @default(uuid())
-  tenantId     String
-  policyId     String
-  policy       PolicyDocument @relation(fields: [policyId], references: [id])
-  employeeId   String
-  acknowledgedAt DateTime @default(now())
-  ipAddress    String?
-  userAgent    String?
+  id             String         @id @default(uuid())
+  tenantId       String
+  policyId       String
+  policy         PolicyDocument @relation(fields: [policyId], references: [id])
+  employeeId     String
+  acknowledgedAt DateTime       @default(now())
+  ipAddress      String?
+  userAgent      String?
 
   @@unique([policyId, employeeId])
   @@index([tenantId])
@@ -8604,7 +8504,7 @@ model AdminForm {
   tenantId    String
   name        String
   description String?
-  fields      Json     // [{ id, label, type, required, options? }]
+  fields      Json // [{ id, label, type, required, options? }]
   status      String   @default("ACTIVE") // ACTIVE | ARCHIVED
   createdBy   String
   createdAt   DateTime @default(now())
@@ -8617,13 +8517,13 @@ model AdminForm {
 }
 
 model FormSubmission {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   tenantId    String
   formId      String
   form        AdminForm @relation(fields: [formId], references: [id])
   employeeId  String
   answers     Json
-  submittedAt DateTime @default(now())
+  submittedAt DateTime  @default(now())
 
   @@index([tenantId])
   @@index([formId])
@@ -8633,19 +8533,19 @@ model FormSubmission {
 
 // ---- Data import jobs ----
 model DataImportJob {
-  id            String   @id @default(uuid())
+  id            String    @id @default(uuid())
   tenantId      String
-  entityType    String   // 'employees' | 'leaves' | ...
+  entityType    String // 'employees' | 'leaves' | ...
   fileName      String
-  totalRows     Int      @default(0)
-  processedRows Int      @default(0)
-  errorRows     Int      @default(0)
-  status        String   @default("QUEUED") // QUEUED | RUNNING | COMPLETED | FAILED
+  totalRows     Int       @default(0)
+  processedRows Int       @default(0)
+  errorRows     Int       @default(0)
+  status        String    @default("QUEUED") // QUEUED | RUNNING | COMPLETED | FAILED
   errorLog      Json?
   startedAt     DateTime?
   completedAt   DateTime?
   createdBy     String
-  createdAt     DateTime @default(now())
+  createdAt     DateTime  @default(now())
 
   @@index([tenantId])
   @@index([tenantId, status])
@@ -8654,17 +8554,17 @@ model DataImportJob {
 
 // ---- AI config (per-tenant) ----
 model AIConfig {
-  id              String   @id @default(uuid())
-  tenantId        String   @unique
-  enableChatbot   Boolean  @default(false)
-  enableResumeAI  Boolean  @default(false)
-  enableAttritionPrediction Boolean @default(false)
-  llmProvider     String?  // 'openai' | 'azure' | 'anthropic' | null
-  llmModel        String?
-  rateLimitPerMin Int      @default(60)
-  updatedBy       String?
-  updatedAt       DateTime @updatedAt
-  createdAt       DateTime @default(now())
+  id                        String   @id @default(uuid())
+  tenantId                  String   @unique
+  enableChatbot             Boolean  @default(false)
+  enableResumeAI            Boolean  @default(false)
+  enableAttritionPrediction Boolean  @default(false)
+  llmProvider               String? // 'openai' | 'azure' | 'anthropic' | null
+  llmModel                  String?
+  rateLimitPerMin           Int      @default(60)
+  updatedBy                 String?
+  updatedAt                 DateTime @updatedAt
+  createdAt                 DateTime @default(now())
 
   @@map("aura_ai_config")
 }
@@ -8674,7 +8574,7 @@ model UserPreferences {
   id        String   @id @default(uuid())
   userId    String   @unique
   tenantId  String
-  prefs     Json     // free-form per-user prefs
+  prefs     Json // free-form per-user prefs
   updatedAt DateTime @updatedAt
   createdAt DateTime @default(now())
 
@@ -8687,21 +8587,21 @@ model UserPreferences {
 
 // ---- Helpdesk ----
 model HelpdeskTicket {
-  id            String   @id @default(uuid())
-  tenantId      String
-  ticketNumber  String   @unique
-  subject       String
-  description   String?  @db.Text
-  category      String   // HR | IT | FACILITIES | PAYROLL
-  priority      String   @default("MEDIUM") // LOW | MEDIUM | HIGH | URGENT
-  status        String   @default("OPEN") // OPEN | IN_PROGRESS | RESOLVED | CLOSED
-  assigneeId    String?
-  requesterId   String
-  slaDueAt      DateTime?
-  resolvedAt    DateTime?
-  closedAt      DateTime?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id           String    @id @default(uuid())
+  tenantId     String
+  ticketNumber String    @unique
+  subject      String
+  description  String?   @db.Text
+  category     String // HR | IT | FACILITIES | PAYROLL
+  priority     String    @default("MEDIUM") // LOW | MEDIUM | HIGH | URGENT
+  status       String    @default("OPEN") // OPEN | IN_PROGRESS | RESOLVED | CLOSED
+  assigneeId   String?
+  requesterId  String
+  slaDueAt     DateTime?
+  resolvedAt   DateTime?
+  closedAt     DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   @@index([tenantId])
   @@index([tenantId, status])
@@ -8728,35 +8628,35 @@ model HelpdeskSLA {
 
 // ---- Engagement ----
 model EngagementEvent {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   tenantId    String
   title       String
-  description String?  @db.Text
+  description String?   @db.Text
   startsAt    DateTime
   endsAt      DateTime?
   location    String?
   capacity    Int?
-  rsvpCount   Int      @default(0)
+  rsvpCount   Int       @default(0)
   createdBy   String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@index([tenantId])
   @@map("aura_engagement_event")
 }
 
 model EngagementSurvey {
-  id          String   @id @default(uuid())
-  tenantId    String
-  title       String
-  questions   Json     // [{ id, text, type, options? }]
-  status      String   @default("DRAFT") // DRAFT | ACTIVE | CLOSED
-  startsAt    DateTime?
-  endsAt      DateTime?
-  responses   Int      @default(0)
-  createdBy   String
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String    @id @default(uuid())
+  tenantId  String
+  title     String
+  questions Json // [{ id, text, type, options? }]
+  status    String    @default("DRAFT") // DRAFT | ACTIVE | CLOSED
+  startsAt  DateTime?
+  endsAt    DateTime?
+  responses Int       @default(0)
+  createdBy String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
   @@index([tenantId])
   @@map("aura_engagement_survey")
@@ -8765,7 +8665,7 @@ model EngagementSurvey {
 model EsgInitiative {
   id          String   @id @default(uuid())
   tenantId    String
-  pillar      String   // ENVIRONMENT | SOCIAL | GOVERNANCE
+  pillar      String // ENVIRONMENT | SOCIAL | GOVERNANCE
   title       String
   description String?  @db.Text
   metrics     Json?
@@ -8780,22 +8680,22 @@ model EsgInitiative {
 
 // ---- Health & Safety ----
 model HealthSafetyIncident {
-  id             String   @id @default(uuid())
-  tenantId       String
-  incidentNumber String   @unique
-  incidentDate   DateTime
-  type           String   // INJURY | NEAR_MISS | PROPERTY_DAMAGE | ENVIRONMENTAL
-  severity       String   // LOW | MEDIUM | HIGH | CRITICAL
-  description    String   @db.Text
-  location       String?
-  reportedBy     String
-  involvedIds    String[]
-  status         String   @default("REPORTED") // REPORTED | INVESTIGATING | RESOLVED | CLOSED
-  rootCause      String?  @db.Text
-  correctiveActions String? @db.Text
-  closedAt       DateTime?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id                String    @id @default(uuid())
+  tenantId          String
+  incidentNumber    String    @unique
+  incidentDate      DateTime
+  type              String // INJURY | NEAR_MISS | PROPERTY_DAMAGE | ENVIRONMENTAL
+  severity          String // LOW | MEDIUM | HIGH | CRITICAL
+  description       String    @db.Text
+  location          String?
+  reportedBy        String
+  involvedIds       String[]
+  status            String    @default("REPORTED") // REPORTED | INVESTIGATING | RESOLVED | CLOSED
+  rootCause         String?   @db.Text
+  correctiveActions String?   @db.Text
+  closedAt          DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   @@index([tenantId])
   @@index([tenantId, status])
@@ -8803,16 +8703,16 @@ model HealthSafetyIncident {
 }
 
 model HealthSafetyCheckup {
-  id            String   @id @default(uuid())
-  tenantId      String
-  employeeId    String
-  checkupType   String   // PRE_EMPLOYMENT | ANNUAL | HAZARD_BASED
-  scheduledFor  DateTime
-  completedAt   DateTime?
-  result        String?  // FIT | UNFIT | FIT_WITH_RESTRICTIONS
-  notes         String?  @db.Text
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id           String    @id @default(uuid())
+  tenantId     String
+  employeeId   String
+  checkupType  String // PRE_EMPLOYMENT | ANNUAL | HAZARD_BASED
+  scheduledFor DateTime
+  completedAt  DateTime?
+  result       String? // FIT | UNFIT | FIT_WITH_RESTRICTIONS
+  notes        String?   @db.Text
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   @@index([tenantId])
   @@index([employeeId])
@@ -8835,15 +8735,15 @@ model HealthSafetyTraining {
 }
 
 model HealthSafetyEmergencyContact {
-  id          String   @id @default(uuid())
-  tenantId    String
-  type        String   // FIRE | MEDICAL | SECURITY | UTILITY
-  name        String
-  phone       String
-  email       String?
-  notes       String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id        String   @id @default(uuid())
+  tenantId  String
+  type      String // FIRE | MEDICAL | SECURITY | UTILITY
+  name      String
+  phone     String
+  email     String?
+  notes     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([tenantId])
   @@map("aura_hs_emergency")
@@ -8851,18 +8751,18 @@ model HealthSafetyEmergencyContact {
 
 // ---- Security alerts (read-only view onto existing audit log + dedicated alerts) ----
 model SecurityAlert {
-  id            String   @id @default(uuid())
-  tenantId      String
-  severity      String   // LOW | MEDIUM | HIGH | CRITICAL
-  category      String   // LOGIN_ANOMALY | DATA_EXFIL | PERMISSION_ESC | API_ABUSE
-  source        String
-  description   String   @db.Text
-  affectedUser  String?
-  status        String   @default("OPEN") // OPEN | INVESTIGATING | RESOLVED | FALSE_POSITIVE
-  detectedAt    DateTime @default(now())
-  resolvedAt    DateTime?
-  resolvedBy    String?
-  resolution    String?  @db.Text
+  id           String    @id @default(uuid())
+  tenantId     String
+  severity     String // LOW | MEDIUM | HIGH | CRITICAL
+  category     String // LOGIN_ANOMALY | DATA_EXFIL | PERMISSION_ESC | API_ABUSE
+  source       String
+  description  String    @db.Text
+  affectedUser String?
+  status       String    @default("OPEN") // OPEN | INVESTIGATING | RESOLVED | FALSE_POSITIVE
+  detectedAt   DateTime  @default(now())
+  resolvedAt   DateTime?
+  resolvedBy   String?
+  resolution   String?   @db.Text
 
   @@index([tenantId])
   @@index([tenantId, status])
@@ -8872,19 +8772,19 @@ model SecurityAlert {
 
 // ---- Mass updates ----
 model MassUpdateJob {
-  id             String   @id @default(uuid())
+  id             String    @id @default(uuid())
   tenantId       String
   entityType     String
   field          String
   filterCriteria Json
   updateValue    Json
-  affectedCount  Int      @default(0)
-  status         String   @default("PENDING") // PENDING | RUNNING | COMPLETED | FAILED | REVERTED
+  affectedCount  Int       @default(0)
+  status         String    @default("PENDING") // PENDING | RUNNING | COMPLETED | FAILED | REVERTED
   errorLog       Json?
   executedAt     DateTime?
   executedBy     String?
   createdBy      String
-  createdAt      DateTime @default(now())
+  createdAt      DateTime  @default(now())
 
   @@index([tenantId])
   @@index([tenantId, status])
@@ -8893,21 +8793,21 @@ model MassUpdateJob {
 
 // ---- Travel bookings ----
 model TravelBooking {
-  id            String   @id @default(uuid())
-  tenantId      String
-  employeeId    String
-  type          String   // FLIGHT | HOTEL | CAR | TRAIN
-  provider      String?
-  reference     String?
-  destination   String
-  startDate     DateTime
-  endDate       DateTime
-  cost          Decimal? @db.Decimal(12, 2)
-  currency      String   @default("USD")
-  status        String   @default("PENDING") // PENDING | CONFIRMED | CANCELLED | COMPLETED
-  bookedBy      String
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id          String   @id @default(uuid())
+  tenantId    String
+  employeeId  String
+  type        String // FLIGHT | HOTEL | CAR | TRAIN
+  provider    String?
+  reference   String?
+  destination String
+  startDate   DateTime
+  endDate     DateTime
+  cost        Decimal? @db.Decimal(12, 2)
+  currency    String   @default("USD")
+  status      String   @default("PENDING") // PENDING | CONFIRMED | CANCELLED | COMPLETED
+  bookedBy    String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@index([tenantId])
   @@index([employeeId])
@@ -8916,18 +8816,18 @@ model TravelBooking {
 
 // ---- Industry: manufacturing ----
 model ManufacturingEquipment {
-  id            String   @id @default(uuid())
-  tenantId      String
-  name          String
-  type          String
-  location      String?
-  serialNumber  String?
-  manufacturer  String?
-  installedAt   DateTime?
-  status        String   @default("OPERATIONAL") // OPERATIONAL | MAINTENANCE | OFFLINE | RETIRED
-  oeeScore      Float?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id           String    @id @default(uuid())
+  tenantId     String
+  name         String
+  type         String
+  location     String?
+  serialNumber String?
+  manufacturer String?
+  installedAt  DateTime?
+  status       String    @default("OPERATIONAL") // OPERATIONAL | MAINTENANCE | OFFLINE | RETIRED
+  oeeScore     Float?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   @@index([tenantId])
   @@index([tenantId, status])
@@ -8935,16 +8835,16 @@ model ManufacturingEquipment {
 }
 
 model ManufacturingMaintenanceSchedule {
-  id            String   @id @default(uuid())
+  id            String    @id @default(uuid())
   tenantId      String
   equipmentId   String
   frequencyDays Int
   nextDueAt     DateTime
   lastRunAt     DateTime?
   technician    String?
-  notes         String?  @db.Text
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  notes         String?   @db.Text
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   @@index([tenantId])
   @@index([equipmentId])
@@ -8952,19 +8852,19 @@ model ManufacturingMaintenanceSchedule {
 }
 
 model ManufacturingWorkOrder {
-  id            String   @id @default(uuid())
-  tenantId      String
-  workOrderNumber String @unique
-  equipmentId   String
-  type          String   // PREVENTIVE | CORRECTIVE | EMERGENCY
-  priority      String   @default("MEDIUM")
-  description   String?  @db.Text
-  assignedTo    String?
-  status        String   @default("OPEN") // OPEN | IN_PROGRESS | COMPLETED | CANCELLED
-  scheduledAt   DateTime?
-  completedAt   DateTime?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id              String    @id @default(uuid())
+  tenantId        String
+  workOrderNumber String    @unique
+  equipmentId     String
+  type            String // PREVENTIVE | CORRECTIVE | EMERGENCY
+  priority        String    @default("MEDIUM")
+  description     String?   @db.Text
+  assignedTo      String?
+  status          String    @default("OPEN") // OPEN | IN_PROGRESS | COMPLETED | CANCELLED
+  scheduledAt     DateTime?
+  completedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
 
   @@index([tenantId])
   @@index([equipmentId])
@@ -8972,29 +8872,29 @@ model ManufacturingWorkOrder {
 }
 
 model ManufacturingProductionLine {
-  id            String   @id @default(uuid())
-  tenantId      String
-  name          String
-  product       String?
-  capacityPerHour Int    @default(0)
-  status        String   @default("ACTIVE")
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id              String   @id @default(uuid())
+  tenantId        String
+  name            String
+  product         String?
+  capacityPerHour Int      @default(0)
+  status          String   @default("ACTIVE")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   @@index([tenantId])
   @@map("aura_mfg_production_line")
 }
 
 model ManufacturingProductionRun {
-  id              String   @id @default(uuid())
-  tenantId        String
-  lineId          String
-  startedAt       DateTime
-  endedAt         DateTime?
-  unitsProduced   Int      @default(0)
-  unitsRejected   Int      @default(0)
-  notes           String?
-  createdAt       DateTime @default(now())
+  id            String    @id @default(uuid())
+  tenantId      String
+  lineId        String
+  startedAt     DateTime
+  endedAt       DateTime?
+  unitsProduced Int       @default(0)
+  unitsRejected Int       @default(0)
+  notes         String?
+  createdAt     DateTime  @default(now())
 
   @@index([tenantId])
   @@index([lineId])
@@ -9002,14 +8902,14 @@ model ManufacturingProductionRun {
 }
 
 model ManufacturingOEEMetric {
-  id            String   @id @default(uuid())
-  tenantId      String
-  equipmentId   String
-  capturedAt    DateTime
-  availability  Float    @default(0)
-  performance   Float    @default(0)
-  quality       Float    @default(0)
-  oee           Float    @default(0)
+  id           String   @id @default(uuid())
+  tenantId     String
+  equipmentId  String
+  capturedAt   DateTime
+  availability Float    @default(0)
+  performance  Float    @default(0)
+  quality      Float    @default(0)
+  oee          Float    @default(0)
 
   @@index([tenantId])
   @@index([equipmentId, capturedAt])
@@ -9017,43 +8917,43 @@ model ManufacturingOEEMetric {
 }
 
 model ManufacturingSafetyInspection {
-  id            String   @id @default(uuid())
-  tenantId      String
-  area          String
-  inspectorId   String
-  inspectedAt   DateTime
-  passed        Boolean  @default(true)
-  findings      String?  @db.Text
-  createdAt     DateTime @default(now())
+  id          String   @id @default(uuid())
+  tenantId    String
+  area        String
+  inspectorId String
+  inspectedAt DateTime
+  passed      Boolean  @default(true)
+  findings    String?  @db.Text
+  createdAt   DateTime @default(now())
 
   @@index([tenantId])
   @@map("aura_mfg_safety_inspection")
 }
 
 model ManufacturingPPEInventory {
-  id            String   @id @default(uuid())
-  tenantId      String
-  ppeType       String   // HARD_HAT | GLOVES | GOGGLES | etc.
-  quantityOnHand Int    @default(0)
-  reorderThreshold Int  @default(10)
-  unitCost      Decimal? @db.Decimal(10, 2)
-  lastRestocked DateTime?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id               String    @id @default(uuid())
+  tenantId         String
+  ppeType          String // HARD_HAT | GLOVES | GOGGLES | etc.
+  quantityOnHand   Int       @default(0)
+  reorderThreshold Int       @default(10)
+  unitCost         Decimal?  @db.Decimal(10, 2)
+  lastRestocked    DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
   @@index([tenantId])
   @@map("aura_mfg_ppe_inventory")
 }
 
 model ManufacturingAlert {
-  id            String   @id @default(uuid())
-  tenantId      String
-  alertType     String   // EQUIPMENT_DOWN | OEE_BELOW_THRESHOLD | SAFETY_INCIDENT | PPE_LOW
-  severity      String   @default("MEDIUM")
-  message       String
-  resourceId    String?  // equipmentId, lineId, etc.
-  status        String   @default("OPEN")
-  createdAt     DateTime @default(now())
+  id         String   @id @default(uuid())
+  tenantId   String
+  alertType  String // EQUIPMENT_DOWN | OEE_BELOW_THRESHOLD | SAFETY_INCIDENT | PPE_LOW
+  severity   String   @default("MEDIUM")
+  message    String
+  resourceId String? // equipmentId, lineId, etc.
+  status     String   @default("OPEN")
+  createdAt  DateTime @default(now())
 
   @@index([tenantId])
   @@index([tenantId, status])
@@ -9062,33 +8962,33 @@ model ManufacturingAlert {
 
 // ---- Industry: aviation ----
 model AviationCabinCrewMember {
-  id             String   @id @default(uuid())
-  tenantId       String
-  employeeId     String   @unique
-  certification  String?  // CSA | SCCM | etc.
-  languages      String[]
-  baseAirport    String?
-  status         String   @default("ACTIVE")
-  certExpiresAt  DateTime?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  id            String    @id @default(uuid())
+  tenantId      String
+  employeeId    String    @unique
+  certification String? // CSA | SCCM | etc.
+  languages     String[]
+  baseAirport   String?
+  status        String    @default("ACTIVE")
+  certExpiresAt DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   @@index([tenantId])
   @@map("aura_av_cabin_crew")
 }
 
 model AviationPilotTraining {
-  id             String   @id @default(uuid())
-  tenantId       String
-  pilotId        String
-  trainingType   String   // INITIAL | RECURRENT | TYPE_RATING | etc.
-  aircraftType   String?
-  startDate      DateTime
-  endDate        DateTime?
-  status         String   @default("SCHEDULED") // SCHEDULED | IN_PROGRESS | COMPLETED | FAILED
+  id                String    @id @default(uuid())
+  tenantId          String
+  pilotId           String
+  trainingType      String // INITIAL | RECURRENT | TYPE_RATING | etc.
+  aircraftType      String?
+  startDate         DateTime
+  endDate           DateTime?
+  status            String    @default("SCHEDULED") // SCHEDULED | IN_PROGRESS | COMPLETED | FAILED
   certificateNumber String?
-  createdAt      DateTime @default(now())
-  updatedAt      DateTime @updatedAt
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   @@index([tenantId])
   @@index([pilotId])
@@ -9098,7 +8998,7 @@ model AviationPilotTraining {
 model AviationGroundEquipment {
   id            String   @id @default(uuid())
   tenantId      String
-  equipmentType String   // GPU | ASU | PUSHBACK_TUG | LOADER | etc.
+  equipmentType String // GPU | ASU | PUSHBACK_TUG | LOADER | etc.
   serialNumber  String?
   baseAirport   String?
   status        String   @default("AVAILABLE")
@@ -9110,21 +9010,21 @@ model AviationGroundEquipment {
 }
 
 model AviationGroundStaff {
-  id            String   @id @default(uuid())
-  tenantId      String
-  employeeId    String   @unique
-  role          String   // RAMP | LOADER | CUSTOMER_SERVICE | etc.
-  baseAirport   String
+  id             String   @id @default(uuid())
+  tenantId       String
+  employeeId     String   @unique
+  role           String // RAMP | LOADER | CUSTOMER_SERVICE | etc.
+  baseAirport    String
   certifications String[]
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   @@index([tenantId])
   @@map("aura_av_ground_staff")
 }
 
 model AviationTurnaround {
-  id            String   @id @default(uuid())
+  id            String    @id @default(uuid())
   tenantId      String
   flightNumber  String
   airport       String
@@ -9132,10 +9032,10 @@ model AviationTurnaround {
   departedAt    DateTime?
   targetMinutes Int
   actualMinutes Int?
-  status        String   @default("IN_PROGRESS")
+  status        String    @default("IN_PROGRESS")
   assignedStaff String[]
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   @@index([tenantId])
   @@index([flightNumber])
@@ -9143,14 +9043,14 @@ model AviationTurnaround {
 }
 
 model AviationAlert {
-  id            String   @id @default(uuid())
-  tenantId      String
-  alertType     String
-  severity      String   @default("MEDIUM")
-  message       String
-  flightNumber  String?
-  status        String   @default("OPEN")
-  createdAt     DateTime @default(now())
+  id           String   @id @default(uuid())
+  tenantId     String
+  alertType    String
+  severity     String   @default("MEDIUM")
+  message      String
+  flightNumber String?
+  status       String   @default("OPEN")
+  createdAt    DateTime @default(now())
 
   @@index([tenantId])
   @@index([tenantId, status])
@@ -9159,20 +9059,20 @@ model AviationAlert {
 
 // ---- Industry: healthcare ----
 model HealthcareCredentialing {
-  id            String   @id @default(uuid())
-  tenantId      String
-  providerId    String
-  licenseNumber String
-  licenseType   String   // MD | RN | LPN | PA | etc.
-  issuingState  String
-  issueDate     DateTime
-  expiryDate    DateTime
-  status        String   @default("ACTIVE") // ACTIVE | EXPIRED | SUSPENDED | REVOKED
+  id               String   @id @default(uuid())
+  tenantId         String
+  providerId       String
+  licenseNumber    String
+  licenseType      String // MD | RN | LPN | PA | etc.
+  issuingState     String
+  issueDate        DateTime
+  expiryDate       DateTime
+  status           String   @default("ACTIVE") // ACTIVE | EXPIRED | SUSPENDED | REVOKED
   primarySpecialty String?
-  boardCertified Boolean @default(false)
-  npiVerified   Boolean  @default(false)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  boardCertified   Boolean  @default(false)
+  npiVerified      Boolean  @default(false)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   @@index([tenantId])
   @@index([providerId])
@@ -9180,16 +9080,16 @@ model HealthcareCredentialing {
 }
 
 model LocumProvider {
-  id            String   @id @default(uuid())
-  tenantId      String
-  providerName  String
-  specialty     String
-  npi           String?
-  hourlyRate    Decimal? @db.Decimal(10, 2)
-  availability  Json?    // [{ date, available }]
-  status        String   @default("ACTIVE")
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id           String   @id @default(uuid())
+  tenantId     String
+  providerName String
+  specialty    String
+  npi          String?
+  hourlyRate   Decimal? @db.Decimal(10, 2)
+  availability Json? // [{ date, available }]
+  status       String   @default("ACTIVE")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   assignments LocumAssignment[]
 
@@ -9198,19 +9098,19 @@ model LocumProvider {
 }
 
 model LocumAssignment {
-  id            String   @id @default(uuid())
-  tenantId      String
-  providerId    String
-  provider      LocumProvider @relation(fields: [providerId], references: [id])
-  facilityId    String?
-  startDate     DateTime
-  endDate       DateTime
-  hourlyRate    Decimal  @db.Decimal(10, 2)
-  totalHours    Float?
-  totalCost     Decimal? @db.Decimal(12, 2)
-  status        String   @default("SCHEDULED")
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id         String        @id @default(uuid())
+  tenantId   String
+  providerId String
+  provider   LocumProvider @relation(fields: [providerId], references: [id])
+  facilityId String?
+  startDate  DateTime
+  endDate    DateTime
+  hourlyRate Decimal       @db.Decimal(10, 2)
+  totalHours Float?
+  totalCost  Decimal?      @db.Decimal(12, 2)
+  status     String        @default("SCHEDULED")
+  createdAt  DateTime      @default(now())
+  updatedAt  DateTime      @updatedAt
 
   @@index([tenantId])
   @@index([providerId])
@@ -9218,15 +9118,15 @@ model LocumAssignment {
 }
 
 model NurseRoster {
-  id            String   @id @default(uuid())
-  tenantId      String
-  nurseId       String
-  shiftDate     DateTime
-  shiftType     String   // DAY | EVENING | NIGHT
-  unit          String?
-  patientCount  Int?
-  status        String   @default("SCHEDULED")
-  createdAt     DateTime @default(now())
+  id           String   @id @default(uuid())
+  tenantId     String
+  nurseId      String
+  shiftDate    DateTime
+  shiftType    String // DAY | EVENING | NIGHT
+  unit         String?
+  patientCount Int?
+  status       String   @default("SCHEDULED")
+  createdAt    DateTime @default(now())
 
   @@index([tenantId])
   @@index([shiftDate])
@@ -9234,13 +9134,13 @@ model NurseRoster {
 }
 
 model HealthcareAlert {
-  id            String   @id @default(uuid())
-  tenantId      String
-  alertType     String   // LICENSE_EXPIRING | UNDERSTAFFED | etc.
-  severity      String   @default("MEDIUM")
-  message       String
-  status        String   @default("OPEN")
-  createdAt     DateTime @default(now())
+  id        String   @id @default(uuid())
+  tenantId  String
+  alertType String // LICENSE_EXPIRING | UNDERSTAFFED | etc.
+  severity  String   @default("MEDIUM")
+  message   String
+  status    String   @default("OPEN")
+  createdAt DateTime @default(now())
 
   @@index([tenantId])
   @@index([tenantId, status])
@@ -9249,50 +9149,50 @@ model HealthcareAlert {
 
 // ---- Industry: retail ----
 model RetailStore {
-  id            String   @id @default(uuid())
-  tenantId      String
-  storeName     String
-  storeCode     String   @unique
-  region        String?
-  managerId     String?
-  squareFeet    Int?
-  openedAt      DateTime?
-  status        String   @default("ACTIVE")
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id         String    @id @default(uuid())
+  tenantId   String
+  storeName  String
+  storeCode  String    @unique
+  region     String?
+  managerId  String?
+  squareFeet Int?
+  openedAt   DateTime?
+  status     String    @default("ACTIVE")
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
   @@index([tenantId])
   @@map("aura_retail_store")
 }
 
 model RetailCommissionPlan {
-  id            String   @id @default(uuid())
+  id            String    @id @default(uuid())
   tenantId      String
   name          String
   description   String?
-  formula       Json     // { type: 'percent_of_sales', rate: 0.05 } etc.
+  formula       Json // { type: 'percent_of_sales', rate: 0.05 } etc.
   effectiveFrom DateTime
   effectiveTo   DateTime?
-  status        String   @default("ACTIVE")
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  status        String    @default("ACTIVE")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   @@index([tenantId])
   @@map("aura_retail_commission_plan")
 }
 
 model RetailCommission {
-  id            String   @id @default(uuid())
-  tenantId      String
-  employeeId    String
-  planId        String
-  period        String   // YYYY-MM
-  salesAmount   Decimal  @db.Decimal(12, 2)
-  commissionAmount Decimal @db.Decimal(12, 2)
-  status        String   @default("CALCULATED") // CALCULATED | APPROVED | PAID
-  approvedAt    DateTime?
-  paidAt        DateTime?
-  createdAt     DateTime @default(now())
+  id               String    @id @default(uuid())
+  tenantId         String
+  employeeId       String
+  planId           String
+  period           String // YYYY-MM
+  salesAmount      Decimal   @db.Decimal(12, 2)
+  commissionAmount Decimal   @db.Decimal(12, 2)
+  status           String    @default("CALCULATED") // CALCULATED | APPROVED | PAID
+  approvedAt       DateTime?
+  paidAt           DateTime?
+  createdAt        DateTime  @default(now())
 
   @@index([tenantId])
   @@index([employeeId, period])
@@ -9300,30 +9200,30 @@ model RetailCommission {
 }
 
 model RetailSeasonalHiring {
-  id            String   @id @default(uuid())
-  tenantId      String
-  season        String   // HOLIDAY | BACK_TO_SCHOOL | SUMMER
-  targetCount   Int
-  hiredCount    Int      @default(0)
-  startDate     DateTime
-  endDate       DateTime
-  status        String   @default("PLANNING")
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id          String   @id @default(uuid())
+  tenantId    String
+  season      String // HOLIDAY | BACK_TO_SCHOOL | SUMMER
+  targetCount Int
+  hiredCount  Int      @default(0)
+  startDate   DateTime
+  endDate     DateTime
+  status      String   @default("PLANNING")
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@index([tenantId])
   @@map("aura_retail_seasonal_hiring")
 }
 
 model RetailAlert {
-  id            String   @id @default(uuid())
-  tenantId      String
-  alertType     String
-  severity      String   @default("MEDIUM")
-  message       String
-  storeId       String?
-  status        String   @default("OPEN")
-  createdAt     DateTime @default(now())
+  id        String   @id @default(uuid())
+  tenantId  String
+  alertType String
+  severity  String   @default("MEDIUM")
+  message   String
+  storeId   String?
+  status    String   @default("OPEN")
+  createdAt DateTime @default(now())
 
   @@index([tenantId])
   @@index([tenantId, status])
@@ -9332,33 +9232,33 @@ model RetailAlert {
 
 // ---- Tenant branding ----
 model TenantBranding {
-  id              String   @id @default(uuid())
-  tenantId        String   @unique
-  logoUrl         String?
-  primaryColor    String?
-  secondaryColor  String?
-  emailFromName   String?
+  id               String   @id @default(uuid())
+  tenantId         String   @unique
+  logoUrl          String?
+  primaryColor     String?
+  secondaryColor   String?
+  emailFromName    String?
   emailFromAddress String?
-  customDomain    String?
-  updatedBy       String?
-  updatedAt       DateTime @updatedAt
-  createdAt       DateTime @default(now())
+  customDomain     String?
+  updatedBy        String?
+  updatedAt        DateTime @updatedAt
+  createdAt        DateTime @default(now())
 
   @@map("aura_tenant_branding")
 }
 
 // ---- Document templates / uploads ----
 model DocumentTemplate {
-  id              String   @id @default(uuid())
-  tenantId        String
-  name            String
-  category        String   // OFFER | CONTRACT | LETTER | POLICY | etc.
-  body            String   @db.Text
-  variables       Json?
-  isActive        Boolean  @default(true)
-  createdBy       String
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  id        String   @id @default(uuid())
+  tenantId  String
+  name      String
+  category  String // OFFER | CONTRACT | LETTER | POLICY | etc.
+  body      String   @db.Text
+  variables Json?
+  isActive  Boolean  @default(true)
+  createdBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([tenantId])
   @@index([tenantId, category])
@@ -9366,16 +9266,16 @@ model DocumentTemplate {
 }
 
 model DocumentUpload {
-  id              String   @id @default(uuid())
-  tenantId        String
-  uploadedById    String
-  fileName        String
-  contentType     String?
-  sizeBytes       Int
-  storageKey      String   // S3 / GCS / blob key
-  metadata        Json?
-  expiresAt       DateTime?
-  createdAt       DateTime @default(now())
+  id           String    @id @default(uuid())
+  tenantId     String
+  uploadedById String
+  fileName     String
+  contentType  String?
+  sizeBytes    Int
+  storageKey   String // S3 / GCS / blob key
+  metadata     Json?
+  expiresAt    DateTime?
+  createdAt    DateTime  @default(now())
 
   @@index([tenantId])
   @@index([uploadedById])
@@ -9384,14 +9284,14 @@ model DocumentUpload {
 
 // ---- Compliance: labor ----
 model LaborMealBreakRule {
-  id            String   @id @default(uuid())
-  tenantId      String
-  countryCode   String
-  minHoursWorked Float   @default(5)
-  mealBreakMins Int      @default(30)
-  paidBreak     Boolean  @default(false)
-  effectiveFrom DateTime
-  createdAt     DateTime @default(now())
+  id             String   @id @default(uuid())
+  tenantId       String
+  countryCode    String
+  minHoursWorked Float    @default(5)
+  mealBreakMins  Int      @default(30)
+  paidBreak      Boolean  @default(false)
+  effectiveFrom  DateTime
+  createdAt      DateTime @default(now())
 
   @@unique([tenantId, countryCode])
   @@index([tenantId])
@@ -9399,14 +9299,14 @@ model LaborMealBreakRule {
 }
 
 model PredictiveSchedulingRule {
-  id              String   @id @default(uuid())
-  tenantId        String
-  jurisdiction    String   // NYC | OR | etc.
-  advanceNoticeDays Int    @default(14)
-  predictabilityPayPercent Decimal @default(0) @db.Decimal(5, 2)
-  effectiveFrom   DateTime
-  isActive        Boolean  @default(true)
-  createdAt       DateTime @default(now())
+  id                       String   @id @default(uuid())
+  tenantId                 String
+  jurisdiction             String // NYC | OR | etc.
+  advanceNoticeDays        Int      @default(14)
+  predictabilityPayPercent Decimal  @default(0) @db.Decimal(5, 2)
+  effectiveFrom            DateTime
+  isActive                 Boolean  @default(true)
+  createdAt                DateTime @default(now())
 
   @@unique([tenantId, jurisdiction])
   @@index([tenantId])
@@ -9415,15 +9315,15 @@ model PredictiveSchedulingRule {
 
 // ---- AI / ML run records ----
 model AIRunRecord {
-  id            String   @id @default(uuid())
-  tenantId      String
-  runType       String   // attrition | leave_forecast | anomaly | resume_screen | etc.
-  inputContext  Json?
-  output        Json
-  modelVersion  String?
-  startedAt     DateTime @default(now())
-  completedAt   DateTime?
-  durationMs    Int?
+  id           String    @id @default(uuid())
+  tenantId     String
+  runType      String // attrition | leave_forecast | anomaly | resume_screen | etc.
+  inputContext Json?
+  output       Json
+  modelVersion String?
+  startedAt    DateTime  @default(now())
+  completedAt  DateTime?
+  durationMs   Int?
 
   @@index([tenantId])
   @@index([tenantId, runType])
@@ -9433,14 +9333,14 @@ model AIRunRecord {
 
 // ---- Scheduler / cron job runs ----
 model ScheduledJobRun {
-  id          String   @id @default(uuid())
-  tenantId    String?  // null = global job
+  id          String    @id @default(uuid())
+  tenantId    String? // null = global job
   jobName     String
-  status      String   // STARTED | COMPLETED | FAILED
-  startedAt   DateTime @default(now())
+  status      String // STARTED | COMPLETED | FAILED
+  startedAt   DateTime  @default(now())
   completedAt DateTime?
   durationMs  Int?
-  error       String?  @db.Text
+  error       String?   @db.Text
   output      Json?
 
   @@index([jobName])
@@ -9451,19 +9351,19 @@ model ScheduledJobRun {
 
 // ---- Auto-number sequences (when SystemSetting prefix-store is too coarse) ----
 model AutoNumberSequence {
-  id            String   @id @default(uuid())
-  tenantId      String
-  entityType    String   // 'employee' | 'invoice' | 'ticket' | etc.
-  prefix        String
-  suffix        String?
-  padLength     Int      @default(4)
-  currentNumber Int      @default(0)
-  incrementBy   Int      @default(1)
-  resetFrequency String  @default("never") // never | daily | monthly | yearly
-  isActive      Boolean  @default(true)
-  description   String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id             String   @id @default(uuid())
+  tenantId       String
+  entityType     String // 'employee' | 'invoice' | 'ticket' | etc.
+  prefix         String
+  suffix         String?
+  padLength      Int      @default(4)
+  currentNumber  Int      @default(0)
+  incrementBy    Int      @default(1)
+  resetFrequency String   @default("never") // never | daily | monthly | yearly
+  isActive       Boolean  @default(true)
+  description    String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   @@unique([tenantId, entityType])
   @@index([tenantId])
@@ -9902,29 +9802,29 @@ model CountryComplianceCertificate {
 // ============================================================================
 
 model KpiDefinition {
-  id            String    @id @default(uuid())
-  tenantId      String
-  code          String
-  name          String
-  domain        String
-  description   String
-  formula       String
-  dataSource    String
-  lineage       Json      @default("{}")
-  unit          String
-  frequency     String
-  direction     String
-  ownerRole     String
-  version       Int       @default(1)
-  status        String    @default("DRAFT")
-  approvedAt    DateTime?
-  approvedBy    String?
-  reviewDueAt   DateTime?
-  supersededBy  String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  createdBy     String?
-  updatedBy     String?
+  id           String    @id @default(uuid())
+  tenantId     String
+  code         String
+  name         String
+  domain       String
+  description  String
+  formula      String
+  dataSource   String
+  lineage      Json      @default("{}")
+  unit         String
+  frequency    String
+  direction    String
+  ownerRole    String
+  version      Int       @default(1)
+  status       String    @default("DRAFT")
+  approvedAt   DateTime?
+  approvedBy   String?
+  reviewDueAt  DateTime?
+  supersededBy String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  createdBy    String?
+  updatedBy    String?
 
   @@unique([tenantId, code, version], map: "aura_kpi_definition_unique")
   @@index([tenantId])
@@ -10542,25 +10442,25 @@ model WpsPeriodSubmission {
 }
 
 model WpsEmployeeRow {
-  id              String              @id @default(uuid())
-  submissionId    String
-  submission      WpsPeriodSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
-  employeeId      String
-  employeeCode    String
-  nationalId      String?
+  id               String              @id @default(uuid())
+  submissionId     String
+  submission       WpsPeriodSubmission @relation(fields: [submissionId], references: [id], onDelete: Cascade)
+  employeeId       String
+  employeeCode     String
+  nationalId       String?
   labourCardNumber String?
-  iban            String
-  bankSwift       String?
-  currency        String
-  fixedPay        Decimal             @default(0) @db.Decimal(14, 2)
-  variablePay     Decimal             @default(0) @db.Decimal(14, 2)
-  deductions      Decimal             @default(0) @db.Decimal(14, 2)
-  netPay          Decimal             @db.Decimal(14, 2)
-  daysWorked      Int?
-  rowStatus       String              @default("PENDING")
-  rejectionCode   String?
-  rejectionReason String?
-  paidAt          DateTime?
+  iban             String
+  bankSwift        String?
+  currency         String
+  fixedPay         Decimal             @default(0) @db.Decimal(14, 2)
+  variablePay      Decimal             @default(0) @db.Decimal(14, 2)
+  deductions       Decimal             @default(0) @db.Decimal(14, 2)
+  netPay           Decimal             @db.Decimal(14, 2)
+  daysWorked       Int?
+  rowStatus        String              @default("PENDING")
+  rejectionCode    String?
+  rejectionReason  String?
+  paidAt           DateTime?
 
   @@index([submissionId])
   @@index([employeeId])
@@ -10767,20 +10667,20 @@ model GosiContributionWage {
 }
 
 model GosiContribution {
-  id                 String   @id @default(uuid())
-  tenantId           String
-  employeeId         String
-  establishmentId    String
-  period             String
-  nationalityClass   String
-  contributionWage   Decimal  @db.Decimal(14, 2)
-  annuitiesEmployer  Decimal  @default(0) @db.Decimal(14, 2)
-  annuitiesEmployee  Decimal  @default(0) @db.Decimal(14, 2)
-  ohEmployer         Decimal  @default(0) @db.Decimal(14, 2)
-  totalEmployer      Decimal  @db.Decimal(14, 2)
-  totalEmployee      Decimal  @db.Decimal(14, 2)
-  rateRefs           Json     @default("{}")
-  computedAt         DateTime @default(now())
+  id                String   @id @default(uuid())
+  tenantId          String
+  employeeId        String
+  establishmentId   String
+  period            String
+  nationalityClass  String
+  contributionWage  Decimal  @db.Decimal(14, 2)
+  annuitiesEmployer Decimal  @default(0) @db.Decimal(14, 2)
+  annuitiesEmployee Decimal  @default(0) @db.Decimal(14, 2)
+  ohEmployer        Decimal  @default(0) @db.Decimal(14, 2)
+  totalEmployer     Decimal  @db.Decimal(14, 2)
+  totalEmployee     Decimal  @db.Decimal(14, 2)
+  rateRefs          Json     @default("{}")
+  computedAt        DateTime @default(now())
 
   @@unique([tenantId, employeeId, period], map: "aura_gosi_contribution_unique")
   @@index([period])
@@ -10788,26 +10688,26 @@ model GosiContribution {
 }
 
 model GosiPeriodSubmission {
-  id                   String            @id(map: "aura_gosi_period_submission_pkey") @default(uuid())
-  tenantId             String
-  establishmentId      String
-  establishment        GosiEstablishment @relation(fields: [establishmentId], references: [id])
-  period               String
-  status               String            @default("DRAFT")
-  totalEmployees       Int               @default(0)
-  totalEmployerAmount  Decimal           @default(0) @db.Decimal(18, 2)
-  totalEmployeeAmount  Decimal           @default(0) @db.Decimal(18, 2)
-  filePath             String?
-  fileHash             String?
-  dueDate              DateTime?
-  submittedAt          DateTime?
-  acknowledgedAt       DateTime?
-  ackReference         String?
-  errors               Json              @default("[]")
-  createdAt            DateTime          @default(now())
-  updatedAt            DateTime          @updatedAt
-  createdBy            String?
-  updatedBy            String?
+  id                  String            @id(map: "aura_gosi_period_submission_pkey") @default(uuid())
+  tenantId            String
+  establishmentId     String
+  establishment       GosiEstablishment @relation(fields: [establishmentId], references: [id])
+  period              String
+  status              String            @default("DRAFT")
+  totalEmployees      Int               @default(0)
+  totalEmployerAmount Decimal           @default(0) @db.Decimal(18, 2)
+  totalEmployeeAmount Decimal           @default(0) @db.Decimal(18, 2)
+  filePath            String?
+  fileHash            String?
+  dueDate             DateTime?
+  submittedAt         DateTime?
+  acknowledgedAt      DateTime?
+  ackReference        String?
+  errors              Json              @default("[]")
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  createdBy           String?
+  updatedBy           String?
 
   @@unique([tenantId, establishmentId, period], map: "aura_gosi_period_submission_unique")
   @@map("aura_gosi_period_submission")
@@ -11376,22 +11276,22 @@ model EmiratisationFine {
 }
 
 model EmiratisationCertificate {
-  id                   String    @id(map: "aura_emiratisation_certificate_pkey") @default(uuid())
-  tenantId             String
-  period               String
-  status               String    @default("DRAFT")
-  entitiesInScope      Int       @default(0)
-  entitiesAtTarget     Int       @default(0)
-  totalMissedHires     Int       @default(0)
-  totalProjectedFines  Decimal   @default(0) @db.Decimal(14, 2)
-  fakeRiskCount        Int       @default(0)
-  gatingReason         String?
-  attestationsJson     Json      @default("[]")
-  generatedAt          DateTime?
-  signedAt             DateTime?
-  signedBy             String?
-  createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @updatedAt
+  id                  String    @id(map: "aura_emiratisation_certificate_pkey") @default(uuid())
+  tenantId            String
+  period              String
+  status              String    @default("DRAFT")
+  entitiesInScope     Int       @default(0)
+  entitiesAtTarget    Int       @default(0)
+  totalMissedHires    Int       @default(0)
+  totalProjectedFines Decimal   @default(0) @db.Decimal(14, 2)
+  fakeRiskCount       Int       @default(0)
+  gatingReason        String?
+  attestationsJson    Json      @default("[]")
+  generatedAt         DateTime?
+  signedAt            DateTime?
+  signedBy            String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 
   @@unique([tenantId, period], map: "aura_emiratisation_certificate_unique")
   @@map("aura_emiratisation_certificate")
@@ -11999,20 +11899,20 @@ model DocLitigationHold {
 }
 
 model DocDisposalRequest {
-  id             String    @id(map: "aura_doc_disposal_request_pkey") @default(uuid())
-  tenantId       String
-  documentIds    Json      @default("[]")
-  reason         String
-  requestedAt    DateTime  @default(now())
-  requestedBy    String?
-  approverId     String?
-  approvedAt     DateTime?
-  executedAt     DateTime?
-  executedBy     String?
-  status         String    @default("PENDING")
-  blockedReason  String?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  id            String    @id(map: "aura_doc_disposal_request_pkey") @default(uuid())
+  tenantId      String
+  documentIds   Json      @default("[]")
+  reason        String
+  requestedAt   DateTime  @default(now())
+  requestedBy   String?
+  approverId    String?
+  approvedAt    DateTime?
+  executedAt    DateTime?
+  executedBy    String?
+  status        String    @default("PENDING")
+  blockedReason String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   @@map("aura_doc_disposal_request")
 }
@@ -12627,23 +12527,23 @@ model HolidayCertificate {
 }
 
 model AccommodationSite {
-  id                String    @id(map: "aura_accommodation_site_pkey") @default(uuid())
-  tenantId          String
-  name              String
-  siteType          String
-  country           String
-  address           String?
-  totalCapacity     Int       @default(0)
-  currentOccupancy  Int       @default(0)
-  managerId         String?
-  contractorId      String?
-  femaleOnly        Boolean   @default(false)
-  familyAllowed     Boolean   @default(false)
-  lastInspectionAt  DateTime?
-  nextInspectionAt  DateTime?
-  status            String    @default("ACTIVE")
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  id               String    @id(map: "aura_accommodation_site_pkey") @default(uuid())
+  tenantId         String
+  name             String
+  siteType         String
+  country          String
+  address          String?
+  totalCapacity    Int       @default(0)
+  currentOccupancy Int       @default(0)
+  managerId        String?
+  contractorId     String?
+  femaleOnly       Boolean   @default(false)
+  familyAllowed    Boolean   @default(false)
+  lastInspectionAt DateTime?
+  nextInspectionAt DateTime?
+  status           String    @default("ACTIVE")
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
 
   @@index([tenantId], map: "aura_accommodation_site_tenant")
   @@map("aura_accommodation_site")
@@ -13217,20 +13117,20 @@ model ExecutiveComplianceCertificate {
 }
 
 model CountryRuleSet {
-  id              String    @id(map: "aura_country_rule_set_pkey") @default(uuid())
-  tenantId        String
-  country         String
-  domain          String
-  version         String
-  effectiveFrom   DateTime
-  effectiveTo     DateTime?
-  rulesJson       Json      @default("{}")
-  publishedAt     DateTime?
-  publishedBy     String?
-  supersededById  String?
-  status          String    @default("DRAFT")
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id             String    @id(map: "aura_country_rule_set_pkey") @default(uuid())
+  tenantId       String
+  country        String
+  domain         String
+  version        String
+  effectiveFrom  DateTime
+  effectiveTo    DateTime?
+  rulesJson      Json      @default("{}")
+  publishedAt    DateTime?
+  publishedBy    String?
+  supersededById String?
+  status         String    @default("DRAFT")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   @@unique([tenantId, country, domain, version], map: "aura_country_rule_set_unique")
   @@map("aura_country_rule_set")
@@ -13275,17 +13175,17 @@ model NotificationRule {
 }
 
 model AuditTrailSetting {
-  id                 String   @id(map: "aura_audit_trail_setting_pkey") @default(uuid())
-  tenantId           String
-  domain             String
-  captureReads       Boolean  @default(false)
-  captureWrites      Boolean  @default(true)
-  captureExports     Boolean  @default(true)
-  retentionYears     Int      @default(7)
-  piiClassification  String   @default("CONFIDENTIAL")
-  isActive           Boolean  @default(true)
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  id                String   @id(map: "aura_audit_trail_setting_pkey") @default(uuid())
+  tenantId          String
+  domain            String
+  captureReads      Boolean  @default(false)
+  captureWrites     Boolean  @default(true)
+  captureExports    Boolean  @default(true)
+  retentionYears    Int      @default(7)
+  piiClassification String   @default("CONFIDENTIAL")
+  isActive          Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
 
   @@unique([tenantId, domain], map: "aura_audit_trail_setting_unique")
   @@map("aura_audit_trail_setting")
@@ -13313,25 +13213,25 @@ model PayrollGovernanceControl {
 }
 
 model PayrollAuditFinding {
-  id             String    @id(map: "aura_payroll_audit_finding_pkey") @default(uuid())
-  tenantId       String
-  findingNumber  String
-  period         String
-  country        String?
-  category       String
-  controlCode    String?
-  title          String
-  description    String?
-  severity       String    @default("MEDIUM")
-  evidence       String?
-  ownerId        String?
-  dueAt          DateTime?
-  remediation    String?
-  remediatedAt   DateTime?
-  remediatedBy   String?
-  status         String    @default("OPEN")
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  id            String    @id(map: "aura_payroll_audit_finding_pkey") @default(uuid())
+  tenantId      String
+  findingNumber String
+  period        String
+  country       String?
+  category      String
+  controlCode   String?
+  title         String
+  description   String?
+  severity      String    @default("MEDIUM")
+  evidence      String?
+  ownerId       String?
+  dueAt         DateTime?
+  remediation   String?
+  remediatedAt  DateTime?
+  remediatedBy  String?
+  status        String    @default("OPEN")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   @@unique([tenantId, findingNumber], map: "aura_payroll_audit_finding_unique")
   @@index([tenantId, period], map: "aura_payroll_audit_finding_period")
@@ -13362,29 +13262,29 @@ model PayrollRiskEntry {
 }
 
 model PayrollComplianceCertificate {
-  id                          String    @id(map: "aura_payroll_compliance_certificate_pkey") @default(uuid())
-  tenantId                    String
-  period                      String
-  status                      String    @default("DRAFT")
-  runsCount                   Int       @default(0)
-  runsLocked                  Int       @default(0)
-  runsApproved                Int       @default(0)
-  runsMakerCheckerBreaches    Int       @default(0)
-  openFindingsCritical        Int       @default(0)
-  openFindingsHigh            Int       @default(0)
-  criticalRisksOpen           Int       @default(0)
-  controlsOverdue             Int       @default(0)
-  reconciliationVariancePct   Decimal   @default(0) @db.Decimal(8, 4)
-  bankFileMismatches          Int       @default(0)
-  glPostingsMissing           Int       @default(0)
-  metricsJson                 Json      @default("{}")
-  gatingReason                String?
-  attestationsJson            Json      @default("[]")
-  generatedAt                 DateTime?
-  signedAt                    DateTime?
-  signedBy                    String?
-  createdAt                   DateTime  @default(now())
-  updatedAt                   DateTime  @updatedAt
+  id                        String    @id(map: "aura_payroll_compliance_certificate_pkey") @default(uuid())
+  tenantId                  String
+  period                    String
+  status                    String    @default("DRAFT")
+  runsCount                 Int       @default(0)
+  runsLocked                Int       @default(0)
+  runsApproved              Int       @default(0)
+  runsMakerCheckerBreaches  Int       @default(0)
+  openFindingsCritical      Int       @default(0)
+  openFindingsHigh          Int       @default(0)
+  criticalRisksOpen         Int       @default(0)
+  controlsOverdue           Int       @default(0)
+  reconciliationVariancePct Decimal   @default(0) @db.Decimal(8, 4)
+  bankFileMismatches        Int       @default(0)
+  glPostingsMissing         Int       @default(0)
+  metricsJson               Json      @default("{}")
+  gatingReason              String?
+  attestationsJson          Json      @default("[]")
+  generatedAt               DateTime?
+  signedAt                  DateTime?
+  signedBy                  String?
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
 
   @@unique([tenantId, period], map: "aura_payroll_compliance_certificate_unique")
   @@map("aura_payroll_compliance_certificate")
@@ -13506,21 +13406,21 @@ model RecordsDocumentMatrix {
 }
 
 model RecordsCompletenessSnapshot {
-  id                String   @id(map: "aura_records_completeness_snapshot_pkey") @default(uuid())
-  tenantId          String
-  period            String
-  employeeId        String
-  country           String?
-  mandatoryTotal    Int      @default(0)
-  mandatoryPresent  Int      @default(0)
-  mandatoryMissing  Int      @default(0)
-  expiringWithin30  Int      @default(0)
-  expired           Int      @default(0)
-  score             Decimal  @default(0) @db.Decimal(5, 2)
-  band              String   @default("AMBER")
-  missingCodes      Json     @default("[]")
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id               String   @id(map: "aura_records_completeness_snapshot_pkey") @default(uuid())
+  tenantId         String
+  period           String
+  employeeId       String
+  country          String?
+  mandatoryTotal   Int      @default(0)
+  mandatoryPresent Int      @default(0)
+  mandatoryMissing Int      @default(0)
+  expiringWithin30 Int      @default(0)
+  expired          Int      @default(0)
+  score            Decimal  @default(0) @db.Decimal(5, 2)
+  band             String   @default("AMBER")
+  missingCodes     Json     @default("[]")
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 
   @@unique([tenantId, period, employeeId], map: "aura_records_completeness_snapshot_unique")
   @@index([tenantId, period, band], map: "aura_records_completeness_snapshot_band")
@@ -13643,24 +13543,24 @@ model TaRiskEntry {
 }
 
 model TaComplianceCertificate {
-  id                  String    @id(map: "aura_ta_compliance_certificate_pkey") @default(uuid())
-  tenantId            String
-  period              String
-  status              String    @default("DRAFT")
-  checklistTotal      Int       @default(0)
-  checklistFailing    Int       @default(0)
-  checklistOverdue    Int       @default(0)
-  criticalRisksOpen   Int       @default(0)
-  stagesCovered       Int       @default(0)
-  stageBreakdownJson  Json      @default("[]")
-  metricsJson         Json      @default("{}")
-  gatingReason        String?
-  attestationsJson    Json      @default("[]")
-  generatedAt         DateTime?
-  signedAt            DateTime?
-  signedBy            String?
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
+  id                 String    @id(map: "aura_ta_compliance_certificate_pkey") @default(uuid())
+  tenantId           String
+  period             String
+  status             String    @default("DRAFT")
+  checklistTotal     Int       @default(0)
+  checklistFailing   Int       @default(0)
+  checklistOverdue   Int       @default(0)
+  criticalRisksOpen  Int       @default(0)
+  stagesCovered      Int       @default(0)
+  stageBreakdownJson Json      @default("[]")
+  metricsJson        Json      @default("{}")
+  gatingReason       String?
+  attestationsJson   Json      @default("[]")
+  generatedAt        DateTime?
+  signedAt           DateTime?
+  signedBy           String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
   @@unique([tenantId, period], map: "aura_ta_compliance_certificate_unique")
   @@map("aura_ta_compliance_certificate")
@@ -13808,26 +13708,26 @@ model ImmigrationComplianceCertificate {
 }
 
 model BankPaymentFile {
-  id              String    @id(map: "aura_bank_payment_file_pkey") @default(uuid())
-  tenantId        String
-  payrollPeriod   String
-  payrollRunId    String?
-  bankCode        String
-  fileFormat      String    @default("SIF")
-  fileReference   String?
-  currency        String    @default("AED")
-  totalAmount     Decimal   @default(0) @db.Decimal(18, 2)
-  recordCount     Int       @default(0)
-  matchedCount    Int       @default(0)
-  mismatchCount   Int       @default(0)
-  submittedAt     DateTime?
-  submittedBy     String?
-  acknowledgedAt  DateTime?
-  rejectedReason  String?
-  status          String    @default("DRAFT")
-  metadataJson    Json      @default("{}")
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id             String    @id(map: "aura_bank_payment_file_pkey") @default(uuid())
+  tenantId       String
+  payrollPeriod  String
+  payrollRunId   String?
+  bankCode       String
+  fileFormat     String    @default("SIF")
+  fileReference  String?
+  currency       String    @default("AED")
+  totalAmount    Decimal   @default(0) @db.Decimal(18, 2)
+  recordCount    Int       @default(0)
+  matchedCount   Int       @default(0)
+  mismatchCount  Int       @default(0)
+  submittedAt    DateTime?
+  submittedBy    String?
+  acknowledgedAt DateTime?
+  rejectedReason String?
+  status         String    @default("DRAFT")
+  metadataJson   Json      @default("{}")
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   @@index([tenantId, payrollPeriod, status], map: "aura_bank_payment_file_period")
   @@index([tenantId, payrollRunId], map: "aura_bank_payment_file_run")
@@ -14022,23 +13922,23 @@ model ReturnToWorkPlan {
 }
 
 model HolidayCalendarChangeRequest {
-  id            String    @id(map: "aura_holiday_calendar_change_request_pkey") @default(uuid())
-  tenantId      String
-  calendarCode  String
-  country       String
-  year          Int
-  changeType    String // ADD | REMOVE | MOVE | RENAME
-  changeJson    Json
-  rationale     String
-  regulatorRef  String?
-  status        String    @default("PENDING_APPROVAL") // PENDING_APPROVAL | APPROVED | REJECTED | PUBLISHED
-  requestedBy   String
-  requestedAt   DateTime  @default(now())
-  approvedBy    String?
-  approvedAt    DateTime?
-  publishedAt   DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id           String    @id(map: "aura_holiday_calendar_change_request_pkey") @default(uuid())
+  tenantId     String
+  calendarCode String
+  country      String
+  year         Int
+  changeType   String // ADD | REMOVE | MOVE | RENAME
+  changeJson   Json
+  rationale    String
+  regulatorRef String?
+  status       String    @default("PENDING_APPROVAL") // PENDING_APPROVAL | APPROVED | REJECTED | PUBLISHED
+  requestedBy  String
+  requestedAt  DateTime  @default(now())
+  approvedBy   String?
+  approvedAt   DateTime?
+  publishedAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
 
   @@index([tenantId, status], map: "aura_holiday_calendar_change_request_status")
   @@map("aura_holiday_calendar_change_request")
@@ -14068,39 +13968,39 @@ model RedundancyBatch {
 }
 
 model SeparationRetentionPolicy {
-  id              String    @id(map: "aura_separation_retention_policy_pkey") @default(uuid())
-  tenantId        String
-  country         String?
-  recordType      String
-  retentionYears  Int
-  classification  String    @default("CONFIDENTIAL")
-  disposalMethod  String    @default("SECURE_SHRED")
-  legalBasis      String?
-  effectiveFrom   DateTime
-  effectiveTo     DateTime?
-  isActive        Boolean   @default(true)
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
+  id             String    @id(map: "aura_separation_retention_policy_pkey") @default(uuid())
+  tenantId       String
+  country        String?
+  recordType     String
+  retentionYears Int
+  classification String    @default("CONFIDENTIAL")
+  disposalMethod String    @default("SECURE_SHRED")
+  legalBasis     String?
+  effectiveFrom  DateTime
+  effectiveTo    DateTime?
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
 
   @@unique([tenantId, country, recordType, effectiveFrom], map: "aura_separation_retention_policy_unique")
   @@map("aura_separation_retention_policy")
 }
 
 model DocumentPhysicalLocation {
-  id             String    @id(map: "aura_document_physical_location_pkey") @default(uuid())
-  tenantId       String
-  documentRef    String
-  warehouseCode  String
-  boxCode        String?
-  shelfCode      String?
-  fileCode       String?
-  status         String    @default("STORED") // STORED | CHECKED_OUT | DISPOSED
-  checkedOutBy   String?
-  checkedOutAt   DateTime?
-  returnedAt     DateTime?
-  notes          String?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  id            String    @id(map: "aura_document_physical_location_pkey") @default(uuid())
+  tenantId      String
+  documentRef   String
+  warehouseCode String
+  boxCode       String?
+  shelfCode     String?
+  fileCode      String?
+  status        String    @default("STORED") // STORED | CHECKED_OUT | DISPOSED
+  checkedOutBy  String?
+  checkedOutAt  DateTime?
+  returnedAt    DateTime?
+  notes         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 
   @@unique([tenantId, documentRef], map: "aura_document_physical_location_unique")
   @@index([tenantId, warehouseCode], map: "aura_document_physical_location_warehouse")
@@ -14108,15 +14008,15 @@ model DocumentPhysicalLocation {
 }
 
 model AuditFindingRiskLink {
-  id          String   @id(map: "aura_audit_finding_risk_link_pkey") @default(uuid())
-  tenantId    String
-  findingRef  String
-  domainCode  String
-  riskCode    String
-  linkType    String   @default("CAUSED_BY") // CAUSED_BY | MITIGATED_BY | RELATED_TO
-  notes       String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String   @id(map: "aura_audit_finding_risk_link_pkey") @default(uuid())
+  tenantId   String
+  findingRef String
+  domainCode String
+  riskCode   String
+  linkType   String   @default("CAUSED_BY") // CAUSED_BY | MITIGATED_BY | RELATED_TO
+  notes      String?
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
 
   @@unique([tenantId, findingRef, domainCode, riskCode], map: "aura_audit_finding_risk_link_unique")
   @@map("aura_audit_finding_risk_link")
@@ -14271,19 +14171,19 @@ model VisaExitBenefitsClosure {
 }
 
 model VisaExitCommTemplate {
-  id            String   @id(map: "aura_visa_exit_comm_template_pkey") @default(uuid())
-  tenantId      String
-  templateCode  String
-  trigger       String // CASE_OPENED | GRACE_STARTED | GRACE_EXPIRING | CANCELLED
-  label         String
-  channelsJson  Json?
-  subjectEn     String?
-  subjectAr     String?
-  bodyEn        String?
-  bodyAr        String?
-  isActive      Boolean  @default(true)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id           String   @id(map: "aura_visa_exit_comm_template_pkey") @default(uuid())
+  tenantId     String
+  templateCode String
+  trigger      String // CASE_OPENED | GRACE_STARTED | GRACE_EXPIRING | CANCELLED
+  label        String
+  channelsJson Json?
+  subjectEn    String?
+  subjectAr    String?
+  bodyEn       String?
+  bodyAr       String?
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 
   @@unique([tenantId, templateCode], map: "aura_visa_exit_comm_template_unique")
   @@map("aura_visa_exit_comm_template")
@@ -14294,21 +14194,21 @@ model VisaExitCommTemplate {
 // F: EmployeeLoanSchedule (S22-S09), UniformPpeIssuance (S22-S11).
 // I: AccommodationTransportRoute, AccommodationClinic, AccommodationMaintenanceTicket.
 model ContractorAssignment {
-  id           String    @id(map: "aura_contractor_assignment_pkey") @default(uuid())
-  tenantId     String
-  subjectId    String
-  subjectName  String
-  vendorId     String?
-  vendorName   String?
-  contractRef  String?
-  siteId       String?
-  domain       String // ATTENDANCE | HOLIDAYS | ACCOMMODATION | HSE
-  startDate    DateTime
-  endDate      DateTime?
-  status       String    @default("ACTIVE") // ACTIVE | EXPIRED | TERMINATED
-  notes        String?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  id          String    @id(map: "aura_contractor_assignment_pkey") @default(uuid())
+  tenantId    String
+  subjectId   String
+  subjectName String
+  vendorId    String?
+  vendorName  String?
+  contractRef String?
+  siteId      String?
+  domain      String // ATTENDANCE | HOLIDAYS | ACCOMMODATION | HSE
+  startDate   DateTime
+  endDate     DateTime?
+  status      String    @default("ACTIVE") // ACTIVE | EXPIRED | TERMINATED
+  notes       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@unique([tenantId, subjectId, domain, startDate], map: "aura_contractor_assignment_unique")
   @@index([tenantId, domain, status], map: "aura_contractor_assignment_domain")
@@ -14316,23 +14216,23 @@ model ContractorAssignment {
 }
 
 model EmployeeLoanSchedule {
-  id                String   @id(map: "aura_employee_loan_schedule_pkey") @default(uuid())
+  id                String    @id(map: "aura_employee_loan_schedule_pkey") @default(uuid())
   tenantId          String
   employeeId        String
   loanCode          String
-  loanType          String   @default("GENERAL") // GENERAL | SALARY_ADVANCE | EDUCATION | RELOCATION
-  currency          String   @default("AED")
-  principal         Decimal  @db.Decimal(18, 2)
-  interestRatePct   Decimal  @default(0) @db.Decimal(5, 2)
+  loanType          String    @default("GENERAL") // GENERAL | SALARY_ADVANCE | EDUCATION | RELOCATION
+  currency          String    @default("AED")
+  principal         Decimal   @db.Decimal(18, 2)
+  interestRatePct   Decimal   @default(0) @db.Decimal(5, 2)
   installments      Int
-  installmentAmount Decimal  @db.Decimal(18, 2)
-  balance           Decimal  @db.Decimal(18, 2)
+  installmentAmount Decimal   @db.Decimal(18, 2)
+  balance           Decimal   @db.Decimal(18, 2)
   startDate         DateTime
   endDate           DateTime?
-  status            String   @default("ACTIVE") // ACTIVE | PAID_OFF | DEFAULTED | WAIVED
+  status            String    @default("ACTIVE") // ACTIVE | PAID_OFF | DEFAULTED | WAIVED
   notes             String?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   @@unique([tenantId, employeeId, loanCode], map: "aura_employee_loan_schedule_unique")
   @@index([tenantId, status], map: "aura_employee_loan_schedule_status")
@@ -14340,21 +14240,21 @@ model EmployeeLoanSchedule {
 }
 
 model UniformPpeIssuance {
-  id          String    @id(map: "aura_uniform_ppe_issuance_pkey") @default(uuid())
-  tenantId    String
-  employeeId  String
-  itemCode    String
-  itemLabel   String
-  category    String    @default("UNIFORM") // UNIFORM | PPE | TOOLS
-  quantity    Int       @default(1)
-  issuedAt    DateTime  @default(now())
-  issuedBy    String?
-  returnedAt  DateTime?
-  returnedBy  String?
-  condition   String?
-  notes       String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id         String    @id(map: "aura_uniform_ppe_issuance_pkey") @default(uuid())
+  tenantId   String
+  employeeId String
+  itemCode   String
+  itemLabel  String
+  category   String    @default("UNIFORM") // UNIFORM | PPE | TOOLS
+  quantity   Int       @default(1)
+  issuedAt   DateTime  @default(now())
+  issuedBy   String?
+  returnedAt DateTime?
+  returnedBy String?
+  condition  String?
+  notes      String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
 
   @@index([tenantId, employeeId], map: "aura_uniform_ppe_issuance_employee")
   @@index([tenantId, category], map: "aura_uniform_ppe_issuance_category")
@@ -14680,23 +14580,23 @@ model HrmsConfigCertificate {
 }
 
 model HrmsImplementationChecklist {
-  id           String    @id(map: "aura_hrms_implementation_checklist_pkey") @default(uuid())
-  tenantId     String
-  phase        String // DISCOVERY | DESIGN | BUILD | TEST | GO_LIVE | POST_GO_LIVE
-  category     String
-  code         String
-  label        String
-  owner        String?
-  ownerRole    String?
-  status       String    @default("OPEN") // OPEN | IN_PROGRESS | COMPLETED | WAIVED
-  isMandatory  Boolean   @default(true)
-  dueDate      DateTime?
-  completedAt  DateTime?
-  completedBy  String?
-  evidenceUrl  String?
-  notes        String?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  id          String    @id(map: "aura_hrms_implementation_checklist_pkey") @default(uuid())
+  tenantId    String
+  phase       String // DISCOVERY | DESIGN | BUILD | TEST | GO_LIVE | POST_GO_LIVE
+  category    String
+  code        String
+  label       String
+  owner       String?
+  ownerRole   String?
+  status      String    @default("OPEN") // OPEN | IN_PROGRESS | COMPLETED | WAIVED
+  isMandatory Boolean   @default(true)
+  dueDate     DateTime?
+  completedAt DateTime?
+  completedBy String?
+  evidenceUrl String?
+  notes       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@unique([tenantId, code], map: "aura_hrms_implementation_checklist_unique")
   @@index([tenantId, phase, status], map: "aura_hrms_implementation_checklist_phase")
@@ -14729,26 +14629,26 @@ model HrmsConfigConnector {
 }
 
 model HrmsConfigMigration {
-  id                 String    @id(map: "aura_hrms_config_migration_pkey") @default(uuid())
-  tenantId           String
-  planCode           String
-  label              String
-  domainCode         String
-  sourceSystem       String
-  targetEntity       String
-  expectedRows       Int?
-  status             String    @default("PLANNED") // PLANNED | RUNNING | COMPLETED | FAILED | ROLLED_BACK
-  lastRunAt          DateTime?
-  lastRunResult      String?
-  lastRunInserted    Int       @default(0)
-  lastRunUpdated     Int       @default(0)
-  lastRunSkipped     Int       @default(0)
-  lastRunErrors      Int       @default(0)
-  validationsPassed  Boolean   @default(false)
-  validationsJson    Json?
-  notes              String?
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
+  id                String    @id(map: "aura_hrms_config_migration_pkey") @default(uuid())
+  tenantId          String
+  planCode          String
+  label             String
+  domainCode        String
+  sourceSystem      String
+  targetEntity      String
+  expectedRows      Int?
+  status            String    @default("PLANNED") // PLANNED | RUNNING | COMPLETED | FAILED | ROLLED_BACK
+  lastRunAt         DateTime?
+  lastRunResult     String?
+  lastRunInserted   Int       @default(0)
+  lastRunUpdated    Int       @default(0)
+  lastRunSkipped    Int       @default(0)
+  lastRunErrors     Int       @default(0)
+  validationsPassed Boolean   @default(false)
+  validationsJson   Json?
+  notes             String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   @@unique([tenantId, planCode], map: "aura_hrms_config_migration_unique")
   @@index([tenantId, status], map: "aura_hrms_config_migration_status")
