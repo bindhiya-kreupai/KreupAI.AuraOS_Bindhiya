@@ -6078,6 +6078,38 @@ model WorkFromHomePolicy {
   @@map("aura_wfh_policy")
 }
 
+model WorkFromHomeRequest {
+  id              String    @id
+  requestCode     String
+  tenantId        String
+  employeeId      String
+  managerId       String?
+  startDate       DateTime
+  endDate         DateTime
+  numberOfDays    Decimal   @db.Decimal(5, 1)
+  reason          String
+  status          String    @default("PENDING")
+  submittedDate   DateTime  @default(now())
+  approvedBy      String?
+  approvedAt      DateTime?
+  rejectionReason String?
+  requiresCheckIn Boolean   @default(false)
+  checkInRequired DateTime?
+  checkOutRequired DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  createdBy       String?
+  updatedBy       String?
+  deletedAt       DateTime?
+  isDeleted       Boolean   @default(false)
+
+  @@unique([tenantId, requestCode])
+  @@index([employeeId], map: "WorkFromHomeRequest_employeeId_idx")
+  @@index([status], map: "WorkFromHomeRequest_status_idx")
+  @@index([tenantId], map: "WorkFromHomeRequest_tenantId_idx")
+  @@map("aura_wfh_request")
+}
+
 model ShiftSwapPolicy {
   id          String    @id @default(uuid())
   tenantId    String
