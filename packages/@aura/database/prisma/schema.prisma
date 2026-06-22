@@ -6079,14 +6079,14 @@ model WorkFromHomePolicy {
 }
 
 model WorkFromHomeRequest {
-  id              String    @id @default(uuid())
+  id              String    @id
   requestCode     String
   tenantId        String
   employeeId      String
   managerId       String?
   startDate       DateTime
   endDate         DateTime
-  numberOfDays    Float
+  numberOfDays    Decimal   @db.Decimal(5, 1)
   reason          String
   status          String    @default("PENDING")
   submittedDate   DateTime  @default(now())
@@ -6103,10 +6103,10 @@ model WorkFromHomeRequest {
   deletedAt       DateTime?
   isDeleted       Boolean   @default(false)
 
+  @@unique([tenantId, requestCode])
   @@index([employeeId], map: "WorkFromHomeRequest_employeeId_idx")
   @@index([status], map: "WorkFromHomeRequest_status_idx")
   @@index([tenantId], map: "WorkFromHomeRequest_tenantId_idx")
-  @@index([requestCode], map: "WorkFromHomeRequest_requestCode_idx")
   @@map("aura_wfh_request")
 }
 
