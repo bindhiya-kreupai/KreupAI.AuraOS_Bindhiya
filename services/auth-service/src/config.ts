@@ -5,7 +5,7 @@
 export const config = {
   // Server
   env: process.env.NODE_ENV || 'development',
-  port: parseInt(process.env.PORT || '3001', 10),
+  port: parseInt(process.env.PORT || '3011', 10),
   host: process.env.HOST || '0.0.0.0',
   grpcPort: parseInt(process.env.GRPC_PORT || '50051', 10),
 
