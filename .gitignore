@@ -82,3 +82,8 @@ apps/web/matches.txt
 .env.*.local
 **/.env
 !.env.example
+
+# Prisma schema backups (created before destructive operations like db pull)
+**/schema.prisma.bak
+**/schema.prisma.pre-*.bak
+**/schema.prisma.pre-*
