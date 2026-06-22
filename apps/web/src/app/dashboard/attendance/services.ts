@@ -102,17 +102,26 @@ type ScheduleApiResponse = {
 
 type WFHApiResponse = {
   id: string;
+  requestCode?: string;
   employeeId?: string;
   employeeName?: string;
   startDate?: string;
   endDate?: string;
+  numberOfDays?: number;
   reason?: string;
   isRecurring?: boolean;
   recurringDays?: number[];
   status?: string;
+  submittedDate?: string;
+  createdAt?: string;
   approvedBy?: string;
   approvedAt?: string;
+  approvedDate?: string;
   requestedAt?: string;
+  rejectionReason?: string;
+  requiresCheckIn?: boolean;
+  checkInRequired?: string;
+  checkOutRequired?: string;
 };
 
 type RosterApiResponse = {
@@ -448,20 +457,24 @@ function differenceInDaysInclusive(startDate?: string, endDate?: string) {
 function mapWFHRequest(raw: WFHApiResponse): WFHRequest {
   return {
     id: raw.id,
-    requestCode: raw.id,
+    requestCode: raw.requestCode || raw.id,
     employeeId: raw.employeeId || '',
     employeeName: raw.employeeName || 'Unknown Employee',
     managerId: raw.approvedBy || '',
     managerName: '',
     startDate: raw.startDate || '',
     endDate: raw.endDate || raw.startDate || '',
-    numberOfDays: differenceInDaysInclusive(raw.startDate, raw.endDate || raw.startDate),
+    numberOfDays:
+      raw.numberOfDays ?? differenceInDaysInclusive(raw.startDate, raw.endDate || raw.startDate),
     reason: raw.reason || '',
     status: normalizeWFHStatus(raw.status),
-    requestDate: raw.requestedAt || '',
+    submittedDate: raw.submittedDate || raw.createdAt || '',
     approvedBy: raw.approvedBy || undefined,
-    approvedDate: raw.approvedAt || undefined,
-    rejectionReason: undefined,
+    approvedDate: raw.approvedAt || raw.approvedDate || undefined,
+    rejectionReason: raw.rejectionReason || undefined,
+    requiresCheckIn: raw.requiresCheckIn ?? false,
+    checkInRequired: raw.checkInRequired || undefined,
+    checkOutRequired: raw.checkOutRequired || undefined,
     workPlan: '',
     contactNumber: '',
     emergencyContact: '',
@@ -1438,7 +1451,7 @@ export class CompOffService {
 // ============================================================================
 
 export class WFHService {
-  private static endpoint = '/attendance/work-from-home';
+  private static endpoint = '/attendance/wfh-requests';
 
   static async getWFHRequests(filters?: {
     employeeId?: string;
