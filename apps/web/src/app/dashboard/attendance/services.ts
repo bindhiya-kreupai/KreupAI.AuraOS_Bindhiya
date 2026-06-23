@@ -1377,8 +1377,29 @@ export class AttendanceSettingsService {
 // COMP-OFF SERVICE
 // ============================================================================
 
+function mapMgmtCompOff(raw: Record<string, unknown>) {
+  return {
+    id: (raw.id as string) || '',
+    employeeId: (raw.employeeId as string) || '',
+    employeeName: (raw.employeeName as string) || '',
+    workDate: (raw.earnedDate as string) || '',
+    workHours: (raw.earnedHours as number) || 0,
+    reason: (raw.remarks as string) || '',
+    status: normalizeCompOffStatus(raw.status as string),
+    approvedBy: raw.approvedBy as string | undefined,
+    approvedAt: raw.approvedAt as string | undefined,
+    requestedAt: (raw.createdAt as string) || '',
+    earnedDate: raw.earnedDate as string | undefined,
+    expiryDate: raw.expiryDate as string | undefined,
+    balance: (raw.balance as number) ?? 0,
+    used: (raw.used as number) ?? 0,
+    usedOn: raw.usedOn as string | undefined,
+    remarks: raw.remarks as string | undefined,
+  } satisfies CompOffApiResponse;
+}
+
 export class CompOffService {
-  private static endpoint = '/attendance/comp-off';
+  private static endpoint = '/attendance/comp-off-management';
 
   static async getCompOffs(filters?: {
     employeeId?: string;
@@ -1389,9 +1410,9 @@ export class CompOffService {
     try {
       const response = await APIClient.get<{
         success?: boolean;
-        data?: { compOffs?: CompOffApiResponse[]; summary?: CompOffSummaryResponse };
+        data?: { compOffs?: Record<string, unknown>[] };
       }>(this.endpoint, filters);
-      return (response.data?.compOffs || []).map(mapCompOff);
+      return (response.data?.compOffs || []).map(mapMgmtCompOff).map(mapCompOff);
     } catch (error: any) {
       return [];
     }
@@ -1403,33 +1424,60 @@ export class CompOffService {
     hours: number;
     reason: string;
   }): Promise<any> {
+    const payload: Record<string, unknown> = {
+      action: 'request',
+      date: compOff.date,
+      hours: compOff.hours,
+      reason: compOff.reason,
+    };
+
+    const normalizedId = normalizePlaceholderEmployeeId(compOff.employeeId);
+    if (normalizedId) {
+      payload.employeeId = normalizedId;
+    }
+
     const response = await APIClient.post<{
       success?: boolean;
-      data?: CompOffApiResponse;
-      compOff?: CompOffApiResponse;
-    }>(this.endpoint, normalizeCompOffPayload(compOff));
-    return mapCompOff(response.data || response.compOff || { id: '' });
+      data?: Record<string, unknown>;
+    }>(this.endpoint, payload);
+
+    const d = (response.data || {}) as Record<string, unknown>;
+    return mapCompOff(mapMgmtCompOff(d));
   }
 
   static async getCompOffSummary(employeeId: string): Promise<any> {
     try {
-      const params = ['current-user', 'current-user-id'].includes(employeeId)
-        ? undefined
-        : { employeeId };
       const response = await APIClient.get<{
         success?: boolean;
-        data?: { compOffs?: CompOffApiResponse[]; summary?: CompOffSummaryResponse };
-      }>(this.endpoint, params);
-      const summary = response.data?.summary;
+        data?: { compOffs?: Record<string, unknown>[] };
+      }>(this.endpoint, { employeeId });
+
+      const records = (response.data?.compOffs || []).map(mapMgmtCompOff);
+      const now = new Date();
+      const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+      const earned = records.filter(
+        (r) => r.status === 'APPROVED' || r.status === 'AVAILED'
+      ).length;
+      const used = records.filter((r) => r.status === 'AVAILED').length;
+      const pending = records.filter(
+        (r) => r.status === 'PENDING' || r.status === 'APPLIED'
+      ).length;
+      const expiring = records.filter((r) => {
+        if (!r.expiryDate) return false;
+        const exp = new Date(r.expiryDate);
+        return exp >= now && exp <= thirtyDaysFromNow;
+      }).length;
+
       return {
-        total: summary?.total ?? summary?.balance ?? 0,
-        earned: summary?.earned ?? summary?.totalEarned ?? 0,
-        used: summary?.used ?? summary?.totalUsed ?? 0,
-        pending: summary?.pending ?? 0,
-        expiring: summary?.expiring ?? 0,
-        totalEarned: summary?.earned ?? summary?.totalEarned ?? 0,
-        totalUsed: summary?.used ?? summary?.totalUsed ?? 0,
-        balance: summary?.total ?? summary?.balance ?? 0,
+        total: earned - used,
+        earned,
+        used,
+        pending,
+        expiring,
+        totalEarned: earned,
+        totalUsed: used,
+        balance: earned - used,
       };
     } catch (error: any) {
       return {
