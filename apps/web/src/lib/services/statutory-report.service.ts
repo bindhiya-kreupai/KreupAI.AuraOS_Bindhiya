@@ -1402,7 +1402,7 @@ registerReport({
     let employeeCount = 0;
     for (const run of runs) {
       for (const slip of run.payslips ?? []) {
-        const tds = Number(slip.incomeTax ?? 0);
+        const tds = Number(slip.employeeTDS ?? 0);
         if (tds === 0) continue;
         lines.push({
           quarter: run.payrollMonth,
@@ -1557,7 +1557,10 @@ registerReport({
     let employeeCount = 0;
     for (const run of runs) {
       for (const slip of run.payslips ?? []) {
-        const bonus = Number(slip.bonusAmount ?? 0);
+        const earnings = (slip.earnings as Array<Record<string, unknown>>) ?? [];
+        const bonus = earnings
+          .filter((earning) => ['BONUS', 'STATUTORY_BONUS'].includes(String(earning.code ?? '')))
+          .reduce((sum, earning) => sum + Number(earning.amount ?? 0), 0);
         if (bonus === 0) continue;
         lines.push({
           payrollMonth: run.payrollMonth,
@@ -1575,6 +1578,278 @@ registerReport({
       totals: { employeeCount, grossAmount: 0, deductionAmount: 0, netAmount: totalBonus },
       lines,
       warnings: ['Form D must be filed within 30 days of bonus disbursement per Section 26.'],
+    };
+  },
+});
+
+// ---------------- GCC compliance certificate exports ----------------
+//
+// The 6 monthly compliance certificates that ship under
+// /dashboard/{hrms-config, payroll-compliance, org-compliance,
+// records-compliance, talent-acquisition-compliance,
+// immigration-compliance} need to be exportable as auditor-friendly
+// reports (CSV / PDF rendered from JSON). Each registration below
+// reads the certificate row for the period and emits canonical lines
+// (one row per metric) plus a warning line if gating is non-null.
+
+function periodKey(start: Date): string {
+  return `${start.getFullYear()}-${String(start.getMonth() + 1).padStart(2, '0')}`;
+}
+
+interface CertMetric {
+  metric: string;
+  value: string | number;
+}
+
+async function loadCert(model: string, tenantId: string, period: string) {
+  try {
+    return await (prisma as any)[model].findFirst({
+      where: { tenantId, period },
+      orderBy: { updatedAt: 'desc' },
+    });
+  } catch {
+    return null;
+  }
+}
+
+function metricsToLines(cert: Record<string, unknown> | null, keys: string[]): CertMetric[] {
+  if (!cert) return [];
+  return keys.map((k) => ({ metric: k, value: (cert[k] as string | number) ?? 0 }));
+}
+
+registerReport({
+  code: 'PAYROLL_COMPLIANCE_CERT',
+  countryCode: 'AE,SA,BH,QA,OM,KW,IN',
+  name: 'Payroll Governance & Compliance Certificate (EPIC-10)',
+  format: 'pdf',
+  description:
+    'Monthly payroll compliance certificate — runs, locks, maker-checker, reconciliation, bank file, GL postings, gating reason.',
+  generate: async (ctx) => {
+    const period = periodKey(ctx.periodStart);
+    const cert = await loadCert('payrollComplianceCertificate', ctx.tenantId, period);
+    const lines = metricsToLines(cert, [
+      'runsCount',
+      'runsApproved',
+      'runsLocked',
+      'runsMakerCheckerBreaches',
+      'openFindingsCritical',
+      'openFindingsHigh',
+      'criticalRisksOpen',
+      'controlsOverdue',
+      'reconciliationVariancePct',
+      'bankFileMismatches',
+      'glPostingsMissing',
+    ]);
+    return {
+      schemaVersion: '1.0.0',
+      totals: { employeeCount: 0, grossAmount: 0, deductionAmount: 0, netAmount: 0 },
+      lines,
+      warnings: cert?.gatingReason ? [`GATED: ${cert.gatingReason}`] : [],
+    };
+  },
+});
+
+registerReport({
+  code: 'ORG_COMPLIANCE_CERT',
+  countryCode: 'AE,SA,BH,QA,OM,KW,IN',
+  name: 'Org & Position Compliance Certificate (EPIC-09)',
+  format: 'pdf',
+  description:
+    'Monthly org & position compliance certificate — checklist results, overhire/frozen headcount, vacancy ageing, gating reason.',
+  generate: async (ctx) => {
+    const period = periodKey(ctx.periodStart);
+    const cert = await loadCert('orgComplianceCertificate', ctx.tenantId, period);
+    const lines = metricsToLines(cert, [
+      'checklistTotal',
+      'checklistFailing',
+      'checklistOverdue',
+      'overhireTotal',
+      'frozenTotal',
+      'vacanciesOpen',
+      'vacanciesAgedOver90',
+      'unapprovedVacancies',
+      'departmentsCovered',
+    ]);
+    return {
+      schemaVersion: '1.0.0',
+      totals: { employeeCount: 0, grossAmount: 0, deductionAmount: 0, netAmount: 0 },
+      lines,
+      warnings: cert?.gatingReason ? [`GATED: ${cert.gatingReason}`] : [],
+    };
+  },
+});
+
+registerReport({
+  code: 'RECORDS_COMPLIANCE_CERT',
+  countryCode: 'AE,SA,BH,QA,OM,KW,IN',
+  name: 'Employee Records Compliance Certificate (EPIC-08)',
+  format: 'pdf',
+  description:
+    'Monthly records compliance certificate — completeness band breakdown, missing/expired mandatory documents, audit results.',
+  generate: async (ctx) => {
+    const period = periodKey(ctx.periodStart);
+    const cert = await loadCert('recordsComplianceCertificate', ctx.tenantId, period);
+    const lines = metricsToLines(cert, [
+      'employeesEvaluated',
+      'averageScore',
+      'greenEmployees',
+      'amberEmployees',
+      'redEmployees',
+      'mandatoryMissingTotal',
+      'expiredDocsTotal',
+      'checklistFailing',
+      'checklistOverdue',
+      'criticalRisksOpen',
+    ]);
+    return {
+      schemaVersion: '1.0.0',
+      totals: {
+        employeeCount: Number((cert?.employeesEvaluated as number) ?? 0),
+        grossAmount: 0,
+        deductionAmount: 0,
+        netAmount: 0,
+      },
+      lines,
+      warnings: cert?.gatingReason ? [`GATED: ${cert.gatingReason}`] : [],
+    };
+  },
+});
+
+registerReport({
+  code: 'TA_COMPLIANCE_CERT',
+  countryCode: 'AE,SA,BH,QA,OM,KW,IN',
+  name: 'Talent Acquisition Compliance Certificate (EPIC-03/04/05)',
+  format: 'pdf',
+  description:
+    'Monthly TA compliance certificate — workforce planning → recruitment → offer → pre-employment audit, stage breakdown, gating.',
+  generate: async (ctx) => {
+    const period = periodKey(ctx.periodStart);
+    const cert = await loadCert('taComplianceCertificate', ctx.tenantId, period);
+    const lines = metricsToLines(cert, [
+      'checklistTotal',
+      'checklistFailing',
+      'checklistOverdue',
+      'criticalRisksOpen',
+      'stagesCovered',
+    ]);
+    if (cert?.stageBreakdownJson) {
+      for (const s of cert.stageBreakdownJson as Array<Record<string, unknown>>) {
+        lines.push({
+          metric: `stage:${s.stage}`,
+          value: `total=${s.total} pass=${s.pass} fail=${s.fail} obs=${s.obs} unchecked=${s.unchecked}`,
+        });
+      }
+    }
+    return {
+      schemaVersion: '1.0.0',
+      totals: { employeeCount: 0, grossAmount: 0, deductionAmount: 0, netAmount: 0 },
+      lines,
+      warnings: cert?.gatingReason ? [`GATED: ${cert.gatingReason}`] : [],
+    };
+  },
+});
+
+registerReport({
+  code: 'IMMIGRATION_COMPLIANCE_CERT',
+  countryCode: 'AE,SA,BH,QA,OM,KW',
+  name: 'Immigration & Work Authorization Compliance Certificate (EPIC-07)',
+  format: 'pdf',
+  description:
+    'Monthly immigration certificate — expired docs, 60/30/7-day renewal alert ladder, transfer ageing, audit, risks, gating.',
+  generate: async (ctx) => {
+    const period = periodKey(ctx.periodStart);
+    const cert = await loadCert('immigrationComplianceCertificate', ctx.tenantId, period);
+    const lines = metricsToLines(cert, [
+      'countriesCovered',
+      'expiredDocsTotal',
+      'alerts7dOpen',
+      'alerts30dOpen',
+      'alerts60dOpen',
+      'transfersOpenOverdue',
+      'checklistTotal',
+      'checklistFailing',
+      'checklistOverdue',
+      'criticalRisksOpen',
+    ]);
+    return {
+      schemaVersion: '1.0.0',
+      totals: { employeeCount: 0, grossAmount: 0, deductionAmount: 0, netAmount: 0 },
+      lines,
+      warnings: cert?.gatingReason ? [`GATED: ${cert.gatingReason}`] : [],
+    };
+  },
+});
+
+registerReport({
+  code: 'HRMS_CONFIG_SNAPSHOT',
+  countryCode: 'AE,SA,BH,QA,OM,KW,IN',
+  name: 'HRMS Configuration Snapshot (EPIC-34)',
+  format: 'csv',
+  description:
+    'Configuration inventory snapshot — counts of rule sets, approval templates, notification rules, audit settings, plus per-status rule-set breakdown.',
+  generate: async (ctx) => {
+    let ruleSets: Array<{ status: string }> = [];
+    let approvals: Array<{ isActive: boolean }> = [];
+    let notifications: Array<{ isActive: boolean }> = [];
+    let audits: Array<{ domain: string }> = [];
+    try {
+      ruleSets = await (prisma as any).countryRuleSet.findMany({
+        where: { tenantId: ctx.tenantId },
+        select: { status: true },
+      });
+    } catch {
+      /* tolerate */
+    }
+    try {
+      approvals = await (prisma as any).approvalWorkflowTemplate.findMany({
+        where: { tenantId: ctx.tenantId },
+        select: { isActive: true },
+      });
+    } catch {
+      /* tolerate */
+    }
+    try {
+      notifications = await (prisma as any).notificationRule.findMany({
+        where: { tenantId: ctx.tenantId },
+        select: { isActive: true },
+      });
+    } catch {
+      /* tolerate */
+    }
+    try {
+      audits = await (prisma as any).auditTrailSetting.findMany({
+        where: { tenantId: ctx.tenantId },
+        select: { domain: true },
+      });
+    } catch {
+      /* tolerate */
+    }
+    const ruleSetsByStatus = ruleSets.reduce<Record<string, number>>(
+      (acc, r) => ({ ...acc, [r.status]: (acc[r.status] ?? 0) + 1 }),
+      {}
+    );
+    const lines: Array<Record<string, unknown>> = [
+      { metric: 'ruleSets.total', value: ruleSets.length },
+      { metric: 'ruleSets.draft', value: ruleSetsByStatus.DRAFT ?? 0 },
+      { metric: 'ruleSets.published', value: ruleSetsByStatus.PUBLISHED ?? 0 },
+      { metric: 'ruleSets.superseded', value: ruleSetsByStatus.SUPERSEDED ?? 0 },
+      { metric: 'approvalTemplates.total', value: approvals.length },
+      { metric: 'approvalTemplates.active', value: approvals.filter((a) => a.isActive).length },
+      { metric: 'notificationRules.total', value: notifications.length },
+      {
+        metric: 'notificationRules.active',
+        value: notifications.filter((n) => n.isActive).length,
+      },
+      { metric: 'auditSettings.total', value: audits.length },
+      {
+        metric: 'auditSettings.domainsCovered',
+        value: new Set(audits.map((a) => a.domain)).size,
+      },
+    ];
+    return {
+      schemaVersion: '1.0.0',
+      totals: { employeeCount: 0, grossAmount: 0, deductionAmount: 0, netAmount: 0 },
+      lines,
     };
   },
 });

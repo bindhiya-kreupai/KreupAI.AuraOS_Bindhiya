@@ -1,335 +1,235 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuites name="vitest tests" tests="152" failures="0" errors="0" time="0.078550084">
-    <testsuite name="src/lib/services/__tests__/ai-governance.service.test.ts" timestamp="2026-06-03T18:16:17.218Z" hostname="MacBookPro.lan" tests="18" failures="0" errors="0" skipped="0" time="0.00706075">
-        <testcase classname="src/lib/services/__tests__/ai-governance.service.test.ts" name="fourFifthsPassed (EEOC 4/5ths rule) &gt; passes when worst cohort ratio ≥ 0.8" time="0.000958667">
+<testsuites name="vitest tests" tests="109" failures="0" errors="0" time="0.06384575">
+    <testsuite name="src/lib/services/__tests__/hrms-config.service.test.ts" timestamp="2026-06-17T11:12:31.568Z" hostname="MacBookPro-2.lan" tests="15" failures="0" errors="0" skipped="0" time="0.009034583">
+        <testcase classname="src/lib/services/__tests__/hrms-config.service.test.ts" name="resolveActiveRuleSet &gt; returns null when none published" time="0.000866542">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/ai-governance.service.test.ts" name="fourFifthsPassed (EEOC 4/5ths rule) &gt; fails when worst cohort ratio &lt; 0.8" time="0.000135042">
+        <testcase classname="src/lib/services/__tests__/hrms-config.service.test.ts" name="resolveActiveRuleSet &gt; picks the latest effectiveFrom among published rows" time="0.00024925">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/ai-governance.service.test.ts" name="fourFifthsPassed (EEOC 4/5ths rule) &gt; handles single cohort (ratio = 1.0)" time="0.000173916">
+        <testcase classname="src/lib/services/__tests__/hrms-config.service.test.ts" name="resolveActiveRuleSet &gt; excludes rows with effectiveTo in the past" time="0.0002545">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/ai-governance.service.test.ts" name="fourFifthsPassed (EEOC 4/5ths rule) &gt; handles empty cohorts (passes vacuously)" time="0.000183083">
+        <testcase classname="src/lib/services/__tests__/hrms-config.service.test.ts" name="nextStage &gt; returns first unmet stage" time="0.000411083">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/ai-governance.service.test.ts" name="fourFifthsPassed (EEOC 4/5ths rule) &gt; computes worstCohortGap correctly" time="0.000521">
+        <testcase classname="src/lib/services/__tests__/hrms-config.service.test.ts" name="auditCapturePolicy &gt; returns defaults when no row" time="0.000266417">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/ai-governance.service.test.ts" name="AIGovernanceService.canModelTransition &gt; DRAFT → UNDER_REVIEW / RECALLED only" time="0.000163125">
+        <testcase classname="src/lib/services/__tests__/hrms-config.service.test.ts" name="auditCapturePolicy &gt; honours per-domain override" time="0.000215209">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/ai-governance.service.test.ts" name="AIGovernanceService.canModelTransition &gt; UNDER_REVIEW ↔ DRAFT and UNDER_REVIEW → PUBLISHED" time="0.000173833">
+        <testcase classname="src/lib/services/__tests__/hrms-config.service.test.ts" name="auditCapturePolicy &gt; ignores inactive rows" time="0.000215708">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/ai-governance.service.test.ts" name="AIGovernanceService.canModelTransition &gt; PUBLISHED → DEPRECATED / RECALLED only" time="0.000102875">
+        <testcase classname="src/lib/services/__tests__/hrms-config.service.test.ts" name="countryRuleSetService.publish &gt; refuses to publish a non-DRAFT row" time="0.001007208">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/ai-governance.service.test.ts" name="AIGovernanceService.canModelTransition &gt; RECALLED is terminal" time="0.000178375">
+        <testcase classname="src/lib/services/__tests__/hrms-config.service.test.ts" name="countryRuleSetService.publish &gt; refuses cross-tenant" time="0.000460458">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/ai-governance.service.test.ts" name="AIGovernanceService.canModelTransition &gt; assertModelTransition throws on illegal moves" time="0.000276125">
+        <testcase classname="src/lib/services/__tests__/hrms-config.service.test.ts" name="countryRuleSetService.publish &gt; supersedes prior PUBLISHED rows for same (country,domain)" time="0.000726292">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/ai-governance.service.test.ts" name="AIGovernanceService.validateHighRiskPublishable &gt; returns no reasons for a complete HIGH-risk card" time="0.000350209">
+        <testcase classname="src/lib/services/__tests__/hrms-config.service.test.ts" name="approvalWorkflowTemplateService.upsert &gt; saves with defaults when minimal input" time="0.000255291">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/ai-governance.service.test.ts" name="AIGovernanceService.validateHighRiskPublishable &gt; returns empty array for non-HIGH risk tiers (no gate)" time="0.000147625">
+        <testcase classname="src/lib/services/__tests__/hrms-config.service.test.ts" name="notificationRuleService.upsert &gt; captures bilingual templates and channel array" time="0.000520042">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/ai-governance.service.test.ts" name="AIGovernanceService.validateHighRiskPublishable &gt; flags short intendedUse" time="0.000088084">
+        <testcase classname="src/lib/services/__tests__/hrms-config.service.test.ts" name="auditTrailSettingService.policy &gt; falls back to default when no setting for domain" time="0.000213208">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/ai-governance.service.test.ts" name="AIGovernanceService.validateHighRiskPublishable &gt; flags missing knownLimitations" time="0.000085333">
+        <testcase classname="src/lib/services/__tests__/hrms-config.service.test.ts" name="auditTrailSettingService.policy &gt; returns configured policy when present" time="0.000467625">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/ai-governance.service.test.ts" name="AIGovernanceService.validateHighRiskPublishable &gt; flags missing fairnessMetrics" time="0.000111625">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/ai-governance.service.test.ts" name="AIGovernanceService.validateHighRiskPublishable &gt; flags missing recent passing bias audit" time="0.000085333">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/ai-governance.service.test.ts" name="AIGovernanceService.validateHighRiskPublishable &gt; flags failing most-recent bias audit" time="0.000099584">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/ai-governance.service.test.ts" name="AIGovernanceService.validateHighRiskPublishable &gt; flags stale bias audit (&gt; 12 months)" time="0.000084833">
+        <testcase classname="src/lib/services/__tests__/hrms-config.service.test.ts" name="HRMS_CONFIG_CONSTANTS &gt; covers GCC countries and shipped compliance domains" time="0.000565375">
         </testcase>
     </testsuite>
-    <testsuite name="src/lib/services/__tests__/asset.service.test.ts" timestamp="2026-06-03T18:16:17.221Z" hostname="MacBookPro.lan" tests="8" failures="0" errors="0" skipped="0" time="0.007652708">
-        <testcase classname="src/lib/services/__tests__/asset.service.test.ts" name="AssetService.findAll &gt; filters by tenant + category + status + locationId" time="0.001058916">
+    <testsuite name="src/lib/services/__tests__/immigration-compliance.service.test.ts" timestamp="2026-06-17T11:12:31.570Z" hostname="MacBookPro-2.lan" tests="27" failures="0" errors="0" skipped="0" time="0.014258792">
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="alertWindow ladder &gt; returns EXPIRED for negative days" time="0.000930834">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/asset.service.test.ts" name="AssetService.findAll &gt; builds a 4-field OR clause for search" time="0.001163458">
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="alertWindow ladder &gt; returns WINDOW_7 inside 7 days" time="0.000331417">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/asset.service.test.ts" name="AssetService.findAll &gt; paginates correctly" time="0.0011375">
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="alertWindow ladder &gt; returns WINDOW_30 between 8 and 30 days" time="0.000293208">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/asset.service.test.ts" name="AssetService.findById — tenant isolation &gt; scopes by tenantId + id" time="0.000396583">
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="alertWindow ladder &gt; returns WINDOW_60 between 31 and 60 days" time="0.000351959">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/asset.service.test.ts" name="AssetService.findById — tenant isolation &gt; returns null when tenant mismatch" time="0.000192541">
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="alertWindow ladder &gt; returns null beyond 60 days" time="0.000236209">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/asset.service.test.ts" name="AssetService.create &gt; refuses when asset code already exists" time="0.001759708">
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="daysToExpiry &gt; returns integer day difference" time="0.000215042">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/asset.service.test.ts" name="AssetService.create &gt; rejects invalid DTO via zod" time="0.000325916">
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="daysToExpiry &gt; returns negative for past dates" time="0.000259208">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/asset.service.test.ts" name="AssetService.getAssignmentHistory &gt; queries assignments for the asset, scoped by tenant" time="0.000211125">
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="riskBand &gt; bands 1..25" time="0.000331">
         </testcase>
-    </testsuite>
-    <testsuite name="src/lib/services/__tests__/cobra.service.test.ts" timestamp="2026-06-03T18:16:17.221Z" hostname="MacBookPro.lan" tests="12" failures="0" errors="0" skipped="0" time="0.00585025">
-        <testcase classname="src/lib/services/__tests__/cobra.service.test.ts" name="CobraService.computeDeadlines &gt; TERMINATION → 60-day election window + 18-month coverage cap" time="0.000687959">
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="immigrationGatingReason &gt; returns null when clean" time="0.000423875">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/cobra.service.test.ts" name="CobraService.computeDeadlines &gt; REDUCED_HOURS → 18-month cap (same as termination)" time="0.000113667">
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="immigrationGatingReason &gt; gates on expired + 7d window + overdue transfers" time="0.00030475">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/cobra.service.test.ts" name="CobraService.computeDeadlines &gt; DIVORCE / DEPENDENT_LOSS / DEATH / MEDICARE → 36-month cap" time="0.000238167">
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="immigrationGatingReason &gt; gates on checklist + risk signals" time="0.000252542">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/cobra.service.test.ts" name="CobraService.computeCobraPremium &gt; sums employee+employer and adds 2% admin uplift" time="0.000616125">
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="renewalAlertService.raise &gt; skips when document is beyond 60-day window" time="0.00036325">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/cobra.service.test.ts" name="CobraService.computeCobraPremium &gt; rounds to 2 decimals" time="0.000403708">
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="renewalAlertService.raise &gt; writes EXPIRED window for past expiry" time="0.000314375">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/cobra.service.test.ts" name="CobraService transitions &gt; PENDING_ELECTION → ELECTED / DECLINED / EXPIRED / CANCELED" time="0.00020625">
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="renewalAlertService.raise &gt; writes WINDOW_7 for expiry within 7 days" time="0.000483542">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/cobra.service.test.ts" name="CobraService transitions &gt; ELECTED → ACTIVE / CANCELED only" time="0.000136208">
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="renewalAlertService.raise &gt; is idempotent — upsert keyed by (subject, document, expiresAt, window)" time="0.000772333">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/cobra.service.test.ts" name="CobraService transitions &gt; ACTIVE → TERMINATED_NONPAYMENT / EXPIRED / CANCELED" time="0.000237958">
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="renewalAlertService.openCountsByWindow &gt; counts only OPEN alerts grouped by window" time="0.000456875">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/cobra.service.test.ts" name="CobraService transitions &gt; terminal states reject everything" time="0.000269208">
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="transferCaseService.complete &gt; refuses to complete from REQUESTED (must be APPROVED)" time="0.00108325">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/cobra.service.test.ts" name="CobraService transitions &gt; assertTransition throws on illegal moves" time="0.000761292">
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="transferCaseService.complete &gt; refuses cross-tenant" time="0.000460084">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/cobra.service.test.ts" name="COBRA error contracts &gt; InvalidCobraTransitionError is a real Error subclass" time="0.000222292">
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="transferCaseService.complete &gt; completes from APPROVED" time="0.000305625">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/cobra.service.test.ts" name="COBRA error contracts &gt; ElectionWindowExpiredError carries the deadline in the message" time="0.000262084">
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="transferCaseService.openOverdueCount &gt; flags cases older than 60 days from requestedAt" time="0.000327584">
         </testcase>
-    </testsuite>
-    <testsuite name="src/lib/services/__tests__/disaster-recovery.service.test.ts" timestamp="2026-06-03T18:16:17.222Z" hostname="MacBookPro.lan" tests="10" failures="0" errors="0" skipped="0" time="0.004414333">
-        <testcase classname="src/lib/services/__tests__/disaster-recovery.service.test.ts" name="DisasterRecoveryService.evaluateDrill &gt; PASS when both RPO and RTO targets met" time="0.000909042">
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="immigrationAuditChecklistService.overdueCount &gt; flags items &gt; 35 days since review" time="0.000316375">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/disaster-recovery.service.test.ts" name="DisasterRecoveryService.evaluateDrill &gt; PASS at exact targets (≤ is the boundary)" time="0.0001145">
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="immigrationRiskService.upsert &gt; clamps L/I and derives score+band" time="0.000349958">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/disaster-recovery.service.test.ts" name="DisasterRecoveryService.evaluateDrill &gt; FAIL when RPO missed" time="0.000235459">
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="immigrationComplianceCertificateService &gt; refuses to sign while gated" time="0.000735917">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/disaster-recovery.service.test.ts" name="DisasterRecoveryService.evaluateDrill &gt; FAIL when RTO missed" time="0.000243541">
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="immigrationComplianceCertificateService &gt; signs when clean" time="0.000416833">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/disaster-recovery.service.test.ts" name="DisasterRecoveryService.evaluateDrill &gt; FAIL with both missed → both in missed array" time="0.000191416">
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="immigrationComplianceCertificateService &gt; generate gates when expired + 7d alerts present" time="0.001017584">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/disaster-recovery.service.test.ts" name="DisasterRecoveryService.evaluateDrill &gt; INCONCLUSIVE when either actual is missing" time="0.000107625">
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="IMMIGRATION_COMPLIANCE_CONSTANTS &gt; covers all 6 GCC countries" time="0.000333083">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/disaster-recovery.service.test.ts" name="DisasterRecoveryService transitions &gt; PLANNED → IN_PROGRESS / INCONCLUSIVE only" time="0.000361083">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/disaster-recovery.service.test.ts" name="DisasterRecoveryService transitions &gt; IN_PROGRESS → PASS / FAIL / INCONCLUSIVE" time="0.0001245">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/disaster-recovery.service.test.ts" name="DisasterRecoveryService transitions &gt; PASS / FAIL / INCONCLUSIVE are terminal" time="0.000265833">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/disaster-recovery.service.test.ts" name="DisasterRecoveryService transitions &gt; assertTransition throws on illegal moves" time="0.000288416">
+        <testcase classname="src/lib/services/__tests__/immigration-compliance.service.test.ts" name="IMMIGRATION_COMPLIANCE_CONSTANTS &gt; covers entry/work/residence/dependent visa categories" time="0.000745458">
         </testcase>
     </testsuite>
-    <testsuite name="src/lib/services/__tests__/dsar.service.test.ts" timestamp="2026-06-03T18:16:17.223Z" hostname="MacBookPro.lan" tests="10" failures="0" errors="0" skipped="0" time="0.003786416">
-        <testcase classname="src/lib/services/__tests__/dsar.service.test.ts" name="DSARService.computeDueBy (SLA defaults) &gt; GDPR Art. 15 access → 30 days" time="0.00061375">
+    <testsuite name="src/lib/services/__tests__/org-compliance.service.test.ts" timestamp="2026-06-17T11:12:31.572Z" hostname="MacBookPro-2.lan" tests="17" failures="0" errors="0" skipped="0" time="0.008261041">
+        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="headcountVariance &gt; vacant when filled below approved" time="0.001152125">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/dsar.service.test.ts" name="DSARService.computeDueBy (SLA defaults) &gt; GDPR Art. 17 deletion → 30 days" time="0.000193834">
+        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="headcountVariance &gt; overhire when filled above approved" time="0.000237459">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/dsar.service.test.ts" name="DSARService.computeDueBy (SLA defaults) &gt; CCPA basis override → 45 days" time="0.000091375">
+        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="headcountVariance &gt; clamps both to 0 when equal" time="0.000326875">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/dsar.service.test.ts" name="DSARService.computeDueBy (SLA defaults) &gt; PDPL basis → 30 days" time="0.00022575">
+        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="agingDays &gt; returns integer days" time="0.000327625">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/dsar.service.test.ts" name="DSARService transitions &gt; RECEIVED → VERIFYING / REJECTED only" time="0.000252917">
+        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="agingDays &gt; uses filledAt when present" time="0.00022425">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/dsar.service.test.ts" name="DSARService transitions &gt; VERIFYING → IN_PROGRESS / REJECTED only" time="0.000122291">
+        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="agingDays &gt; never negative" time="0.000151416">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/dsar.service.test.ts" name="DSARService transitions &gt; IN_PROGRESS → FULFILLED / REJECTED / EXTENDED" time="0.000182208">
+        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="orgGatingReason &gt; returns null when clean" time="0.000189541">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/dsar.service.test.ts" name="DSARService transitions &gt; EXTENDED can return to IN_PROGRESS or close out" time="0.000107333">
+        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="orgGatingReason &gt; gates on overhire + aged vacancies" time="0.000268208">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/dsar.service.test.ts" name="DSARService transitions &gt; terminal states reject" time="0.000191167">
+        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="orgGatingReason &gt; gates on HIGH/CRIT checklist + unapproved vacancies" time="0.000348917">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/dsar.service.test.ts" name="DSARService transitions &gt; assertTransition throws on illegal moves" time="0.000268083">
+        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="orgAuditChecklistService.overdueCount &gt; flags items &gt; 35 days since last review" time="0.000389042">
         </testcase>
-    </testsuite>
-    <testsuite name="src/lib/services/__tests__/employment-history.service.test.ts" timestamp="2026-06-03T18:16:17.224Z" hostname="MacBookPro.lan" tests="7" failures="0" errors="0" skipped="0" time="0.005745084">
-        <testcase classname="src/lib/services/__tests__/employment-history.service.test.ts" name="EmploymentHistoryService.findAll &gt; filters by tenant + employee + changeType" time="0.000948792">
+        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="orgPositionControlService.upsert &gt; derives vacant + overhire from headcount inputs" time="0.000267583">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/employment-history.service.test.ts" name="EmploymentHistoryService.findAll &gt; builds effectiveDate range from startDate + endDate" time="0.00045375">
+        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="orgVacancyService &gt; refuses to fill unknown vacancy" time="0.000821708">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/employment-history.service.test.ts" name="EmploymentHistoryService.findAll &gt; paginates with default ordering effectiveDate desc" time="0.001349125">
+        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="orgVacancyService &gt; fill sets aging days from raisedAt" time="0.000268625">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/employment-history.service.test.ts" name="EmploymentHistoryService.findById — tenant isolation &gt; scopes by tenantId + id" time="0.00035225">
+        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="orgVacancyService &gt; openAged separates aged + unapproved counts" time="0.000532625">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/employment-history.service.test.ts" name="EmploymentHistoryService.findById — tenant isolation &gt; returns null when tenant mismatch" time="0.000184958">
+        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="orgComplianceCertificateService.sign &gt; refuses while gated" time="0.000296958">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/employment-history.service.test.ts" name="EmploymentHistoryService.getEmployeeTimeline &gt; queries records for the employee in tenant" time="0.000133917">
+        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="orgComplianceCertificateService.sign &gt; signs when clean" time="0.000291542">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/employment-history.service.test.ts" name="EmploymentHistoryService.delete &gt; throws when record not found" time="0.000750583">
+        <testcase classname="src/lib/services/__tests__/org-compliance.service.test.ts" name="ORG_COMPLIANCE_CONSTANTS &gt; covers org structure categories" time="0.000572084">
         </testcase>
     </testsuite>
-    <testsuite name="src/lib/services/__tests__/exit.service.test.ts" timestamp="2026-06-03T18:16:17.224Z" hostname="MacBookPro.lan" tests="8" failures="0" errors="0" skipped="0" time="0.004238792">
-        <testcase classname="src/lib/services/__tests__/exit.service.test.ts" name="ExitService.canTransition &gt; PENDING → APPROVED / CANCELED only" time="0.000827125">
+    <testsuite name="src/lib/services/__tests__/payroll-compliance.service.test.ts" timestamp="2026-06-17T11:12:31.573Z" hostname="MacBookPro-2.lan" tests="13" failures="0" errors="0" skipped="0" time="0.007479584">
+        <testcase classname="src/lib/services/__tests__/payroll-compliance.service.test.ts" name="riskBand &gt; maps score to band" time="0.001147375">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/exit.service.test.ts" name="ExitService.canTransition &gt; APPROVED → PROCESSING / CANCELED only" time="0.000189417">
+        <testcase classname="src/lib/services/__tests__/payroll-compliance.service.test.ts" name="payrollGatingReason &gt; returns null when clean" time="0.000284167">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/exit.service.test.ts" name="ExitService.canTransition &gt; PROCESSING → COMPLETED / CANCELED only" time="0.00021075">
+        <testcase classname="src/lib/services/__tests__/payroll-compliance.service.test.ts" name="payrollGatingReason &gt; gates on unapproved run" time="0.000299541">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/exit.service.test.ts" name="ExitService.canTransition &gt; terminal states reject all transitions" time="0.000268375">
+        <testcase classname="src/lib/services/__tests__/payroll-compliance.service.test.ts" name="payrollGatingReason &gt; gates on maker-checker breach + critical findings + variance" time="0.000381333">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/exit.service.test.ts" name="ExitService.assertTransition &gt; throws InvalidExitTransitionError on illegal moves" time="0.000624416">
+        <testcase classname="src/lib/services/__tests__/payroll-compliance.service.test.ts" name="payrollGatingReason &gt; does not gate at 0.5% variance threshold edge" time="0.000183917">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/exit.service.test.ts" name="ExitService.assertTransition &gt; is silent on legal moves" time="0.000268583">
+        <testcase classname="src/lib/services/__tests__/payroll-compliance.service.test.ts" name="payrollGatingReason &gt; gates on bank-file mismatch and missing GL postings" time="0.000269875">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/exit.service.test.ts" name="Exit error contracts &gt; InvalidExitTransitionError is a real Error subclass" time="0.0001485">
+        <testcase classname="src/lib/services/__tests__/payroll-compliance.service.test.ts" name="payrollGovernanceService.overdueCount &gt; flags MONTHLY controls older than 35 days" time="0.000321958">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/exit.service.test.ts" name="Exit error contracts &gt; ExitNotClearedError carries the user-facing message" time="0.0001965">
+        <testcase classname="src/lib/services/__tests__/payroll-compliance.service.test.ts" name="payrollGovernanceService.overdueCount &gt; uses cadence-specific thresholds" time="0.00021825">
         </testcase>
-    </testsuite>
-    <testsuite name="src/lib/services/__tests__/expense.service.test.ts" timestamp="2026-06-03T18:16:17.225Z" hostname="MacBookPro.lan" tests="13" failures="0" errors="0" skipped="0" time="0.0060625">
-        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService transitions &gt; DRAFT → SUBMITTED / CANCELED only" time="0.000799417">
+        <testcase classname="src/lib/services/__tests__/payroll-compliance.service.test.ts" name="payrollRiskService.upsert &gt; clamps L/I to 1..5 and derives score+band" time="0.000409542">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService transitions &gt; SUBMITTED → APPROVED / REJECTED / CANCELED only" time="0.000175875">
+        <testcase classname="src/lib/services/__tests__/payroll-compliance.service.test.ts" name="payrollComplianceCertificateService &gt; refuses to sign while gated" time="0.000905791">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService transitions &gt; APPROVED → PAID / CANCELED only" time="0.000200208">
+        <testcase classname="src/lib/services/__tests__/payroll-compliance.service.test.ts" name="payrollComplianceCertificateService &gt; signs when clean" time="0.000273667">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService transitions &gt; REJECTED → DRAFT only (re-open for re-submission)" time="0.000260333">
+        <testcase classname="src/lib/services/__tests__/payroll-compliance.service.test.ts" name="payrollComplianceCertificateService &gt; generate computes reconciliationVariancePct from runs" time="0.000749125">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService transitions &gt; PAID and CANCELED are terminal" time="0.00019175">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService transitions &gt; assertTransition throws InvalidExpenseTransitionError on illegal moves" time="0.000584708">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService.evaluatePolicy &gt; routes ≤ managerThreshold totals to auto" time="0.000489417">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService.evaluatePolicy &gt; routes manager-threshold totals to manager" time="0.000094875">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService.evaluatePolicy &gt; routes finance-threshold totals to finance" time="0.000174167">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService.evaluatePolicy &gt; blocks submission when a line is above receipt threshold and has no receipt" time="0.000254166">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService.evaluatePolicy &gt; warns (but does not fail) when a line exceeds the category cap" time="0.000131084">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="ExpenseService.evaluatePolicy &gt; defaults to manager lane when no policy is attached" time="0.000079333">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/expense.service.test.ts" name="Expense error contracts &gt; PolicyViolationError carries failures and reason" time="0.000276875">
+        <testcase classname="src/lib/services/__tests__/payroll-compliance.service.test.ts" name="PAYROLL_COMPLIANCE_CONSTANTS &gt; covers SOD, period lock and GL posting categories" time="0.00060925">
         </testcase>
     </testsuite>
-    <testsuite name="src/lib/services/__tests__/fmla.service.test.ts" timestamp="2026-06-03T18:16:17.226Z" hostname="MacBookPro.lan" tests="19" failures="0" errors="0" skipped="0" time="0.0058255">
-        <testcase classname="src/lib/services/__tests__/fmla.service.test.ts" name="FMLA eligibility (§ 825.110) &gt; FMLA requires ≥12 months tenure AND ≥1250 hours in prior year" time="0.000733834">
+    <testsuite name="src/lib/services/__tests__/records-compliance.service.test.ts" timestamp="2026-06-17T11:12:31.574Z" hostname="MacBookPro-2.lan" tests="16" failures="0" errors="0" skipped="0" time="0.008665792">
+        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="completenessScore &gt; returns 100 GREEN when zero mandatory total" time="0.001214833">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/fmla.service.test.ts" name="FMLA eligibility (§ 825.110) &gt; CFRA mirrors FMLA thresholds" time="0.00019525">
+        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="completenessScore &gt; GREEN when all present" time="0.000288">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/fmla.service.test.ts" name="FMLA eligibility (§ 825.110) &gt; OFLA only requires 6 months tenure, no hours minimum" time="0.000113458">
+        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="completenessScore &gt; AMBER between 70 and 89" time="0.000352292">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/fmla.service.test.ts" name="FMLA eligibility (§ 825.110) &gt; returns a human-readable reason on ineligibility" time="0.000257167">
+        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="completenessScore &gt; RED below 70" time="0.000312084">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/fmla.service.test.ts" name="FMLA period computation (§ 825.200) &gt; CALENDAR_YEAR — Jan 1 → Dec 31 of the start year" time="0.000318458">
+        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="completenessScore &gt; expired docs apply 5-point penalty each" time="0.000181459">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/fmla.service.test.ts" name="FMLA period computation (§ 825.200) &gt; ROLLING_FORWARD — start date → 365 days later" time="0.000126625">
+        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="completenessScore &gt; expiring within 30d adds penalty capped at 10" time="0.00016125">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/fmla.service.test.ts" name="FMLA period computation (§ 825.200) &gt; ROLLING_BACKWARD — effective entitlement reduced by prior-year usage" time="0.000082916">
+        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="recordsGatingReason &gt; returns null when clean" time="0.000245125">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/fmla.service.test.ts" name="FMLA period computation (§ 825.200) &gt; ROLLING_BACKWARD with no prior usage gives full 480h" time="0.000130916">
+        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="recordsGatingReason &gt; gates on RED employees + expired docs" time="0.000230042">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/fmla.service.test.ts" name="FMLA period computation (§ 825.200) &gt; ROLLING_BACKWARD never goes negative when prior usage &gt; 480" time="0.000155209">
+        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="recordsGatingReason &gt; gates on HIGH/CRIT checklist + overdue + risks" time="0.000322542">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/fmla.service.test.ts" name="FMLA period computation (§ 825.200) &gt; EMPLOYEE_ANNIVERSARY — uses the most recent anniversary on/before the start" time="0.000188958">
+        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="riskBand &gt; bands 1..25" time="0.000336917">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/fmla.service.test.ts" name="FMLA case transitions &gt; DRAFT → NOTICE_SENT / DENIED / CANCELED only" time="0.000141083">
+        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="recordsCompletenessService.upsert &gt; derives mandatoryMissing, score and band" time="0.000339625">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/fmla.service.test.ts" name="FMLA case transitions &gt; NOTICE_SENT → CERTIFIED / DENIED / CANCELED only" time="0.000170667">
+        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="recordsCompletenessService.aggregate &gt; aggregates band counts, average score, missing/expired totals" time="0.000307209">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/fmla.service.test.ts" name="FMLA case transitions &gt; ACTIVE ↔ INTERMITTENT" time="0.000084959">
+        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="recordsAuditChecklistService.overdueCount &gt; flags items &gt; 35 days" time="0.000223209">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/fmla.service.test.ts" name="FMLA case transitions &gt; EXHAUSTED → COMPLETED only" time="0.000176292">
+        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="recordsComplianceCertificateService &gt; refuses to sign while gated" time="0.001025791">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/fmla.service.test.ts" name="FMLA case transitions &gt; terminal states reject all transitions" time="0.000179167">
+        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="recordsComplianceCertificateService &gt; generates with gating when RED employees and expired docs present" time="0.000408667">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/fmla.service.test.ts" name="FMLA case transitions &gt; assertTransition throws on illegal moves" time="0.00049475">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/fmla.service.test.ts" name="FMLA error contracts &gt; IneligibleForFMLAError carries reason" time="0.00020025">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/fmla.service.test.ts" name="FMLA error contracts &gt; EntitlementExceededError carries attempted + remaining" time="0.000176459">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/fmla.service.test.ts" name="FMLA error contracts &gt; InvalidFMLATransitionError is a real Error subclass" time="0.000090458">
+        <testcase classname="src/lib/services/__tests__/records-compliance.service.test.ts" name="RECORDS_COMPLIANCE_CONSTANTS &gt; covers identity, contract, visa, work permit" time="0.0007875">
         </testcase>
     </testsuite>
-    <testsuite name="src/lib/services/__tests__/full-final.service.test.ts" timestamp="2026-06-03T18:16:17.228Z" hostname="MacBookPro.lan" tests="10" failures="0" errors="0" skipped="0" time="0.0042545">
-        <testcase classname="src/lib/services/__tests__/full-final.service.test.ts" name="FullFinalService.calculate — UAE EOSB &gt; returns zero EOSB before any service" time="0.000812166">
+    <testsuite name="src/lib/services/__tests__/statutory-report.service.test.ts" timestamp="2026-06-17T11:12:31.575Z" hostname="MacBookPro-2.lan" tests="10" failures="0" errors="0" skipped="0" time="0.008540583">
+        <testcase classname="src/lib/services/__tests__/statutory-report.service.test.ts" name="Statutory report registry &gt; exposes the 24 statutory generators plus 6 GCC compliance certificate exports (30 total)" time="0.000999458">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/full-final.service.test.ts" name="FullFinalService.calculate — UAE EOSB &gt; applies 21 days basic per year for &lt;5 years" time="0.000177458">
+        <testcase classname="src/lib/services/__tests__/statutory-report.service.test.ts" name="Statutory report registry &gt; filters by country code" time="0.000844375">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/full-final.service.test.ts" name="FullFinalService.calculate — UAE EOSB &gt; caps at 24 months basic for long service" time="0.000113541">
+        <testcase classname="src/lib/services/__tests__/statutory-report.service.test.ts" name="Statutory report registry &gt; all 6 GCC compliance certificate exports are registered with the expected formats" time="0.000309792">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/full-final.service.test.ts" name="FullFinalService.calculate — KSA Article 84 &gt; uses half-month basic per year under 5 years" time="0.000289666">
+        <testcase classname="src/lib/services/__tests__/statutory-report.service.test.ts" name="Statutory report registry &gt; returns specs without the generate function (safe to serialize)" time="0.002583459">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/full-final.service.test.ts" name="FullFinalService.calculate — KSA Article 84 &gt; switches to full-month basic per year beyond 5 years" time="0.000189">
+        <testcase classname="src/lib/services/__tests__/statutory-report.service.test.ts" name="GCC compliance certificate export generators &gt; IMMIGRATION_COMPLIANCE_CERT surfaces gating reason as warning" time="0.00044">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/full-final.service.test.ts" name="FullFinalService.calculate — India Gratuity Act 1972 &gt; returns zero before 5 years" time="0.000118417">
+        <testcase classname="src/lib/services/__tests__/statutory-report.service.test.ts" name="GCC compliance certificate export generators &gt; PAYROLL_COMPLIANCE_CERT emits all 11 governance metrics" time="0.00032325">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/full-final.service.test.ts" name="FullFinalService.calculate — India Gratuity Act 1972 &gt; uses (15/26) * basic * years for &gt;=5 years" time="0.000094625">
+        <testcase classname="src/lib/services/__tests__/statutory-report.service.test.ts" name="GCC compliance certificate export generators &gt; HRMS_CONFIG_SNAPSHOT tolerates missing tables and emits zero-filled snapshot" time="0.000236417">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/full-final.service.test.ts" name="FullFinalService.calculate — India Gratuity Act 1972 &gt; caps at INR 20,00,000" time="0.000089917">
+        <testcase classname="src/lib/services/__tests__/statutory-report.service.test.ts" name="GCC compliance certificate export generators &gt; RECORDS_COMPLIANCE_CERT populates employeeCount total from cert.employeesEvaluated" time="0.000145166">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/full-final.service.test.ts" name="FullFinalService.calculate — breakdown composition &gt; subtracts loan + notice + other deductions from gross" time="0.00035625">
+        <testcase classname="src/lib/services/__tests__/statutory-report.service.test.ts" name="Statutory report submission contract (#85) &gt; exports InvalidReportTransitionError as a real Error subclass" time="0.000211">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/full-final.service.test.ts" name="FullFinalService.calculate — breakdown composition &gt; includes a breakdown line for every component (even zeros)" time="0.000392042">
-        </testcase>
-    </testsuite>
-    <testsuite name="src/lib/services/__tests__/gl-posting.service.test.ts" timestamp="2026-06-03T18:16:17.230Z" hostname="MacBookPro.lan" tests="11" failures="0" errors="0" skipped="0" time="0.00489725">
-        <testcase classname="src/lib/services/__tests__/gl-posting.service.test.ts" name="GLPostingService.assertBalanced &gt; accepts equal debits and credits" time="0.000669459">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/gl-posting.service.test.ts" name="GLPostingService.assertBalanced &gt; accepts multi-line balanced journal with 2dp rounding" time="0.000175542">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/gl-posting.service.test.ts" name="GLPostingService.assertBalanced &gt; rejects unbalanced journal with UnbalancedJournalError" time="0.000594667">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/gl-posting.service.test.ts" name="GLPostingService.assertBalanced &gt; tolerates floating-point noise within 1 cent" time="0.000564334">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/gl-posting.service.test.ts" name="GLPostingService transitions &gt; DRAFT → POSTED / REVERSED only" time="0.000226916">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/gl-posting.service.test.ts" name="GLPostingService transitions &gt; POSTED → EXPORTED / REVERSED only" time="0.0001225">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/gl-posting.service.test.ts" name="GLPostingService transitions &gt; EXPORTED → REVERSED only" time="0.000176542">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/gl-posting.service.test.ts" name="GLPostingService transitions &gt; REVERSED is terminal" time="0.0001035">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/gl-posting.service.test.ts" name="GLPostingService transitions &gt; assertTransition throws on illegal moves" time="0.000303125">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/gl-posting.service.test.ts" name="GL error contracts &gt; UnbalancedJournalError carries totals in the message" time="0.000278125">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/gl-posting.service.test.ts" name="GL error contracts &gt; InvalidGLTransitionError is a real Error subclass" time="0.000092208">
+        <testcase classname="src/lib/services/__tests__/statutory-report.service.test.ts" name="Statutory report submission contract (#85) &gt; rejects placeholder submission references shorter than 3 chars" time="0.000969708">
         </testcase>
     </testsuite>
-    <testsuite name="src/lib/services/__tests__/labour-ministry-submission.service.test.ts" timestamp="2026-06-03T18:16:17.231Z" hostname="MacBookPro.lan" tests="9" failures="0" errors="0" skipped="0" time="0.004022375">
-        <testcase classname="src/lib/services/__tests__/labour-ministry-submission.service.test.ts" name="LabourMinistrySubmissionService transitions &gt; DRAFT → READY / REJECTED only" time="0.000745125">
+    <testsuite name="src/lib/services/__tests__/talent-acquisition-compliance.service.test.ts" timestamp="2026-06-17T11:12:31.576Z" hostname="MacBookPro-2.lan" tests="11" failures="0" errors="0" skipped="0" time="0.007605375">
+        <testcase classname="src/lib/services/__tests__/talent-acquisition-compliance.service.test.ts" name="riskBand &gt; maps to bands" time="0.001276666">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/labour-ministry-submission.service.test.ts" name="LabourMinistrySubmissionService transitions &gt; READY ↔ DRAFT and READY → SUBMITTED / REJECTED" time="0.00015825">
+        <testcase classname="src/lib/services/__tests__/talent-acquisition-compliance.service.test.ts" name="taGatingReason &gt; null when clean" time="0.000232625">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/labour-ministry-submission.service.test.ts" name="LabourMinistrySubmissionService transitions &gt; SUBMITTED → ACKNOWLEDGED / REJECTED only" time="0.0001945">
+        <testcase classname="src/lib/services/__tests__/talent-acquisition-compliance.service.test.ts" name="taGatingReason &gt; gates when any signal is non-zero" time="0.000387084">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/labour-ministry-submission.service.test.ts" name="LabourMinistrySubmissionService transitions &gt; REJECTED can be redrafted or resubmitted" time="0.000264917">
+        <testcase classname="src/lib/services/__tests__/talent-acquisition-compliance.service.test.ts" name="taAuditChecklistService.overdueCount &gt; flags items &gt; 35 days" time="0.000363708">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/labour-ministry-submission.service.test.ts" name="LabourMinistrySubmissionService transitions &gt; ACKNOWLEDGED is terminal" time="0.000182375">
+        <testcase classname="src/lib/services/__tests__/talent-acquisition-compliance.service.test.ts" name="taAuditChecklistService.stageBreakdown &gt; groups by stage and counts PASS/FAIL/OBSERVATION/unchecked" time="0.001051084">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/labour-ministry-submission.service.test.ts" name="LabourMinistrySubmissionService transitions &gt; assertTransition throws on illegal moves" time="0.000174667">
+        <testcase classname="src/lib/services/__tests__/talent-acquisition-compliance.service.test.ts" name="taRiskService.upsert &gt; clamps L/I and derives score+band" time="0.000268875">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/labour-ministry-submission.service.test.ts" name="LabourMinistrySubmissionService.hashPayload &gt; returns a sha256-shaped hex string" time="0.000303375">
+        <testcase classname="src/lib/services/__tests__/talent-acquisition-compliance.service.test.ts" name="taComplianceCertificateService &gt; refuses to sign while gated" time="0.000867583">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/labour-ministry-submission.service.test.ts" name="LabourMinistrySubmissionService.hashPayload &gt; is stable across key ordering" time="0.00009475">
+        <testcase classname="src/lib/services/__tests__/talent-acquisition-compliance.service.test.ts" name="taComplianceCertificateService &gt; signs when clean" time="0.000222875">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/labour-ministry-submission.service.test.ts" name="LabourMinistrySubmissionService.hashPayload &gt; changes when payload content changes" time="0.000432708">
+        <testcase classname="src/lib/services/__tests__/talent-acquisition-compliance.service.test.ts" name="taComplianceCertificateService &gt; generate writes stage breakdown into the certificate" time="0.00043875">
         </testcase>
-    </testsuite>
-    <testsuite name="src/lib/services/__tests__/payroll.service.test.ts" timestamp="2026-06-03T18:16:17.232Z" hostname="MacBookPro.lan" tests="12" failures="0" errors="0" skipped="0" time="0.009108917">
-        <testcase classname="src/lib/services/__tests__/payroll.service.test.ts" name="PayrollService.findAllRuns &gt; filters by tenantId + status + paginates" time="0.000926459">
+        <testcase classname="src/lib/services/__tests__/talent-acquisition-compliance.service.test.ts" name="TA_COMPLIANCE_CONSTANTS &gt; covers all 5 lifecycle stages" time="0.000255958">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/payroll.service.test.ts" name="PayrollService.findAllRuns &gt; computes pagination correctly" time="0.001331459">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/payroll.service.test.ts" name="PayrollService.findRunById — tenant isolation &gt; scopes by tenantId + id" time="0.001060792">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/payroll.service.test.ts" name="PayrollService.findRunById — tenant isolation &gt; returns null for foreign tenant" time="0.000315792">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/payroll.service.test.ts" name="PayrollService.processPayroll &gt; sets status to CALCULATED and processedAt timestamp" time="0.000349541">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/payroll.service.test.ts" name="PayrollService.approveRun &gt; sets status to APPROVED with approvedBy + approvedAt" time="0.000359208">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/payroll.service.test.ts" name="PayrollService.getRunStatistics &gt; returns counts per status (total, draft, processing, approved)" time="0.000814083">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/payroll.service.test.ts" name="PayrollService.findAllStructures &gt; filters by tenant" time="0.0007035">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/payroll.service.test.ts" name="PayrollService.submitDeclaration &gt; updates status to SUBMITTED" time="0.0002905">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/payroll.service.test.ts" name="PayrollService.verifyDeclaration &gt; updates status to VERIFIED with verifier" time="0.00021">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/payroll.service.test.ts" name="PayrollService.findAllBenefits &gt; filters by tenant + employeeId" time="0.000178583">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/payroll.service.test.ts" name="PayrollService.findAllAdjustments &gt; filters by tenant + employeeId + payrollMonth" time="0.000399916">
-        </testcase>
-    </testsuite>
-    <testsuite name="src/lib/services/__tests__/statutory-report.service.test.ts" timestamp="2026-06-03T18:16:17.233Z" hostname="MacBookPro.lan" tests="5" failures="0" errors="0" skipped="0" time="0.005630709">
-        <testcase classname="src/lib/services/__tests__/statutory-report.service.test.ts" name="Statutory report registry &gt; exposes the 16 generators landed across Phase 2 + Phase 3 + Phase 4" time="0.000922417">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/statutory-report.service.test.ts" name="Statutory report registry &gt; filters by country code" time="0.000407708">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/statutory-report.service.test.ts" name="Statutory report registry &gt; returns specs without the generate function (safe to serialize)" time="0.001636">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/statutory-report.service.test.ts" name="Statutory report submission contract (#85) &gt; exports InvalidReportTransitionError as a real Error subclass" time="0.000376458">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/statutory-report.service.test.ts" name="Statutory report submission contract (#85) &gt; rejects placeholder submission references shorter than 3 chars" time="0.000869125">
+        <testcase classname="src/lib/services/__tests__/talent-acquisition-compliance.service.test.ts" name="TA_COMPLIANCE_CONSTANTS &gt; covers EPIC-03/04/05 categories" time="0.000566625">
         </testcase>
     </testsuite>
 </testsuites>

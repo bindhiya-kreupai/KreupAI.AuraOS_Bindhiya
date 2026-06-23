@@ -1,10 +1,11 @@
 // @ts-nocheck — Has Prisma schema drift (wrong field/relation names against current schema). Tracked under #29.
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
 import { comparePassword } from '@/lib/auth/password';
 import { generateAccessToken, generateRefreshToken } from '@/lib/auth/jwt';
+import { setAuthCookies } from '@/lib/auth/cookies';
 import { validationErrorResponse } from '@/lib/validators';
 import { authRateLimit } from '@/lib/middleware/rate-limit';
 import { logAuthEvent } from '@/lib/logger';
@@ -19,9 +20,8 @@ const LoginSchema = z.object({
 export const POST = authRateLimit(async function (request: NextRequest) {
   try {
     // Get client information from headers
-    const ipAddress = request.headers.get('x-forwarded-for') ||
-                     request.headers.get('x-real-ip') ||
-                     'unknown';
+    const ipAddress =
+      request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
 
     // Validate request body
     const body = await request.json();
@@ -57,17 +57,11 @@ export const POST = authRateLimit(async function (request: NextRequest) {
 
     // Check if user is active
     if (user.status !== 'Active') {
-      return NextResponse.json(
-        { success: false, error: 'Account is not active' },
-        { status: 403 }
-      );
+      return NextResponse.json({ success: false, error: 'Account is not active' }, { status: 403 });
     }
 
     // Verify password
-    const isPasswordValid = await comparePassword(
-      validatedData.password,
-      user.password
-    );
+    const isPasswordValid = await comparePassword(validatedData.password, user.password);
 
     if (!isPasswordValid) {
       logAuthEvent('failed-login', user.id, user.email, ipAddress, 'Invalid password');
@@ -86,16 +80,21 @@ export const POST = authRateLimit(async function (request: NextRequest) {
           userId: user.id,
           action: 'LOGIN_MFA_REQUIRED',
           entityType: 'Authentication',
-          metadata: { description: `User ${user.email} requires MFA verification from ${ipAddress}` } as any,
+          metadata: {
+            description: `User ${user.email} requires MFA verification from ${ipAddress}`,
+          } as any,
           ipAddress,
         },
       });
 
-      logger.info({
-        userId: user.id,
-        email: user.email,
-        ipAddress,
-      }, 'Login password verified, MFA required');
+      logger.info(
+        {
+          userId: user.id,
+          email: user.email,
+          ipAddress,
+        },
+        'Login password verified, MFA required'
+      );
 
       // Return MFA required response
       return NextResponse.json({
@@ -134,29 +133,41 @@ export const POST = authRateLimit(async function (request: NextRequest) {
       sessionId: session.id,
     });
 
-    // Update last login
-    await prisma.user.update({
-      where: { id: user.id },
-      data: { lastLogin: new Date() },
-    });
+    // Update last login — best-effort, never block login on it.
+    try {
+      await prisma.user.update({
+        where: { id: user.id },
+        data: { lastLogin: new Date() },
+      });
+    } catch (err: any) {
+      logger.warn({ err, userId: user.id }, 'Failed to update lastLogin — login proceeds');
+    }
 
-    // Create audit log
-    await prisma.auditLog.create({
-      data: {
-        tenantId: user.tenantId,
-        userId: user.id,
-        action: 'LOGIN',
-        entityType: 'Authentication',
-        metadata: { description: `User logged in from ${ipAddress}` } as any,
-        ipAddress,
-      },
-    });
+    // Create audit log — best-effort. `module` is NOT NULL in the live DB
+    // even though the schema marks it optional, so we always pass a value.
+    try {
+      await prisma.auditLog.create({
+        data: {
+          tenantId: user.tenantId,
+          userId: user.id,
+          action: 'LOGIN',
+          entityType: 'Authentication',
+          module: 'auth',
+          metadata: { description: `User logged in from ${ipAddress}` } as any,
+          ipAddress,
+        },
+      });
+    } catch (err: any) {
+      logger.warn({ err, userId: user.id }, 'Failed to write login audit log — login proceeds');
+    }
 
     // Log successful authentication
     logAuthEvent('login', user.id, user.email, ipAddress);
 
-    // Return response
-    return NextResponse.json({
+    // Return response — tokens are set as HTTP-only cookies so the browser
+    // sends them automatically on subsequent same-origin requests. They are
+    // also echoed in the body for clients that need bearer-style auth (mobile).
+    const response = NextResponse.json({
       success: true,
       data: {
         accessToken,
@@ -175,15 +186,15 @@ export const POST = authRateLimit(async function (request: NextRequest) {
       },
       message: 'Login successful',
     });
+
+    setAuthCookies(response, { accessToken, refreshToken });
+    return response;
   } catch (error: any) {
     if (error instanceof z.ZodError) {
       return validationErrorResponse(error);
     }
 
     logger.error({ error }, '');
-    return NextResponse.json(
-      { success: false, error: 'Login failed' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: 'Login failed' }, { status: 500 });
   }
 });

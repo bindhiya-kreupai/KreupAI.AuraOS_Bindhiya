@@ -149,6 +149,10 @@ type OvertimeApiResponse = {
   createdAt?: string | Date;
   paymentAmount?: number;
   compOffGranted?: boolean;
+  payout?: number;
+  estimatedPayout?: number;
+  hourlyRate?: number;
+  multiplier?: number;
 };
 
 type ExceptionApiResponse = {
@@ -599,6 +603,9 @@ function mapOvertimeRequest(raw: OvertimeApiResponse): OvertimeRequest {
     rejectionReason: raw.rejectionReason || undefined,
     paymentAmount: raw.paymentAmount,
     compOffGranted: raw.compOffGranted,
+    estimatedPayout: raw.payout ?? raw.estimatedPayout,
+    hourlyRate: raw.hourlyRate,
+    multiplier: raw.multiplier,
   };
 }
 
@@ -1125,7 +1132,7 @@ export class OvertimeService {
       const normalizedEmployeeId = normalizePlaceholderEmployeeId(filters?.employeeId);
       const response = await APIClient.get<{
         success?: boolean;
-        data?: { overtime?: OvertimeApiResponse[]; summary?: unknown };
+        data?: { overtime?: OvertimeApiResponse[]; summary?: unknown; employeeId?: string };
       }>(this.endpoint, { ...filters, employeeId: normalizedEmployeeId });
       return (response.data?.overtime || []).map(mapOvertimeRequest);
     } catch (error: any) {

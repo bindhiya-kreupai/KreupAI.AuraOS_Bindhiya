@@ -1,8 +1,9 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import type { JWTPayload } from './jwt';
 import { verifyToken, extractTokenFromHeader } from './jwt';
+import { ACCESS_COOKIE } from './cookies';
 import { logger } from '@/lib/logger';
 
 export interface AuthenticatedRequest extends NextRequest {
@@ -20,9 +21,10 @@ export async function authenticate(
   request: NextRequest
 ): Promise<{ user: JWTPayload; error: null } | { user: null; error: NextResponse }> {
   try {
-    // Extract token from Authorization header
+    // Extract token from Authorization header (mobile/API) or cookie (browser).
     const authHeader = request.headers.get('Authorization');
-    const token = extractTokenFromHeader(authHeader);
+    const token =
+      extractTokenFromHeader(authHeader) ?? request.cookies.get(ACCESS_COOKIE)?.value ?? null;
 
     if (!token) {
       return {
@@ -44,7 +46,7 @@ export async function authenticate(
         error: NextResponse.json(
           {
             success: false,
-            error: error instanceof Error ? error.message : 'Invalid token'
+            error: error instanceof Error ? error.message : 'Invalid token',
           },
           { status: 401 }
         ),
@@ -55,10 +57,7 @@ export async function authenticate(
     if (decoded.type !== 'access') {
       return {
         user: null,
-        error: NextResponse.json(
-          { success: false, error: 'Invalid token type' },
-          { status: 401 }
-        ),
+        error: NextResponse.json({ success: false, error: 'Invalid token type' }, { status: 401 }),
       };
     }
 
@@ -77,10 +76,7 @@ export async function authenticate(
     if (!user) {
       return {
         user: null,
-        error: NextResponse.json(
-          { success: false, error: 'User not found' },
-          { status: 401 }
-        ),
+        error: NextResponse.json({ success: false, error: 'User not found' }, { status: 401 }),
       };
     }
 
@@ -123,10 +119,7 @@ export async function authenticate(
     logger.error({ error }, 'Authentication error');
     return {
       user: null,
-      error: NextResponse.json(
-        { success: false, error: 'Authentication failed' },
-        { status: 500 }
-      ),
+      error: NextResponse.json({ success: false, error: 'Authentication failed' }, { status: 500 }),
     };
   }
 }
@@ -164,7 +157,10 @@ export function validateTenantAccess(userTenantId: string, resourceTenantId: str
 /**
  * Middleware to enforce tenant isolation
  */
-export function requireTenantAccess(userTenantId: string, resourceTenantId: string): NextResponse | null {
+export function requireTenantAccess(
+  userTenantId: string,
+  resourceTenantId: string
+): NextResponse | null {
   if (!validateTenantAccess(userTenantId, resourceTenantId)) {
     return NextResponse.json(
       { success: false, error: 'Access denied: Tenant mismatch' },

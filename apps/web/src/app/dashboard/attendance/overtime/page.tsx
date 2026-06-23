@@ -14,32 +14,105 @@ import {
   PieChart,
 } from 'lucide-react';
 import { OvertimeService } from '../services';
+import type { OvertimeRequest } from '../types';
 
-interface OTClaim {
-  id: string;
-  date: string;
-  project: string;
-  hours: number;
-  multiplier: 1.5 | 2.0;
-  amount: number;
-  status: 'Approved' | 'Pending' | 'Rejected';
-  approver: string;
+function formatDate(dateStr: string): string {
+  if (!dateStr) return '—';
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    const months = [
+      'Jan',
+      'Feb',
+      'Mar',
+      'Apr',
+      'May',
+      'Jun',
+      'Jul',
+      'Aug',
+      'Sep',
+      'Oct',
+      'Nov',
+      'Dec',
+    ];
+    return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear()}`;
+  } catch {
+    return dateStr;
+  }
 }
 
-interface OvertimeSummary {
-  totalHours: number;
-  weekdayHours: number;
-  weekendHours: number;
-  approvedHours: number;
-  totalEarnings: number;
-  pendingEarnings: number;
+function formatTime(dateStr: string): string {
+  if (!dateStr) return '—';
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    const hours = d.getHours();
+    const minutes = d.getMinutes();
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    const h12 = hours % 12 || 12;
+    return `${h12}:${String(minutes).padStart(2, '0')} ${ampm}`;
+  } catch {
+    return dateStr;
+  }
+}
+
+function getMultiplierLabel(
+  multiplier?: number,
+  overtimeType?: OvertimeRequest['overtimeType']
+): string {
+  if (multiplier != null) return `${multiplier}x`;
+  switch (overtimeType) {
+    case 'weekend':
+    case 'holiday':
+      return '2.0x';
+    case 'regular':
+    case 'compensatory':
+    default:
+      return '1.5x';
+  }
+}
+
+function getStatusDisplayClass(status: OvertimeRequest['status']): string {
+  switch (status) {
+    case 'approved':
+    case 'paid':
+    case 'comp_off_granted':
+      return 'text-emerald-500';
+    case 'pending':
+      return 'text-amber-500';
+    case 'rejected':
+      return 'text-rose-500';
+    default:
+      return 'text-slate-500';
+  }
+}
+
+function getStatusLabel(status: OvertimeRequest['status']): string {
+  switch (status) {
+    case 'approved':
+      return 'Approved';
+    case 'rejected':
+      return 'Rejected';
+    case 'paid':
+      return 'Paid';
+    case 'comp_off_granted':
+      return 'Comp Off';
+    case 'pending':
+    default:
+      return 'Pending';
+  }
 }
 
 export default function OvertimePage() {
-  console.log('OVERTIME PAGE LOADED');
-
-  const [overtimeRecords, setOvertimeRecords] = useState<OTClaim[]>([]);
-  const [summary, setSummary] = useState<OvertimeSummary | null>(null);
+  const [overtimeRecords, setOvertimeRecords] = useState<OvertimeRequest[]>([]);
+  const [summary, setSummary] = useState<{
+    totalHours: number;
+    weekdayHours: number;
+    weekendHours: number;
+    approvedHours: number;
+    totalEarnings: number;
+    pendingEarnings: number;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
   const [formDate, setFormDate] = useState('');
@@ -48,30 +121,46 @@ export default function OvertimePage() {
   const [formError, setFormError] = useState('');
   const [showAll, setShowAll] = useState(false);
 
-  console.log({ showForm, showAll });
-
   useEffect(() => {
-    console.log('[OvertimePage] Mounted');
     fetchOvertimeData();
   }, []);
 
   const fetchOvertimeData = async () => {
     try {
-      const records = await OvertimeService.getOvertimeRequests();
-      setOvertimeRecords((records || []) as any);
-      // Calculate summary from records
-      const recordsArr = (records || []) as any[];
-      const approved = recordsArr.filter((r: any) => r.status === 'Approved');
-      const totalHours = recordsArr.reduce((sum: number, r: any) => sum + (r.hours || 0), 0);
+      const records = await OvertimeService.getOvertimeRequests({ employeeId: 'current-user' });
+      const recordsArr = records || [];
+
+      // Client-side filter: only show records belonging to the current employee
+      const currentEmployeeId = recordsArr.length > 0 ? recordsArr[0].employeeId : null;
+      const filteredRecords = currentEmployeeId
+        ? recordsArr.filter((r) => r.employeeId === currentEmployeeId)
+        : recordsArr;
+
+      setOvertimeRecords(filteredRecords);
+
+      const approved = filteredRecords.filter((r) => r.status === 'approved');
+      const pending = filteredRecords.filter((r) => r.status === 'pending');
+
+      const weekdayHours = filteredRecords
+        .filter((r) => r.overtimeType === 'regular' || r.overtimeType === 'compensatory')
+        .reduce((sum, r) => sum + (r.requestedHours || 0), 0);
+      const weekendHours = filteredRecords
+        .filter((r) => r.overtimeType === 'weekend' || r.overtimeType === 'holiday')
+        .reduce((sum, r) => sum + (r.requestedHours || 0), 0);
+
       setSummary({
-        totalHours,
-        weekdayHours: totalHours * 0.6,
-        weekendHours: totalHours * 0.4,
-        approvedHours: approved.reduce((sum: number, r: any) => sum + (r.hours || 0), 0),
-        totalEarnings: recordsArr.reduce((sum: number, r: any) => sum + (r.amount || 0), 0),
-        pendingEarnings: recordsArr
-          .filter((r: any) => r.status === 'Pending')
-          .reduce((sum: number, r: any) => sum + (r.amount || 0), 0),
+        totalHours: filteredRecords.reduce((sum, r) => sum + (r.requestedHours || 0), 0),
+        weekdayHours,
+        weekendHours,
+        approvedHours: approved.reduce((sum, r) => sum + (r.requestedHours || 0), 0),
+        totalEarnings: filteredRecords.reduce(
+          (sum, r) => sum + (r.estimatedPayout ?? r.paymentAmount ?? 0),
+          0
+        ),
+        pendingEarnings: pending.reduce(
+          (sum, r) => sum + (r.estimatedPayout ?? r.paymentAmount ?? 0),
+          0
+        ),
       });
     } catch (error: any) {
       console.error('Error:', error);
@@ -80,14 +169,18 @@ export default function OvertimePage() {
     }
   };
 
-  const handleSubmitOvertime = async (data: any) => {
+  const handleSubmitOvertime = async (data: { date: string; hours: number; reason: string }) => {
     setLoading(true);
     try {
+      const dayOfWeek = new Date(data.date).getDay();
+      const overtimeType = dayOfWeek === 0 || dayOfWeek === 6 ? 'weekend' : 'regular';
+
       await OvertimeService.submitOvertimeRequest({
         employeeId: 'current-user',
         date: data.date,
         overtimeMinutes: data.hours * 60,
         reason: data.reason,
+        overtimeType,
       } as any);
       await fetchOvertimeData();
       setShowForm(false);
@@ -116,6 +209,9 @@ export default function OvertimePage() {
     await handleSubmitOvertime({ date: formDate, hours: formHours, reason: formReason });
   };
 
+  const pendingRecords = overtimeRecords.filter((r) => r.status === 'pending');
+  const hasPendingRecords = pendingRecords.length > 0;
+
   return (
     <div className="space-y-4 pb-6">
       {/* Header */}
@@ -130,12 +226,7 @@ export default function OvertimePage() {
           </p>
         </div>
         <button
-          onClick={() => {
-            console.log('Log Overtime clicked');
-            console.log('showForm before:', showForm);
-            setShowForm(true);
-            console.log('showForm after: true');
-          }}
+          onClick={() => setShowForm(true)}
           className="flex items-center gap-2 px-4 py-2 bg-celestial-indigo text-white rounded-lg text-sm font-medium hover:bg-celestial-indigo/90 transition-colors shadow-lg shadow-celestial-indigo/20"
         >
           <Plus className="w-4 h-4" /> Log Overtime
@@ -154,12 +245,20 @@ export default function OvertimePage() {
                 <span className="text-sm font-bold uppercase tracking-wider">Estimated Payout</span>
               </div>
               <div className="flex items-baseline gap-1 mb-2">
-                <span className="text-4xl font-bold">${summary?.pendingEarnings || 0}</span>
-                <span className="text-lg font-medium opacity-80">Pending</span>
+                <span className="text-4xl font-bold">
+                  {summary != null && hasPendingRecords
+                    ? `$${summary.pendingEarnings.toFixed(2)}`
+                    : '—'}
+                </span>
+                {summary != null && hasPendingRecords && summary.pendingEarnings > 0 && (
+                  <span className="text-lg font-medium opacity-80">Pending</span>
+                )}
               </div>
-              <div className="text-xs bg-white/20 inline-flex px-3 py-1 rounded-full backdrop-blur-sm flex items-center gap-1">
-                <Calendar className="w-3 h-3" /> December 2024 Cycle
-              </div>
+              {summary != null && hasPendingRecords && summary.pendingEarnings > 0 && (
+                <div className="text-xs bg-white/20 inline-flex px-3 py-1 rounded-full backdrop-blur-sm flex items-center gap-1">
+                  <Calendar className="w-3 h-3" /> December 2024 Cycle
+                </div>
+              )}
             </div>
           </div>
 
@@ -229,12 +328,7 @@ export default function OvertimePage() {
                 Claim History
               </h3>
               <button
-                onClick={() => {
-                  console.log('View All clicked');
-                  console.log('showAll before:', showAll);
-                  setShowAll(!showAll);
-                  console.log('showAll after:', !showAll);
-                }}
+                onClick={() => setShowAll(!showAll)}
                 className="text-xs font-bold text-celestial-indigo hover:underline"
               >
                 {showAll ? 'Show Less' : 'View All'}
@@ -260,44 +354,42 @@ export default function OvertimePage() {
                     <div className="flex justify-between items-start mb-3">
                       <div className="flex items-center gap-3">
                         <div className="p-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-slate-500 font-bold text-xs flex flex-col items-center justify-center w-12 h-12">
-                          <span>{claim.hours}</span>
+                          <span>{claim.requestedHours ?? 0}</span>
                           <span className="text-[9px] uppercase">Hrs</span>
                         </div>
                         <div>
                           <h4 className="font-bold text-ink-black dark:text-pearl text-sm group-hover:text-celestial-indigo transition-colors">
-                            {claim.project}
+                            {claim.reason || 'Overtime'}
                           </h4>
                           <div className="text-xs text-silver-mist flex items-center gap-2 mt-0.5">
-                            <span>{claim.date}</span>
+                            <span>{formatDate(claim.date)}</span>
                             <span>•</span>
                             <span className="font-mono bg-slate-100 dark:bg-slate-800 px-1.5 rounded text-[10px]">
-                              {claim.multiplier}x Rate
+                              {getMultiplierLabel(claim.multiplier, claim.overtimeType)} Rate
                             </span>
                           </div>
                         </div>
                       </div>
                       <div className="text-right">
                         <div className="font-bold text-ink-black dark:text-pearl text-sm">
-                          ${claim.amount}
+                          {claim.estimatedPayout != null
+                            ? `$${claim.estimatedPayout.toFixed(2)}`
+                            : claim.paymentAmount != null
+                              ? `$${claim.paymentAmount.toFixed(2)}`
+                              : '—'}
                         </div>
                         <div
-                          className={`text-[10px] font-bold uppercase mt-1 ${
-                            claim.status === 'Approved'
-                              ? 'text-emerald-500'
-                              : claim.status === 'Pending'
-                                ? 'text-amber-500'
-                                : 'text-rose-500'
-                          }`}
+                          className={`text-[10px] font-bold uppercase mt-1 ${getStatusDisplayClass(claim.status)}`}
                         >
-                          {claim.status}
+                          {getStatusLabel(claim.status)}
                         </div>
                       </div>
                     </div>
 
-                    {claim.status === 'Approved' && (
+                    {claim.status === 'approved' && claim.approvedBy && (
                       <div className="flex items-center gap-1.5 text-[10px] text-slate-400 border-t border-dashed border-cloud dark:border-nebula-purple/20 pt-2 mt-2">
                         <CheckCircle2 className="w-3 h-3 text-emerald-500" />
-                        Approved by {claim.approver}
+                        Approved by {claim.approvedBy}
                       </div>
                     )}
                   </div>

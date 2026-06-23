@@ -1,195 +1,719 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
+import Link from 'next/link';
+import { DataPage, type Column } from '@aura/ui/components/ui';
 import {
-    Clock,
-    Plus,
-    MoreHorizontal,
-    Edit2,
-    Trash2,
-    Sun,
-    Moon,
-    Coffee,
-    Briefcase
+  Clock,
+  Users,
+  Calendar,
+  RefreshCw,
+  CheckCircle,
+  XCircle,
+  Star,
+  LayoutTemplate,
+  Moon,
+  CalendarDays,
 } from 'lucide-react';
-import { ShiftService } from '../services';
 
-const iconMap: Record<string, any> = {
-    Sun,
-    Moon,
-    Coffee,
-    Briefcase
+type Stats = {
+  totalShifts: number;
+  activeShifts: number;
+  activeAssignments: number;
+  pendingSwaps: number;
 };
 
-interface Shift {
-    id: string;
-    name: string;
-    start: string;
-    end: string;
-    break_duration: string;
-    type: string;
-    color: string;
-    icon: string;
-    employees: number;
+type Shift = {
+  id: string;
+  code: string;
+  name: string;
+  description?: string;
+  startTime: string;
+  endTime: string;
+  workHours: number;
+  graceInMinutes: number;
+  graceOutMinutes: number;
+  breakDuration: number;
+  overtimeAllowed: boolean;
+  maxOvertimeHours?: number;
+  isDefault: boolean;
+  isActive: boolean;
+};
+
+type Assignment = {
+  id: string;
+  employeeId: string;
+  shiftId: string;
+  shift?: { id: string; name: string };
+  effectiveFrom: string;
+  effectiveTo?: string | null;
+  reason?: string;
+  isActive: boolean;
+};
+
+type Roster = {
+  id: string;
+  employeeId: string;
+  shiftId: string;
+  shift?: { id: string; name: string };
+  rosterDate: string;
+  customStartTime?: string | null;
+  customEndTime?: string | null;
+  isWeekOff: boolean;
+  isHoliday: boolean;
+  status: string;
+};
+
+type Swap = {
+  id: string;
+  requestorId: string;
+  swapWithId: string;
+  requestorShiftId: string;
+  swapWithShiftId: string;
+  requestorDate: string;
+  swapWithDate: string;
+  reason: string;
+  status: 'PENDING' | 'APPROVED_BY_PEER' | 'APPROVED_BY_MANAGER' | 'COMPLETED' | 'REJECTED';
+};
+
+const swapStatusColors: Record<Swap['status'], string> = {
+  PENDING: 'bg-yellow-100 text-yellow-800',
+  APPROVED_BY_PEER: 'bg-blue-100 text-blue-800',
+  APPROVED_BY_MANAGER: 'bg-green-100 text-green-800',
+  COMPLETED: 'bg-purple-100 text-purple-800',
+  REJECTED: 'bg-red-100 text-red-800',
+};
+
+async function apiJson<T = unknown>(
+  url: string,
+  init?: RequestInit
+): Promise<{ ok: boolean; data?: T; error?: { message: string; messageAr?: string } }> {
+  try {
+    const res = await fetch(url, {
+      ...init,
+      headers: { 'Content-Type': 'application/json', ...(init?.headers || {}) },
+    });
+    const json = await res.json().catch(() => ({}));
+    if (!res.ok || json?.success === false) {
+      return { ok: false, error: json?.error || { message: `Request failed (${res.status})` } };
+    }
+    return { ok: true, data: json?.data as T };
+  } catch (err: any) {
+    return { ok: false, error: { message: err?.message || 'Network error' } };
+  }
+}
+
+function showError(action: string, error?: { message: string; messageAr?: string }) {
+  const msg = error?.message || 'Unknown error';
+  alert(`${action} failed: ${msg}`);
 }
 
 export default function ShiftManagementPage() {
-    const [shiftList, setShiftList] = useState<Shift[]>([]);
-    const [loading, setLoading] = useState(true);
+  const [stats, setStats] = useState<Stats | null>(null);
+  const [activeTab, setActiveTab] = useState<'shifts' | 'assignments' | 'rosters' | 'swaps'>(
+    'shifts'
+  );
 
-    useEffect(() => {
-        fetchShifts();
-    }, []);
+  const [shifts, setShifts] = useState<Shift[]>([]);
+  const [assignments, setAssignments] = useState<Assignment[]>([]);
+  const [rosters, setRosters] = useState<Roster[]>([]);
+  const [swaps, setSwaps] = useState<Swap[]>([]);
 
-    const fetchShifts = async () => {
-        try {
-            const result = await ShiftService.getShifts();
-            // Map API fields to UI interface
-            const mapped: Shift[] = (result as any[]).map((s: any) => ({
-                id: s.id,
-                name: s.name || '',
-                start: s.startTime || s.start || '',
-                end: s.endTime || s.end || '',
-                break_duration: s.breakDuration || s.break_duration || '0 min',
-                type: s.isFlexible ? 'Flexible' : (s.type || 'Fixed'),
-                color: s.color || 'bg-blue-500',
-                icon: s.icon || 'Sun',
-                employees: s.employees || s._count?.employees || 0,
-            }));
-            setShiftList(mapped);
-        } catch (error: any) {
-            console.error('Error:', error);
-        } finally {
-            setLoading(false);
-        }
+  const fetchStats = useCallback(async () => {
+    const r = await apiJson<Stats>('/api/v1/shifts/stats');
+    if (r.ok && r.data) setStats(r.data);
+  }, []);
+
+  const fetchShifts = useCallback(async () => {
+    const r = await apiJson<Shift[]>('/api/v1/shifts?limit=200');
+    if (r.ok && r.data) setShifts(r.data);
+  }, []);
+
+  const fetchAssignments = useCallback(async () => {
+    const r = await apiJson<Assignment[]>('/api/v1/shift-assignments?limit=200');
+    if (r.ok && r.data) setAssignments(r.data);
+  }, []);
+
+  const fetchRosters = useCallback(async () => {
+    const r = await apiJson<Roster[]>('/api/v1/shift-rosters?limit=200');
+    if (r.ok && r.data) setRosters(r.data);
+  }, []);
+
+  const fetchSwaps = useCallback(async () => {
+    const r = await apiJson<Swap[]>('/api/v1/shift-swaps?limit=200');
+    if (r.ok && r.data) setSwaps(r.data);
+  }, []);
+
+  useEffect(() => {
+    fetchStats();
+    fetchShifts();
+    fetchAssignments();
+    fetchRosters();
+    fetchSwaps();
+  }, [fetchStats, fetchShifts, fetchAssignments, fetchRosters, fetchSwaps]);
+
+  // ---------------------------------------------------------------------------
+  // Shifts tab
+  // ---------------------------------------------------------------------------
+  const shiftColumns: Column<Shift>[] = [
+    {
+      key: 'code',
+      header: 'Code',
+      render: (r) => <span className="font-mono text-xs">{r.code}</span>,
+    },
+    { key: 'name', header: 'Name', render: (r) => <span className="font-medium">{r.name}</span> },
+    { key: 'startTime', header: 'Start' },
+    { key: 'endTime', header: 'End' },
+    { key: 'workHours', header: 'Hours', render: (r) => `${r.workHours}h` },
+    { key: 'graceInMinutes', header: 'Grace', render: (r) => `${r.graceInMinutes} min` },
+    {
+      key: 'isDefault',
+      header: 'Default',
+      render: (r) =>
+        r.isDefault ? (
+          <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+            Default
+          </span>
+        ) : null,
+    },
+    {
+      key: 'isActive',
+      header: 'Status',
+      render: (r) => (
+        <span
+          className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
+            r.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700'
+          }`}
+        >
+          {r.isActive ? 'Active' : 'Inactive'}
+        </span>
+      ),
+    },
+  ];
+
+  const saveShift = async (record: Partial<Shift>) => {
+    const payload: Record<string, any> = {
+      code: record.code,
+      name: record.name,
+      description: record.description,
+      startTime: record.startTime,
+      endTime: record.endTime,
+      workHours: record.workHours !== undefined ? Number(record.workHours) : undefined,
+      graceInMinutes:
+        record.graceInMinutes !== undefined ? Number(record.graceInMinutes) : undefined,
+      graceOutMinutes:
+        record.graceOutMinutes !== undefined ? Number(record.graceOutMinutes) : undefined,
+      breakDuration: record.breakDuration !== undefined ? Number(record.breakDuration) : undefined,
+      overtimeAllowed: !!record.overtimeAllowed,
+      maxOvertimeHours:
+        record.maxOvertimeHours !== undefined && record.maxOvertimeHours !== null
+          ? Number(record.maxOvertimeHours)
+          : undefined,
     };
 
-    const handleDelete = async (id: string) => {
-        setLoading(true);
-        try {
-            await ShiftService.deleteShift(id);
-            await fetchShifts();
-        } catch (error: any) {
-            console.error('Error:', error);
-                    } finally {
-            setLoading(false);
-        }
+    const url = record.id ? `/api/v1/shifts/${record.id}` : '/api/v1/shifts';
+    const method = record.id ? 'PUT' : 'POST';
+    const r = await apiJson(url, { method, body: JSON.stringify(payload) });
+    if (!r.ok) return showError('Save shift', r.error);
+    await Promise.all([fetchShifts(), fetchStats()]);
+  };
+
+  const deleteShift = async (row: Shift) => {
+    if (!confirm(`Delete shift "${row.name}"?`)) return;
+    const r = await apiJson(`/api/v1/shifts/${row.id}`, { method: 'DELETE' });
+    if (!r.ok) return showError('Delete shift', r.error);
+    await Promise.all([fetchShifts(), fetchStats()]);
+  };
+
+  const setShiftDefault = async (row: Shift) => {
+    const r = await apiJson(`/api/v1/shifts/${row.id}/set-default`, { method: 'POST' });
+    if (!r.ok) return showError('Set default', r.error);
+    await fetchShifts();
+  };
+
+  // ---------------------------------------------------------------------------
+  // Assignments tab
+  // ---------------------------------------------------------------------------
+  const assignmentColumns: Column<Assignment>[] = [
+    {
+      key: 'employeeId',
+      header: 'Employee ID',
+      render: (r) => <span className="font-mono text-xs">{r.employeeId}</span>,
+    },
+    { key: 'shift.name', header: 'Shift', render: (r) => r.shift?.name || '—' },
+    {
+      key: 'effectiveFrom',
+      header: 'From',
+      render: (r) => new Date(r.effectiveFrom).toLocaleDateString(),
+    },
+    {
+      key: 'effectiveTo',
+      header: 'To',
+      render: (r) =>
+        r.effectiveTo ? (
+          new Date(r.effectiveTo).toLocaleDateString()
+        ) : (
+          <span className="text-slate-400">Current</span>
+        ),
+    },
+    {
+      key: 'isActive',
+      header: 'Status',
+      render: (r) => (
+        <span
+          className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
+            r.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700'
+          }`}
+        >
+          {r.isActive ? 'Active' : 'Inactive'}
+        </span>
+      ),
+    },
+  ];
+
+  const saveAssignment = async (record: Partial<Assignment>) => {
+    const payload = {
+      employeeId: record.employeeId,
+      shiftId: record.shiftId,
+      effectiveFrom: record.effectiveFrom,
+      effectiveTo: record.effectiveTo || undefined,
+      reason: record.reason,
     };
-    return (
-        <div className="space-y-4 pb-6">
-            {/* Header */}
-            <div className="flex justify-between items-start">
-                <div>
-                    <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
-                        <Clock className="w-6 h-6 text-indigo-500" />
-                        Shift Management
-                    </h1>
-                    <p className="text-silver-mist text-sm mt-1">Configure work shifts, timings, and break rules.</p>
-                </div>
-                <button className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition-colors shadow-sm">
-                    <Plus className="w-4 h-4" /> Add New Shift
-                </button>
-            </div>
+    const url = record.id ? `/api/v1/shift-assignments/${record.id}` : '/api/v1/shift-assignments';
+    const method = record.id ? 'PUT' : 'POST';
+    const r = await apiJson(url, { method, body: JSON.stringify(payload) });
+    if (!r.ok) return showError('Save assignment', r.error);
+    await Promise.all([fetchAssignments(), fetchStats()]);
+  };
 
-            {/* Shift Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-                {loading ? (
-                    <div className="col-span-full p-8 text-center">
-                        <div className="animate-spin w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full mx-auto"></div>
-                    </div>
-                ) : shiftList.length === 0 ? (
-                    <div className="col-span-full p-8 text-center text-slate-400">No shifts configured</div>
-                ) : (
-                shiftList.map((shift) => {
-                    const IconComponent = iconMap[shift.icon] || Sun;
-                    return (
-                    <div key={shift.id} className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm overflow-hidden hover:shadow-md transition-all group">
-                        <div className={`h-2 ${shift.color}`} />
-                        <div className="p-5">
-                            <div className="flex justify-between items-start mb-4">
-                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center ${shift.color} bg-opacity-10 text-opacity-100`}>
-                                    <IconComponent className={`w-5 h-5 ${shift.color.replace('bg-', 'text-')}`} />
-                                </div>
-                                <button className="p-1 hover:bg-slate-50 dark:hover:bg-slate-800 rounded">
-                                    <MoreHorizontal className="w-4 h-4 text-slate-400" />
-                                </button>
-                            </div>
+  const deleteAssignment = async (row: Assignment) => {
+    if (!confirm('End this assignment?')) return;
+    const r = await apiJson(`/api/v1/shift-assignments/${row.id}`, { method: 'DELETE' });
+    if (!r.ok) return showError('Delete assignment', r.error);
+    await Promise.all([fetchAssignments(), fetchStats()]);
+  };
 
-                            <h3 className="font-bold text-lg text-ink-black dark:text-pearl mb-1">{shift.name}</h3>
-                            <p className="text-xs text-silver-mist font-medium mb-4">{shift.type}</p>
+  // ---------------------------------------------------------------------------
+  // Rosters tab
+  // ---------------------------------------------------------------------------
+  const rosterColumns: Column<Roster>[] = [
+    {
+      key: 'employeeId',
+      header: 'Employee ID',
+      render: (r) => <span className="font-mono text-xs">{r.employeeId}</span>,
+    },
+    {
+      key: 'rosterDate',
+      header: 'Date',
+      render: (r) => new Date(r.rosterDate).toLocaleDateString(),
+    },
+    { key: 'shift.name', header: 'Shift', render: (r) => r.shift?.name || '—' },
+    { key: 'isWeekOff', header: 'Week Off', render: (r) => (r.isWeekOff ? '✓' : '') },
+    { key: 'isHoliday', header: 'Holiday', render: (r) => (r.isHoliday ? '✓' : '') },
+    {
+      key: 'status',
+      header: 'Status',
+      render: (r) => (
+        <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+          {r.status}
+        </span>
+      ),
+    },
+  ];
 
-                            <div className="space-y-3">
-                                <div className="flex items-center justify-between text-sm">
-                                    <span className="text-slate-500 dark:text-slate-400">Timing</span>
-                                    <span className="font-bold text-slate-700 dark:text-slate-200">
-                                        {shift.start} - <span className="text-xs opacity-50">{shift.end}</span>
-                                    </span>
-                                </div>
-                                <div className="flex items-center justify-between text-sm">
-                                    <span className="text-slate-500 dark:text-slate-400">Break</span>
-                                    <span className="font-bold text-slate-700 dark:text-slate-200">{shift.break_duration}</span>
-                                </div>
-                                <div className="flex items-center justify-between text-sm">
-                                    <span className="text-slate-500 dark:text-slate-400">Employees</span>
-                                    <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 rounded text-xs font-bold text-slate-600 dark:text-slate-300">
-                                        {shift.employees}
-                                    </span>
-                                </div>
-                            </div>
-                        </div>
-                        <div className="flex border-t border-cloud dark:border-nebula-purple/20 divide-x divide-cloud dark:divide-nebula-purple/20">
-                            <button className="flex-1 py-3 text-xs font-bold text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-indigo-600 transition-colors flex items-center justify-center gap-2">
-                                <Edit2 className="w-3.5 h-3.5" /> Edit
-                            </button>
-                            <button
-                                onClick={() => handleDelete(shift.id)}
-                                disabled={loading}
-                                className="flex-1 py-3 text-xs font-bold text-slate-500 hover:bg-slate-50 dark:hover:bg-slate-800 hover:text-rose-600 transition-colors flex items-center justify-center gap-2 disabled:opacity-50">
-                                <Trash2 className="w-3.5 h-3.5" /> Delete
-                            </button>
-                        </div>
-                    </div>
-                    );
-                }))}
-            </div>
+  const saveRoster = async (record: Partial<Roster>) => {
+    const payload = {
+      employeeId: record.employeeId,
+      shiftId: record.shiftId,
+      rosterDate: record.rosterDate,
+      customStartTime: record.customStartTime || undefined,
+      customEndTime: record.customEndTime || undefined,
+      isWeekOff: !!record.isWeekOff,
+      isHoliday: !!record.isHoliday,
+    };
+    const url = record.id ? `/api/v1/shift-rosters/${record.id}` : '/api/v1/shift-rosters';
+    const method = record.id ? 'PUT' : 'POST';
+    const r = await apiJson(url, { method, body: JSON.stringify(payload) });
+    if (!r.ok) return showError('Save roster', r.error);
+    await fetchRosters();
+  };
 
-            {/* Visual Timeline (Mock) */}
-            <div className="bg-white dark:bg-stellar-blue p-6 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm mt-8">
-                <h3 className="font-bold text-ink-black dark:text-pearl mb-6">Daily Coverage Timeline (24 Hours)</h3>
+  const deleteRoster = async (row: Roster) => {
+    if (!confirm('Delete this roster entry?')) return;
+    const r = await apiJson(`/api/v1/shift-rosters/${row.id}`, { method: 'DELETE' });
+    if (!r.ok) return showError('Delete roster', r.error);
+    await fetchRosters();
+  };
 
-                <div className="relative h-20 bg-slate-50 dark:bg-slate-900/40 rounded-lg overflow-hidden flex">
-                    {/* Time Markers */}
-                    {[0, 4, 8, 12, 16, 20, 24].map((h, i) => (
-                        <div key={h} className="absolute h-full border-l border-slate-200 dark:border-slate-700 flex flex-col justify-end pb-2 pl-1" style={{ left: `${(h / 24) * 100}%` }}>
-                            <span className="text-[10px] font-mono text-slate-400">{h}:00</span>
-                        </div>
-                    ))}
+  // ---------------------------------------------------------------------------
+  // Swap requests tab
+  // ---------------------------------------------------------------------------
+  const swapColumns: Column<Swap>[] = [
+    {
+      key: 'requestorId',
+      header: 'Requestor',
+      render: (r) => <span className="font-mono text-xs">{r.requestorId}</span>,
+    },
+    {
+      key: 'swapWithId',
+      header: 'Swap With',
+      render: (r) => <span className="font-mono text-xs">{r.swapWithId}</span>,
+    },
+    {
+      key: 'requestorDate',
+      header: 'Their Date',
+      render: (r) => new Date(r.requestorDate).toLocaleDateString(),
+    },
+    {
+      key: 'swapWithDate',
+      header: 'Swap Date',
+      render: (r) => new Date(r.swapWithDate).toLocaleDateString(),
+    },
+    {
+      key: 'status',
+      header: 'Status',
+      render: (r) => (
+        <span
+          className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
+            swapStatusColors[r.status] || 'bg-gray-100 text-gray-700'
+          }`}
+        >
+          {r.status.replace(/_/g, ' ')}
+        </span>
+      ),
+    },
+  ];
 
-                    {/* Shift Bars */}
-                    {/* Morning: 06:00 - 15:00 (9 hrs) -> Start 25%, Width 37.5% */}
-                    <div className="absolute top-2 h-3 bg-amber-400 rounded-full opacity-80 hover:opacity-100 transition-opacity cursor-pointer" style={{ left: '25%', width: '37.5%' }} title="Morning Shift" />
+  const saveSwap = async (record: Partial<Swap>) => {
+    if (record.id) {
+      showError('Edit swap', { message: 'Swap requests cannot be edited — use approve/reject.' });
+      return;
+    }
+    const payload = {
+      requestorId: record.requestorId,
+      swapWithId: record.swapWithId,
+      requestorShiftId: record.requestorShiftId,
+      swapWithShiftId: record.swapWithShiftId,
+      requestorDate: record.requestorDate,
+      swapWithDate: record.swapWithDate,
+      reason: record.reason,
+    };
+    const r = await apiJson('/api/v1/shift-swaps', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    if (!r.ok) return showError('Create swap request', r.error);
+    await Promise.all([fetchSwaps(), fetchStats()]);
+  };
 
-                    {/* General: 09:00 - 18:00 (9 hrs) -> Start 37.5%, Width 37.5% */}
-                    <div className="absolute top-6 h-3 bg-blue-500 rounded-full opacity-80 hover:opacity-100 transition-opacity cursor-pointer" style={{ left: '37.5%', width: '37.5%' }} title="General Shift" />
+  const swapAction = async (
+    id: string,
+    action: 'peer-approve' | 'manager-approve' | 'reject',
+    label: string
+  ) => {
+    let body: string | undefined;
+    if (action === 'reject') {
+      const reason = prompt('Rejection reason:') || '';
+      if (!reason.trim()) return;
+      body = JSON.stringify({ reason });
+    }
+    const r = await apiJson(`/api/v1/shift-swaps/${id}/${action}`, {
+      method: 'POST',
+      body,
+    });
+    if (!r.ok) return showError(label, r.error);
+    await Promise.all([fetchSwaps(), fetchStats()]);
+  };
 
-                    {/* Executive: 10:00 - 19:00 (9 hrs) -> Start 41.6%, Width 37.5% */}
-                    <div className="absolute top-10 h-3 bg-emerald-500 rounded-full opacity-80 hover:opacity-100 transition-opacity cursor-pointer" style={{ left: '41.6%', width: '37.5%' }} title="Executive Shift" />
+  const swapRowActions = (row: Swap) => {
+    const actions: Array<{
+      label: string;
+      icon: any;
+      variant?: 'success' | 'danger' | 'warning';
+      onClick: () => void;
+    }> = [];
+    if (row.status === 'PENDING') {
+      actions.push({
+        label: 'Peer approve',
+        icon: CheckCircle,
+        variant: 'success',
+        onClick: () => swapAction(row.id, 'peer-approve', 'Peer approve'),
+      });
+    }
+    if (row.status === 'APPROVED_BY_PEER') {
+      actions.push({
+        label: 'Manager approve',
+        icon: CheckCircle,
+        variant: 'success',
+        onClick: () => swapAction(row.id, 'manager-approve', 'Manager approve'),
+      });
+    }
+    if (row.status === 'PENDING' || row.status === 'APPROVED_BY_PEER') {
+      actions.push({
+        label: 'Reject',
+        icon: XCircle,
+        variant: 'danger',
+        onClick: () => swapAction(row.id, 'reject', 'Reject swap'),
+      });
+    }
+    return actions;
+  };
 
-                    {/* Night: 20:00 - 05:00 (9 hrs) -> Split Bar */}
-                    <div className="absolute top-14 h-3 bg-indigo-500 rounded-l-full opacity-80 hover:opacity-100 transition-opacity cursor-pointer" style={{ left: '83.3%', width: '16.7%' }} title="Night Shift (Start)" />
-                    <div className="absolute top-14 h-3 bg-indigo-500 rounded-r-full opacity-80 hover:opacity-100 transition-opacity cursor-pointer" style={{ left: '0%', width: '20.8%' }} title="Night Shift (End)" />
-                </div>
-
-                <div className="flex justify-center gap-3 mt-4">
-                    {shiftList.map(s => (
-                        <div key={s.id} className="flex items-center gap-2">
-                            <div className={`w-3 h-3 ${s.color} rounded-sm`} />
-                            <span className="text-xs font-medium text-slate-600 dark:text-slate-300">{s.name}</span>
-                        </div>
-                    ))}
-                </div>
-            </div>
+  // ---------------------------------------------------------------------------
+  // Render
+  // ---------------------------------------------------------------------------
+  return (
+    <div className="space-y-4 pb-6">
+      {/* Page header + sub-page links */}
+      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+        <div>
+          <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
+            <Clock className="w-6 h-6 text-indigo-500" />
+            Shift Management
+          </h1>
+          <p className="text-silver-mist text-sm mt-1">
+            Configure shifts, assign employees, plan rosters and approve swap requests.
+          </p>
         </div>
-    );
+        <div className="flex flex-wrap gap-2">
+          <Link
+            href="/dashboard/attendance/shift-management/shift-templates"
+            className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg border border-cloud dark:border-nebula-purple/50 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+          >
+            <LayoutTemplate className="w-4 h-4" /> Templates
+          </Link>
+          <Link
+            href="/dashboard/attendance/shift-management/ramadan-auto-switch"
+            className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg border border-cloud dark:border-nebula-purple/50 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+          >
+            <Moon className="w-4 h-4" /> Ramadan Auto-switch
+          </Link>
+          <Link
+            href="/dashboard/attendance/roster-assignment"
+            className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg border border-cloud dark:border-nebula-purple/50 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+          >
+            <CalendarDays className="w-4 h-4" /> Roster planner
+          </Link>
+        </div>
+      </div>
+
+      {/* Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+        <StatCard
+          icon={<Clock className="h-7 w-7 text-blue-600 dark:text-blue-400" />}
+          label="Total shifts"
+          value={stats?.totalShifts ?? '—'}
+          tone="blue"
+        />
+        <StatCard
+          icon={<Users className="h-7 w-7 text-green-600 dark:text-green-400" />}
+          label="Active shifts"
+          value={stats?.activeShifts ?? '—'}
+          tone="green"
+        />
+        <StatCard
+          icon={<Calendar className="h-7 w-7 text-purple-600 dark:text-purple-400" />}
+          label="Active assignments"
+          value={stats?.activeAssignments ?? '—'}
+          tone="purple"
+        />
+        <StatCard
+          icon={<RefreshCw className="h-7 w-7 text-orange-600 dark:text-orange-400" />}
+          label="Pending swaps"
+          value={stats?.pendingSwaps ?? '—'}
+          tone="orange"
+        />
+      </div>
+
+      {/* Tabs */}
+      <div className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
+        <div className="border-b border-cloud dark:border-nebula-purple/40">
+          <nav className="flex gap-6 px-4 overflow-x-auto" aria-label="Tabs">
+            {[
+              { id: 'shifts', label: 'Shifts' },
+              { id: 'assignments', label: 'Assignments' },
+              { id: 'rosters', label: 'Rosters' },
+              { id: 'swaps', label: 'Swap Requests' },
+            ].map((tab) => (
+              <button
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as typeof activeTab)}
+                className={`py-3 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition-colors ${
+                  activeTab === tab.id
+                    ? 'border-indigo-500 text-indigo-600 dark:text-indigo-300'
+                    : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
+                }`}
+              >
+                {tab.label}
+              </button>
+            ))}
+          </nav>
+        </div>
+
+        <div className="p-2 sm:p-4">
+          {activeTab === 'shifts' && (
+            <DataPage<Shift>
+              title="Shifts"
+              data={shifts}
+              columns={shiftColumns}
+              onSave={saveShift}
+              onDelete={deleteShift}
+              addButtonText="Add shift"
+              rowActions={(row) =>
+                row.isDefault
+                  ? []
+                  : [
+                      {
+                        label: 'Set as default',
+                        icon: Star,
+                        variant: 'warning',
+                        onClick: () => setShiftDefault(row),
+                      },
+                    ]
+              }
+              formFields={[
+                {
+                  name: 'code',
+                  label: 'Shift code',
+                  type: 'text',
+                  required: true,
+                  placeholder: 'GEN-09',
+                },
+                { name: 'name', label: 'Name', type: 'text', required: true },
+                { name: 'description', label: 'Description', type: 'textarea' },
+                {
+                  name: 'startTime',
+                  label: 'Start time (HH:MM)',
+                  type: 'text',
+                  required: true,
+                  placeholder: '09:00',
+                },
+                {
+                  name: 'endTime',
+                  label: 'End time (HH:MM)',
+                  type: 'text',
+                  required: true,
+                  placeholder: '18:00',
+                },
+                { name: 'workHours', label: 'Work hours', type: 'number', required: true },
+                { name: 'graceInMinutes', label: 'Grace in (min)', type: 'number', required: true },
+                {
+                  name: 'graceOutMinutes',
+                  label: 'Grace out (min)',
+                  type: 'number',
+                  required: true,
+                },
+                {
+                  name: 'breakDuration',
+                  label: 'Break duration (min)',
+                  type: 'number',
+                  required: true,
+                },
+                { name: 'overtimeAllowed', label: 'Overtime allowed', type: 'checkbox' },
+                { name: 'maxOvertimeHours', label: 'Max overtime hours', type: 'number' },
+              ]}
+            />
+          )}
+
+          {activeTab === 'assignments' && (
+            <DataPage<Assignment>
+              title="Assignments"
+              data={assignments}
+              columns={assignmentColumns}
+              onSave={saveAssignment}
+              onDelete={deleteAssignment}
+              addButtonText="Assign shift"
+              formFields={[
+                { name: 'employeeId', label: 'Employee ID', type: 'text', required: true },
+                { name: 'shiftId', label: 'Shift ID', type: 'text', required: true },
+                { name: 'effectiveFrom', label: 'Effective from', type: 'date', required: true },
+                { name: 'effectiveTo', label: 'Effective to', type: 'date' },
+                { name: 'reason', label: 'Reason', type: 'textarea' },
+              ]}
+            />
+          )}
+
+          {activeTab === 'rosters' && (
+            <DataPage<Roster>
+              title="Rosters"
+              data={rosters}
+              columns={rosterColumns}
+              onSave={saveRoster}
+              onDelete={deleteRoster}
+              addButtonText="Add roster entry"
+              formFields={[
+                { name: 'employeeId', label: 'Employee ID', type: 'text', required: true },
+                { name: 'shiftId', label: 'Shift ID', type: 'text', required: true },
+                { name: 'rosterDate', label: 'Date', type: 'date', required: true },
+                { name: 'customStartTime', label: 'Custom start (HH:MM)', type: 'text' },
+                { name: 'customEndTime', label: 'Custom end (HH:MM)', type: 'text' },
+                { name: 'isWeekOff', label: 'Week off', type: 'checkbox' },
+                { name: 'isHoliday', label: 'Holiday', type: 'checkbox' },
+              ]}
+            />
+          )}
+
+          {activeTab === 'swaps' && (
+            <DataPage<Swap>
+              title="Swap requests"
+              data={swaps}
+              columns={swapColumns}
+              onSave={saveSwap}
+              rowActions={swapRowActions}
+              addButtonText="New swap request"
+              formFields={[
+                { name: 'requestorId', label: 'Your employee ID', type: 'text', required: true },
+                { name: 'requestorShiftId', label: 'Your shift ID', type: 'text', required: true },
+                { name: 'requestorDate', label: 'Your shift date', type: 'date', required: true },
+                {
+                  name: 'swapWithId',
+                  label: 'Swap with (employee ID)',
+                  type: 'text',
+                  required: true,
+                },
+                { name: 'swapWithShiftId', label: 'Their shift ID', type: 'text', required: true },
+                { name: 'swapWithDate', label: 'Their shift date', type: 'date', required: true },
+                { name: 'reason', label: 'Reason', type: 'textarea', required: true },
+              ]}
+            />
+          )}
+        </div>
+      </div>
+    </div>
+  );
 }
 
+function StatCard({
+  icon,
+  label,
+  value,
+  tone,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  value: number | string;
+  tone: 'blue' | 'green' | 'purple' | 'orange';
+}) {
+  const tones: Record<typeof tone, string> = {
+    blue: 'from-blue-50 to-blue-100 dark:from-blue-900/40 dark:to-blue-800/40 text-blue-700 dark:text-blue-200',
+    green:
+      'from-green-50 to-green-100 dark:from-green-900/40 dark:to-green-800/40 text-green-700 dark:text-green-200',
+    purple:
+      'from-purple-50 to-purple-100 dark:from-purple-900/40 dark:to-purple-800/40 text-purple-700 dark:text-purple-200',
+    orange:
+      'from-orange-50 to-orange-100 dark:from-orange-900/40 dark:to-orange-800/40 text-orange-700 dark:text-orange-200',
+  };
+  return (
+    <div
+      className={`bg-gradient-to-br ${tones[tone]} p-5 rounded-xl shadow-sm border border-white/40 dark:border-white/10`}
+    >
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-xs font-medium opacity-80">{label}</p>
+          <p className="text-2xl font-bold mt-1">{value}</p>
+        </div>
+        {icon}
+      </div>
+    </div>
+  );
+}

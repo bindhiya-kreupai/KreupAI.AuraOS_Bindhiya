@@ -75,6 +75,11 @@ export interface DataPageProps<T> {
         label: string;
         value: string;
     }[];
+    /**
+     * Extra controls (e.g. ExportMenu, ImportDialog trigger, SavedView dropdown)
+     * rendered in the DataTable toolbar after the built-in icon buttons.
+     */
+    toolbarSlot?: React.ReactNode;
 }
 
 export function DataPage<T extends { id: string | number }>({
@@ -106,6 +111,7 @@ export function DataPage<T extends { id: string | number }>({
     enableColumnVisibility,
     addButtonText,
     filterParams,
+    toolbarSlot,
 }: DataPageProps<T>) {
     const [isSheetOpen, setIsSheetOpen] = useState(false);
     const [currentRecord, setCurrentRecord] = useState<Partial<T>>(defaultValues);
@@ -234,7 +240,7 @@ export function DataPage<T extends { id: string | number }>({
                                         }
                                     }}
                                     className={cn(
-                                        "p-1.5 rounded-md transition-colors",
+                                        Icon ? "p-1.5 rounded-md transition-colors" : "px-2 py-1 text-xs font-medium rounded-md transition-colors",
                                         action.variant === 'danger' ? "text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20" :
                                             action.variant === 'success' ? "text-emerald-500 hover:bg-emerald-50 dark:hover:bg-emerald-900/20" :
                                                 action.variant === 'warning' ? "text-amber-500 hover:bg-amber-50 dark:hover:bg-amber-900/20" :
@@ -242,7 +248,7 @@ export function DataPage<T extends { id: string | number }>({
                                     )}
                                     title={action.label}
                                 >
-                                    <Icon className="w-4 h-4" />
+                                    {Icon ? <Icon className="w-4 h-4" /> : action.label}
                                 </button>
                             );
                         })}
@@ -282,6 +288,7 @@ export function DataPage<T extends { id: string | number }>({
                     onExport={onExport}
                     onImport={onImport}
                     onFilter={onFilter}
+                    toolbarSlot={toolbarSlot}
                     className="h-full"
                 />
             </div>

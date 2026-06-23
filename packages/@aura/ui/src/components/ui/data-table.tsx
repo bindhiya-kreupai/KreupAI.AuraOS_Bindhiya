@@ -24,6 +24,11 @@ interface DataTableProps<T> {
     onExport?: () => void;
     onImport?: () => void;
     onFilter?: () => void;
+    /**
+     * Extra controls rendered in the toolbar after the built-in icon buttons.
+     * Use to inject ExportMenu, ImportDialog triggers, FilterPanel toggles, etc.
+     */
+    toolbarSlot?: React.ReactNode;
     className?: string;
 }
 
@@ -35,6 +40,7 @@ export function DataTable<T extends { id: string | number }>({
     onExport,
     onImport,
     onFilter,
+    toolbarSlot,
     className
 }: DataTableProps<T>) {
     return (
@@ -78,6 +84,7 @@ export function DataTable<T extends { id: string | number }>({
                             <Download className="w-4 h-4" />
                         </button>
                     )}
+                    {toolbarSlot}
                 </div>
             </div>
 

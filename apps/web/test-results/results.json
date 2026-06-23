@@ -1,10 +1,10 @@
 {
-  "numTotalTestSuites": 64,
-  "numPassedTestSuites": 64,
+  "numTotalTestSuites": 59,
+  "numPassedTestSuites": 59,
   "numFailedTestSuites": 0,
   "numPendingTestSuites": 0,
-  "numTotalTests": 152,
-  "numPassedTests": 152,
+  "numTotalTests": 109,
+  "numPassedTests": 109,
   "numFailedTests": 0,
   "numPendingTests": 0,
   "numTodoTests": 0,
@@ -24,1457 +24,854 @@
     "updated": 0,
     "didUpdate": false
   },
-  "startTime": 1780510576381,
+  "startTime": 1781694751027,
   "success": true,
   "testResults": [
     {
       "assertionResults": [
         {
-          "ancestorTitles": ["fourFifthsPassed (EEOC 4/5ths rule)"],
-          "fullName": "fourFifthsPassed (EEOC 4/5ths rule) passes when worst cohort ratio ≥ 0.8",
+          "ancestorTitles": ["resolveActiveRuleSet"],
+          "fullName": "resolveActiveRuleSet returns null when none published",
           "status": "passed",
-          "title": "passes when worst cohort ratio ≥ 0.8",
-          "duration": 0.9586669999999913,
+          "title": "returns null when none published",
+          "duration": 0.8665419999999813,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["fourFifthsPassed (EEOC 4/5ths rule)"],
-          "fullName": "fourFifthsPassed (EEOC 4/5ths rule) fails when worst cohort ratio < 0.8",
+          "ancestorTitles": ["resolveActiveRuleSet"],
+          "fullName": "resolveActiveRuleSet picks the latest effectiveFrom among published rows",
           "status": "passed",
-          "title": "fails when worst cohort ratio < 0.8",
-          "duration": 0.13504199999999855,
+          "title": "picks the latest effectiveFrom among published rows",
+          "duration": 0.2492499999999609,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["fourFifthsPassed (EEOC 4/5ths rule)"],
-          "fullName": "fourFifthsPassed (EEOC 4/5ths rule) handles single cohort (ratio = 1.0)",
+          "ancestorTitles": ["resolveActiveRuleSet"],
+          "fullName": "resolveActiveRuleSet excludes rows with effectiveTo in the past",
           "status": "passed",
-          "title": "handles single cohort (ratio = 1.0)",
-          "duration": 0.17391599999996288,
+          "title": "excludes rows with effectiveTo in the past",
+          "duration": 0.2545000000000073,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["fourFifthsPassed (EEOC 4/5ths rule)"],
-          "fullName": "fourFifthsPassed (EEOC 4/5ths rule) handles empty cohorts (passes vacuously)",
+          "ancestorTitles": ["nextStage"],
+          "fullName": "nextStage returns first unmet stage",
           "status": "passed",
-          "title": "handles empty cohorts (passes vacuously)",
-          "duration": 0.18308299999989686,
+          "title": "returns first unmet stage",
+          "duration": 0.41108299999996234,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["fourFifthsPassed (EEOC 4/5ths rule)"],
-          "fullName": "fourFifthsPassed (EEOC 4/5ths rule) computes worstCohortGap correctly",
+          "ancestorTitles": ["auditCapturePolicy"],
+          "fullName": "auditCapturePolicy returns defaults when no row",
           "status": "passed",
-          "title": "computes worstCohortGap correctly",
-          "duration": 0.5209999999999582,
+          "title": "returns defaults when no row",
+          "duration": 0.26641699999993307,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["AIGovernanceService.canModelTransition"],
-          "fullName": "AIGovernanceService.canModelTransition DRAFT → UNDER_REVIEW / RECALLED only",
+          "ancestorTitles": ["auditCapturePolicy"],
+          "fullName": "auditCapturePolicy honours per-domain override",
           "status": "passed",
-          "title": "DRAFT → UNDER_REVIEW / RECALLED only",
-          "duration": 0.16312500000003638,
+          "title": "honours per-domain override",
+          "duration": 0.2152090000000726,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["AIGovernanceService.canModelTransition"],
-          "fullName": "AIGovernanceService.canModelTransition UNDER_REVIEW ↔ DRAFT and UNDER_REVIEW → PUBLISHED",
+          "ancestorTitles": ["auditCapturePolicy"],
+          "fullName": "auditCapturePolicy ignores inactive rows",
           "status": "passed",
-          "title": "UNDER_REVIEW ↔ DRAFT and UNDER_REVIEW → PUBLISHED",
-          "duration": 0.17383299999994506,
+          "title": "ignores inactive rows",
+          "duration": 0.2157080000000633,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["AIGovernanceService.canModelTransition"],
-          "fullName": "AIGovernanceService.canModelTransition PUBLISHED → DEPRECATED / RECALLED only",
+          "ancestorTitles": ["countryRuleSetService.publish"],
+          "fullName": "countryRuleSetService.publish refuses to publish a non-DRAFT row",
           "status": "passed",
-          "title": "PUBLISHED → DEPRECATED / RECALLED only",
-          "duration": 0.10287500000004002,
+          "title": "refuses to publish a non-DRAFT row",
+          "duration": 1.0072079999999914,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["AIGovernanceService.canModelTransition"],
-          "fullName": "AIGovernanceService.canModelTransition RECALLED is terminal",
+          "ancestorTitles": ["countryRuleSetService.publish"],
+          "fullName": "countryRuleSetService.publish refuses cross-tenant",
           "status": "passed",
-          "title": "RECALLED is terminal",
-          "duration": 0.17837499999995998,
+          "title": "refuses cross-tenant",
+          "duration": 0.4604579999999032,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["AIGovernanceService.canModelTransition"],
-          "fullName": "AIGovernanceService.canModelTransition assertModelTransition throws on illegal moves",
+          "ancestorTitles": ["countryRuleSetService.publish"],
+          "fullName": "countryRuleSetService.publish supersedes prior PUBLISHED rows for same (country,domain)",
           "status": "passed",
-          "title": "assertModelTransition throws on illegal moves",
-          "duration": 0.2761249999999791,
+          "title": "supersedes prior PUBLISHED rows for same (country,domain)",
+          "duration": 0.726291999999944,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["AIGovernanceService.validateHighRiskPublishable"],
-          "fullName": "AIGovernanceService.validateHighRiskPublishable returns no reasons for a complete HIGH-risk card",
+          "ancestorTitles": ["approvalWorkflowTemplateService.upsert"],
+          "fullName": "approvalWorkflowTemplateService.upsert saves with defaults when minimal input",
           "status": "passed",
-          "title": "returns no reasons for a complete HIGH-risk card",
-          "duration": 0.3502090000000635,
+          "title": "saves with defaults when minimal input",
+          "duration": 0.25529099999994287,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["AIGovernanceService.validateHighRiskPublishable"],
-          "fullName": "AIGovernanceService.validateHighRiskPublishable returns empty array for non-HIGH risk tiers (no gate)",
+          "ancestorTitles": ["notificationRuleService.upsert"],
+          "fullName": "notificationRuleService.upsert captures bilingual templates and channel array",
           "status": "passed",
-          "title": "returns empty array for non-HIGH risk tiers (no gate)",
-          "duration": 0.14762499999994816,
+          "title": "captures bilingual templates and channel array",
+          "duration": 0.5200419999999895,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["AIGovernanceService.validateHighRiskPublishable"],
-          "fullName": "AIGovernanceService.validateHighRiskPublishable flags short intendedUse",
+          "ancestorTitles": ["auditTrailSettingService.policy"],
+          "fullName": "auditTrailSettingService.policy falls back to default when no setting for domain",
           "status": "passed",
-          "title": "flags short intendedUse",
-          "duration": 0.08808400000009442,
+          "title": "falls back to default when no setting for domain",
+          "duration": 0.21320800000000872,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["AIGovernanceService.validateHighRiskPublishable"],
-          "fullName": "AIGovernanceService.validateHighRiskPublishable flags missing knownLimitations",
+          "ancestorTitles": ["auditTrailSettingService.policy"],
+          "fullName": "auditTrailSettingService.policy returns configured policy when present",
           "status": "passed",
-          "title": "flags missing knownLimitations",
-          "duration": 0.08533299999999144,
+          "title": "returns configured policy when present",
+          "duration": 0.4676249999999982,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["AIGovernanceService.validateHighRiskPublishable"],
-          "fullName": "AIGovernanceService.validateHighRiskPublishable flags missing fairnessMetrics",
+          "ancestorTitles": ["HRMS_CONFIG_CONSTANTS"],
+          "fullName": "HRMS_CONFIG_CONSTANTS covers GCC countries and shipped compliance domains",
           "status": "passed",
-          "title": "flags missing fairnessMetrics",
-          "duration": 0.11162500000000364,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["AIGovernanceService.validateHighRiskPublishable"],
-          "fullName": "AIGovernanceService.validateHighRiskPublishable flags missing recent passing bias audit",
-          "status": "passed",
-          "title": "flags missing recent passing bias audit",
-          "duration": 0.08533299999999144,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["AIGovernanceService.validateHighRiskPublishable"],
-          "fullName": "AIGovernanceService.validateHighRiskPublishable flags failing most-recent bias audit",
-          "status": "passed",
-          "title": "flags failing most-recent bias audit",
-          "duration": 0.09958399999993617,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["AIGovernanceService.validateHighRiskPublishable"],
-          "fullName": "AIGovernanceService.validateHighRiskPublishable flags stale bias audit (> 12 months)",
-          "status": "passed",
-          "title": "flags stale bias audit (> 12 months)",
-          "duration": 0.08483300000000327,
+          "title": "covers GCC countries and shipped compliance domains",
+          "duration": 0.5653750000000173,
           "failureMessages": [],
           "meta": {}
         }
       ],
-      "startTime": 1780510577026,
-      "endTime": 1780510577030.1116,
+      "startTime": 1781694751477,
+      "endTime": 1781694751483.5654,
       "status": "passed",
       "message": "",
-      "name": "/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/lib/services/__tests__/ai-governance.service.test.ts"
+      "name": "/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/lib/services/__tests__/hrms-config.service.test.ts"
     },
     {
       "assertionResults": [
         {
-          "ancestorTitles": ["AssetService.findAll"],
-          "fullName": "AssetService.findAll filters by tenant + category + status + locationId",
+          "ancestorTitles": ["alertWindow ladder"],
+          "fullName": "alertWindow ladder returns EXPIRED for negative days",
           "status": "passed",
-          "title": "filters by tenant + category + status + locationId",
-          "duration": 1.0589159999999538,
+          "title": "returns EXPIRED for negative days",
+          "duration": 0.9308340000000044,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["AssetService.findAll"],
-          "fullName": "AssetService.findAll builds a 4-field OR clause for search",
+          "ancestorTitles": ["alertWindow ladder"],
+          "fullName": "alertWindow ladder returns WINDOW_7 inside 7 days",
           "status": "passed",
-          "title": "builds a 4-field OR clause for search",
-          "duration": 1.1634579999999914,
+          "title": "returns WINDOW_7 inside 7 days",
+          "duration": 0.33141699999998764,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["AssetService.findAll"],
-          "fullName": "AssetService.findAll paginates correctly",
+          "ancestorTitles": ["alertWindow ladder"],
+          "fullName": "alertWindow ladder returns WINDOW_30 between 8 and 30 days",
           "status": "passed",
-          "title": "paginates correctly",
-          "duration": 1.1374999999999318,
+          "title": "returns WINDOW_30 between 8 and 30 days",
+          "duration": 0.29320799999993596,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["AssetService.findById — tenant isolation"],
-          "fullName": "AssetService.findById — tenant isolation scopes by tenantId + id",
+          "ancestorTitles": ["alertWindow ladder"],
+          "fullName": "alertWindow ladder returns WINDOW_60 between 31 and 60 days",
           "status": "passed",
-          "title": "scopes by tenantId + id",
-          "duration": 0.39658299999996416,
+          "title": "returns WINDOW_60 between 31 and 60 days",
+          "duration": 0.35195899999996527,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["AssetService.findById — tenant isolation"],
-          "fullName": "AssetService.findById — tenant isolation returns null when tenant mismatch",
+          "ancestorTitles": ["alertWindow ladder"],
+          "fullName": "alertWindow ladder returns null beyond 60 days",
           "status": "passed",
-          "title": "returns null when tenant mismatch",
-          "duration": 0.19254100000000562,
+          "title": "returns null beyond 60 days",
+          "duration": 0.23620900000003076,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["AssetService.create"],
-          "fullName": "AssetService.create refuses when asset code already exists",
+          "ancestorTitles": ["daysToExpiry"],
+          "fullName": "daysToExpiry returns integer day difference",
           "status": "passed",
-          "title": "refuses when asset code already exists",
-          "duration": 1.759708000000046,
+          "title": "returns integer day difference",
+          "duration": 0.2150419999999258,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["AssetService.create"],
-          "fullName": "AssetService.create rejects invalid DTO via zod",
+          "ancestorTitles": ["daysToExpiry"],
+          "fullName": "daysToExpiry returns negative for past dates",
           "status": "passed",
-          "title": "rejects invalid DTO via zod",
-          "duration": 0.32591600000000653,
+          "title": "returns negative for past dates",
+          "duration": 0.25920800000005784,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["AssetService.getAssignmentHistory"],
-          "fullName": "AssetService.getAssignmentHistory queries assignments for the asset, scoped by tenant",
+          "ancestorTitles": ["riskBand"],
+          "fullName": "riskBand bands 1..25",
           "status": "passed",
-          "title": "queries assignments for the asset, scoped by tenant",
-          "duration": 0.2111250000000382,
+          "title": "bands 1..25",
+          "duration": 0.3310000000000173,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["immigrationGatingReason"],
+          "fullName": "immigrationGatingReason returns null when clean",
+          "status": "passed",
+          "title": "returns null when clean",
+          "duration": 0.4238750000000664,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["immigrationGatingReason"],
+          "fullName": "immigrationGatingReason gates on expired + 7d window + overdue transfers",
+          "status": "passed",
+          "title": "gates on expired + 7d window + overdue transfers",
+          "duration": 0.30475000000001273,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["immigrationGatingReason"],
+          "fullName": "immigrationGatingReason gates on checklist + risk signals",
+          "status": "passed",
+          "title": "gates on checklist + risk signals",
+          "duration": 0.25254199999994853,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["renewalAlertService.raise"],
+          "fullName": "renewalAlertService.raise skips when document is beyond 60-day window",
+          "status": "passed",
+          "title": "skips when document is beyond 60-day window",
+          "duration": 0.3632500000001073,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["renewalAlertService.raise"],
+          "fullName": "renewalAlertService.raise writes EXPIRED window for past expiry",
+          "status": "passed",
+          "title": "writes EXPIRED window for past expiry",
+          "duration": 0.3143750000000409,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["renewalAlertService.raise"],
+          "fullName": "renewalAlertService.raise writes WINDOW_7 for expiry within 7 days",
+          "status": "passed",
+          "title": "writes WINDOW_7 for expiry within 7 days",
+          "duration": 0.4835419999999431,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["renewalAlertService.raise"],
+          "fullName": "renewalAlertService.raise is idempotent — upsert keyed by (subject, document, expiresAt, window)",
+          "status": "passed",
+          "title": "is idempotent — upsert keyed by (subject, document, expiresAt, window)",
+          "duration": 0.7723330000000033,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["renewalAlertService.openCountsByWindow"],
+          "fullName": "renewalAlertService.openCountsByWindow counts only OPEN alerts grouped by window",
+          "status": "passed",
+          "title": "counts only OPEN alerts grouped by window",
+          "duration": 0.45687499999996817,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["transferCaseService.complete"],
+          "fullName": "transferCaseService.complete refuses to complete from REQUESTED (must be APPROVED)",
+          "status": "passed",
+          "title": "refuses to complete from REQUESTED (must be APPROVED)",
+          "duration": 1.083250000000021,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["transferCaseService.complete"],
+          "fullName": "transferCaseService.complete refuses cross-tenant",
+          "status": "passed",
+          "title": "refuses cross-tenant",
+          "duration": 0.460083999999938,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["transferCaseService.complete"],
+          "fullName": "transferCaseService.complete completes from APPROVED",
+          "status": "passed",
+          "title": "completes from APPROVED",
+          "duration": 0.3056249999999636,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["transferCaseService.openOverdueCount"],
+          "fullName": "transferCaseService.openOverdueCount flags cases older than 60 days from requestedAt",
+          "status": "passed",
+          "title": "flags cases older than 60 days from requestedAt",
+          "duration": 0.32758400000000165,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["immigrationAuditChecklistService.overdueCount"],
+          "fullName": "immigrationAuditChecklistService.overdueCount flags items > 35 days since review",
+          "status": "passed",
+          "title": "flags items > 35 days since review",
+          "duration": 0.31637499999999363,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["immigrationRiskService.upsert"],
+          "fullName": "immigrationRiskService.upsert clamps L/I and derives score+band",
+          "status": "passed",
+          "title": "clamps L/I and derives score+band",
+          "duration": 0.3499580000000151,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["immigrationComplianceCertificateService"],
+          "fullName": "immigrationComplianceCertificateService refuses to sign while gated",
+          "status": "passed",
+          "title": "refuses to sign while gated",
+          "duration": 0.7359169999999722,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["immigrationComplianceCertificateService"],
+          "fullName": "immigrationComplianceCertificateService signs when clean",
+          "status": "passed",
+          "title": "signs when clean",
+          "duration": 0.4168329999999969,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["immigrationComplianceCertificateService"],
+          "fullName": "immigrationComplianceCertificateService generate gates when expired + 7d alerts present",
+          "status": "passed",
+          "title": "generate gates when expired + 7d alerts present",
+          "duration": 1.0175840000000562,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["IMMIGRATION_COMPLIANCE_CONSTANTS"],
+          "fullName": "IMMIGRATION_COMPLIANCE_CONSTANTS covers all 6 GCC countries",
+          "status": "passed",
+          "title": "covers all 6 GCC countries",
+          "duration": 0.3330829999999878,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["IMMIGRATION_COMPLIANCE_CONSTANTS"],
+          "fullName": "IMMIGRATION_COMPLIANCE_CONSTANTS covers entry/work/residence/dependent visa categories",
+          "status": "passed",
+          "title": "covers entry/work/residence/dependent visa categories",
+          "duration": 0.7454579999999851,
           "failureMessages": [],
           "meta": {}
         }
       ],
-      "startTime": 1780510576979,
-      "endTime": 1780510576985.326,
+      "startTime": 1781694751480,
+      "endTime": 1781694751492.7454,
       "status": "passed",
       "message": "",
-      "name": "/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/lib/services/__tests__/asset.service.test.ts"
+      "name": "/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/lib/services/__tests__/immigration-compliance.service.test.ts"
     },
     {
       "assertionResults": [
         {
-          "ancestorTitles": ["CobraService.computeDeadlines"],
-          "fullName": "CobraService.computeDeadlines TERMINATION → 60-day election window + 18-month coverage cap",
+          "ancestorTitles": ["headcountVariance"],
+          "fullName": "headcountVariance vacant when filled below approved",
           "status": "passed",
-          "title": "TERMINATION → 60-day election window + 18-month coverage cap",
-          "duration": 0.687958999999978,
+          "title": "vacant when filled below approved",
+          "duration": 1.1521249999999554,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["CobraService.computeDeadlines"],
-          "fullName": "CobraService.computeDeadlines REDUCED_HOURS → 18-month cap (same as termination)",
+          "ancestorTitles": ["headcountVariance"],
+          "fullName": "headcountVariance overhire when filled above approved",
           "status": "passed",
-          "title": "REDUCED_HOURS → 18-month cap (same as termination)",
-          "duration": 0.11366699999996399,
+          "title": "overhire when filled above approved",
+          "duration": 0.23745899999994435,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["CobraService.computeDeadlines"],
-          "fullName": "CobraService.computeDeadlines DIVORCE / DEPENDENT_LOSS / DEATH / MEDICARE → 36-month cap",
+          "ancestorTitles": ["headcountVariance"],
+          "fullName": "headcountVariance clamps both to 0 when equal",
           "status": "passed",
-          "title": "DIVORCE / DEPENDENT_LOSS / DEATH / MEDICARE → 36-month cap",
-          "duration": 0.2381670000000895,
+          "title": "clamps both to 0 when equal",
+          "duration": 0.3268749999999727,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["CobraService.computeCobraPremium"],
-          "fullName": "CobraService.computeCobraPremium sums employee+employer and adds 2% admin uplift",
+          "ancestorTitles": ["agingDays"],
+          "fullName": "agingDays returns integer days",
           "status": "passed",
-          "title": "sums employee+employer and adds 2% admin uplift",
-          "duration": 0.6161250000000109,
+          "title": "returns integer days",
+          "duration": 0.3276250000000118,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["CobraService.computeCobraPremium"],
-          "fullName": "CobraService.computeCobraPremium rounds to 2 decimals",
+          "ancestorTitles": ["agingDays"],
+          "fullName": "agingDays uses filledAt when present",
           "status": "passed",
-          "title": "rounds to 2 decimals",
-          "duration": 0.40370800000005147,
+          "title": "uses filledAt when present",
+          "duration": 0.22424999999998363,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["CobraService transitions"],
-          "fullName": "CobraService transitions PENDING_ELECTION → ELECTED / DECLINED / EXPIRED / CANCELED",
+          "ancestorTitles": ["agingDays"],
+          "fullName": "agingDays never negative",
           "status": "passed",
-          "title": "PENDING_ELECTION → ELECTED / DECLINED / EXPIRED / CANCELED",
-          "duration": 0.2062500000000682,
+          "title": "never negative",
+          "duration": 0.15141600000004019,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["CobraService transitions"],
-          "fullName": "CobraService transitions ELECTED → ACTIVE / CANCELED only",
+          "ancestorTitles": ["orgGatingReason"],
+          "fullName": "orgGatingReason returns null when clean",
           "status": "passed",
-          "title": "ELECTED → ACTIVE / CANCELED only",
-          "duration": 0.13620800000001054,
+          "title": "returns null when clean",
+          "duration": 0.18954099999996288,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["CobraService transitions"],
-          "fullName": "CobraService transitions ACTIVE → TERMINATED_NONPAYMENT / EXPIRED / CANCELED",
+          "ancestorTitles": ["orgGatingReason"],
+          "fullName": "orgGatingReason gates on overhire + aged vacancies",
           "status": "passed",
-          "title": "ACTIVE → TERMINATED_NONPAYMENT / EXPIRED / CANCELED",
-          "duration": 0.23795800000004874,
+          "title": "gates on overhire + aged vacancies",
+          "duration": 0.2682079999999587,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["CobraService transitions"],
-          "fullName": "CobraService transitions terminal states reject everything",
+          "ancestorTitles": ["orgGatingReason"],
+          "fullName": "orgGatingReason gates on HIGH/CRIT checklist + unapproved vacancies",
           "status": "passed",
-          "title": "terminal states reject everything",
-          "duration": 0.26920800000004874,
+          "title": "gates on HIGH/CRIT checklist + unapproved vacancies",
+          "duration": 0.34891700000002857,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["CobraService transitions"],
-          "fullName": "CobraService transitions assertTransition throws on illegal moves",
+          "ancestorTitles": ["orgAuditChecklistService.overdueCount"],
+          "fullName": "orgAuditChecklistService.overdueCount flags items > 35 days since last review",
           "status": "passed",
-          "title": "assertTransition throws on illegal moves",
-          "duration": 0.7612920000000258,
+          "title": "flags items > 35 days since last review",
+          "duration": 0.38904200000001765,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["COBRA error contracts"],
-          "fullName": "COBRA error contracts InvalidCobraTransitionError is a real Error subclass",
+          "ancestorTitles": ["orgPositionControlService.upsert"],
+          "fullName": "orgPositionControlService.upsert derives vacant + overhire from headcount inputs",
           "status": "passed",
-          "title": "InvalidCobraTransitionError is a real Error subclass",
-          "duration": 0.22229200000003857,
+          "title": "derives vacant + overhire from headcount inputs",
+          "duration": 0.26758300000005875,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["COBRA error contracts"],
-          "fullName": "COBRA error contracts ElectionWindowExpiredError carries the deadline in the message",
+          "ancestorTitles": ["orgVacancyService"],
+          "fullName": "orgVacancyService refuses to fill unknown vacancy",
           "status": "passed",
-          "title": "ElectionWindowExpiredError carries the deadline in the message",
-          "duration": 0.2620839999999589,
+          "title": "refuses to fill unknown vacancy",
+          "duration": 0.8217080000000578,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["orgVacancyService"],
+          "fullName": "orgVacancyService fill sets aging days from raisedAt",
+          "status": "passed",
+          "title": "fill sets aging days from raisedAt",
+          "duration": 0.26862500000004275,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["orgVacancyService"],
+          "fullName": "orgVacancyService openAged separates aged + unapproved counts",
+          "status": "passed",
+          "title": "openAged separates aged + unapproved counts",
+          "duration": 0.5326249999999391,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["orgComplianceCertificateService.sign"],
+          "fullName": "orgComplianceCertificateService.sign refuses while gated",
+          "status": "passed",
+          "title": "refuses while gated",
+          "duration": 0.2969580000000178,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["orgComplianceCertificateService.sign"],
+          "fullName": "orgComplianceCertificateService.sign signs when clean",
+          "status": "passed",
+          "title": "signs when clean",
+          "duration": 0.2915420000000495,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["ORG_COMPLIANCE_CONSTANTS"],
+          "fullName": "ORG_COMPLIANCE_CONSTANTS covers org structure categories",
+          "status": "passed",
+          "title": "covers org structure categories",
+          "duration": 0.572084000000018,
           "failureMessages": [],
           "meta": {}
         }
       ],
-      "startTime": 1780510577024,
-      "endTime": 1780510577028.262,
+      "startTime": 1781694751470,
+      "endTime": 1781694751477.572,
       "status": "passed",
       "message": "",
-      "name": "/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/lib/services/__tests__/cobra.service.test.ts"
+      "name": "/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/lib/services/__tests__/org-compliance.service.test.ts"
     },
     {
       "assertionResults": [
         {
-          "ancestorTitles": ["DisasterRecoveryService.evaluateDrill"],
-          "fullName": "DisasterRecoveryService.evaluateDrill PASS when both RPO and RTO targets met",
+          "ancestorTitles": ["riskBand"],
+          "fullName": "riskBand maps score to band",
           "status": "passed",
-          "title": "PASS when both RPO and RTO targets met",
-          "duration": 0.9090419999999995,
+          "title": "maps score to band",
+          "duration": 1.147375000000011,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["DisasterRecoveryService.evaluateDrill"],
-          "fullName": "DisasterRecoveryService.evaluateDrill PASS at exact targets (≤ is the boundary)",
+          "ancestorTitles": ["payrollGatingReason"],
+          "fullName": "payrollGatingReason returns null when clean",
           "status": "passed",
-          "title": "PASS at exact targets (≤ is the boundary)",
-          "duration": 0.11449999999990723,
+          "title": "returns null when clean",
+          "duration": 0.2841670000000249,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["DisasterRecoveryService.evaluateDrill"],
-          "fullName": "DisasterRecoveryService.evaluateDrill FAIL when RPO missed",
+          "ancestorTitles": ["payrollGatingReason"],
+          "fullName": "payrollGatingReason gates on unapproved run",
           "status": "passed",
-          "title": "FAIL when RPO missed",
-          "duration": 0.23545899999999165,
+          "title": "gates on unapproved run",
+          "duration": 0.2995409999999765,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["DisasterRecoveryService.evaluateDrill"],
-          "fullName": "DisasterRecoveryService.evaluateDrill FAIL when RTO missed",
+          "ancestorTitles": ["payrollGatingReason"],
+          "fullName": "payrollGatingReason gates on maker-checker breach + critical findings + variance",
           "status": "passed",
-          "title": "FAIL when RTO missed",
-          "duration": 0.2435410000000502,
+          "title": "gates on maker-checker breach + critical findings + variance",
+          "duration": 0.38133300000004056,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["DisasterRecoveryService.evaluateDrill"],
-          "fullName": "DisasterRecoveryService.evaluateDrill FAIL with both missed → both in missed array",
+          "ancestorTitles": ["payrollGatingReason"],
+          "fullName": "payrollGatingReason does not gate at 0.5% variance threshold edge",
           "status": "passed",
-          "title": "FAIL with both missed → both in missed array",
-          "duration": 0.19141599999989012,
+          "title": "does not gate at 0.5% variance threshold edge",
+          "duration": 0.18391699999995126,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["DisasterRecoveryService.evaluateDrill"],
-          "fullName": "DisasterRecoveryService.evaluateDrill INCONCLUSIVE when either actual is missing",
+          "ancestorTitles": ["payrollGatingReason"],
+          "fullName": "payrollGatingReason gates on bank-file mismatch and missing GL postings",
           "status": "passed",
-          "title": "INCONCLUSIVE when either actual is missing",
-          "duration": 0.10762499999987085,
+          "title": "gates on bank-file mismatch and missing GL postings",
+          "duration": 0.26987500000007003,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["DisasterRecoveryService transitions"],
-          "fullName": "DisasterRecoveryService transitions PLANNED → IN_PROGRESS / INCONCLUSIVE only",
+          "ancestorTitles": ["payrollGovernanceService.overdueCount"],
+          "fullName": "payrollGovernanceService.overdueCount flags MONTHLY controls older than 35 days",
           "status": "passed",
-          "title": "PLANNED → IN_PROGRESS / INCONCLUSIVE only",
-          "duration": 0.3610830000000078,
+          "title": "flags MONTHLY controls older than 35 days",
+          "duration": 0.3219579999999951,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["DisasterRecoveryService transitions"],
-          "fullName": "DisasterRecoveryService transitions IN_PROGRESS → PASS / FAIL / INCONCLUSIVE",
+          "ancestorTitles": ["payrollGovernanceService.overdueCount"],
+          "fullName": "payrollGovernanceService.overdueCount uses cadence-specific thresholds",
           "status": "passed",
-          "title": "IN_PROGRESS → PASS / FAIL / INCONCLUSIVE",
-          "duration": 0.12449999999989814,
+          "title": "uses cadence-specific thresholds",
+          "duration": 0.21825000000001182,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["DisasterRecoveryService transitions"],
-          "fullName": "DisasterRecoveryService transitions PASS / FAIL / INCONCLUSIVE are terminal",
+          "ancestorTitles": ["payrollRiskService.upsert"],
+          "fullName": "payrollRiskService.upsert clamps L/I to 1..5 and derives score+band",
           "status": "passed",
-          "title": "PASS / FAIL / INCONCLUSIVE are terminal",
-          "duration": 0.26583300000015697,
+          "title": "clamps L/I to 1..5 and derives score+band",
+          "duration": 0.40954199999998764,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["DisasterRecoveryService transitions"],
-          "fullName": "DisasterRecoveryService transitions assertTransition throws on illegal moves",
+          "ancestorTitles": ["payrollComplianceCertificateService"],
+          "fullName": "payrollComplianceCertificateService refuses to sign while gated",
           "status": "passed",
-          "title": "assertTransition throws on illegal moves",
-          "duration": 0.2884160000000975,
+          "title": "refuses to sign while gated",
+          "duration": 0.905791000000022,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["payrollComplianceCertificateService"],
+          "fullName": "payrollComplianceCertificateService signs when clean",
+          "status": "passed",
+          "title": "signs when clean",
+          "duration": 0.27366700000004585,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["payrollComplianceCertificateService"],
+          "fullName": "payrollComplianceCertificateService generate computes reconciliationVariancePct from runs",
+          "status": "passed",
+          "title": "generate computes reconciliationVariancePct from runs",
+          "duration": 0.7491249999999354,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["PAYROLL_COMPLIANCE_CONSTANTS"],
+          "fullName": "PAYROLL_COMPLIANCE_CONSTANTS covers SOD, period lock and GL posting categories",
+          "status": "passed",
+          "title": "covers SOD, period lock and GL posting categories",
+          "duration": 0.6092499999999745,
           "failureMessages": [],
           "meta": {}
         }
       ],
-      "startTime": 1780510577197,
-      "endTime": 1780510577200.2883,
+      "startTime": 1781694751470,
+      "endTime": 1781694751476.6091,
       "status": "passed",
       "message": "",
-      "name": "/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/lib/services/__tests__/disaster-recovery.service.test.ts"
+      "name": "/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/lib/services/__tests__/payroll-compliance.service.test.ts"
     },
     {
       "assertionResults": [
         {
-          "ancestorTitles": ["DSARService.computeDueBy (SLA defaults)"],
-          "fullName": "DSARService.computeDueBy (SLA defaults) GDPR Art. 15 access → 30 days",
+          "ancestorTitles": ["completenessScore"],
+          "fullName": "completenessScore returns 100 GREEN when zero mandatory total",
           "status": "passed",
-          "title": "GDPR Art. 15 access → 30 days",
-          "duration": 0.6137499999999818,
+          "title": "returns 100 GREEN when zero mandatory total",
+          "duration": 1.2148329999999987,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["DSARService.computeDueBy (SLA defaults)"],
-          "fullName": "DSARService.computeDueBy (SLA defaults) GDPR Art. 17 deletion → 30 days",
+          "ancestorTitles": ["completenessScore"],
+          "fullName": "completenessScore GREEN when all present",
           "status": "passed",
-          "title": "GDPR Art. 17 deletion → 30 days",
-          "duration": 0.19383399999992434,
+          "title": "GREEN when all present",
+          "duration": 0.2880000000000109,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["DSARService.computeDueBy (SLA defaults)"],
-          "fullName": "DSARService.computeDueBy (SLA defaults) CCPA basis override → 45 days",
+          "ancestorTitles": ["completenessScore"],
+          "fullName": "completenessScore AMBER between 70 and 89",
           "status": "passed",
-          "title": "CCPA basis override → 45 days",
-          "duration": 0.0913749999999709,
+          "title": "AMBER between 70 and 89",
+          "duration": 0.352292000000034,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["DSARService.computeDueBy (SLA defaults)"],
-          "fullName": "DSARService.computeDueBy (SLA defaults) PDPL basis → 30 days",
+          "ancestorTitles": ["completenessScore"],
+          "fullName": "completenessScore RED below 70",
           "status": "passed",
-          "title": "PDPL basis → 30 days",
-          "duration": 0.22575000000006185,
+          "title": "RED below 70",
+          "duration": 0.31208399999991343,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["DSARService transitions"],
-          "fullName": "DSARService transitions RECEIVED → VERIFYING / REJECTED only",
+          "ancestorTitles": ["completenessScore"],
+          "fullName": "completenessScore expired docs apply 5-point penalty each",
           "status": "passed",
-          "title": "RECEIVED → VERIFYING / REJECTED only",
-          "duration": 0.25291699999979755,
+          "title": "expired docs apply 5-point penalty each",
+          "duration": 0.18145899999990434,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["DSARService transitions"],
-          "fullName": "DSARService transitions VERIFYING → IN_PROGRESS / REJECTED only",
+          "ancestorTitles": ["completenessScore"],
+          "fullName": "completenessScore expiring within 30d adds penalty capped at 10",
           "status": "passed",
-          "title": "VERIFYING → IN_PROGRESS / REJECTED only",
-          "duration": 0.12229099999990467,
+          "title": "expiring within 30d adds penalty capped at 10",
+          "duration": 0.16124999999999545,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["DSARService transitions"],
-          "fullName": "DSARService transitions IN_PROGRESS → FULFILLED / REJECTED / EXTENDED",
+          "ancestorTitles": ["recordsGatingReason"],
+          "fullName": "recordsGatingReason returns null when clean",
           "status": "passed",
-          "title": "IN_PROGRESS → FULFILLED / REJECTED / EXTENDED",
-          "duration": 0.18220799999994597,
+          "title": "returns null when clean",
+          "duration": 0.24512500000003,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["DSARService transitions"],
-          "fullName": "DSARService transitions EXTENDED can return to IN_PROGRESS or close out",
+          "ancestorTitles": ["recordsGatingReason"],
+          "fullName": "recordsGatingReason gates on RED employees + expired docs",
           "status": "passed",
-          "title": "EXTENDED can return to IN_PROGRESS or close out",
-          "duration": 0.10733299999992596,
+          "title": "gates on RED employees + expired docs",
+          "duration": 0.23004200000002584,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["DSARService transitions"],
-          "fullName": "DSARService transitions terminal states reject",
+          "ancestorTitles": ["recordsGatingReason"],
+          "fullName": "recordsGatingReason gates on HIGH/CRIT checklist + overdue + risks",
           "status": "passed",
-          "title": "terminal states reject",
-          "duration": 0.19116699999995035,
+          "title": "gates on HIGH/CRIT checklist + overdue + risks",
+          "duration": 0.32254199999999855,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["DSARService transitions"],
-          "fullName": "DSARService transitions assertTransition throws on illegal moves",
+          "ancestorTitles": ["riskBand"],
+          "fullName": "riskBand bands 1..25",
           "status": "passed",
-          "title": "assertTransition throws on illegal moves",
-          "duration": 0.2680830000001606,
-          "failureMessages": [],
-          "meta": {}
-        }
-      ],
-      "startTime": 1780510577199,
-      "endTime": 1780510577202.268,
-      "status": "passed",
-      "message": "",
-      "name": "/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/lib/services/__tests__/dsar.service.test.ts"
-    },
-    {
-      "assertionResults": [
-        {
-          "ancestorTitles": ["EmploymentHistoryService.findAll"],
-          "fullName": "EmploymentHistoryService.findAll filters by tenant + employee + changeType",
-          "status": "passed",
-          "title": "filters by tenant + employee + changeType",
-          "duration": 0.9487920000000258,
+          "title": "bands 1..25",
+          "duration": 0.33691699999997127,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["EmploymentHistoryService.findAll"],
-          "fullName": "EmploymentHistoryService.findAll builds effectiveDate range from startDate + endDate",
+          "ancestorTitles": ["recordsCompletenessService.upsert"],
+          "fullName": "recordsCompletenessService.upsert derives mandatoryMissing, score and band",
           "status": "passed",
-          "title": "builds effectiveDate range from startDate + endDate",
-          "duration": 0.45375000000001364,
+          "title": "derives mandatoryMissing, score and band",
+          "duration": 0.3396250000000691,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["EmploymentHistoryService.findAll"],
-          "fullName": "EmploymentHistoryService.findAll paginates with default ordering effectiveDate desc",
+          "ancestorTitles": ["recordsCompletenessService.aggregate"],
+          "fullName": "recordsCompletenessService.aggregate aggregates band counts, average score, missing/expired totals",
           "status": "passed",
-          "title": "paginates with default ordering effectiveDate desc",
-          "duration": 1.3491249999999582,
+          "title": "aggregates band counts, average score, missing/expired totals",
+          "duration": 0.30720900000005713,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["EmploymentHistoryService.findById — tenant isolation"],
-          "fullName": "EmploymentHistoryService.findById — tenant isolation scopes by tenantId + id",
+          "ancestorTitles": ["recordsAuditChecklistService.overdueCount"],
+          "fullName": "recordsAuditChecklistService.overdueCount flags items > 35 days",
           "status": "passed",
-          "title": "scopes by tenantId + id",
-          "duration": 0.3522499999999127,
+          "title": "flags items > 35 days",
+          "duration": 0.2232090000001108,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["EmploymentHistoryService.findById — tenant isolation"],
-          "fullName": "EmploymentHistoryService.findById — tenant isolation returns null when tenant mismatch",
+          "ancestorTitles": ["recordsComplianceCertificateService"],
+          "fullName": "recordsComplianceCertificateService refuses to sign while gated",
           "status": "passed",
-          "title": "returns null when tenant mismatch",
-          "duration": 0.18495800000005147,
+          "title": "refuses to sign while gated",
+          "duration": 1.0257910000000265,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["EmploymentHistoryService.getEmployeeTimeline"],
-          "fullName": "EmploymentHistoryService.getEmployeeTimeline queries records for the employee in tenant",
+          "ancestorTitles": ["recordsComplianceCertificateService"],
+          "fullName": "recordsComplianceCertificateService generates with gating when RED employees and expired docs present",
           "status": "passed",
-          "title": "queries records for the employee in tenant",
-          "duration": 0.13391699999999673,
+          "title": "generates with gating when RED employees and expired docs present",
+          "duration": 0.40866700000003675,
           "failureMessages": [],
           "meta": {}
         },
         {
-          "ancestorTitles": ["EmploymentHistoryService.delete"],
-          "fullName": "EmploymentHistoryService.delete throws when record not found",
+          "ancestorTitles": ["RECORDS_COMPLIANCE_CONSTANTS"],
+          "fullName": "RECORDS_COMPLIANCE_CONSTANTS covers identity, contract, visa, work permit",
           "status": "passed",
-          "title": "throws when record not found",
-          "duration": 0.750583000000006,
+          "title": "covers identity, contract, visa, work permit",
+          "duration": 0.787499999999909,
           "failureMessages": [],
           "meta": {}
         }
       ],
-      "startTime": 1780510576979,
-      "endTime": 1780510576982.7505,
+      "startTime": 1781694751487,
+      "endTime": 1781694751494.7876,
       "status": "passed",
       "message": "",
-      "name": "/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/lib/services/__tests__/employment-history.service.test.ts"
-    },
-    {
-      "assertionResults": [
-        {
-          "ancestorTitles": ["ExitService.canTransition"],
-          "fullName": "ExitService.canTransition PENDING → APPROVED / CANCELED only",
-          "status": "passed",
-          "title": "PENDING → APPROVED / CANCELED only",
-          "duration": 0.8271249999997963,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["ExitService.canTransition"],
-          "fullName": "ExitService.canTransition APPROVED → PROCESSING / CANCELED only",
-          "status": "passed",
-          "title": "APPROVED → PROCESSING / CANCELED only",
-          "duration": 0.1894169999998212,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["ExitService.canTransition"],
-          "fullName": "ExitService.canTransition PROCESSING → COMPLETED / CANCELED only",
-          "status": "passed",
-          "title": "PROCESSING → COMPLETED / CANCELED only",
-          "duration": 0.2107499999999618,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["ExitService.canTransition"],
-          "fullName": "ExitService.canTransition terminal states reject all transitions",
-          "status": "passed",
-          "title": "terminal states reject all transitions",
-          "duration": 0.2683750000001055,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["ExitService.assertTransition"],
-          "fullName": "ExitService.assertTransition throws InvalidExitTransitionError on illegal moves",
-          "status": "passed",
-          "title": "throws InvalidExitTransitionError on illegal moves",
-          "duration": 0.6244160000001102,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["ExitService.assertTransition"],
-          "fullName": "ExitService.assertTransition is silent on legal moves",
-          "status": "passed",
-          "title": "is silent on legal moves",
-          "duration": 0.2685830000000351,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["Exit error contracts"],
-          "fullName": "Exit error contracts InvalidExitTransitionError is a real Error subclass",
-          "status": "passed",
-          "title": "InvalidExitTransitionError is a real Error subclass",
-          "duration": 0.14850000000001273,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["Exit error contracts"],
-          "fullName": "Exit error contracts ExitNotClearedError carries the user-facing message",
-          "status": "passed",
-          "title": "ExitNotClearedError carries the user-facing message",
-          "duration": 0.19650000000001455,
-          "failureMessages": [],
-          "meta": {}
-        }
-      ],
-      "startTime": 1780510577174,
-      "endTime": 1780510577177.1965,
-      "status": "passed",
-      "message": "",
-      "name": "/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/lib/services/__tests__/exit.service.test.ts"
-    },
-    {
-      "assertionResults": [
-        {
-          "ancestorTitles": ["ExpenseService transitions"],
-          "fullName": "ExpenseService transitions DRAFT → SUBMITTED / CANCELED only",
-          "status": "passed",
-          "title": "DRAFT → SUBMITTED / CANCELED only",
-          "duration": 0.7994169999999485,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["ExpenseService transitions"],
-          "fullName": "ExpenseService transitions SUBMITTED → APPROVED / REJECTED / CANCELED only",
-          "status": "passed",
-          "title": "SUBMITTED → APPROVED / REJECTED / CANCELED only",
-          "duration": 0.1758750000000191,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["ExpenseService transitions"],
-          "fullName": "ExpenseService transitions APPROVED → PAID / CANCELED only",
-          "status": "passed",
-          "title": "APPROVED → PAID / CANCELED only",
-          "duration": 0.20020800000008876,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["ExpenseService transitions"],
-          "fullName": "ExpenseService transitions REJECTED → DRAFT only (re-open for re-submission)",
-          "status": "passed",
-          "title": "REJECTED → DRAFT only (re-open for re-submission)",
-          "duration": 0.26033300000005966,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["ExpenseService transitions"],
-          "fullName": "ExpenseService transitions PAID and CANCELED are terminal",
-          "status": "passed",
-          "title": "PAID and CANCELED are terminal",
-          "duration": 0.19174999999995634,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["ExpenseService transitions"],
-          "fullName": "ExpenseService transitions assertTransition throws InvalidExpenseTransitionError on illegal moves",
-          "status": "passed",
-          "title": "assertTransition throws InvalidExpenseTransitionError on illegal moves",
-          "duration": 0.5847079999999778,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["ExpenseService.evaluatePolicy"],
-          "fullName": "ExpenseService.evaluatePolicy routes ≤ managerThreshold totals to auto",
-          "status": "passed",
-          "title": "routes ≤ managerThreshold totals to auto",
-          "duration": 0.4894170000000031,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["ExpenseService.evaluatePolicy"],
-          "fullName": "ExpenseService.evaluatePolicy routes manager-threshold totals to manager",
-          "status": "passed",
-          "title": "routes manager-threshold totals to manager",
-          "duration": 0.09487500000000182,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["ExpenseService.evaluatePolicy"],
-          "fullName": "ExpenseService.evaluatePolicy routes finance-threshold totals to finance",
-          "status": "passed",
-          "title": "routes finance-threshold totals to finance",
-          "duration": 0.17416700000001129,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["ExpenseService.evaluatePolicy"],
-          "fullName": "ExpenseService.evaluatePolicy blocks submission when a line is above receipt threshold and has no receipt",
-          "status": "passed",
-          "title": "blocks submission when a line is above receipt threshold and has no receipt",
-          "duration": 0.25416600000005474,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["ExpenseService.evaluatePolicy"],
-          "fullName": "ExpenseService.evaluatePolicy warns (but does not fail) when a line exceeds the category cap",
-          "status": "passed",
-          "title": "warns (but does not fail) when a line exceeds the category cap",
-          "duration": 0.1310839999999871,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["ExpenseService.evaluatePolicy"],
-          "fullName": "ExpenseService.evaluatePolicy defaults to manager lane when no policy is attached",
-          "status": "passed",
-          "title": "defaults to manager lane when no policy is attached",
-          "duration": 0.07933300000001964,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["Expense error contracts"],
-          "fullName": "Expense error contracts PolicyViolationError carries failures and reason",
-          "status": "passed",
-          "title": "PolicyViolationError carries failures and reason",
-          "duration": 0.2768750000000182,
-          "failureMessages": [],
-          "meta": {}
-        }
-      ],
-      "startTime": 1780510577023,
-      "endTime": 1780510577027.2769,
-      "status": "passed",
-      "message": "",
-      "name": "/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/lib/services/__tests__/expense.service.test.ts"
-    },
-    {
-      "assertionResults": [
-        {
-          "ancestorTitles": ["FMLA eligibility (§ 825.110)"],
-          "fullName": "FMLA eligibility (§ 825.110) FMLA requires ≥12 months tenure AND ≥1250 hours in prior year",
-          "status": "passed",
-          "title": "FMLA requires ≥12 months tenure AND ≥1250 hours in prior year",
-          "duration": 0.7338340000000017,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["FMLA eligibility (§ 825.110)"],
-          "fullName": "FMLA eligibility (§ 825.110) CFRA mirrors FMLA thresholds",
-          "status": "passed",
-          "title": "CFRA mirrors FMLA thresholds",
-          "duration": 0.19524999999998727,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["FMLA eligibility (§ 825.110)"],
-          "fullName": "FMLA eligibility (§ 825.110) OFLA only requires 6 months tenure, no hours minimum",
-          "status": "passed",
-          "title": "OFLA only requires 6 months tenure, no hours minimum",
-          "duration": 0.11345800000003692,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["FMLA eligibility (§ 825.110)"],
-          "fullName": "FMLA eligibility (§ 825.110) returns a human-readable reason on ineligibility",
-          "status": "passed",
-          "title": "returns a human-readable reason on ineligibility",
-          "duration": 0.25716699999998127,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["FMLA period computation (§ 825.200)"],
-          "fullName": "FMLA period computation (§ 825.200) CALENDAR_YEAR — Jan 1 → Dec 31 of the start year",
-          "status": "passed",
-          "title": "CALENDAR_YEAR — Jan 1 → Dec 31 of the start year",
-          "duration": 0.31845799999996416,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["FMLA period computation (§ 825.200)"],
-          "fullName": "FMLA period computation (§ 825.200) ROLLING_FORWARD — start date → 365 days later",
-          "status": "passed",
-          "title": "ROLLING_FORWARD — start date → 365 days later",
-          "duration": 0.12662499999999,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["FMLA period computation (§ 825.200)"],
-          "fullName": "FMLA period computation (§ 825.200) ROLLING_BACKWARD — effective entitlement reduced by prior-year usage",
-          "status": "passed",
-          "title": "ROLLING_BACKWARD — effective entitlement reduced by prior-year usage",
-          "duration": 0.08291600000006838,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["FMLA period computation (§ 825.200)"],
-          "fullName": "FMLA period computation (§ 825.200) ROLLING_BACKWARD with no prior usage gives full 480h",
-          "status": "passed",
-          "title": "ROLLING_BACKWARD with no prior usage gives full 480h",
-          "duration": 0.1309160000000702,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["FMLA period computation (§ 825.200)"],
-          "fullName": "FMLA period computation (§ 825.200) ROLLING_BACKWARD never goes negative when prior usage > 480",
-          "status": "passed",
-          "title": "ROLLING_BACKWARD never goes negative when prior usage > 480",
-          "duration": 0.15520900000001348,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["FMLA period computation (§ 825.200)"],
-          "fullName": "FMLA period computation (§ 825.200) EMPLOYEE_ANNIVERSARY — uses the most recent anniversary on/before the start",
-          "status": "passed",
-          "title": "EMPLOYEE_ANNIVERSARY — uses the most recent anniversary on/before the start",
-          "duration": 0.18895800000007057,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["FMLA case transitions"],
-          "fullName": "FMLA case transitions DRAFT → NOTICE_SENT / DENIED / CANCELED only",
-          "status": "passed",
-          "title": "DRAFT → NOTICE_SENT / DENIED / CANCELED only",
-          "duration": 0.14108300000009422,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["FMLA case transitions"],
-          "fullName": "FMLA case transitions NOTICE_SENT → CERTIFIED / DENIED / CANCELED only",
-          "status": "passed",
-          "title": "NOTICE_SENT → CERTIFIED / DENIED / CANCELED only",
-          "duration": 0.17066699999998036,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["FMLA case transitions"],
-          "fullName": "FMLA case transitions ACTIVE ↔ INTERMITTENT",
-          "status": "passed",
-          "title": "ACTIVE ↔ INTERMITTENT",
-          "duration": 0.08495900000002621,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["FMLA case transitions"],
-          "fullName": "FMLA case transitions EXHAUSTED → COMPLETED only",
-          "status": "passed",
-          "title": "EXHAUSTED → COMPLETED only",
-          "duration": 0.17629199999998946,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["FMLA case transitions"],
-          "fullName": "FMLA case transitions terminal states reject all transitions",
-          "status": "passed",
-          "title": "terminal states reject all transitions",
-          "duration": 0.17916700000000674,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["FMLA case transitions"],
-          "fullName": "FMLA case transitions assertTransition throws on illegal moves",
-          "status": "passed",
-          "title": "assertTransition throws on illegal moves",
-          "duration": 0.4947499999999536,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["FMLA error contracts"],
-          "fullName": "FMLA error contracts IneligibleForFMLAError carries reason",
-          "status": "passed",
-          "title": "IneligibleForFMLAError carries reason",
-          "duration": 0.2002500000000964,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["FMLA error contracts"],
-          "fullName": "FMLA error contracts EntitlementExceededError carries attempted + remaining",
-          "status": "passed",
-          "title": "EntitlementExceededError carries attempted + remaining",
-          "duration": 0.17645900000002257,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["FMLA error contracts"],
-          "fullName": "FMLA error contracts InvalidFMLATransitionError is a real Error subclass",
-          "status": "passed",
-          "title": "InvalidFMLATransitionError is a real Error subclass",
-          "duration": 0.09045800000001236,
-          "failureMessages": [],
-          "meta": {}
-        }
-      ],
-      "startTime": 1780510577024,
-      "endTime": 1780510577029.0906,
-      "status": "passed",
-      "message": "",
-      "name": "/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/lib/services/__tests__/fmla.service.test.ts"
-    },
-    {
-      "assertionResults": [
-        {
-          "ancestorTitles": ["FullFinalService.calculate — UAE EOSB"],
-          "fullName": "FullFinalService.calculate — UAE EOSB returns zero EOSB before any service",
-          "status": "passed",
-          "title": "returns zero EOSB before any service",
-          "duration": 0.8121660000001611,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["FullFinalService.calculate — UAE EOSB"],
-          "fullName": "FullFinalService.calculate — UAE EOSB applies 21 days basic per year for <5 years",
-          "status": "passed",
-          "title": "applies 21 days basic per year for <5 years",
-          "duration": 0.17745800000011513,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["FullFinalService.calculate — UAE EOSB"],
-          "fullName": "FullFinalService.calculate — UAE EOSB caps at 24 months basic for long service",
-          "status": "passed",
-          "title": "caps at 24 months basic for long service",
-          "duration": 0.11354099999994105,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["FullFinalService.calculate — KSA Article 84"],
-          "fullName": "FullFinalService.calculate — KSA Article 84 uses half-month basic per year under 5 years",
-          "status": "passed",
-          "title": "uses half-month basic per year under 5 years",
-          "duration": 0.2896659999998974,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["FullFinalService.calculate — KSA Article 84"],
-          "fullName": "FullFinalService.calculate — KSA Article 84 switches to full-month basic per year beyond 5 years",
-          "status": "passed",
-          "title": "switches to full-month basic per year beyond 5 years",
-          "duration": 0.18900000000007822,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["FullFinalService.calculate — India Gratuity Act 1972"],
-          "fullName": "FullFinalService.calculate — India Gratuity Act 1972 returns zero before 5 years",
-          "status": "passed",
-          "title": "returns zero before 5 years",
-          "duration": 0.11841699999990851,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["FullFinalService.calculate — India Gratuity Act 1972"],
-          "fullName": "FullFinalService.calculate — India Gratuity Act 1972 uses (15/26) * basic * years for >=5 years",
-          "status": "passed",
-          "title": "uses (15/26) * basic * years for >=5 years",
-          "duration": 0.09462500000017826,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["FullFinalService.calculate — India Gratuity Act 1972"],
-          "fullName": "FullFinalService.calculate — India Gratuity Act 1972 caps at INR 20,00,000",
-          "status": "passed",
-          "title": "caps at INR 20,00,000",
-          "duration": 0.08991700000001401,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["FullFinalService.calculate — breakdown composition"],
-          "fullName": "FullFinalService.calculate — breakdown composition subtracts loan + notice + other deductions from gross",
-          "status": "passed",
-          "title": "subtracts loan + notice + other deductions from gross",
-          "duration": 0.3562500000000455,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["FullFinalService.calculate — breakdown composition"],
-          "fullName": "FullFinalService.calculate — breakdown composition includes a breakdown line for every component (even zeros)",
-          "status": "passed",
-          "title": "includes a breakdown line for every component (even zeros)",
-          "duration": 0.3920419999999467,
-          "failureMessages": [],
-          "meta": {}
-        }
-      ],
-      "startTime": 1780510577164,
-      "endTime": 1780510577167.392,
-      "status": "passed",
-      "message": "",
-      "name": "/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/lib/services/__tests__/full-final.service.test.ts"
-    },
-    {
-      "assertionResults": [
-        {
-          "ancestorTitles": ["GLPostingService.assertBalanced"],
-          "fullName": "GLPostingService.assertBalanced accepts equal debits and credits",
-          "status": "passed",
-          "title": "accepts equal debits and credits",
-          "duration": 0.6694589999999607,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["GLPostingService.assertBalanced"],
-          "fullName": "GLPostingService.assertBalanced accepts multi-line balanced journal with 2dp rounding",
-          "status": "passed",
-          "title": "accepts multi-line balanced journal with 2dp rounding",
-          "duration": 0.17554199999995035,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["GLPostingService.assertBalanced"],
-          "fullName": "GLPostingService.assertBalanced rejects unbalanced journal with UnbalancedJournalError",
-          "status": "passed",
-          "title": "rejects unbalanced journal with UnbalancedJournalError",
-          "duration": 0.5946669999998448,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["GLPostingService.assertBalanced"],
-          "fullName": "GLPostingService.assertBalanced tolerates floating-point noise within 1 cent",
-          "status": "passed",
-          "title": "tolerates floating-point noise within 1 cent",
-          "duration": 0.5643340000001444,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["GLPostingService transitions"],
-          "fullName": "GLPostingService transitions DRAFT → POSTED / REVERSED only",
-          "status": "passed",
-          "title": "DRAFT → POSTED / REVERSED only",
-          "duration": 0.22691599999984646,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["GLPostingService transitions"],
-          "fullName": "GLPostingService transitions POSTED → EXPORTED / REVERSED only",
-          "status": "passed",
-          "title": "POSTED → EXPORTED / REVERSED only",
-          "duration": 0.12249999999994543,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["GLPostingService transitions"],
-          "fullName": "GLPostingService transitions EXPORTED → REVERSED only",
-          "status": "passed",
-          "title": "EXPORTED → REVERSED only",
-          "duration": 0.1765419999999267,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["GLPostingService transitions"],
-          "fullName": "GLPostingService transitions REVERSED is terminal",
-          "status": "passed",
-          "title": "REVERSED is terminal",
-          "duration": 0.10349999999993997,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["GLPostingService transitions"],
-          "fullName": "GLPostingService transitions assertTransition throws on illegal moves",
-          "status": "passed",
-          "title": "assertTransition throws on illegal moves",
-          "duration": 0.3031250000001364,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["GL error contracts"],
-          "fullName": "GL error contracts UnbalancedJournalError carries totals in the message",
-          "status": "passed",
-          "title": "UnbalancedJournalError carries totals in the message",
-          "duration": 0.2781250000000455,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["GL error contracts"],
-          "fullName": "GL error contracts InvalidGLTransitionError is a real Error subclass",
-          "status": "passed",
-          "title": "InvalidGLTransitionError is a real Error subclass",
-          "duration": 0.09220800000002782,
-          "failureMessages": [],
-          "meta": {}
-        }
-      ],
-      "startTime": 1780510577177,
-      "endTime": 1780510577180.3032,
-      "status": "passed",
-      "message": "",
-      "name": "/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/lib/services/__tests__/gl-posting.service.test.ts"
-    },
-    {
-      "assertionResults": [
-        {
-          "ancestorTitles": ["LabourMinistrySubmissionService transitions"],
-          "fullName": "LabourMinistrySubmissionService transitions DRAFT → READY / REJECTED only",
-          "status": "passed",
-          "title": "DRAFT → READY / REJECTED only",
-          "duration": 0.74512500000003,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["LabourMinistrySubmissionService transitions"],
-          "fullName": "LabourMinistrySubmissionService transitions READY ↔ DRAFT and READY → SUBMITTED / REJECTED",
-          "status": "passed",
-          "title": "READY ↔ DRAFT and READY → SUBMITTED / REJECTED",
-          "duration": 0.1582499999999527,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["LabourMinistrySubmissionService transitions"],
-          "fullName": "LabourMinistrySubmissionService transitions SUBMITTED → ACKNOWLEDGED / REJECTED only",
-          "status": "passed",
-          "title": "SUBMITTED → ACKNOWLEDGED / REJECTED only",
-          "duration": 0.19450000000006185,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["LabourMinistrySubmissionService transitions"],
-          "fullName": "LabourMinistrySubmissionService transitions REJECTED can be redrafted or resubmitted",
-          "status": "passed",
-          "title": "REJECTED can be redrafted or resubmitted",
-          "duration": 0.26491699999996854,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["LabourMinistrySubmissionService transitions"],
-          "fullName": "LabourMinistrySubmissionService transitions ACKNOWLEDGED is terminal",
-          "status": "passed",
-          "title": "ACKNOWLEDGED is terminal",
-          "duration": 0.18237499999997908,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["LabourMinistrySubmissionService transitions"],
-          "fullName": "LabourMinistrySubmissionService transitions assertTransition throws on illegal moves",
-          "status": "passed",
-          "title": "assertTransition throws on illegal moves",
-          "duration": 0.17466699999999946,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["LabourMinistrySubmissionService.hashPayload"],
-          "fullName": "LabourMinistrySubmissionService.hashPayload returns a sha256-shaped hex string",
-          "status": "passed",
-          "title": "returns a sha256-shaped hex string",
-          "duration": 0.30337499999996,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["LabourMinistrySubmissionService.hashPayload"],
-          "fullName": "LabourMinistrySubmissionService.hashPayload is stable across key ordering",
-          "status": "passed",
-          "title": "is stable across key ordering",
-          "duration": 0.09474999999997635,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["LabourMinistrySubmissionService.hashPayload"],
-          "fullName": "LabourMinistrySubmissionService.hashPayload changes when payload content changes",
-          "status": "passed",
-          "title": "changes when payload content changes",
-          "duration": 0.43270799999993415,
-          "failureMessages": [],
-          "meta": {}
-        }
-      ],
-      "startTime": 1780510577024,
-      "endTime": 1780510577027.4326,
-      "status": "passed",
-      "message": "",
-      "name": "/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/lib/services/__tests__/labour-ministry-submission.service.test.ts"
-    },
-    {
-      "assertionResults": [
-        {
-          "ancestorTitles": ["PayrollService.findAllRuns"],
-          "fullName": "PayrollService.findAllRuns filters by tenantId + status + paginates",
-          "status": "passed",
-          "title": "filters by tenantId + status + paginates",
-          "duration": 0.9264590000000226,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["PayrollService.findAllRuns"],
-          "fullName": "PayrollService.findAllRuns computes pagination correctly",
-          "status": "passed",
-          "title": "computes pagination correctly",
-          "duration": 1.3314589999999953,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["PayrollService.findRunById — tenant isolation"],
-          "fullName": "PayrollService.findRunById — tenant isolation scopes by tenantId + id",
-          "status": "passed",
-          "title": "scopes by tenantId + id",
-          "duration": 1.0607920000001059,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["PayrollService.findRunById — tenant isolation"],
-          "fullName": "PayrollService.findRunById — tenant isolation returns null for foreign tenant",
-          "status": "passed",
-          "title": "returns null for foreign tenant",
-          "duration": 0.31579199999998764,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["PayrollService.processPayroll"],
-          "fullName": "PayrollService.processPayroll sets status to CALCULATED and processedAt timestamp",
-          "status": "passed",
-          "title": "sets status to CALCULATED and processedAt timestamp",
-          "duration": 0.34954100000004473,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["PayrollService.approveRun"],
-          "fullName": "PayrollService.approveRun sets status to APPROVED with approvedBy + approvedAt",
-          "status": "passed",
-          "title": "sets status to APPROVED with approvedBy + approvedAt",
-          "duration": 0.3592079999999669,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["PayrollService.getRunStatistics"],
-          "fullName": "PayrollService.getRunStatistics returns counts per status (total, draft, processing, approved)",
-          "status": "passed",
-          "title": "returns counts per status (total, draft, processing, approved)",
-          "duration": 0.8140829999999823,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["PayrollService.findAllStructures"],
-          "fullName": "PayrollService.findAllStructures filters by tenant",
-          "status": "passed",
-          "title": "filters by tenant",
-          "duration": 0.7035000000000764,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["PayrollService.submitDeclaration"],
-          "fullName": "PayrollService.submitDeclaration updates status to SUBMITTED",
-          "status": "passed",
-          "title": "updates status to SUBMITTED",
-          "duration": 0.2905000000000655,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["PayrollService.verifyDeclaration"],
-          "fullName": "PayrollService.verifyDeclaration updates status to VERIFIED with verifier",
-          "status": "passed",
-          "title": "updates status to VERIFIED with verifier",
-          "duration": 0.21000000000003638,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["PayrollService.findAllBenefits"],
-          "fullName": "PayrollService.findAllBenefits filters by tenant + employeeId",
-          "status": "passed",
-          "title": "filters by tenant + employeeId",
-          "duration": 0.17858300000000327,
-          "failureMessages": [],
-          "meta": {}
-        },
-        {
-          "ancestorTitles": ["PayrollService.findAllAdjustments"],
-          "fullName": "PayrollService.findAllAdjustments filters by tenant + employeeId + payrollMonth",
-          "status": "passed",
-          "title": "filters by tenant + employeeId + payrollMonth",
-          "duration": 0.39991600000007566,
-          "failureMessages": [],
-          "meta": {}
-        }
-      ],
-      "startTime": 1780510576978,
-      "endTime": 1780510576985.4,
-      "status": "passed",
-      "message": "",
-      "name": "/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/lib/services/__tests__/payroll.service.test.ts"
+      "name": "/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/lib/services/__tests__/records-compliance.service.test.ts"
     },
     {
       "assertionResults": [
         {
           "ancestorTitles": ["Statutory report registry"],
-          "fullName": "Statutory report registry exposes the 16 generators landed across Phase 2 + Phase 3 + Phase 4",
+          "fullName": "Statutory report registry exposes the 24 statutory generators plus 6 GCC compliance certificate exports (30 total)",
           "status": "passed",
-          "title": "exposes the 16 generators landed across Phase 2 + Phase 3 + Phase 4",
-          "duration": 0.9224169999999958,
+          "title": "exposes the 24 statutory generators plus 6 GCC compliance certificate exports (30 total)",
+          "duration": 0.9994580000000042,
           "failureMessages": [],
           "meta": {}
         },
@@ -1483,7 +880,16 @@
           "fullName": "Statutory report registry filters by country code",
           "status": "passed",
           "title": "filters by country code",
-          "duration": 0.4077079999999569,
+          "duration": 0.8443749999999,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["Statutory report registry"],
+          "fullName": "Statutory report registry all 6 GCC compliance certificate exports are registered with the expected formats",
+          "status": "passed",
+          "title": "all 6 GCC compliance certificate exports are registered with the expected formats",
+          "duration": 0.30979199999990215,
           "failureMessages": [],
           "meta": {}
         },
@@ -1492,7 +898,43 @@
           "fullName": "Statutory report registry returns specs without the generate function (safe to serialize)",
           "status": "passed",
           "title": "returns specs without the generate function (safe to serialize)",
-          "duration": 1.6359999999999673,
+          "duration": 2.583458999999948,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["GCC compliance certificate export generators"],
+          "fullName": "GCC compliance certificate export generators IMMIGRATION_COMPLIANCE_CERT surfaces gating reason as warning",
+          "status": "passed",
+          "title": "IMMIGRATION_COMPLIANCE_CERT surfaces gating reason as warning",
+          "duration": 0.44000000000005457,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["GCC compliance certificate export generators"],
+          "fullName": "GCC compliance certificate export generators PAYROLL_COMPLIANCE_CERT emits all 11 governance metrics",
+          "status": "passed",
+          "title": "PAYROLL_COMPLIANCE_CERT emits all 11 governance metrics",
+          "duration": 0.32325000000003,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["GCC compliance certificate export generators"],
+          "fullName": "GCC compliance certificate export generators HRMS_CONFIG_SNAPSHOT tolerates missing tables and emits zero-filled snapshot",
+          "status": "passed",
+          "title": "HRMS_CONFIG_SNAPSHOT tolerates missing tables and emits zero-filled snapshot",
+          "duration": 0.23641699999996035,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["GCC compliance certificate export generators"],
+          "fullName": "GCC compliance certificate export generators RECORDS_COMPLIANCE_CERT populates employeeCount total from cert.employeesEvaluated",
+          "status": "passed",
+          "title": "RECORDS_COMPLIANCE_CERT populates employeeCount total from cert.employeesEvaluated",
+          "duration": 0.14516600000001745,
           "failureMessages": [],
           "meta": {}
         },
@@ -1501,7 +943,7 @@
           "fullName": "Statutory report submission contract (#85) exports InvalidReportTransitionError as a real Error subclass",
           "status": "passed",
           "title": "exports InvalidReportTransitionError as a real Error subclass",
-          "duration": 0.3764579999999569,
+          "duration": 0.21100000000001273,
           "failureMessages": [],
           "meta": {}
         },
@@ -1510,16 +952,124 @@
           "fullName": "Statutory report submission contract (#85) rejects placeholder submission references shorter than 3 chars",
           "status": "passed",
           "title": "rejects placeholder submission references shorter than 3 chars",
-          "duration": 0.8691250000000537,
+          "duration": 0.9697080000000824,
           "failureMessages": [],
           "meta": {}
         }
       ],
-      "startTime": 1780510577023,
-      "endTime": 1780510577027.8691,
+      "startTime": 1781694751545,
+      "endTime": 1781694751552.9697,
       "status": "passed",
       "message": "",
       "name": "/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/lib/services/__tests__/statutory-report.service.test.ts"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": ["riskBand"],
+          "fullName": "riskBand maps to bands",
+          "status": "passed",
+          "title": "maps to bands",
+          "duration": 1.2766659999999774,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["taGatingReason"],
+          "fullName": "taGatingReason null when clean",
+          "status": "passed",
+          "title": "null when clean",
+          "duration": 0.23262499999998454,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["taGatingReason"],
+          "fullName": "taGatingReason gates when any signal is non-zero",
+          "status": "passed",
+          "title": "gates when any signal is non-zero",
+          "duration": 0.3870839999999589,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["taAuditChecklistService.overdueCount"],
+          "fullName": "taAuditChecklistService.overdueCount flags items > 35 days",
+          "status": "passed",
+          "title": "flags items > 35 days",
+          "duration": 0.36370799999997416,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["taAuditChecklistService.stageBreakdown"],
+          "fullName": "taAuditChecklistService.stageBreakdown groups by stage and counts PASS/FAIL/OBSERVATION/unchecked",
+          "status": "passed",
+          "title": "groups by stage and counts PASS/FAIL/OBSERVATION/unchecked",
+          "duration": 1.0510839999999462,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["taRiskService.upsert"],
+          "fullName": "taRiskService.upsert clamps L/I and derives score+band",
+          "status": "passed",
+          "title": "clamps L/I and derives score+band",
+          "duration": 0.2688750000000937,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["taComplianceCertificateService"],
+          "fullName": "taComplianceCertificateService refuses to sign while gated",
+          "status": "passed",
+          "title": "refuses to sign while gated",
+          "duration": 0.8675829999999678,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["taComplianceCertificateService"],
+          "fullName": "taComplianceCertificateService signs when clean",
+          "status": "passed",
+          "title": "signs when clean",
+          "duration": 0.22287500000004457,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["taComplianceCertificateService"],
+          "fullName": "taComplianceCertificateService generate writes stage breakdown into the certificate",
+          "status": "passed",
+          "title": "generate writes stage breakdown into the certificate",
+          "duration": 0.4387499999999136,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["TA_COMPLIANCE_CONSTANTS"],
+          "fullName": "TA_COMPLIANCE_CONSTANTS covers all 5 lifecycle stages",
+          "status": "passed",
+          "title": "covers all 5 lifecycle stages",
+          "duration": 0.25595800000007785,
+          "failureMessages": [],
+          "meta": {}
+        },
+        {
+          "ancestorTitles": ["TA_COMPLIANCE_CONSTANTS"],
+          "fullName": "TA_COMPLIANCE_CONSTANTS covers EPIC-03/04/05 categories",
+          "status": "passed",
+          "title": "covers EPIC-03/04/05 categories",
+          "duration": 0.5666250000000446,
+          "failureMessages": [],
+          "meta": {}
+        }
+      ],
+      "startTime": 1781694751486,
+      "endTime": 1781694751492.5667,
+      "status": "passed",
+      "message": "",
+      "name": "/Users/sabujohnbosco/KreupAI/KreupAI.AuraOS/apps/web/src/lib/services/__tests__/talent-acquisition-compliance.service.test.ts"
     }
   ]
 }

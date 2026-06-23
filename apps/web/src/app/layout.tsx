@@ -5,6 +5,7 @@ import { Toaster } from 'sonner';
 import { QueryProvider } from '@/providers/QueryProvider';
 import { SocketProvider } from '@/providers/SocketProvider';
 import { FeatureFlagProvider } from '@/providers/FeatureFlagProvider';
+import { AuthProvider } from '@/lib/auth/AuthProvider';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -35,21 +36,33 @@ export default function RootLayout({
         <script
           dangerouslySetInnerHTML={{
             __html: `
+              // Service worker only in production — in dev it caches stale
+              // webpack chunks across Prisma/code regenerations and breaks
+              // hot-reload with "Cannot read properties of undefined (reading 'call')".
               if ('serviceWorker' in navigator) {
-                window.addEventListener('load', function() {
-                  navigator.serviceWorker.register('/sw.js').catch(function() {});
-                });
+                if (${process.env.NODE_ENV === 'production'}) {
+                  window.addEventListener('load', function() {
+                    navigator.serviceWorker.register('/sw.js').catch(function() {});
+                  });
+                } else {
+                  // Dev: unregister any leftover SW from a prior prod build / earlier dev session.
+                  navigator.serviceWorker.getRegistrations().then(function(rs) {
+                    rs.forEach(function(r) { r.unregister(); });
+                  });
+                }
               }
             `,
           }}
         />
         <QueryProvider>
-          <SocketProvider>
-            <FeatureFlagProvider>
-              {children}
-              <Toaster position="top-right" richColors />
-            </FeatureFlagProvider>
-          </SocketProvider>
+          <AuthProvider>
+            <SocketProvider>
+              <FeatureFlagProvider>
+                {children}
+                <Toaster position="top-right" richColors />
+              </FeatureFlagProvider>
+            </SocketProvider>
+          </AuthProvider>
         </QueryProvider>
       </body>
     </html>
