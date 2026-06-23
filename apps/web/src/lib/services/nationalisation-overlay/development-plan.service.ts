@@ -9,24 +9,38 @@
 
 import { prisma } from '@aura/database';
 import type { AuthContext } from './types';
+import {
+  normalisePaging,
+  prismaPageArgs,
+  buildPaginatedResult,
+  type PaginationInput,
+  type PaginatedResult,
+} from '@/lib/services/pagination';
 
 export type DevelopmentPlanStatus = 'PLANNED' | 'ACTIVE' | 'COMPLETED' | 'CANCELLED';
 
 export class NationalisationDevelopmentPlanService {
   async list(
     tenantId: string,
-    filter: { program?: string; employeeId?: string; status?: DevelopmentPlanStatus } = {}
-  ) {
-    return (prisma as any).nationalisationDevelopmentPlan.findMany({
-      where: {
-        tenantId,
-        ...(filter.program ? { program: filter.program } : {}),
-        ...(filter.employeeId ? { employeeId: filter.employeeId } : {}),
-        ...(filter.status ? { status: filter.status } : {}),
-      },
-      orderBy: [{ program: 'asc' }, { employeeId: 'asc' }, { planCode: 'asc' }],
-      take: 500,
-    });
+    filter: { program?: string; employeeId?: string; status?: DevelopmentPlanStatus } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.program ? { program: filter.program } : {}),
+      ...(filter.employeeId ? { employeeId: filter.employeeId } : {}),
+      ...(filter.status ? { status: filter.status } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).nationalisationDevelopmentPlan.findMany({
+        where,
+        orderBy: [{ program: 'asc' }, { employeeId: 'asc' }, { planCode: 'asc' }],
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).nationalisationDevelopmentPlan.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 
   async upsert(

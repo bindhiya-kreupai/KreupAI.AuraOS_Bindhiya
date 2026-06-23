@@ -1,6 +1,13 @@
 import { prisma } from '@aura/database';
 import type { AuthContext } from './types';
 import { CATEGORY_SEEDS, RECURRENCE_RULE_SEEDS } from './seeds';
+import {
+  normalisePaging,
+  prismaPageArgs,
+  buildPaginatedResult,
+  type PaginationInput,
+  type PaginatedResult,
+} from '@/lib/services/pagination';
 
 /**
  * EPIC-35-S01..S06 + S09: Recurring statutory task scheduler with
@@ -224,26 +231,33 @@ export class ComplianceCalendarService {
       countryCode?: string;
       from?: Date;
       to?: Date;
-    } = {}
-  ) {
-    return (prisma as any).complianceTask.findMany({
-      where: {
-        tenantId,
-        ...(filter.status ? { status: filter.status } : {}),
-        ...(filter.categoryCode ? { categoryCode: filter.categoryCode } : {}),
-        ...(filter.countryCode ? { countryCode: filter.countryCode } : {}),
-        ...(filter.from || filter.to
-          ? {
-              dueDate: {
-                ...(filter.from ? { gte: filter.from } : {}),
-                ...(filter.to ? { lte: filter.to } : {}),
-              },
-            }
-          : {}),
-      },
-      orderBy: { dueDate: 'asc' },
-      take: 500,
-    });
+    } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.status ? { status: filter.status } : {}),
+      ...(filter.categoryCode ? { categoryCode: filter.categoryCode } : {}),
+      ...(filter.countryCode ? { countryCode: filter.countryCode } : {}),
+      ...(filter.from || filter.to
+        ? {
+            dueDate: {
+              ...(filter.from ? { gte: filter.from } : {}),
+              ...(filter.to ? { lte: filter.to } : {}),
+            },
+          }
+        : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).complianceTask.findMany({
+        where,
+        orderBy: { dueDate: 'asc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).complianceTask.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 
   async completeTask(taskId: string, input: { evidenceUrl?: string }, auth: AuthContext) {

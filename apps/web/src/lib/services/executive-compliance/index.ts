@@ -17,6 +17,13 @@
  */
 
 import { prisma } from '@aura/database';
+import {
+  normalisePaging,
+  prismaPageArgs,
+  buildPaginatedResult,
+  type PaginationInput,
+  type PaginatedResult,
+} from '@/lib/services/pagination';
 
 export interface AuthContext {
   tenantId: string;
@@ -231,17 +238,27 @@ export class ComplianceRiskService {
     });
   }
 
-  async list(tenantId: string, filter: { status?: string; domain?: string; band?: string } = {}) {
-    return (prisma as any).complianceRiskEntry.findMany({
-      where: {
-        tenantId,
-        ...(filter.status ? { status: filter.status } : {}),
-        ...(filter.domain ? { domain: filter.domain } : {}),
-        ...(filter.band ? { band: filter.band } : {}),
-      },
-      orderBy: { score: 'desc' },
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { status?: string; domain?: string; band?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.status ? { status: filter.status } : {}),
+      ...(filter.domain ? { domain: filter.domain } : {}),
+      ...(filter.band ? { band: filter.band } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).complianceRiskEntry.findMany({
+        where,
+        orderBy: { score: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).complianceRiskEntry.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 }
 
@@ -292,16 +309,26 @@ export class ComplianceCorrectiveActionService {
     });
   }
 
-  async list(tenantId: string, filter: { status?: string; severity?: string } = {}) {
-    return (prisma as any).complianceCorrectiveAction.findMany({
-      where: {
-        tenantId,
-        ...(filter.status ? { status: filter.status } : {}),
-        ...(filter.severity ? { severity: filter.severity } : {}),
-      },
-      orderBy: { raisedAt: 'desc' },
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { status?: string; severity?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.status ? { status: filter.status } : {}),
+      ...(filter.severity ? { severity: filter.severity } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).complianceCorrectiveAction.findMany({
+        where,
+        orderBy: { raisedAt: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).complianceCorrectiveAction.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 }
 
@@ -351,15 +378,25 @@ export class ComplianceReviewCalendarService {
     });
   }
 
-  async list(tenantId: string, filter: { overdueOnly?: boolean } = {}) {
-    return (prisma as any).complianceReviewCalendarItem.findMany({
-      where: {
-        tenantId,
-        ...(filter.overdueOnly ? { dueAt: { lt: new Date() }, status: 'PENDING' } : {}),
-      },
-      orderBy: { dueAt: 'asc' },
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { overdueOnly?: boolean } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.overdueOnly ? { dueAt: { lt: new Date() }, status: 'PENDING' } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).complianceReviewCalendarItem.findMany({
+        where,
+        orderBy: { dueAt: 'asc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).complianceReviewCalendarItem.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 }
 

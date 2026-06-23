@@ -15,6 +15,13 @@
  */
 
 import { prisma } from '@aura/database';
+import {
+  normalisePaging,
+  prismaPageArgs,
+  buildPaginatedResult,
+  type PaginationInput,
+  type PaginatedResult,
+} from '@/lib/services/pagination';
 
 export interface AuthContext {
   tenantId: string;
@@ -27,18 +34,25 @@ export type ContractorStatus = 'ACTIVE' | 'EXPIRED' | 'TERMINATED';
 export class ContractorAssignmentService {
   async list(
     tenantId: string,
-    filter: { domain?: ContractorDomain; status?: ContractorStatus; siteId?: string } = {}
-  ) {
-    return (prisma as any).contractorAssignment.findMany({
-      where: {
-        tenantId,
-        ...(filter.domain ? { domain: filter.domain } : {}),
-        ...(filter.status ? { status: filter.status } : {}),
-        ...(filter.siteId ? { siteId: filter.siteId } : {}),
-      },
-      orderBy: [{ domain: 'asc' }, { startDate: 'desc' }],
-      take: 500,
-    });
+    filter: { domain?: ContractorDomain; status?: ContractorStatus; siteId?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.domain ? { domain: filter.domain } : {}),
+      ...(filter.status ? { status: filter.status } : {}),
+      ...(filter.siteId ? { siteId: filter.siteId } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).contractorAssignment.findMany({
+        where,
+        orderBy: [{ domain: 'asc' }, { startDate: 'desc' }],
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).contractorAssignment.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 
   async upsert(
@@ -120,16 +134,26 @@ export function equalInstallment(principal: number, annualRatePct: number, month
 }
 
 export class EmployeeLoanService {
-  async list(tenantId: string, filter: { status?: LoanStatus; employeeId?: string } = {}) {
-    return (prisma as any).employeeLoanSchedule.findMany({
-      where: {
-        tenantId,
-        ...(filter.status ? { status: filter.status } : {}),
-        ...(filter.employeeId ? { employeeId: filter.employeeId } : {}),
-      },
-      orderBy: [{ employeeId: 'asc' }, { startDate: 'desc' }],
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { status?: LoanStatus; employeeId?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.status ? { status: filter.status } : {}),
+      ...(filter.employeeId ? { employeeId: filter.employeeId } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).employeeLoanSchedule.findMany({
+        where,
+        orderBy: [{ employeeId: 'asc' }, { startDate: 'desc' }],
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).employeeLoanSchedule.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 
   async create(
@@ -195,16 +219,26 @@ export const employeeLoanService = new EmployeeLoanService();
 export type IssuanceCategory = 'UNIFORM' | 'PPE' | 'TOOLS';
 
 export class UniformPpeIssuanceService {
-  async list(tenantId: string, filter: { employeeId?: string; category?: IssuanceCategory } = {}) {
-    return (prisma as any).uniformPpeIssuance.findMany({
-      where: {
-        tenantId,
-        ...(filter.employeeId ? { employeeId: filter.employeeId } : {}),
-        ...(filter.category ? { category: filter.category } : {}),
-      },
-      orderBy: { issuedAt: 'desc' },
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { employeeId?: string; category?: IssuanceCategory } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.employeeId ? { employeeId: filter.employeeId } : {}),
+      ...(filter.category ? { category: filter.category } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).uniformPpeIssuance.findMany({
+        where,
+        orderBy: { issuedAt: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).uniformPpeIssuance.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 
   async issue(
@@ -254,12 +288,22 @@ export const uniformPpeIssuanceService = new UniformPpeIssuanceService();
 // ---------------------------------------------------------------------------
 
 export class AccommodationTransportRouteService {
-  async list(tenantId: string, siteId?: string) {
-    return (prisma as any).accommodationTransportRoute.findMany({
-      where: { tenantId, ...(siteId ? { siteId } : {}) },
-      orderBy: [{ siteId: 'asc' }, { routeCode: 'asc' }],
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    siteId?: string,
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = { tenantId, ...(siteId ? { siteId } : {}) };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).accommodationTransportRoute.findMany({
+        where,
+        orderBy: [{ siteId: 'asc' }, { routeCode: 'asc' }],
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).accommodationTransportRoute.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
   async upsert(
     input: {
@@ -316,12 +360,22 @@ export class AccommodationTransportRouteService {
 export const accommodationTransportRouteService = new AccommodationTransportRouteService();
 
 export class AccommodationClinicService {
-  async list(tenantId: string, siteId?: string) {
-    return (prisma as any).accommodationClinic.findMany({
-      where: { tenantId, ...(siteId ? { siteId } : {}) },
-      orderBy: [{ siteId: 'asc' }, { clinicCode: 'asc' }],
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    siteId?: string,
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = { tenantId, ...(siteId ? { siteId } : {}) };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).accommodationClinic.findMany({
+        where,
+        orderBy: [{ siteId: 'asc' }, { clinicCode: 'asc' }],
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).accommodationClinic.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
   async upsert(
     input: {
@@ -393,18 +447,25 @@ const DEFAULT_SLA_HOURS: Record<MaintenanceSeverity, number> = {
 export class AccommodationMaintenanceService {
   async list(
     tenantId: string,
-    filter: { status?: MaintenanceStatus; severity?: MaintenanceSeverity; siteId?: string } = {}
-  ) {
-    return (prisma as any).accommodationMaintenanceTicket.findMany({
-      where: {
-        tenantId,
-        ...(filter.status ? { status: filter.status } : {}),
-        ...(filter.severity ? { severity: filter.severity } : {}),
-        ...(filter.siteId ? { siteId: filter.siteId } : {}),
-      },
-      orderBy: [{ severity: 'desc' }, { reportedAt: 'desc' }],
-      take: 500,
-    });
+    filter: { status?: MaintenanceStatus; severity?: MaintenanceSeverity; siteId?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.status ? { status: filter.status } : {}),
+      ...(filter.severity ? { severity: filter.severity } : {}),
+      ...(filter.siteId ? { siteId: filter.siteId } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).accommodationMaintenanceTicket.findMany({
+        where,
+        orderBy: [{ severity: 'desc' }, { reportedAt: 'desc' }],
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).accommodationMaintenanceTicket.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 
   async open(

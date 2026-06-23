@@ -21,15 +21,18 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
     const period =
       url.searchParams.get('period') ??
       `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
-    const [matrix, agg, checklist, risks, certs, checklistOverdue] = await Promise.all([
-      recordsDocumentMatrixService.list(tenantId),
+    const [matrixRes, agg, checklistRes, risksRes, certs, checklistOverdue] = await Promise.all([
+      recordsDocumentMatrixService.list(tenantId, {}, { page: 1, pageSize: 500 }),
       recordsCompletenessService.aggregate(tenantId, period),
-      recordsAuditChecklistService.list(tenantId),
-      recordsRiskService.list(tenantId, { status: 'OPEN' }),
+      recordsAuditChecklistService.list(tenantId, {}, { page: 1, pageSize: 500 }),
+      recordsRiskService.list(tenantId, { status: 'OPEN' }, { page: 1, pageSize: 500 }),
       recordsComplianceCertificateService.list(tenantId),
       recordsAuditChecklistService.overdueCount(tenantId),
     ]);
-    const matrixByCountry = (matrix as Array<{ country: string }>).reduce<Record<string, number>>(
+    const matrix = matrixRes.items as Array<{ country: string }>;
+    const checklist = checklistRes.items as Array<unknown>;
+    const risks = risksRes.items as Array<unknown>;
+    const matrixByCountry = matrix.reduce<Record<string, number>>(
       (acc, m) => ({ ...acc, [m.country]: (acc[m.country] ?? 0) + 1 }),
       {}
     );

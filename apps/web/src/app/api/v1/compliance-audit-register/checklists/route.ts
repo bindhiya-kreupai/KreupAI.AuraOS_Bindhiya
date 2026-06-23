@@ -11,15 +11,22 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
   try {
     const url = new URL(req.url);
     return ok(
-      await complianceChecklistService.list(ctx.user.tenantId, {
-        domainCode: url.searchParams.get('domainCode') ?? undefined,
-        categoryCode: url.searchParams.get('categoryCode') ?? undefined,
-        status: (url.searchParams.get('status') as any) ?? undefined,
-        isMandatory:
-          url.searchParams.get('isMandatory') === null
-            ? undefined
-            : url.searchParams.get('isMandatory') === 'true',
-      })
+      await complianceChecklistService.list(
+        ctx.user.tenantId,
+        {
+          domainCode: url.searchParams.get('domainCode') ?? undefined,
+          categoryCode: url.searchParams.get('categoryCode') ?? undefined,
+          status: (url.searchParams.get('status') as any) ?? undefined,
+          isMandatory:
+            url.searchParams.get('isMandatory') === null
+              ? undefined
+              : url.searchParams.get('isMandatory') === 'true',
+        },
+        {
+          page: Number(url.searchParams.get('page') ?? '1'),
+          pageSize: Number(url.searchParams.get('pageSize') ?? '50'),
+        }
+      )
     );
   } catch (err) {
     return serverError('Failed to list checklist items', err);

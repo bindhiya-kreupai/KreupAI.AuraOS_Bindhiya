@@ -10,9 +10,16 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
   try {
     const url = new URL(req.url);
     return ok(
-      await hrPolicyReviewService.list(ctx.user.tenantId, {
-        overdueOnly: url.searchParams.get('overdueOnly') === 'true',
-      })
+      await hrPolicyReviewService.list(
+        ctx.user.tenantId,
+        {
+          overdueOnly: url.searchParams.get('overdueOnly') === 'true',
+        },
+        {
+          page: Number(url.searchParams.get('page') ?? '1'),
+          pageSize: Number(url.searchParams.get('pageSize') ?? '50'),
+        }
+      )
     );
   } catch (err) {
     return serverError('Failed to list reviews', err);

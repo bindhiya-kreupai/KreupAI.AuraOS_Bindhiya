@@ -12,11 +12,18 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
     const url = new URL(req.url);
     const isActive = url.searchParams.get('isActive');
     return ok(
-      await approvalWorkflowTemplateService.list(ctx.user.tenantId, {
-        domain: url.searchParams.get('domain') ?? undefined,
-        country: url.searchParams.get('country') ?? undefined,
-        isActive: isActive === null ? undefined : isActive === 'true',
-      })
+      await approvalWorkflowTemplateService.list(
+        ctx.user.tenantId,
+        {
+          domain: url.searchParams.get('domain') ?? undefined,
+          country: url.searchParams.get('country') ?? undefined,
+          isActive: isActive === null ? undefined : isActive === 'true',
+        },
+        {
+          page: Number(url.searchParams.get('page') ?? '1'),
+          pageSize: Number(url.searchParams.get('pageSize') ?? '50'),
+        }
+      )
     );
   } catch (err) {
     return serverError('Failed to list approval templates', err);

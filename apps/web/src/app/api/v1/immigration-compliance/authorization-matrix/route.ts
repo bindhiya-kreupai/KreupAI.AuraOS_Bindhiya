@@ -11,10 +11,17 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
   try {
     const url = new URL(req.url);
     return ok(
-      await authorizationMatrixService.list(ctx.user.tenantId, {
-        country: url.searchParams.get('country') ?? undefined,
-        appliesTo: url.searchParams.get('appliesTo') ?? undefined,
-      })
+      await authorizationMatrixService.list(
+        ctx.user.tenantId,
+        {
+          country: url.searchParams.get('country') ?? undefined,
+          appliesTo: url.searchParams.get('appliesTo') ?? undefined,
+        },
+        {
+          page: Number(url.searchParams.get('page') ?? '1'),
+          pageSize: Number(url.searchParams.get('pageSize') ?? '50'),
+        }
+      )
     );
   } catch (err) {
     return serverError('Failed to list authorization matrix', err);

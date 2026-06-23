@@ -15,15 +15,16 @@ export const GET = withEnhancedAuth(async (_req: NextRequest, ctx: RouteContext)
     return forbidden();
   try {
     const tenantId = ctx.user.tenantId;
-    const [checklist, risks, certs, stageBreakdown, overdue, failing] = await Promise.all([
+    const [checklist, risksRes, certs, stageBreakdown, overdue, failing] = await Promise.all([
       taAuditChecklistService.list(tenantId),
-      taRiskService.list(tenantId, { status: 'OPEN' }),
+      taRiskService.list(tenantId, { status: 'OPEN' }, { page: 1, pageSize: 500 }),
       taComplianceCertificateService.list(tenantId),
       taAuditChecklistService.stageBreakdown(tenantId),
       taAuditChecklistService.overdueCount(tenantId),
       taAuditChecklistService.failingHighOrCriticalCount(tenantId),
     ]);
-    const risksByBand = (risks as Array<{ band: string }>).reduce<Record<string, number>>(
+    const risks = risksRes.items as Array<{ band: string }>;
+    const risksByBand = risks.reduce<Record<string, number>>(
       (acc, r) => ({ ...acc, [r.band]: (acc[r.band] ?? 0) + 1 }),
       {}
     );

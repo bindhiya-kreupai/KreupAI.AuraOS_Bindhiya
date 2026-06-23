@@ -9,6 +9,7 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import type { JWTPayload } from './jwt';
 import { verifyToken, extractTokenFromHeader } from './jwt';
+import { ACCESS_COOKIE } from './cookies';
 import { logger } from '@/lib/logger';
 
 /**
@@ -52,13 +53,16 @@ export type SessionResult =
  */
 export function getSession(request: NextRequest): SessionResult {
   try {
+    // Prefer Authorization header (mobile/API clients), fall back to
+    // HTTP-only cookie set at login (browser clients).
     const authHeader = request.headers.get('Authorization');
-    const token = extractTokenFromHeader(authHeader);
+    const token =
+      extractTokenFromHeader(authHeader) ?? request.cookies.get(ACCESS_COOKIE)?.value ?? null;
 
     if (!token) {
       return {
         session: null,
-        error: { message: 'Authentication required', status: 401 }
+        error: { message: 'Authentication required', status: 401 },
       };
     }
 
@@ -67,7 +71,7 @@ export function getSession(request: NextRequest): SessionResult {
     if (decoded.type !== 'access') {
       return {
         session: null,
-        error: { message: 'Invalid token type', status: 401 }
+        error: { message: 'Invalid token type', status: 401 },
       };
     }
 
@@ -77,9 +81,9 @@ export function getSession(request: NextRequest): SessionResult {
         email: decoded.email,
         tenantId: decoded.tenantId,
         sessionId: decoded.sessionId,
-        isAuthenticated: true
+        isAuthenticated: true,
       },
-      error: null
+      error: null,
     };
   } catch (error: any) {
     logger.warn({ error }, 'Failed to extract session from request');
@@ -87,8 +91,8 @@ export function getSession(request: NextRequest): SessionResult {
       session: null,
       error: {
         message: error instanceof Error ? error.message : 'Invalid or expired token',
-        status: 401
-      }
+        status: 401,
+      },
     };
   }
 }
@@ -115,10 +119,7 @@ export function getSessionOrError(request: NextRequest): Session | NextResponse 
   const { session, error } = getSession(request);
 
   if (error) {
-    return NextResponse.json(
-      { success: false, error: error.message },
-      { status: error.status }
-    );
+    return NextResponse.json({ success: false, error: error.message }, { status: error.status });
   }
 
   return session;
@@ -142,7 +143,9 @@ export function getSessionOrError(request: NextRequest): Session | NextResponse 
 export function requireSession<T>(
   handler: (request: NextRequest, session: Session) => Promise<NextResponse<T>>
 ) {
-  return async (request: NextRequest): Promise<NextResponse<T | { success: false; error: string }>> => {
+  return async (
+    request: NextRequest
+  ): Promise<NextResponse<T | { success: false; error: string }>> => {
     const result = getSessionOrError(request);
 
     if (result instanceof NextResponse) {
@@ -167,10 +170,13 @@ export function verifyTenantAccess(
   resourceTenantId: string | null | undefined
 ): NextResponse | null {
   if (!resourceTenantId) {
-    logger.warn({
-      userId: session.userId,
-      tenantId: session.tenantId
-    }, 'Attempted to access resource without tenant ID');
+    logger.warn(
+      {
+        userId: session.userId,
+        tenantId: session.tenantId,
+      },
+      'Attempted to access resource without tenant ID'
+    );
 
     return NextResponse.json(
       { success: false, error: 'Resource has no tenant association' },
@@ -179,16 +185,16 @@ export function verifyTenantAccess(
   }
 
   if (resourceTenantId !== session.tenantId) {
-    logger.error({
-      userId: session.userId,
-      userTenantId: session.tenantId,
-      resourceTenantId
-    }, 'Tenant isolation violation attempt');
-
-    return NextResponse.json(
-      { success: false, error: 'Access denied' },
-      { status: 403 }
+    logger.error(
+      {
+        userId: session.userId,
+        userTenantId: session.tenantId,
+        resourceTenantId,
+      },
+      'Tenant isolation violation attempt'
     );
+
+    return NextResponse.json({ success: false, error: 'Access denied' }, { status: 403 });
   }
 
   return null;
@@ -214,7 +220,7 @@ export function extractUserInfo(payload: JWTPayload): Session {
     email: payload.email,
     tenantId: payload.tenantId,
     sessionId: payload.sessionId,
-    isAuthenticated: true
+    isAuthenticated: true,
   };
 }
 
@@ -224,5 +230,5 @@ export default {
   requireSession,
   verifyTenantAccess,
   getOptionalSession,
-  extractUserInfo
+  extractUserInfo,
 };

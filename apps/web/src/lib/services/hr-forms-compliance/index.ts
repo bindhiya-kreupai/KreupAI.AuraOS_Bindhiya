@@ -17,6 +17,14 @@
  */
 
 import { prisma } from '@aura/database';
+import { signWithHmac } from '../signing/hmac-signature.service';
+import {
+  normalisePaging,
+  prismaPageArgs,
+  buildPaginatedResult,
+  type PaginationInput,
+  type PaginatedResult,
+} from '@/lib/services/pagination';
 
 export interface AuthContext {
   tenantId: string;
@@ -209,16 +217,26 @@ export class HrFormTemplateService {
     });
   }
 
-  async list(tenantId: string, filter: { formGroup?: string; status?: string } = {}) {
-    return (prisma as any).hrFormTemplate.findMany({
-      where: {
-        tenantId,
-        ...(filter.formGroup ? { formGroup: filter.formGroup } : {}),
-        ...(filter.status ? { status: filter.status } : {}),
-      },
-      orderBy: [{ formGroup: 'asc' }, { templateCode: 'asc' }],
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { formGroup?: string; status?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.formGroup ? { formGroup: filter.formGroup } : {}),
+      ...(filter.status ? { status: filter.status } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).hrFormTemplate.findMany({
+        where,
+        orderBy: [{ formGroup: 'asc' }, { templateCode: 'asc' }],
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).hrFormTemplate.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 }
 
@@ -343,7 +361,16 @@ export class HrFormSubmissionService {
         signerId: auth.userId,
         action: 'APPROVE',
         comments: input.comments,
-        signatureHash: `hash:${auth.userId}:${Date.now()}`,
+        // Cryptographic HMAC-SHA256 signature (audit Pattern 7) — replaces
+        // the predictable `hash:userId:timestamp` shape so signatures are
+        // tamper-evident and verifiable. See lib/services/signing/.
+        signatureHash: signWithHmac({
+          domain: 'hr-forms:approve',
+          resourceId: input.id,
+          actorId: auth.userId,
+          ipAddress: input.ipAddress,
+          extra: { stage: state.currentStage },
+        }),
         ipAddress: input.ipAddress,
         userAgent: input.userAgent,
       },
@@ -400,16 +427,26 @@ export class HrFormSubmissionService {
     });
   }
 
-  async list(tenantId: string, filter: { status?: string; templateId?: string } = {}) {
-    return (prisma as any).hrFormSubmissionState.findMany({
-      where: {
-        tenantId,
-        ...(filter.status ? { status: filter.status } : {}),
-        ...(filter.templateId ? { templateId: filter.templateId } : {}),
-      },
-      orderBy: { updatedAt: 'desc' },
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { status?: string; templateId?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.status ? { status: filter.status } : {}),
+      ...(filter.templateId ? { templateId: filter.templateId } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).hrFormSubmissionState.findMany({
+        where,
+        orderBy: { updatedAt: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).hrFormSubmissionState.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 
   async listSignatures(tenantId: string, submissionStateId: string) {

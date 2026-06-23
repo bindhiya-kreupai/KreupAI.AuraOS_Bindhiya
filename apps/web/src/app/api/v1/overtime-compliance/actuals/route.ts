@@ -11,11 +11,18 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
   try {
     const url = new URL(req.url);
     return ok(
-      await otActualService.list(ctx.user.tenantId, {
-        employeeId: url.searchParams.get('employeeId') ?? undefined,
-        period: url.searchParams.get('period') ?? undefined,
-        fraudOnly: url.searchParams.get('fraudOnly') === 'true',
-      })
+      await otActualService.list(
+        ctx.user.tenantId,
+        {
+          employeeId: url.searchParams.get('employeeId') ?? undefined,
+          period: url.searchParams.get('period') ?? undefined,
+          fraudOnly: url.searchParams.get('fraudOnly') === 'true',
+        },
+        {
+          page: Number(url.searchParams.get('page') ?? '1'),
+          pageSize: Number(url.searchParams.get('pageSize') ?? '50'),
+        }
+      )
     );
   } catch (err) {
     return serverError('Failed to list actuals', err);

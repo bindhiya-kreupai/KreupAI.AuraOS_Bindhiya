@@ -50,6 +50,13 @@ const nextConfig = {
       '@aura/events',
       '@aura/messaging',
       '@aura/monitoring',
+      // pino spawns worker threads for async logging; bundling breaks the
+      // worker-file resolution (`.next/server/vendor-chunks/lib/worker.js`
+      // MODULE_NOT_FOUND). Keep these CJS so node loads them from
+      // node_modules at runtime.
+      'pino',
+      'pino-pretty',
+      'thread-stream',
     ],
   },
   webpack: (config, { isServer }) => {
@@ -63,6 +70,9 @@ const nextConfig = {
         '@aura/events': 'commonjs @aura/events',
         '@aura/messaging': 'commonjs @aura/messaging',
         '@aura/monitoring': 'commonjs @aura/monitoring',
+        'pino': 'commonjs pino',
+        'pino-pretty': 'commonjs pino-pretty',
+        'thread-stream': 'commonjs thread-stream',
       });
     }
     return config;

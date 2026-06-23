@@ -12,7 +12,12 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
     const url = new URL(req.url);
     const domain = url.searchParams.get('domain');
     if (domain) return ok(await auditTrailSettingService.policy(ctx.user.tenantId, domain));
-    return ok(await auditTrailSettingService.list(ctx.user.tenantId));
+    return ok(
+      await auditTrailSettingService.list(ctx.user.tenantId, {
+        page: Number(url.searchParams.get('page') ?? '1'),
+        pageSize: Number(url.searchParams.get('pageSize') ?? '50'),
+      })
+    );
   } catch (err) {
     return serverError('Failed to list audit settings', err);
   }

@@ -2,6 +2,13 @@ import { prisma } from '@aura/database';
 import type { AuthContext, GosiBranch, NationalityClass } from './types';
 import { gosiConfigService } from './config.service';
 import { gosiRegistrationService } from './registration.service';
+import {
+  normalisePaging,
+  prismaPageArgs,
+  buildPaginatedResult,
+  type PaginationInput,
+  type PaginatedResult,
+} from '@/lib/services/pagination';
 
 export interface ContributionWageInput {
   employeeId: string;
@@ -105,18 +112,37 @@ export class GosiCalculationService {
     const wage = Number(wageRow.contributionWage);
 
     const cls = reg.nationalityClass as NationalityClass;
-    const annuities = await gosiConfigService.resolveRate(auth.tenantId, 'ANNUITIES', cls);
-    const oh = await gosiConfigService.resolveRate(auth.tenantId, 'OCCUPATIONAL_HAZARDS', cls);
+    // Tenant config first; country rule pack as the regulatory baseline
+    // when tenant config is missing. Either source uses the same
+    // GosiResolvedRate shape. (audit 2026-06-17 Pattern 1)
+    const annuities = await gosiConfigService.resolveRateWithRulePack(
+      auth.tenantId,
+      'ANNUITIES',
+      cls
+    );
+    const oh = await gosiConfigService.resolveRateWithRulePack(
+      auth.tenantId,
+      'OCCUPATIONAL_HAZARDS',
+      cls
+    );
 
-    const apply = (rate: Record<string, unknown> | null, wageValue: number) => {
+    const apply = (
+      rate: {
+        employerPct: number;
+        employeePct: number;
+        wageFloor: number | null;
+        wageCeiling: number | null;
+      } | null,
+      wageValue: number
+    ) => {
       if (!rate) return { employer: 0, employee: 0, wageUsed: 0 };
-      const floor = rate.wageFloor != null ? Number(rate.wageFloor) : null;
-      const ceil = rate.wageCeiling != null ? Number(rate.wageCeiling) : null;
+      const floor = rate.wageFloor;
+      const ceil = rate.wageCeiling;
       let w = wageValue;
       if (floor != null) w = Math.max(w, floor);
       if (ceil != null) w = Math.min(w, ceil);
-      const er = Number(((w * Number(rate.employerPct)) / 100).toFixed(2));
-      const ee = Number(((w * Number(rate.employeePct)) / 100).toFixed(2));
+      const er = Number(((w * rate.employerPct) / 100).toFixed(2));
+      const ee = Number(((w * rate.employeePct) / 100).toFixed(2));
       return { employer: er, employee: ee, wageUsed: w };
     };
 
@@ -171,13 +197,20 @@ export class GosiCalculationService {
 
   async listContributions(
     tenantId: string,
-    filter: { period?: string; nationalityClass?: string } = {}
-  ) {
-    return (prisma as any).gosiContribution.findMany({
-      where: { tenantId, ...filter },
-      orderBy: [{ period: 'desc' }, { employeeId: 'asc' }],
-      take: 500,
-    });
+    filter: { period?: string; nationalityClass?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = { tenantId, ...filter };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).gosiContribution.findMany({
+        where,
+        orderBy: [{ period: 'desc' }, { employeeId: 'asc' }],
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).gosiContribution.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 }
 

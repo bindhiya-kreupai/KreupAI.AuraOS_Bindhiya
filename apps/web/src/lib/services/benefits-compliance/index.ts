@@ -24,6 +24,13 @@
  */
 
 import { prisma } from '@aura/database';
+import {
+  normalisePaging,
+  prismaPageArgs,
+  buildPaginatedResult,
+  type PaginationInput,
+  type PaginatedResult,
+} from '@/lib/services/pagination';
 
 export interface AuthContext {
   tenantId: string;
@@ -406,20 +413,27 @@ export class BenefitCoverageService {
       employeeId?: string;
       expiringSoon?: boolean;
       status?: string;
-    } = {}
-  ) {
+    } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
     const now = new Date();
     const soon = new Date(now.getTime() + 60 * 24 * 3600 * 1000);
-    return (prisma as any).benefitCoverage.findMany({
-      where: {
-        tenantId,
-        ...(filter.employeeId ? { employeeId: filter.employeeId } : {}),
-        ...(filter.status ? { status: filter.status } : { status: 'ACTIVE' }),
-        ...(filter.expiringSoon ? { expiresAt: { gte: now, lte: soon } } : {}),
-      },
-      orderBy: { startedAt: 'desc' },
-      take: 500,
-    });
+    const where = {
+      tenantId,
+      ...(filter.employeeId ? { employeeId: filter.employeeId } : {}),
+      ...(filter.status ? { status: filter.status } : { status: 'ACTIVE' }),
+      ...(filter.expiringSoon ? { expiresAt: { gte: now, lte: soon } } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).benefitCoverage.findMany({
+        where,
+        orderBy: { startedAt: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).benefitCoverage.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 }
 

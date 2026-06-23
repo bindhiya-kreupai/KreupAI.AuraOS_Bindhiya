@@ -8,12 +8,11 @@ import type {
   LabourLawConfig,
   SupportedCountryCode,
   ComplianceValidation,
-  ComplianceIssue} from './types';
-import {
-  COUNTRY_NAMES,
-  COUNTRY_CURRENCIES
+  ComplianceIssue,
 } from './types';
+import { COUNTRY_NAMES, COUNTRY_CURRENCIES } from './types';
 import { HijriCalendarService } from './hijri-calendar.service';
+import { resolveRuleValue } from '../gcc-rule-library/rule-value.helper';
 
 // ============================================================================
 // LABOUR LAW CONFIGURATIONS BY COUNTRY
@@ -38,22 +37,22 @@ const UAE_LABOUR_LAW: LabourLawConfig = {
   },
 
   overtimeRates: {
-    normal: 1.25,      // 125%
-    night: 1.50,       // 150% (9pm-4am)
-    holiday: 1.50,     // 150%
-    friday: 1.50,      // 150% or day off in lieu
+    normal: 1.25, // 125%
+    night: 1.5, // 150% (9pm-4am)
+    holiday: 1.5, // 150%
+    friday: 1.5, // 150% or day off in lieu
     nightShiftStart: '21:00',
     nightShiftEnd: '04:00',
   },
 
   probation: {
-    maxDays: 180,      // 6 months
-    noticeDays: 14,    // 14-30 days based on who terminates
+    maxDays: 180, // 6 months
+    noticeDays: 14, // 14-30 days based on who terminates
   },
 
   leave: {
-    annualFirstYear: 2,    // 2 days per month
-    annualAfterYears: 30,  // 30 days per year
+    annualFirstYear: 2, // 2 days per month
+    annualAfterYears: 30, // 30 days per year
     annualThresholdYears: 1,
     sickFullPay: 15,
     sickHalfPay: 30,
@@ -64,18 +63,18 @@ const UAE_LABOUR_LAW: LabourLawConfig = {
     paternity: 5,
     bereavementSpouse: 5,
     bereavementFamily: 3,
-    hajj: 30,              // Unpaid, once during employment
+    hajj: 30, // Unpaid, once during employment
     study: 10,
-    marriage: 5,           // UAE nationals
+    marriage: 5, // UAE nationals
   },
 
   eosb: {
     firstPeriodYears: 5,
     firstPeriodDaysPerYear: 21,
     afterPeriodDaysPerYear: 30,
-    maxMonths: 24,         // Cannot exceed 2 years salary
-    resignationFactor1: 0.333,  // 1/3 for 1-3 years
-    resignationFactor2: 0.666,  // 2/3 for 3-5 years
+    maxMonths: 24, // Cannot exceed 2 years salary
+    resignationFactor1: 0.333, // 1/3 for 1-3 years
+    resignationFactor2: 0.666, // 2/3 for 3-5 years
     minServiceMonths: 12,
     calculationBase: 'BASIC',
   },
@@ -103,14 +102,14 @@ const KSA_LABOUR_LAW: LabourLawConfig = {
   },
 
   overtimeRates: {
-    normal: 1.50,      // 150%
-    night: 1.50,
-    holiday: 1.50,
+    normal: 1.5, // 150%
+    night: 1.5,
+    holiday: 1.5,
   },
 
   probation: {
     maxDays: 90,
-    extensionDays: 90,  // Can extend to 180 total
+    extensionDays: 90, // Can extend to 180 total
     noticeDays: 30,
   },
 
@@ -119,33 +118,33 @@ const KSA_LABOUR_LAW: LabourLawConfig = {
     annualAfterYears: 30,
     annualThresholdYears: 5,
     sickFullPay: 30,
-    sickHalfPay: 60,      // 75% pay
+    sickHalfPay: 60, // 75% pay
     sickUnpaid: 30,
-    maternity: 70,        // 10 weeks
+    maternity: 70, // 10 weeks
     maternityFullPay: 70,
     maternityHalfPay: 0,
     paternity: 3,
     bereavementSpouse: 5,
     bereavementFamily: 3,
-    hajj: 15,             // 10-15 days, once after 2 years
+    hajj: 15, // 10-15 days, once after 2 years
     hajjMinServiceYears: 2,
     marriage: 5,
-    iddah: 130,           // 4 months 10 days for widows
+    iddah: 130, // 4 months 10 days for widows
   },
 
   eosb: {
     firstPeriodYears: 5,
-    firstPeriodDaysPerYear: 15,  // Half month
-    afterPeriodDaysPerYear: 30,  // Full month
-    resignationFactor1: 0.333,   // 1/3 for 2-5 years
-    resignationFactor2: 0.666,   // 2/3 for 5-10 years
+    firstPeriodDaysPerYear: 15, // Half month
+    afterPeriodDaysPerYear: 30, // Full month
+    resignationFactor1: 0.333, // 1/3 for 2-5 years
+    resignationFactor2: 0.666, // 2/3 for 5-10 years
     minServiceMonths: 24,
     calculationBase: 'BASIC',
   },
 
   socialInsurance: {
-    employeeRate: 0.105,    // 10.5% total for Saudis
-    employerRate: 0.1175,   // 11.75% total for Saudis
+    employeeRate: 0.105, // 10.5% total for Saudis
+    employerRate: 0.1175, // 11.75% total for Saudis
     maxWage: 45000,
     pensionEmployeeRate: 0.0975,
     pensionEmployerRate: 0.0975,
@@ -177,8 +176,8 @@ const BAHRAIN_LABOUR_LAW: LabourLawConfig = {
 
   overtimeRates: {
     normal: 1.25,
-    night: 1.50,
-    holiday: 1.50,
+    night: 1.5,
+    holiday: 1.5,
   },
 
   probation: {
@@ -205,8 +204,8 @@ const BAHRAIN_LABOUR_LAW: LabourLawConfig = {
 
   eosb: {
     firstPeriodYears: 3,
-    firstPeriodDaysPerYear: 15,  // Half month
-    afterPeriodDaysPerYear: 30,  // Full month
+    firstPeriodDaysPerYear: 15, // Half month
+    afterPeriodDaysPerYear: 30, // Full month
     minServiceMonths: 12,
     calculationBase: 'BASIC',
   },
@@ -239,8 +238,8 @@ const QATAR_LABOUR_LAW: LabourLawConfig = {
 
   overtimeRates: {
     normal: 1.25,
-    night: 1.50,       // 9pm-6am
-    holiday: 1.50,
+    night: 1.5, // 9pm-6am
+    holiday: 1.5,
     nightShiftStart: '21:00',
     nightShiftEnd: '06:00',
   },
@@ -251,8 +250,8 @@ const QATAR_LABOUR_LAW: LabourLawConfig = {
   },
 
   leave: {
-    annualFirstYear: 21,   // 3 weeks
-    annualAfterYears: 28,  // 4 weeks
+    annualFirstYear: 21, // 3 weeks
+    annualAfterYears: 28, // 4 weeks
     annualThresholdYears: 5,
     sickFullPay: 14,
     sickHalfPay: 28,
@@ -269,7 +268,7 @@ const QATAR_LABOUR_LAW: LabourLawConfig = {
 
   eosb: {
     firstPeriodYears: 0,
-    firstPeriodDaysPerYear: 21,  // 3 weeks per year
+    firstPeriodDaysPerYear: 21, // 3 weeks per year
     afterPeriodDaysPerYear: 21,
     minServiceMonths: 12,
     calculationBase: 'BASIC',
@@ -298,8 +297,8 @@ const OMAN_LABOUR_LAW: LabourLawConfig = {
 
   overtimeRates: {
     normal: 1.25,
-    night: 1.50,
-    holiday: 1.50,
+    night: 1.5,
+    holiday: 1.5,
   },
 
   probation: {
@@ -311,7 +310,7 @@ const OMAN_LABOUR_LAW: LabourLawConfig = {
     annualFirstYear: 30,
     annualAfterYears: 30,
     annualThresholdYears: 1,
-    sickFullPay: 10,    // 10 weeks at 100% then reducing
+    sickFullPay: 10, // 10 weeks at 100% then reducing
     sickHalfPay: 10,
     sickUnpaid: 32,
     maternity: 50,
@@ -326,14 +325,14 @@ const OMAN_LABOUR_LAW: LabourLawConfig = {
 
   eosb: {
     firstPeriodYears: 0,
-    firstPeriodDaysPerYear: 15,  // 15 days per year for expats
+    firstPeriodDaysPerYear: 15, // 15 days per year for expats
     afterPeriodDaysPerYear: 15,
     minServiceMonths: 12,
     calculationBase: 'BASIC',
   },
 
   socialInsurance: {
-    employeeRate: 0.07,     // For Omanis only
+    employeeRate: 0.07, // For Omanis only
     employerRate: 0.115,
   },
 
@@ -359,9 +358,9 @@ const KUWAIT_LABOUR_LAW: LabourLawConfig = {
   },
 
   overtimeRates: {
-    normal: 1.25,       // Plus additional hour pay per hour
-    night: 1.50,
-    holiday: 2.00,      // Double pay
+    normal: 1.25, // Plus additional hour pay per hour
+    night: 1.5,
+    holiday: 2.0, // Double pay
   },
 
   probation: {
@@ -374,7 +373,7 @@ const KUWAIT_LABOUR_LAW: LabourLawConfig = {
     annualAfterYears: 30,
     annualThresholdYears: 1,
     sickFullPay: 15,
-    sickHalfPay: 10,    // 75%
+    sickHalfPay: 10, // 75%
     sickUnpaid: 50,
     maternity: 70,
     maternityFullPay: 70,
@@ -390,14 +389,14 @@ const KUWAIT_LABOUR_LAW: LabourLawConfig = {
 
   eosb: {
     firstPeriodYears: 5,
-    firstPeriodDaysPerYear: 15,  // 15 days per year
-    afterPeriodDaysPerYear: 30,  // 1 month per year
+    firstPeriodDaysPerYear: 15, // 15 days per year
+    afterPeriodDaysPerYear: 30, // 1 month per year
     minServiceMonths: 12,
     calculationBase: 'BASIC',
   },
 
   socialInsurance: {
-    employeeRate: 0.08,     // For Kuwaitis only
+    employeeRate: 0.08, // For Kuwaitis only
     employerRate: 0.115,
   },
 
@@ -421,42 +420,42 @@ const INDIA_LABOUR_LAW: LabourLawConfig = {
   },
 
   overtimeRates: {
-    normal: 2.00,       // Double the ordinary rate
-    night: 2.00,
-    holiday: 2.00,
+    normal: 2.0, // Double the ordinary rate
+    night: 2.0,
+    holiday: 2.0,
   },
 
   probation: {
-    maxDays: 180,       // Typically 3-6 months
+    maxDays: 180, // Typically 3-6 months
     noticeDays: 30,
   },
 
   leave: {
-    annualFirstYear: 15,   // Earned leave varies by state
+    annualFirstYear: 15, // Earned leave varies by state
     annualAfterYears: 15,
     annualThresholdYears: 1,
-    sickFullPay: 7,        // Varies by state
+    sickFullPay: 7, // Varies by state
     sickHalfPay: 0,
     sickUnpaid: 0,
-    maternity: 182,        // 26 weeks
+    maternity: 182, // 26 weeks
     maternityFullPay: 182,
     maternityHalfPay: 0,
-    paternity: 15,         // Central govt, not mandatory for private
+    paternity: 15, // Central govt, not mandatory for private
     bereavementSpouse: 5,
     bereavementFamily: 3,
   },
 
   eosb: {
     firstPeriodYears: 0,
-    firstPeriodDaysPerYear: 15,  // 15 days per year
+    firstPeriodDaysPerYear: 15, // 15 days per year
     afterPeriodDaysPerYear: 15,
-    minServiceMonths: 60,        // 5 years minimum for gratuity
+    minServiceMonths: 60, // 5 years minimum for gratuity
     calculationBase: 'BASIC',
   },
 
   socialInsurance: {
-    employeeRate: 0.12,     // PF contribution
-    employerRate: 0.13,     // PF + Admin charges
+    employeeRate: 0.12, // PF contribution
+    employerRate: 0.13, // PF + Admin charges
   },
 
   weekendDays: ['Saturday', 'Sunday'],
@@ -509,11 +508,50 @@ export class LabourLawService {
    */
   static getGCCCountries(): { code: SupportedCountryCode; name: string; nameAr: string }[] {
     const gccCodes: SupportedCountryCode[] = ['AE', 'SA', 'BH', 'QA', 'OM', 'KW'];
-    return gccCodes.map(code => ({
+    return gccCodes.map((code) => ({
       code,
       name: COUNTRY_NAMES[code].en,
       nameAr: COUNTRY_NAMES[code].ar,
     }));
+  }
+
+  /**
+   * Rule-engine-aware variant of `calculateAnnualLeave`.
+   *
+   * Reads `LEAVE.ANNUAL_LEAVE_DAYS` from the active country rule pack
+   * (EPIC-02 / EPIC-36) and uses it as the after-threshold-year value.
+   * Falls back to the hardcoded `config.leave.annualAfterYears` when no
+   * rule pack is seeded or the rule engine is unreachable. The first-
+   * year UAE special case (2 days/month) and the under-threshold
+   * branch are preserved.
+   *
+   * Closes the audit's Tier-1 LabourLawService follow-up — legacy sync
+   * callers stay on `calculateAnnualLeave`; new callers that want
+   * compliance officers to control entitlements without a deploy use
+   * this method.
+   *
+   * (audit 2026-06-17 §9)
+   */
+  static async calculateAnnualLeaveWithRulePack(
+    countryCode: SupportedCountryCode,
+    yearsOfService: number
+  ): Promise<number> {
+    const config = this.getConfig(countryCode);
+    const { annualFirstYear, annualThresholdYears } = config.leave;
+
+    const afterYears = await resolveRuleValue<number>(
+      countryCode,
+      'LEAVE',
+      'ANNUAL_LEAVE_DAYS',
+      config.leave.annualAfterYears,
+      { source: 'labourLaw.calculateAnnualLeaveWithRulePack' }
+    );
+
+    if (countryCode === 'AE' && yearsOfService < 1) {
+      return Math.floor(yearsOfService * 12) * 2;
+    }
+    if (yearsOfService < annualThresholdYears) return annualFirstYear;
+    return afterYears;
   }
 
   /**
@@ -607,11 +645,19 @@ export class LabourLawService {
     }
 
     if (religion.toLowerCase() !== 'islam' && religion.toLowerCase() !== 'muslim') {
-      return { eligible: false, reason: 'Hajj leave is for Muslim employees only', reasonAr: 'إجازة الحج للموظفين المسلمين فقط' };
+      return {
+        eligible: false,
+        reason: 'Hajj leave is for Muslim employees only',
+        reasonAr: 'إجازة الحج للموظفين المسلمين فقط',
+      };
     }
 
     if (hasTakenHajjLeave) {
-      return { eligible: false, reason: 'Hajj leave can only be taken once during employment', reasonAr: 'يمكن الحصول على إجازة الحج مرة واحدة فقط خلال فترة العمل' };
+      return {
+        eligible: false,
+        reason: 'Hajj leave can only be taken once during employment',
+        reasonAr: 'يمكن الحصول على إجازة الحج مرة واحدة فقط خلال فترة العمل',
+      };
     }
 
     if (hajjMinServiceYears && yearsOfService < hajjMinServiceYears) {
@@ -640,12 +686,14 @@ export class LabourLawService {
     const issues: ComplianceIssue[] = [];
 
     const isRamadan = this.isRamadanPeriod(date);
-    const maxDaily = isRamadan && workingHours.ramadanPerDay
-      ? workingHours.ramadanPerDay
-      : workingHours.standardPerDay;
-    const maxWeekly = isRamadan && workingHours.ramadanPerWeek
-      ? workingHours.ramadanPerWeek
-      : workingHours.standardPerWeek;
+    const maxDaily =
+      isRamadan && workingHours.ramadanPerDay
+        ? workingHours.ramadanPerDay
+        : workingHours.standardPerDay;
+    const maxWeekly =
+      isRamadan && workingHours.ramadanPerWeek
+        ? workingHours.ramadanPerWeek
+        : workingHours.standardPerWeek;
 
     if (dailyHours > maxDaily + (workingHours.maxOvertimePerDay || 2)) {
       issues.push({
@@ -684,7 +732,7 @@ export class LabourLawService {
     }
 
     return {
-      isCompliant: issues.filter(i => i.severity === 'ERROR').length === 0,
+      isCompliant: issues.filter((i) => i.severity === 'ERROR').length === 0,
       country: countryCode,
       category: 'WORKING_HOURS',
       issues,
@@ -703,9 +751,10 @@ export class LabourLawService {
     const { probation } = config;
     const issues: ComplianceIssue[] = [];
 
-    const maxDays = hasExtension && probation.extensionDays
-      ? probation.maxDays + probation.extensionDays
-      : probation.maxDays;
+    const maxDays =
+      hasExtension && probation.extensionDays
+        ? probation.maxDays + probation.extensionDays
+        : probation.maxDays;
 
     if (probationDays > maxDays) {
       issues.push({

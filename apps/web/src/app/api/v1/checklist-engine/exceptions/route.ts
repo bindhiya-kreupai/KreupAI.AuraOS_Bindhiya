@@ -11,12 +11,19 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
   try {
     const url = new URL(req.url);
     return ok(
-      await complianceExceptionService.list(ctx.user.tenantId, {
-        domain: url.searchParams.get('domain') ?? undefined,
-        registerCode: url.searchParams.get('registerCode') ?? undefined,
-        status: url.searchParams.get('status') ?? undefined,
-        severity: url.searchParams.get('severity') ?? undefined,
-      })
+      await complianceExceptionService.list(
+        ctx.user.tenantId,
+        {
+          domain: url.searchParams.get('domain') ?? undefined,
+          registerCode: url.searchParams.get('registerCode') ?? undefined,
+          status: url.searchParams.get('status') ?? undefined,
+          severity: url.searchParams.get('severity') ?? undefined,
+        },
+        {
+          page: Number(url.searchParams.get('page') ?? '1'),
+          pageSize: Number(url.searchParams.get('pageSize') ?? '50'),
+        }
+      )
     );
   } catch (err) {
     return serverError('Failed to list exceptions', err);

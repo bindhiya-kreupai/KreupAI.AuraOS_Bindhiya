@@ -12,6 +12,13 @@
 
 import { createHash } from 'crypto';
 import { prisma } from '@aura/database';
+import {
+  normalisePaging,
+  prismaPageArgs,
+  buildPaginatedResult,
+  type PaginationInput,
+  type PaginatedResult,
+} from '@/lib/services/pagination';
 
 export interface AuthContext {
   tenantId: string;
@@ -250,12 +257,22 @@ export class SioRegistrationService {
       return row;
     });
   }
-  async list(tenantId: string, filter: { status?: string } = {}) {
-    return (prisma as any).sioEmployeeRegistration.findMany({
-      where: { tenantId, ...filter },
-      orderBy: { registrationDate: 'desc' },
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { status?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = { tenantId, ...filter };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).sioEmployeeRegistration.findMany({
+        where,
+        orderBy: { registrationDate: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).sioEmployeeRegistration.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
   async getActive(tenantId: string, employeeId: string) {
     return (prisma as any).sioEmployeeRegistration.findUnique({
@@ -406,12 +423,22 @@ export class SioCalculationService {
       },
     });
   }
-  async listContributions(tenantId: string, filter: { period?: string } = {}) {
-    return (prisma as any).sioContribution.findMany({
-      where: { tenantId, ...filter },
-      orderBy: [{ period: 'desc' }, { employeeId: 'asc' }],
-      take: 500,
-    });
+  async listContributions(
+    tenantId: string,
+    filter: { period?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = { tenantId, ...filter };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).sioContribution.findMany({
+        where,
+        orderBy: [{ period: 'desc' }, { employeeId: 'asc' }],
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).sioContribution.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 }
 
@@ -609,13 +636,20 @@ export class SioReconciliationService {
   }
   async list(
     tenantId: string,
-    filter: { period?: string; status?: string; severity?: string } = {}
-  ) {
-    return (prisma as any).sioVariance.findMany({
-      where: { tenantId, ...filter },
-      orderBy: [{ severity: 'asc' }, { createdAt: 'desc' }],
-      take: 500,
-    });
+    filter: { period?: string; status?: string; severity?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = { tenantId, ...filter };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).sioVariance.findMany({
+        where,
+        orderBy: [{ severity: 'asc' }, { createdAt: 'desc' }],
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).sioVariance.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
   async resolve(id: string, notes?: string) {
     return (prisma as any).sioVariance.update({

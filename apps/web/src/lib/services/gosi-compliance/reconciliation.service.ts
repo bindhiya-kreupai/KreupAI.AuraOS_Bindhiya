@@ -1,5 +1,12 @@
 import { prisma } from '@aura/database';
 import type { AuthContext } from './types';
+import {
+  normalisePaging,
+  prismaPageArgs,
+  buildPaginatedResult,
+  type PaginationInput,
+  type PaginatedResult,
+} from '@/lib/services/pagination';
 
 export interface PayrollSiRow {
   employeeId: string;
@@ -107,13 +114,20 @@ export class GosiReconciliationService {
 
   async list(
     tenantId: string,
-    filter: { period?: string; status?: string; severity?: string } = {}
-  ) {
-    return (prisma as any).gosiVariance.findMany({
-      where: { tenantId, ...filter },
-      orderBy: [{ severity: 'asc' }, { createdAt: 'desc' }],
-      take: 500,
-    });
+    filter: { period?: string; status?: string; severity?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = { tenantId, ...filter };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).gosiVariance.findMany({
+        where,
+        orderBy: [{ severity: 'asc' }, { createdAt: 'desc' }],
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).gosiVariance.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 
   async resolve(varianceId: string, notes: string | undefined) {

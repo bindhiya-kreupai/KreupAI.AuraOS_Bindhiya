@@ -22,6 +22,13 @@
  */
 
 import { prisma } from '@aura/database';
+import {
+  normalisePaging,
+  prismaPageArgs,
+  buildPaginatedResult,
+  type PaginationInput,
+  type PaginatedResult,
+} from '@/lib/services/pagination';
 
 export interface AuthContext {
   tenantId: string;
@@ -151,17 +158,27 @@ class RecordsDocumentMatrixService {
     });
   }
 
-  async list(tenantId: string, filter: { country?: string; category?: string } = {}) {
-    return (prisma as any).recordsDocumentMatrix.findMany({
-      where: {
-        tenantId,
-        status: 'ACTIVE',
-        ...(filter.country ? { country: filter.country } : {}),
-        ...(filter.category ? { category: filter.category } : {}),
-      },
-      orderBy: [{ country: 'asc' }, { category: 'asc' }, { documentCode: 'asc' }],
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { country?: string; category?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      status: 'ACTIVE',
+      ...(filter.country ? { country: filter.country } : {}),
+      ...(filter.category ? { category: filter.category } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).recordsDocumentMatrix.findMany({
+        where,
+        orderBy: [{ country: 'asc' }, { category: 'asc' }, { documentCode: 'asc' }],
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).recordsDocumentMatrix.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 }
 
@@ -224,16 +241,23 @@ class RecordsCompletenessService {
     });
   }
 
-  async list(tenantId: string, period: string, filter: { band?: Band } = {}) {
-    return (prisma as any).recordsCompletenessSnapshot.findMany({
-      where: {
-        tenantId,
-        period,
-        ...(filter.band ? { band: filter.band } : {}),
-      },
-      orderBy: { score: 'asc' },
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    period: string,
+    filter: { band?: Band } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = { tenantId, period, ...(filter.band ? { band: filter.band } : {}) };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).recordsCompletenessSnapshot.findMany({
+        where,
+        orderBy: { score: 'asc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).recordsCompletenessSnapshot.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 
   async aggregate(tenantId: string, period: string) {
@@ -330,16 +354,26 @@ class RecordsAuditChecklistService {
     });
   }
 
-  async list(tenantId: string, filter: { category?: string } = {}) {
-    return (prisma as any).recordsAuditChecklistItem.findMany({
-      where: {
-        tenantId,
-        status: 'ACTIVE',
-        ...(filter.category ? { category: filter.category } : {}),
-      },
-      orderBy: [{ category: 'asc' }, { itemCode: 'asc' }],
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { category?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      status: 'ACTIVE',
+      ...(filter.category ? { category: filter.category } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).recordsAuditChecklistItem.findMany({
+        where,
+        orderBy: [{ category: 'asc' }, { itemCode: 'asc' }],
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).recordsAuditChecklistItem.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 
   async overdueCount(tenantId: string, now: Date = new Date()): Promise<number> {
@@ -402,16 +436,26 @@ class RecordsRiskService {
     });
   }
 
-  async list(tenantId: string, filter: { status?: string; band?: string } = {}) {
-    return (prisma as any).recordsRiskEntry.findMany({
-      where: {
-        tenantId,
-        ...(filter.status ? { status: filter.status } : {}),
-        ...(filter.band ? { band: filter.band } : {}),
-      },
-      orderBy: { score: 'desc' },
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { status?: string; band?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.status ? { status: filter.status } : {}),
+      ...(filter.band ? { band: filter.band } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).recordsRiskEntry.findMany({
+        where,
+        orderBy: { score: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).recordsRiskEntry.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 }
 

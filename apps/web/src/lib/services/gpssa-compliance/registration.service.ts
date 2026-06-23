@@ -1,6 +1,13 @@
 import { prisma } from '@aura/database';
 import type { AuthContext, NationalityClass } from './types';
 import { APPLICABLE_CLASSES } from './seeds';
+import {
+  normalisePaging,
+  prismaPageArgs,
+  buildPaginatedResult,
+  type PaginationInput,
+  type PaginatedResult,
+} from '@/lib/services/pagination';
 
 export interface RegistrationInput {
   employeeId: string;
@@ -132,12 +139,22 @@ export class GpssaRegistrationService {
     });
   }
 
-  async list(tenantId: string, filter: { status?: string } = {}) {
-    return (prisma as any).gpssaEmployeeRegistration.findMany({
-      where: { tenantId, ...filter },
-      orderBy: { registrationDate: 'desc' },
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { status?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = { tenantId, ...filter };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).gpssaEmployeeRegistration.findMany({
+        where,
+        orderBy: { registrationDate: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).gpssaEmployeeRegistration.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 
   async getActive(tenantId: string, employeeId: string) {

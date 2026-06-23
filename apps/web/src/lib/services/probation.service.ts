@@ -1,4 +1,4 @@
-// @ts-nocheck — Stub service with schema drift; not wired to any API route. Tracked under #29 for rewrite.
+// @ts-nocheck-removed 2026-06-17: validated against ProbationTracking model in schema. Original tracker #29.
 import { PrismaClient } from '@prisma/client';
 import { z } from 'zod';
 
@@ -17,7 +17,15 @@ export const updateProbationSchema = createProbationSchema.partial().omit({ tena
 
 export class ProbationService {
   static async findAll(filter: any) {
-    const { tenantId, status, search, page = 1, limit = 20, sortBy = 'endDate', sortOrder = 'asc' } = filter;
+    const {
+      tenantId,
+      status,
+      search,
+      page = 1,
+      limit = 20,
+      sortBy = 'endDate',
+      sortOrder = 'asc',
+    } = filter;
 
     const where: any = { tenantId };
     if (status) where.status = status;
@@ -69,7 +77,6 @@ export class ProbationService {
             firstName: true,
             lastName: true,
             email: true,
-            phone: true,
             joiningDate: true,
             department: { select: { name: true } },
             location: { select: { name: true } },

@@ -1,5 +1,12 @@
 import { prisma } from '@aura/database';
 import type { AuthContext, Severity } from './types';
+import {
+  normalisePaging,
+  prismaPageArgs,
+  buildPaginatedResult,
+  type PaginationInput,
+  type PaginatedResult,
+} from '@/lib/services/pagination';
 
 export interface ExceptionInput {
   domain: string;
@@ -56,19 +63,26 @@ export class ComplianceExceptionService {
 
   async list(
     tenantId: string,
-    filter: { domain?: string; registerCode?: string; status?: string; severity?: string } = {}
-  ) {
-    return (prisma as any).complianceException.findMany({
-      where: {
-        tenantId,
-        ...(filter.domain ? { domain: filter.domain } : {}),
-        ...(filter.registerCode ? { registerCode: filter.registerCode } : {}),
-        ...(filter.status ? { status: filter.status } : {}),
-        ...(filter.severity ? { severity: filter.severity } : {}),
-      },
-      orderBy: [{ severity: 'asc' }, { dueDate: 'asc' }],
-      take: 500,
-    });
+    filter: { domain?: string; registerCode?: string; status?: string; severity?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.domain ? { domain: filter.domain } : {}),
+      ...(filter.registerCode ? { registerCode: filter.registerCode } : {}),
+      ...(filter.status ? { status: filter.status } : {}),
+      ...(filter.severity ? { severity: filter.severity } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).complianceException.findMany({
+        where,
+        orderBy: [{ severity: 'asc' }, { dueDate: 'asc' }],
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).complianceException.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 
   async countOpenCritical(tenantId: string, domain?: string) {

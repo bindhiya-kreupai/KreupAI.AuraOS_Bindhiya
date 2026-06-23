@@ -1,4 +1,23 @@
-// @ts-nocheck — April 2026 sprint addition with heavy Prisma drift. Tracked under #29 for proper rewrite against current schema.
+// @ts-nocheck — tracker #29. 2026-06-17 audit re-verification documented 18 schema-drift
+// sites that need domain investigation before TS can be re-enabled. Known drifted call-sites:
+//   - L176 / L180 / L689 PayrollRun.payPeriodYear / payPeriodMonth (renamed/removed)
+//   - L381 / L471 BenefitEnrollmentStatus enum no longer accepts 'PENDING'
+//   - L427 / L456 BenefitPlan.isActive removed (use status string?)
+//   - L466 CoverageLevel narrowed from string to enum
+//   - L504 EmployeeDocument.uploadedAt removed
+//   - L535 EmployeeDocument.employee (relation) is now .employeeId (scalar)
+//   - L631 ExpenseClaim.expenseDate renamed
+//   - L660 Employee.designation removed
+//   - L677 LeavePolicy.leaveType relation removed
+//   - L754 prisma.attendance delegate no longer exists (split into multiple models)
+//   - L801 / L831 Employee.dateOfBirth no longer in default select shape
+// Until these drift sites are remediated against the deployed schema, the file
+// must stay under @ts-nocheck. (probation.service.ts was cleanly re-typed in
+// the same commit — only this larger ESS surface is still pending.)
+//
+// Note: when removing @ts-nocheck, do NOT use a blanket `as any` cast — each
+// drift site needs to map to the canonical shape (payslip period split, benefit
+// enum migration, attendance model split, etc.) so callers get accurate types.
 /**
  * Enhanced Employee Self-Service (ESS) Portal Service
  * Provides payslip portal, tax document access, benefits enrollment,
@@ -13,9 +32,9 @@ import { prisma } from '@aura/database';
 
 export interface PayslipSummary {
   id: string;
-  month: string;        // "2026-04"
-  monthLabel: string;    // "April 2026"
-  monthLabelAr: string;  // "أبريل ٢٠٢٦"
+  month: string; // "2026-04"
+  monthLabel: string; // "April 2026"
+  monthLabelAr: string; // "أبريل ٢٠٢٦"
   grossEarnings: number;
   totalDeductions: number;
   netPay: number;
@@ -44,8 +63,15 @@ export interface YTDSummary {
 
 export interface TaxDocument {
   id: string;
-  type: 'FORM_16' | 'FORM_12BA' | 'TDS_CERTIFICATE' | 'PF_STATEMENT' |
-        'ESI_CARD' | 'GOSI_STATEMENT' | 'SALARY_CERTIFICATE' | 'EMPLOYMENT_LETTER';
+  type:
+    | 'FORM_16'
+    | 'FORM_12BA'
+    | 'TDS_CERTIFICATE'
+    | 'PF_STATEMENT'
+    | 'ESI_CARD'
+    | 'GOSI_STATEMENT'
+    | 'SALARY_CERTIFICATE'
+    | 'EMPLOYMENT_LETTER';
   name: string;
   nameAr: string;
   financialYear: string;
@@ -58,7 +84,15 @@ export interface BenefitEnrollment {
   id: string;
   planName: string;
   planNameAr: string;
-  category: 'HEALTH' | 'DENTAL' | 'VISION' | 'LIFE' | 'DISABILITY' | 'RETIREMENT' | 'EDUCATION' | 'OTHER';
+  category:
+    | 'HEALTH'
+    | 'DENTAL'
+    | 'VISION'
+    | 'LIFE'
+    | 'DISABILITY'
+    | 'RETIREMENT'
+    | 'EDUCATION'
+    | 'OTHER';
   provider: string;
   coverageLevel: 'EMPLOYEE' | 'EMPLOYEE_SPOUSE' | 'FAMILY';
   monthlyCost: number;
@@ -88,8 +122,16 @@ export interface ExpenseClaim {
   tenantId: string;
   employeeId: string;
   title: string;
-  category: 'TRAVEL' | 'MEALS' | 'ACCOMMODATION' | 'TRANSPORT' | 'OFFICE_SUPPLIES' |
-            'TRAINING' | 'COMMUNICATION' | 'MEDICAL' | 'OTHER';
+  category:
+    | 'TRAVEL'
+    | 'MEALS'
+    | 'ACCOMMODATION'
+    | 'TRANSPORT'
+    | 'OFFICE_SUPPLIES'
+    | 'TRAINING'
+    | 'COMMUNICATION'
+    | 'MEDICAL'
+    | 'OTHER';
   amount: number;
   currency: string;
   date: Date;
@@ -112,7 +154,13 @@ export interface ESSProfileSummary {
   manager: string;
   joiningDate: Date;
   yearsOfService: number;
-  leaveBalance: Array<{ type: string; typeAr: string; available: number; used: number; total: number }>;
+  leaveBalance: Array<{
+    type: string;
+    typeAr: string;
+    available: number;
+    used: number;
+    total: number;
+  }>;
   pendingApprovals: number;
   pendingExpenses: number;
   upcomingEvents: Array<{ type: string; title: string; date: Date }>;
@@ -144,10 +192,34 @@ export interface TeamDashboard {
 // MONTH NAMES
 // ============================================================================
 
-const MONTH_NAMES_EN = ['January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December'];
-const MONTH_NAMES_AR = ['يناير', 'فبراي��', 'مارس', 'أبريل', 'مايو', 'يونيو',
-  'يوليو', 'أغسطس', 'سبتمبر', 'أكتوبر', 'نوفمبر', 'ديسم��ر'];
+const MONTH_NAMES_EN = [
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
+];
+const MONTH_NAMES_AR = [
+  'يناير',
+  'فبراي��',
+  'مارس',
+  'أبريل',
+  'مايو',
+  'يونيو',
+  'يوليو',
+  'أغسطس',
+  'سبتمبر',
+  'أكتوبر',
+  'نوفمبر',
+  'ديسم��ر',
+];
 
 // ============================================================================
 // ESS SERVICE
@@ -209,7 +281,7 @@ export class EmployeeSelfService {
     const targetYear = year || new Date().getFullYear();
     const payslips = await this.getPayslipHistory(tenantId, employeeId, targetYear);
 
-    const monthlyBreakdown = payslips.map(ps => ({
+    const monthlyBreakdown = payslips.map((ps) => ({
       month: ps.month,
       gross: ps.grossEarnings,
       deductions: ps.totalDeductions,
@@ -407,20 +479,22 @@ export class EmployeeSelfService {
   static async getAvailableBenefitPlans(
     tenantId: string,
     employeeId: string
-  ): Promise<Array<{
-    id: string;
-    name: string;
-    nameAr: string;
-    category: string;
-    provider: string;
-    options: Array<{
-      coverageLevel: string;
-      monthlyCost: number;
-      employerContribution: number;
-      employeeContribution: number;
-    }>;
-    enrollmentDeadline?: Date;
-  }>> {
+  ): Promise<
+    Array<{
+      id: string;
+      name: string;
+      nameAr: string;
+      category: string;
+      provider: string;
+      options: Array<{
+        coverageLevel: string;
+        monthlyCost: number;
+        employerContribution: number;
+        employeeContribution: number;
+      }>;
+      enrollmentDeadline?: Date;
+    }>
+  > {
     const plans = await prisma.benefitPlan.findMany({
       where: {
         tenantId,
@@ -436,7 +510,12 @@ export class EmployeeSelfService {
       category: p.category,
       provider: p.provider,
       options: (p.coverageOptions as any[]) || [
-        { coverageLevel: 'EMPLOYEE', monthlyCost: Number(p.monthlyCost || 0), employerContribution: Number(p.employerContribution || 0), employeeContribution: Number(p.employeeContribution || 0) },
+        {
+          coverageLevel: 'EMPLOYEE',
+          monthlyCost: Number(p.monthlyCost || 0),
+          employerContribution: Number(p.employerContribution || 0),
+          employeeContribution: Number(p.employeeContribution || 0),
+        },
       ],
       enrollmentDeadline: p.enrollmentDeadline,
     }));
@@ -649,10 +728,7 @@ export class EmployeeSelfService {
   /**
    * Get ESS profile summary for the employee dashboard
    */
-  static async getProfileSummary(
-    tenantId: string,
-    employeeId: string
-  ): Promise<ESSProfileSummary> {
+  static async getProfileSummary(tenantId: string, employeeId: string): Promise<ESSProfileSummary> {
     const employee: any = await prisma.employee.findFirst({
       where: { id: employeeId, company: { tenantId } },
       include: {
@@ -664,8 +740,8 @@ export class EmployeeSelfService {
 
     if (!employee) throw new Error('Employee not found');
 
-    const yearsOfService = (new Date().getTime() - employee.joiningDate.getTime()) /
-      (1000 * 60 * 60 * 24 * 365.25);
+    const yearsOfService =
+      (new Date().getTime() - employee.joiningDate.getTime()) / (1000 * 60 * 60 * 24 * 365.25);
 
     // Get leave balances
     const leaveBalances = await prisma.leaveBalance.findMany({
@@ -692,7 +768,9 @@ export class EmployeeSelfService {
     return {
       employeeId,
       name: `${employee.firstName} ${employee.lastName}`,
-      nameAr: employee.firstNameAr ? `${employee.firstNameAr} ${employee.lastNameAr || ''}` : undefined,
+      nameAr: employee.firstNameAr
+        ? `${employee.firstNameAr} ${employee.lastNameAr || ''}`
+        : undefined,
       designation: employee.designation?.name || '',
       department: employee.department?.name || '',
       location: employee.location?.name || '',
@@ -709,17 +787,19 @@ export class EmployeeSelfService {
       pendingApprovals,
       pendingExpenses: 0,
       upcomingEvents: [],
-      recentPayslip: recentPayslip ? {
-        id: recentPayslip.id,
-        month: `${(recentPayslip as any).payrollRun.payPeriodYear}-${String((recentPayslip as any).payrollRun.payPeriodMonth).padStart(2, '0')}`,
-        monthLabel: `${MONTH_NAMES_EN[((recentPayslip as any).payrollRun.payPeriodMonth || 1) - 1]} ${(recentPayslip as any).payrollRun.payPeriodYear}`,
-        monthLabelAr: `${MONTH_NAMES_AR[((recentPayslip as any).payrollRun.payPeriodMonth || 1) - 1]} ${(recentPayslip as any).payrollRun.payPeriodYear}`,
-        grossEarnings: Number((recentPayslip as any).grossEarnings || 0),
-        totalDeductions: Number((recentPayslip as any).totalDeductions || 0),
-        netPay: Number((recentPayslip as any).netPay || 0),
-        currency: (recentPayslip as any).currency || 'AED',
-        status: 'PAID',
-      } : undefined,
+      recentPayslip: recentPayslip
+        ? {
+            id: recentPayslip.id,
+            month: `${(recentPayslip as any).payrollRun.payPeriodYear}-${String((recentPayslip as any).payrollRun.payPeriodMonth).padStart(2, '0')}`,
+            monthLabel: `${MONTH_NAMES_EN[((recentPayslip as any).payrollRun.payPeriodMonth || 1) - 1]} ${(recentPayslip as any).payrollRun.payPeriodYear}`,
+            monthLabelAr: `${MONTH_NAMES_AR[((recentPayslip as any).payrollRun.payPeriodMonth || 1) - 1]} ${(recentPayslip as any).payrollRun.payPeriodYear}`,
+            grossEarnings: Number((recentPayslip as any).grossEarnings || 0),
+            totalDeductions: Number((recentPayslip as any).totalDeductions || 0),
+            netPay: Number((recentPayslip as any).netPay || 0),
+            currency: (recentPayslip as any).currency || 'AED',
+            status: 'PAID',
+          }
+        : undefined,
     };
   }
 
@@ -730,10 +810,7 @@ export class EmployeeSelfService {
   /**
    * Get team dashboard for a manager
    */
-  static async getTeamDashboard(
-    tenantId: string,
-    managerId: string
-  ): Promise<TeamDashboard> {
+  static async getTeamDashboard(tenantId: string, managerId: string): Promise<TeamDashboard> {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const tomorrow = new Date(today);
@@ -748,7 +825,7 @@ export class EmployeeSelfService {
       },
     });
 
-    const teamIds = teamMembers.map(m => m.id);
+    const teamIds = teamMembers.map((m) => m.id);
 
     // Get today's attendance
     const todayAttendance = await prisma.attendance.findMany({
@@ -759,9 +836,11 @@ export class EmployeeSelfService {
       },
     });
 
-    const presentIds = new Set(todayAttendance.filter(
-      (a: any) => ['PRESENT', 'LATE', 'EARLY_OUT', 'HALF_DAY'].includes(a.status)
-    ).map((a: any) => a.employeeId));
+    const presentIds = new Set(
+      todayAttendance
+        .filter((a: any) => ['PRESENT', 'LATE', 'EARLY_OUT', 'HALF_DAY'].includes(a.status))
+        .map((a: any) => a.employeeId)
+    );
 
     // Get today's leaves
     const todayLeaves = await prisma.leaveRequest.findMany({
@@ -773,13 +852,19 @@ export class EmployeeSelfService {
         endDate: { gte: today },
       },
     });
-    const onLeaveIds = new Set(todayLeaves.map(l => l.employeeId));
+    const onLeaveIds = new Set(todayLeaves.map((l) => l.employeeId));
 
     // Pending approvals
     const [pendingLeaves, pendingOT, pendingReg] = await Promise.all([
-      prisma.leaveRequest.count({ where: { tenantId, employeeId: { in: teamIds }, status: 'PENDING' } }),
-      prisma.overtimeRequest.count({ where: { tenantId, employeeId: { in: teamIds }, status: 'PENDING' } }),
-      prisma.attendanceRegularization.count({ where: { tenantId, employeeId: { in: teamIds }, status: 'PENDING' } }),
+      prisma.leaveRequest.count({
+        where: { tenantId, employeeId: { in: teamIds }, status: 'PENDING' },
+      }),
+      prisma.overtimeRequest.count({
+        where: { tenantId, employeeId: { in: teamIds }, status: 'PENDING' },
+      }),
+      prisma.attendanceRegularization.count({
+        where: { tenantId, employeeId: { in: teamIds }, status: 'PENDING' },
+      }),
     ]);
 
     // Upcoming leaves
@@ -797,14 +882,15 @@ export class EmployeeSelfService {
 
     // Birthdays this month
     const currentMonth = today.getMonth() + 1;
-    const birthdays = teamMembers.filter(m =>
-      m.dateOfBirth && (m.dateOfBirth.getMonth() + 1) === currentMonth
+    const birthdays = teamMembers.filter(
+      (m) => m.dateOfBirth && m.dateOfBirth.getMonth() + 1 === currentMonth
     );
 
     // Work anniversaries this month
-    const anniversaries = teamMembers.filter(m =>
-      m.joiningDate.getMonth() + 1 === currentMonth &&
-      m.joiningDate.getFullYear() < today.getFullYear()
+    const anniversaries = teamMembers.filter(
+      (m) =>
+        m.joiningDate.getMonth() + 1 === currentMonth &&
+        m.joiningDate.getFullYear() < today.getFullYear()
     );
 
     return {
@@ -817,7 +903,7 @@ export class EmployeeSelfService {
         { type: 'LEAVE' as const, count: pendingLeaves },
         { type: 'OVERTIME' as const, count: pendingOT },
         { type: 'REGULARIZATION' as const, count: pendingReg },
-      ].filter(p => p.count > 0),
+      ].filter((p) => p.count > 0),
       teamLeaveCalendar: upcomingLeaves.map((l: any) => ({
         employeeId: l.employeeId,
         employeeName: `${l.employee.firstName} ${l.employee.lastName}`,
@@ -825,12 +911,12 @@ export class EmployeeSelfService {
         startDate: l.startDate,
         endDate: l.endDate,
       })),
-      birthdays: birthdays.map(m => ({
+      birthdays: birthdays.map((m) => ({
         employeeId: m.id,
         name: `${m.firstName} ${m.lastName}`,
         date: m.dateOfBirth!,
       })),
-      workAnniversaries: anniversaries.map(m => ({
+      workAnniversaries: anniversaries.map((m) => ({
         employeeId: m.id,
         name: `${m.firstName} ${m.lastName}`,
         date: m.joiningDate,

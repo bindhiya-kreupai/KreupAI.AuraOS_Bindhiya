@@ -11,11 +11,18 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
   try {
     const url = new URL(req.url);
     return ok(
-      await hseToolboxTalkService.list(ctx.user.tenantId, {
-        siteId: url.searchParams.get('siteId') ?? undefined,
-        from: url.searchParams.get('from') ? new Date(url.searchParams.get('from')!) : undefined,
-        to: url.searchParams.get('to') ? new Date(url.searchParams.get('to')!) : undefined,
-      })
+      await hseToolboxTalkService.list(
+        ctx.user.tenantId,
+        {
+          siteId: url.searchParams.get('siteId') ?? undefined,
+          from: url.searchParams.get('from') ? new Date(url.searchParams.get('from')!) : undefined,
+          to: url.searchParams.get('to') ? new Date(url.searchParams.get('to')!) : undefined,
+        },
+        {
+          page: Number(url.searchParams.get('page') ?? '1'),
+          pageSize: Number(url.searchParams.get('pageSize') ?? '50'),
+        }
+      )
     );
   } catch (err) {
     return serverError('Failed to list toolbox talks', err);

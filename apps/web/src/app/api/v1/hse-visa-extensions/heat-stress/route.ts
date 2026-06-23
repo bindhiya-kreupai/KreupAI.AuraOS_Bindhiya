@@ -13,7 +13,11 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
     return ok(
       await hseHeatStressRuleService.list(
         ctx.user.tenantId,
-        url.searchParams.get('country') ?? undefined
+        url.searchParams.get('country') ?? undefined,
+        {
+          page: Number(url.searchParams.get('page') ?? '1'),
+          pageSize: Number(url.searchParams.get('pageSize') ?? '50'),
+        }
       )
     );
   } catch (err) {

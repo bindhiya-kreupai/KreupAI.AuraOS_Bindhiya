@@ -11,12 +11,19 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
   try {
     const url = new URL(req.url);
     return ok(
-      await nationalisationJobTagService.list(ctx.user.tenantId, {
-        program: url.searchParams.get('program') ?? undefined,
-        eligibility: url.searchParams.get('eligibility') ?? undefined,
-        targetType: url.searchParams.get('targetType') ?? undefined,
-        targetId: url.searchParams.get('targetId') ?? undefined,
-      })
+      await nationalisationJobTagService.list(
+        ctx.user.tenantId,
+        {
+          program: url.searchParams.get('program') ?? undefined,
+          eligibility: url.searchParams.get('eligibility') ?? undefined,
+          targetType: url.searchParams.get('targetType') ?? undefined,
+          targetId: url.searchParams.get('targetId') ?? undefined,
+        },
+        {
+          page: Number(url.searchParams.get('page') ?? '1'),
+          pageSize: Number(url.searchParams.get('pageSize') ?? '50'),
+        }
+      )
     );
   } catch (err) {
     return serverError('Failed to list job tags', err);

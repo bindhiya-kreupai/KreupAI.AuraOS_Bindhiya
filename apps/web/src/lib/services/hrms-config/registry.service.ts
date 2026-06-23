@@ -12,6 +12,14 @@
 
 import { prisma } from '@aura/database';
 import type { AuthContext } from './types';
+import { validatePayload } from './validator-registry';
+import {
+  normalisePaging,
+  prismaPageArgs,
+  buildPaginatedResult,
+  type PaginationInput,
+  type PaginatedResult,
+} from '@/lib/services/pagination';
 
 export type ConfigScope = 'GLOBAL' | 'COUNTRY' | 'LEGAL_ENTITY' | 'DOMAIN';
 export type ConfigStatus = 'DRAFT' | 'PENDING_APPROVAL' | 'ACTIVE' | 'RETIRED';
@@ -92,23 +100,38 @@ export class HrmsConfigRegistryService {
       scope?: ConfigScope;
       country?: string;
       objectKey?: string;
-    } = {}
-  ) {
-    return (prisma as any).hrmsConfigObject.findMany({
-      where: {
-        tenantId,
-        ...(filter.domainCode ? { domainCode: filter.domainCode } : {}),
-        ...(filter.status ? { status: filter.status } : {}),
-        ...(filter.scope ? { scope: filter.scope } : {}),
-        ...(filter.country ? { country: filter.country } : {}),
-        ...(filter.objectKey ? { objectKey: filter.objectKey } : {}),
-      },
-      orderBy: [{ domainCode: 'asc' }, { objectKey: 'asc' }, { version: 'desc' }],
-      take: 500,
-    });
+    } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.domainCode ? { domainCode: filter.domainCode } : {}),
+      ...(filter.status ? { status: filter.status } : {}),
+      ...(filter.scope ? { scope: filter.scope } : {}),
+      ...(filter.country ? { country: filter.country } : {}),
+      ...(filter.objectKey ? { objectKey: filter.objectKey } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).hrmsConfigObject.findMany({
+        where,
+        orderBy: [{ domainCode: 'asc' }, { objectKey: 'asc' }, { version: 'desc' }],
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).hrmsConfigObject.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 
   async createDraft(input: ConfigObjectInput, auth: AuthContext) {
+    // Validate the payload against the per-domain Zod schema (if any
+    // is registered). Domains without a registered schema accept the
+    // payload as-is so existing tenants are never blocked when new
+    // schemas are introduced. The validated payload is the canonical
+    // shape that persists. (audit 2026-06-17 EPIC-34 — fixes the
+    // "78% of domain logic missing" finding.)
+    const validatedPayload = validatePayload(input.domainCode, input.payload);
+
     const prior = await (prisma as any).hrmsConfigObject.findFirst({
       where: {
         tenantId: auth.tenantId,
@@ -133,7 +156,7 @@ export class HrmsConfigRegistryService {
         status: 'DRAFT' as ConfigStatus,
         effectiveFrom: input.effectiveFrom,
         effectiveTo: input.effectiveTo ?? null,
-        payload: input.payload as any,
+        payload: validatedPayload as any,
         targetModel: input.targetModel ?? null,
         targetRecordId: input.targetRecordId ?? null,
         rationale: input.rationale ?? null,

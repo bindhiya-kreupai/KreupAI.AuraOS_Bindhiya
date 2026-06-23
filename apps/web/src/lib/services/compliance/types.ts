@@ -144,11 +144,11 @@ export interface GOSIContribution {
 }
 
 export interface GOSIRates {
-  pensionEmployee: number;      // 9.75% for Saudis
-  pensionEmployer: number;      // 9.75% for Saudis
-  sanedEmployee: number;        // 0.75% for Saudis
-  sanedEmployer: number;        // 0.75% for Saudis
-  occupationalHazards: number;  // 2% employer only
+  pensionEmployee: number; // 9.75% for Saudis
+  pensionEmployer: number; // 9.75% for Saudis
+  sanedEmployee: number; // 0.75% for Saudis
+  sanedEmployer: number; // 0.75% for Saudis
+  occupationalHazards: number; // 2% employer only
   maxContributableSalary: number; // 45,000 SAR
 }
 
@@ -238,7 +238,13 @@ export interface GOSIValidationWarning {
 // NITAQAT (SAUDIZATION)
 // ============================================================================
 
-export type NitaqatBand = 'PLATINUM' | 'GREEN_HIGH' | 'GREEN_MEDIUM' | 'GREEN_LOW' | 'YELLOW' | 'RED';
+export type NitaqatBand =
+  | 'PLATINUM'
+  | 'GREEN_HIGH'
+  | 'GREEN_MEDIUM'
+  | 'GREEN_LOW'
+  | 'YELLOW'
+  | 'RED';
 
 export interface NitaqatStatus {
   companyId: string;
@@ -286,6 +292,12 @@ export interface EOSBCalculationInput {
   totalSalary?: number;
   terminationType: TerminationType;
   contractType?: 'FIXED' | 'INDEFINITE';
+  /**
+   * Total unpaid-leave days taken during the employment period.
+   * Subtracted from total service before gratuity is computed.
+   * (EPIC-28-S09 closure — audit 2026-06-17.)
+   */
+  unpaidLeaveDays?: number;
 }
 
 export interface EOSBCalculationResult {
@@ -353,9 +365,9 @@ export interface LabourLawConfig {
 
   // Overtime Rates
   overtimeRates: {
-    normal: number;       // e.g., 1.25 for 125%
-    night: number;        // e.g., 1.50 for 150%
-    holiday: number;      // e.g., 1.50 for 150%
+    normal: number; // e.g., 1.25 for 125%
+    night: number; // e.g., 1.50 for 150%
+    holiday: number; // e.g., 1.50 for 150%
     friday?: number;
     nightShiftStart?: string;
     nightShiftEnd?: string;

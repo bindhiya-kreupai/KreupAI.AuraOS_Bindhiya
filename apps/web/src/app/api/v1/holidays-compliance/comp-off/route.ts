@@ -12,10 +12,17 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
     const url = new URL(req.url);
     const within = url.searchParams.get('expiringSoonDays');
     return ok(
-      await holidayCompOffService.list(ctx.user.tenantId, {
-        employeeId: url.searchParams.get('employeeId') ?? undefined,
-        expiringSoonDays: within ? Number(within) : undefined,
-      })
+      await holidayCompOffService.list(
+        ctx.user.tenantId,
+        {
+          employeeId: url.searchParams.get('employeeId') ?? undefined,
+          expiringSoonDays: within ? Number(within) : undefined,
+        },
+        {
+          page: Number(url.searchParams.get('page') ?? '1'),
+          pageSize: Number(url.searchParams.get('pageSize') ?? '50'),
+        }
+      )
     );
   } catch (err) {
     return serverError('Failed to list comp-off', err);

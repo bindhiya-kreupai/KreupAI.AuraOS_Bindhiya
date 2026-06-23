@@ -22,6 +22,13 @@
  */
 
 import { prisma } from '@aura/database';
+import {
+  normalisePaging,
+  prismaPageArgs,
+  buildPaginatedResult,
+  type PaginationInput,
+  type PaginatedResult,
+} from '@/lib/services/pagination';
 
 export interface AuthContext {
   tenantId: string;
@@ -488,16 +495,26 @@ export class LeaveMisuseService {
     });
   }
 
-  async list(tenantId: string, filter: { status?: string; employeeId?: string } = {}) {
-    return (prisma as any).leaveMisuseFlag.findMany({
-      where: {
-        tenantId,
-        ...(filter.status ? { status: filter.status } : {}),
-        ...(filter.employeeId ? { employeeId: filter.employeeId } : {}),
-      },
-      orderBy: { createdAt: 'desc' },
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { status?: string; employeeId?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.status ? { status: filter.status } : {}),
+      ...(filter.employeeId ? { employeeId: filter.employeeId } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).leaveMisuseFlag.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).leaveMisuseFlag.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 }
 
@@ -544,16 +561,26 @@ export class LeaveMedicalEvidenceService {
     });
   }
 
-  async list(tenantId: string, filter: { leaveRequestId?: string; employeeId?: string } = {}) {
-    return (prisma as any).leaveMedicalEvidence.findMany({
-      where: {
-        tenantId,
-        ...(filter.leaveRequestId ? { leaveRequestId: filter.leaveRequestId } : {}),
-        ...(filter.employeeId ? { employeeId: filter.employeeId } : {}),
-      },
-      orderBy: { createdAt: 'desc' },
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { leaveRequestId?: string; employeeId?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.leaveRequestId ? { leaveRequestId: filter.leaveRequestId } : {}),
+      ...(filter.employeeId ? { employeeId: filter.employeeId } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).leaveMedicalEvidence.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).leaveMedicalEvidence.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 }
 

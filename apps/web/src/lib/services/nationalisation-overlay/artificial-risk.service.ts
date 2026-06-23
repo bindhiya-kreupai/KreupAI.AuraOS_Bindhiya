@@ -20,6 +20,13 @@
 
 import { prisma } from '@aura/database';
 import type { AuthContext } from './types';
+import {
+  normalisePaging,
+  prismaPageArgs,
+  buildPaginatedResult,
+  type PaginationInput,
+  type PaginatedResult,
+} from '@/lib/services/pagination';
 
 export const ARTIFICIAL_RISK_SIGNALS = [
   'NO_PAYROLL',
@@ -109,20 +116,27 @@ export class NationalisationArtificialRiskService {
       isResolved?: boolean;
       employeeId?: string;
       evidenceMonth?: string;
-    } = {}
-  ) {
-    return (prisma as any).nationalisationArtificialRiskFlag.findMany({
-      where: {
-        tenantId,
-        ...(filter.program ? { program: filter.program } : {}),
-        ...(filter.riskBand ? { riskBand: filter.riskBand } : {}),
-        ...(filter.isResolved !== undefined ? { isResolved: filter.isResolved } : {}),
-        ...(filter.employeeId ? { employeeId: filter.employeeId } : {}),
-        ...(filter.evidenceMonth ? { evidenceMonth: filter.evidenceMonth } : {}),
-      },
-      orderBy: [{ riskBand: 'desc' }, { evidenceMonth: 'desc' }],
-      take: 500,
-    });
+    } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.program ? { program: filter.program } : {}),
+      ...(filter.riskBand ? { riskBand: filter.riskBand } : {}),
+      ...(filter.isResolved !== undefined ? { isResolved: filter.isResolved } : {}),
+      ...(filter.employeeId ? { employeeId: filter.employeeId } : {}),
+      ...(filter.evidenceMonth ? { evidenceMonth: filter.evidenceMonth } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).nationalisationArtificialRiskFlag.findMany({
+        where,
+        orderBy: [{ riskBand: 'desc' }, { evidenceMonth: 'desc' }],
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).nationalisationArtificialRiskFlag.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 
   async openCriticalCount(tenantId: string, program?: string): Promise<number> {

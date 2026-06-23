@@ -31,6 +31,13 @@
  */
 
 import { prisma } from '@aura/database';
+import {
+  normalisePaging,
+  prismaPageArgs,
+  buildPaginatedResult,
+  type PaginationInput,
+  type PaginatedResult,
+} from '@/lib/services/pagination';
 
 export interface AuthContext {
   tenantId: string;
@@ -254,17 +261,27 @@ class TaRiskService {
     });
   }
 
-  async list(tenantId: string, filter: { status?: string; band?: string; stage?: string } = {}) {
-    return (prisma as any).taRiskEntry.findMany({
-      where: {
-        tenantId,
-        ...(filter.status ? { status: filter.status } : {}),
-        ...(filter.band ? { band: filter.band } : {}),
-        ...(filter.stage ? { stage: filter.stage } : {}),
-      },
-      orderBy: { score: 'desc' },
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { status?: string; band?: string; stage?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.status ? { status: filter.status } : {}),
+      ...(filter.band ? { band: filter.band } : {}),
+      ...(filter.stage ? { stage: filter.stage } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).taRiskEntry.findMany({
+        where,
+        orderBy: { score: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).taRiskEntry.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 }
 

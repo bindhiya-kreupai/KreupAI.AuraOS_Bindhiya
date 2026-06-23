@@ -9,6 +9,13 @@
 
 import { prisma } from '@aura/database';
 import type { AuthContext } from './types';
+import {
+  normalisePaging,
+  prismaPageArgs,
+  buildPaginatedResult,
+  type PaginationInput,
+  type PaginatedResult,
+} from '@/lib/services/pagination';
 
 export class NationalisationJobTagService {
   async list(
@@ -18,19 +25,26 @@ export class NationalisationJobTagService {
       eligibility?: string;
       targetType?: string;
       targetId?: string;
-    } = {}
-  ) {
-    return (prisma as any).nationalisationJobTag.findMany({
-      where: {
-        tenantId,
-        ...(filter.program ? { program: filter.program } : {}),
-        ...(filter.eligibility ? { eligibility: filter.eligibility } : {}),
-        ...(filter.targetType ? { targetType: filter.targetType } : {}),
-        ...(filter.targetId ? { targetId: filter.targetId } : {}),
-      },
-      orderBy: [{ program: 'asc' }, { targetType: 'asc' }],
-      take: 500,
-    });
+    } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.program ? { program: filter.program } : {}),
+      ...(filter.eligibility ? { eligibility: filter.eligibility } : {}),
+      ...(filter.targetType ? { targetType: filter.targetType } : {}),
+      ...(filter.targetId ? { targetId: filter.targetId } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).nationalisationJobTag.findMany({
+        where,
+        orderBy: [{ program: 'asc' }, { targetType: 'asc' }],
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).nationalisationJobTag.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 
   async upsert(

@@ -12,13 +12,20 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
     const url = new URL(req.url);
     if (url.searchParams.get('action') === 'signals') return ok(OT_FRAUD_SIGNALS);
     return ok(
-      await overtimeFraudService.list(ctx.user.tenantId, {
-        signal: (url.searchParams.get('signal') as any) ?? undefined,
-        isResolved:
-          url.searchParams.get('isResolved') === null
-            ? undefined
-            : url.searchParams.get('isResolved') === 'true',
-      })
+      await overtimeFraudService.list(
+        ctx.user.tenantId,
+        {
+          signal: (url.searchParams.get('signal') as any) ?? undefined,
+          isResolved:
+            url.searchParams.get('isResolved') === null
+              ? undefined
+              : url.searchParams.get('isResolved') === 'true',
+        },
+        {
+          page: Number(url.searchParams.get('page') ?? '1'),
+          pageSize: Number(url.searchParams.get('pageSize') ?? '50'),
+        }
+      )
     );
   } catch (err) {
     return serverError('Failed to list OT fraud flags', err);

@@ -11,10 +11,17 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
   try {
     const url = new URL(req.url);
     return ok(
-      await payrollGovernanceService.list(ctx.user.tenantId, {
-        category: url.searchParams.get('category') ?? undefined,
-        country: url.searchParams.get('country') ?? undefined,
-      })
+      await payrollGovernanceService.list(
+        ctx.user.tenantId,
+        {
+          category: url.searchParams.get('category') ?? undefined,
+          country: url.searchParams.get('country') ?? undefined,
+        },
+        {
+          page: Number(url.searchParams.get('page') ?? '1'),
+          pageSize: Number(url.searchParams.get('pageSize') ?? '50'),
+        }
+      )
     );
   } catch (err) {
     return serverError('Failed to list governance controls', err);

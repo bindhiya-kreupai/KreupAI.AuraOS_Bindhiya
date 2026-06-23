@@ -17,7 +17,12 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
       from: url.searchParams.get('from') ? new Date(url.searchParams.get('from')!) : undefined,
       to: url.searchParams.get('to') ? new Date(url.searchParams.get('to')!) : undefined,
     };
-    return ok(await complianceCalendarService.listTasks(ctx.user.tenantId, filter));
+    return ok(
+      await complianceCalendarService.listTasks(ctx.user.tenantId, filter, {
+        page: Number(url.searchParams.get('page') ?? '1'),
+        pageSize: Number(url.searchParams.get('pageSize') ?? '50'),
+      })
+    );
   } catch (err) {
     return serverError('Failed to list tasks', err);
   }

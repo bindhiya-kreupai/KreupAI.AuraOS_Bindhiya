@@ -12,6 +12,13 @@
  */
 
 import { prisma } from '@aura/database';
+import {
+  normalisePaging,
+  prismaPageArgs,
+  buildPaginatedResult,
+  type PaginationInput,
+  type PaginatedResult,
+} from '@/lib/services/pagination';
 
 export interface AuthContext {
   tenantId: string;
@@ -37,16 +44,26 @@ export const TRANSFER_PRO_ACTIONS = [
 ] as const;
 
 export class HseSafetyOfficerService {
-  async list(tenantId: string, filter: { siteId?: string; status?: string } = {}) {
-    return (prisma as any).hseSafetyOfficer.findMany({
-      where: {
-        tenantId,
-        ...(filter.siteId ? { siteId: filter.siteId } : {}),
-        ...(filter.status ? { status: filter.status } : {}),
-      },
-      orderBy: [{ siteId: 'asc' }, { name: 'asc' }],
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { siteId?: string; status?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.siteId ? { siteId: filter.siteId } : {}),
+      ...(filter.status ? { status: filter.status } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).hseSafetyOfficer.findMany({
+        where,
+        orderBy: [{ siteId: 'asc' }, { name: 'asc' }],
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).hseSafetyOfficer.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
   async upsert(
     input: {
@@ -105,12 +122,22 @@ export class HseSafetyOfficerService {
 export const hseSafetyOfficerService = new HseSafetyOfficerService();
 
 export class HseHeatStressRuleService {
-  async list(tenantId: string, country?: string) {
-    return (prisma as any).hseHeatStressRule.findMany({
-      where: { tenantId, ...(country ? { country } : {}) },
-      orderBy: [{ country: 'asc' }, { month: 'asc' }, { effectiveFrom: 'desc' }],
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    country?: string,
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = { tenantId, ...(country ? { country } : {}) };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).hseHeatStressRule.findMany({
+        where,
+        orderBy: [{ country: 'asc' }, { month: 'asc' }, { effectiveFrom: 'desc' }],
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).hseHeatStressRule.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
   async upsert(
     input: {
@@ -176,23 +203,33 @@ export class HseHeatStressRuleService {
 export const hseHeatStressRuleService = new HseHeatStressRuleService();
 
 export class HseToolboxTalkService {
-  async list(tenantId: string, filter: { siteId?: string; from?: Date; to?: Date } = {}) {
-    return (prisma as any).hseToolboxTalk.findMany({
-      where: {
-        tenantId,
-        ...(filter.siteId ? { siteId: filter.siteId } : {}),
-        ...(filter.from || filter.to
-          ? {
-              deliveredAt: {
-                ...(filter.from ? { gte: filter.from } : {}),
-                ...(filter.to ? { lte: filter.to } : {}),
-              },
-            }
-          : {}),
-      },
-      orderBy: { deliveredAt: 'desc' },
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { siteId?: string; from?: Date; to?: Date } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.siteId ? { siteId: filter.siteId } : {}),
+      ...(filter.from || filter.to
+        ? {
+            deliveredAt: {
+              ...(filter.from ? { gte: filter.from } : {}),
+              ...(filter.to ? { lte: filter.to } : {}),
+            },
+          }
+        : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).hseToolboxTalk.findMany({
+        where,
+        orderBy: { deliveredAt: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).hseToolboxTalk.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
   async record(
     input: {
@@ -227,16 +264,26 @@ export class HseToolboxTalkService {
 export const hseToolboxTalkService = new HseToolboxTalkService();
 
 export class HseEmergencyDrillService {
-  async list(tenantId: string, filter: { siteId?: string; result?: string } = {}) {
-    return (prisma as any).hseEmergencyDrill.findMany({
-      where: {
-        tenantId,
-        ...(filter.siteId ? { siteId: filter.siteId } : {}),
-        ...(filter.result ? { result: filter.result } : {}),
-      },
-      orderBy: { scheduledAt: 'desc' },
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { siteId?: string; result?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.siteId ? { siteId: filter.siteId } : {}),
+      ...(filter.result ? { result: filter.result } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).hseEmergencyDrill.findMany({
+        where,
+        orderBy: { scheduledAt: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).hseEmergencyDrill.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
   async schedule(
     input: {
@@ -283,12 +330,22 @@ export class HseEmergencyDrillService {
 export const hseEmergencyDrillService = new HseEmergencyDrillService();
 
 export class HseFirstAidStationService {
-  async list(tenantId: string, siteId?: string) {
-    return (prisma as any).hseFirstAidStation.findMany({
-      where: { tenantId, ...(siteId ? { siteId } : {}) },
-      orderBy: [{ siteId: 'asc' }, { stationCode: 'asc' }],
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    siteId?: string,
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = { tenantId, ...(siteId ? { siteId } : {}) };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).hseFirstAidStation.findMany({
+        where,
+        orderBy: [{ siteId: 'asc' }, { stationCode: 'asc' }],
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).hseFirstAidStation.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
   async upsert(
     input: {
@@ -342,16 +399,26 @@ export class HseFirstAidStationService {
 export const hseFirstAidStationService = new HseFirstAidStationService();
 
 export class HseWelfareInspectionService {
-  async list(tenantId: string, filter: { siteId?: string; result?: string } = {}) {
-    return (prisma as any).hseWelfareInspection.findMany({
-      where: {
-        tenantId,
-        ...(filter.siteId ? { siteId: filter.siteId } : {}),
-        ...(filter.result ? { result: filter.result } : {}),
-      },
-      orderBy: { inspectedAt: 'desc' },
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { siteId?: string; result?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.siteId ? { siteId: filter.siteId } : {}),
+      ...(filter.result ? { result: filter.result } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).hseWelfareInspection.findMany({
+        where,
+        orderBy: { inspectedAt: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).hseWelfareInspection.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
   async record(
     input: {
@@ -402,15 +469,25 @@ export const hseWelfareInspectionService = new HseWelfareInspectionService();
 // ---------------------------------------------------------------------------
 
 export class VisaExitDependentService {
-  async list(tenantId: string, filter: { visaExitCaseId?: string } = {}) {
-    return (prisma as any).visaExitDependent.findMany({
-      where: {
-        tenantId,
-        ...(filter.visaExitCaseId ? { visaExitCaseId: filter.visaExitCaseId } : {}),
-      },
-      orderBy: { createdAt: 'desc' },
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { visaExitCaseId?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.visaExitCaseId ? { visaExitCaseId: filter.visaExitCaseId } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).visaExitDependent.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).visaExitDependent.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
   async addDependent(
     input: {
@@ -457,12 +534,22 @@ export const visaExitDependentService = new VisaExitDependentService();
 const DEFAULT_BENEFITS = ['INSURANCE', 'ACCOMMODATION', 'EOS', 'LOAN'] as const;
 
 export class VisaExitBenefitsClosureService {
-  async list(tenantId: string, visaExitCaseId?: string) {
-    return (prisma as any).visaExitBenefitsClosure.findMany({
-      where: { tenantId, ...(visaExitCaseId ? { visaExitCaseId } : {}) },
-      orderBy: [{ visaExitCaseId: 'asc' }, { benefitCategory: 'asc' }],
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    visaExitCaseId?: string,
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = { tenantId, ...(visaExitCaseId ? { visaExitCaseId } : {}) };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).visaExitBenefitsClosure.findMany({
+        where,
+        orderBy: [{ visaExitCaseId: 'asc' }, { benefitCategory: 'asc' }],
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).visaExitBenefitsClosure.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
   /** Seeds the 4 default benefit closure rows for a case. */
   async seedDefaults(visaExitCaseId: string, auth: AuthContext) {

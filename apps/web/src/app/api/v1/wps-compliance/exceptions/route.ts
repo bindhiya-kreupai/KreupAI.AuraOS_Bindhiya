@@ -9,20 +9,32 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
   if (!hasAny(ctx.permissions, 'tenant:read', 'dashboard:read')) return forbidden();
   try {
     const url = new URL(req.url);
+    const paging = {
+      page: Number(url.searchParams.get('page') ?? '1'),
+      pageSize: Number(url.searchParams.get('pageSize') ?? '50'),
+    };
     if (url.searchParams.get('view') === 'delay-flags') {
       return ok(
-        await wpsExceptionService.listDelayFlags(ctx.user.tenantId, {
-          status: url.searchParams.get('status') ?? undefined,
-          severity: url.searchParams.get('severity') ?? undefined,
-          period: url.searchParams.get('period') ?? undefined,
-        })
+        await wpsExceptionService.listDelayFlags(
+          ctx.user.tenantId,
+          {
+            status: url.searchParams.get('status') ?? undefined,
+            severity: url.searchParams.get('severity') ?? undefined,
+            period: url.searchParams.get('period') ?? undefined,
+          },
+          paging
+        )
       );
     }
     return ok(
-      await wpsExceptionService.list(ctx.user.tenantId, {
-        status: url.searchParams.get('status') ?? undefined,
-        severity: url.searchParams.get('severity') ?? undefined,
-      })
+      await wpsExceptionService.list(
+        ctx.user.tenantId,
+        {
+          status: url.searchParams.get('status') ?? undefined,
+          severity: url.searchParams.get('severity') ?? undefined,
+        },
+        paging
+      )
     );
   } catch (err) {
     return serverError('Failed to list exceptions', err);

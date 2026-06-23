@@ -11,11 +11,18 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
   try {
     const url = new URL(req.url);
     return ok(
-      await taRiskService.list(ctx.user.tenantId, {
-        status: url.searchParams.get('status') ?? undefined,
-        band: url.searchParams.get('band') ?? undefined,
-        stage: url.searchParams.get('stage') ?? undefined,
-      })
+      await taRiskService.list(
+        ctx.user.tenantId,
+        {
+          status: url.searchParams.get('status') ?? undefined,
+          band: url.searchParams.get('band') ?? undefined,
+          stage: url.searchParams.get('stage') ?? undefined,
+        },
+        {
+          page: Number(url.searchParams.get('page') ?? '1'),
+          pageSize: Number(url.searchParams.get('pageSize') ?? '50'),
+        }
+      )
     );
   } catch (err) {
     return serverError('Failed to list TA risks', err);

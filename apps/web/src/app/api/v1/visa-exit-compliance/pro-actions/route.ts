@@ -11,10 +11,17 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
   try {
     const url = new URL(req.url);
     return ok(
-      await visaExitProActionService.list(ctx.user.tenantId, {
-        caseId: url.searchParams.get('caseId') ?? undefined,
-        status: url.searchParams.get('status') ?? undefined,
-      })
+      await visaExitProActionService.list(
+        ctx.user.tenantId,
+        {
+          caseId: url.searchParams.get('caseId') ?? undefined,
+          status: url.searchParams.get('status') ?? undefined,
+        },
+        {
+          page: Number(url.searchParams.get('page') ?? '1'),
+          pageSize: Number(url.searchParams.get('pageSize') ?? '50'),
+        }
+      )
     );
   } catch (err) {
     return serverError('Failed to list actions', err);

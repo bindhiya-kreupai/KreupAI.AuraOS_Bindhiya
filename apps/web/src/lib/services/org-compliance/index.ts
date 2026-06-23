@@ -19,6 +19,13 @@
  */
 
 import { prisma } from '@aura/database';
+import {
+  normalisePaging,
+  prismaPageArgs,
+  buildPaginatedResult,
+  type PaginationInput,
+  type PaginatedResult,
+} from '@/lib/services/pagination';
 
 export interface AuthContext {
   tenantId: string;
@@ -140,17 +147,27 @@ class OrgAuditChecklistService {
     });
   }
 
-  async list(tenantId: string, filter: { category?: string; severity?: string } = {}) {
-    return (prisma as any).orgAuditChecklistItem.findMany({
-      where: {
-        tenantId,
-        status: 'ACTIVE',
-        ...(filter.category ? { category: filter.category } : {}),
-        ...(filter.severity ? { severity: filter.severity } : {}),
-      },
-      orderBy: [{ category: 'asc' }, { itemCode: 'asc' }],
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { category?: string; severity?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      status: 'ACTIVE',
+      ...(filter.category ? { category: filter.category } : {}),
+      ...(filter.severity ? { severity: filter.severity } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).orgAuditChecklistItem.findMany({
+        where,
+        orderBy: [{ category: 'asc' }, { itemCode: 'asc' }],
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).orgAuditChecklistItem.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 
   async overdueCount(tenantId: string, now: Date = new Date()): Promise<number> {
@@ -234,16 +251,26 @@ class OrgPositionControlService {
     });
   }
 
-  async list(tenantId: string, filter: { period?: string; departmentId?: string } = {}) {
-    return (prisma as any).orgPositionControl.findMany({
-      where: {
-        tenantId,
-        ...(filter.period ? { period: filter.period } : {}),
-        ...(filter.departmentId ? { departmentId: filter.departmentId } : {}),
-      },
-      orderBy: [{ period: 'desc' }, { departmentId: 'asc' }],
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { period?: string; departmentId?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.period ? { period: filter.period } : {}),
+      ...(filter.departmentId ? { departmentId: filter.departmentId } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).orgPositionControl.findMany({
+        where,
+        orderBy: [{ period: 'desc' }, { departmentId: 'asc' }],
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).orgPositionControl.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 
   async overhireTotal(tenantId: string, period: string): Promise<number> {
@@ -314,20 +341,30 @@ class OrgVacancyService {
     });
   }
 
-  async list(tenantId: string, filter: { status?: string } = {}) {
-    const rows = await (prisma as any).orgVacancy.findMany({
-      where: {
-        tenantId,
-        ...(filter.status ? { status: filter.status } : {}),
-      },
-      orderBy: { raisedAt: 'desc' },
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { status?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.status ? { status: filter.status } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [rows, total] = await Promise.all([
+      (prisma as any).orgVacancy.findMany({
+        where,
+        orderBy: { raisedAt: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).orgVacancy.count({ where }),
+    ]);
     const now = new Date();
-    return rows.map((r: any) => ({
+    const items = rows.map((r: any) => ({
       ...r,
       agingDays: r.status === 'FILLED' ? r.agingDays : agingDays(new Date(r.raisedAt), null, now),
     }));
+    return buildPaginatedResult(items, total, page);
   }
 
   async openAged(tenantId: string, gateDays = ORG_COMPLIANCE_CONSTANTS.VACANCY_AGE_GATE_DAYS) {

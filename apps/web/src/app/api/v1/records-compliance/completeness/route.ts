@@ -14,9 +14,17 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
       url.searchParams.get('period') ??
       `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
     return ok(
-      await recordsCompletenessService.list(ctx.user.tenantId, period, {
-        band: (url.searchParams.get('band') as any) ?? undefined,
-      })
+      await recordsCompletenessService.list(
+        ctx.user.tenantId,
+        period,
+        {
+          band: (url.searchParams.get('band') as any) ?? undefined,
+        },
+        {
+          page: Number(url.searchParams.get('page') ?? '1'),
+          pageSize: Number(url.searchParams.get('pageSize') ?? '50'),
+        }
+      )
     );
   } catch (err) {
     return serverError('Failed to list completeness', err);

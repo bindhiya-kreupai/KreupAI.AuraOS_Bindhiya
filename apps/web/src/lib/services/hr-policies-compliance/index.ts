@@ -16,6 +16,13 @@
  */
 
 import { prisma } from '@aura/database';
+import {
+  normalisePaging,
+  prismaPageArgs,
+  buildPaginatedResult,
+  type PaginationInput,
+  type PaginatedResult,
+} from '@/lib/services/pagination';
 
 export interface AuthContext {
   tenantId: string;
@@ -68,12 +75,22 @@ export class HrPolicyService {
     });
   }
 
-  async list(tenantId: string, filter: { status?: string } = {}) {
-    return (prisma as any).policyDocument.findMany({
-      where: { tenantId, ...(filter.status ? { status: filter.status } : {}) },
-      orderBy: { updatedAt: 'desc' },
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { status?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = { tenantId, ...(filter.status ? { status: filter.status } : {}) };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).policyDocument.findMany({
+        where,
+        orderBy: { updatedAt: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).policyDocument.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 }
 
@@ -166,15 +183,25 @@ export class HrPolicyReviewService {
     });
   }
 
-  async list(tenantId: string, filter: { overdueOnly?: boolean } = {}) {
-    return (prisma as any).hrPolicyReview.findMany({
-      where: {
-        tenantId,
-        ...(filter.overdueOnly ? { dueAt: { lt: new Date() }, status: 'OPEN' } : {}),
-      },
-      orderBy: { dueAt: 'asc' },
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { overdueOnly?: boolean } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.overdueOnly ? { dueAt: { lt: new Date() }, status: 'OPEN' } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).hrPolicyReview.findMany({
+        where,
+        orderBy: { dueAt: 'asc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).hrPolicyReview.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 }
 

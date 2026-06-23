@@ -11,11 +11,18 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
   try {
     const url = new URL(req.url);
     return ok(
-      await accommodationComplaintService.list(ctx.user.tenantId, {
-        siteId: url.searchParams.get('siteId') ?? undefined,
-        status: url.searchParams.get('status') ?? undefined,
-        severity: url.searchParams.get('severity') ?? undefined,
-      })
+      await accommodationComplaintService.list(
+        ctx.user.tenantId,
+        {
+          siteId: url.searchParams.get('siteId') ?? undefined,
+          status: url.searchParams.get('status') ?? undefined,
+          severity: url.searchParams.get('severity') ?? undefined,
+        },
+        {
+          page: Number(url.searchParams.get('page') ?? '1'),
+          pageSize: Number(url.searchParams.get('pageSize') ?? '50'),
+        }
+      )
     );
   } catch (err) {
     return serverError('Failed to list complaints', err);

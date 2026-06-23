@@ -13,15 +13,61 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
+
+  const isDev = process.env.NODE_ENV !== 'production';
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMsg(null);
     setLoading(true);
-    // Simulate login delay
-    setTimeout(() => {
-      setLoading(false);
+    try {
+      const res = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({ email, password }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok || !body?.success) {
+        throw new Error(body?.error ?? `Login failed (${res.status})`);
+      }
       router.push('/dashboard');
-    }, 1000);
+      router.refresh();
+    } catch (err: any) {
+      setErrorMsg(err?.message ?? 'Login failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // DEV-ONLY: skip real login when User table is not yet seeded.
+  // Removed automatically in production (the underlying route returns 404).
+  const handleDevLogin = async () => {
+    setErrorMsg(null);
+    setLoading(true);
+    try {
+      const res = await fetch('/api/auth/dev-login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
+        body: JSON.stringify({
+          email: email || 'dev@auraos.local',
+          tenantId: 'dev-tenant',
+          userId: 'dev-user',
+        }),
+      });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok || !body?.success) {
+        throw new Error(body?.error ?? `Dev login failed (${res.status})`);
+      }
+      router.push('/dashboard');
+      router.refresh();
+    } catch (err: any) {
+      setErrorMsg(err?.message ?? 'Dev login failed');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -131,6 +177,23 @@ export default function LoginPage() {
             >
               {loading ? 'Signing in...' : 'Sign in'}
             </Button>
+
+            {errorMsg && (
+              <p className="text-sm text-rose-600 dark:text-rose-400" role="alert">
+                {errorMsg}
+              </p>
+            )}
+
+            {isDev && (
+              <button
+                type="button"
+                onClick={handleDevLogin}
+                disabled={loading}
+                className="w-full text-xs text-twilight dark:text-silver-mist underline hover:text-celestial-indigo"
+              >
+                Dev quick-login (skips DB — until User table is seeded)
+              </button>
+            )}
           </form>
 
           <div className="relative">

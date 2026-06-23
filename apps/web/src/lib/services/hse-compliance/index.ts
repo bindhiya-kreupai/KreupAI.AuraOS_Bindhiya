@@ -15,6 +15,13 @@
  */
 
 import { prisma } from '@aura/database';
+import {
+  normalisePaging,
+  prismaPageArgs,
+  buildPaginatedResult,
+  type PaginationInput,
+  type PaginatedResult,
+} from '@/lib/services/pagination';
 
 export interface AuthContext {
   tenantId: string;
@@ -125,18 +132,26 @@ export class HseRiskService {
     });
   }
 
-  async list(tenantId: string, filter: { status?: string; minResidualRisk?: number } = {}) {
-    return (prisma as any).hseRiskAssessment.findMany({
-      where: {
-        tenantId,
-        ...(filter.status ? { status: filter.status } : {}),
-        ...(filter.minResidualRisk != null
-          ? { residualRisk: { gte: filter.minResidualRisk } }
-          : {}),
-      },
-      orderBy: { residualRisk: 'desc' },
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { status?: string; minResidualRisk?: number } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.status ? { status: filter.status } : {}),
+      ...(filter.minResidualRisk != null ? { residualRisk: { gte: filter.minResidualRisk } } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).hseRiskAssessment.findMany({
+        where,
+        orderBy: { residualRisk: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).hseRiskAssessment.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 }
 
@@ -202,18 +217,25 @@ export class HseIncidentService {
 
   async list(
     tenantId: string,
-    filter: { status?: string; severity?: string; incidentType?: string } = {}
-  ) {
-    return (prisma as any).hseIncident.findMany({
-      where: {
-        tenantId,
-        ...(filter.status ? { status: filter.status } : {}),
-        ...(filter.severity ? { severity: filter.severity } : {}),
-        ...(filter.incidentType ? { incidentType: filter.incidentType } : {}),
-      },
-      orderBy: { incidentDate: 'desc' },
-      take: 500,
-    });
+    filter: { status?: string; severity?: string; incidentType?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.status ? { status: filter.status } : {}),
+      ...(filter.severity ? { severity: filter.severity } : {}),
+      ...(filter.incidentType ? { incidentType: filter.incidentType } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).hseIncident.findMany({
+        where,
+        orderBy: { incidentDate: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).hseIncident.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 }
 
@@ -272,15 +294,25 @@ export class HsePermitService {
     });
   }
 
-  async list(tenantId: string, filter: { status?: string } = {}) {
-    return (prisma as any).hsePermitToWork.findMany({
-      where: {
-        tenantId,
-        ...(filter.status ? { status: filter.status } : {}),
-      },
-      orderBy: { startAt: 'desc' },
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { status?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.status ? { status: filter.status } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).hsePermitToWork.findMany({
+        where,
+        orderBy: { startAt: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).hsePermitToWork.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 }
 
@@ -312,8 +344,9 @@ export class HseTrainingService {
 
   async list(
     tenantId: string,
-    filter: { employeeId?: string; expiringSoonDays?: number; expiredOnly?: boolean } = {}
-  ) {
+    filter: { employeeId?: string; expiringSoonDays?: number; expiredOnly?: boolean } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
     const now = new Date();
     const soon = new Date(now.getTime() + (filter.expiringSoonDays ?? 30) * 24 * 3600 * 1000);
     let dateFilter = {};
@@ -322,15 +355,21 @@ export class HseTrainingService {
     } else if (filter.expiringSoonDays != null) {
       dateFilter = { validUntil: { gte: now, lte: soon } };
     }
-    return (prisma as any).hseTrainingRecord.findMany({
-      where: {
-        tenantId,
-        ...(filter.employeeId ? { employeeId: filter.employeeId } : {}),
-        ...dateFilter,
-      },
-      orderBy: { completedAt: 'desc' },
-      take: 500,
-    });
+    const where = {
+      tenantId,
+      ...(filter.employeeId ? { employeeId: filter.employeeId } : {}),
+      ...dateFilter,
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).hseTrainingRecord.findMany({
+        where,
+        orderBy: { completedAt: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).hseTrainingRecord.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 }
 

@@ -20,6 +20,13 @@
  */
 
 import { prisma } from '@aura/database';
+import {
+  normalisePaging,
+  prismaPageArgs,
+  buildPaginatedResult,
+  type PaginationInput,
+  type PaginatedResult,
+} from '@/lib/services/pagination';
 
 export interface AuthContext {
   tenantId: string;
@@ -139,18 +146,25 @@ export class ErGrievanceService {
 
   async list(
     tenantId: string,
-    filter: { status?: string; severity?: string; channel?: string } = {}
-  ) {
-    return (prisma as any).erGrievanceCase.findMany({
-      where: {
-        tenantId,
-        ...(filter.status ? { status: filter.status } : {}),
-        ...(filter.severity ? { severity: filter.severity } : {}),
-        ...(filter.channel ? { channel: filter.channel } : {}),
-      },
-      orderBy: { raisedAt: 'desc' },
-      take: 500,
-    });
+    filter: { status?: string; severity?: string; channel?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.status ? { status: filter.status } : {}),
+      ...(filter.severity ? { severity: filter.severity } : {}),
+      ...(filter.channel ? { channel: filter.channel } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).erGrievanceCase.findMany({
+        where,
+        orderBy: { raisedAt: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).erGrievanceCase.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 }
 
@@ -231,18 +245,25 @@ export class ErDisciplinaryService {
 
   async list(
     tenantId: string,
-    filter: { status?: string; employeeId?: string; actionType?: string } = {}
-  ) {
-    return (prisma as any).erDisciplinaryAction.findMany({
-      where: {
-        tenantId,
-        ...(filter.status ? { status: filter.status } : {}),
-        ...(filter.employeeId ? { employeeId: filter.employeeId } : {}),
-        ...(filter.actionType ? { actionType: filter.actionType } : {}),
-      },
-      orderBy: { createdAt: 'desc' },
-      take: 500,
-    });
+    filter: { status?: string; employeeId?: string; actionType?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.status ? { status: filter.status } : {}),
+      ...(filter.employeeId ? { employeeId: filter.employeeId } : {}),
+      ...(filter.actionType ? { actionType: filter.actionType } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).erDisciplinaryAction.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).erDisciplinaryAction.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 }
 
@@ -303,15 +324,22 @@ export class ErInvestigationService {
     });
   }
 
-  async list(tenantId: string, filter: { status?: string } = {}) {
-    return (prisma as any).erInvestigation.findMany({
-      where: {
-        tenantId,
-        ...(filter.status ? { status: filter.status } : {}),
-      },
-      orderBy: { startedAt: 'desc' },
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { status?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = { tenantId, ...(filter.status ? { status: filter.status } : {}) };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).erInvestigation.findMany({
+        where,
+        orderBy: { startedAt: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).erInvestigation.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 }
 
@@ -351,15 +379,22 @@ export class ErAppealService {
     });
   }
 
-  async list(tenantId: string, filter: { status?: string } = {}) {
-    return (prisma as any).erAppeal.findMany({
-      where: {
-        tenantId,
-        ...(filter.status ? { status: filter.status } : {}),
-      },
-      orderBy: { filedAt: 'desc' },
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { status?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = { tenantId, ...(filter.status ? { status: filter.status } : {}) };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).erAppeal.findMany({
+        where,
+        orderBy: { filedAt: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).erAppeal.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 }
 

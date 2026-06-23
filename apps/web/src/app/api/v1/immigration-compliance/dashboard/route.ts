@@ -19,30 +19,33 @@ export const GET = withEnhancedAuth(async (_req: NextRequest, ctx: RouteContext)
   try {
     const tenantId = ctx.user.tenantId;
     const [
-      matrix,
+      matrixRes,
       windowCounts,
       expired,
-      transfers,
+      transfersRes,
       transfersOverdue,
-      checklist,
+      checklistRes,
       checklistOverdue,
       checklistFailing,
-      risks,
+      risksRes,
       certs,
     ] = await Promise.all([
-      authorizationMatrixService.list(tenantId),
+      authorizationMatrixService.list(tenantId, {}, { page: 1, pageSize: 500 }),
       renewalAlertService.openCountsByWindow(tenantId),
       renewalAlertService.expiredCount(tenantId),
-      transferCaseService.list(tenantId, { status: 'REQUESTED' }),
+      transferCaseService.list(tenantId, { status: 'REQUESTED' }, { page: 1, pageSize: 500 }),
       transferCaseService.openOverdueCount(tenantId),
-      immigrationAuditChecklistService.list(tenantId),
+      immigrationAuditChecklistService.list(tenantId, {}, { page: 1, pageSize: 500 }),
       immigrationAuditChecklistService.overdueCount(tenantId),
       immigrationAuditChecklistService.failingHighOrCriticalCount(tenantId),
-      immigrationRiskService.list(tenantId, { status: 'OPEN' }),
+      immigrationRiskService.list(tenantId, { status: 'OPEN' }, { page: 1, pageSize: 500 }),
       immigrationComplianceCertificateService.list(tenantId),
     ]);
-    const countriesCovered = new Set((matrix as Array<{ country: string }>).map((m) => m.country))
-      .size;
+    const matrix = matrixRes.items as Array<{ country: string }>;
+    const transfers = transfersRes.items as Array<unknown>;
+    const checklist = checklistRes.items as Array<unknown>;
+    const risks = risksRes.items as Array<unknown>;
+    const countriesCovered = new Set(matrix.map((m) => m.country)).size;
     return ok({
       counts: {
         matrixItems: matrix.length,

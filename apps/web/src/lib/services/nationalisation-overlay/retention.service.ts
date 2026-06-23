@@ -8,6 +8,13 @@
 
 import { prisma } from '@aura/database';
 import type { AuthContext } from './types';
+import {
+  normalisePaging,
+  prismaPageArgs,
+  buildPaginatedResult,
+  type PaginationInput,
+  type PaginatedResult,
+} from '@/lib/services/pagination';
 
 export interface RetentionEventInput {
   employeeId: string;
@@ -80,29 +87,36 @@ export class NationalisationRetentionService {
       employeeId?: string;
       from?: Date;
       to?: Date;
-    } = {}
-  ) {
-    return (prisma as any).nationalisationRetentionEvent.findMany({
-      where: {
-        tenantId,
-        ...(filter.program ? { program: filter.program } : {}),
-        ...(filter.eventType ? { eventType: filter.eventType } : {}),
-        ...(filter.isEarlyAttrition !== undefined
-          ? { isEarlyAttrition: filter.isEarlyAttrition }
-          : {}),
-        ...(filter.employeeId ? { employeeId: filter.employeeId } : {}),
-        ...(filter.from || filter.to
-          ? {
-              eventDate: {
-                ...(filter.from ? { gte: filter.from } : {}),
-                ...(filter.to ? { lte: filter.to } : {}),
-              },
-            }
-          : {}),
-      },
-      orderBy: { eventDate: 'desc' },
-      take: 500,
-    });
+    } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.program ? { program: filter.program } : {}),
+      ...(filter.eventType ? { eventType: filter.eventType } : {}),
+      ...(filter.isEarlyAttrition !== undefined
+        ? { isEarlyAttrition: filter.isEarlyAttrition }
+        : {}),
+      ...(filter.employeeId ? { employeeId: filter.employeeId } : {}),
+      ...(filter.from || filter.to
+        ? {
+            eventDate: {
+              ...(filter.from ? { gte: filter.from } : {}),
+              ...(filter.to ? { lte: filter.to } : {}),
+            },
+          }
+        : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).nationalisationRetentionEvent.findMany({
+        where,
+        orderBy: { eventDate: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).nationalisationRetentionEvent.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 
   async kpis(

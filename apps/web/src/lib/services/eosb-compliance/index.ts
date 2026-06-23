@@ -18,6 +18,13 @@ import type {
   SupportedCountryCode,
   TerminationType,
 } from '@/lib/services/compliance/types';
+import {
+  normalisePaging,
+  prismaPageArgs,
+  buildPaginatedResult,
+  type PaginationInput,
+  type PaginatedResult,
+} from '@/lib/services/pagination';
 
 export interface AuthContext {
   tenantId: string;
@@ -123,16 +130,26 @@ export class EosbCalculationService {
     });
   }
 
-  async list(tenantId: string, filter: { status?: string; employeeId?: string } = {}) {
-    return (prisma as any).eosbCalculation.findMany({
-      where: {
-        tenantId,
-        ...(filter.status ? { status: filter.status } : {}),
-        ...(filter.employeeId ? { employeeId: filter.employeeId } : {}),
-      },
-      orderBy: { lastWorkingDate: 'desc' },
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { status?: string; employeeId?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.status ? { status: filter.status } : {}),
+      ...(filter.employeeId ? { employeeId: filter.employeeId } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).eosbCalculation.findMany({
+        where,
+        orderBy: { lastWorkingDate: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).eosbCalculation.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 }
 
@@ -214,12 +231,22 @@ export class EosbAccrualService {
     });
   }
 
-  async list(tenantId: string, period?: string) {
-    return (prisma as any).eosbAccrual.findMany({
-      where: { tenantId, ...(period ? { period } : {}) },
-      orderBy: [{ period: 'desc' }, { employeeId: 'asc' }],
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    period?: string,
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = { tenantId, ...(period ? { period } : {}) };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).eosbAccrual.findMany({
+        where,
+        orderBy: [{ period: 'desc' }, { employeeId: 'asc' }],
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).eosbAccrual.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 }
 
@@ -267,12 +294,22 @@ export class EosbDisputeService {
     });
   }
 
-  async list(tenantId: string, filter: { status?: string } = {}) {
-    return (prisma as any).eosbDispute.findMany({
-      where: { tenantId, ...(filter.status ? { status: filter.status } : {}) },
-      orderBy: { raisedAt: 'desc' },
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { status?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = { tenantId, ...(filter.status ? { status: filter.status } : {}) };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).eosbDispute.findMany({
+        where,
+        orderBy: { raisedAt: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).eosbDispute.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 }
 

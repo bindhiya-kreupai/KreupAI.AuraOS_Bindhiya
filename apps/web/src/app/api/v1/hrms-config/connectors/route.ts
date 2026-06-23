@@ -16,11 +16,18 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
     const isActiveParam = url.searchParams.get('isActive');
     const health = url.searchParams.get('health') ?? undefined;
     return ok(
-      await hrmsConnectorService.list(ctx.user.tenantId, {
-        kind: kind as any,
-        isActive: isActiveParam == null ? undefined : isActiveParam === 'true',
-        health: health as any,
-      })
+      await hrmsConnectorService.list(
+        ctx.user.tenantId,
+        {
+          kind: kind as any,
+          isActive: isActiveParam == null ? undefined : isActiveParam === 'true',
+          health: health as any,
+        },
+        {
+          page: Number(url.searchParams.get('page') ?? '1'),
+          pageSize: Number(url.searchParams.get('pageSize') ?? '50'),
+        }
+      )
     );
   } catch (err) {
     return serverError('Failed to list connectors', err);

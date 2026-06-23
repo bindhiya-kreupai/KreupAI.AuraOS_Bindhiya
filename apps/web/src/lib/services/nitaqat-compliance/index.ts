@@ -19,6 +19,28 @@
  */
 
 import { prisma } from '@aura/database';
+import { resolveRuleObject } from '../gcc-rule-library/rule-value.helper';
+import {
+  normalisePaging,
+  prismaPageArgs,
+  buildPaginatedResult,
+  type PaginationInput,
+  type PaginatedResult,
+} from '@/lib/services/pagination';
+
+/**
+ * Resolved Nitaqat band threshold, sourced from either tenant config or
+ * the country rule pack. Mirrors the `nitaqat_band_threshold` table
+ * columns consumed by `deriveBand`.
+ */
+export interface NitaqatResolvedThreshold {
+  /** Tenant row id when source = 'tenant-config'; null when from rule pack. */
+  id: string | null;
+  redMaxPct: number;
+  yellowMaxPct: number;
+  greenMaxPct: number;
+  source: 'tenant-config' | 'rule-pack';
+}
 
 export interface AuthContext {
   tenantId: string;
@@ -158,6 +180,70 @@ export class NitaqatConfigService {
     return rows[0] ?? null;
   }
 
+  /**
+   * Rule-engine-aware threshold resolution.
+   *
+   * Resolution order:
+   *   1. tenant-level threshold (existing `resolveThreshold`) — wins;
+   *      lets a tenant override Nitaqat percentages.
+   *   2. KSA country rule pack — looks up
+   *      NATIONALIZATION / NITAQAT_BAND_THRESHOLDS_<SECTOR>_<SIZE>
+   *      (e.g. NITAQAT_BAND_THRESHOLDS_PRIVATE_MEDIUM) expected to
+   *      carry `{ redMaxPct, yellowMaxPct, greenMaxPct }`.
+   *   3. null — caller (snapshot service) throws today; preserves
+   *      the existing "no Nitaqat threshold" failure mode.
+   *
+   * (audit 2026-06-17 Pattern 1)
+   */
+  async resolveThresholdWithRulePack(
+    tenantId: string,
+    sector: string,
+    sizeBracket: string,
+    asOf: Date = new Date()
+  ): Promise<NitaqatResolvedThreshold | null> {
+    const tenant = await this.resolveThreshold(tenantId, sector, sizeBracket, asOf);
+    if (tenant) {
+      return {
+        id: tenant.id ?? null,
+        redMaxPct: Number(tenant.redMaxPct),
+        yellowMaxPct: Number(tenant.yellowMaxPct),
+        greenMaxPct: Number(tenant.greenMaxPct),
+        source: 'tenant-config',
+      };
+    }
+
+    const ruleKey = `NITAQAT_BAND_THRESHOLDS_${sector}_${sizeBracket}`;
+    const seeded = await resolveRuleObject<{
+      redMaxPct?: number;
+      yellowMaxPct?: number;
+      greenMaxPct?: number;
+    }>(
+      'SA',
+      'NATIONALIZATION',
+      ruleKey,
+      {},
+      {
+        at: asOf,
+        source: `nitaqat.resolveThreshold(${sector}/${sizeBracket})`,
+      }
+    );
+
+    if (
+      typeof seeded.redMaxPct === 'number' &&
+      typeof seeded.yellowMaxPct === 'number' &&
+      typeof seeded.greenMaxPct === 'number'
+    ) {
+      return {
+        id: null,
+        redMaxPct: seeded.redMaxPct,
+        yellowMaxPct: seeded.yellowMaxPct,
+        greenMaxPct: seeded.greenMaxPct,
+        source: 'rule-pack',
+      };
+    }
+    return null;
+  }
+
   async listThresholds(tenantId: string) {
     return (prisma as any).nitaqatBandThreshold.findMany({
       where: { tenantId, status: 'ACTIVE' },
@@ -229,7 +315,9 @@ export class NitaqatSnapshotService {
     });
     if (!config) throw new Error('nitaqat config not found');
     if (!config.isInScope) throw new Error('entity is not in scope for Nitaqat');
-    const threshold = await nitaqatConfigService.resolveThreshold(
+    // Tenant config first; KSA rule pack as the regulatory baseline
+    // when tenant config is missing. (audit 2026-06-17 Pattern 1)
+    const threshold = await nitaqatConfigService.resolveThresholdWithRulePack(
       auth.tenantId,
       config.sector,
       config.sizeBracket,
@@ -344,15 +432,25 @@ export class NitaqatHireService {
     });
   }
 
-  async list(tenantId: string, filter: { legalEntityId?: string } = {}) {
-    return (prisma as any).nitaqatHire.findMany({
-      where: {
-        tenantId,
-        ...(filter.legalEntityId ? { legalEntityId: filter.legalEntityId } : {}),
-      },
-      orderBy: { hireDate: 'desc' },
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { legalEntityId?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.legalEntityId ? { legalEntityId: filter.legalEntityId } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).nitaqatHire.findMany({
+        where,
+        orderBy: { hireDate: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).nitaqatHire.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 }
 

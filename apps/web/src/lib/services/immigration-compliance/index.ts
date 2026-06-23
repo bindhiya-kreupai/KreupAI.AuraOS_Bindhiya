@@ -49,6 +49,13 @@
  */
 
 import { prisma } from '@aura/database';
+import {
+  normalisePaging,
+  prismaPageArgs,
+  buildPaginatedResult,
+  type PaginationInput,
+  type PaginatedResult,
+} from '@/lib/services/pagination';
 
 export interface AuthContext {
   tenantId: string;
@@ -187,17 +194,27 @@ class AuthorizationMatrixService {
     });
   }
 
-  async list(tenantId: string, filter: { country?: string; appliesTo?: string } = {}) {
-    return (prisma as any).immigrationAuthorizationMatrix.findMany({
-      where: {
-        tenantId,
-        status: 'ACTIVE',
-        ...(filter.country ? { country: filter.country } : {}),
-        ...(filter.appliesTo ? { appliesTo: filter.appliesTo } : {}),
-      },
-      orderBy: [{ country: 'asc' }, { appliesTo: 'asc' }, { documentCode: 'asc' }],
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { country?: string; appliesTo?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      status: 'ACTIVE',
+      ...(filter.country ? { country: filter.country } : {}),
+      ...(filter.appliesTo ? { appliesTo: filter.appliesTo } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).immigrationAuthorizationMatrix.findMany({
+        where,
+        orderBy: [{ country: 'asc' }, { appliesTo: 'asc' }, { documentCode: 'asc' }],
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).immigrationAuthorizationMatrix.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 }
 
@@ -259,16 +276,26 @@ class RenewalAlertService {
     });
   }
 
-  async list(tenantId: string, filter: { status?: string; window?: string } = {}) {
-    return (prisma as any).immigrationRenewalAlert.findMany({
-      where: {
-        tenantId,
-        ...(filter.status ? { status: filter.status } : {}),
-        ...(filter.window ? { window: filter.window } : {}),
-      },
-      orderBy: [{ window: 'asc' }, { expiresAt: 'asc' }],
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { status?: string; window?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.status ? { status: filter.status } : {}),
+      ...(filter.window ? { window: filter.window } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).immigrationRenewalAlert.findMany({
+        where,
+        orderBy: [{ window: 'asc' }, { expiresAt: 'asc' }],
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).immigrationRenewalAlert.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 
   async openCountsByWindow(tenantId: string): Promise<Record<string, number>> {
@@ -341,16 +368,26 @@ class TransferCaseService {
     });
   }
 
-  async list(tenantId: string, filter: { status?: string; transferType?: string } = {}) {
-    return (prisma as any).immigrationTransferCase.findMany({
-      where: {
-        tenantId,
-        ...(filter.status ? { status: filter.status } : {}),
-        ...(filter.transferType ? { transferType: filter.transferType } : {}),
-      },
-      orderBy: { requestedAt: 'desc' },
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { status?: string; transferType?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.status ? { status: filter.status } : {}),
+      ...(filter.transferType ? { transferType: filter.transferType } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).immigrationTransferCase.findMany({
+        where,
+        orderBy: { requestedAt: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).immigrationTransferCase.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 
   async openOverdueCount(
@@ -428,17 +465,27 @@ class ImmigrationAuditChecklistService {
     });
   }
 
-  async list(tenantId: string, filter: { category?: string; country?: string } = {}) {
-    return (prisma as any).immigrationAuditChecklistItem.findMany({
-      where: {
-        tenantId,
-        status: 'ACTIVE',
-        ...(filter.category ? { category: filter.category } : {}),
-        ...(filter.country ? { country: filter.country } : {}),
-      },
-      orderBy: [{ category: 'asc' }, { itemCode: 'asc' }],
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { category?: string; country?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      status: 'ACTIVE',
+      ...(filter.category ? { category: filter.category } : {}),
+      ...(filter.country ? { country: filter.country } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).immigrationAuditChecklistItem.findMany({
+        where,
+        orderBy: [{ category: 'asc' }, { itemCode: 'asc' }],
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).immigrationAuditChecklistItem.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 
   async overdueCount(tenantId: string, now: Date = new Date()): Promise<number> {
@@ -501,16 +548,26 @@ class ImmigrationRiskService {
     });
   }
 
-  async list(tenantId: string, filter: { status?: string; band?: string } = {}) {
-    return (prisma as any).immigrationRiskEntry.findMany({
-      where: {
-        tenantId,
-        ...(filter.status ? { status: filter.status } : {}),
-        ...(filter.band ? { band: filter.band } : {}),
-      },
-      orderBy: { score: 'desc' },
-      take: 500,
-    });
+  async list(
+    tenantId: string,
+    filter: { status?: string; band?: string } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = {
+      tenantId,
+      ...(filter.status ? { status: filter.status } : {}),
+      ...(filter.band ? { band: filter.band } : {}),
+    };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).immigrationRiskEntry.findMany({
+        where,
+        orderBy: { score: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).immigrationRiskEntry.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 }
 
@@ -542,8 +599,9 @@ class ImmigrationComplianceCertificateService {
       }),
       authorizationMatrixService.list(tenantId),
     ]);
-    const countriesCovered = new Set((matrix as Array<{ country: string }>).map((m) => m.country))
-      .size;
+    const countriesCovered = new Set(
+      (matrix.items as Array<{ country: string }>).map((m) => m.country)
+    ).size;
     const alerts7d = windowCounts.WINDOW_7 ?? 0;
     const alerts30d = windowCounts.WINDOW_30 ?? 0;
     const alerts60d = windowCounts.WINDOW_60 ?? 0;

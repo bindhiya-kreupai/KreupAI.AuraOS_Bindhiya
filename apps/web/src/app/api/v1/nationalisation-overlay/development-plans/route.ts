@@ -17,11 +17,18 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
       return ok(await nationalisationDevelopmentPlanService.stats(ctx.user.tenantId, program));
     }
     return ok(
-      await nationalisationDevelopmentPlanService.list(ctx.user.tenantId, {
-        program: url.searchParams.get('program') ?? undefined,
-        employeeId: url.searchParams.get('employeeId') ?? undefined,
-        status: (url.searchParams.get('status') as any) ?? undefined,
-      })
+      await nationalisationDevelopmentPlanService.list(
+        ctx.user.tenantId,
+        {
+          program: url.searchParams.get('program') ?? undefined,
+          employeeId: url.searchParams.get('employeeId') ?? undefined,
+          status: (url.searchParams.get('status') as any) ?? undefined,
+        },
+        {
+          page: Number(url.searchParams.get('page') ?? '1'),
+          pageSize: Number(url.searchParams.get('pageSize') ?? '50'),
+        }
+      )
     );
   } catch (err) {
     return serverError('Failed to list development plans', err);
