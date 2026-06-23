@@ -213,7 +213,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
 
                 return (
                   <button
-                    key={module.code}
+                    key={`${module.code}-${module.path || getModulePath(module.code)}`}
                     onClick={() => setSelectedModule(module.code)}
                     className={cn(
                       'w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left relative overflow-hidden',

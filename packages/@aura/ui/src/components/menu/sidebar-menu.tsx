@@ -196,7 +196,7 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
           const isExpanded = expandedModule === module.code;
 
           return (
-            <div key={module.code}>
+            <div key={`${module.code}-${module.path || getModulePath(module)}`}>
               {/* Module Item */}
               <div
                 className={cn(
@@ -246,7 +246,7 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
                       const isSubExpanded = expandedSubModule === subModule.code;
 
                       return (
-                        <div key={subModule.code} className="mb-2">
+                        <div key={`${subModule.code}-${subModule.path || getModulePath(subModule)}`} className="mb-2">
                           <div
                             className={cn(
                               "flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-pointer transition-colors text-sm",
