@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   CalendarPlus,
   Clock,
@@ -12,6 +12,9 @@ import {
   Hourglass,
   X,
   Loader2,
+  Ban,
+  CalendarDays,
+  ListChecks,
 } from 'lucide-react';
 import { CompOffService } from '../services';
 import { useCurrentUser } from '@/lib/auth/AuthProvider';
@@ -43,6 +46,7 @@ export default function CompOffPage() {
   const [summary, setSummary] = useState<CompOffSummary | null>(null);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
+  const [showAllModal, setShowAllModal] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
   const [formData, setFormData] = useState({
@@ -125,6 +129,27 @@ export default function CompOffPage() {
       setFormError(err?.message || 'Failed to submit comp-off claim');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const statusCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    for (const c of compOffs) {
+      const key = c.status === 'APPROVED' || c.status === 'AVAILED' ? 'APPROVED' : c.status;
+      counts[key] = (counts[key] || 0) + 1;
+    }
+    return { total: compOffs.length, ...counts } as Record<string, number>;
+  }, [compOffs]);
+
+  const formatDate = (dateStr: string) => {
+    try {
+      return new Date(dateStr + 'T00:00:00').toLocaleDateString('en-GB', {
+        day: '2-digit',
+        month: 'short',
+        year: 'numeric',
+      });
+    } catch {
+      return dateStr;
     }
   };
 
@@ -214,11 +239,17 @@ export default function CompOffPage() {
         {/* Right: History & Form */}
         <div className="lg:col-span-2 space-y-4">
           <div className="bg-white dark:bg-stellar-blue rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm overflow-hidden">
-            <div className="p-4 border-b border-cloud dark:border-nebula-purple/20">
+            <div className="p-4 border-b border-cloud dark:border-nebula-purple/20 flex justify-between items-center">
               <h3 className="font-bold text-ink-black dark:text-pearl flex items-center gap-2">
                 <History className="w-5 h-5 text-slate-500" />
                 Recent Claims
               </h3>
+              <button
+                onClick={() => setShowAllModal(true)}
+                className="text-xs font-bold text-celestial-indigo hover:underline"
+              >
+                View All
+              </button>
             </div>
             <div className="divide-y divide-cloud dark:divide-nebula-purple/20">
               {loading ? (
@@ -226,7 +257,7 @@ export default function CompOffPage() {
               ) : compOffs.length === 0 ? (
                 <div className="p-8 text-center text-slate-400">No comp-off records found</div>
               ) : (
-                compOffs.map((claim) => (
+                compOffs.slice(0, 5).map((claim) => (
                   <div
                     key={claim.id}
                     className="p-4 hover:bg-slate-50 dark:hover:bg-deep-cosmos/50 transition-colors group"
@@ -411,6 +442,229 @@ export default function CompOffPage() {
               </button>
             </div>
           </form>
+        </DialogContent>
+      </Dialog>
+
+      {/* View All Dialog */}
+      <Dialog open={showAllModal} onOpenChange={setShowAllModal}>
+        <DialogContent className="!w-[95vw] !max-w-7xl !max-h-[85vh] overflow-y-auto !p-0">
+          {/* Header */}
+          <div className="px-8 pt-6 pb-4 border-b border-cloud dark:border-nebula-purple/20">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-blue-600 flex items-center justify-center shadow-sm">
+                  <ListChecks className="w-5 h-5 text-white" />
+                </div>
+                <div>
+                  <DialogTitle className="text-lg font-bold">All Comp-off Applications</DialogTitle>
+                  <p className="text-xs text-silver-mist mt-0.5">
+                    {compOffs.length} record{compOffs.length !== 1 ? 's' : ''} &middot; Sorted by
+                    newest first
+                  </p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowAllModal(false)}
+                className="w-8 h-8 rounded-lg flex items-center justify-center text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-deep-cosmos/50 transition-colors"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+
+          {/* Summary strip */}
+          {compOffs.length > 0 && (
+            <div className="flex flex-wrap gap-2 px-8 py-4 bg-indigo-50/40 dark:bg-indigo-950/20 border-b border-cloud dark:border-nebula-purple/20">
+              {[
+                {
+                  label: 'Total',
+                  value: statusCounts.total || 0,
+                  color:
+                    'bg-white text-slate-700 dark:bg-slate-800 dark:text-slate-300 border border-slate-200 dark:border-slate-700',
+                },
+                {
+                  label: 'Pending',
+                  value: statusCounts['PENDING'] || 0,
+                  color: 'bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400',
+                },
+                {
+                  label: 'Approved',
+                  value: (statusCounts['APPROVED'] || 0) + (statusCounts['AVAILED'] || 0),
+                  color:
+                    'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400',
+                },
+                {
+                  label: 'Expired',
+                  value: statusCounts['EXPIRED'] || 0,
+                  color: 'bg-slate-200 text-slate-600 dark:bg-slate-800 dark:text-slate-400',
+                },
+                {
+                  label: 'Cancelled',
+                  value: statusCounts['CANCELLED'] || 0,
+                  color: 'bg-rose-100 text-rose-700 dark:bg-rose-900/20 dark:text-rose-400',
+                },
+              ]
+                .filter((s) => s.value > 0)
+                .map((s) => (
+                  <span
+                    key={s.label}
+                    className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-full ${s.color}`}
+                  >
+                    {s.value}
+                    <span className="font-normal opacity-80">{s.label}</span>
+                  </span>
+                ))}
+            </div>
+          )}
+
+          <div className="overflow-x-auto px-8 py-4">
+            <table className="w-full text-sm">
+              <thead>
+                <tr className="border-b-2 border-slate-100 dark:border-slate-800">
+                  <th className="text-left py-3.5 pr-6 font-semibold text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    <span className="inline-flex items-center gap-1.5">
+                      <CalendarDays className="w-3.5 h-3.5" />
+                      Date
+                    </span>
+                  </th>
+                  <th className="text-left py-3.5 pr-6 font-semibold text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    Hours
+                  </th>
+                  <th className="text-left py-3.5 pr-6 font-semibold text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    Credit
+                  </th>
+                  <th className="text-left py-3.5 pr-6 font-semibold text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    Reason
+                  </th>
+                  <th className="text-left py-3.5 pr-6 font-semibold text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    Status
+                  </th>
+                  <th className="text-right py-3.5 font-semibold text-xs uppercase tracking-wider text-slate-500 dark:text-slate-400">
+                    Balance
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 dark:divide-slate-800/50">
+                {compOffs.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="text-center py-20">
+                      <div className="flex flex-col items-center gap-3">
+                        <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                          <FileText className="w-6 h-6 text-slate-400 dark:text-slate-500" />
+                        </div>
+                        <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">
+                          No comp-off records found
+                        </p>
+                        <p className="text-xs text-slate-400 dark:text-slate-500">
+                          Submit a new claim to get started
+                        </p>
+                      </div>
+                    </td>
+                  </tr>
+                ) : (
+                  compOffs.map((claim, idx) => (
+                    <tr
+                      key={claim.id}
+                      className={`transition-colors ${
+                        idx % 2 === 0
+                          ? 'bg-white dark:bg-transparent'
+                          : 'bg-indigo-50/30 dark:bg-indigo-950/10'
+                      } hover:bg-indigo-50 dark:hover:bg-indigo-900/15`}
+                    >
+                      <td className="py-4 pr-6">
+                        <span className="font-medium text-ink-black dark:text-pearl whitespace-nowrap">
+                          {formatDate(claim.workDate)}
+                        </span>
+                      </td>
+                      <td className="py-4 pr-6">
+                        <span className="font-semibold text-slate-700 dark:text-slate-200">
+                          {claim.workHours}
+                        </span>
+                        <span className="text-slate-400 dark:text-slate-500 text-xs ml-0.5">
+                          hrs
+                        </span>
+                      </td>
+                      <td className="py-4 pr-6">
+                        <span
+                          className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full ${
+                            claim.workHours >= 8
+                              ? 'bg-indigo-100 text-indigo-700 dark:bg-indigo-900/20 dark:text-indigo-400'
+                              : 'bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400'
+                          }`}
+                        >
+                          {claim.workHours >= 8 ? 'Full Day' : 'Half Day'}
+                        </span>
+                      </td>
+                      <td className="py-4 pr-6 max-w-xs">
+                        <p
+                          className="text-slate-600 dark:text-slate-300 truncate leading-relaxed"
+                          title={claim.reason}
+                        >
+                          {claim.reason || '—'}
+                        </p>
+                      </td>
+                      <td className="py-4 pr-6">
+                        <span
+                          className={`inline-flex items-center gap-1.5 text-xs font-semibold px-3 py-1 rounded-full ${
+                            claim.status === 'APPROVED' || claim.status === 'AVAILED'
+                              ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400'
+                              : claim.status === 'PENDING' ||
+                                  claim.status === 'APPLIED' ||
+                                  claim.status === 'EARNED'
+                                ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400'
+                                : claim.status === 'EXPIRED'
+                                  ? 'bg-slate-100 text-slate-500 dark:bg-slate-800 dark:text-slate-400'
+                                  : 'bg-rose-100 text-rose-700 dark:bg-rose-900/20 dark:text-rose-400'
+                          }`}
+                        >
+                          {claim.status === 'APPROVED' || claim.status === 'AVAILED' ? (
+                            <CheckCircle2 className="w-3 h-3" />
+                          ) : claim.status === 'PENDING' ||
+                            claim.status === 'APPLIED' ||
+                            claim.status === 'EARNED' ? (
+                            <AlertCircle className="w-3 h-3" />
+                          ) : claim.status === 'EXPIRED' ? (
+                            <Hourglass className="w-3 h-3" />
+                          ) : (
+                            <Ban className="w-3 h-3" />
+                          )}
+                          {claim.status === 'AVAILED'
+                            ? 'Utilized'
+                            : claim.status === 'APPLIED' || claim.status === 'EARNED'
+                              ? 'Pending'
+                              : claim.status.charAt(0) + claim.status.slice(1).toLowerCase()}
+                        </span>
+                      </td>
+                      <td className="py-4 text-right">
+                        <div className="inline-flex items-baseline gap-1">
+                          <span className="font-bold text-ink-black dark:text-pearl text-sm">
+                            {claim.balance}
+                          </span>
+                          <span className="text-xs text-slate-400 dark:text-slate-500">
+                            day{claim.balance !== 1 ? 's' : ''}
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          {compOffs.length > 0 && (
+            <div className="px-8 py-4 border-t border-cloud dark:border-nebula-purple/20 flex items-center justify-between bg-slate-50/50 dark:bg-deep-cosmos/30">
+              <span className="text-xs text-slate-400 dark:text-slate-500">
+                Showing {compOffs.length} record{compOffs.length !== 1 ? 's' : ''}
+              </span>
+              <button
+                onClick={() => setShowAllModal(false)}
+                className="text-xs font-semibold text-celestial-indigo hover:text-celestial-indigo/80 transition-colors"
+              >
+                Close
+              </button>
+            </div>
+          )}
         </DialogContent>
       </Dialog>
     </div>
