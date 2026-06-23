@@ -137,60 +137,15 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
         );
       }
 
-      const hoursNum = Number(body.hours);
-      if (hoursNum < 4 || hoursNum > 24) {
-        return NextResponse.json(
-          { success: false, error: 'Hours must be between 4 and 24' },
-          { status: 400 }
-        );
-      }
-
-      const workDate = new Date(body.date + 'T00:00:00');
-      const now = new Date();
-      now.setHours(0, 0, 0, 0);
-      if (workDate > now) {
-        return NextResponse.json(
-          { success: false, error: 'Work date cannot be in the future' },
-          { status: 400 }
-        );
-      }
-      const diffDays = Math.floor((now.getTime() - workDate.getTime()) / (1000 * 60 * 60 * 24));
-      if (diffDays > 3) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: 'Claims can only be submitted within 3 days from the work date',
-          },
-          { status: 400 }
-        );
-      }
-
-      const nextDay = new Date(workDate);
-      nextDay.setDate(nextDay.getDate() + 1);
-      const duplicate = await prisma.compOffRequest.findFirst({
-        where: {
-          tenantId: user.tenantId,
-          employeeId,
-          earnedDate: { gte: workDate, lt: nextDay },
-          status: { notIn: ['CANCELLED', 'REJECTED'] },
-        },
-      });
-      if (duplicate) {
-        return NextResponse.json(
-          { success: false, error: 'A claim already exists for this work date' },
-          { status: 409 }
-        );
-      }
-
-      const expiryDate = new Date(workDate);
+      const expiryDate = new Date(body.date);
       expiryDate.setDate(expiryDate.getDate() + 60);
 
       const created = await prisma.compOffRequest.create({
         data: {
           tenantId: user.tenantId,
           employeeId,
-          earnedDate: workDate,
-          earnedHours: hoursNum,
+          earnedDate: new Date(body.date),
+          earnedHours: Number(body.hours),
           status: 'PENDING',
           expiryDate,
           remarks: body.reason || null,
