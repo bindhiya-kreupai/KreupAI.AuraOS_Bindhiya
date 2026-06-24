@@ -1,4 +1,4 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { Redis } from 'ioredis';
 import { logger } from '@/lib/logger';
@@ -16,8 +16,10 @@ let redisClient: Redis | null = null;
 function getRedisClient(): Redis {
   if (!redisClient) {
     const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
+    const redisPassword = process.env.REDIS_PASSWORD;
     redisClient = new Redis(redisUrl, {
       maxRetriesPerRequest: 3,
+      password: redisPassword,
       enableReadyCheck: true,
       lazyConnect: true,
     });
@@ -88,11 +90,7 @@ interface RateLimitResult {
 /**
  * Get rate limit key for a request
  */
-function getRateLimitKey(
-  config: RateLimitConfig,
-  request: NextRequest,
-  userId?: string
-): string {
+function getRateLimitKey(config: RateLimitConfig, request: NextRequest, userId?: string): string {
   let identifier: string;
 
   if (config.keyGenerator) {
@@ -112,10 +110,7 @@ function getRateLimitKey(
 /**
  * Check rate limit using sliding window algorithm
  */
-async function checkRateLimit(
-  key: string,
-  config: RateLimitConfig
-): Promise<RateLimitResult> {
+async function checkRateLimit(key: string, config: RateLimitConfig): Promise<RateLimitResult> {
   try {
     const redis = getRedisClient();
     await redis.connect().catch(() => {
@@ -209,8 +204,7 @@ export function createRateLimit(config: RateLimitConfig) {
       );
 
       const message =
-        config.message ||
-        `Too many requests. Please try again in ${retryAfter} seconds.`;
+        config.message || `Too many requests. Please try again in ${retryAfter} seconds.`;
 
       return new NextResponse(
         JSON.stringify({
@@ -360,10 +354,7 @@ export async function getRateLimitStatus(
 /**
  * Helper function to reset rate limit for a key (admin use)
  */
-export async function resetRateLimit(
-  config: RateLimitConfig,
-  identifier: string
-): Promise<void> {
+export async function resetRateLimit(config: RateLimitConfig, identifier: string): Promise<void> {
   try {
     const redis = getRedisClient();
     await redis.connect().catch(() => {});
