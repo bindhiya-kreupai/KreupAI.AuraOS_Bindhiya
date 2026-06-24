@@ -6,21 +6,21 @@ This guide will help you set up the KreupAI AuraOS development environment from 
 
 Before you begin, ensure you have the following installed:
 
-| Tool | Version | Installation |
-|------|---------|--------------|
-| **Node.js** | >= 20.0.0 | [nodejs.org](https://nodejs.org/) |
-| **pnpm** | >= 8.15.0 | `npm install -g pnpm` |
-| **PostgreSQL** | >= 14 | [postgresql.org](https://www.postgresql.org/download/) |
-| **Git** | Latest | [git-scm.com](https://git-scm.com/) |
+| Tool           | Version   | Installation                                           |
+| -------------- | --------- | ------------------------------------------------------ |
+| **Node.js**    | >= 20.0.0 | [nodejs.org](https://nodejs.org/)                      |
+| **pnpm**       | >= 8.15.0 | `npm install -g pnpm`                                  |
+| **PostgreSQL** | >= 14     | [postgresql.org](https://www.postgresql.org/download/) |
+| **Git**        | Latest    | [git-scm.com](https://git-scm.com/)                    |
 
 ### Optional (for full functionality)
 
-| Tool | Purpose |
-|------|---------|
-| **Redis** >= 7.0 | Caching layer |
-| **RabbitMQ** >= 3.12 | Message queue |
-| **Elasticsearch** >= 8.0 | Search functionality |
-| **Docker** | Containerized infrastructure |
+| Tool                     | Purpose                      |
+| ------------------------ | ---------------------------- |
+| **Redis** >= 7.0         | Caching layer                |
+| **RabbitMQ** >= 3.12     | Message queue                |
+| **Elasticsearch** >= 8.0 | Search functionality         |
+| **Docker**               | Containerized infrastructure |
 
 ## Step 1: Clone the Repository
 
@@ -71,7 +71,7 @@ For additional features, configure these optional variables:
 
 ```env
 # Redis (Caching)
-REDIS_URL="redis://localhost:6379"
+REDIS_URL="redis://:auraos_redis_2024@localhost:6379"
 
 # RabbitMQ (Message Queue)
 RABBITMQ_HOST="localhost"
@@ -189,7 +189,7 @@ Update your `.env` to use Docker services:
 
 ```env
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/auraos?schema=public"
-REDIS_URL="redis://localhost:6379"
+REDIS_URL="redis://:auraos_redis_2024@localhost:6379"
 ```
 
 ## Project Structure Overview

@@ -191,6 +191,7 @@ export function withEnhancedAuth<T = any>(
                   tenantId: context!.user.tenantId || 'system',
                   userId: context!.user.userId,
                   action,
+                  module: path.split('/').filter(Boolean).slice(1, 2).join('/') || 'api',
                   resourceType: path.split('/').filter(Boolean).slice(2, 4).join('/') || 'unknown',
                   ipAddress:
                     request.headers.get('x-forwarded-for') ||

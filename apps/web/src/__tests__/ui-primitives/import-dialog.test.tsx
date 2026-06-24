@@ -86,6 +86,7 @@ describe('ImportDialog', () => {
 
   it('disables Commit when every row is invalid', async () => {
     const user = userEvent.setup();
+<<<<<<< HEAD
     const dryRun = vi.fn().mockResolvedValue(
       makePreview({
         validRows: 0,
@@ -94,6 +95,18 @@ describe('ImportDialog', () => {
         sample: [],
       })
     );
+=======
+    const dryRun = vi
+      .fn()
+      .mockResolvedValue(
+        makePreview({
+          validRows: 0,
+          totalRows: 1,
+          errors: [{ row: 1, message: 'bad' }],
+          sample: [],
+        })
+      );
+>>>>>>> 8492df9bd42d74db150a3648a1db92b18beba01c
 
     render(
       <ImportDialog

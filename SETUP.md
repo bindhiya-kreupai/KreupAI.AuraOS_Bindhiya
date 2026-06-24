@@ -27,7 +27,7 @@ DATABASE_URL="postgresql://user:password@host:port/database?sslmode=require&sche
 JWT_SECRET="your-super-secret-jwt-key-change-this-in-production"
 
 # Optional but recommended for full functionality
-REDIS_URL="redis://localhost:6379"
+REDIS_URL="redis://:auraos_redis_2024@localhost:6379"
 RABBITMQ_HOST="localhost"
 ELASTICSEARCH_NODE="http://localhost:9200"
 ```
@@ -65,6 +65,7 @@ pnpm dev --filter=employee-service
 ```
 
 The application will be available at:
+
 - **Web App**: http://localhost:3000
 - **Auth Service**: http://localhost:3001
 - **Employee Service**: http://localhost:3002
@@ -133,21 +134,25 @@ KreupAI.AuraOS/
 ## Available Scripts (from root)
 
 ### Development
+
 - `pnpm dev` - Start all apps in development mode
 - `pnpm dev --filter=web` - Start only web app
 - `pnpm dev --filter=auth-service` - Start only auth service
 
 ### Building
+
 - `pnpm build` - Build all packages and apps
 - `pnpm build --filter=web` - Build only web app
 
 ### Testing
+
 - `pnpm test` - Run all tests
 - `pnpm test:coverage` - Run tests with coverage
 - `pnpm lint` - Run ESLint
 - `pnpm lint:fix` - Fix linting issues
 
 ### Database
+
 - `cd packages/@aura/database && pnpm prisma generate` - Generate Prisma client
 - `cd packages/@aura/database && pnpm prisma db push` - Push schema to database
 - `cd packages/@aura/database && pnpm prisma studio` - Open Prisma Studio
@@ -187,23 +192,24 @@ psql "postgresql://user:password@host:port/database"
 ### 4. Port already in use
 
 If a port is already in use, you can:
+
 - Stop the process using that port
 - Change the PORT in the service's `.env` file
 - Use `npx kill-port <port>` to kill the process
 
 ## Environment Variables Reference
 
-| Variable | Description | Required | Default |
-|----------|-------------|----------|---------|
-| `DATABASE_URL` | PostgreSQL connection string | Yes | - |
-| `JWT_SECRET` | Secret key for JWT tokens | Yes | - |
-| `JWT_EXPIRES_IN` | Access token expiration | No | 24h |
-| `JWT_REFRESH_EXPIRES_IN` | Refresh token expiration | No | 7d |
-| `NODE_ENV` | Environment mode | No | development |
-| `PORT` | Application port | No | 3006 |
-| `REDIS_URL` | Redis connection string | No | redis://localhost:6379 |
-| `RABBITMQ_HOST` | RabbitMQ host | No | localhost |
-| `ELASTICSEARCH_NODE` | Elasticsearch URL | No | http://localhost:9200 |
+| Variable                 | Description                  | Required | Default                |
+| ------------------------ | ---------------------------- | -------- | ---------------------- |
+| `DATABASE_URL`           | PostgreSQL connection string | Yes      | -                      |
+| `JWT_SECRET`             | Secret key for JWT tokens    | Yes      | -                      |
+| `JWT_EXPIRES_IN`         | Access token expiration      | No       | 24h                    |
+| `JWT_REFRESH_EXPIRES_IN` | Refresh token expiration     | No       | 7d                     |
+| `NODE_ENV`               | Environment mode             | No       | development            |
+| `PORT`                   | Application port             | No       | 3006                   |
+| `REDIS_URL`              | Redis connection string      | No       | redis://localhost:6379 |
+| `RABBITMQ_HOST`          | RabbitMQ host                | No       | localhost              |
+| `ELASTICSEARCH_NODE`     | Elasticsearch URL            | No       | http://localhost:9200  |
 
 ## Next Steps
 
@@ -224,6 +230,7 @@ If a port is already in use, you can:
 ## Support
 
 For issues or questions:
+
 - GitHub Issues: https://github.com/KreupAI-Technologies/KreupAI.AuraOS/issues
 - Email: support@kreupai.com
 - Documentation: [./docs/](./docs/)
