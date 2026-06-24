@@ -63,6 +63,10 @@ export enum Resource {
   TRAVEL = 'travel',
   BENEFITS = 'benefits',
   SYSTEM = 'system',
+  SHIFTS = 'shifts',
+  SHIFT_ASSIGNMENTS = 'shift-assignments',
+  SHIFT_ROSTERS = 'shift-rosters',
+  SHIFT_SWAPS = 'shift-swaps',
 }
 
 export enum Action {
@@ -105,6 +109,10 @@ export const RolePermissions: Record<string, Permission[]> = {
     'audit_logs:read',
     'system_settings:manage',
     'master_data:manage',
+    'shifts:manage',
+    'shift-assignments:manage',
+    'shift-rosters:manage',
+    'shift-swaps:manage',
   ],
 
   ADMIN: [
@@ -134,6 +142,10 @@ export const RolePermissions: Record<string, Permission[]> = {
     // System
     'audit_logs:read',
     'master_data:read',
+    'shifts:manage',
+    'shift-assignments:manage',
+    'shift-rosters:manage',
+    'shift-swaps:manage',
   ],
 
   HR_MANAGER: [
@@ -157,6 +169,10 @@ export const RolePermissions: Record<string, Permission[]> = {
 
     // Master data
     'master_data:read',
+    'shifts:manage',
+    'shift-assignments:manage',
+    'shift-rosters:manage',
+    'shift-swaps:manage',
   ],
 
   MANAGER: [
@@ -174,6 +190,11 @@ export const RolePermissions: Record<string, Permission[]> = {
     'gap_analysis:create',
     'development_plans:read',
     'development_plans:create',
+    'shifts:read',
+    'shift-assignments:read',
+    'shift-rosters:read',
+    'shift-swaps:read',
+    'shift-swaps:create',
   ],
 
   EMPLOYEE: [
@@ -185,6 +206,11 @@ export const RolePermissions: Record<string, Permission[]> = {
     'skill_assessments:create', // Self-assessment
     'gap_analysis:read', // Own gap analysis
     'development_plans:read', // Own development plans
+    'shifts:read',
+    'shift-assignments:read',
+    'shift-rosters:read',
+    'shift-swaps:read',
+    'shift-swaps:create',
   ],
 
   READONLY: [

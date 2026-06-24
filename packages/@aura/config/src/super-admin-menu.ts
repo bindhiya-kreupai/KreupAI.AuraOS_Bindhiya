@@ -80,6 +80,7 @@ export const superAdminMenu: MenuDefinition = {
                 'Overtime Management',
                 'Comp-off',
                 'Comp-off Management',
+                'Biometric Integration',
                 'Punch Rules',
                 'Rules',
                 'Time Rounding',
