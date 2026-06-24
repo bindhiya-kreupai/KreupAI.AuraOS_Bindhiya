@@ -51,6 +51,20 @@ const FALLBACK_METHODS: MethodStat[] = [
   { icon: Wifi, label: 'Wi-Fi Proximity', count: 0, color: 'cyan', desc: 'Office SSID Auto-Mark' },
 ];
 
+function inferMethod(c: any): string {
+  const type = (c.type || '').toUpperCase();
+  if (type.includes('CHECK_IN')) return 'Manual';
+  if (type.includes('CHECK_OUT')) return 'Manual';
+  if (type.includes('BREAK')) return 'Manual';
+  const dev = (c.deviceInfo?.deviceType || c.deviceType || '').toLowerCase();
+  if (dev.includes('zkteco') || dev.includes('biometric') || dev.includes('finger'))
+    return 'Biometric';
+  if (dev.includes('facial') || dev.includes('face') || dev.includes('camera')) return 'Facial';
+  if (dev.includes('gps') || dev.includes('mobile')) return 'GPS Mobile';
+  if (dev.includes('wifi')) return 'Wi-Fi Proximity';
+  return c.captureMethod || c.method || 'Manual';
+}
+
 function mapCaptureToEntry(c: any): FeedEntry {
   const t = new Date(c.timestamp || c.captureTime || c.createdAt);
   const name = c.employeeName || c.employee?.name || 'Unknown';
@@ -59,8 +73,11 @@ function mapCaptureToEntry(c: any): FeedEntry {
     name,
     time: t.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false }),
     rawTimestamp: t.toISOString(),
-    method: c.captureMethod || c.method || 'Manual',
-    location: c.location?.address || c.locationName || '—',
+    method: inferMethod(c),
+    location:
+      typeof c.location === 'object' && c.location
+        ? c.location.address || `${c.location.latitude},${c.location.longitude}` || '—'
+        : c.locationName || '—',
     status: c.status === 'LATE' ? 'late' : c.status === 'EARLY' ? 'early' : 'on-time',
     avatar: name
       .split(' ')
@@ -114,27 +131,20 @@ export default function LiveFeedPage() {
     try {
       const today = new Date().toISOString().split('T')[0];
       const result = await timeCapture.getCaptures({ date: today });
-      const captures = result?.items || result?.data || (Array.isArray(result) ? result : []);
+      const raw =
+        result?.data?.captures ||
+        result?.items ||
+        result?.data ||
+        (Array.isArray(result) ? result : []);
+      const captures = Array.isArray(raw) ? raw : [];
       if (captures.length > 0) {
         const entries = captures.slice(0, 50).map(mapCaptureToEntry);
         setFeed(entries);
 
-        const bio = captures.filter((c: any) => {
-          const m = (c.captureMethod || c.method || '').toLowerCase();
-          return m.includes('bio') || m.includes('finger');
-        }).length;
-        const facial = captures.filter((c: any) => {
-          const m = (c.captureMethod || c.method || '').toLowerCase();
-          return m.includes('facial') || m.includes('face');
-        }).length;
-        const gps = captures.filter((c: any) => {
-          const m = (c.captureMethod || c.method || '').toLowerCase();
-          return m.includes('gps') || m.includes('mobile');
-        }).length;
-        const wifi = captures.filter((c: any) => {
-          const m = (c.captureMethod || c.method || '').toLowerCase();
-          return m.includes('wifi') || m.includes('wi-fi');
-        }).length;
+        const bio = captures.filter((c: any) => inferMethod(c) === 'Biometric').length;
+        const facial = captures.filter((c: any) => inferMethod(c) === 'Facial').length;
+        const gps = captures.filter((c: any) => inferMethod(c) === 'GPS Mobile').length;
+        const wifi = captures.filter((c: any) => inferMethod(c) === 'Wi-Fi Proximity').length;
 
         setMethods([
           {

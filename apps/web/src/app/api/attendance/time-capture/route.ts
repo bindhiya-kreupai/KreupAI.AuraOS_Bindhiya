@@ -204,7 +204,9 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
     }
 
     const punchTime = new Date(timestamp);
-    const punchDate = new Date(punchTime.getFullYear(), punchTime.getMonth(), punchTime.getDate());
+    const punchDate = new Date(
+      Date.UTC(punchTime.getUTCFullYear(), punchTime.getUTCMonth(), punchTime.getUTCDate())
+    );
 
     const created = await prisma.attendancePunch.create({
       data: {
