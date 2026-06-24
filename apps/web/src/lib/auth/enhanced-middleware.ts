@@ -249,6 +249,9 @@ export function withEnhancedAuth<T = any>(
                       : request.method === 'POST'
                         ? 'CREATE'
                         : 'UPDATE',
+                  module:
+                    request.nextUrl.pathname.split('/').filter(Boolean).slice(1, 2).join('/') ||
+                    'api',
                   resourceType:
                     request.nextUrl.pathname.split('/').filter(Boolean).slice(2, 4).join('/') ||
                     'unknown',
