@@ -28,6 +28,7 @@ pnpm dev
 ```
 
 **Access Points:**
+
 - 🌐 App: http://localhost:3006
 - 🐰 RabbitMQ: http://localhost:15672 (auraos / auraos_rabbit_2024)
 - 🔍 Kibana: http://localhost:5601
@@ -47,15 +48,11 @@ Async processing infrastructure built on RabbitMQ.
 import { EmailQueueService } from '@aura/messaging';
 
 const emailService = new EmailQueueService();
-await emailService.queueWelcomeEmail(
-  'tenant-123',
-  'user@example.com',
-  'John Doe',
-  'temp-password'
-);
+await emailService.queueWelcomeEmail('tenant-123', 'user@example.com', 'John Doe', 'temp-password');
 ```
 
 **Features:**
+
 - 11 queues with Dead Letter Queue (DLQ) support
 - Email, SMS, push notifications
 - Document processing
@@ -80,11 +77,12 @@ await searchClient.connect();
 const results = await searchClient.search('aura_employees', {
   tenantId: 'tenant-123',
   query: 'john',
-  size: 10
+  size: 10,
 });
 ```
 
 **Features:**
+
 - 5 optimized indices (employees, documents, audit logs, leaves, jobs)
 - Autocomplete/suggestions
 - Sub-second search (100K+ records)
@@ -109,11 +107,12 @@ metrics.recordAPILatency('/api/employees', 'GET', 125, 200);
 // Track business events
 metrics.recordBusinessEvent('aura.payroll.processed', 1, {
   tenantId: 'tenant-123',
-  month: 'December'
+  month: 'December',
 });
 ```
 
 **Features:**
+
 - 10 business metrics
 - 6 critical alerts
 - Distributed tracing
@@ -151,6 +150,7 @@ await eventBus.publish(
 ```
 
 **Features:**
+
 - 18+ domain events
 - Pub/Sub pattern
 - Event store
@@ -174,13 +174,11 @@ const authUrl = googleProvider.getAuthorizationUrl('state-token');
 
 // MFA
 const mfaService = new MFAService();
-const { secret, qrCode } = await mfaService.generateTOTPSecret(
-  'user-123',
-  'john@example.com'
-);
+const { secret, qrCode } = await mfaService.generateTOTPSecret('user-123', 'john@example.com');
 ```
 
 **Providers:**
+
 - OAuth2: Google, Microsoft Azure AD, Okta
 - SAML: OneLogin, PingIdentity, ADFS
 - MFA: TOTP, SMS, Email, Backup codes
@@ -204,6 +202,7 @@ Services:
 ```
 
 **Management:**
+
 ```bash
 # Start all services
 ./scripts/init-infrastructure.sh
@@ -268,36 +267,42 @@ By Category:
 ## 🎯 What's New in Phase 3
 
 ### ✅ Message Queue Infrastructure
+
 - RabbitMQ cluster with 11 queues
 - Dead Letter Queue (DLQ) support
 - Email queue service with retry logic
 - Document and payroll processing queues
 
 ### ✅ Search Infrastructure
+
 - Elasticsearch 8.x with 5 indices
 - Full-text search across employees, documents
 - Autocomplete/suggestions
 - Sub-second response times
 
 ### ✅ APM & Monitoring
+
 - Datadog APM configuration
 - 10 custom business metrics
 - 6 critical alert rules
 - Distributed tracing
 
 ### ✅ Enterprise Authentication
+
 - OAuth2 (Google, Microsoft, Okta)
 - SAML 2.0 (OneLogin, PingIdentity, ADFS)
 - Multi-factor authentication (TOTP, SMS, Email)
 - Backup codes
 
 ### ✅ Event-Driven Architecture
+
 - Event bus (pub/sub)
 - 18+ domain events
 - Employee, leave, payroll events
 - Foundation for microservices
 
 ### ✅ Docker Infrastructure
+
 - One-command setup (~3 min)
 - 6 infrastructure services
 - Consistent dev environment
@@ -308,16 +313,19 @@ By Category:
 ## 📚 Documentation
 
 **Architecture & Planning:**
+
 - [Phase 3 Implementation Complete](docs/architecture/PHASE3-IMPLEMENTATION-COMPLETE.md) - Comprehensive implementation report
 - [Microservices Roadmap](docs/architecture/MICROSERVICES-ROADMAP.md) - Phase 4 planning
 - [Solution Architect GPS](docs/gps-solutions/01-SOLUTION-ARCHITECT-GPS.md) - Architecture strategy
 
 **Setup & Development:**
+
 - [Infrastructure Setup Guide](scripts/setup-infrastructure.md) - Detailed setup instructions
 - [API Documentation](docs/API-DOCUMENTATION.md) - API reference
 - [Development Guide](docs/DEVELOPMENT-GUIDE.md) - Development workflows
 
 **HR & Business:**
+
 - [HR Gap Analysis](docs/hr-gap-analysis/00-EXECUTIVE-SUMMARY.md) - Feature comparison
 - [GPS Overview](docs/gps-solutions/00-GPS-OVERVIEW.md) - Platform roadmap
 
@@ -332,7 +340,7 @@ Copy `.env.example` to `.env` and configure:
 DATABASE_URL="postgresql://auraos:auraos_dev_2024@localhost:5432/auraos_dev"
 
 # Redis
-REDIS_URL="redis://localhost:6379"
+REDIS_URL="redis://:auraos_redis_2024@localhost:6379"
 REDIS_PASSWORD="auraos_redis_2024"
 
 # RabbitMQ
@@ -377,22 +385,23 @@ curl http://localhost:9200/_cluster/health
 
 ## 📊 Success Metrics (Phase 3)
 
-| Metric | Target | Achieved | Status |
-|--------|--------|----------|--------|
-| Message Queue Setup | Complete | ✅ | Done |
-| Search Infrastructure | 5 indices | ✅ 5 indices | Done |
-| APM Metrics | 10+ metrics | ✅ 10 metrics | Done |
-| OAuth2 Providers | 3+ | ✅ 3 providers | Done |
-| SAML Support | Yes | ✅ Complete | Done |
-| Event System | 15+ events | ✅ 18 events | Done |
-| Docker Setup | <5 min | ✅ ~3 min | Done |
-| Platform Progress | 75% | ✅ 78% | Exceeded! |
+| Metric                | Target      | Achieved       | Status    |
+| --------------------- | ----------- | -------------- | --------- |
+| Message Queue Setup   | Complete    | ✅             | Done      |
+| Search Infrastructure | 5 indices   | ✅ 5 indices   | Done      |
+| APM Metrics           | 10+ metrics | ✅ 10 metrics  | Done      |
+| OAuth2 Providers      | 3+          | ✅ 3 providers | Done      |
+| SAML Support          | Yes         | ✅ Complete    | Done      |
+| Event System          | 15+ events  | ✅ 18 events   | Done      |
+| Docker Setup          | <5 min      | ✅ ~3 min      | Done      |
+| Platform Progress     | 75%         | ✅ 78%         | Exceeded! |
 
 ---
 
 ## 🎉 Next Steps: Phase 4 (Q1 2025)
 
 **Microservices Extraction:**
+
 1. Auth Service (Weeks 1-2)
 2. Employee Service (Weeks 3-5)
 3. Notification Service (Weeks 6-7)
@@ -400,11 +409,13 @@ curl http://localhost:9200/_cluster/health
 5. Payroll Service (Weeks 10-12)
 
 **GraphQL Layer:**
+
 - Apollo Server setup
 - Mobile-optimized queries
 - Real-time subscriptions
 
 **Multi-Region Deployment:**
+
 - Kubernetes clusters
 - Service mesh (Istio)
 - Global load balancing
@@ -414,6 +425,7 @@ curl http://localhost:9200/_cluster/health
 ## 💡 Tips & Tricks
 
 **Fast Development:**
+
 ```bash
 # Watch mode for packages
 cd packages/@aura/messaging
@@ -430,6 +442,7 @@ open http://localhost:5601
 ```
 
 **Debugging:**
+
 ```bash
 # View RabbitMQ queues
 curl -u auraos:auraos_rabbit_2024 http://localhost:15672/api/queues/%2Fauraos
@@ -446,6 +459,7 @@ docker exec -it auraos-redis redis-cli -a auraos_redis_2024 KEYS '*'
 ## 🆘 Troubleshooting
 
 **Port Conflicts:**
+
 ```bash
 # Find process using port
 lsof -i :5432
@@ -457,6 +471,7 @@ kill -9 <PID>
 ```
 
 **Docker Issues:**
+
 ```bash
 # Clean slate
 docker-compose -f docker-compose.infrastructure.yml down -v
@@ -466,6 +481,7 @@ docker-compose -f docker-compose.infrastructure.yml down -v
 ```
 
 **Service Not Starting:**
+
 ```bash
 # Check logs
 docker logs auraos-postgres
@@ -485,6 +501,7 @@ docker-compose -f docker-compose.infrastructure.yml restart <service>
 **Next Review**: January 9, 2025
 
 **Support:**
+
 - Engineering: engineering@kreupai.com
 - Documentation: [docs/](docs/)
 - Issues: GitHub Issues
