@@ -19,16 +19,16 @@
 
 ## Technology Stack
 
-| Layer | Technology |
-|-------|------------|
-| **Frontend** | Next.js 14.1, React 18, Tailwind CSS |
-| **Mobile** | React Native, Expo 50 |
-| **Backend** | Node.js, Fastify (microservices) |
-| **Database** | PostgreSQL with Prisma ORM |
-| **Cache** | Redis |
-| **Search** | Elasticsearch |
-| **Queue** | RabbitMQ |
-| **Monitoring** | Datadog APM, Sentry |
+| Layer          | Technology                           |
+| -------------- | ------------------------------------ |
+| **Frontend**   | Next.js 14.1, React 18, Tailwind CSS |
+| **Mobile**     | React Native, Expo 50                |
+| **Backend**    | Node.js, Fastify (microservices)     |
+| **Database**   | PostgreSQL with Prisma ORM           |
+| **Cache**      | Redis                                |
+| **Search**     | Elasticsearch                        |
+| **Queue**      | RabbitMQ                             |
+| **Monitoring** | Datadog APM, Sentry                  |
 
 ## Project Structure
 
@@ -94,13 +94,13 @@ For detailed setup instructions, see [QUICK-START.md](./QUICK-START.md).
 
 ## Documentation
 
-| Document | Description |
-|----------|-------------|
-| [QUICK-START.md](./QUICK-START.md) | Step-by-step setup guide |
-| [CONTRIBUTING.md](./CONTRIBUTING.md) | Contribution guidelines |
-| [docs/API-DOCUMENTATION.md](./docs/API-DOCUMENTATION.md) | API reference |
-| [docs/BACKEND_ARCHITECTURE.md](./docs/BACKEND_ARCHITECTURE.md) | Backend architecture |
-| [docs/AUTHENTICATION.md](./docs/AUTHENTICATION.md) | Authentication system |
+| Document                                                       | Description              |
+| -------------------------------------------------------------- | ------------------------ |
+| [QUICK-START.md](./QUICK-START.md)                             | Step-by-step setup guide |
+| [CONTRIBUTING.md](./CONTRIBUTING.md)                           | Contribution guidelines  |
+| [docs/API-DOCUMENTATION.md](./docs/API-DOCUMENTATION.md)       | API reference            |
+| [docs/BACKEND_ARCHITECTURE.md](./docs/BACKEND_ARCHITECTURE.md) | Backend architecture     |
+| [docs/AUTHENTICATION.md](./docs/AUTHENTICATION.md)             | Authentication system    |
 
 ## Available Scripts
 
@@ -132,18 +132,21 @@ pnpm prisma studio    # Open Prisma Studio
 ## Core Modules
 
 ### HR Operations
+
 - **Core HR** - Employee profiles, organization structure
 - **Attendance** - Clock in/out, shift management
 - **Leave Management** - Leave policies, approvals, balances
 - **Payroll** - Salary processing, tax calculations
 
 ### Talent Management
+
 - **Recruitment** - Job postings, applicant tracking
 - **Onboarding** - New hire workflows
 - **Performance** - Reviews, goals, feedback
 - **Learning & Development** - Training management
 
 ### Administration
+
 - **User Management** - Role-based access control
 - **Audit Logging** - Comprehensive audit trails
 - **Analytics** - Dashboards and reports
@@ -160,7 +163,9 @@ AuraOS implements enterprise-grade security:
 - **Audit Logging**: Complete audit trails
 - **Tenant Isolation**: Data segregation per tenant
 
-## Contributing
+## Contributingcd "C:\Users\hp\OneDrive\Documents\kreupAI auraOS\KreupAI.AuraOS"
+
+pnpm install
 
 We welcome contributions! Please read our [Contributing Guidelines](./CONTRIBUTING.md) before submitting a pull request.
 
