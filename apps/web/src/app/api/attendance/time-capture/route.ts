@@ -204,7 +204,9 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
     }
 
     const punchTime = new Date(timestamp);
-    const punchDate = new Date(punchTime.getFullYear(), punchTime.getMonth(), punchTime.getDate());
+    const punchDate = new Date(
+      Date.UTC(punchTime.getUTCFullYear(), punchTime.getUTCMonth(), punchTime.getUTCDate())
+    );
 
     const created = await prisma.attendancePunch.create({
       data: {
@@ -255,10 +257,16 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
       }
     }
 
-    const employee = await prisma.employee.findFirst({
-      where: { id: employeeId, company: { tenantId: user.tenantId } },
+    let employee = await prisma.employee.findUnique({
+      where: { id: employeeId },
       select: { firstName: true, lastName: true },
     });
+    if (!employee) {
+      employee = await prisma.employee.findFirst({
+        where: { userId: employeeId, company: { tenantId: user.tenantId } },
+        select: { firstName: true, lastName: true },
+      });
+    }
 
     const newCapture = mapCapture(
       created,
@@ -271,9 +279,12 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
         userId: user.id || user.userId,
         module: 'attendance',
         action: 'CREATE',
+        module: 'attendance',
+        resourceType: 'time-capture',
         entityType: 'Attendance - Time Capture',
-        metadata: { description: `Captured time: ${data.type} at ${timestamp}` } as any,
+        details: `Captured time: ${data.type} at ${timestamp}`,
         ipAddress,
+        severity: 'LOW',
       },
     });
 
@@ -285,8 +296,11 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
         { status: 400 }
       );
     }
-    logger.error({ error }, '');
-    return NextResponse.json({ success: false, error: 'Failed to capture time' }, { status: 500 });
+    logger.error({ error, message: error?.message, stack: error?.stack }, 'Time capture failed');
+    return NextResponse.json(
+      { success: false, error: `Failed to capture time: ${error?.message || 'Unknown error'}` },
+      { status: 500 }
+    );
   }
 });
 
