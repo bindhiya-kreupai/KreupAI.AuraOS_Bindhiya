@@ -42,6 +42,8 @@ interface PunchRulesConfig {
 
 export default function PunchRulesPage() {
   const [config, setConfig] = useState<PunchRulesConfig>(DEFAULTS);
+  const [ruleId, setRuleId] = useState<string | null>(null);
+  const [ruleVersion, setRuleVersion] = useState<number>(1);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [status, setStatus] = useState<{ kind: 'success' | 'error'; text: string } | null>(null);
@@ -61,12 +63,23 @@ export default function PunchRulesPage() {
         /* ignore */
       }
       const result: any = await PunchRulesService.getPunchRules().catch(() => null);
-      const fromServer: Partial<PunchRulesConfig> = result
+      console.log('PUNCH RULES RESULT', result);
+      if (result) {
+        setRuleId(result.id);
+        setRuleVersion(result.version);
+      }
+
+      const fromServer: Partial<PunchRulesConfig> = result?.config
         ? {
-            lateInTolerance: result.gracePeriodMinutes ?? undefined,
-            autoLogoutTime: result.autoCheckOutAfterHours
-              ? `${String(result.autoCheckOutAfterHours).padStart(2, '0')}:00`
-              : undefined,
+            lateInTolerance: result.config.lateInTolerance,
+            earlyOutTolerance: result.config.earlyOutTolerance,
+            maxLogins: result.config.maxLogins,
+            deductLeave: result.config.deductLeave,
+            autoLogoutTime: result.config.autoLogoutTime,
+            sessionTimeout: result.config.sessionTimeout,
+            markAbsentBy: result.config.markAbsentBy,
+            crossDayLogic: result.config.crossDayLogic,
+            nightShiftAllowance: result.config.nightShiftAllowance,
           }
         : {};
       setConfig({ ...DEFAULTS, ...local, ...fromServer });
@@ -86,7 +99,28 @@ export default function PunchRulesPage() {
       } catch {
         /* ignore */
       }
-      await PunchRulesService.updatePunchRules(config).catch(() => null);
+      await PunchRulesService.updatePunchRules(ruleId!, ruleVersion, {
+        name: 'Default Office Rule',
+        description: 'Standard office punch policy',
+        config: {
+          punchType: 'MIXED',
+          allowedMethods: ['WEB', 'MOBILE', 'BIOMETRIC'],
+          requirePhoto: false,
+          requireGeoLocation: false,
+          maxPunchesPerDay: config.maxLogins,
+
+          lateInTolerance: config.lateInTolerance,
+          earlyOutTolerance: config.earlyOutTolerance,
+          maxLogins: config.maxLogins,
+          deductLeave: config.deductLeave,
+          autoLogoutTime: config.autoLogoutTime,
+          sessionTimeout: config.sessionTimeout,
+          markAbsentBy: config.markAbsentBy,
+          crossDayLogic: config.crossDayLogic,
+          nightShiftAllowance: config.nightShiftAllowance,
+        },
+        isActive: true,
+      });
       setStatus({ kind: 'success', text: 'Punch rules saved.' });
     } catch (error: any) {
       console.error('Error:', error);
