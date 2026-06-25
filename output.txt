@@ -1,0 +1,79 @@
+[WARN] The "pnpm" field in package.json is no longer read by pnpm. The following keys were ignored: "pnpm.overrides". See https://pnpm.io/settings for the new home of each setting.
+
+> kreupai-hcm@1.0.0 dev C:\Users\devadharshini\OneDrive\Desktop\webpage\website\KreupAI.AuraOS
+> turbo run dev --concurrency=30
+
+• turbo 2.9.16
+
+   • Packages in scope: @aura/ai-service, @aura/analytics-service, @aura/auth, @aura/cache, @aura/cloud, @aura/config, @aura/database, @aura/events, @aura/integration-service, @aura/learning-runtime, @aura/messaging, @aura/monitoring, @aura/resilience, @aura/scheduler, @aura/scheduling-service, @aura/search, @aura/secrets, @aura/security, @aura/service-mesh, @aura/shared-services, @aura/testing, @aura/tracing, @aura/types, @aura/ui, @aura/workflow-service, @auraos/auth-service, @auraos/document-service, @auraos/employee-service, @auraos/mobile, @auraos/notification-service, @auraos/payroll-service, web
+   • Running dev in 32 packages
+   • Remote caching disabled
+
+@auraos/notification-service:dev: cache bypass, force executing 4bd1ca9f55346fff
+@aura/security:dev: cache bypass, force executing c915cdd2bbbe2cab
+@aura/monitoring:dev: cache bypass, force executing e6b68c6295c53e35
+@aura/learning-runtime:dev: cache bypass, force executing b9f324f14308c163
+@aura/integration-service:dev: cache bypass, force executing 35b999f69eec5704
+@auraos/auth-service:dev: cache bypass, force executing 1156281c76148ab5
+@auraos/payroll-service:dev: cache bypass, force executing 532099ec6c032b05
+@aura/tracing:dev: cache bypass, force executing c067a2b3e6912106
+@auraos/employee-service:dev: cache bypass, force executing 504b2128f90ff31e
+@aura/auth:dev: cache bypass, force executing 94209a62f1886d0e
+@aura/cache:dev: cache bypass, force executing 5b99584adaf4ba5f
+@aura/search:dev: cache bypass, force executing 524b30ff63b601f2
+@aura/secrets:dev: cache bypass, force executing b0666dfc7275098d
+@aura/events:dev: cache bypass, force executing ae93af684c6a88cd
+@aura/cloud:dev: cache bypass, force executing 36b9e6f84b1a340d
+@aura/testing:dev: cache bypass, force executing ce4560145e29920d
+@aura/messaging:dev: cache bypass, force executing 75004253db5bb7f8
+@aura/scheduler:dev: cache bypass, force executing 9a452df572c182e4
+@aura/resilience:dev: cache bypass, force executing 20668a05ab8d481b
+@aura/scheduling-service:dev: cache bypass, force executing 5b7aa4f04f1c8587
+@aura/workflow-service:dev: cache bypass, force executing 6c0f2d98e8c6cbef
+@aura/analytics-service:dev: cache bypass, force executing 552b87f53d16838c
+web:dev: cache bypass, force executing b4d19551c27e60c6
+@aura/ai-service:dev: cache bypass, force executing 0dd96b869534da2d
+@aura/shared-services:dev: cache bypass, force executing 88212fb4d17e54ad
+@aura/service-mesh:dev: cache bypass, force executing 9f94adbc4fe2859b
+@auraos/document-service:dev: cache bypass, force executing e23d39697303af52
+@auraos/notification-service:dev: 
+@auraos/notification-service:dev: > @auraos/notification-service@1.0.0 dev C:\Users\devadharshini\OneDrive\Desktop\webpage\website\KreupAI.AuraOS\services\notification-service
+@auraos/notification-service:dev: > tsx watch --env-file=../../.env src/index.ts
+@auraos/notification-service:dev: 
+@aura/security:dev: 
+@aura/security:dev: > @aura/security@1.0.0 dev C:\Users\devadharshini\OneDrive\Desktop\webpage\website\KreupAI.AuraOS\packages\@aura\security
+@aura/security:dev: > tsup --watch
+@aura/security:dev: 
+@aura/monitoring:dev: 
+@aura/monitoring:dev: > @aura/monitoring@1.0.0 dev C:\Users\devadharshini\OneDrive\Desktop\webpage\website\KreupAI.AuraOS\packages\@aura\monitoring
+@aura/monitoring:dev: > tsup --watch
+@aura/monitoring:dev: 
+@aura/learning-runtime:dev: 
+@aura/learning-runtime:dev: > @aura/learning-runtime@1.0.0 dev C:\Users\devadharshini\OneDrive\Desktop\webpage\website\KreupAI.AuraOS\packages\@aura\learning-runtime
+@aura/learning-runtime:dev: > tsup --watch
+@aura/learning-runtime:dev: 
+@aura/integration-service:dev: 
+@aura/integration-service:dev: > @aura/integration-service@0.1.0 dev C:\Users\devadharshini\OneDrive\Desktop\webpage\website\KreupAI.AuraOS\services\integration-service
+@aura/integration-service:dev: > tsx watch --env-file=../../.env src/index.ts
+@aura/integration-service:dev: 
+Shutting down Turborepo tasks...
+@auraos/payroll-service:dev: 
+@auraos/payroll-service:dev: > @auraos/payroll-service@1.0.0 dev C:\Users\devadharshini\OneDrive\Desktop\webpage\website\KreupAI.AuraOS\services\payroll-service
+@auraos/payroll-service:dev: > tsx watch --env-file=../../.env src/index.ts
+@auraos/payroll-service:dev: 
+@aura/shared-services:dev: Terminate batch job (Y/N)? 
+@aura/scheduling-service:dev: ^C
+@aura/messaging:dev: ^C
+@aura/auth:dev: ^C
+@aura/workflow-service:dev: ^C
+@aura/cache:dev: ^C
+@aura/search:dev: ^C
+Terminate batch job (Y/N)? @aura/shared-services:dev: ^C
+@aura/ai-service:dev: ^C
+
+ Tasks:    0 successful, 27 total
+Cached:    0 cached, 27 total
+  Time:    3.327s 
+
+
+^C
