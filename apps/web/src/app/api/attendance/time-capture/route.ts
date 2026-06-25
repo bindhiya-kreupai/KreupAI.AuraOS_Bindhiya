@@ -120,9 +120,9 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
     }
 
     if (date) {
-      const start = new Date(date);
-      const end = new Date(date);
-      end.setDate(end.getDate() + 1);
+      const [y, m, d] = date.split('-').map(Number);
+      const start = new Date(y, m - 1, d);
+      const end = new Date(y, m - 1, d + 1);
       where.punchDate = { gte: start, lt: end };
     }
 
@@ -234,7 +234,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
 
       if (existingRecord) {
         await prisma.attendanceRecord.update({
-          where: { id: existingRecord.id, company: { tenantId: user.tenantId } },
+          where: { id: existingRecord.id, tenantId: user.tenantId },
           data: {
             ...(data.type === 'CHECK_IN' && !existingRecord.clockIn ? { clockIn: punchTime } : {}),
             ...(data.type === 'CHECK_OUT' ? { clockOut: punchTime } : {}),
@@ -255,7 +255,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
       }
     }
 
-    const employee = await prisma.employee.findUnique({
+    const employee = await prisma.employee.findFirst({
       where: { id: employeeId, company: { tenantId: user.tenantId } },
       select: { firstName: true, lastName: true },
     });
@@ -269,6 +269,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
       data: {
         tenantId: user.tenantId,
         userId: user.id || user.userId,
+        module: 'attendance',
         action: 'CREATE',
         entityType: 'Attendance - Time Capture',
         metadata: { description: `Captured time: ${data.type} at ${timestamp}` } as any,

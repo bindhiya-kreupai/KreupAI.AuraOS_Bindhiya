@@ -1,1 +1,1 @@
-export { default } from '../../../dashboard/attendance/page';
+export { default } from '../../../dashboard/attendance/live-tracking/page';
