@@ -25,11 +25,8 @@ model Tenant {
   wpsConfigurations WPSConfiguration[]
   wpsRecords        WPSRecord[]
   wpsSubmissions    WPSSubmission[]
-<<<<<<< HEAD
-=======
   biometricDevices  BiometricDevice[]
   ramadanConfig     RamadanAutoSwitchConfig?
->>>>>>> 8492df9bd42d74db150a3648a1db92b18beba01c
 
   @@map("aura_tenant")
 }
@@ -838,8 +835,6 @@ model AttendancePunch {
   @@map("aura_attendance_punch")
 }
 
-<<<<<<< HEAD
-=======
 model BiometricDevice {
   id                String    @id @default(uuid())
   tenantId          String
@@ -890,7 +885,6 @@ model RamadanAutoSwitchConfig {
   @@map("aura_ramadan_auto_switch_config")
 }
 
->>>>>>> 8492df9bd42d74db150a3648a1db92b18beba01c
 model AttendanceRecord {
   id               String    @id @default(uuid())
   tenantId         String
@@ -920,10 +914,7 @@ model AttendanceRecord {
   createdBy        String?
   updatedBy        String?
 
-<<<<<<< HEAD
-=======
   @@unique([tenantId, employeeId, date], map: "AttendanceRecord_tenant_employee_date_uniq")
->>>>>>> 8492df9bd42d74db150a3648a1db92b18beba01c
   @@index([date], map: "AttendanceRecord_date_idx")
   @@index([employeeId], map: "AttendanceRecord_employeeId_idx")
   @@index([status], map: "AttendanceRecord_status_idx")
