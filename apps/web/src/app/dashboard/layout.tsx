@@ -50,6 +50,8 @@ const PREVIEW_MODULES = new Set<string>([
   'retail',
 ]);
 
+import { ThemeProvider, useTheme } from '@/stores/theme-store';
+
 interface FavoriteItem {
   path: string;
   title: string;
@@ -57,12 +59,14 @@ interface FavoriteItem {
   icon?: string;
 }
 
-export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
   const pathname = usePathname() || '';
   const moduleSegment = pathname.split('/').filter(Boolean)[1];
   const isPreviewModule = !!moduleSegment && PREVIEW_MODULES.has(moduleSegment);
+
+  const { isDark, toggleTheme } = useTheme();
 
   const handleToggleFavorite = useCallback((item: FavoriteItem) => {
     setFavorites((prev) => {
@@ -93,7 +97,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top Navigation */}
-        <TopNav />
+        <TopNav isDark={isDark} onThemeToggle={toggleTheme} />
 
         {/* Page Content */}
         <main className="flex-1 overflow-y-auto p-2 scroll-smooth pr-16">
@@ -118,5 +122,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       {/* Right Panel (Action Hub) */}
       <RightPanel />
     </div>
+  );
+}
+
+export default function DashboardLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <ThemeProvider>
+      <DashboardLayoutInner>{children}</DashboardLayoutInner>
+    </ThemeProvider>
   );
 }

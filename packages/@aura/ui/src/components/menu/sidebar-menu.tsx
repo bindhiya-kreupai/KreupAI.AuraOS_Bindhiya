@@ -10,7 +10,7 @@
 
 import React, { useState, useMemo, useCallback } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { ChevronDown, ChevronRight, Search, X, PanelLeftClose, PanelLeft, Star } from 'lucide-react';
 import { cn } from '../../utils';
@@ -43,6 +43,7 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
   onNavigate,
 }) => {
   const pathname = usePathname();
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedModule, setExpandedModule] = useState<string | null>(null);
   const [expandedSubModule, setExpandedSubModule] = useState<string | null>(null);
@@ -205,7 +206,16 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
                     ? 'bg-brand-red text-white shadow-lg font-bold scale-[1.02] z-10'
                     : 'text-white hover:bg-white/10'
                 )}
-                onClick={() => !collapsed && toggleModule(module.code)}
+                onClick={() => {
+                  const path = getModulePath(module);
+                  if (path) {
+                    router.push(path);
+                    onNavigate?.({ path, title: module.label, module: module.label });
+                  }
+                  if (!collapsed) {
+                    toggleModule(module.code);
+                  }
+                }}
               >
                 <div
                   className={cn(
