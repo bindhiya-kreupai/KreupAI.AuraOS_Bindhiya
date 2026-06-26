@@ -32,21 +32,32 @@ model Tenant {
 }
 
 model Company {
-  id          String       @id(map: "Company_pkey") @default(uuid())
-  tenantId    String
-  code        String
-  name        String
-  taxId       String?
-  isDeleted   Boolean      @default(false)
-  deletedAt   DateTime?
-  createdBy   String?
-  updatedBy   String?
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @default(now())
-  tenant      Tenant       @relation(fields: [tenantId], references: [id], map: "Company_tenantId_fkey")
-  departments Department[]
-  employees   Employee[]
-  locations   Location[]
+  id                 String       @id(map: "Company_pkey") @default(uuid())
+  tenantId           String
+  code               String
+  name               String
+  email              String?
+  phoneNumber        String?
+  address            String?
+  city               String?
+  state              String?
+  postalCode         String?
+  country            String?
+  industry           String?
+  website            String?
+  taxId              String?
+  registrationNumber String?
+  status             String       @default("Active")
+  isDeleted          Boolean      @default(false)
+  deletedAt          DateTime?
+  createdBy          String?
+  updatedBy          String?
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @default(now()) @updatedAt
+  tenant             Tenant       @relation(fields: [tenantId], references: [id], map: "Company_tenantId_fkey")
+  departments        Department[]
+  employees          Employee[]
+  locations          Location[]
 
   @@unique([tenantId, code], map: "Company_tenantId_code_key")
   @@map("aura_company")
@@ -83,7 +94,7 @@ model CostCenter {
   code        String       @unique(map: "CostCenter_code_key")
   name        String
   createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @default(now())
+  updatedAt   DateTime     @default(now()) @updatedAt
   createdBy   String?
   updatedBy   String?
   deletedAt   DateTime?
@@ -99,7 +110,7 @@ model Country {
   name      String
   currency  String
   createdAt DateTime  @default(now())
-  updatedAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
   createdBy String?
   updatedBy String?
   deletedAt DateTime?
@@ -6361,6 +6372,28 @@ model TenantSetting {
   @@index([tenantId, module])
   @@map("aura_tenant_setting")
 }
+model TenantOvertimePolicy {
+  id                     String    @id @default(uuid())
+  tenantId               String
+  calculationBase        String
+  minimumDurationMinutes Int
+  monthlyCapHours        Int
+  normalMultiplier       Decimal
+  weekendMultiplier      Decimal
+  holidayMultiplier      Decimal
+  payoutMode             String
+  effectiveFrom          DateTime
+  effectiveTo            DateTime?
+  createdBy              String?
+  updatedBy              String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+  deletedAt              DateTime?
+  isDeleted              Boolean   @default(false)
+
+  @@unique([tenantId, effectiveFrom])
+  @@map("aura_tenant_overtime_policy")
+}
 
 model PolicyDocument {
   id                       String                  @id @default(uuid())
@@ -12059,6 +12092,11 @@ enum AuditAction {
   REJECT_SHIFT_SWAP_REQUEST
   CANCEL_INTERVIEW
   REQUEST_DOCUMENT
+  COMPANY_CREATED
+  COMPANY_UPDATED
+  COMPANY_DELETED
+  COMPANY_ACTIVATED
+  COMPANY_SUSPENDED
   REQUEST_INFO
   MFA_SETUP_INITIATED
   MFA_VALIDATION_FAILED
