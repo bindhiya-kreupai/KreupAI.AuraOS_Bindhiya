@@ -6362,24 +6362,25 @@ model TenantSetting {
   @@map("aura_tenant_setting")
 }
 model TenantOvertimePolicy {
-  id                String    @id @default(uuid())
-  tenantId          String
-  calculationBase   String
-  minimumDuration   Int
-  monthlyCap        Int
-  normalMultiplier  Float
-  weekendMultiplier Float
-  holidayMultiplier Float
-  payoutMode        String
-  createdBy         String?
-  updatedBy         String?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  deletedAt         DateTime?
-  isDeleted         Boolean   @default(false)
+  id                     String    @id @default(uuid())
+  tenantId               String
+  calculationBase        String
+  minimumDurationMinutes Int
+  monthlyCapHours        Int
+  normalMultiplier       Decimal
+  weekendMultiplier      Decimal
+  holidayMultiplier      Decimal
+  payoutMode             String
+  effectiveFrom          DateTime
+  effectiveTo            DateTime?
+  createdBy              String?
+  updatedBy              String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+  deletedAt              DateTime?
+  isDeleted              Boolean   @default(false)
 
-  @@unique([tenantId])
-  @@index([tenantId])
+  @@unique([tenantId, effectiveFrom])
   @@map("aura_tenant_overtime_policy")
 }
 
