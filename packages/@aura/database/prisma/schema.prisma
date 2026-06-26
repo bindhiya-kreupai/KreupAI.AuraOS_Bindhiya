@@ -53,7 +53,7 @@ model Company {
   createdBy          String?
   updatedBy          String?
   createdAt          DateTime     @default(now())
-  updatedAt          DateTime     @default(now())
+  updatedAt          DateTime     @default(now()) @updatedAt
   tenant             Tenant       @relation(fields: [tenantId], references: [id], map: "Company_tenantId_fkey")
   departments        Department[]
   employees          Employee[]
@@ -94,7 +94,7 @@ model CostCenter {
   code        String       @unique(map: "CostCenter_code_key")
   name        String
   createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @default(now())
+  updatedAt   DateTime     @default(now()) @updatedAt
   createdBy   String?
   updatedBy   String?
   deletedAt   DateTime?
@@ -110,7 +110,7 @@ model Country {
   name      String
   currency  String
   createdAt DateTime  @default(now())
-  updatedAt DateTime  @default(now())
+  updatedAt DateTime  @default(now()) @updatedAt
   createdBy String?
   updatedBy String?
   deletedAt DateTime?
