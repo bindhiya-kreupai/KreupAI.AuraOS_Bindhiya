@@ -6361,6 +6361,28 @@ model TenantSetting {
   @@index([tenantId, module])
   @@map("aura_tenant_setting")
 }
+model TenantOvertimePolicy {
+  id                     String    @id @default(uuid())
+  tenantId               String
+  calculationBase        String
+  minimumDurationMinutes Int
+  monthlyCapHours        Int
+  normalMultiplier       Decimal
+  weekendMultiplier      Decimal
+  holidayMultiplier      Decimal
+  payoutMode             String
+  effectiveFrom          DateTime
+  effectiveTo            DateTime?
+  createdBy              String?
+  updatedBy              String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+  deletedAt              DateTime?
+  isDeleted              Boolean   @default(false)
+
+  @@unique([tenantId, effectiveFrom])
+  @@map("aura_tenant_overtime_policy")
+}
 
 model PolicyDocument {
   id                       String                  @id @default(uuid())
