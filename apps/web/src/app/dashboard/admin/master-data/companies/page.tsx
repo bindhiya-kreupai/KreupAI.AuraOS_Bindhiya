@@ -43,10 +43,10 @@ export default function CompaniesPage() {
       const response = await fetch(url);
       if (response.ok) {
         const json = await response.json();
-        if (json.companies) {
-          setData(json.companies);
-        } else if (Array.isArray(json)) {
-          setData(json);
+        const records =
+          json.data?.companies ?? json.companies ?? (Array.isArray(json) ? json : null);
+        if (records) {
+          setData(records);
         }
       }
     } catch (error: any) {
@@ -72,7 +72,7 @@ export default function CompaniesPage() {
       } else {
         const errorData = await response.json();
         console.error('Failed to save company:', errorData);
-        alert('Failed to save company');
+        alert(`Failed to save company: ${errorData.error || errorData.message || 'Unknown error'}`);
       }
     } catch (error: any) {
       console.error('Error saving company:', error);
