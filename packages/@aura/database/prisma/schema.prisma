@@ -32,21 +32,32 @@ model Tenant {
 }
 
 model Company {
-  id          String       @id(map: "Company_pkey") @default(uuid())
-  tenantId    String
-  code        String
-  name        String
-  taxId       String?
-  isDeleted   Boolean      @default(false)
-  deletedAt   DateTime?
-  createdBy   String?
-  updatedBy   String?
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @default(now())
-  tenant      Tenant       @relation(fields: [tenantId], references: [id], map: "Company_tenantId_fkey")
-  departments Department[]
-  employees   Employee[]
-  locations   Location[]
+  id                 String       @id(map: "Company_pkey") @default(uuid())
+  tenantId           String
+  code               String
+  name               String
+  email              String?
+  phoneNumber        String?
+  address            String?
+  city               String?
+  state              String?
+  postalCode         String?
+  country            String?
+  industry           String?
+  website            String?
+  taxId              String?
+  registrationNumber String?
+  status             String       @default("Active")
+  isDeleted          Boolean      @default(false)
+  deletedAt          DateTime?
+  createdBy          String?
+  updatedBy          String?
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @default(now())
+  tenant             Tenant       @relation(fields: [tenantId], references: [id], map: "Company_tenantId_fkey")
+  departments        Department[]
+  employees          Employee[]
+  locations          Location[]
 
   @@unique([tenantId, code], map: "Company_tenantId_code_key")
   @@map("aura_company")
@@ -12059,6 +12070,11 @@ enum AuditAction {
   REJECT_SHIFT_SWAP_REQUEST
   CANCEL_INTERVIEW
   REQUEST_DOCUMENT
+  COMPANY_CREATED
+  COMPANY_UPDATED
+  COMPANY_DELETED
+  COMPANY_ACTIVATED
+  COMPANY_SUSPENDED
   REQUEST_INFO
   MFA_SETUP_INITIATED
   MFA_VALIDATION_FAILED
