@@ -95,10 +95,7 @@
 
 import type { NextRequest } from 'next/server';
 import { createProtectedRoute, getIpAddress } from '@/lib/api/route-wrapper';
-import {
-  createCompanySchema,
-  listCompaniesQuerySchema,
-} from '@/lib/validation/schemas';
+import { createCompanySchema, listCompaniesQuerySchema } from '@/lib/validation/schemas';
 import companyService from '@/services/company.service';
 import { ConflictError, BusinessRuleError } from '@/lib/errors';
 
@@ -107,19 +104,13 @@ import { ConflictError, BusinessRuleError } from '@/lib/errors';
  * Create a new company
  */
 export const POST = createProtectedRoute(
-  async (request: NextRequest, { auth }) => {
-    const body = await request.json();
-
+  async (request: NextRequest, { auth, body }) => {
     const input = {
       ...body,
       tenantId: auth!.tenantId,
     };
 
-    const result = await companyService.createCompany(
-      input,
-      auth!.userId,
-      getIpAddress(request)
-    );
+    const result = await companyService.createCompany(input, auth!.userId, getIpAddress(request));
 
     if (!result.success) {
       if (result.error?.includes('already exists')) {
