@@ -441,6 +441,8 @@ export interface AttendanceSettings {
   workingDaysPerWeek: number;
   weekendDays: number[];
   standardWorkingHours: number;
+  gracePeriodMinutes: number;
+  earlyExitBufferMinutes: number;
   enableBiometric: boolean;
   enableGeofencing: boolean;
   enableMobileCheckIn: boolean;
