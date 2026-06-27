@@ -38,15 +38,16 @@ export default function CompaniesPage() {
     try {
       const params = new URLSearchParams();
       if (search) params.set('search', search);
+      params.set('page', '1');
+      params.set('limit', '100');
+      params.set('status', 'Active');
       const qs = params.toString();
-      const url = qs ? `/api/companies?${qs}` : '/api/companies';
+      const url = qs ? `/api/master-data/companies?${qs}` : '/api/master-data/companies';
       const response = await fetch(url);
       if (response.ok) {
         const json = await response.json();
-        const records =
-          json.data?.companies ?? json.companies ?? (Array.isArray(json) ? json : null);
-        if (records) {
-          setData(records);
+        if (json.success && Array.isArray(json.data)) {
+          setData(json.data);
         }
       }
     } catch (error: any) {
@@ -61,11 +62,14 @@ export default function CompaniesPage() {
   const handleSave = async (record: Partial<Company>) => {
     try {
       const isUpdate = !!record.id;
-      const response = await fetch(isUpdate ? `/api/companies/${record.id}` : '/api/companies', {
-        method: isUpdate ? 'PATCH' : 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(record),
-      });
+      const response = await fetch(
+        isUpdate ? `/api/master-data/companies/${record.id}` : '/api/master-data/companies',
+        {
+          method: isUpdate ? 'PUT' : 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(record),
+        }
+      );
 
       if (response.ok) {
         fetchCompanies();
@@ -83,7 +87,7 @@ export default function CompaniesPage() {
   const handleDelete = async (record: Company) => {
     if (confirm(`Are you sure you want to delete ${record.name}?`)) {
       try {
-        const response = await fetch(`/api/companies/${record.id}`, {
+        const response = await fetch(`/api/master-data/companies/${record.id}`, {
           method: 'DELETE',
         });
 
