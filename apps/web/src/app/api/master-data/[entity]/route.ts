@@ -1,5 +1,5 @@
 // @ts-nocheck — Uses prisma.salaryStructure / prisma.statutory models not in current schema, or AuditLog 'module'/'details' fields. Tracked under #29.
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
@@ -25,25 +25,30 @@ import {
 } from '@/lib/validators';
 
 // Generic schema for entities without specific schemas
-const GenericCreateSchema = z.object({
-  code: z.string().optional(),
-  name: z.string().min(1),
-  description: z.string().optional(),
-  status: z.enum(['Active', 'Inactive']).optional().default('Active'),
-}).passthrough();
+const GenericCreateSchema = z
+  .object({
+    code: z.string().optional(),
+    name: z.string().min(1),
+    description: z.string().optional(),
+    status: z.enum(['Active', 'Inactive']).optional().default('Active'),
+  })
+  .passthrough();
 
 const GenericUpdateSchema = GenericCreateSchema.partial();
 
 // Entity configuration
-const ENTITIES: Record<string, {
-  model: any;
-  createSchema: z.ZodType;
-  updateSchema: z.ZodType;
-  querySchema?: z.ZodType;
-  searchFields?: string[];
-  include?: any;
-  unique?: string;
-}> = {
+const ENTITIES: Record<
+  string,
+  {
+    model: any;
+    createSchema: z.ZodType;
+    updateSchema: z.ZodType;
+    querySchema?: z.ZodType;
+    searchFields?: string[];
+    include?: any;
+    unique?: string;
+  }
+> = {
   // Geographic entities
   countries: {
     model: prisma.country,
@@ -66,7 +71,9 @@ const ENTITIES: Record<string, {
     updateSchema: UpdateCitySchema,
     querySchema: CityQuerySchema,
     searchFields: ['name'],
-    include: { state: { select: { id: true, name: true, country: { select: { id: true, name: true } } } } },
+    include: {
+      state: { select: { id: true, name: true, country: { select: { id: true, name: true } } } },
+    },
   },
 
   // Currency and language
@@ -279,18 +286,22 @@ const ENTITIES: Record<string, {
   },
   'system-settings': {
     model: prisma.systemSetting,
-    createSchema: z.object({
-      key: z.string().min(1),
-      value: z.string(),
-      group: z.string().optional(),
-      description: z.string().optional(),
-    }).passthrough(),
-    updateSchema: z.object({
-      key: z.string().optional(),
-      value: z.string().optional(),
-      group: z.string().optional(),
-      description: z.string().optional(),
-    }).passthrough(),
+    createSchema: z
+      .object({
+        key: z.string().min(1),
+        value: z.string(),
+        group: z.string().optional(),
+        description: z.string().optional(),
+      })
+      .passthrough(),
+    updateSchema: z
+      .object({
+        key: z.string().optional(),
+        value: z.string().optional(),
+        group: z.string().optional(),
+        description: z.string().optional(),
+      })
+      .passthrough(),
     searchFields: ['key', 'group'],
     unique: 'key',
   },
@@ -317,11 +328,16 @@ export const GET = withEnhancedAuth(
 
       const { searchParams } = new URL(request.url);
       const querySchema = config.querySchema || MasterDataQuerySchema;
-      const { search, status, page, limit, ...filters } = validateQueryParams(querySchema, searchParams);
+      const { search, status, page, limit, ...filters } = validateQueryParams(
+        querySchema,
+        searchParams
+      );
 
       const where: any = { ...filters };
       if (search && config.searchFields) {
-        where.OR = config.searchFields.map(f => ({ [f]: { contains: search, mode: 'insensitive' } }));
+        where.OR = config.searchFields.map((f) => ({
+          [f]: { contains: search, mode: 'insensitive' },
+        }));
       }
       if (status) where.status = status;
 
@@ -365,9 +381,14 @@ export const POST = withEnhancedAuth(
       const data = config.createSchema.parse(body);
 
       if (config.unique) {
-        const existing = await config.model.findUnique({ where: { [config.unique]: data[config.unique] } });
+        const existing = await config.model.findUnique({
+          where: { [config.unique]: data[config.unique] },
+        });
         if (existing) {
-          return NextResponse.json({ success: false, error: `${config.unique} already exists` }, { status: 400 });
+          return NextResponse.json(
+            { success: false, error: `${config.unique} already exists` },
+            { status: 400 }
+          );
         }
       }
 
@@ -377,9 +398,12 @@ export const POST = withEnhancedAuth(
         data: {
           tenantId: user.tenantId,
           userId: user.userId,
+          module: params.entity,
           action: 'CREATE',
           resourceType: 'Master Data',
-          metadata: { description: `Created ${params.entity.slice(0, -1)}: ${item.name || item.code}` } as any,
+          metadata: {
+            description: `Created ${params.entity.slice(0, -1)}: ${item.name || item.code}`,
+          } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });
