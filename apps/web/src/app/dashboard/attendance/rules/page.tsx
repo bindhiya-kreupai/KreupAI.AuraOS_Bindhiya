@@ -39,8 +39,6 @@ const DEFAULT_CONFIG: RulesConfig = {
   allowMobilePunch: true,
 };
 
-const LOCAL_STORAGE_KEY = 'auraos.attendance.rules.v1';
-
 export default function AttendanceRulesPage() {
   const [config, setConfig] = useState<RulesConfig>(DEFAULT_CONFIG);
   const [locations, setLocations] = useState<LocationPolicy[]>([]);
@@ -52,19 +50,21 @@ export default function AttendanceRulesPage() {
     let cancelled = false;
     const init = async () => {
       try {
-        const raw = localStorage.getItem(LOCAL_STORAGE_KEY);
-        const localConfig: Partial<RulesConfig> = raw ? JSON.parse(raw) : {};
-
         const settings: any = await AttendanceSettingsService.getSettings().catch(() => null);
         const serverPart: Partial<RulesConfig> = settings
           ? {
+              gracePeriodMinutes: settings.gracePeriodMinutes ?? DEFAULT_CONFIG.gracePeriodMinutes,
+              earlyExitBufferMinutes:
+                settings.earlyExitBufferMinutes ?? DEFAULT_CONFIG.earlyExitBufferMinutes,
+              halfDayThresholdHours:
+                settings.halfDayThresholdHours ?? DEFAULT_CONFIG.halfDayThresholdHours,
               autoCheckout: settings.autoMarkAbsent ?? DEFAULT_CONFIG.autoCheckout,
               allowMobilePunch: settings.enableMobileCheckIn ?? DEFAULT_CONFIG.allowMobilePunch,
             }
           : {};
 
         if (!cancelled) {
-          setConfig({ ...DEFAULT_CONFIG, ...localConfig, ...serverPart });
+          setConfig({ ...DEFAULT_CONFIG, ...serverPart });
         }
 
         const res = await fetch('/api/attendance/geo-fencing');
@@ -100,8 +100,10 @@ export default function AttendanceRulesPage() {
     setSaving(true);
     setStatus(null);
     try {
-      localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(config));
       await AttendanceSettingsService.updateSettings({
+        gracePeriodMinutes: config.gracePeriodMinutes,
+        earlyExitBufferMinutes: config.earlyExitBufferMinutes,
+        halfDayThresholdHours: config.halfDayThresholdHours,
         autoMarkAbsent: config.autoCheckout,
         enableMobileCheckIn: config.allowMobilePunch,
       } as any).catch(() => null);

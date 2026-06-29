@@ -1311,10 +1311,12 @@ export class AttendanceSettingsService {
 
   static async getSettings(): Promise<AttendanceSettings> {
     try {
-      const response = await APIClient.get<{ settings?: AttendanceSettings }>(this.endpoint);
+      const response = await APIClient.get<{ success: boolean; data: AttendanceSettings }>(
+        this.endpoint
+      );
       console.log('API RESPONSE =', response);
       return (
-        response.settings || {
+        response.data || {
           workingDaysPerWeek: 5,
           weekendDays: [0, 6],
           standardWorkingHours: 8,
