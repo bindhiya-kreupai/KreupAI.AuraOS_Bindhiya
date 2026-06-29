@@ -3,14 +3,62 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/database';
 import { withEnhancedAuth } from '@/lib/auth';
 
+const WORKING_DAYS_PER_MONTH = 22;
+const HOURS_PER_DAY = 8;
+
+function getMultiplier(overtimeType: string): number {
+  const type = (overtimeType || '').toUpperCase();
+  return type === 'WEEKEND' || type === 'HOLIDAY' ? 2.0 : 1.5;
+}
+
+async function getHourlyRate(employeeId: string): Promise<number> {
+  try {
+    // Path 1: Direct lookup by employeeId (UUID — production pattern)
+    let salaryStructure = await prisma.employeeSalaryStructure.findFirst({
+      where: { employeeId, isActive: true },
+      orderBy: { effectiveFrom: 'desc' },
+    });
+
+    // Path 2: If not found, look up by employeeCode
+    // (handles seed/legacy data where EmployeeSalaryStructure.employeeId
+    //  stores an employee-code string like 'emp-001' instead of the Employee UUID)
+    if (!salaryStructure) {
+      const employee = await prisma.employee.findUnique({
+        where: { id: employeeId },
+        select: { employeeCode: true },
+      });
+
+      if (employee?.employeeCode) {
+        // Try both the raw employeeCode and lowercase variant
+        // (handles seed data case mismatch: 'EMP-001' vs 'emp-001')
+        salaryStructure = await prisma.employeeSalaryStructure.findFirst({
+          where: {
+            employeeId: { in: [employee.employeeCode, employee.employeeCode.toLowerCase()] },
+            isActive: true,
+          },
+          orderBy: { effectiveFrom: 'desc' },
+        });
+      }
+    }
+
+    if (salaryStructure?.grossSalary) {
+      const rate = Number(salaryStructure.grossSalary) / (WORKING_DAYS_PER_MONTH * HOURS_PER_DAY);
+      return rate;
+    }
+  } catch {
+    // Fall through to return 0
+  }
+  return 0;
+}
+
 export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
-    const { user } = context;
+    const { user, employeeId: contextEmployeeId } = context;
     const { searchParams } = new URL(request.url);
     const requestedEmployeeId = searchParams.get('employeeId');
     const employeeId =
       !requestedEmployeeId || ['current-user', 'current-user-id'].includes(requestedEmployeeId)
-        ? user.employeeId || user.userId
+        ? contextEmployeeId || user.userId
         : requestedEmployeeId;
     const status = searchParams.get('status');
 
@@ -18,22 +66,39 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
     if (employeeId) where.employeeId = employeeId;
     if (status) where.status = status;
 
-    const overtime = await prisma.overtimeRequest.findMany({
-      where,
-      orderBy: { createdAt: 'desc' },
+    const [overtime, hourlyRate] = await Promise.all([
+      prisma.overtimeRequest.findMany({ where, orderBy: { createdAt: 'desc' } }),
+      employeeId ? getHourlyRate(employeeId) : Promise.resolve(0),
+    ]);
+
+    const overtimeWithPayout = overtime.map((r) => {
+      const multiplier = getMultiplier(r.overtimeType);
+      const hours = r.actualHours ?? (r.totalHours || 0);
+      const payout = hourlyRate > 0 ? Math.round(hours * hourlyRate * multiplier * 100) / 100 : 0;
+      return { ...r, payout, hourlyRate: Math.round(hourlyRate * 100) / 100, multiplier };
     });
+
+    const totalPendingEstimatedPayout = overtimeWithPayout
+      .filter((r) => r.status === 'PENDING')
+      .reduce((sum, r) => sum + (r.payout || 0), 0);
 
     const summary = {
       totalHours: overtime.reduce((sum, r) => sum + r.totalHours, 0),
-      totalAmount: 0,
+      totalAmount: overtimeWithPayout.reduce((sum, r) => sum + (r.payout || 0), 0),
       pendingApproval: overtime.filter((r) => r.status === 'PENDING').length,
       approved: overtime.filter((r) => r.status === 'APPROVED').length,
       rejected: overtime.filter((r) => r.status === 'REJECTED').length,
+      estimatedPayout: totalPendingEstimatedPayout,
     };
 
     return NextResponse.json({
       success: true,
-      data: { overtime, summary },
+      data: {
+        overtime: overtimeWithPayout,
+        summary,
+        employeeId,
+        estimatedPayout: totalPendingEstimatedPayout,
+      },
     });
   } catch (error: any) {
     return NextResponse.json({ error: 'Failed to fetch overtime records' }, { status: 500 });
@@ -42,7 +107,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
 
 export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
-    const { user } = context;
+    const { user, employeeId: contextEmployeeId } = context;
     const body = await request.json();
     const action = body.action || 'submit';
 
@@ -50,7 +115,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
       case 'submit': {
         const employeeId =
           !body.employeeId || ['current-user', 'current-user-id'].includes(body.employeeId)
-            ? user.employeeId || user.userId
+            ? contextEmployeeId || user.userId
             : body.employeeId;
 
         if (!employeeId || !body.date || !body.overtimeMinutes) {

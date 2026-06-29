@@ -7,6 +7,16 @@ const PunchRuleConfigSchema = z.object({
   requirePhoto: z.boolean().default(false),
   requireGeoLocation: z.boolean().default(false),
   maxPunchesPerDay: z.number().int().positive(),
+
+  lateInTolerance: z.number().int().nonnegative().default(15),
+  earlyOutTolerance: z.number().int().nonnegative().default(10),
+  maxLogins: z.number().int().positive().default(4),
+  deductLeave: z.boolean().default(true),
+  autoLogoutTime: z.string().default('23:59'),
+  sessionTimeout: z.number().int().positive().default(30),
+  markAbsentBy: z.boolean().default(true),
+  crossDayLogic: z.boolean().default(true),
+  nightShiftAllowance: z.boolean().default(false),
 });
 
 const PunchRuleSchema = z.object({

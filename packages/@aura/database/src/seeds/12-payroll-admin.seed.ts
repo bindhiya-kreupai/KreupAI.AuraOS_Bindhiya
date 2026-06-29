@@ -21,12 +21,12 @@ export const payComponentsSeed = [
 ];
 
 export const rolesSeed = [
-    { name: 'Super Admin', description: 'Full System Access', usersCount: 1 },
-    { name: 'HR Admin', description: 'Access to all HR & Payroll Modules', usersCount: 0 },
-    { name: 'IT Admin', description: 'System Settings and User Management', usersCount: 0 },
-    { name: 'Manager', description: 'Team Management Access', usersCount: 0 },
-    { name: 'Employee', description: 'Self-Service Portal Access', usersCount: 0 },
-    { name: 'Recruiter', description: 'Recruitment Module Access', usersCount: 0 }
+    { name: 'Super Admin', description: 'Full System Access' },
+    { name: 'HR Admin', description: 'Access to all HR & Payroll Modules'},
+    { name: 'IT Admin', description: 'System Settings and User Management'},
+    { name: 'Manager', description: 'Team Management Access'},
+    { name: 'Employee', description: 'Self-Service Portal Access'},
+    { name: 'Recruiter', description: 'Recruitment Module Access'}
 ];
 
 export const holidaysSeed = [
@@ -43,3 +43,4 @@ export const holidaysSeed = [
     { name: 'Bahrain National Day', date: '2025-12-16', type: 'National' },
     { name: 'Oman National Day', date: '2025-11-18', type: 'National' }
 ];
+

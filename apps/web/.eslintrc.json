@@ -11,6 +11,7 @@
   },
   "plugins": ["@typescript-eslint"],
   "rules": {
+    "@next/next/no-html-link-for-pages": ["error", "apps/web/src/app"],
     "no-console": ["warn", { "allow": ["error", "warn", "info", "log"] }],
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/ban-ts-comment": [

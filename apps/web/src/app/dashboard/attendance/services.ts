@@ -158,6 +158,10 @@ type OvertimeApiResponse = {
   createdAt?: string | Date;
   paymentAmount?: number;
   compOffGranted?: boolean;
+  payout?: number;
+  estimatedPayout?: number;
+  hourlyRate?: number;
+  multiplier?: number;
 };
 
 type ExceptionApiResponse = {
@@ -612,6 +616,9 @@ function mapOvertimeRequest(raw: OvertimeApiResponse): OvertimeRequest {
     rejectionReason: raw.rejectionReason || undefined,
     paymentAmount: raw.paymentAmount,
     compOffGranted: raw.compOffGranted,
+    estimatedPayout: raw.payout ?? raw.estimatedPayout,
+    hourlyRate: raw.hourlyRate,
+    multiplier: raw.multiplier,
   };
 }
 
@@ -1138,7 +1145,7 @@ export class OvertimeService {
       const normalizedEmployeeId = normalizePlaceholderEmployeeId(filters?.employeeId);
       const response = await APIClient.get<{
         success?: boolean;
-        data?: { overtime?: OvertimeApiResponse[]; summary?: unknown };
+        data?: { overtime?: OvertimeApiResponse[]; summary?: unknown; employeeId?: string };
       }>(this.endpoint, { ...filters, employeeId: normalizedEmployeeId });
       return (response.data?.overtime || []).map(mapOvertimeRequest);
     } catch (error: any) {
@@ -1305,6 +1312,7 @@ export class AttendanceSettingsService {
   static async getSettings(): Promise<AttendanceSettings> {
     try {
       const response = await APIClient.get<{ settings?: AttendanceSettings }>(this.endpoint);
+      console.log('API RESPONSE =', response);
       return (
         response.settings || {
           workingDaysPerWeek: 5,
@@ -1897,40 +1905,29 @@ export class PunchRulesService {
 
   static async getPunchRules(): Promise<any> {
     try {
-      const response = await APIClient.get<{ rules?: any }>(this.endpoint);
-      return (
-        response.rules || {
-          allowEarlyCheckIn: true,
-          earlyCheckInMinutes: 30,
-          allowLateCheckOut: true,
-          lateCheckOutMinutes: 60,
-          requirePhoto: false,
-          requireGPS: false,
-          requireBiometric: false,
-          allowMultiplePunches: false,
-          autoCheckOutAfterHours: 12,
-          gracePeriodMinutes: 15,
-        }
-      );
-    } catch (error: any) {
-      return {
-        allowEarlyCheckIn: true,
-        earlyCheckInMinutes: 30,
-        allowLateCheckOut: true,
-        lateCheckOutMinutes: 60,
-        requirePhoto: false,
-        requireGPS: false,
-        requireBiometric: false,
-        allowMultiplePunches: false,
-        autoCheckOutAfterHours: 12,
-        gracePeriodMinutes: 15,
-      };
+      const response = await APIClient.get<{ data: any[] }>(this.endpoint);
+
+      if (!response.data || response.data.length === 0) {
+        return null;
+      }
+
+      return response.data[0];
+    } catch (error) {
+      return null;
     }
   }
+  static async createPunchRule(rule: any) {
+    const response = await APIClient.post<{ data: any }>(this.endpoint, rule);
+    return response.data;
+  }
+  static async updatePunchRules(id: string, version: number, patch: any): Promise<any> {
+    const response = await APIClient.put<{ data: any }>(this.endpoint, {
+      id,
+      version,
+      patch,
+    });
 
-  static async updatePunchRules(rules: any): Promise<any> {
-    const response = await APIClient.put<{ rules: any }>(this.endpoint, rules);
-    return response.rules;
+    return response.data;
   }
 }
 

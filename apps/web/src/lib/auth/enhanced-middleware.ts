@@ -250,7 +250,8 @@ export function withEnhancedAuth<T = any>(
                         ? 'CREATE'
                         : 'UPDATE',
                   module:
-                    request.nextUrl.pathname.split('/').filter(Boolean).slice(1, 2)[0] || 'system',
+                    request.nextUrl.pathname.split('/').filter(Boolean).slice(1, 2).join('/') ||
+                    'api',
                   resourceType:
                     request.nextUrl.pathname.split('/').filter(Boolean).slice(2, 4).join('/') ||
                     'unknown',

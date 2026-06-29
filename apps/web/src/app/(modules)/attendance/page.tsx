@@ -86,6 +86,44 @@ export default function AttendanceCommandCenter() {
     null
   );
 
+  // Modal and action states
+  const [shiftsRefreshKey, setShiftsRefreshKey] = useState(0);
+  const [zonesRefreshKey, setZonesRefreshKey] = useState(0);
+
+  const [isNewShiftOpen, setIsNewShiftOpen] = useState(false);
+  const [newShiftForm, setNewShiftForm] = useState({
+    name: '',
+    code: '',
+    startTime: '09:00',
+    endTime: '18:00',
+    gracePeriod: 15,
+  });
+  const [isSubmittingShift, setIsSubmittingShift] = useState(false);
+  const [shiftSuccess, setShiftSuccess] = useState<string | null>(null);
+  const [shiftError, setShiftError] = useState<string | null>(null);
+
+  const [isAddZoneOpen, setIsAddZoneOpen] = useState(false);
+  const [addZoneForm, setAddZoneForm] = useState({
+    name: '',
+    type: 'OFFICE' as 'OFFICE' | 'BRANCH' | 'SITE' | 'CUSTOM',
+    latitude: 25.2048,
+    longitude: 55.2708,
+    radiusMeters: 100,
+    address: '',
+    strictMode: true,
+  });
+  const [isSubmittingZone, setIsSubmittingZone] = useState(false);
+  const [zoneSuccess, setZoneSuccess] = useState<string | null>(null);
+  const [zoneError, setZoneError] = useState<string | null>(null);
+
+  const [isCalculating, setIsCalculating] = useState(false);
+  const [calculationSuccess, setCalculationSuccess] = useState<string | null>(null);
+  const [calculationError, setCalculationError] = useState<string | null>(null);
+
+  const [isPreviewRamadanOpen, setIsPreviewRamadanOpen] = useState(false);
+  const [allShifts, setAllShifts] = useState<any[]>([]);
+  const [isLoadingShifts, setIsLoadingShifts] = useState(false);
+
   // Manual Entry Form State
   const [isManualEntryOpen, setIsManualEntryOpen] = useState(false);
   const [employees, setEmployees] = useState<any[]>([]);
@@ -106,6 +144,147 @@ export default function AttendanceCommandCenter() {
   const [isApplyingActNow, setIsApplyingActNow] = useState(false);
   const [actNowSuccess, setActNowSuccess] = useState<string | null>(null);
   const [actNowError, setActNowError] = useState<string | null>(null);
+
+  // Handlers for quick actions
+  const handleNewShiftSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmittingShift(true);
+    setShiftSuccess(null);
+    setShiftError(null);
+    try {
+      const res = await shiftService.createShift({
+        name: newShiftForm.name,
+        code: newShiftForm.code || newShiftForm.name.toUpperCase().replace(/\s+/g, '_'),
+        startTime: newShiftForm.startTime,
+        endTime: newShiftForm.endTime,
+        gracePeriod: Number(newShiftForm.gracePeriod),
+      });
+
+      if (res.success || !res.error) {
+        setShiftSuccess('Shift created successfully!');
+        setShiftsRefreshKey((k) => k + 1);
+        setTimeout(() => {
+          setIsNewShiftOpen(false);
+          setShiftSuccess(null);
+          setNewShiftForm({
+            name: '',
+            code: '',
+            startTime: '09:00',
+            endTime: '18:00',
+            gracePeriod: 15,
+          });
+        }, 1500);
+      } else {
+        setShiftError(res.error || 'Failed to create shift.');
+      }
+    } catch (err: any) {
+      setShiftError(err.message || 'Error occurred while saving shift.');
+    } finally {
+      setIsSubmittingShift(false);
+    }
+  };
+
+  const handleAddZoneSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmittingZone(true);
+    setZoneSuccess(null);
+    setZoneError(null);
+    try {
+      const res = await geoFencing.createGeoFence({
+        name: addZoneForm.name,
+        type: addZoneForm.type,
+        latitude: Number(addZoneForm.latitude),
+        longitude: Number(addZoneForm.longitude),
+        radiusMeters: Number(addZoneForm.radiusMeters),
+        address: addZoneForm.address,
+        strictMode: addZoneForm.strictMode,
+      });
+
+      if (res.success || !res.error) {
+        setZoneSuccess('Geofence zone added successfully!');
+        setZonesRefreshKey((k) => k + 1);
+        setTimeout(() => {
+          setIsAddZoneOpen(false);
+          setZoneSuccess(null);
+          setAddZoneForm({
+            name: '',
+            type: 'OFFICE',
+            latitude: 25.2048,
+            longitude: 55.2708,
+            radiusMeters: 100,
+            address: '',
+            strictMode: true,
+          });
+        }, 1500);
+      } else {
+        setZoneError(res.error || 'Failed to add zone.');
+      }
+    } catch (err: any) {
+      setZoneError(err.message || 'Error occurred while saving zone.');
+    } finally {
+      setIsSubmittingZone(false);
+    }
+  };
+
+  const handleRunCalculation = async () => {
+    setIsCalculating(true);
+    setCalculationSuccess(null);
+    setCalculationError(null);
+    try {
+      const todayStr = new Date().toISOString().split('T')[0];
+      const res = await fetch('/api/attendance', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'process', date: todayStr }),
+      });
+      const json = await res.json();
+      if (json.success || !json.error) {
+        setCalculationSuccess('Overtime and hours calculation completed successfully!');
+        fetchStats();
+      } else {
+        setCalculationError(json.error || 'Calculation failed');
+      }
+    } catch (e: any) {
+      setCalculationError(e.message || 'Calculation execution failed');
+    } finally {
+      setIsCalculating(false);
+    }
+  };
+
+  const handleOpenRamadanPreview = async () => {
+    setIsPreviewRamadanOpen(true);
+    setIsLoadingShifts(true);
+    try {
+      const [shiftsRes, configRes] = await Promise.all([
+        fetch('/api/attendance/shifts').then((res) => res.json()),
+        fetch('/api/attendance/shift-management/ramadan-auto-switch').then((res) => res.json()),
+      ]);
+
+      const shiftsList =
+        shiftsRes.shifts || shiftsRes.data || (Array.isArray(shiftsRes) ? shiftsRes : []);
+      const configData = configRes.data || configRes;
+
+      if (configData && configData.mapping) {
+        const mapped = shiftsList.map((shift: any) => {
+          const ramadanShiftId = configData.mapping[shift.id];
+          const ramadanShift = ramadanShiftId
+            ? shiftsList.find((s: any) => s.id === ramadanShiftId)
+            : null;
+          return {
+            ...shift,
+            ramadanShift,
+          };
+        });
+        setAllShifts(mapped);
+      } else {
+        setAllShifts(shiftsList.map((s: any) => ({ ...s, ramadanShift: null })));
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsLoadingShifts(false);
+    }
+  };
 
   // Fetch Ramadan Config
   const fetchRamadanConfig = async () => {
@@ -442,9 +621,30 @@ export default function AttendanceCommandCenter() {
       {activeTab === 'live' && (
         <LiveTrackingTab autoRefresh={autoRefresh} setAutoRefresh={setAutoRefresh} />
       )}
-      {activeTab === 'shifts' && <ShiftOrchestratorTab ramadanEnabled={ramadanConfig?.enabled} />}
-      {activeTab === 'geofence' && <GeofenceGPSTab />}
-      {activeTab === 'overtime' && <OvertimeRamadanTab />}
+      {activeTab === 'shifts' && (
+        <ShiftOrchestratorTab
+          ramadanEnabled={ramadanConfig?.enabled}
+          onNewShiftClick={() => setIsNewShiftOpen(true)}
+          refreshTrigger={shiftsRefreshKey}
+        />
+      )}
+      {activeTab === 'geofence' && (
+        <GeofenceGPSTab
+          onAddZoneClick={() => setIsAddZoneOpen(true)}
+          refreshTrigger={zonesRefreshKey}
+        />
+      )}
+      {activeTab === 'overtime' && (
+        <OvertimeRamadanTab
+          onRunCalculationClick={handleRunCalculation}
+          onPreviewRamadanClick={handleOpenRamadanPreview}
+          isCalculating={isCalculating}
+          calculationSuccess={calculationSuccess}
+          calculationError={calculationError}
+          setCalculationSuccess={setCalculationSuccess}
+          setCalculationError={setCalculationError}
+        />
+      )}
 
       {/* ── MANUAL PUNCH ENTRY MODAL ────────────────────────────── */}
       {isManualEntryOpen && (
@@ -662,6 +862,356 @@ export default function AttendanceCommandCenter() {
                   )}
                 </button>
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* ── NEW SHIFT MODAL ─────────────────────────────────────── */}
+      {isNewShiftOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-all">
+          <div className="bg-white dark:bg-stellar-blue w-full max-w-md rounded-3xl border border-cloud dark:border-nebula-purple/30 p-6 shadow-2xl relative">
+            <button
+              onClick={() => setIsNewShiftOpen(false)}
+              className="absolute top-4 right-4 p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full text-silver-mist transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h2 className="text-xl font-black text-ink-black dark:text-pearl uppercase tracking-tight mb-4 flex items-center gap-2">
+              <Layers className="w-5 h-5 text-emerald-600" /> Create New Shift
+            </h2>
+
+            <form onSubmit={handleNewShiftSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-silver-mist uppercase tracking-widest mb-1">
+                  Shift Name
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Morning Shift"
+                  value={newShiftForm.name}
+                  onChange={(e) => setNewShiftForm({ ...newShiftForm, name: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs font-bold text-ink-black dark:text-pearl"
+                />
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-silver-mist uppercase tracking-widest mb-1">
+                  Shift Code (Optional)
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. MORN_09"
+                  value={newShiftForm.code}
+                  onChange={(e) => setNewShiftForm({ ...newShiftForm, code: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs font-bold text-ink-black dark:text-pearl"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-silver-mist uppercase tracking-widest mb-1">
+                    Start Time
+                  </label>
+                  <input
+                    type="time"
+                    required
+                    value={newShiftForm.startTime}
+                    onChange={(e) =>
+                      setNewShiftForm({ ...newShiftForm, startTime: e.target.value })
+                    }
+                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs font-bold text-ink-black dark:text-pearl"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-silver-mist uppercase tracking-widest mb-1">
+                    End Time
+                  </label>
+                  <input
+                    type="time"
+                    required
+                    value={newShiftForm.endTime}
+                    onChange={(e) => setNewShiftForm({ ...newShiftForm, endTime: e.target.value })}
+                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs font-bold text-ink-black dark:text-pearl"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-silver-mist uppercase tracking-widest mb-1">
+                  Grace Period (Minutes)
+                </label>
+                <input
+                  type="number"
+                  required
+                  min={0}
+                  value={newShiftForm.gracePeriod}
+                  onChange={(e) =>
+                    setNewShiftForm({ ...newShiftForm, gracePeriod: Number(e.target.value) })
+                  }
+                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs font-bold text-ink-black dark:text-pearl"
+                />
+              </div>
+
+              {shiftSuccess && (
+                <div className="p-3 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 rounded-xl text-xs font-bold border border-emerald-200/50">
+                  {shiftSuccess}
+                </div>
+              )}
+
+              {shiftError && (
+                <div className="p-3 bg-rose-50 dark:bg-rose-950/20 text-rose-600 rounded-xl text-xs font-bold border border-rose-200/50">
+                  {shiftError}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={isSubmittingShift}
+                className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-emerald-600/20 transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSubmittingShift ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" /> Creating...
+                  </>
+                ) : (
+                  'Create Shift'
+                )}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── ADD GEOFENCE ZONE MODAL ────────────────────────────── */}
+      {isAddZoneOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-all">
+          <div className="bg-white dark:bg-stellar-blue w-full max-w-md rounded-3xl border border-cloud dark:border-nebula-purple/30 p-6 shadow-2xl relative">
+            <button
+              onClick={() => setIsAddZoneOpen(false)}
+              className="absolute top-4 right-4 p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full text-silver-mist transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h2 className="text-xl font-black text-ink-black dark:text-pearl uppercase tracking-tight mb-4 flex items-center gap-2">
+              <Navigation className="w-5 h-5 text-emerald-600" /> Add Geofence Zone
+            </h2>
+
+            <form onSubmit={handleAddZoneSubmit} className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-silver-mist uppercase tracking-widest mb-1">
+                  Zone Name
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="e.g. Dubai Office HQ"
+                  value={addZoneForm.name}
+                  onChange={(e) => setAddZoneForm({ ...addZoneForm, name: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs font-bold text-ink-black dark:text-pearl"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-silver-mist uppercase tracking-widest mb-1">
+                    Zone Type
+                  </label>
+                  <select
+                    value={addZoneForm.type}
+                    onChange={(e) =>
+                      setAddZoneForm({ ...addZoneForm, type: e.target.value as any })
+                    }
+                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs font-bold text-ink-black dark:text-pearl"
+                  >
+                    <option value="OFFICE">Office</option>
+                    <option value="BRANCH">Branch</option>
+                    <option value="SITE">Site</option>
+                    <option value="CUSTOM">Custom</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-silver-mist uppercase tracking-widest mb-1">
+                    Radius (Meters)
+                  </label>
+                  <input
+                    type="number"
+                    required
+                    min={10}
+                    value={addZoneForm.radiusMeters}
+                    onChange={(e) =>
+                      setAddZoneForm({ ...addZoneForm, radiusMeters: Number(e.target.value) })
+                    }
+                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs font-bold text-ink-black dark:text-pearl"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-silver-mist uppercase tracking-widest mb-1">
+                    Latitude
+                  </label>
+                  <input
+                    type="number"
+                    step="any"
+                    required
+                    value={addZoneForm.latitude}
+                    onChange={(e) =>
+                      setAddZoneForm({ ...addZoneForm, latitude: Number(e.target.value) })
+                    }
+                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs font-bold text-ink-black dark:text-pearl"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-silver-mist uppercase tracking-widest mb-1">
+                    Longitude
+                  </label>
+                  <input
+                    type="number"
+                    step="any"
+                    required
+                    value={addZoneForm.longitude}
+                    onChange={(e) =>
+                      setAddZoneForm({ ...addZoneForm, longitude: Number(e.target.value) })
+                    }
+                    className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs font-bold text-ink-black dark:text-pearl"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-bold text-silver-mist uppercase tracking-widest mb-1">
+                  Address
+                </label>
+                <input
+                  type="text"
+                  placeholder="Street description, city..."
+                  value={addZoneForm.address}
+                  onChange={(e) => setAddZoneForm({ ...addZoneForm, address: e.target.value })}
+                  className="w-full px-4 py-2.5 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 text-xs font-bold text-ink-black dark:text-pearl"
+                />
+              </div>
+
+              <div className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-900/50 rounded-xl border border-cloud dark:border-nebula-purple/10">
+                <div>
+                  <span className="block text-xs font-bold text-ink-black dark:text-pearl">
+                    Strict Mode
+                  </span>
+                  <span className="block text-[10px] text-silver-mist">
+                    Lock punches to exact geofence
+                  </span>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={addZoneForm.strictMode}
+                  onChange={(e) => setAddZoneForm({ ...addZoneForm, strictMode: e.target.checked })}
+                  className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500 bg-transparent border-slate-300 dark:border-slate-700"
+                />
+              </div>
+
+              {zoneSuccess && (
+                <div className="p-3 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 rounded-xl text-xs font-bold border border-emerald-200/50">
+                  {zoneSuccess}
+                </div>
+              )}
+
+              {zoneError && (
+                <div className="p-3 bg-rose-50 dark:bg-rose-950/20 text-rose-600 rounded-xl text-xs font-bold border border-rose-200/50">
+                  {zoneError}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={isSubmittingZone}
+                className="w-full py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-emerald-600/20 transition-all flex items-center justify-center gap-2 active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSubmittingZone ? (
+                  <>
+                    <Loader2 className="w-4 h-4 animate-spin" /> Adding...
+                  </>
+                ) : (
+                  'Add Geofence Zone'
+                )}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* ── RAMADAN PREVIEW MODAL ──────────────────────────────── */}
+      {isPreviewRamadanOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm transition-all animate-fade-in">
+          <div className="bg-gradient-to-br from-amber-50/95 to-orange-50/95 dark:from-stellar-blue dark:to-deep-space w-full max-w-2xl rounded-3xl border border-amber-200/50 dark:border-nebula-purple/30 p-8 shadow-2xl relative">
+            <button
+              onClick={() => setIsPreviewRamadanOpen(false)}
+              className="absolute top-4 right-4 p-2 hover:bg-amber-100/50 dark:hover:bg-slate-800 rounded-full text-amber-700 dark:text-silver-mist transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+            <h2 className="text-xl font-black text-amber-900 dark:text-pearl uppercase tracking-tight mb-4 flex items-center gap-2">
+              <Moon className="w-6 h-6 text-amber-600 animate-pulse" /> Ramadan Schedule Preview
+            </h2>
+            <p className="text-xs text-amber-800 dark:text-slate-400 mb-6 leading-relaxed">
+              Below is a live preview mapping of all active regular shifts to their respective
+              2-hour reduced Ramadan shifts. These mappings will automatically activate on 1
+              Ramadan.
+            </p>
+
+            {isLoadingShifts ? (
+              <div className="p-8 flex items-center justify-center text-amber-600">
+                <Loader2 className="w-5 h-5 animate-spin mr-2" /> Loading schedule mappings…
+              </div>
+            ) : allShifts.length === 0 ? (
+              <div className="p-6 text-center text-sm text-amber-800 dark:text-slate-400">
+                No shifts mapped yet. Configure your auto-switch template.
+              </div>
+            ) : (
+              <div className="overflow-hidden rounded-2xl border border-amber-200 dark:border-nebula-purple/20 max-h-80 overflow-y-auto">
+                <table className="w-full text-xs">
+                  <thead className="bg-amber-100 dark:bg-slate-900/50 text-left font-bold uppercase text-amber-900 dark:text-slate-400">
+                    <tr>
+                      <th className="px-4 py-3">Regular Shift</th>
+                      <th className="px-4 py-3">Standard Timing</th>
+                      <th className="px-4 py-3">Ramadan Equivalent</th>
+                      <th className="px-4 py-3">Ramadan Timing</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-amber-100 dark:divide-nebula-purple/10 bg-white/50 dark:bg-transparent">
+                    {allShifts.map((shift) => (
+                      <tr
+                        key={shift.id}
+                        className="hover:bg-amber-100/20 dark:hover:bg-slate-900/30"
+                      >
+                        <td className="px-4 py-3 font-semibold text-amber-900 dark:text-slate-100">
+                          {shift.name}
+                        </td>
+                        <td className="px-4 py-3 text-amber-850 dark:text-slate-300">
+                          {shift.startTime} – {shift.endTime} ({shift.workHours}h)
+                        </td>
+                        <td className="px-4 py-3 font-semibold text-emerald-700 dark:text-emerald-400">
+                          {shift.ramadanShift ? shift.ramadanShift.name : '— Not Mapped —'}
+                        </td>
+                        <td className="px-4 py-3 text-emerald-800 dark:text-emerald-300">
+                          {shift.ramadanShift
+                            ? `${shift.ramadanShift.startTime} – ${shift.ramadanShift.endTime} (${shift.ramadanShift.workHours}h)`
+                            : '—'}
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={() => setIsPreviewRamadanOpen(false)}
+                className="px-6 py-2.5 bg-amber-600 hover:bg-amber-700 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-amber-600/20 transition-all"
+              >
+                Close Preview
+              </button>
             </div>
           </div>
         </div>
@@ -895,7 +1445,15 @@ function LiveTrackingTab({
 // ═══════════════════════════════════════════════════════════════
 // TAB: Shift Orchestrator
 // ═══════════════════════════════════════════════════════════════
-function ShiftOrchestratorTab({ ramadanEnabled }: { ramadanEnabled?: boolean }) {
+function ShiftOrchestratorTab({
+  ramadanEnabled,
+  onNewShiftClick,
+  refreshTrigger,
+}: {
+  ramadanEnabled?: boolean;
+  onNewShiftClick: () => void;
+  refreshTrigger: number;
+}) {
   const [shiftData, setShiftData] = useState(FALLBACK_SHIFT_DATA);
 
   useEffect(() => {
@@ -918,7 +1476,7 @@ function ShiftOrchestratorTab({ ramadanEnabled }: { ramadanEnabled?: boolean }) 
         console.error('Shift fetch error:', e);
       }
     })();
-  }, []);
+  }, [refreshTrigger]);
 
   return (
     <div className="space-y-8">
@@ -949,7 +1507,10 @@ function ShiftOrchestratorTab({ ramadanEnabled }: { ramadanEnabled?: boolean }) 
                 <Moon className="w-3.5 h-3.5" />
                 {ramadanEnabled ? 'Ramadan Mode Ready' : 'Ramadan Mode Disabled'}
               </Link>
-              <button className="px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-600/20 active:scale-95 transition-all">
+              <button
+                onClick={onNewShiftClick}
+                className="px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-600/20 active:scale-95 transition-all"
+              >
                 + New Shift
               </button>
             </div>
@@ -1043,7 +1604,13 @@ function ShiftOrchestratorTab({ ramadanEnabled }: { ramadanEnabled?: boolean }) 
 // ═══════════════════════════════════════════════════════════════
 // TAB: Geofence & GPS
 // ═══════════════════════════════════════════════════════════════
-function GeofenceGPSTab() {
+function GeofenceGPSTab({
+  onAddZoneClick,
+  refreshTrigger,
+}: {
+  onAddZoneClick: () => void;
+  refreshTrigger: number;
+}) {
   const [geofenceZones, setGeofenceZones] = useState(FALLBACK_GEOFENCE_ZONES);
 
   useEffect(() => {
@@ -1067,7 +1634,7 @@ function GeofenceGPSTab() {
         console.error('Geofence fetch error:', e);
       }
     })();
-  }, []);
+  }, [refreshTrigger]);
 
   return (
     <div className="space-y-8">
@@ -1086,7 +1653,10 @@ function GeofenceGPSTab() {
                 GPS Validation • Zone Management • Breach Alerting
               </p>
             </div>
-            <button className="px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-600/20 active:scale-95 transition-all flex items-center gap-2">
+            <button
+              onClick={onAddZoneClick}
+              className="px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-600/20 active:scale-95 transition-all flex items-center gap-2"
+            >
               <Plus className="w-3.5 h-3.5" /> Add Zone
             </button>
           </div>
@@ -1203,7 +1773,23 @@ function GeofenceGPSTab() {
 // ═══════════════════════════════════════════════════════════════
 // TAB: Overtime & Ramadan
 // ═══════════════════════════════════════════════════════════════
-function OvertimeRamadanTab() {
+function OvertimeRamadanTab({
+  onRunCalculationClick,
+  onPreviewRamadanClick,
+  isCalculating,
+  calculationSuccess,
+  calculationError,
+  setCalculationSuccess,
+  setCalculationError,
+}: {
+  onRunCalculationClick: () => void;
+  onPreviewRamadanClick: () => void;
+  isCalculating: boolean;
+  calculationSuccess: string | null;
+  calculationError: string | null;
+  setCalculationSuccess: (val: string | null) => void;
+  setCalculationError: (val: string | null) => void;
+}) {
   return (
     <div className="space-y-8">
       {/* Overtime Rules Engine */}
@@ -1221,10 +1807,48 @@ function OvertimeRamadanTab() {
                 Multi-Jurisdiction Auto-Calculation • Holiday Multipliers
               </p>
             </div>
-            <button className="px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-600/20 active:scale-95 transition-all flex items-center gap-2">
-              <Zap className="w-3.5 h-3.5" /> Run Calculation
-            </button>
+            <div className="flex flex-col items-end gap-2">
+              <button
+                onClick={onRunCalculationClick}
+                disabled={isCalculating}
+                className="px-5 py-2.5 bg-emerald-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-emerald-600/20 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isCalculating ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 animate-spin" /> Calculating...
+                  </>
+                ) : (
+                  <>
+                    <Zap className="w-3.5 h-3.5" /> Run Calculation
+                  </>
+                )}
+              </button>
+            </div>
           </div>
+
+          {calculationSuccess && (
+            <div className="mb-4 p-3 bg-emerald-50 dark:bg-emerald-950/20 text-emerald-600 rounded-xl text-xs font-bold border border-emerald-200/50 flex justify-between items-center">
+              <span>{calculationSuccess}</span>
+              <button
+                onClick={() => setCalculationSuccess(null)}
+                className="text-emerald-800 hover:text-emerald-900 font-bold ml-2"
+              >
+                ×
+              </button>
+            </div>
+          )}
+
+          {calculationError && (
+            <div className="mb-4 p-3 bg-rose-50 dark:bg-rose-950/20 text-rose-600 rounded-xl text-xs font-bold border border-rose-200/50 flex justify-between items-center">
+              <span>{calculationError}</span>
+              <button
+                onClick={() => setCalculationError(null)}
+                className="text-rose-800 hover:text-rose-900 font-bold ml-2"
+              >
+                ×
+              </button>
+            </div>
+          )}
 
           <div className="overflow-hidden rounded-2xl border border-cloud dark:border-nebula-purple/20">
             <table className="w-full">
@@ -1332,12 +1956,18 @@ function OvertimeRamadanTab() {
               </div>
             </div>
             <div className="flex gap-3">
-              <button className="px-6 py-3 bg-amber-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-amber-600/20 active:scale-95 transition-all">
+              <button
+                onClick={onPreviewRamadanClick}
+                className="px-6 py-3 bg-amber-600 text-white rounded-xl text-[10px] font-black uppercase tracking-widest shadow-lg shadow-amber-600/20 active:scale-95 transition-all"
+              >
                 Preview Ramadan Schedule
               </button>
-              <button className="px-6 py-3 bg-white/80 dark:bg-slate-900/50 text-ink-black dark:text-pearl rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white transition-all">
+              <Link
+                href="/dashboard/attendance/rules"
+                className="px-6 py-3 bg-white/80 dark:bg-slate-900/50 text-ink-black dark:text-pearl rounded-xl text-[10px] font-black uppercase tracking-widest hover:bg-white transition-all text-center flex items-center justify-center"
+              >
                 Configure Rules
-              </button>
+              </Link>
             </div>
           </div>
         </div>
