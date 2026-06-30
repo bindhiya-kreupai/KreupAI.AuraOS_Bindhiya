@@ -35,6 +35,7 @@ import type { ZodSchema } from 'zod';
 import { ZodError } from 'zod';
 import { logger } from '@/lib/logger';
 import { verifyAccessToken } from '@/lib/auth/jwt';
+import { ACCESS_COOKIE } from '@/lib/auth/cookies';
 import { prisma } from '@aura/database';
 import { setAuthIdentifiers } from '@/lib/observability/request-context';
 import type { RateLimitConfig } from '@/lib/middleware/advanced-rate-limit';
@@ -73,7 +74,7 @@ export interface AuthContext {
  */
 export type RouteHandler<T = any> = (
   request: NextRequest,
-  context: { params?: any; auth?: AuthContext }
+  context: { params?: any; auth?: AuthContext; body?: any }
 ) => Promise<T | NextResponse>;
 
 /**
@@ -176,13 +177,17 @@ export function createSuccessResponse<T>(data: T, status: number = 200): NextRes
  */
 async function extractAuth(request: NextRequest): Promise<AuthContext | null> {
   try {
-    // Get token from Authorization header
+    // Get token from Authorization header or cookie fallback
     const authHeader = request.headers.get('authorization');
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+    let token: string | null = null;
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.substring(7);
+    } else {
+      token = request.cookies.get(ACCESS_COOKIE)?.value ?? null;
+    }
+    if (!token) {
       return null;
     }
-
-    const token = authHeader.substring(7);
 
     // Verify JWT token
     const payload = verifyAccessToken(token);
@@ -367,10 +372,11 @@ export function createProtectedRoute<T = any>(
       }
 
       // Validate request body if schema provided
+      let validatedBody: any = null;
       if (config.bodySchema && request.method !== 'GET') {
         try {
-          const body = await request.json();
-          validateData(body, config.bodySchema);
+          validatedBody = await request.json();
+          validateData(validatedBody, config.bodySchema);
         } catch (error: any) {
           if (error instanceof ZodError) {
             return createErrorResponse(
@@ -405,8 +411,8 @@ export function createProtectedRoute<T = any>(
       // outside an active request scope (e.g. unit tests).
       setAuthIdentifiers(auth.tenantId, auth.userId);
 
-      // Execute handler
-      const result = await handler(request, { ...context, auth });
+      // Execute handler with validated body pre-parsed
+      const result = await handler(request, { ...context, auth, body: validatedBody });
 
       // If handler returns NextResponse, use it directly
       if (result instanceof NextResponse) {
