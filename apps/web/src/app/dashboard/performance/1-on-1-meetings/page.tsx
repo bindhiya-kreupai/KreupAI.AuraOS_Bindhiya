@@ -1,29 +1,30 @@
-"use client";
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import { OneOnOneMeetingService, PerformanceReviewService } from '../core/services';
+import { useCurrentUser } from '@/lib/auth/AuthProvider';
 import {
-    MessageSquare,
-    Calendar,
-    Mic,
-    CheckSquare,
-    Smile,
-    ArrowRight,
-    X,
-    Plus,
-    Clock,
-    User,
-    FileText,
-    TrendingUp,
-    AlertCircle,
-    CheckCircle,
-    Edit2,
-    Trash2,
-    Send,
-    BarChart3,
-    Target,
-    Users,
-    Loader2
+  MessageSquare,
+  Calendar,
+  Mic,
+  CheckSquare,
+  Smile,
+  ArrowRight,
+  X,
+  Plus,
+  Clock,
+  User,
+  FileText,
+  TrendingUp,
+  AlertCircle,
+  CheckCircle,
+  Edit2,
+  Trash2,
+  Send,
+  BarChart3,
+  Target,
+  Users,
+  Loader2,
 } from 'lucide-react';
 
 // ==================== TYPE DEFINITIONS ====================
@@ -34,1084 +35,1333 @@ type ActionStatus = 'pending' | 'in-progress' | 'completed';
 type SentimentScore = 1 | 2 | 3 | 4 | 5;
 
 interface Employee {
-    id: string;
-    name: string;
-    role: string;
-    department: string;
-    avatar?: string;
+  id: string;
+  name: string;
+  role: string;
+  department: string;
+  avatar?: string;
 }
 
 interface TalkingPoint {
-    id: string;
-    text: string;
-    isDiscussed: boolean;
-    notes?: string;
+  id: string;
+  text: string;
+  isDiscussed: boolean;
+  notes?: string;
 }
 
 interface ActionItem {
-    id: string;
-    description: string;
-    assignedTo: string;
-    dueDate: string;
-    status: ActionStatus;
-    priority: 'low' | 'medium' | 'high';
+  id: string;
+  description: string;
+  assignedTo: string;
+  dueDate: string;
+  status: ActionStatus;
+  priority: 'low' | 'medium' | 'high';
 }
 
 interface FeedbackQuestion {
-    id: string;
-    question: string;
-    category: 'engagement' | 'workload' | 'growth' | 'satisfaction' | 'concerns';
+  id: string;
+  question: string;
+  category: 'engagement' | 'workload' | 'growth' | 'satisfaction' | 'concerns';
 }
 
 interface FeedbackResponse {
-    questionId: string;
-    response: string;
-    rating?: number;
+  questionId: string;
+  response: string;
+  rating?: number;
 }
 
 interface Meeting {
-    id: string;
-    employeeId: string;
-    employeeName: string;
-    employeeRole: string;
-    managerId: string;
-    managerName: string;
-    scheduledDate: string;
-    duration: number; // in minutes
-    type: MeetingType;
-    status: MeetingStatus;
-    talkingPoints: TalkingPoint[];
-    actionItems: ActionItem[];
-    notes: string;
-    sentiment?: SentimentScore;
-    feedbackResponses?: FeedbackResponse[];
-    createdAt: string;
-    completedAt?: string;
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  employeeRole: string;
+  managerId: string;
+  managerName: string;
+  scheduledDate: string;
+  duration: number; // in minutes
+  type: MeetingType;
+  status: MeetingStatus;
+  talkingPoints: TalkingPoint[];
+  actionItems: ActionItem[];
+  notes: string;
+  sentiment?: SentimentScore;
+  feedbackResponses?: FeedbackResponse[];
+  createdAt: string;
+  completedAt?: string;
 }
 
 interface MeetingStats {
-    totalMeetings: number;
-    completedMeetings: number;
-    averageSentiment: number;
-    pendingActionItems: number;
-    employeesEngaged: number;
-    trendsImproving: boolean;
+  totalMeetings: number;
+  completedMeetings: number;
+  averageSentiment: number;
+  pendingActionItems: number;
+  employeesEngaged: number;
+  trendsImproving: boolean;
 }
 
 // ==================== FEEDBACK QUESTIONS ====================
 
 const FEEDBACK_QUESTIONS: FeedbackQuestion[] = [
-    { id: 'fq1', question: 'How satisfied are you with your current role?', category: 'satisfaction' },
-    { id: 'fq2', question: 'Do you feel your workload is manageable?', category: 'workload' },
-    { id: 'fq3', question: 'Are you getting opportunities to grow and develop?', category: 'growth' },
-    { id: 'fq4', question: 'How engaged do you feel with your team and work?', category: 'engagement' },
-    { id: 'fq5', question: 'Do you have any concerns you would like to discuss?', category: 'concerns' },
+  {
+    id: 'fq1',
+    question: 'How satisfied are you with your current role?',
+    category: 'satisfaction',
+  },
+  { id: 'fq2', question: 'Do you feel your workload is manageable?', category: 'workload' },
+  { id: 'fq3', question: 'Are you getting opportunities to grow and develop?', category: 'growth' },
+  {
+    id: 'fq4',
+    question: 'How engaged do you feel with your team and work?',
+    category: 'engagement',
+  },
+  {
+    id: 'fq5',
+    question: 'Do you have any concerns you would like to discuss?',
+    category: 'concerns',
+  },
 ];
 
 // ==================== MAIN COMPONENT ====================
 
 export default function OneOnOnePage() {
-    const [loading, setLoading] = useState(true);
-    const [meetings, setMeetings] = useState<Meeting[]>([]);
-    const [employees, setEmployees] = useState<Employee[]>([]);
-    const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
-    const [showScheduleModal, setShowScheduleModal] = useState(false);
-    const [showFeedbackModal, setShowFeedbackModal] = useState(false);
-    const [showAnalytics, setShowAnalytics] = useState(false);
-    const [newTalkingPoint, setNewTalkingPoint] = useState('');
-    const [newActionItem, setNewActionItem] = useState('');
+  const { user } = useCurrentUser();
+  const [loading, setLoading] = useState(true);
+  const [banner, setBanner] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [meetings, setMeetings] = useState<Meeting[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [selectedMeeting, setSelectedMeeting] = useState<Meeting | null>(null);
+  const [showScheduleModal, setShowScheduleModal] = useState(false);
+  const [showFeedbackModal, setShowFeedbackModal] = useState(false);
+  const [showAnalytics, setShowAnalytics] = useState(false);
+  const [newTalkingPoint, setNewTalkingPoint] = useState('');
+  const [newActionItem, setNewActionItem] = useState('');
 
-    // ==================== SCHEDULE MEETING FORM STATE ====================
-    const [scheduleForm, setScheduleForm] = useState({
-        employeeId: '',
-        date: '',
-        time: '',
-        duration: '30',
-        type: 'Weekly Sync' as MeetingType,
-    });
+  // ==================== SCHEDULE MEETING FORM STATE ====================
+  const [scheduleForm, setScheduleForm] = useState({
+    employeeId: '',
+    date: '',
+    time: '',
+    duration: '30',
+    type: 'Weekly Sync' as MeetingType,
+  });
 
-    // ==================== FEEDBACK FORM STATE ====================
-    const [feedbackForm, setFeedbackForm] = useState<FeedbackResponse[]>(
-        FEEDBACK_QUESTIONS.map(q => ({ questionId: q.id, response: '', rating: undefined }))
-    );
+  // ==================== FEEDBACK FORM STATE ====================
+  const [feedbackForm, setFeedbackForm] = useState<FeedbackResponse[]>(
+    FEEDBACK_QUESTIONS.map((q) => ({ questionId: q.id, response: '', rating: undefined }))
+  );
 
-    // ==================== LOAD DATA ====================
-    useEffect(() => {
-        async function loadData() {
-            try {
-                const [meetingsData, reviewsData] = await Promise.all([
-                    OneOnOneMeetingService.getMeetings(),
-                    PerformanceReviewService.getReviews(),
-                ]);
+  // ==================== LOAD DATA ====================
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const [meetingsData, reviewsData] = await Promise.all([
+          OneOnOneMeetingService.getMeetings(),
+          PerformanceReviewService.getReviews(),
+        ]);
 
-                // Map API meetings to local Meeting interface
-                const mappedMeetings: Meeting[] = meetingsData.map((m: any) => ({
-                    id: m.id,
-                    employeeId: m.employeeId,
-                    employeeName: m.employeeName || `Employee ${m.employeeId?.slice(-4) || ''}`,
-                    employeeRole: m.employeeRole || '',
-                    managerId: m.managerId || '',
-                    managerName: m.managerName || 'Manager',
-                    scheduledDate: m.scheduledDate,
-                    duration: m.duration || 30,
-                    type: m.type || 'Check-in',
-                    status: (m.status === 'COMPLETED' ? 'completed' : m.status === 'CANCELLED' ? 'cancelled' : 'scheduled') as MeetingStatus,
-                    talkingPoints: Array.isArray(m.agenda) ? m.agenda.map((a: any, i: number) => ({
-                        id: `tp-${m.id}-${i}`,
-                        text: a.topic || a,
-                        isDiscussed: m.status === 'COMPLETED',
-                    })) : [],
-                    actionItems: Array.isArray(m.actionItems) ? m.actionItems.map((a: any, i: number) => ({
-                        id: `ai-${m.id}-${i}`,
-                        description: a.action || a.description || a,
-                        assignedTo: a.owner || m.employeeId,
-                        dueDate: a.dueDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-                        status: (a.status || 'pending') as ActionStatus,
-                        priority: a.priority || 'medium',
-                    })) : [],
-                    notes: m.notes || '',
-                    sentiment: m.sentiment,
-                    feedbackResponses: m.feedbackResponses,
-                    createdAt: m.createdAt || new Date().toISOString(),
-                    completedAt: m.completedAt,
-                }));
+        // Map API meetings to local Meeting interface
+        const mappedMeetings: Meeting[] = meetingsData.map((m: any) => ({
+          id: m.id,
+          employeeId: m.employeeId,
+          employeeName: m.employeeName || `Employee ${m.employeeId?.slice(-4) || ''}`,
+          employeeRole: m.employeeRole || '',
+          managerId: m.managerId || '',
+          managerName: m.managerName || 'Manager',
+          scheduledDate: m.scheduledDate,
+          duration: m.duration || 30,
+          type: m.type || 'Check-in',
+          status: (m.status === 'COMPLETED'
+            ? 'completed'
+            : m.status === 'CANCELLED'
+              ? 'cancelled'
+              : 'scheduled') as MeetingStatus,
+          talkingPoints: Array.isArray(m.agenda)
+            ? m.agenda.map((a: any, i: number) => ({
+                id: `tp-${m.id}-${i}`,
+                text: a.topic || a,
+                isDiscussed: m.status === 'COMPLETED',
+              }))
+            : [],
+          actionItems: Array.isArray(m.actionItems)
+            ? m.actionItems.map((a: any, i: number) => ({
+                id: `ai-${m.id}-${i}`,
+                description: a.action || a.description || a,
+                assignedTo: a.owner || m.employeeId,
+                dueDate: a.dueDate || new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+                status: (a.status || 'pending') as ActionStatus,
+                priority: a.priority || 'medium',
+              }))
+            : [],
+          notes: m.notes || '',
+          sentiment: m.sentiment,
+          feedbackResponses: m.feedbackResponses,
+          createdAt: m.createdAt || new Date().toISOString(),
+          completedAt: m.completedAt,
+        }));
 
-                setMeetings(mappedMeetings);
-                if (mappedMeetings.length > 0) {
-                    setSelectedMeeting(mappedMeetings[0]);
-                }
-
-                // Derive employees from reviews
-                const empMap = new Map<string, Employee>();
-                reviewsData.forEach((r: any) => {
-                    if (r.employeeId && !empMap.has(r.employeeId)) {
-                        empMap.set(r.employeeId, {
-                            id: r.employeeId,
-                            name: r.employeeName || `Employee ${r.employeeId.slice(-4)}`,
-                            role: r.reviewType || 'Team Member',
-                            department: 'General',
-                        });
-                    }
-                });
-                // Also add employees from meetings
-                mappedMeetings.forEach(m => {
-                    if (m.employeeId && !empMap.has(m.employeeId)) {
-                        empMap.set(m.employeeId, {
-                            id: m.employeeId,
-                            name: m.employeeName,
-                            role: m.employeeRole || 'Team Member',
-                            department: 'General',
-                        });
-                    }
-                });
-                setEmployees(Array.from(empMap.values()));
-            } catch (error: any) {
-                console.error('Failed to load 1-on-1 meetings:', error);
-            } finally {
-                setLoading(false);
-            }
-        }
-        loadData();
-    }, []);
-
-    // ==================== COMPUTED STATS ====================
-    const stats: MeetingStats = {
-        totalMeetings: meetings.length,
-        completedMeetings: meetings.filter(m => m.status === 'completed').length,
-        averageSentiment: meetings.filter(m => m.sentiment).reduce((acc, m) => acc + (m.sentiment || 0), 0) / meetings.filter(m => m.sentiment).length || 0,
-        pendingActionItems: meetings.flatMap(m => m.actionItems).filter(a => a.status !== 'completed').length,
-        employeesEngaged: new Set(meetings.map(m => m.employeeId)).size,
-        trendsImproving: true, // Would be calculated based on historical data
-    };
-
-    // ==================== HANDLERS ====================
-
-    const handleScheduleMeeting = async () => {
-        const employee = employees.find(e => e.id === scheduleForm.employeeId);
-        if (!employee || !scheduleForm.date || !scheduleForm.time) {
-            alert('Please fill all required fields');
-            return;
+        setMeetings(mappedMeetings);
+        if (mappedMeetings.length > 0) {
+          setSelectedMeeting(mappedMeetings[0]);
         }
 
-        const scheduledDate = new Date(`${scheduleForm.date}T${scheduleForm.time}`);
-
-        try {
-            const created = await OneOnOneMeetingService.createMeeting({
-                employeeId: employee.id,
-                managerId: 'current-user', // Would come from auth context
-                scheduledDate: scheduledDate.toISOString(),
-                duration: parseInt(scheduleForm.duration),
-                agenda: [],
+        // Derive employees from reviews
+        const empMap = new Map<string, Employee>();
+        reviewsData.forEach((r: any) => {
+          if (r.employeeId && !empMap.has(r.employeeId)) {
+            empMap.set(r.employeeId, {
+              id: r.employeeId,
+              name: r.employeeName || `Employee ${r.employeeId.slice(-4)}`,
+              role: r.reviewType || 'Team Member',
+              department: 'General',
             });
+          }
+        });
+        // Also add employees from meetings
+        mappedMeetings.forEach((m) => {
+          if (m.employeeId && !empMap.has(m.employeeId)) {
+            empMap.set(m.employeeId, {
+              id: m.employeeId,
+              name: m.employeeName,
+              role: m.employeeRole || 'Team Member',
+              department: 'General',
+            });
+          }
+        });
+        setEmployees(Array.from(empMap.values()));
+      } catch (error: any) {
+        console.error('Failed to load 1-on-1 meetings:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, []);
 
-            const newMeeting: Meeting = {
-                id: created?.id || `m${Date.now()}`,
-                employeeId: employee.id,
-                employeeName: employee.name,
-                employeeRole: employee.role,
-                managerId: 'current-user',
-                managerName: 'Manager',
-                scheduledDate: scheduledDate.toISOString(),
-                duration: parseInt(scheduleForm.duration),
-                type: scheduleForm.type,
-                status: 'scheduled',
-                talkingPoints: [],
-                actionItems: [],
-                notes: '',
-                createdAt: new Date().toISOString(),
-            };
+  // ==================== COMPUTED STATS ====================
+  const stats: MeetingStats = {
+    totalMeetings: meetings.length,
+    completedMeetings: meetings.filter((m) => m.status === 'completed').length,
+    averageSentiment:
+      meetings.filter((m) => m.sentiment).reduce((acc, m) => acc + (m.sentiment || 0), 0) /
+        meetings.filter((m) => m.sentiment).length || 0,
+    pendingActionItems: meetings
+      .flatMap((m) => m.actionItems)
+      .filter((a) => a.status !== 'completed').length,
+    employeesEngaged: new Set(meetings.map((m) => m.employeeId)).size,
+    trendsImproving: true, // Would be calculated based on historical data
+  };
 
-            setMeetings([newMeeting, ...meetings]);
-            setSelectedMeeting(newMeeting);
-        } catch (error: any) {
-            console.error('Failed to schedule meeting:', error);
-            // Still add to local state for UI responsiveness
-            const newMeeting: Meeting = {
-                id: `m${Date.now()}`,
-                employeeId: employee.id,
-                employeeName: employee.name,
-                employeeRole: employee.role,
-                managerId: 'current-user',
-                managerName: 'Manager',
-                scheduledDate: scheduledDate.toISOString(),
-                duration: parseInt(scheduleForm.duration),
-                type: scheduleForm.type,
-                status: 'scheduled',
-                talkingPoints: [],
-                actionItems: [],
-                notes: '',
-                createdAt: new Date().toISOString(),
-            };
-            setMeetings([newMeeting, ...meetings]);
-            setSelectedMeeting(newMeeting);
-        }
+  // ==================== HANDLERS ====================
 
-        setShowScheduleModal(false);
-        setScheduleForm({ employeeId: '', date: '', time: '', duration: '30', type: 'Weekly Sync' });
-    };
-
-    const handleAddTalkingPoint = () => {
-        if (!selectedMeeting || !newTalkingPoint.trim()) return;
-
-        const updatedMeeting = {
-            ...selectedMeeting,
-            talkingPoints: [
-                ...selectedMeeting.talkingPoints,
-                { id: `tp${Date.now()}`, text: newTalkingPoint, isDiscussed: false },
-            ],
-        };
-
-        setMeetings(meetings.map(m => m.id === selectedMeeting.id ? updatedMeeting : m));
-        setSelectedMeeting(updatedMeeting);
-        setNewTalkingPoint('');
-    };
-
-    const handleToggleTalkingPoint = (tpId: string) => {
-        if (!selectedMeeting) return;
-
-        const updatedMeeting = {
-            ...selectedMeeting,
-            talkingPoints: selectedMeeting.talkingPoints.map(tp =>
-                tp.id === tpId ? { ...tp, isDiscussed: !tp.isDiscussed } : tp
-            ),
-        };
-
-        setMeetings(meetings.map(m => m.id === selectedMeeting.id ? updatedMeeting : m));
-        setSelectedMeeting(updatedMeeting);
-    };
-
-    const handleAddActionItem = () => {
-        if (!selectedMeeting || !newActionItem.trim()) return;
-
-        const updatedMeeting = {
-            ...selectedMeeting,
-            actionItems: [
-                ...selectedMeeting.actionItems,
-                {
-                    id: `ai${Date.now()}`,
-                    description: newActionItem,
-                    assignedTo: selectedMeeting.employeeId,
-                    dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
-                    status: 'pending' as ActionStatus,
-                    priority: 'medium' as const,
-                },
-            ],
-        };
-
-        setMeetings(meetings.map(m => m.id === selectedMeeting.id ? updatedMeeting : m));
-        setSelectedMeeting(updatedMeeting);
-        setNewActionItem('');
-    };
-
-    const handleToggleActionItem = (aiId: string) => {
-        if (!selectedMeeting) return;
-
-        const updatedMeeting = {
-            ...selectedMeeting,
-            actionItems: selectedMeeting.actionItems.map(ai =>
-                ai.id === aiId ? { ...ai, status: ai.status === 'completed' ? 'pending' : 'completed' as ActionStatus } : ai
-            ),
-        };
-
-        setMeetings(meetings.map(m => m.id === selectedMeeting.id ? updatedMeeting : m));
-        setSelectedMeeting(updatedMeeting);
-    };
-
-    const handleSetSentiment = (score: SentimentScore) => {
-        if (!selectedMeeting) return;
-
-        const updatedMeeting = { ...selectedMeeting, sentiment: score };
-        setMeetings(meetings.map(m => m.id === selectedMeeting.id ? updatedMeeting : m));
-        setSelectedMeeting(updatedMeeting);
-    };
-
-    const handleCompleteMeeting = () => {
-        if (!selectedMeeting) return;
-
-        if (!selectedMeeting.sentiment) {
-            alert('Please rate the meeting vibe before completing');
-            return;
-        }
-
-        const updatedMeeting = {
-            ...selectedMeeting,
-            status: 'completed' as MeetingStatus,
-            completedAt: new Date().toISOString(),
-        };
-
-        setMeetings(meetings.map(m => m.id === selectedMeeting.id ? updatedMeeting : m));
-        setSelectedMeeting(updatedMeeting);
-        setShowFeedbackModal(true);
-    };
-
-    const handleSubmitFeedback = () => {
-        if (!selectedMeeting) return;
-
-        const updatedMeeting = {
-            ...selectedMeeting,
-            feedbackResponses: feedbackForm.filter(f => f.response.trim() !== ''),
-        };
-
-        setMeetings(meetings.map(m => m.id === selectedMeeting.id ? updatedMeeting : m));
-        setSelectedMeeting(updatedMeeting);
-        setShowFeedbackModal(false);
-        setFeedbackForm(FEEDBACK_QUESTIONS.map(q => ({ questionId: q.id, response: '', rating: undefined })));
-    };
-
-    const handleUpdateNotes = (notes: string) => {
-        if (!selectedMeeting) return;
-
-        const updatedMeeting = { ...selectedMeeting, notes };
-        setMeetings(meetings.map(m => m.id === selectedMeeting.id ? updatedMeeting : m));
-        setSelectedMeeting(updatedMeeting);
-    };
-
-    const handleDeleteMeeting = async (meetingId: string) => {
-        if (!confirm('Are you sure you want to delete this meeting?')) return;
-
-        try {
-            await OneOnOneMeetingService.deleteMeeting(meetingId);
-        } catch (error: any) {
-            console.error('Failed to delete meeting:', error);
-        }
-
-        setMeetings(meetings.filter(m => m.id !== meetingId));
-        if (selectedMeeting?.id === meetingId) {
-            setSelectedMeeting(meetings.find(m => m.id !== meetingId) || null);
-        }
-    };
-
-    // ==================== RENDER ====================
-
-    const upcomingMeetings = meetings.filter(m => m.status === 'scheduled').sort((a, b) => new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime());
-    const pastMeetings = meetings.filter(m => m.status === 'completed').sort((a, b) => new Date(b.completedAt || b.scheduledDate).getTime() - new Date(a.completedAt || a.scheduledDate).getTime());
-
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center h-96">
-                <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
-            </div>
-        );
+  const handleScheduleMeeting = async () => {
+    setBanner(null);
+    const employee = employees.find((e) => e.id === scheduleForm.employeeId);
+    if (!employee || !scheduleForm.date || !scheduleForm.time) {
+      setBanner({ type: 'error', text: 'Please fill all required fields.' });
+      return;
     }
 
-    return (
-        <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-            {/* Header with Stats */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
-                <div>
-                    <h1 className="text-2xl font-bold flex items-center gap-2">
-                        <MessageSquare className="w-6 h-6 text-emerald-500" />
-                        1-on-1 Meetings
-                    </h1>
-                    <p className="text-slate-500 text-sm">Track manager-employee check-ins, talking points, and action items.</p>
-                </div>
-                <div className="flex gap-2">
-                    <button
-                        onClick={() => setShowAnalytics(true)}
-                        className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-4 py-2 rounded-xl text-sm font-bold"
-                    >
-                        <BarChart3 className="w-4 h-4" />
-                        Analytics
-                    </button>
-                    <button
-                        onClick={() => setShowScheduleModal(true)}
-                        className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-emerald-500/20"
-                    >
-                        <Plus className="w-4 h-4" />
-                        Schedule New
-                    </button>
-                </div>
-            </div>
+    const scheduledDate = new Date(`${scheduleForm.date}T${scheduleForm.time}`);
+    const managerId = user?.employeeId || '';
 
-            {/* Quick Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-5 gap-3 shrink-0">
-                <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
-                    <div className="text-2xl font-bold text-emerald-600">{stats.totalMeetings}</div>
-                    <div className="text-xs text-slate-500">Total Meetings</div>
-                </div>
-                <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
-                    <div className="text-2xl font-bold text-blue-600">{stats.completedMeetings}</div>
-                    <div className="text-xs text-slate-500">Completed</div>
-                </div>
-                <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
-                    <div className="text-2xl font-bold text-amber-600">{stats.averageSentiment.toFixed(1)}/5</div>
-                    <div className="text-xs text-slate-500">Avg Sentiment</div>
-                </div>
-                <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
-                    <div className="text-2xl font-bold text-indigo-600">{stats.pendingActionItems}</div>
-                    <div className="text-xs text-slate-500">Pending Actions</div>
-                </div>
-                <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
-                    <div className="text-2xl font-bold text-purple-600">{stats.employeesEngaged}</div>
-                    <div className="text-xs text-slate-500">Employees</div>
-                </div>
-            </div>
+    try {
+      const created = await OneOnOneMeetingService.createMeeting({
+        employeeId: employee.id,
+        managerId, // derived from the authenticated user — never trusted from client
+        scheduledDate: scheduledDate.toISOString(),
+        duration: parseInt(scheduleForm.duration),
+        type: scheduleForm.type,
+        agenda: [],
+      });
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0">
-                {/* Meeting List */}
-                <div className="lg:col-span-1 space-y-4 overflow-y-auto pb-20">
-                    <h3 className="font-bold text-sm mb-2 text-slate-500 uppercase">Upcoming ({upcomingMeetings.length})</h3>
-                    {upcomingMeetings.length === 0 && pastMeetings.length === 0 && (
-                        <div className="flex flex-col items-center justify-center py-8 text-slate-400">
-                            <MessageSquare className="w-10 h-10 mb-2 opacity-30" />
-                            <p className="text-sm font-bold">No meetings yet</p>
-                            <p className="text-xs mt-1">Schedule your first 1-on-1</p>
-                        </div>
-                    )}
-                    {upcomingMeetings.map(meeting => (
-                        <div
-                            key={meeting.id}
-                            onClick={() => setSelectedMeeting(meeting)}
-                            className={`bg-white dark:bg-slate-900 p-4 rounded-xl border-l-4 shadow-sm cursor-pointer hover:shadow-md transition-all ${selectedMeeting?.id === meeting.id ? 'border-emerald-500 ring-2 ring-emerald-500/20' : 'border-emerald-300'
-                                }`}
-                        >
-                            <div className="flex justify-between items-start mb-2">
-                                <h4 className="font-bold text-slate-800 dark:text-slate-200">{meeting.employeeName}</h4>
-                                <span className="text-[10px] bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 px-2 py-0.5 rounded font-bold">{meeting.type}</span>
-                            </div>
-                            <div className="text-xs text-slate-500 font-bold mb-1">{meeting.employeeRole}</div>
-                            <div className="text-xs text-slate-400 flex items-center gap-1">
-                                <Calendar className="w-3 h-3" />
-                                {new Date(meeting.scheduledDate).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
-                            </div>
-                            <div className="text-xs text-slate-400 flex items-center gap-1 mt-1">
-                                <Clock className="w-3 h-3" />
-                                {meeting.duration} mins
-                            </div>
-                        </div>
-                    ))}
+      const newMeeting: Meeting = {
+        id: created?.id || `m${Date.now()}`,
+        employeeId: employee.id,
+        employeeName: employee.name,
+        employeeRole: employee.role,
+        managerId,
+        managerName: 'Manager',
+        scheduledDate: scheduledDate.toISOString(),
+        duration: parseInt(scheduleForm.duration),
+        type: scheduleForm.type,
+        status: 'scheduled',
+        talkingPoints: [],
+        actionItems: [],
+        notes: '',
+        createdAt: new Date().toISOString(),
+      };
 
-                    <h3 className="font-bold text-sm mt-6 mb-2 text-slate-500 uppercase">Past Logs ({pastMeetings.length})</h3>
-                    {pastMeetings.map(meeting => (
-                        <div
-                            key={meeting.id}
-                            onClick={() => setSelectedMeeting(meeting)}
-                            className={`bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border cursor-pointer transition-all ${selectedMeeting?.id === meeting.id ? 'border-slate-400 dark:border-slate-600' : 'border-slate-100 dark:border-slate-800'
-                                } hover:border-slate-300 dark:hover:border-slate-700`}
-                        >
-                            <div className="flex justify-between items-start mb-1">
-                                <h4 className="font-bold text-slate-700 dark:text-slate-300 text-sm">{meeting.employeeName}</h4>
-                                <div className="flex items-center gap-1">
-                                    {meeting.sentiment && (
-                                        <div className="flex items-center gap-0.5">
-                                            {[...Array(meeting.sentiment)].map((_, i) => (
-                                                <Smile key={i} className="w-3 h-3 text-emerald-500" />
-                                            ))}
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
-                            <p className="text-xs text-slate-500 truncate">{meeting.notes || 'No notes recorded'}</p>
-                            <div className="text-[10px] text-slate-400 mt-1">
-                                {new Date(meeting.completedAt || meeting.scheduledDate).toLocaleDateString()}
-                            </div>
-                        </div>
-                    ))}
-                </div>
+      setMeetings([newMeeting, ...meetings]);
+      setSelectedMeeting(newMeeting);
+      setShowScheduleModal(false);
+      setScheduleForm({ employeeId: '', date: '', time: '', duration: '30', type: 'Weekly Sync' });
+      setBanner({ type: 'success', text: `Meeting scheduled with ${employee.name}.` });
+    } catch (error: any) {
+      setBanner({
+        type: 'error',
+        text: error?.message || 'Failed to schedule the meeting. Please try again.',
+      });
+    }
+  };
 
-                {/* Meeting Console */}
-                <div className="lg:col-span-2 space-y-4 overflow-y-auto pb-20">
-                    {selectedMeeting ? (
-                        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
-                            {/* Meeting Header */}
-                            <div className="flex justify-between items-start pb-4 border-b border-slate-100 dark:border-slate-800 mb-6">
-                                <div className="flex-1">
-                                    <div className="flex items-center gap-3 mb-2">
-                                        <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center font-bold text-emerald-600 text-lg">
-                                            {selectedMeeting.employeeName.split(' ').map(n => n[0]).join('')}
-                                        </div>
-                                        <div>
-                                            <h2 className="text-xl font-bold">{selectedMeeting.employeeName}</h2>
-                                            <p className="text-xs text-slate-500">{selectedMeeting.employeeRole}</p>
-                                        </div>
-                                    </div>
-                                    <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
-                                        <span className="flex items-center gap-1">
-                                            <Calendar className="w-3 h-3" />
-                                            {new Date(selectedMeeting.scheduledDate).toLocaleString('en-US', { weekday: 'short', month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' })}
-                                        </span>
-                                        <span className="flex items-center gap-1">
-                                            <Clock className="w-3 h-3" />
-                                            {selectedMeeting.duration} mins
-                                        </span>
-                                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${selectedMeeting.status === 'completed' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
-                                            }`}>
-                                            {selectedMeeting.status}
-                                        </span>
-                                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
-                                            {selectedMeeting.type}
-                                        </span>
-                                    </div>
-                                </div>
-                                <button
-                                    onClick={() => handleDeleteMeeting(selectedMeeting.id)}
-                                    className="p-2 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors"
-                                >
-                                    <Trash2 className="w-4 h-4" />
-                                </button>
-                            </div>
+  // Persist meeting mutations (talking points, action items, notes, status)
+  // to the backend so they survive reloads.
+  const persistMeeting = async (meeting: Meeting) => {
+    try {
+      await OneOnOneMeetingService.updateMeeting(meeting.id, {
+        agenda: meeting.talkingPoints.map((tp) => ({ topic: tp.text, discussed: tp.isDiscussed })),
+        actionItems: meeting.actionItems.map((ai) => ({
+          action: ai.description,
+          owner: ai.assignedTo,
+          dueDate: ai.dueDate,
+          status: ai.status,
+          priority: ai.priority,
+        })),
+        notes: meeting.notes,
+        sentiment: meeting.sentiment,
+        status: meeting.status,
+        completedAt: meeting.completedAt,
+      });
+    } catch (error: any) {
+      setBanner({ type: 'error', text: 'Changes could not be saved. Please retry.' });
+    }
+  };
 
-                            {/* Talking Points */}
-                            <div className="mb-6">
-                                <h3 className="text-sm font-bold text-slate-500 uppercase mb-3 flex items-center gap-2">
-                                    <MessageSquare className="w-4 h-4" /> Talking Points ({selectedMeeting.talkingPoints.length})
-                                </h3>
-                                <div className="space-y-2">
-                                    {selectedMeeting.talkingPoints.map(tp => (
-                                        <div
-                                            key={tp.id}
-                                            className={`flex items-start gap-3 p-3 rounded-lg transition-colors ${tp.isDiscussed
-                                                    ? 'bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800/30'
-                                                    : 'bg-slate-50 dark:bg-slate-800'
-                                                }`}
-                                        >
-                                            <input
-                                                type="checkbox"
-                                                checked={tp.isDiscussed}
-                                                onChange={() => handleToggleTalkingPoint(tp.id)}
-                                                disabled={selectedMeeting.status === 'completed'}
-                                                className="mt-0.5 w-4 h-4 accent-emerald-600 cursor-pointer"
-                                            />
-                                            <div className="flex-1">
-                                                <span className={`text-sm font-bold ${tp.isDiscussed ? 'text-emerald-700 dark:text-emerald-400 line-through' : 'text-slate-700 dark:text-slate-300'
-                                                    }`}>
-                                                    {tp.text}
-                                                </span>
-                                                {tp.notes && (
-                                                    <p className="text-xs text-slate-500 mt-1 italic">{tp.notes}</p>
-                                                )}
-                                            </div>
-                                        </div>
-                                    ))}
-                                    {selectedMeeting.status !== 'completed' && (
-                                        <div className="flex items-center gap-2">
-                                            <input
-                                                type="text"
-                                                value={newTalkingPoint}
-                                                onChange={(e) => setNewTalkingPoint(e.target.value)}
-                                                onKeyDown={(e) => e.key === 'Enter' && handleAddTalkingPoint()}
-                                                placeholder="Add talking point..."
-                                                className="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
-                                            />
-                                            <button
-                                                onClick={handleAddTalkingPoint}
-                                                className="p-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg"
-                                            >
-                                                <Plus className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
+  const handleAddTalkingPoint = () => {
+    if (!selectedMeeting || !newTalkingPoint.trim()) return;
 
-                            {/* Action Items */}
-                            <div className="mb-6">
-                                <h3 className="text-sm font-bold text-slate-500 uppercase mb-3 flex items-center gap-2">
-                                    <CheckSquare className="w-4 h-4" /> Action Items ({selectedMeeting.actionItems.length})
-                                </h3>
-                                <div className="space-y-2">
-                                    {selectedMeeting.actionItems.map(ai => (
-                                        <div
-                                            key={ai.id}
-                                            className={`flex items-start gap-3 p-3 rounded-lg border ${ai.status === 'completed'
-                                                    ? 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800/30'
-                                                    : 'bg-indigo-50 dark:bg-indigo-900/10 border-indigo-100 dark:border-indigo-800/30'
-                                                }`}
-                                        >
-                                            <input
-                                                type="checkbox"
-                                                checked={ai.status === 'completed'}
-                                                onChange={() => handleToggleActionItem(ai.id)}
-                                                className="mt-0.5 w-4 h-4 accent-indigo-600 cursor-pointer"
-                                            />
-                                            <div className="flex-1">
-                                                <span className={`text-sm font-bold ${ai.status === 'completed'
-                                                        ? 'text-green-700 dark:text-green-400 line-through'
-                                                        : 'text-indigo-700 dark:text-indigo-300'
-                                                    }`}>
-                                                    {ai.description}
-                                                </span>
-                                                <div className="flex items-center gap-3 mt-1 text-xs text-slate-500">
-                                                    <span className="flex items-center gap-1">
-                                                        <User className="w-3 h-3" />
-                                                        {employees.find(e => e.id === ai.assignedTo)?.name}
-                                                    </span>
-                                                    <span className="flex items-center gap-1">
-                                                        <Calendar className="w-3 h-3" />
-                                                        Due: {new Date(ai.dueDate).toLocaleDateString()}
-                                                    </span>
-                                                    <span className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${ai.priority === 'high' ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30' :
-                                                            ai.priority === 'medium' ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30' :
-                                                                'bg-slate-100 text-slate-700 dark:bg-slate-800'
-                                                        }`}>
-                                                        {ai.priority}
-                                                    </span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    ))}
-                                    {selectedMeeting.status !== 'completed' && (
-                                        <div className="flex items-center gap-2">
-                                            <input
-                                                type="text"
-                                                value={newActionItem}
-                                                onChange={(e) => setNewActionItem(e.target.value)}
-                                                onKeyDown={(e) => e.key === 'Enter' && handleAddActionItem()}
-                                                placeholder="Add action item..."
-                                                className="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
-                                            />
-                                            <button
-                                                onClick={handleAddActionItem}
-                                                className="p-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg"
-                                            >
-                                                <Plus className="w-4 h-4" />
-                                            </button>
-                                        </div>
-                                    )}
-                                </div>
-                            </div>
+    const updatedMeeting = {
+      ...selectedMeeting,
+      talkingPoints: [
+        ...selectedMeeting.talkingPoints,
+        { id: `tp${Date.now()}`, text: newTalkingPoint, isDiscussed: false },
+      ],
+    };
 
-                            {/* Meeting Notes */}
-                            <div className="mb-6">
-                                <h3 className="text-sm font-bold text-slate-500 uppercase mb-3 flex items-center gap-2">
-                                    <FileText className="w-4 h-4" /> Meeting Notes
-                                </h3>
-                                <textarea
-                                    value={selectedMeeting.notes}
-                                    onChange={(e) => handleUpdateNotes(e.target.value)}
-                                    disabled={selectedMeeting.status === 'completed'}
-                                    placeholder="Add notes about the meeting..."
-                                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-emerald-500 min-h-[100px] resize-none"
-                                />
-                            </div>
+    setMeetings(meetings.map((m) => (m.id === selectedMeeting.id ? updatedMeeting : m)));
+    setSelectedMeeting(updatedMeeting);
+    setNewTalkingPoint('');
+    void persistMeeting(updatedMeeting);
+  };
 
-                            {/* Feedback Responses (if completed) */}
-                            {selectedMeeting.status === 'completed' && selectedMeeting.feedbackResponses && selectedMeeting.feedbackResponses.length > 0 && (
-                                <div className="mb-6">
-                                    <h3 className="text-sm font-bold text-slate-500 uppercase mb-3 flex items-center gap-2">
-                                        <TrendingUp className="w-4 h-4" /> Employee Feedback
-                                    </h3>
-                                    <div className="space-y-3">
-                                        {selectedMeeting.feedbackResponses.map(fr => {
-                                            const question = FEEDBACK_QUESTIONS.find(q => q.id === fr.questionId);
-                                            return (
-                                                <div key={fr.questionId} className="bg-slate-50 dark:bg-slate-800 p-3 rounded-lg">
-                                                    <div className="text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">{question?.question}</div>
-                                                    <div className="text-sm text-slate-700 dark:text-slate-300">{fr.response}</div>
-                                                    {fr.rating && (
-                                                        <div className="flex items-center gap-0.5 mt-2">
-                                                            {[...Array(5)].map((_, i) => (
-                                                                <Smile key={i} className={`w-3 h-3 ${i < fr.rating! ? 'text-emerald-500' : 'text-slate-300 dark:text-slate-600'}`} />
-                                                            ))}
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                </div>
-                            )}
+  const handleToggleTalkingPoint = (tpId: string) => {
+    if (!selectedMeeting) return;
 
-                            {/* Meeting Actions */}
-                            {selectedMeeting.status === 'scheduled' && (
-                                <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center">
-                                    <div className="flex items-center gap-3">
-                                        <div className="text-xs font-bold text-slate-400 uppercase">Meeting Vibe</div>
-                                        <div className="flex gap-1">
-                                            {[1, 2, 3, 4, 5].map(n => (
-                                                <button
-                                                    key={n}
-                                                    onClick={() => handleSetSentiment(n as SentimentScore)}
-                                                    className={`p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors ${selectedMeeting.sentiment === n
-                                                            ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30'
-                                                            : 'text-slate-400'
-                                                        }`}
-                                                >
-                                                    <Smile className="w-4 h-4" />
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
-                                    <button
-                                        onClick={handleCompleteMeeting}
-                                        className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-bold flex items-center gap-2 shadow-lg shadow-indigo-500/20"
-                                    >
-                                        Complete Meeting <ArrowRight className="w-4 h-4" />
-                                    </button>
-                                </div>
-                            )}
+    const updatedMeeting = {
+      ...selectedMeeting,
+      talkingPoints: selectedMeeting.talkingPoints.map((tp) =>
+        tp.id === tpId ? { ...tp, isDiscussed: !tp.isDiscussed } : tp
+      ),
+    };
 
-                            {selectedMeeting.status === 'completed' && (
-                                <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
-                                    <div className="flex items-center gap-2 text-green-600">
-                                        <CheckCircle className="w-5 h-5" />
-                                        <span className="text-sm font-bold">
-                                            Meeting completed on {new Date(selectedMeeting.completedAt!).toLocaleDateString()}
-                                        </span>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-                    ) : (
-                        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center">
-                            <MessageSquare className="w-16 h-16 text-slate-300 dark:text-slate-700 mx-auto mb-4" />
-                            <h3 className="text-lg font-bold text-slate-400 dark:text-slate-600 mb-2">No Meeting Selected</h3>
-                            <p className="text-sm text-slate-500">Select a meeting from the list or schedule a new one</p>
-                        </div>
-                    )}
-                </div>
-            </div>
+    setMeetings(meetings.map((m) => (m.id === selectedMeeting.id ? updatedMeeting : m)));
+    setSelectedMeeting(updatedMeeting);
+    void persistMeeting(updatedMeeting);
+  };
 
-            {/* Schedule Meeting Modal */}
-            {showScheduleModal && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-                    <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-md w-full p-6 border border-slate-200 dark:border-slate-800">
-                        <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-xl font-bold">Schedule 1-on-1 Meeting</h2>
-                            <button onClick={() => setShowScheduleModal(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
+  const handleAddActionItem = () => {
+    if (!selectedMeeting || !newActionItem.trim()) return;
 
-                        <div className="space-y-4">
-                            <div>
-                                <label className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 block">Employee</label>
-                                <select
-                                    value={scheduleForm.employeeId}
-                                    onChange={(e) => setScheduleForm({ ...scheduleForm, employeeId: e.target.value })}
-                                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
-                                >
-                                    <option value="">Select employee...</option>
-                                    {employees.length === 0 && (
-                                        <option disabled>No employees found - complete reviews first</option>
-                                    )}
-                                    {employees.map(emp => (
-                                        <option key={emp.id} value={emp.id}>{emp.name} - {emp.role}</option>
-                                    ))}
-                                </select>
-                            </div>
+    const updatedMeeting = {
+      ...selectedMeeting,
+      actionItems: [
+        ...selectedMeeting.actionItems,
+        {
+          id: `ai${Date.now()}`,
+          description: newActionItem,
+          assignedTo: selectedMeeting.employeeId,
+          dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString(),
+          status: 'pending' as ActionStatus,
+          priority: 'medium' as const,
+        },
+      ],
+    };
 
-                            <div>
-                                <label className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 block">Date</label>
-                                <input
-                                    type="date"
-                                    value={scheduleForm.date}
-                                    onChange={(e) => setScheduleForm({ ...scheduleForm, date: e.target.value })}
-                                    min={new Date().toISOString().split('T')[0]}
-                                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
-                                />
-                            </div>
+    setMeetings(meetings.map((m) => (m.id === selectedMeeting.id ? updatedMeeting : m)));
+    setSelectedMeeting(updatedMeeting);
+    setNewActionItem('');
+    void persistMeeting(updatedMeeting);
+  };
 
-                            <div>
-                                <label className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 block">Time</label>
-                                <input
-                                    type="time"
-                                    value={scheduleForm.time}
-                                    onChange={(e) => setScheduleForm({ ...scheduleForm, time: e.target.value })}
-                                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
-                                />
-                            </div>
+  const handleToggleActionItem = (aiId: string) => {
+    if (!selectedMeeting) return;
 
-                            <div>
-                                <label className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 block">Duration (minutes)</label>
-                                <select
-                                    value={scheduleForm.duration}
-                                    onChange={(e) => setScheduleForm({ ...scheduleForm, duration: e.target.value })}
-                                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
-                                >
-                                    <option value="15">15 minutes</option>
-                                    <option value="30">30 minutes</option>
-                                    <option value="45">45 minutes</option>
-                                    <option value="60">60 minutes</option>
-                                </select>
-                            </div>
+    const updatedMeeting = {
+      ...selectedMeeting,
+      actionItems: selectedMeeting.actionItems.map((ai) =>
+        ai.id === aiId
+          ? { ...ai, status: ai.status === 'completed' ? 'pending' : ('completed' as ActionStatus) }
+          : ai
+      ),
+    };
 
-                            <div>
-                                <label className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 block">Meeting Type</label>
-                                <select
-                                    value={scheduleForm.type}
-                                    onChange={(e) => setScheduleForm({ ...scheduleForm, type: e.target.value as MeetingType })}
-                                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
-                                >
-                                    <option value="Weekly Sync">Weekly Sync</option>
-                                    <option value="Career Dev">Career Development</option>
-                                    <option value="Performance Review">Performance Review</option>
-                                    <option value="Feedback">Feedback Session</option>
-                                    <option value="Check-in">General Check-in</option>
-                                </select>
-                            </div>
-                        </div>
+    setMeetings(meetings.map((m) => (m.id === selectedMeeting.id ? updatedMeeting : m)));
+    setSelectedMeeting(updatedMeeting);
+    void persistMeeting(updatedMeeting);
+  };
 
-                        <div className="flex gap-3 mt-6">
-                            <button
-                                onClick={() => setShowScheduleModal(false)}
-                                className="flex-1 px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-800"
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={handleScheduleMeeting}
-                                className="flex-1 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-bold"
-                            >
-                                Schedule Meeting
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+  const handleSetSentiment = (score: SentimentScore) => {
+    if (!selectedMeeting) return;
 
-            {/* Feedback Survey Modal */}
-            {showFeedbackModal && selectedMeeting && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
-                    <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-2xl w-full p-6 border border-slate-200 dark:border-slate-800 my-8">
-                        <div className="flex justify-between items-center mb-6">
-                            <div>
-                                <h2 className="text-xl font-bold">Employee Feedback Survey</h2>
-                                <p className="text-sm text-slate-500">Collect feedback from {selectedMeeting.employeeName}</p>
-                            </div>
-                            <button onClick={() => setShowFeedbackModal(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
+    const updatedMeeting = { ...selectedMeeting, sentiment: score };
+    setMeetings(meetings.map((m) => (m.id === selectedMeeting.id ? updatedMeeting : m)));
+    setSelectedMeeting(updatedMeeting);
+  };
 
-                        <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
-                            {FEEDBACK_QUESTIONS.map((question, idx) => (
-                                <div key={question.id} className="pb-4 border-b border-slate-100 dark:border-slate-800 last:border-0">
-                                    <label className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-3 block">
-                                        {idx + 1}. {question.question}
-                                    </label>
-                                    <textarea
-                                        value={feedbackForm[idx].response}
-                                        onChange={(e) => {
-                                            const updated = [...feedbackForm];
-                                            updated[idx].response = e.target.value;
-                                            setFeedbackForm(updated);
-                                        }}
-                                        placeholder="Enter response..."
-                                        className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500 min-h-[80px] resize-none mb-2"
-                                    />
-                                    {question.category !== 'concerns' && (
-                                        <div className="flex items-center gap-2">
-                                            <span className="text-xs text-slate-500">Rating:</span>
-                                            <div className="flex gap-1">
-                                                {[1, 2, 3, 4, 5].map(n => (
-                                                    <button
-                                                        key={n}
-                                                        onClick={() => {
-                                                            const updated = [...feedbackForm];
-                                                            updated[idx].rating = n;
-                                                            setFeedbackForm(updated);
-                                                        }}
-                                                        className={`p-1 rounded transition-colors ${feedbackForm[idx].rating === n
-                                                                ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30'
-                                                                : 'text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
-                                                            }`}
-                                                    >
-                                                        <Smile className="w-4 h-4" />
-                                                    </button>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
-                                </div>
-                            ))}
-                        </div>
+  const handleCompleteMeeting = () => {
+    if (!selectedMeeting) return;
 
-                        <div className="flex gap-3 mt-6">
-                            <button
-                                onClick={() => setShowFeedbackModal(false)}
-                                className="flex-1 px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-800"
-                            >
-                                Skip for Now
-                            </button>
-                            <button
-                                onClick={handleSubmitFeedback}
-                                className="flex-1 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-bold flex items-center justify-center gap-2"
-                            >
-                                <Send className="w-4 h-4" />
-                                Submit Feedback
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
+    if (!selectedMeeting.sentiment) {
+      setBanner({ type: 'error', text: 'Please rate the meeting vibe before completing.' });
+      return;
+    }
 
-            {/* Analytics Modal */}
-            {showAnalytics && (
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
-                    <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-4xl w-full p-6 border border-slate-200 dark:border-slate-800 my-8">
-                        <div className="flex justify-between items-center mb-6">
-                            <div>
-                                <h2 className="text-xl font-bold flex items-center gap-2">
-                                    <BarChart3 className="w-6 h-6 text-indigo-500" />
-                                    Meeting Analytics & Insights
-                                </h2>
-                                <p className="text-sm text-slate-500">Summary insights and trends</p>
-                            </div>
-                            <button onClick={() => setShowAnalytics(false)} className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
-                                <X className="w-5 h-5" />
-                            </button>
-                        </div>
+    const updatedMeeting = {
+      ...selectedMeeting,
+      status: 'completed' as MeetingStatus,
+      completedAt: new Date().toISOString(),
+    };
 
-                        {/* Key Metrics */}
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-                            <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-900/10 p-4 rounded-xl">
-                                <div className="text-3xl font-bold text-emerald-600">{stats.totalMeetings}</div>
-                                <div className="text-xs text-emerald-700 dark:text-emerald-400 font-bold">Total Meetings</div>
-                            </div>
-                            <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-900/10 p-4 rounded-xl">
-                                <div className="text-3xl font-bold text-blue-600">{((stats.completedMeetings / stats.totalMeetings) * 100).toFixed(0)}%</div>
-                                <div className="text-xs text-blue-700 dark:text-blue-400 font-bold">Completion Rate</div>
-                            </div>
-                            <div className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-900/10 p-4 rounded-xl">
-                                <div className="text-3xl font-bold text-amber-600">{stats.averageSentiment.toFixed(1)}/5</div>
-                                <div className="text-xs text-amber-700 dark:text-amber-400 font-bold">Avg Sentiment</div>
-                            </div>
-                            <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-900/10 p-4 rounded-xl">
-                                <div className="text-3xl font-bold text-purple-600">{stats.employeesEngaged}</div>
-                                <div className="text-xs text-purple-700 dark:text-purple-400 font-bold">Employees</div>
-                            </div>
-                        </div>
+    setMeetings(meetings.map((m) => (m.id === selectedMeeting.id ? updatedMeeting : m)));
+    setSelectedMeeting(updatedMeeting);
+    void persistMeeting(updatedMeeting);
+    setShowFeedbackModal(true);
+  };
 
-                        {/* Insights */}
-                        <div className="space-y-4">
-                            <h3 className="text-lg font-bold flex items-center gap-2">
-                                <TrendingUp className="w-5 h-5 text-emerald-500" />
-                                Key Insights
-                            </h3>
+  const handleSubmitFeedback = () => {
+    if (!selectedMeeting) return;
 
-                            <div className="bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800/30 p-4 rounded-xl">
-                                <div className="flex items-start gap-3">
-                                    <CheckCircle className="w-5 h-5 text-emerald-600 mt-0.5" />
-                                    <div>
-                                        <div className="font-bold text-emerald-700 dark:text-emerald-400">High Engagement</div>
-                                        <div className="text-sm text-emerald-600 dark:text-emerald-500">
-                                            {stats.employeesEngaged} employees are actively participating in 1-on-1 meetings. Average sentiment score of {stats.averageSentiment.toFixed(1)} indicates positive engagement.
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+    const updatedMeeting = {
+      ...selectedMeeting,
+      feedbackResponses: feedbackForm.filter((f) => f.response.trim() !== ''),
+    };
 
-                            {stats.pendingActionItems > 0 && (
-                                <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/30 p-4 rounded-xl">
-                                    <div className="flex items-start gap-3">
-                                        <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5" />
-                                        <div>
-                                            <div className="font-bold text-amber-700 dark:text-amber-400">Action Items Pending</div>
-                                            <div className="text-sm text-amber-600 dark:text-amber-500">
-                                                {stats.pendingActionItems} action items are still pending. Follow up with team members to ensure completion.
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {meetings.filter(m => m.feedbackResponses && m.feedbackResponses.length > 0).length > 0 && (
-                                <div className="bg-indigo-50 dark:bg-indigo-900/10 border border-indigo-200 dark:border-indigo-800/30 p-4 rounded-xl">
-                                    <div className="flex items-start gap-3">
-                                        <Target className="w-5 h-5 text-indigo-600 mt-0.5" />
-                                        <div>
-                                            <div className="font-bold text-indigo-700 dark:text-indigo-400">Feedback Collected</div>
-                                            <div className="text-sm text-indigo-600 dark:text-indigo-500">
-                                                {meetings.filter(m => m.feedbackResponses && m.feedbackResponses.length > 0).length} meetings have employee feedback responses.
-                                                Review concerns and growth opportunities mentioned.
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-
-                            {stats.trendsImproving && (
-                                <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800/30 p-4 rounded-xl">
-                                    <div className="flex items-start gap-3">
-                                        <TrendingUp className="w-5 h-5 text-blue-600 mt-0.5" />
-                                        <div>
-                                            <div className="font-bold text-blue-700 dark:text-blue-400">Improving Trends</div>
-                                            <div className="text-sm text-blue-600 dark:text-blue-500">
-                                                Meeting sentiment and completion rates are trending upward. Continue current engagement practices.
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
-
-                        {/* Common Themes */}
-                        {meetings.some(m => m.feedbackResponses && m.feedbackResponses.length > 0) && (
-                            <div className="mt-6">
-                                <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                                    <MessageSquare className="w-5 h-5 text-purple-500" />
-                                    Common Themes from Feedback
-                                </h3>
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                    <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl">
-                                        <div className="text-xs font-bold text-slate-500 uppercase mb-2">Growth & Development</div>
-                                        <div className="text-sm text-slate-700 dark:text-slate-300">
-                                            Employees are interested in skill development and career advancement opportunities.
-                                        </div>
-                                    </div>
-                                    <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl">
-                                        <div className="text-xs font-bold text-slate-500 uppercase mb-2">Work-Life Balance</div>
-                                        <div className="text-sm text-slate-700 dark:text-slate-300">
-                                            Overall satisfaction with workload management is high across the team.
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-
-                        <div className="flex justify-end mt-6">
-                            <button
-                                onClick={() => setShowAnalytics(false)}
-                                className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-bold"
-                            >
-                                Close
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            )}
-        </div>
+    setMeetings(meetings.map((m) => (m.id === selectedMeeting.id ? updatedMeeting : m)));
+    setSelectedMeeting(updatedMeeting);
+    void persistMeeting(updatedMeeting);
+    setShowFeedbackModal(false);
+    setFeedbackForm(
+      FEEDBACK_QUESTIONS.map((q) => ({ questionId: q.id, response: '', rating: undefined }))
     );
-}
+  };
 
+  const handleUpdateNotes = (notes: string) => {
+    if (!selectedMeeting) return;
+
+    const updatedMeeting = { ...selectedMeeting, notes };
+    setMeetings(meetings.map((m) => (m.id === selectedMeeting.id ? updatedMeeting : m)));
+    setSelectedMeeting(updatedMeeting);
+  };
+
+  const handleNotesBlur = () => {
+    if (selectedMeeting) void persistMeeting(selectedMeeting);
+  };
+
+  const handleDeleteMeeting = async (meetingId: string) => {
+    setConfirmDeleteId(null);
+    setBanner(null);
+    try {
+      await OneOnOneMeetingService.deleteMeeting(meetingId);
+    } catch (error: any) {
+      setBanner({ type: 'error', text: 'Failed to delete the meeting. Please try again.' });
+      return;
+    }
+
+    setMeetings(meetings.filter((m) => m.id !== meetingId));
+    if (selectedMeeting?.id === meetingId) {
+      setSelectedMeeting(meetings.find((m) => m.id !== meetingId) || null);
+    }
+    setBanner({ type: 'success', text: 'Meeting deleted.' });
+  };
+
+  // ==================== RENDER ====================
+
+  const upcomingMeetings = meetings
+    .filter((m) => m.status === 'scheduled')
+    .sort((a, b) => new Date(a.scheduledDate).getTime() - new Date(b.scheduledDate).getTime());
+  const pastMeetings = meetings
+    .filter((m) => m.status === 'completed')
+    .sort(
+      (a, b) =>
+        new Date(b.completedAt || b.scheduledDate).getTime() -
+        new Date(a.completedAt || a.scheduledDate).getTime()
+    );
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <Loader2 className="w-8 h-8 animate-spin text-emerald-500" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+      {/* Header with Stats */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
+        <div>
+          <h1 className="text-2xl font-bold flex items-center gap-2">
+            <MessageSquare className="w-6 h-6 text-emerald-500" />
+            1-on-1 Meetings
+          </h1>
+          <p className="text-slate-500 text-sm">
+            Track manager-employee check-ins, talking points, and action items.
+          </p>
+        </div>
+        <div className="flex gap-2">
+          <button
+            onClick={() => setShowAnalytics(true)}
+            className="flex items-center gap-2 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 px-4 py-2 rounded-xl text-sm font-bold"
+          >
+            <BarChart3 className="w-4 h-4" />
+            Analytics
+          </button>
+          <button
+            onClick={() => setShowScheduleModal(true)}
+            className="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-emerald-500/20"
+          >
+            <Plus className="w-4 h-4" />
+            Schedule New
+          </button>
+        </div>
+      </div>
+
+      {banner && (
+        <div
+          className={`flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-bold shrink-0 ${
+            banner.type === 'success'
+              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800'
+              : 'bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-900/20 dark:text-rose-400 dark:border-rose-800'
+          }`}
+        >
+          {banner.type === 'success' ? (
+            <CheckCircle className="w-4 h-4 shrink-0" />
+          ) : (
+            <AlertCircle className="w-4 h-4 shrink-0" />
+          )}
+          <span>{banner.text}</span>
+        </div>
+      )}
+
+      {/* Quick Stats */}
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3 shrink-0">
+        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+          <div className="text-2xl font-bold text-emerald-600">{stats.totalMeetings}</div>
+          <div className="text-xs text-slate-500">Total Meetings</div>
+        </div>
+        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+          <div className="text-2xl font-bold text-blue-600">{stats.completedMeetings}</div>
+          <div className="text-xs text-slate-500">Completed</div>
+        </div>
+        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+          <div className="text-2xl font-bold text-amber-600">
+            {stats.averageSentiment.toFixed(1)}/5
+          </div>
+          <div className="text-xs text-slate-500">Avg Sentiment</div>
+        </div>
+        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+          <div className="text-2xl font-bold text-indigo-600">{stats.pendingActionItems}</div>
+          <div className="text-xs text-slate-500">Pending Actions</div>
+        </div>
+        <div className="bg-white dark:bg-slate-900 p-4 rounded-xl border border-slate-200 dark:border-slate-800">
+          <div className="text-2xl font-bold text-purple-600">{stats.employeesEngaged}</div>
+          <div className="text-xs text-slate-500">Employees</div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full min-h-0">
+        {/* Meeting List */}
+        <div className="lg:col-span-1 space-y-4 overflow-y-auto pb-20">
+          <h3 className="font-bold text-sm mb-2 text-slate-500 uppercase">
+            Upcoming ({upcomingMeetings.length})
+          </h3>
+          {upcomingMeetings.length === 0 && pastMeetings.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-8 text-slate-400">
+              <MessageSquare className="w-10 h-10 mb-2 opacity-30" />
+              <p className="text-sm font-bold">No meetings yet</p>
+              <p className="text-xs mt-1">Schedule your first 1-on-1</p>
+            </div>
+          )}
+          {upcomingMeetings.map((meeting) => (
+            <div
+              key={meeting.id}
+              onClick={() => setSelectedMeeting(meeting)}
+              className={`bg-white dark:bg-slate-900 p-4 rounded-xl border-l-4 shadow-sm cursor-pointer hover:shadow-md transition-all ${
+                selectedMeeting?.id === meeting.id
+                  ? 'border-emerald-500 ring-2 ring-emerald-500/20'
+                  : 'border-emerald-300'
+              }`}
+            >
+              <div className="flex justify-between items-start mb-2">
+                <h4 className="font-bold text-slate-800 dark:text-slate-200">
+                  {meeting.employeeName}
+                </h4>
+                <span className="text-[10px] bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 px-2 py-0.5 rounded font-bold">
+                  {meeting.type}
+                </span>
+              </div>
+              <div className="text-xs text-slate-500 font-bold mb-1">{meeting.employeeRole}</div>
+              <div className="text-xs text-slate-400 flex items-center gap-1">
+                <Calendar className="w-3 h-3" />
+                {new Date(meeting.scheduledDate).toLocaleString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                  hour: 'numeric',
+                  minute: '2-digit',
+                })}
+              </div>
+              <div className="text-xs text-slate-400 flex items-center gap-1 mt-1">
+                <Clock className="w-3 h-3" />
+                {meeting.duration} mins
+              </div>
+            </div>
+          ))}
+
+          <h3 className="font-bold text-sm mt-6 mb-2 text-slate-500 uppercase">
+            Past Logs ({pastMeetings.length})
+          </h3>
+          {pastMeetings.map((meeting) => (
+            <div
+              key={meeting.id}
+              onClick={() => setSelectedMeeting(meeting)}
+              className={`bg-slate-50 dark:bg-slate-800/50 p-4 rounded-xl border cursor-pointer transition-all ${
+                selectedMeeting?.id === meeting.id
+                  ? 'border-slate-400 dark:border-slate-600'
+                  : 'border-slate-100 dark:border-slate-800'
+              } hover:border-slate-300 dark:hover:border-slate-700`}
+            >
+              <div className="flex justify-between items-start mb-1">
+                <h4 className="font-bold text-slate-700 dark:text-slate-300 text-sm">
+                  {meeting.employeeName}
+                </h4>
+                <div className="flex items-center gap-1">
+                  {meeting.sentiment && (
+                    <div className="flex items-center gap-0.5">
+                      {[...Array(meeting.sentiment)].map((_, i) => (
+                        <Smile key={i} className="w-3 h-3 text-emerald-500" />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+              <p className="text-xs text-slate-500 truncate">
+                {meeting.notes || 'No notes recorded'}
+              </p>
+              <div className="text-[10px] text-slate-400 mt-1">
+                {new Date(meeting.completedAt || meeting.scheduledDate).toLocaleDateString()}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Meeting Console */}
+        <div className="lg:col-span-2 space-y-4 overflow-y-auto pb-20">
+          {selectedMeeting ? (
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
+              {/* Meeting Header */}
+              <div className="flex justify-between items-start pb-4 border-b border-slate-100 dark:border-slate-800 mb-6">
+                <div className="flex-1">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-12 h-12 rounded-full bg-emerald-100 dark:bg-emerald-900/30 flex items-center justify-center font-bold text-emerald-600 text-lg">
+                      {selectedMeeting.employeeName
+                        .split(' ')
+                        .map((n) => n[0])
+                        .join('')}
+                    </div>
+                    <div>
+                      <h2 className="text-xl font-bold">{selectedMeeting.employeeName}</h2>
+                      <p className="text-xs text-slate-500">{selectedMeeting.employeeRole}</p>
+                    </div>
+                  </div>
+                  <div className="flex flex-wrap items-center gap-3 text-xs text-slate-500">
+                    <span className="flex items-center gap-1">
+                      <Calendar className="w-3 h-3" />
+                      {new Date(selectedMeeting.scheduledDate).toLocaleString('en-US', {
+                        weekday: 'short',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: 'numeric',
+                        minute: '2-digit',
+                      })}
+                    </span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-3 h-3" />
+                      {selectedMeeting.duration} mins
+                    </span>
+                    <span
+                      className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                        selectedMeeting.status === 'completed'
+                          ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
+                          : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400'
+                      }`}
+                    >
+                      {selectedMeeting.status}
+                    </span>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+                      {selectedMeeting.type}
+                    </span>
+                  </div>
+                </div>
+                <button
+                  onClick={() => setConfirmDeleteId(selectedMeeting.id)}
+                  className="p-2 text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 rounded-lg transition-colors"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </div>
+
+              {/* Talking Points */}
+              <div className="mb-6">
+                <h3 className="text-sm font-bold text-slate-500 uppercase mb-3 flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4" /> Talking Points (
+                  {selectedMeeting.talkingPoints.length})
+                </h3>
+                <div className="space-y-2">
+                  {selectedMeeting.talkingPoints.map((tp) => (
+                    <div
+                      key={tp.id}
+                      className={`flex items-start gap-3 p-3 rounded-lg transition-colors ${
+                        tp.isDiscussed
+                          ? 'bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800/30'
+                          : 'bg-slate-50 dark:bg-slate-800'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={tp.isDiscussed}
+                        onChange={() => handleToggleTalkingPoint(tp.id)}
+                        disabled={selectedMeeting.status === 'completed'}
+                        className="mt-0.5 w-4 h-4 accent-emerald-600 cursor-pointer"
+                      />
+                      <div className="flex-1">
+                        <span
+                          className={`text-sm font-bold ${
+                            tp.isDiscussed
+                              ? 'text-emerald-700 dark:text-emerald-400 line-through'
+                              : 'text-slate-700 dark:text-slate-300'
+                          }`}
+                        >
+                          {tp.text}
+                        </span>
+                        {tp.notes && (
+                          <p className="text-xs text-slate-500 mt-1 italic">{tp.notes}</p>
+                        )}
+                      </div>
+                    </div>
+                  ))}
+                  {selectedMeeting.status !== 'completed' && (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={newTalkingPoint}
+                        onChange={(e) => setNewTalkingPoint(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleAddTalkingPoint()}
+                        placeholder="Add talking point..."
+                        className="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
+                      />
+                      <button
+                        onClick={handleAddTalkingPoint}
+                        className="p-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg"
+                      >
+                        <Plus className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Action Items */}
+              <div className="mb-6">
+                <h3 className="text-sm font-bold text-slate-500 uppercase mb-3 flex items-center gap-2">
+                  <CheckSquare className="w-4 h-4" /> Action Items (
+                  {selectedMeeting.actionItems.length})
+                </h3>
+                <div className="space-y-2">
+                  {selectedMeeting.actionItems.map((ai) => (
+                    <div
+                      key={ai.id}
+                      className={`flex items-start gap-3 p-3 rounded-lg border ${
+                        ai.status === 'completed'
+                          ? 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800/30'
+                          : 'bg-indigo-50 dark:bg-indigo-900/10 border-indigo-100 dark:border-indigo-800/30'
+                      }`}
+                    >
+                      <input
+                        type="checkbox"
+                        checked={ai.status === 'completed'}
+                        onChange={() => handleToggleActionItem(ai.id)}
+                        className="mt-0.5 w-4 h-4 accent-indigo-600 cursor-pointer"
+                      />
+                      <div className="flex-1">
+                        <span
+                          className={`text-sm font-bold ${
+                            ai.status === 'completed'
+                              ? 'text-green-700 dark:text-green-400 line-through'
+                              : 'text-indigo-700 dark:text-indigo-300'
+                          }`}
+                        >
+                          {ai.description}
+                        </span>
+                        <div className="flex items-center gap-3 mt-1 text-xs text-slate-500">
+                          <span className="flex items-center gap-1">
+                            <User className="w-3 h-3" />
+                            {employees.find((e) => e.id === ai.assignedTo)?.name}
+                          </span>
+                          <span className="flex items-center gap-1">
+                            <Calendar className="w-3 h-3" />
+                            Due: {new Date(ai.dueDate).toLocaleDateString()}
+                          </span>
+                          <span
+                            className={`px-1.5 py-0.5 rounded text-[10px] font-bold ${
+                              ai.priority === 'high'
+                                ? 'bg-rose-100 text-rose-700 dark:bg-rose-900/30'
+                                : ai.priority === 'medium'
+                                  ? 'bg-amber-100 text-amber-700 dark:bg-amber-900/30'
+                                  : 'bg-slate-100 text-slate-700 dark:bg-slate-800'
+                            }`}
+                          >
+                            {ai.priority}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {selectedMeeting.status !== 'completed' && (
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={newActionItem}
+                        onChange={(e) => setNewActionItem(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && handleAddActionItem()}
+                        placeholder="Add action item..."
+                        className="flex-1 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+                      />
+                      <button
+                        onClick={handleAddActionItem}
+                        className="p-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg"
+                      >
+                        <Plus className="w-4 h-4" />
+                      </button>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              {/* Meeting Notes */}
+              <div className="mb-6">
+                <h3 className="text-sm font-bold text-slate-500 uppercase mb-3 flex items-center gap-2">
+                  <FileText className="w-4 h-4" /> Meeting Notes
+                </h3>
+                <textarea
+                  value={selectedMeeting.notes}
+                  onChange={(e) => handleUpdateNotes(e.target.value)}
+                  onBlur={handleNotesBlur}
+                  disabled={selectedMeeting.status === 'completed'}
+                  placeholder="Add notes about the meeting..."
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-4 py-3 text-sm outline-none focus:ring-2 focus:ring-emerald-500 min-h-[100px] resize-none"
+                />
+              </div>
+
+              {/* Feedback Responses (if completed) */}
+              {selectedMeeting.status === 'completed' &&
+                selectedMeeting.feedbackResponses &&
+                selectedMeeting.feedbackResponses.length > 0 && (
+                  <div className="mb-6">
+                    <h3 className="text-sm font-bold text-slate-500 uppercase mb-3 flex items-center gap-2">
+                      <TrendingUp className="w-4 h-4" /> Employee Feedback
+                    </h3>
+                    <div className="space-y-3">
+                      {selectedMeeting.feedbackResponses.map((fr) => {
+                        const question = FEEDBACK_QUESTIONS.find((q) => q.id === fr.questionId);
+                        return (
+                          <div
+                            key={fr.questionId}
+                            className="bg-slate-50 dark:bg-slate-800 p-3 rounded-lg"
+                          >
+                            <div className="text-xs font-bold text-slate-600 dark:text-slate-400 mb-1">
+                              {question?.question}
+                            </div>
+                            <div className="text-sm text-slate-700 dark:text-slate-300">
+                              {fr.response}
+                            </div>
+                            {fr.rating && (
+                              <div className="flex items-center gap-0.5 mt-2">
+                                {[...Array(5)].map((_, i) => (
+                                  <Smile
+                                    key={i}
+                                    className={`w-3 h-3 ${i < fr.rating! ? 'text-emerald-500' : 'text-slate-300 dark:text-slate-600'}`}
+                                  />
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
+              {/* Meeting Actions */}
+              {selectedMeeting.status === 'scheduled' && (
+                <div className="pt-4 border-t border-slate-100 dark:border-slate-800 flex justify-between items-center">
+                  <div className="flex items-center gap-3">
+                    <div className="text-xs font-bold text-slate-400 uppercase">Meeting Vibe</div>
+                    <div className="flex gap-1">
+                      {[1, 2, 3, 4, 5].map((n) => (
+                        <button
+                          key={n}
+                          onClick={() => handleSetSentiment(n as SentimentScore)}
+                          className={`p-1.5 rounded hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors ${
+                            selectedMeeting.sentiment === n
+                              ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30'
+                              : 'text-slate-400'
+                          }`}
+                        >
+                          <Smile className="w-4 h-4" />
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <button
+                    onClick={handleCompleteMeeting}
+                    className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-bold flex items-center gap-2 shadow-lg shadow-indigo-500/20"
+                  >
+                    Complete Meeting <ArrowRight className="w-4 h-4" />
+                  </button>
+                </div>
+              )}
+
+              {selectedMeeting.status === 'completed' && (
+                <div className="pt-4 border-t border-slate-100 dark:border-slate-800">
+                  <div className="flex items-center gap-2 text-green-600">
+                    <CheckCircle className="w-5 h-5" />
+                    <span className="text-sm font-bold">
+                      Meeting completed on{' '}
+                      {new Date(selectedMeeting.completedAt!).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-12 text-center">
+              <MessageSquare className="w-16 h-16 text-slate-300 dark:text-slate-700 mx-auto mb-4" />
+              <h3 className="text-lg font-bold text-slate-400 dark:text-slate-600 mb-2">
+                No Meeting Selected
+              </h3>
+              <p className="text-sm text-slate-500">
+                Select a meeting from the list or schedule a new one
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Schedule Meeting Modal */}
+      {showScheduleModal && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-md w-full p-6 border border-slate-200 dark:border-slate-800">
+            <div className="flex justify-between items-center mb-6">
+              <h2 className="text-xl font-bold">Schedule 1-on-1 Meeting</h2>
+              <button
+                onClick={() => setShowScheduleModal(false)}
+                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 block">
+                  Employee
+                </label>
+                <select
+                  value={scheduleForm.employeeId}
+                  onChange={(e) => setScheduleForm({ ...scheduleForm, employeeId: e.target.value })}
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
+                >
+                  <option value="">Select employee...</option>
+                  {employees.length === 0 && (
+                    <option disabled>No employees found - complete reviews first</option>
+                  )}
+                  {employees.map((emp) => (
+                    <option key={emp.id} value={emp.id}>
+                      {emp.name} - {emp.role}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div>
+                <label className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 block">
+                  Date
+                </label>
+                <input
+                  type="date"
+                  value={scheduleForm.date}
+                  onChange={(e) => setScheduleForm({ ...scheduleForm, date: e.target.value })}
+                  min={new Date().toISOString().split('T')[0]}
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 block">
+                  Time
+                </label>
+                <input
+                  type="time"
+                  value={scheduleForm.time}
+                  onChange={(e) => setScheduleForm({ ...scheduleForm, time: e.target.value })}
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
+                />
+              </div>
+
+              <div>
+                <label className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 block">
+                  Duration (minutes)
+                </label>
+                <select
+                  value={scheduleForm.duration}
+                  onChange={(e) => setScheduleForm({ ...scheduleForm, duration: e.target.value })}
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
+                >
+                  <option value="15">15 minutes</option>
+                  <option value="30">30 minutes</option>
+                  <option value="45">45 minutes</option>
+                  <option value="60">60 minutes</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-2 block">
+                  Meeting Type
+                </label>
+                <select
+                  value={scheduleForm.type}
+                  onChange={(e) =>
+                    setScheduleForm({ ...scheduleForm, type: e.target.value as MeetingType })
+                  }
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500"
+                >
+                  <option value="Weekly Sync">Weekly Sync</option>
+                  <option value="Career Dev">Career Development</option>
+                  <option value="Performance Review">Performance Review</option>
+                  <option value="Feedback">Feedback Session</option>
+                  <option value="Check-in">General Check-in</option>
+                </select>
+              </div>
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setShowScheduleModal(false)}
+                className="flex-1 px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-800"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleScheduleMeeting}
+                className="flex-1 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-bold"
+              >
+                Schedule Meeting
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Feedback Survey Modal */}
+      {showFeedbackModal && selectedMeeting && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-2xl w-full p-6 border border-slate-200 dark:border-slate-800 my-8">
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h2 className="text-xl font-bold">Employee Feedback Survey</h2>
+                <p className="text-sm text-slate-500">
+                  Collect feedback from {selectedMeeting.employeeName}
+                </p>
+              </div>
+              <button
+                onClick={() => setShowFeedbackModal(false)}
+                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-2">
+              {FEEDBACK_QUESTIONS.map((question, idx) => (
+                <div
+                  key={question.id}
+                  className="pb-4 border-b border-slate-100 dark:border-slate-800 last:border-0"
+                >
+                  <label className="text-sm font-bold text-slate-700 dark:text-slate-300 mb-3 block">
+                    {idx + 1}. {question.question}
+                  </label>
+                  <textarea
+                    value={feedbackForm[idx].response}
+                    onChange={(e) => {
+                      const updated = [...feedbackForm];
+                      updated[idx].response = e.target.value;
+                      setFeedbackForm(updated);
+                    }}
+                    placeholder="Enter response..."
+                    className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-emerald-500 min-h-[80px] resize-none mb-2"
+                  />
+                  {question.category !== 'concerns' && (
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-slate-500">Rating:</span>
+                      <div className="flex gap-1">
+                        {[1, 2, 3, 4, 5].map((n) => (
+                          <button
+                            key={n}
+                            onClick={() => {
+                              const updated = [...feedbackForm];
+                              updated[idx].rating = n;
+                              setFeedbackForm(updated);
+                            }}
+                            className={`p-1 rounded transition-colors ${
+                              feedbackForm[idx].rating === n
+                                ? 'bg-emerald-100 text-emerald-600 dark:bg-emerald-900/30'
+                                : 'text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
+                            }`}
+                          >
+                            <Smile className="w-4 h-4" />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            <div className="flex gap-3 mt-6">
+              <button
+                onClick={() => setShowFeedbackModal(false)}
+                className="flex-1 px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-800"
+              >
+                Skip for Now
+              </button>
+              <button
+                onClick={handleSubmitFeedback}
+                className="flex-1 px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white rounded-lg text-sm font-bold flex items-center justify-center gap-2"
+              >
+                <Send className="w-4 h-4" />
+                Submit Feedback
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Analytics Modal */}
+      {showAnalytics && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4 overflow-y-auto">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-4xl w-full p-6 border border-slate-200 dark:border-slate-800 my-8">
+            <div className="flex justify-between items-center mb-6">
+              <div>
+                <h2 className="text-xl font-bold flex items-center gap-2">
+                  <BarChart3 className="w-6 h-6 text-indigo-500" />
+                  Meeting Analytics & Insights
+                </h2>
+                <p className="text-sm text-slate-500">Summary insights and trends</p>
+              </div>
+              <button
+                onClick={() => setShowAnalytics(false)}
+                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Key Metrics */}
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+              <div className="bg-gradient-to-br from-emerald-50 to-emerald-100 dark:from-emerald-900/20 dark:to-emerald-900/10 p-4 rounded-xl">
+                <div className="text-3xl font-bold text-emerald-600">{stats.totalMeetings}</div>
+                <div className="text-xs text-emerald-700 dark:text-emerald-400 font-bold">
+                  Total Meetings
+                </div>
+              </div>
+              <div className="bg-gradient-to-br from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-900/10 p-4 rounded-xl">
+                <div className="text-3xl font-bold text-blue-600">
+                  {((stats.completedMeetings / stats.totalMeetings) * 100).toFixed(0)}%
+                </div>
+                <div className="text-xs text-blue-700 dark:text-blue-400 font-bold">
+                  Completion Rate
+                </div>
+              </div>
+              <div className="bg-gradient-to-br from-amber-50 to-amber-100 dark:from-amber-900/20 dark:to-amber-900/10 p-4 rounded-xl">
+                <div className="text-3xl font-bold text-amber-600">
+                  {stats.averageSentiment.toFixed(1)}/5
+                </div>
+                <div className="text-xs text-amber-700 dark:text-amber-400 font-bold">
+                  Avg Sentiment
+                </div>
+              </div>
+              <div className="bg-gradient-to-br from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-900/10 p-4 rounded-xl">
+                <div className="text-3xl font-bold text-purple-600">{stats.employeesEngaged}</div>
+                <div className="text-xs text-purple-700 dark:text-purple-400 font-bold">
+                  Employees
+                </div>
+              </div>
+            </div>
+
+            {/* Insights */}
+            <div className="space-y-4">
+              <h3 className="text-lg font-bold flex items-center gap-2">
+                <TrendingUp className="w-5 h-5 text-emerald-500" />
+                Key Insights
+              </h3>
+
+              <div className="bg-emerald-50 dark:bg-emerald-900/10 border border-emerald-200 dark:border-emerald-800/30 p-4 rounded-xl">
+                <div className="flex items-start gap-3">
+                  <CheckCircle className="w-5 h-5 text-emerald-600 mt-0.5" />
+                  <div>
+                    <div className="font-bold text-emerald-700 dark:text-emerald-400">
+                      High Engagement
+                    </div>
+                    <div className="text-sm text-emerald-600 dark:text-emerald-500">
+                      {stats.employeesEngaged} employees are actively participating in 1-on-1
+                      meetings. Average sentiment score of {stats.averageSentiment.toFixed(1)}{' '}
+                      indicates positive engagement.
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {stats.pendingActionItems > 0 && (
+                <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-800/30 p-4 rounded-xl">
+                  <div className="flex items-start gap-3">
+                    <AlertCircle className="w-5 h-5 text-amber-600 mt-0.5" />
+                    <div>
+                      <div className="font-bold text-amber-700 dark:text-amber-400">
+                        Action Items Pending
+                      </div>
+                      <div className="text-sm text-amber-600 dark:text-amber-500">
+                        {stats.pendingActionItems} action items are still pending. Follow up with
+                        team members to ensure completion.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {meetings.filter((m) => m.feedbackResponses && m.feedbackResponses.length > 0)
+                .length > 0 && (
+                <div className="bg-indigo-50 dark:bg-indigo-900/10 border border-indigo-200 dark:border-indigo-800/30 p-4 rounded-xl">
+                  <div className="flex items-start gap-3">
+                    <Target className="w-5 h-5 text-indigo-600 mt-0.5" />
+                    <div>
+                      <div className="font-bold text-indigo-700 dark:text-indigo-400">
+                        Feedback Collected
+                      </div>
+                      <div className="text-sm text-indigo-600 dark:text-indigo-500">
+                        {
+                          meetings.filter(
+                            (m) => m.feedbackResponses && m.feedbackResponses.length > 0
+                          ).length
+                        }{' '}
+                        meetings have employee feedback responses. Review concerns and growth
+                        opportunities mentioned.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {stats.trendsImproving && (
+                <div className="bg-blue-50 dark:bg-blue-900/10 border border-blue-200 dark:border-blue-800/30 p-4 rounded-xl">
+                  <div className="flex items-start gap-3">
+                    <TrendingUp className="w-5 h-5 text-blue-600 mt-0.5" />
+                    <div>
+                      <div className="font-bold text-blue-700 dark:text-blue-400">
+                        Improving Trends
+                      </div>
+                      <div className="text-sm text-blue-600 dark:text-blue-500">
+                        Meeting sentiment and completion rates are trending upward. Continue current
+                        engagement practices.
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Common Themes */}
+            {meetings.some((m) => m.feedbackResponses && m.feedbackResponses.length > 0) && (
+              <div className="mt-6">
+                <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
+                  <MessageSquare className="w-5 h-5 text-purple-500" />
+                  Common Themes from Feedback
+                </h3>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl">
+                    <div className="text-xs font-bold text-slate-500 uppercase mb-2">
+                      Growth & Development
+                    </div>
+                    <div className="text-sm text-slate-700 dark:text-slate-300">
+                      Employees are interested in skill development and career advancement
+                      opportunities.
+                    </div>
+                  </div>
+                  <div className="bg-slate-50 dark:bg-slate-800 p-4 rounded-xl">
+                    <div className="text-xs font-bold text-slate-500 uppercase mb-2">
+                      Work-Life Balance
+                    </div>
+                    <div className="text-sm text-slate-700 dark:text-slate-300">
+                      Overall satisfaction with workload management is high across the team.
+                    </div>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            <div className="flex justify-end mt-6">
+              <button
+                onClick={() => setShowAnalytics(false)}
+                className="px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg text-sm font-bold"
+              >
+                Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Confirmation Modal */}
+      {confirmDeleteId && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-sm w-full p-6 border border-slate-200 dark:border-slate-800">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 rounded-full bg-rose-100 dark:bg-rose-900/30 flex items-center justify-center">
+                <Trash2 className="w-5 h-5 text-rose-600" />
+              </div>
+              <h2 className="text-lg font-bold">Delete meeting?</h2>
+            </div>
+            <p className="text-sm text-slate-500 mb-6">
+              This will permanently remove the meeting and its notes. This action cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmDeleteId(null)}
+                className="flex-1 px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-800"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDeleteMeeting(confirmDeleteId)}
+                className="flex-1 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-sm font-bold"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

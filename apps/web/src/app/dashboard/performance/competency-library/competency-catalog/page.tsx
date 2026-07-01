@@ -230,6 +230,7 @@ export default function CompetencyCatalogPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const categoryNameById = useMemo(
     () => Object.fromEntries(categories.map((c) => [c.id, c.name])),
@@ -367,7 +368,7 @@ export default function CompetencyCatalogPage() {
   };
 
   const handleDeleteCompetency = async (id: string) => {
-    if (!confirm('Are you sure you want to delete this competency?')) return;
+    setConfirmDeleteId(null);
     setError(null);
     try {
       const result = await CompetencyService.delete(id);
@@ -496,6 +497,30 @@ export default function CompetencyCatalogPage() {
 
   return (
     <div className="space-y-4 pb-6">
+      {confirmDeleteId && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-sm w-full p-6 border border-slate-200 dark:border-slate-800">
+            <h2 className="text-lg font-bold mb-2">Delete competency?</h2>
+            <p className="text-sm text-slate-500 mb-6">
+              This will permanently remove the competency. This action cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmDeleteId(null)}
+                className="flex-1 px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-800"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDeleteCompetency(confirmDeleteId)}
+                className="flex-1 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-sm font-bold"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
@@ -802,7 +827,7 @@ export default function CompetencyCatalogPage() {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleDeleteCompetency(comp.id);
+                            setConfirmDeleteId(comp.id);
                           }}
                           className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-100 dark:hover:bg-rose-900/20 rounded-lg transition-colors"
                           title="Delete"

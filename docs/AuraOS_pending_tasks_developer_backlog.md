@@ -5416,7 +5416,7 @@ This document is intended for AI Developer execution. It converts the tracker in
 
 ## Performance Module
 
-- [ ] **AURA-656 — Performance: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-656 — Performance: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5424,7 +5424,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains.
 
-- [ ] **AURA-657 — 360 Feedback: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-657 — 360 Feedback: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5432,7 +5432,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains; localStorage persistence.
 
-- [ ] **AURA-658 — 9 Box Grid: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-658 — 9 Box Grid: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5440,7 +5440,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but localStorage persistence.
 
-- [ ] **AURA-659 — Ai Insights: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-659 — Ai Insights: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5448,7 +5448,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but @ts-nocheck contract drift.
 
-- [ ] **AURA-660 — Competency Framework: Manual review required**
+- [x] **AURA-660 — Competency Framework: Manual review required**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5456,7 +5456,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page exists; automated heuristics could not classify wiring.
 
-- [ ] **AURA-661 — Continuous Feedback: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-661 — Continuous Feedback: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5464,7 +5464,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but localStorage persistence.
 
-- [ ] **AURA-662 — Dashboard: Replace hub with functional page or add child route**
+- [x] **AURA-662 — Dashboard: Replace hub with functional page or add child route**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5472,7 +5472,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page is a ModuleGrid navigation shell with no data/API integration.
 
-- [ ] **AURA-663 — Feedback: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-663 — Feedback: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5480,7 +5480,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but localStorage persistence.
 
-- [ ] **AURA-664 — Goal Setting Okr Mbo: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-664 — Goal Setting Okr Mbo: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5488,7 +5488,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains.
 
-- [ ] **AURA-665 — Review Cycles: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-665 — Review Cycles: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5496,7 +5496,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains.
 
-- [ ] **AURA-666 — Reviews: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-666 — Reviews: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5504,7 +5504,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains.
 
-- [ ] **AURA-667 — Performance: Replace hub with functional page or add child route**
+- [x] **AURA-667 — Performance: Replace hub with functional page or add child route**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5512,7 +5512,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page is a ModuleGrid navigation shell with no data/API integration.
 
-- [ ] **AURA-668 — 1 On 1 Meetings: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-668 — 1 On 1 Meetings: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5520,7 +5520,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains.
 
-- [ ] **AURA-669 — 360 Feedback: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-669 — 360 Feedback: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5528,7 +5528,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains; localStorage persistence.
 
-- [ ] **AURA-670 — Check In Templates: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-670 — Check In Templates: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5536,7 +5536,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but localStorage persistence.
 
-- [ ] **AURA-671 — Competency Assessment: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-671 — Competency Assessment: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5544,7 +5544,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains.
 
-- [ ] **AURA-672 — Competency Catalog: Replace mock/hardcoded data with live API**
+- [x] **AURA-672 — Competency Catalog: Replace mock/hardcoded data with live API**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5552,7 +5552,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page uses hardcoded or mock data; no fetch/service calls detected.
 
-- [ ] **AURA-673 — Job Competency Map: Replace mock/hardcoded data with live API**
+- [x] **AURA-673 — Job Competency Map: Replace mock/hardcoded data with live API**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5560,7 +5560,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page uses hardcoded or mock data; no fetch/service calls detected.
 
-- [ ] **AURA-674 — Proficiency Levels: Manual review required**
+- [x] **AURA-674 — Proficiency Levels: Manual review required**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5568,7 +5568,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page exists; automated heuristics could not classify wiring.
 
-- [ ] **AURA-675 — Skill Assessment: Manual review required**
+- [x] **AURA-675 — Skill Assessment: Manual review required**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5576,7 +5576,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page exists; automated heuristics could not classify wiring.
 
-- [ ] **AURA-676 — Competency Library: Manual review required**
+- [x] **AURA-676 — Competency Library: Manual review required**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5584,7 +5584,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page exists; automated heuristics could not classify wiring.
 
-- [ ] **AURA-677 — Competency Catalog: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-677 — Competency Catalog: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5592,7 +5592,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains.
 
-- [ ] **AURA-678 — Gap Analysis: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-678 — Gap Analysis: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5600,7 +5600,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains.
 
-- [ ] **AURA-679 — Job Competency Map: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-679 — Job Competency Map: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5608,7 +5608,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains.
 
-- [ ] **AURA-680 — Proficiency Levels: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-680 — Proficiency Levels: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5616,7 +5616,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains.
 
-- [ ] **AURA-681 — Skill Assessment: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-681 — Skill Assessment: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5624,7 +5624,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains.
 
-- [ ] **AURA-682 — Continuous Feedback: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-682 — Continuous Feedback: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5632,7 +5632,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but localStorage persistence.
 
-- [ ] **AURA-683 — Goal Setting: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-683 — Goal Setting: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5640,7 +5640,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains.
 
-- [ ] **AURA-684 — Library: Replace mock/hardcoded data with live API**
+- [x] **AURA-684 — Library: Replace mock/hardcoded data with live API**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5648,7 +5648,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page uses hardcoded or mock data; no fetch/service calls detected.
 
-- [ ] **AURA-685 — Manager Assessment: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-685 — Manager Assessment: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5656,7 +5656,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains.
 
-- [ ] **AURA-686 — Nine Box: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-686 — Nine Box: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5664,7 +5664,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but localStorage persistence.
 
-- [ ] **AURA-687 — Performance Analytics: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-687 — Performance Analytics: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5672,7 +5672,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but @ts-nocheck contract drift.
 
-- [ ] **AURA-688 — Recognition Wall: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-688 — Recognition Wall: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5680,7 +5680,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but localStorage persistence.
 
-- [ ] **AURA-689 — Review Cycles: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-689 — Review Cycles: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5688,7 +5688,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains.
 
-- [ ] **AURA-690 — Reward Linkage: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-690 — Reward Linkage: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5696,7 +5696,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but localStorage persistence.
 
-- [ ] **AURA-691 — Self Assessment: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-691 — Self Assessment: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5704,7 +5704,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains.
 
-- [ ] **AURA-692 — Performance: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-692 — Performance: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5712,7 +5712,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains.
 
-- [ ] **AURA-693 — 360 Feedback: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-693 — 360 Feedback: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5720,7 +5720,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains; localStorage persistence.
 
-- [ ] **AURA-694 — 9-Box Grid: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-694 — 9-Box Grid: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5728,7 +5728,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but localStorage persistence.
 
-- [ ] **AURA-695 — AI Insights: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-695 — AI Insights: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5736,7 +5736,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but @ts-nocheck contract drift.
 
-- [ ] **AURA-696 — Competency Framework: Manual review required**
+- [x] **AURA-696 — Competency Framework: Manual review required**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5744,7 +5744,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page exists; automated heuristics could not classify wiring.
 
-- [ ] **AURA-697 — Continuous Feedback: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-697 — Continuous Feedback: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5752,7 +5752,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but localStorage persistence.
 
-- [ ] **AURA-698 — Dashboard: Replace hub with functional page or add child route**
+- [x] **AURA-698 — Dashboard: Replace hub with functional page or add child route**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5760,7 +5760,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page is a ModuleGrid navigation shell with no data/API integration.
 
-- [ ] **AURA-699 — Feedback: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-699 — Feedback: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5768,7 +5768,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but localStorage persistence.
 
-- [ ] **AURA-700 — Goal Setting (OKR/MBO): Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-700 — Goal Setting (OKR/MBO): Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5776,7 +5776,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains.
 
-- [ ] **AURA-701 — Review Cycles: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-701 — Review Cycles: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5784,7 +5784,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains.
 
-- [ ] **AURA-702 — Reviews: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-702 — Reviews: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified

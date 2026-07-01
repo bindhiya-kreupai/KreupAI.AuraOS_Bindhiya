@@ -180,447 +180,6 @@ const LEVEL_LABELS: Record<ProficiencyLevel, { name: string; color: string; bgCo
   },
 };
 
-const JOB_ROLES: JobRole[] = [
-  {
-    id: 'JOB-001',
-    title: 'Software Engineer',
-    code: 'ENG-SE-001',
-    department: 'Engineering',
-    level: 'Individual Contributor',
-    family: 'Engineering',
-    description:
-      'Designs, develops, and maintains software applications. Collaborates with cross-functional teams to deliver high-quality solutions.',
-    headcount: 45,
-    status: 'Active',
-    lastUpdated: '2025-11-20',
-    owner: 'Engineering Excellence',
-    mappedCompetencies: [
-      {
-        id: 'MC-001',
-        competencyId: 'COMP-001',
-        competencyName: 'Software Development',
-        category: 'Technical',
-        requiredLevel: 3,
-        requirementType: 'Required',
-        weight: 25,
-      },
-      {
-        id: 'MC-002',
-        competencyId: 'COMP-006',
-        competencyName: 'Data Analysis',
-        category: 'Technical',
-        requiredLevel: 2,
-        requirementType: 'Preferred',
-        weight: 10,
-      },
-      {
-        id: 'MC-003',
-        competencyId: 'COMP-003',
-        competencyName: 'Effective Communication',
-        category: 'Behavioral',
-        requiredLevel: 2,
-        requirementType: 'Required',
-        weight: 15,
-      },
-      {
-        id: 'MC-004',
-        competencyId: 'COMP-008',
-        competencyName: 'Problem Solving',
-        category: 'Behavioral',
-        requiredLevel: 3,
-        requirementType: 'Required',
-        weight: 20,
-      },
-      {
-        id: 'MC-005',
-        competencyId: 'COMP-005',
-        competencyName: 'Customer Focus',
-        category: 'Core',
-        requiredLevel: 2,
-        requirementType: 'Required',
-        weight: 15,
-      },
-      {
-        id: 'MC-006',
-        competencyId: 'COMP-004',
-        competencyName: 'Project Management',
-        category: 'Functional',
-        requiredLevel: 1,
-        requirementType: 'Optional',
-        weight: 5,
-      },
-      {
-        id: 'MC-007',
-        competencyId: 'COMP-007',
-        competencyName: 'Team Leadership',
-        category: 'Leadership',
-        requiredLevel: 1,
-        requirementType: 'Optional',
-        weight: 10,
-      },
-    ],
-  },
-  {
-    id: 'JOB-002',
-    title: 'Senior Software Engineer',
-    code: 'ENG-SSE-001',
-    department: 'Engineering',
-    level: 'Senior Individual Contributor',
-    family: 'Engineering',
-    description:
-      'Leads technical design and implementation of complex systems. Mentors junior engineers and drives best practices.',
-    headcount: 28,
-    status: 'Active',
-    lastUpdated: '2025-11-18',
-    owner: 'Engineering Excellence',
-    mappedCompetencies: [
-      {
-        id: 'MC-008',
-        competencyId: 'COMP-001',
-        competencyName: 'Software Development',
-        category: 'Technical',
-        requiredLevel: 4,
-        requirementType: 'Required',
-        weight: 25,
-      },
-      {
-        id: 'MC-009',
-        competencyId: 'COMP-006',
-        competencyName: 'Data Analysis',
-        category: 'Technical',
-        requiredLevel: 3,
-        requirementType: 'Required',
-        weight: 10,
-      },
-      {
-        id: 'MC-010',
-        competencyId: 'COMP-003',
-        competencyName: 'Effective Communication',
-        category: 'Behavioral',
-        requiredLevel: 3,
-        requirementType: 'Required',
-        weight: 15,
-      },
-      {
-        id: 'MC-011',
-        competencyId: 'COMP-008',
-        competencyName: 'Problem Solving',
-        category: 'Behavioral',
-        requiredLevel: 4,
-        requirementType: 'Required',
-        weight: 15,
-      },
-      {
-        id: 'MC-012',
-        competencyId: 'COMP-005',
-        competencyName: 'Customer Focus',
-        category: 'Core',
-        requiredLevel: 3,
-        requirementType: 'Required',
-        weight: 10,
-      },
-      {
-        id: 'MC-013',
-        competencyId: 'COMP-007',
-        competencyName: 'Team Leadership',
-        category: 'Leadership',
-        requiredLevel: 2,
-        requirementType: 'Required',
-        weight: 15,
-      },
-      {
-        id: 'MC-014',
-        competencyId: 'COMP-002',
-        competencyName: 'Strategic Thinking',
-        category: 'Leadership',
-        requiredLevel: 2,
-        requirementType: 'Preferred',
-        weight: 10,
-      },
-    ],
-  },
-  {
-    id: 'JOB-003',
-    title: 'Engineering Manager',
-    code: 'ENG-EM-001',
-    department: 'Engineering',
-    level: 'Manager',
-    family: 'Engineering',
-    description:
-      'Manages engineering team, sets technical direction, and ensures delivery of high-quality products. Develops talent and builds team culture.',
-    headcount: 12,
-    status: 'Active',
-    lastUpdated: '2025-11-15',
-    owner: 'Engineering Excellence',
-    mappedCompetencies: [
-      {
-        id: 'MC-015',
-        competencyId: 'COMP-007',
-        competencyName: 'Team Leadership',
-        category: 'Leadership',
-        requiredLevel: 4,
-        requirementType: 'Required',
-        weight: 25,
-      },
-      {
-        id: 'MC-016',
-        competencyId: 'COMP-002',
-        competencyName: 'Strategic Thinking',
-        category: 'Leadership',
-        requiredLevel: 3,
-        requirementType: 'Required',
-        weight: 20,
-      },
-      {
-        id: 'MC-017',
-        competencyId: 'COMP-001',
-        competencyName: 'Software Development',
-        category: 'Technical',
-        requiredLevel: 3,
-        requirementType: 'Required',
-        weight: 15,
-      },
-      {
-        id: 'MC-018',
-        competencyId: 'COMP-003',
-        competencyName: 'Effective Communication',
-        category: 'Behavioral',
-        requiredLevel: 4,
-        requirementType: 'Required',
-        weight: 15,
-      },
-      {
-        id: 'MC-019',
-        competencyId: 'COMP-004',
-        competencyName: 'Project Management',
-        category: 'Functional',
-        requiredLevel: 3,
-        requirementType: 'Required',
-        weight: 15,
-      },
-      {
-        id: 'MC-020',
-        competencyId: 'COMP-005',
-        competencyName: 'Customer Focus',
-        category: 'Core',
-        requiredLevel: 3,
-        requirementType: 'Required',
-        weight: 10,
-      },
-    ],
-  },
-  {
-    id: 'JOB-004',
-    title: 'Product Manager',
-    code: 'PROD-PM-001',
-    department: 'Product',
-    level: 'Individual Contributor',
-    family: 'Product',
-    description:
-      'Defines product vision and strategy. Works with engineering and design to deliver valuable customer experiences.',
-    headcount: 18,
-    status: 'Active',
-    lastUpdated: '2025-11-10',
-    owner: 'Product Leadership',
-    mappedCompetencies: [
-      {
-        id: 'MC-021',
-        competencyId: 'COMP-002',
-        competencyName: 'Strategic Thinking',
-        category: 'Leadership',
-        requiredLevel: 3,
-        requirementType: 'Required',
-        weight: 25,
-      },
-      {
-        id: 'MC-022',
-        competencyId: 'COMP-005',
-        competencyName: 'Customer Focus',
-        category: 'Core',
-        requiredLevel: 4,
-        requirementType: 'Required',
-        weight: 20,
-      },
-      {
-        id: 'MC-023',
-        competencyId: 'COMP-003',
-        competencyName: 'Effective Communication',
-        category: 'Behavioral',
-        requiredLevel: 4,
-        requirementType: 'Required',
-        weight: 20,
-      },
-      {
-        id: 'MC-024',
-        competencyId: 'COMP-006',
-        competencyName: 'Data Analysis',
-        category: 'Technical',
-        requiredLevel: 3,
-        requirementType: 'Required',
-        weight: 15,
-      },
-      {
-        id: 'MC-025',
-        competencyId: 'COMP-004',
-        competencyName: 'Project Management',
-        category: 'Functional',
-        requiredLevel: 3,
-        requirementType: 'Required',
-        weight: 10,
-      },
-      {
-        id: 'MC-026',
-        competencyId: 'COMP-008',
-        competencyName: 'Problem Solving',
-        category: 'Behavioral',
-        requiredLevel: 3,
-        requirementType: 'Required',
-        weight: 10,
-      },
-    ],
-  },
-  {
-    id: 'JOB-005',
-    title: 'Sales Representative',
-    code: 'SALES-SR-001',
-    department: 'Sales',
-    level: 'Individual Contributor',
-    family: 'Sales',
-    description:
-      'Drives revenue growth by identifying opportunities, building relationships, and closing deals with customers.',
-    headcount: 35,
-    status: 'Active',
-    lastUpdated: '2025-10-28',
-    owner: 'Sales Operations',
-    mappedCompetencies: [
-      {
-        id: 'MC-027',
-        competencyId: 'COMP-003',
-        competencyName: 'Effective Communication',
-        category: 'Behavioral',
-        requiredLevel: 4,
-        requirementType: 'Required',
-        weight: 30,
-      },
-      {
-        id: 'MC-028',
-        competencyId: 'COMP-005',
-        competencyName: 'Customer Focus',
-        category: 'Core',
-        requiredLevel: 4,
-        requirementType: 'Required',
-        weight: 30,
-      },
-      {
-        id: 'MC-029',
-        competencyId: 'COMP-008',
-        competencyName: 'Problem Solving',
-        category: 'Behavioral',
-        requiredLevel: 3,
-        requirementType: 'Required',
-        weight: 15,
-      },
-      {
-        id: 'MC-030',
-        competencyId: 'COMP-002',
-        competencyName: 'Strategic Thinking',
-        category: 'Leadership',
-        requiredLevel: 2,
-        requirementType: 'Preferred',
-        weight: 15,
-      },
-      {
-        id: 'MC-031',
-        competencyId: 'COMP-006',
-        competencyName: 'Data Analysis',
-        category: 'Technical',
-        requiredLevel: 2,
-        requirementType: 'Optional',
-        weight: 10,
-      },
-    ],
-  },
-  {
-    id: 'JOB-006',
-    title: 'HR Business Partner',
-    code: 'HR-HRBP-001',
-    department: 'People & Culture',
-    level: 'Individual Contributor',
-    family: 'Human Resources',
-    description:
-      'Partners with business leaders to align people strategy with business objectives. Drives talent development and employee engagement.',
-    headcount: 8,
-    status: 'Active',
-    lastUpdated: '2025-10-15',
-    owner: 'People & Culture',
-    mappedCompetencies: [
-      {
-        id: 'MC-032',
-        competencyId: 'COMP-003',
-        competencyName: 'Effective Communication',
-        category: 'Behavioral',
-        requiredLevel: 4,
-        requirementType: 'Required',
-        weight: 25,
-      },
-      {
-        id: 'MC-033',
-        competencyId: 'COMP-002',
-        competencyName: 'Strategic Thinking',
-        category: 'Leadership',
-        requiredLevel: 3,
-        requirementType: 'Required',
-        weight: 20,
-      },
-      {
-        id: 'MC-034',
-        competencyId: 'COMP-007',
-        competencyName: 'Team Leadership',
-        category: 'Leadership',
-        requiredLevel: 3,
-        requirementType: 'Required',
-        weight: 20,
-      },
-      {
-        id: 'MC-035',
-        competencyId: 'COMP-008',
-        competencyName: 'Problem Solving',
-        category: 'Behavioral',
-        requiredLevel: 3,
-        requirementType: 'Required',
-        weight: 15,
-      },
-      {
-        id: 'MC-036',
-        competencyId: 'COMP-005',
-        competencyName: 'Customer Focus',
-        category: 'Core',
-        requiredLevel: 3,
-        requirementType: 'Required',
-        weight: 10,
-      },
-      {
-        id: 'MC-037',
-        competencyId: 'COMP-006',
-        competencyName: 'Data Analysis',
-        category: 'Technical',
-        requiredLevel: 2,
-        requirementType: 'Preferred',
-        weight: 10,
-      },
-    ],
-  },
-];
-
-const STATS = {
-  totalRoles: JOB_ROLES.length,
-  totalMappings: JOB_ROLES.reduce((acc, role) => acc + role.mappedCompetencies.length, 0),
-  avgCompetenciesPerRole: Math.round(
-    JOB_ROLES.reduce((acc, role) => acc + role.mappedCompetencies.length, 0) / JOB_ROLES.length
-  ),
-  totalHeadcount: JOB_ROLES.reduce((acc, role) => acc + role.headcount, 0),
-};
-
 // --- COMPONENTS ---
 
 const RequirementBadge: React.FC<{ type: RequirementLevel }> = ({ type }) => {
@@ -768,6 +327,18 @@ export default function JobCompetencyMapPage() {
   const [jobRoles, setJobRoles] = useState<JobRole[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+
+  // Live stats derived from the fetched job roles (not mock data).
+  const STATS = useMemo(() => {
+    const totalMappings = jobRoles.reduce((acc, role) => acc + role.mappedCompetencies.length, 0);
+    return {
+      totalRoles: jobRoles.length,
+      totalMappings,
+      avgCompetenciesPerRole: jobRoles.length ? Math.round(totalMappings / jobRoles.length) : 0,
+      totalHeadcount: jobRoles.reduce((acc, role) => acc + (role.headcount || 0), 0),
+    };
+  }, [jobRoles]);
 
   // Fetch job roles from API on mount
   const fetchJobRoles = useCallback(async () => {
@@ -946,16 +517,14 @@ export default function JobCompetencyMapPage() {
   };
 
   const handleDeleteRole = async (roleId: string) => {
-    if (confirm('Are you sure you want to delete this job role mapping?')) {
-      try {
-        const result = await JobRoleService.delete(roleId);
-        if (result.success) {
-          setJobRoles((prev) => prev.filter((r) => r.id !== roleId));
-        }
-      } catch (error: any) {
-        console.error('Error:', error);
-        console.error('Failed to delete role:', error);
+    setConfirmDeleteId(null);
+    try {
+      const result = await JobRoleService.delete(roleId);
+      if (result.success) {
+        setJobRoles((prev) => prev.filter((r) => r.id !== roleId));
       }
+    } catch (error: any) {
+      console.error('Failed to delete role:', error);
     }
   };
 
@@ -1041,6 +610,31 @@ export default function JobCompetencyMapPage() {
 
   return (
     <div className="space-y-4 pb-6">
+      {confirmDeleteId && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-sm w-full p-6 border border-slate-200 dark:border-slate-800">
+            <h2 className="text-lg font-bold mb-2">Delete job role mapping?</h2>
+            <p className="text-sm text-slate-500 mb-6">
+              This will permanently remove the job role and its competency mappings. This action
+              cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmDeleteId(null)}
+                className="flex-1 px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-800"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDeleteRole(confirmDeleteId)}
+                className="flex-1 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-sm font-bold"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
@@ -1322,7 +916,7 @@ export default function JobCompetencyMapPage() {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleDeleteRole(role.id);
+                            setConfirmDeleteId(role.id);
                           }}
                           className="p-2 text-slate-400 hover:text-rose-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
                           title="Delete role"

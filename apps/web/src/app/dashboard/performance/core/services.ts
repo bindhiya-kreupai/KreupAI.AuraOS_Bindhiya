@@ -217,3 +217,93 @@ export class OneOnOneMeetingService {
     await APIClient.delete(`${this.endpoint}?id=${id}`);
   }
 }
+
+export interface RewardCatalogItem {
+  id: string;
+  name: string;
+  description?: string | null;
+  category: string;
+  cost: number;
+  image?: string | null;
+}
+
+export class RewardService {
+  private static endpoint = '/performance/rewards';
+
+  static async getCatalog(filters?: {
+    category?: string;
+  }): Promise<{ items: RewardCatalogItem[]; balance: number }> {
+    const response = await APIClient.get<{ items: RewardCatalogItem[]; balance: number }>(
+      this.endpoint,
+      filters
+    );
+    return { items: response.items ?? [], balance: response.balance ?? 0 };
+  }
+
+  static async redeem(rewardId: string): Promise<{ balance: number }> {
+    const response = await APIClient.post<{ balance: number }>(`${this.endpoint}/redeem`, {
+      rewardId,
+    });
+    return { balance: response.balance ?? 0 };
+  }
+}
+
+export interface Nomination {
+  id: string;
+  nomineeName: string;
+  status: string;
+}
+
+export class NominationService {
+  private static endpoint = '/performance/nominations';
+
+  static async list(): Promise<Nomination[]> {
+    try {
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<Nomination>(response, 'items');
+    } catch {
+      return [];
+    }
+  }
+
+  static async create(nomineeName: string): Promise<Nomination> {
+    const response = await APIClient.post<{ item: Nomination }>(this.endpoint, { nomineeName });
+    return response.item;
+  }
+
+  static async remove(id: string): Promise<void> {
+    await APIClient.delete(`${this.endpoint}?id=${id}`);
+  }
+}
+
+export interface GoalTemplate {
+  id: string;
+  title: string;
+  description?: string | null;
+  category: string;
+  metric?: string | null;
+  suggestedTarget?: string | null;
+  tags: string[];
+  usageCount: number;
+}
+
+export class GoalTemplateService {
+  private static endpoint = '/performance/goal-templates';
+
+  static async list(filters?: { category?: string; search?: string }): Promise<GoalTemplate[]> {
+    try {
+      const response = await APIClient.get<unknown>(this.endpoint, filters);
+      return APIClient.unwrapList<GoalTemplate>(response, 'items');
+    } catch {
+      return [];
+    }
+  }
+
+  static async use(id: string): Promise<GoalTemplate> {
+    const response = await APIClient.put<{ item: GoalTemplate }>(this.endpoint, {
+      id,
+      action: 'use',
+    });
+    return response.item;
+  }
+}

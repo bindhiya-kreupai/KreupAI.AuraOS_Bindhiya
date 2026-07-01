@@ -759,6 +759,7 @@ export default function SkillAssessmentPage() {
   const [assessments, setAssessments] = useState<Assessment[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   // Fetch assessments from API on mount
   const fetchAssessments = useCallback(async () => {
@@ -1103,16 +1104,14 @@ export default function SkillAssessmentPage() {
   };
 
   const handleDeleteAssessment = async (assessmentId: string) => {
-    if (confirm('Are you sure you want to delete this assessment?')) {
-      try {
-        const result = await AssessmentService.delete(assessmentId);
-        if (result.success) {
-          setAssessments((prev) => prev.filter((a) => a.id !== assessmentId));
-        }
-      } catch (error: any) {
-        console.error('Error:', error);
-        console.error('Failed to delete assessment:', error);
+    setConfirmDeleteId(null);
+    try {
+      const result = await AssessmentService.delete(assessmentId);
+      if (result.success) {
+        setAssessments((prev) => prev.filter((a) => a.id !== assessmentId));
       }
+    } catch (error: any) {
+      console.error('Failed to delete assessment:', error);
     }
   };
 
@@ -1235,6 +1234,30 @@ export default function SkillAssessmentPage() {
 
   return (
     <div className="space-y-4 pb-6">
+      {confirmDeleteId && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-sm w-full p-6 border border-slate-200 dark:border-slate-800">
+            <h2 className="text-lg font-bold mb-2">Delete assessment?</h2>
+            <p className="text-sm text-slate-500 mb-6">
+              This will permanently remove the assessment. This action cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmDeleteId(null)}
+                className="flex-1 px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-800"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDeleteAssessment(confirmDeleteId)}
+                className="flex-1 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-sm font-bold"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
@@ -1554,6 +1577,16 @@ export default function SkillAssessmentPage() {
                       )}
                       <button className="p-2 text-slate-400 hover:text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors">
                         <Eye className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setConfirmDeleteId(assessment.id);
+                        }}
+                        className="p-2 text-slate-400 hover:text-rose-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+                        aria-label="Delete assessment"
+                      >
+                        <Trash2 className="w-4 h-4" />
                       </button>
                     </div>
 
