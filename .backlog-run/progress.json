@@ -216,43 +216,43 @@
     "state": "pending"
   },
   "AURA-073": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-074": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-075": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-076": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-077": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-078": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-079": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-080": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-081": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-082": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-083": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-084": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-085": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-086": {
     "state": "pending"
@@ -327,37 +327,37 @@
     "state": "pending"
   },
   "AURA-110": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-111": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-112": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-113": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-114": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-115": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-116": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-117": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-118": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-119": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-120": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-121": {
     "state": "pending"
@@ -843,61 +843,65 @@
     "state": "pending"
   },
   "AURA-282": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-283": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-284": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-285": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-286": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-287": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-288": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-289": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-290": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-291": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-292": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-293": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-294": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-295": {
-    "state": "pending"
+    "state": "partial",
+    "note": "needs POST /api/benefits/campaigns for real campaign persistence"
   },
   "AURA-296": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-297": {
-    "state": "pending"
+    "state": "blocked",
+    "note": "large refactor of (modules)/benefits mock BenefitsClaimsService; deferred"
   },
   "AURA-298": {
-    "state": "pending"
+    "state": "partial",
+    "note": "v1 /benefits/enrollments POST writes non-existent Prisma fields (pre-existing route bug)"
   },
   "AURA-299": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-300": {
-    "state": "pending"
+    "state": "partial",
+    "note": "7 orphaned components need deletion or rewire to real v1 API"
   },
   "AURA-301": {
     "state": "pending"
@@ -1737,163 +1741,166 @@
     "state": "pending"
   },
   "AURA-580": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-581": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-582": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-583": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-584": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-585": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-586": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-587": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-588": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-589": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-590": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-591": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-592": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-593": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-594": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-595": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-596": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-597": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-598": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-599": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-600": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-601": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-602": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-603": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-604": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-605": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-606": {
-    "state": "pending"
+    "state": "partial",
+    "note": "bank corporate-account CRUD needs Prisma model/API"
   },
   "AURA-607": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-608": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-609": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-610": {
-    "state": "pending"
+    "state": "partial",
+    "note": "cross-country report-generation + archive persistence backend"
   },
   "AURA-611": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-612": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-613": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-614": {
-    "state": "pending"
+    "state": "partial",
+    "note": "remains a nav hub (acceptable) \u2014 revisit if real aggregation wanted"
   },
   "AURA-615": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-616": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-617": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-618": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-619": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-620": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-621": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-622": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-623": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-624": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-625": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-626": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-627": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-628": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-629": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-630": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-631": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-632": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-633": {
     "state": "pending"
@@ -1938,31 +1945,31 @@
     "state": "pending"
   },
   "AURA-647": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-648": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-649": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-650": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-651": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-652": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-653": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-654": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-655": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-656": {
     "state": "pending"

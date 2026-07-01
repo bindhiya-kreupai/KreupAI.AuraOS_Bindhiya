@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React from 'react';
 import Link from 'next/link';
@@ -10,7 +10,7 @@ import {
   Scale,
   FileText,
   ArrowRight,
-  Globe
+  Globe,
 } from 'lucide-react';
 
 const complianceModules = [
@@ -134,7 +134,9 @@ export default function PayrollCompliancePage() {
             <Globe className="w-7 h-7 text-indigo-500" />
             Payroll Compliance
             <span className="text-sm font-normal text-slate-500 mr-2">|</span>
-            <span className="text-lg font-semibold text-slate-600 dark:text-slate-400" dir="rtl">امتثال الرواتب</span>
+            <span className="text-lg font-semibold text-slate-600 dark:text-slate-400" dir="rtl">
+              امتثال الرواتب
+            </span>
           </h1>
           <p className="text-slate-500 text-sm mt-1">
             Manage payroll compliance across MENA region and India
@@ -149,7 +151,9 @@ export default function PayrollCompliancePage() {
         <h2 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">
           Supported Countries
           <span className="text-sm font-normal text-slate-500 mr-2"> | </span>
-          <span className="text-base font-medium text-slate-600 dark:text-slate-400" dir="rtl">الدول المدعومة</span>
+          <span className="text-base font-medium text-slate-600 dark:text-slate-400" dir="rtl">
+            الدول المدعومة
+          </span>
         </h2>
         <div className="flex flex-wrap gap-3">
           {supportedCountries.map((country) => (
@@ -160,7 +164,9 @@ export default function PayrollCompliancePage() {
               <span className="text-xl">{country.flag}</span>
               <span className="font-medium text-slate-700 dark:text-slate-300">{country.name}</span>
               <span className="text-slate-400">|</span>
-              <span className="text-slate-600 dark:text-slate-400" dir="rtl">{country.nameAr}</span>
+              <span className="text-slate-600 dark:text-slate-400" dir="rtl">
+                {country.nameAr}
+              </span>
             </div>
           ))}
         </div>
@@ -177,7 +183,9 @@ export default function PayrollCompliancePage() {
               className="group bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 hover:shadow-lg hover:border-indigo-300 dark:hover:border-indigo-700 transition-all duration-200"
             >
               <div className="flex items-start justify-between mb-4">
-                <div className={`w-12 h-12 ${module.color} rounded-xl flex items-center justify-center`}>
+                <div
+                  className={`w-12 h-12 ${module.color} rounded-xl flex items-center justify-center`}
+                >
                   <Icon className="w-6 h-6 text-white" />
                 </div>
                 <span className="px-3 py-1 bg-slate-100 dark:bg-slate-800 rounded-full text-xs font-medium text-slate-600 dark:text-slate-400">
@@ -188,7 +196,12 @@ export default function PayrollCompliancePage() {
               <h3 className="text-lg font-bold text-slate-900 dark:text-slate-100 mb-1">
                 {module.title}
                 <span className="text-sm font-normal text-slate-500 mr-2"> | </span>
-                <span className="text-base font-medium text-slate-600 dark:text-slate-400" dir="rtl">{module.titleAr}</span>
+                <span
+                  className="text-base font-medium text-slate-600 dark:text-slate-400"
+                  dir="rtl"
+                >
+                  {module.titleAr}
+                </span>
               </h3>
               <p className="text-sm text-slate-500 mb-3">
                 {module.subtitle}
@@ -212,27 +225,34 @@ export default function PayrollCompliancePage() {
       {/* Quick Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl p-5 text-white">
-          <div className="text-3xl font-bold">7</div>
+          <div className="text-3xl font-bold">{supportedCountries.length}</div>
           <div className="text-sm opacity-90">Countries Supported</div>
-          <div className="text-xs opacity-75 mt-1" dir="rtl">دول مدعومة</div>
+          <div className="text-xs opacity-75 mt-1" dir="rtl">
+            دول مدعومة
+          </div>
         </div>
         <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-5 text-white">
-          <div className="text-3xl font-bold">7</div>
+          <div className="text-3xl font-bold">{complianceModules.length}</div>
           <div className="text-sm opacity-90">Compliance Modules</div>
-          <div className="text-xs opacity-75 mt-1" dir="rtl">وحدات الامتثال</div>
+          <div className="text-xs opacity-75 mt-1" dir="rtl">
+            وحدات الامتثال
+          </div>
         </div>
         <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl p-5 text-white">
           <div className="text-3xl font-bold">3</div>
           <div className="text-sm opacity-90">File Formats</div>
-          <div className="text-xs opacity-75 mt-1" dir="rtl">صيغ الملفات</div>
+          <div className="text-xs opacity-75 mt-1" dir="rtl">
+            صيغ الملفات
+          </div>
         </div>
         <div className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl p-5 text-white">
           <div className="text-3xl font-bold">2</div>
           <div className="text-sm opacity-90">Languages</div>
-          <div className="text-xs opacity-75 mt-1" dir="rtl">اللغات</div>
+          <div className="text-xs opacity-75 mt-1" dir="rtl">
+            اللغات
+          </div>
         </div>
       </div>
     </div>
   );
 }
-

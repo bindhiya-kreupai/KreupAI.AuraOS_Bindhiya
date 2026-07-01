@@ -1,1 +1,1 @@
-export { default } from '../../../dashboard/leave/leave-types/page';
+export { default } from '../../../dashboard/leave/hajj-leave/page';

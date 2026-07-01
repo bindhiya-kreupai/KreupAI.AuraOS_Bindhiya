@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Palmtree, Globe, Plus, Loader2, X } from 'lucide-react';
+import { Palmtree, Plus, Loader2, X, CheckCircle2, AlertCircle } from 'lucide-react';
 import { HolidayService } from '../services';
 import type { Holiday, HolidayType } from '../types';
 
@@ -13,12 +13,18 @@ const EMPTY_FORM = {
   isOptional: false,
 };
 
+interface Feedback {
+  type: 'success' | 'error';
+  message: string;
+}
+
 export default function HolidayManagementPage() {
   const [holidays, setHolidays] = useState<Holiday[]>([]);
   const [loading, setLoading] = useState(true);
   const [showModal, setShowModal] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState({ ...EMPTY_FORM });
+  const [feedback, setFeedback] = useState<Feedback | null>(null);
 
   useEffect(() => {
     fetchHolidays();
@@ -29,8 +35,9 @@ export default function HolidayManagementPage() {
       setLoading(true);
       const result = await HolidayService.getHolidays(new Date().getFullYear());
       setHolidays(result);
-    } catch (error: any) {
-      console.error('Error:', error);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to load holidays';
+      setFeedback({ type: 'error', message });
     } finally {
       setLoading(false);
     }
@@ -45,11 +52,13 @@ export default function HolidayManagementPage() {
     if (!form.name.trim() || !form.date) return;
     try {
       setSaving(true);
-      await HolidayService.createHoliday(form as any);
+      await HolidayService.createHoliday(form as unknown as Holiday);
       setShowModal(false);
+      setFeedback({ type: 'success', message: `Holiday "${form.name}" added successfully.` });
       await fetchHolidays();
-    } catch (error: any) {
-      console.error('Save failed:', error);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to save holiday';
+      setFeedback({ type: 'error', message });
     } finally {
       setSaving(false);
     }
@@ -75,33 +84,26 @@ export default function HolidayManagementPage() {
         </button>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
-          <h3 className="font-bold text-lg mb-4">Locations</h3>
-          <div className="space-y-2">
-            {['New York HQ', 'London Office', 'Singapore Branch', 'Remote - US', 'Remote - EU'].map(
-              (loc, i) => (
-                <div
-                  key={i}
-                  className={`p-3 rounded-xl cursor-pointer flex justify-between items-center ${
-                    i === 0
-                      ? 'bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 font-bold'
-                      : 'hover:bg-slate-50 dark:hover:bg-slate-800'
-                  }`}
-                >
-                  <span className="flex items-center gap-2">
-                    <Globe className="w-4 h-4" /> {loc}
-                  </span>
-                  {i === 0 && (
-                    <span className="text-xs bg-white/50 px-2 py-0.5 rounded">Selected</span>
-                  )}
-                </div>
-              )
-            )}
-          </div>
+      {feedback && (
+        <div
+          role="alert"
+          className={`flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium shrink-0 ${
+            feedback.type === 'success'
+              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+              : 'bg-rose-50 text-rose-700 border border-rose-200'
+          }`}
+        >
+          {feedback.type === 'success' ? (
+            <CheckCircle2 className="w-4 h-4 shrink-0" />
+          ) : (
+            <AlertCircle className="w-4 h-4 shrink-0" />
+          )}
+          {feedback.message}
         </div>
+      )}
 
-        <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
+      <div className="grid grid-cols-1 gap-3">
+        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
           <h3 className="font-bold text-lg mb-4">{new Date().getFullYear()} Holidays</h3>
           <div className="space-y-4">
             {loading ? (

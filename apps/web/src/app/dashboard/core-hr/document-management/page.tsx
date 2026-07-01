@@ -72,18 +72,49 @@ export default function DocumentManagementPage() {
   }, [documents, selectedFolder]);
 
   const [uploading, setUploading] = useState(false);
+  const [actionError, setActionError] = useState('');
 
-  const handleFileAction = async (action: string, fileName: string, docId?: string) => {
-    if (action === 'Delete') {
-      if (!confirm(`Delete "${fileName}"? This cannot be undone.`)) return;
-      try {
-        await DocumentService.verifyDocument(docId || '', 'deleted');
-        await fetchDocuments();
-      } catch (error: any) {
-        console.error('Delete failed:', error);
+  const openDocumentFile = async (action: 'Preview' | 'Download', doc: any) => {
+    try {
+      setActionError('');
+      // Prefer the URL already on the row; fall back to fetching the record.
+      let fileUrl: string | undefined = doc?.fileUrl;
+      if (!fileUrl && doc?.documentId) {
+        const fresh = await DocumentService.getDocumentById(doc.documentId);
+        fileUrl = (fresh as any)?.fileUrl;
       }
+      if (!fileUrl) {
+        setActionError('No file is available for this document.');
+        return;
+      }
+      if (action === 'Download') {
+        const link = document.createElement('a');
+        link.href = fileUrl;
+        link.download = doc?.fileName || doc?.documentName || 'document';
+        link.rel = 'noopener';
+        document.body.appendChild(link);
+        link.click();
+        link.remove();
+      } else {
+        window.open(fileUrl, '_blank', 'noopener,noreferrer');
+      }
+    } catch (error: any) {
+      console.error(`${action} failed:`, error);
+      setActionError(`Failed to ${action.toLowerCase()} the document.`);
     }
-    // Preview and Download are view-only actions - no mutation needed
+  };
+
+  const handleDelete = async (fileName: string, docId?: string) => {
+    if (!docId) return;
+    if (!confirm(`Delete "${fileName}"? This cannot be undone.`)) return;
+    try {
+      setActionError('');
+      await DocumentService.deleteDocument(docId);
+      await fetchDocuments();
+    } catch (error: any) {
+      console.error('Delete failed:', error);
+      setActionError('Failed to delete the document.');
+    }
   };
 
   return (
@@ -105,6 +136,12 @@ export default function DocumentManagementPage() {
           <Upload className="w-4 h-4" /> Upload Document
         </button>
       </div>
+
+      {actionError && (
+        <div className="rounded-lg border border-rose-200 bg-rose-50 dark:bg-rose-900/20 dark:border-rose-800 px-4 py-2 text-sm text-rose-700 dark:text-rose-300 shrink-0">
+          {actionError}
+        </div>
+      )}
 
       {loading && (
         <div className="flex items-center justify-center h-64">
@@ -185,21 +222,21 @@ export default function DocumentManagementPage() {
                     >
                       <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 flex gap-1 bg-white dark:bg-slate-900 rounded-lg shadow-sm border border-slate-100 dark:border-slate-700 p-1 transition-opacity">
                         <button
-                          onClick={() => handleFileAction('Preview', displayName, file.documentId)}
+                          onClick={() => openDocumentFile('Preview', file)}
                           className="p-1 hover:text-indigo-600"
                           title="Preview"
                         >
                           <Eye className="w-3 h-3" />
                         </button>
                         <button
-                          onClick={() => handleFileAction('Download', displayName, file.documentId)}
+                          onClick={() => openDocumentFile('Download', file)}
                           className="p-1 hover:text-emerald-600"
                           title="Download"
                         >
                           <Download className="w-3 h-3" />
                         </button>
                         <button
-                          onClick={() => handleFileAction('Delete', displayName, file.documentId)}
+                          onClick={() => handleDelete(displayName, file.documentId)}
                           className="p-1 hover:text-rose-600"
                           title="Delete"
                         >

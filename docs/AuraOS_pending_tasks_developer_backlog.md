@@ -676,7 +676,7 @@ This document is intended for AI Developer execution. It converts the tracker in
 
 ## Core HR Module
 
-- [ ] **AURA-073 — Auto-Numbering: Persist sequence config to API**
+- [x] **AURA-073 — Auto-Numbering: Persist sequence config to API**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -684,7 +684,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `AutoNumberService → /api/core-hr/auto-numbers`
   - **Description / Acceptance Criteria:** Save/reset must PUT/POST to server; overrides must not be browser-only. Page uses localStorage key auraos.coreHr.autoNumbers.v1.
 
-- [ ] **AURA-074 — Letter Generation: Wire Create New Letter and Preview/Download/Print**
+- [x] **AURA-074 — Letter Generation: Wire Create New Letter and Preview/Download/Print**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -692,7 +692,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `LetterService → /api/core-hr/letters; DocumentTemplateService → /api/core-hr/document-templates`
   - **Description / Acceptance Criteria:** Create New Letter calls handleAction with no API. Template sidebar is hardcoded (5 names). Preview/Download/Print are view-only with no PDF fetch.
 
-- [ ] **AURA-075 — Document Management: Wire document delete, preview/download, and real AI scan**
+- [x] **AURA-075 — Document Management: Wire document delete, preview/download, and real AI scan**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -700,7 +700,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `DocumentService → /api/core-hr/documents`
   - **Description / Acceptance Criteria:** Delete calls DocumentService.verifyDocument() which is a no-op GET stub. Preview/Download unwired. scanDocumentAI uses setTimeout fake OCR.
 
-- [ ] **AURA-076 — Employee Life Events: Wire Approve/Reject to API**
+- [x] **AURA-076 — Employee Life Events: Wire Approve/Reject to API**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -708,7 +708,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `LifeEventService.processEvent → /api/core-hr/life-events`
   - **Description / Acceptance Criteria:** handleAction only updates React state. handleWish passes employee name as eventId to processEvent instead of real event ID.
 
-- [ ] **AURA-077 — Anniversary Alerts: Implement send notifications**
+- [x] **AURA-077 — Anniversary Alerts: Implement send notifications**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -716,7 +716,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `AnniversaryService → /api/core-hr/anniversaries`
   - **Description / Acceptance Criteria:** UI calls AnniversaryService.sendNotifications() which is empty stub.
 
-- [ ] **AURA-078 — Confirmation Letters: Wire Preview and PDF download**
+- [x] **AURA-078 — Confirmation Letters: Wire Preview and PDF download**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -724,7 +724,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `ConfirmationLetterService → /api/core-hr/confirmation-letters`
   - **Description / Acceptance Criteria:** Eye/Preview and PDF buttons have no handlers.
 
-- [ ] **AURA-079 — Employee ID Cards: Wire card generation and revoke**
+- [x] **AURA-079 — Employee ID Cards: Wire card generation and revoke**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -732,7 +732,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `IDCardService.issueIDCard, generateCard → /api/core-hr/id-cards`
   - **Description / Acceptance Criteria:** No issue/generate flow; print is window.print() only.
 
-- [ ] **AURA-080 — Cost Center: Wire export report and budget allocation**
+- [x] **AURA-080 — Cost Center: Wire export report and budget allocation**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -740,7 +740,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `CostCenterService → /api/core-hr/cost-centers`
   - **Description / Acceptance Criteria:** Download button triggers alert(). CostCenterService.allocateBudget() is no-op.
 
-- [ ] **AURA-081 — Mass Updates: Upload file payload and wire preview**
+- [x] **AURA-081 — Mass Updates: Upload file payload and wire preview**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -748,7 +748,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `MassUpdateService → /api/core-hr/mass-updates`
   - **Description / Acceptance Criteria:** Upload creates metadata record only; CSV file not sent. MassUpdateService.previewUpdate() returns empty stub.
 
-- [ ] **AURA-082 — Exit Management: Wire clearance item updates and templates**
+- [x] **AURA-082 — Exit Management: Wire clearance item updates and templates**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -756,7 +756,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `ExitService → /api/core-hr/exits`
   - **Description / Acceptance Criteria:** Clearance shown read-only; no UI to complete items. ExitService.getAllClearanceTemplates() returns [].
 
-- [ ] **AURA-083 — Position Management: Remove mock fallback data**
+- [x] **AURA-083 — Position Management: Remove mock fallback data**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -764,7 +764,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `PositionService.getAllPositions → /api/core-hr/positions`
   - **Description / Acceptance Criteria:** On API error, service returns 2 hardcoded positions instead of empty/error state.
 
-- [ ] **AURA-084 — Life Events: Add workflow actions or consolidate routes**
+- [x] **AURA-084 — Life Events: Add workflow actions or consolidate routes**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -772,7 +772,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `LifeEventService → /api/core-hr/life-events`
   - **Description / Acceptance Criteria:** Read-only list vs duplicate employee-life-events with actions. Consolidate or add create/approve on one page.
 
-- [ ] **AURA-085 — Architecture: Wire or remove dead hook and duplicate service layer**
+- [x] **AURA-085 — Architecture: Wire or remove dead hook and duplicate service layer**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -978,7 +978,7 @@ This document is intended for AI Developer execution. It converts the tracker in
 
 ## Health & Safety Module
 
-- [ ] **AURA-110 — Navigation: Link orphan pages in hub**
+- [x] **AURA-110 — Navigation: Link orphan pages in hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -986,7 +986,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `ModuleGrid`
   - **Description / Acceptance Criteria:** ModuleGrid lists 5 features but /incidents and /emergency pages exist and are not linked from hub.
 
-- [ ] **AURA-111 — Incident Reporting: Wire submit form and photo upload**
+- [x] **AURA-111 — Incident Reporting: Wire submit form and photo upload**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -994,7 +994,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `POST /api/health-safety/incidents; IncidentService.create`
   - **Description / Acceptance Criteria:** Submit Report button and form fields are uncontrolled with no handler. Add Photo Evidence is decorative only.
 
-- [ ] **AURA-112 — Incident Reporting: Wire detail view**
+- [x] **AURA-112 — Incident Reporting: Wire detail view**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1002,7 +1002,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `GET /api/health-safety/incidents (list only)`
   - **Description / Acceptance Criteria:** View Details buttons have no onClick, route, or GET-by-id API.
 
-- [ ] **AURA-113 — Incidents Dashboard: Wire Report Incident and fix schema mapping**
+- [x] **AURA-113 — Incidents Dashboard: Wire Report Incident and fix schema mapping**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1010,7 +1010,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `GET/POST /api/health-safety/incidents; HealthSafetyIncident model`
   - **Description / Acceptance Criteria:** Report Incident button unwired. UI expects date/id/status Open|Investigating|Closed; API returns incidentDate/incidentNumber/REPORTED|INVESTIGATING|RESOLVED|CLOSED. Days Without Incident uses Math.random().
 
-- [ ] **AURA-114 — Incidents Dashboard: Wire emergency sidebar from API**
+- [x] **AURA-114 — Incidents Dashboard: Wire emergency sidebar from API**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1018,7 +1018,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `GET /api/health-safety/emergency; EmergencyService.getContacts`
   - **Description / Acceptance Criteria:** Sidebar emergency contacts hardcoded (911/EXT) instead of EmergencyService.
 
-- [ ] **AURA-115 — COVID Tracker: Add dedicated COVID API and wire daily check**
+- [x] **AURA-115 — COVID Tracker: Add dedicated COVID API and wire daily check**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1026,7 +1026,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `GET /api/health-safety/checkups (proxy reuse); missing COVID API`
   - **Description / Acceptance Criteria:** Page reuses HealthCheckupService with string filters. Submit Report for daily temperature/symptom check is unwired.
 
-- [ ] **AURA-116 — Health Checkups: Wire booking actions and fix schema mapping**
+- [x] **AURA-116 — Health Checkups: Wire booking actions and fix schema mapping**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1034,7 +1034,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `POST /api/health-safety/checkups; HealthCheckupService.create`
   - **Description / Acceptance Criteria:** Book Appointment, Reschedule, Details, View Report unwired. UI expects type/date/doctor/clinic; API returns checkupType/scheduledFor/result/employeeId.
 
-- [ ] **AURA-117 — Emergency Contacts: Wire add contact and fix schema mapping**
+- [x] **AURA-117 — Emergency Contacts: Wire add contact and fix schema mapping**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1042,7 +1042,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `POST /api/health-safety/emergency; HealthSafetyEmergencyContact model`
   - **Description / Acceptance Criteria:** Add Personal Contact unwired. UI filters type emergency/workplace/personal and uses contact.number; API uses FIRE|MEDICAL|SECURITY|UTILITY and phone.
 
-- [ ] **AURA-118 — Emergency Response: Wire SOS dispatch and geolocation**
+- [x] **AURA-118 — Emergency Response: Wire SOS dispatch and geolocation**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1050,7 +1050,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Missing alert dispatch and GPS/workplace API`
   - **Description / Acceptance Criteria:** SOS countdown/alert is client-only simulation. Current location hardcoded as Office Location.
 
-- [ ] **AURA-119 — Safety Training: Add enrollment/progress model and wire course actions**
+- [x] **AURA-119 — Safety Training: Add enrollment/progress model and wire course actions**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1058,7 +1058,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `GET /api/health-safety/training; missing enrollment/completion API`
   - **Description / Acceptance Criteria:** UI shows per-employee progress/deadline but API schema is catalog-only. Play course tiles and Download certification unwired.
 
-- [ ] **AURA-120 — Services: Wire orphan settings/analytics services**
+- [x] **AURA-120 — Services: Wire orphan settings/analytics services**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2388,7 +2388,7 @@ This document is intended for AI Developer execution. It converts the tracker in
 
 ## Benefits Module
 
-- [ ] **AURA-282 — Benefit Types: Wire Add New Benefit, Edit, and Delete to plans API**
+- [x] **AURA-282 — Benefit Types: Wire Add New Benefit, Edit, and Delete to plans API**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2396,7 +2396,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `BenefitPlanService / GET/POST/PUT/DELETE /api/benefits/plans`
   - **Description / Acceptance Criteria:** Page loads plans via GET /api/benefits/plans but Add New Benefit, Edit, and Delete have no onClick handlers. Wire CRUD to BenefitPlanService.
 
-- [ ] **AURA-283 — Dependent Management: Wire Add Dependent, menu actions, and Upload Verification Docs**
+- [x] **AURA-283 — Dependent Management: Wire Add Dependent, menu actions, and Upload Verification Docs**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2404,7 +2404,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `DependentService / /api/benefits/dependents`
   - **Description / Acceptance Criteria:** Page loads dependents via GET /api/benefits/dependents but write actions are missing. Wire Add Dependent form, MoreVertical menu, and document upload to DependentService.
 
-- [ ] **AURA-284 — Claims: Wire Filter, Submit Claim, and row click navigation**
+- [x] **AURA-284 — Claims: Wire Filter, Submit Claim, and row click navigation**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2412,7 +2412,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `ClaimService / /api/benefits/claims`
   - **Description / Acceptance Criteria:** Page loads claims read-only. Wire Filter control, Submit Claim button, and ChevronRight row click to open claim detail. Fix hardcoded 0% deductible bar.
 
-- [ ] **AURA-285 — Open Enrollment: Wire Confirm Enrollment to POST enrollments**
+- [x] **AURA-285 — Open Enrollment: Wire Confirm Enrollment to POST enrollments**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2420,7 +2420,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `EnrollmentService / POST /api/benefits/enrollments`
   - **Description / Acceptance Criteria:** Plans load via GET /api/benefits/plans?status=ACTIVE but Confirm Enrollment has no handler. Connect to POST /api/benefits/enrollments via EnrollmentService.
 
-- [ ] **AURA-286 — Insurance Coverage: Wire Download All Cards, Copy, Contact carrier, Find a Doctor**
+- [x] **AURA-286 — Insurance Coverage: Wire Download All Cards, Copy, Contact carrier, Find a Doctor**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2428,7 +2428,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `GET /api/benefits/plans, /api/benefits/enrollments`
   - **Description / Acceptance Criteria:** Page derives active plan from live plans + enrollments but action buttons have no handlers. Wire carrier contact, card download, and provider lookup actions.
 
-- [ ] **AURA-287 — HSA / FSA: Wire View All, Submit Claim, Change Contribution, Order New Card**
+- [x] **AURA-287 — HSA / FSA: Wire View All, Submit Claim, Change Contribution, Order New Card**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2436,7 +2436,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `GET /api/benefits/plans?category=FSA_HSA; /api/v1/benefits HSA/FSA routes exist`
   - **Description / Acceptance Criteria:** Page proxies FSA_HSA plans and claims with fake account balances. Wire action buttons to dedicated HSA/FSA v1 endpoints or build dashboard routes.
 
-- [ ] **AURA-288 — Plan Eligibility: Implement eligibility API route and wire Create Rule**
+- [x] **AURA-288 — Plan Eligibility: Implement eligibility API route and wire Create Rule**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2444,7 +2444,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `EligibilityService — /api/benefits/eligibility/* (missing)`
   - **Description / Acceptance Criteria:** GET /api/benefits/eligibility/employee/EMP-001 returns 404. Route missing. Replace hardcoded EMP-001 with session employee. Wire Create New Eligibility Rule.
 
-- [ ] **AURA-289 — Enrollment Window: Implement enrollment-windows API and render live data**
+- [x] **AURA-289 — Enrollment Window: Implement enrollment-windows API and render live data**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2452,7 +2452,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `EnrollmentWindowService — /api/benefits/enrollment-windows (missing)`
   - **Description / Acceptance Criteria:** GET /api/benefits/enrollment-windows returns 404. Fetch runs but UI shows hardcoded 'Annual Open Enrollment 2025'. Implement route and bind windows state to UI.
 
-- [ ] **AURA-290 — Provider Directory: Implement providers API or proxy to v1 and wire Search/Call/Book**
+- [x] **AURA-290 — Provider Directory: Implement providers API or proxy to v1 and wire Search/Call/Book**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2460,7 +2460,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/benefits/providers (missing) or /api/v1/benefits/providers`
   - **Description / Acceptance Criteria:** GET /api/benefits/providers returns 404 (v1 providers API exists). Wire Search, Call, and Book Online buttons.
 
-- [ ] **AURA-291 — Exception Handling: Implement qualifying-events API and wire Approve/Reject/Message**
+- [x] **AURA-291 — Exception Handling: Implement qualifying-events API and wire Approve/Reject/Message**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2468,7 +2468,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `QualifyingEventService — /api/benefits/qualifying-events (missing)`
   - **Description / Acceptance Criteria:** GET /api/benefits/qualifying-events returns 404. Wire Approve, Reject, and Message row actions once API exists (v1 life-event route may apply).
 
-- [ ] **AURA-292 — Claim Status: Fix response unwrapping and bind UI to selected claim**
+- [x] **AURA-292 — Claim Status: Fix response unwrapping and bind UI to selected claim**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2476,7 +2476,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `ClaimService / GET /api/benefits/claims`
   - **Description / Acceptance Criteria:** Calls ClaimService.getClaims but sets setClaims(data) instead of data.data. Fetched claims state unused; hardcoded demo claim #CLM-002 shown. Fix unwrap and wire document download.
 
-- [ ] **AURA-293 — Perks Marketplace: Wire View Details navigation**
+- [x] **AURA-293 — Perks Marketplace: Wire View Details navigation**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2484,7 +2484,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `GET /api/benefits/plans?status=ACTIVE`
   - **Description / Acceptance Criteria:** Page maps active plans to perk cards. View Details has no handler or navigation.
 
-- [ ] **AURA-294 — Wellness Tracker: Wire Browse All and replace hardcoded wellness metrics**
+- [x] **AURA-294 — Wellness Tracker: Wire Browse All and replace hardcoded wellness metrics**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2500,7 +2500,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `BenefitSettingsService / GET/PUT /api/benefits/settings`
   - **Description / Acceptance Criteria:** GET /api/benefits/settings is fetched but never rendered. Page shows hardcoded campaigns + templates. Wire settings to UI and Create New Campaign action.
 
-- [ ] **AURA-296 — Benefits Enrollment (stub): Implement sub-feature pages or remove dead ModuleGrid links**
+- [x] **AURA-296 — Benefits Enrollment (stub): Implement sub-feature pages or remove dead ModuleGrid links**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2524,7 +2524,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `BenefitsEnrollmentService / /api/v1/benefits/*`
   - **Description / Acceptance Criteria:** Wizard calls /api/v1/benefits/\* with path mismatches (/v1/benefits vs /v1/benefits/plans, missing dependents/window routes). Fix service paths and DependentSelection submit.
 
-- [ ] **AURA-299 — Session / Identity: Replace hardcoded EMP-001 with session employee ID**
+- [x] **AURA-299 — Session / Identity: Replace hardcoded EMP-001 with session employee ID**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4796,7 +4796,7 @@ This document is intended for AI Developer execution. It converts the tracker in
 
 ## Leave Module
 
-- [ ] **AURA-580 — Accrual Engine: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-580 — Accrual Engine: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4804,7 +4804,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains.
 
-- [ ] **AURA-581 — Ai Insights: Replace hub with functional page or add child route**
+- [x] **AURA-581 — Ai Insights: Replace hub with functional page or add child route**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4812,7 +4812,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page is a ModuleGrid navigation shell with no data/API integration.
 
-- [ ] **AURA-582 — Employee Balances: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-582 — Employee Balances: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4820,7 +4820,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains.
 
-- [ ] **AURA-583 — Holidays: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-583 — Holidays: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4828,7 +4828,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains.
 
-- [ ] **AURA-584 — Dashboard: Replace hub with functional page or add child route**
+- [x] **AURA-584 — Dashboard: Replace hub with functional page or add child route**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4836,7 +4836,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page is a ModuleGrid navigation shell with no data/API integration.
 
-- [ ] **AURA-585 — Hajj Leave: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-585 — Hajj Leave: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4844,7 +4844,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains.
 
-- [ ] **AURA-586 — Holiday Management: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-586 — Holiday Management: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4852,7 +4852,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains.
 
-- [ ] **AURA-587 — Leave Balance: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-587 — Leave Balance: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4860,7 +4860,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains.
 
-- [ ] **AURA-588 — Leave Types: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-588 — Leave Types: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4868,7 +4868,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains.
 
-- [ ] **AURA-589 — Pending Approvals: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-589 — Pending Approvals: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4876,7 +4876,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/manager/approvals`
   - **Description / Acceptance Criteria:** Page calls APIs (/api/manager/approvals) but mock/hardcoded UI remains.
 
-- [ ] **AURA-590 — Leave: Replace hub with functional page or add child route**
+- [x] **AURA-590 — Leave: Replace hub with functional page or add child route**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4884,7 +4884,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page is a ModuleGrid navigation shell with no data/API integration.
 
-- [ ] **AURA-591 — Holiday Management: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-591 — Holiday Management: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4892,7 +4892,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains.
 
-- [ ] **AURA-592 — Leave Balance: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-592 — Leave Balance: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4900,7 +4900,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains.
 
-- [ ] **AURA-593 — Leave Types: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-593 — Leave Types: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4908,7 +4908,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains.
 
-- [ ] **AURA-594 — Accrual Engine: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-594 — Accrual Engine: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4916,7 +4916,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains.
 
-- [ ] **AURA-595 — AI Insights: Replace hub with functional page or add child route**
+- [x] **AURA-595 — AI Insights: Replace hub with functional page or add child route**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4924,7 +4924,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page is a ModuleGrid navigation shell with no data/API integration.
 
-- [ ] **AURA-596 — Employee Balances: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-596 — Employee Balances: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4932,7 +4932,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains.
 
-- [ ] **AURA-597 — Holidays: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-597 — Holidays: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4940,7 +4940,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains.
 
-- [ ] **AURA-598 — Dashboard: Replace hub with functional page or add child route**
+- [x] **AURA-598 — Dashboard: Replace hub with functional page or add child route**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4948,7 +4948,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page is a ModuleGrid navigation shell with no data/API integration.
 
-- [ ] **AURA-599 — Hajj Leave: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-599 — Hajj Leave: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4956,7 +4956,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains.
 
-- [ ] **AURA-600 — Holiday Management: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-600 — Holiday Management: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4964,7 +4964,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains.
 
-- [ ] **AURA-601 — Leave Balance: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-601 — Leave Balance: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4972,7 +4972,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains.
 
-- [ ] **AURA-602 — Leave Types: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-602 — Leave Types: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4980,7 +4980,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains.
 
-- [ ] **AURA-603 — Pending Approvals: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-603 — Pending Approvals: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4990,7 +4990,7 @@ This document is intended for AI Developer execution. It converts the tracker in
 
 ## Localization Module
 
-- [ ] **AURA-604 — Localization: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-604 — Localization: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4998,7 +4998,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains.
 
-- [ ] **AURA-605 — Address Formats: Manual review required**
+- [x] **AURA-605 — Address Formats: Manual review required**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5014,7 +5014,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains; @ts-nocheck contract drift.
 
-- [ ] **AURA-607 — Calendar Types: Manual review required**
+- [x] **AURA-607 — Calendar Types: Manual review required**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5022,7 +5022,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page exists; automated heuristics could not classify wiring.
 
-- [ ] **AURA-608 — Country Specific Fields: Replace hub with functional page or add child route**
+- [x] **AURA-608 — Country Specific Fields: Replace hub with functional page or add child route**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5030,7 +5030,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page is a ModuleGrid navigation shell with no data/API integration.
 
-- [ ] **AURA-609 — Date Time Formats: Manual review required**
+- [x] **AURA-609 — Date Time Formats: Manual review required**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5046,7 +5046,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page exists; automated heuristics could not classify wiring.
 
-- [ ] **AURA-611 — Multi Currency: Replace hub with functional page or add child route**
+- [x] **AURA-611 — Multi Currency: Replace hub with functional page or add child route**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5054,7 +5054,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page is a ModuleGrid navigation shell with no data/API integration.
 
-- [ ] **AURA-612 — Multi Language: Replace hub with functional page or add child route**
+- [x] **AURA-612 — Multi Language: Replace hub with functional page or add child route**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5062,7 +5062,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page is a ModuleGrid navigation shell with no data/API integration.
 
-- [ ] **AURA-613 — Regional Holidays: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-613 — Regional Holidays: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5078,7 +5078,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page renders inline static arrays with no fetch/service detected.
 
-- [ ] **AURA-615 — Tax Regimes: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-615 — Tax Regimes: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5086,7 +5086,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/master-data/tax-regimes`
   - **Description / Acceptance Criteria:** Page calls APIs (/api/master-data/tax-regimes) but mock/hardcoded UI remains.
 
-- [ ] **AURA-616 — Localization: Replace hub with functional page or add child route**
+- [x] **AURA-616 — Localization: Replace hub with functional page or add child route**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5094,7 +5094,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page is a ModuleGrid navigation shell with no data/API integration.
 
-- [ ] **AURA-617 — Address Formats: Manual review required**
+- [x] **AURA-617 — Address Formats: Manual review required**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5102,7 +5102,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page exists; automated heuristics could not classify wiring.
 
-- [ ] **AURA-618 — Calendar Types: Manual review required**
+- [x] **AURA-618 — Calendar Types: Manual review required**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5110,7 +5110,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page exists; automated heuristics could not classify wiring.
 
-- [ ] **AURA-619 — Date Time Formats: Manual review required**
+- [x] **AURA-619 — Date Time Formats: Manual review required**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5118,7 +5118,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page exists; automated heuristics could not classify wiring.
 
-- [ ] **AURA-620 — Government Reports: Manual review required**
+- [x] **AURA-620 — Government Reports: Manual review required**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5126,7 +5126,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page exists; automated heuristics could not classify wiring.
 
-- [ ] **AURA-621 — Localization: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-621 — Localization: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5134,7 +5134,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains.
 
-- [ ] **AURA-622 — Address Formats: Manual review required**
+- [x] **AURA-622 — Address Formats: Manual review required**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5142,7 +5142,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page exists; automated heuristics could not classify wiring.
 
-- [ ] **AURA-623 — Bank Integration: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-623 — Bank Integration: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5150,7 +5150,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains; @ts-nocheck contract drift.
 
-- [ ] **AURA-624 — Calendar Types: Manual review required**
+- [x] **AURA-624 — Calendar Types: Manual review required**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5158,7 +5158,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page exists; automated heuristics could not classify wiring.
 
-- [ ] **AURA-625 — Country-Specific Fields: Replace hub with functional page or add child route**
+- [x] **AURA-625 — Country-Specific Fields: Replace hub with functional page or add child route**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5166,7 +5166,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page is a ModuleGrid navigation shell with no data/API integration.
 
-- [ ] **AURA-626 — Date/Time Formats: Manual review required**
+- [x] **AURA-626 — Date/Time Formats: Manual review required**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5174,7 +5174,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page exists; automated heuristics could not classify wiring.
 
-- [ ] **AURA-627 — Government Reports: Manual review required**
+- [x] **AURA-627 — Government Reports: Manual review required**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5182,7 +5182,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page exists; automated heuristics could not classify wiring.
 
-- [ ] **AURA-628 — Multi-Currency: Replace hub with functional page or add child route**
+- [x] **AURA-628 — Multi-Currency: Replace hub with functional page or add child route**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5190,7 +5190,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page is a ModuleGrid navigation shell with no data/API integration.
 
-- [ ] **AURA-629 — Multi-Language: Replace hub with functional page or add child route**
+- [x] **AURA-629 — Multi-Language: Replace hub with functional page or add child route**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5198,7 +5198,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page is a ModuleGrid navigation shell with no data/API integration.
 
-- [ ] **AURA-630 — Regional Holidays: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-630 — Regional Holidays: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5206,7 +5206,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains.
 
-- [ ] **AURA-631 — Statutory Compliance: Wire page to backend API**
+- [x] **AURA-631 — Statutory Compliance: Wire page to backend API**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5214,7 +5214,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page renders inline static arrays with no fetch/service detected.
 
-- [ ] **AURA-632 — Tax Regimes: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-632 — Tax Regimes: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5342,7 +5342,7 @@ This document is intended for AI Developer execution. It converts the tracker in
 
 ## Org Design Module
 
-- [ ] **AURA-647 — Org Design: Replace hub with functional page or add child route**
+- [x] **AURA-647 — Org Design: Replace hub with functional page or add child route**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5350,7 +5350,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page is a ModuleGrid navigation shell with no data/API integration.
 
-- [ ] **AURA-648 — Change Management: Wire page to backend API**
+- [x] **AURA-648 — Change Management: Wire page to backend API**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5358,7 +5358,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page renders inline static arrays with no fetch/service detected.
 
-- [ ] **AURA-649 — Matrix Structure: Replace mock/hardcoded data with live API**
+- [x] **AURA-649 — Matrix Structure: Replace mock/hardcoded data with live API**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5366,7 +5366,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page uses hardcoded or mock data; no fetch/service calls detected.
 
-- [ ] **AURA-650 — Org Analytics: Wire page to backend API**
+- [x] **AURA-650 — Org Analytics: Wire page to backend API**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5374,7 +5374,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page renders inline static arrays with no fetch/service detected.
 
-- [ ] **AURA-651 — Org Chart Builder: Manual review required**
+- [x] **AURA-651 — Org Chart Builder: Manual review required**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5382,7 +5382,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page exists; automated heuristics could not classify wiring.
 
-- [ ] **AURA-652 — Position Hierarchy: Wire page to backend API**
+- [x] **AURA-652 — Position Hierarchy: Wire page to backend API**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5390,7 +5390,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page renders inline static arrays with no fetch/service detected.
 
-- [ ] **AURA-653 — Scenario Planning: Replace mock/hardcoded data with live API**
+- [x] **AURA-653 — Scenario Planning: Replace mock/hardcoded data with live API**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5398,7 +5398,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page uses hardcoded or mock data; no fetch/service calls detected.
 
-- [ ] **AURA-654 — Span of Control: Wire page to backend API**
+- [x] **AURA-654 — Span of Control: Wire page to backend API**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5406,7 +5406,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page renders inline static arrays with no fetch/service detected.
 
-- [ ] **AURA-655 — Succession Pool: Wire page to backend API**
+- [x] **AURA-655 — Succession Pool: Wire page to backend API**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
