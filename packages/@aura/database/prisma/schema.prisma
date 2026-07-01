@@ -90,16 +90,19 @@ model Department {
 }
 
 model CostCenter {
-  id          String       @id(map: "CostCenter_pkey") @default(uuid())
-  code        String       @unique(map: "CostCenter_code_key")
-  name        String
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @default(now()) @updatedAt
-  createdBy   String?
-  updatedBy   String?
-  deletedAt   DateTime?
-  isDeleted   Boolean      @default(false)
-  departments Department[]
+  id             String       @id(map: "CostCenter_pkey") @default(uuid())
+  code           String       @unique(map: "CostCenter_code_key")
+  name           String
+  fiscalYear     Int?
+  allocatedBudget Decimal     @default(0) @db.Decimal(15, 2)
+  spentBudget    Decimal      @default(0) @db.Decimal(15, 2)
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @default(now()) @updatedAt
+  createdBy      String?
+  updatedBy      String?
+  deletedAt      DateTime?
+  isDeleted      Boolean      @default(false)
+  departments    Department[]
 
   @@map("aura_cost_center")
 }
@@ -3884,6 +3887,24 @@ model ExitClearance {
   @@map("aura_exit_clearance")
 }
 
+model ClearanceTemplate {
+  id          String    @id @default(uuid())
+  tenantId    String
+  department  String
+  description String
+  sortOrder   Int       @default(0)
+  isActive    Boolean   @default(true)
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  deletedAt   DateTime?
+  isDeleted   Boolean   @default(false)
+
+  @@index([tenantId])
+  @@map("aura_clearance_template")
+}
+
 model ProbationTracking {
   id                    String            @id(map: "ProbationTracking_pkey") @default(uuid())
   tenantId              String
@@ -6719,6 +6740,29 @@ model HealthSafetyTraining {
 
   @@index([tenantId])
   @@map("aura_hs_training")
+}
+
+model HealthSafetyTrainingEnrollment {
+  id            String    @id @default(uuid())
+  tenantId      String
+  trainingId    String
+  employeeId    String
+  progress      Int       @default(0)
+  status        String    @default("ENROLLED")
+  dueDate       DateTime?
+  completedAt   DateTime?
+  certificateId String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  createdBy     String?
+  updatedBy     String?
+  deletedAt     DateTime?
+  isDeleted     Boolean   @default(false)
+
+  @@unique([tenantId, trainingId, employeeId])
+  @@index([tenantId])
+  @@index([tenantId, employeeId])
+  @@map("aura_hs_training_enrollment")
 }
 
 model HealthSafetyEmergencyContact {
@@ -12002,6 +12046,114 @@ model UserMFA {
   isDeleted   Boolean   @default(false)
 
   @@index([userId])
+}
+
+// ============================================================================
+// ORG DESIGN MODULE
+// ============================================================================
+
+model OrgScenario {
+  id                String    @id @default(uuid())
+  tenantId          String
+  name              String
+  description       String?
+  scenarioType      String    @default("what_if")
+  status            String    @default("draft")
+  baselineChartId   String?
+  effectiveDate     DateTime?
+  currentHeadcount  Int       @default(0)
+  projectedHeadcount Int      @default(0)
+  currentCost       Decimal   @default(0) @db.Decimal(18, 2)
+  projectedCost     Decimal   @default(0) @db.Decimal(18, 2)
+  changes           Json?
+  impactSummary     Json?
+  approvedBy        String?
+  approvedAt        DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  createdBy         String?
+  updatedBy         String?
+  deletedAt         DateTime?
+  isDeleted         Boolean   @default(false)
+
+  @@index([tenantId])
+  @@index([status])
+  @@map("aura_org_scenario")
+}
+
+model OrgSuccessionPool {
+  id                String                @id @default(uuid())
+  tenantId          String
+  name              String
+  poolType          String                @default("management")
+  description       String?
+  criticalRole      String
+  incumbentId       String?
+  incumbentName     String?
+  retentionRisk     String                @default("medium")
+  status            String                @default("active")
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+  createdBy         String?
+  updatedBy         String?
+  deletedAt         DateTime?
+  isDeleted         Boolean               @default(false)
+  members           OrgSuccessionMember[]
+
+  @@index([tenantId])
+  @@index([status])
+  @@map("aura_org_succession_pool")
+}
+
+model OrgSuccessionMember {
+  id             String            @id @default(uuid())
+  tenantId       String
+  poolId         String
+  employeeId     String
+  employeeName   String
+  currentRole    String?
+  readinessLevel String            @default("ready_2_3_years")
+  fitScore       Int               @default(0)
+  riskOfLoss     String            @default("medium")
+  notes          String?
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
+  createdBy      String?
+  updatedBy      String?
+  pool           OrgSuccessionPool @relation(fields: [poolId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([poolId])
+  @@map("aura_org_succession_member")
+}
+
+model OrgChangeInitiative {
+  id                   String    @id @default(uuid())
+  tenantId             String
+  title                String
+  description          String?
+  changeType           String    @default("restructure")
+  changeScope          String    @default("department")
+  status               String    @default("planning")
+  completionPercentage Int       @default(0)
+  impactLevel          String    @default("medium")
+  ownerId              String?
+  ownerName            String?
+  plannedStartDate     DateTime?
+  plannedEndDate       DateTime?
+  actualStartDate      DateTime?
+  actualEndDate        DateTime?
+  totalAffected        Int       @default(0)
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  createdBy            String?
+  updatedBy            String?
+  deletedAt            DateTime?
+  isDeleted            Boolean   @default(false)
+
+  @@index([tenantId])
+  @@index([status])
+  @@map("aura_org_change_initiative")
 }
 
 enum LocationType {
