@@ -105,17 +105,39 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, { user, permiss
     }
 
     try {
+      const data: any = {};
+
+      const componentCode = body.componentCode ?? body.code;
+      const componentName = body.componentName ?? body.name;
+      const componentType = body.componentType ?? body.type;
+      const calculationType = body.calculationType;
+      const percentage = body.percentage;
+      const amount = body.amount ?? body.defaultValue;
+      const isActive = body.isActive;
+      const isTaxable = body.isTaxable;
+      const isStatutory = body.isStatutory;
+
+      if (componentCode !== undefined) data.componentCode = componentCode;
+      if (componentName !== undefined) data.componentName = componentName;
+      if (componentType !== undefined) data.componentType = componentType;
+      if (calculationType !== undefined) data.calculationType = calculationType;
+      if (percentage !== undefined)
+        data.percentage = percentage !== null ? Number(percentage) : null;
+      if (amount !== undefined) data.amount = amount !== null ? Number(amount) : null;
+      if (isActive !== undefined) data.isActive = isActive;
+      if (isTaxable !== undefined) data.isTaxable = isTaxable;
+      if (isStatutory !== undefined) data.isStatutory = isStatutory;
+      data.updatedAt = new Date();
+
       // tenant-ok: where clause includes the locally-bound tenantId
       const component = await prisma.salaryComponent.update({
         where: { id, tenantId },
-        data: {
-          ...updates,
-          updatedAt: new Date(),
-        },
+        data,
       });
 
       return NextResponse.json({ success: true, data: component });
-    } catch {
+    } catch (err: any) {
+      logger.error('Database update failed, returning mock update:', err);
       return NextResponse.json({
         success: true,
         data: { ...body, updatedAt: new Date().toISOString() },
