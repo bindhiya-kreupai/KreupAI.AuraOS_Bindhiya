@@ -1,0 +1,280 @@
+// Construction & Real Estate module models.
+// Each entity keeps a stable set of query/filter columns plus a `data` JSON
+// blob that carries the rich nested payload defined in
+// apps/web/src/app/dashboard/construction/types.ts. All models are tenant
+// scoped. Access from route code via (prisma as any).<camelCaseModelName>.
+
+model ConstructionProject {
+  id            String    @id @default(uuid())
+  tenantId      String
+  projectName   String
+  projectNumber String
+  projectType   String
+  status        String    @default("planning")
+  clientName    String?
+  data          Json      @default("{}")
+  createdBy     String?
+  updatedBy     String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  isDeleted     Boolean   @default(false)
+  deletedAt     DateTime?
+
+  @@index([tenantId])
+  @@index([status])
+  @@map("aura_construction_project")
+}
+
+model ConstructionTask {
+  id        String    @id @default(uuid())
+  tenantId  String
+  projectId String
+  taskName  String
+  status    String    @default("not_started")
+  priority  String    @default("medium")
+  data      Json      @default("{}")
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
+
+  @@index([tenantId])
+  @@index([projectId])
+  @@map("aura_construction_task")
+}
+
+model ConstructionSafetyInspection {
+  id             String    @id @default(uuid())
+  tenantId       String
+  projectId      String
+  inspectionType String
+  status         String    @default("scheduled")
+  overallScore   Float     @default(0)
+  data           Json      @default("{}")
+  createdBy      String?
+  updatedBy      String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  isDeleted      Boolean   @default(false)
+  deletedAt      DateTime?
+
+  @@index([tenantId])
+  @@index([projectId])
+  @@map("aura_construction_safety_inspection")
+}
+
+model ConstructionSafetyIncident {
+  id           String    @id @default(uuid())
+  tenantId     String
+  projectId    String
+  incidentType String
+  severity     String
+  status       String    @default("reported")
+  data         Json      @default("{}")
+  createdBy    String?
+  updatedBy    String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  isDeleted    Boolean   @default(false)
+  deletedAt    DateTime?
+
+  @@index([tenantId])
+  @@index([projectId])
+  @@map("aura_construction_safety_incident")
+}
+
+model ConstructionSafetyTraining {
+  id           String    @id @default(uuid())
+  tenantId     String
+  trainingName String
+  trainingType String
+  data         Json      @default("{}")
+  createdBy    String?
+  updatedBy    String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  isDeleted    Boolean   @default(false)
+  deletedAt    DateTime?
+
+  @@index([tenantId])
+  @@map("aura_construction_safety_training")
+}
+
+model ConstructionHazard {
+  id          String    @id @default(uuid())
+  tenantId    String
+  projectId   String
+  hazardType  String
+  hazardLevel String
+  status      String    @default("identified")
+  data        Json      @default("{}")
+  createdBy   String?
+  updatedBy   String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  isDeleted   Boolean   @default(false)
+  deletedAt   DateTime?
+
+  @@index([tenantId])
+  @@index([projectId])
+  @@map("aura_construction_hazard")
+}
+
+model ConstructionEquipmentLease {
+  id            String    @id @default(uuid())
+  tenantId      String
+  projectId     String
+  equipmentName String
+  status        String    @default("pending")
+  data          Json      @default("{}")
+  createdBy     String?
+  updatedBy     String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  isDeleted     Boolean   @default(false)
+  deletedAt     DateTime?
+
+  @@index([tenantId])
+  @@index([projectId])
+  @@map("aura_construction_equipment_lease")
+}
+
+model ConstructionSubcontractor {
+  id          String    @id @default(uuid())
+  tenantId    String
+  companyName String
+  status      String    @default("pending")
+  data        Json      @default("{}")
+  createdBy   String?
+  updatedBy   String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  isDeleted   Boolean   @default(false)
+  deletedAt   DateTime?
+
+  @@index([tenantId])
+  @@map("aura_construction_subcontractor")
+}
+
+model ConstructionBidInvitation {
+  id        String    @id @default(uuid())
+  tenantId  String
+  projectId String
+  status    String    @default("open")
+  data      Json      @default("{}")
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
+
+  @@index([tenantId])
+  @@map("aura_construction_bid_invitation")
+}
+
+model ConstructionBid {
+  id              String    @id @default(uuid())
+  tenantId        String
+  projectId       String
+  subcontractorId String
+  status          String    @default("submitted")
+  data            Json      @default("{}")
+  createdBy       String?
+  updatedBy       String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  isDeleted       Boolean   @default(false)
+  deletedAt       DateTime?
+
+  @@index([tenantId])
+  @@index([projectId])
+  @@map("aura_construction_bid")
+}
+
+model ConstructionContract {
+  id              String    @id @default(uuid())
+  tenantId        String
+  projectId       String
+  subcontractorId String
+  status          String    @default("draft")
+  data            Json      @default("{}")
+  createdBy       String?
+  updatedBy       String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  isDeleted       Boolean   @default(false)
+  deletedAt       DateTime?
+
+  @@index([tenantId])
+  @@index([projectId])
+  @@map("aura_construction_contract")
+}
+
+model ConstructionInvoice {
+  id         String    @id @default(uuid())
+  tenantId   String
+  contractId String
+  status     String    @default("draft")
+  data       Json      @default("{}")
+  createdBy  String?
+  updatedBy  String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  isDeleted  Boolean   @default(false)
+  deletedAt  DateTime?
+
+  @@index([tenantId])
+  @@index([contractId])
+  @@map("aura_construction_invoice")
+}
+
+model ConstructionSettings {
+  id        String   @id @default(uuid())
+  tenantId  String   @unique
+  data      Json     @default("{}")
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("aura_construction_settings")
+}
+
+model ConstructionAlert {
+  id        String    @id @default(uuid())
+  tenantId  String
+  alertType String
+  severity  String
+  status    String    @default("active")
+  data      Json      @default("{}")
+  createdBy String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
+
+  @@index([tenantId])
+  @@map("aura_construction_alert")
+}
+
+model ConstructionStaffingAllocation {
+  id          String    @id @default(uuid())
+  tenantId    String
+  projectName String
+  location    String?
+  crewSize    Int       @default(0)
+  workType    String?
+  status      String    @default("active")
+  data        Json      @default("{}")
+  createdBy   String?
+  updatedBy   String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  isDeleted   Boolean   @default(false)
+  deletedAt   DateTime?
+
+  @@index([tenantId])
+  @@map("aura_construction_staffing_allocation")
+}
