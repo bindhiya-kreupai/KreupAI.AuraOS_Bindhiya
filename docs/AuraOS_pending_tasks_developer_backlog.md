@@ -156,7 +156,7 @@ This document is intended for AI Developer execution. It converts the tracker in
 
 ## Companies Module
 
-- [ ] **AURA-009 — Feature Coverage: Expand form fields and wire Import/Export**
+- [x] **AURA-009 — Feature Coverage: Expand form fields and wire Import/Export**
   - **Status:** In Progress
   - **Assignee:** Sharon
   - **Due Date:** 29/06/2026
@@ -164,7 +164,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `createCompanySchema, updateCompanySchema; export API missing`
   - **Description / Acceptance Criteria:** API supports email, phone, address, industry, website, registrationNumber, status; UI only has code, name, taxId. Import shows alert stub; Export calls ?export=csv but master-data route has no export handler.
 
-- [ ] **AURA-010 — Navigation: Fix Legal Entities link to existing companies page**
+- [x] **AURA-010 — Navigation: Fix Legal Entities link to existing companies page**
   - **Status:** Not Started
   - **Assignee:** Sharon
   - **Due Date:** 29/06/2026
@@ -172,7 +172,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `GET /api/v1/hr/entities or /api/companies`
   - **Description / Acceptance Criteria:** Hub links Legal Entities to /core-hr/entities which has no page (404). Retarget to /master-data/companies or /core-hr/companies.
 
-- [ ] **AURA-011 — Missing Page: Create Legal Entities management page**
+- [x] **AURA-011 — Missing Page: Create Legal Entities management page**
   - **Status:** In Progress
   - **Assignee:** Kiruthiga
   - **Due Date:** 2026-01-07 (Excel serial: 46029)
@@ -180,7 +180,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `GET /api/v1/hr/entities, /api/companies/*`
   - **Description / Acceptance Criteria:** GET /api/v1/hr/entities exists with employee/dept/location counts but no UI. Build list/detail page; optionally wire CRUD to /api/companies.
 
-- [ ] **AURA-012 — Missing Page: Create company detail page**
+- [x] **AURA-012 — Missing Page: Create company detail page**
   - **Status:** Not Started
   - **Assignee:** Kiruthiga
   - **Due Date:** 2026-01-07 (Excel serial: 46029)
@@ -188,7 +188,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `GET /api/companies/[id]?includeRelations=true`
   - **Description / Acceptance Criteria:** No detail view for single company with relations (includeRelations=true).
 
-- [ ] **AURA-013 — Orphan Components: Mount or delete mock legal entity UI**
+- [x] **AURA-013 — Orphan Components: Mount or delete mock legal entity UI**
   - **Status:** Not Started
   - **Assignee:** Devadharshni
   - **Due Date:** 2026-02-07 (Excel serial: 46060)
@@ -196,7 +196,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `legalEntityService.ts (MOCK) → should use /api/companies`
   - **Description / Acceptance Criteria:** Full multi-tab UI (entities, transfers, consolidated metrics) using mock legalEntityService. Not imported by any page.
 
-- [ ] **AURA-014 — Orphan Components: Mount or delete multi-entity mock components**
+- [x] **AURA-014 — Orphan Components: Mount or delete multi-entity mock components**
   - **Status:** Not Started
   - **Assignee:** Devadharshni
   - **Due Date:** 2026-02-07 (Excel serial: 46060)
@@ -204,7 +204,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `multiEntityService.ts (MOCK)`
   - **Description / Acceptance Criteria:** EntityManagementDashboard and InterEntityTransfer use mock multiEntityService. Not imported by any route.
 
-- [ ] **AURA-015 — Entity Switcher: Wire EntitySwitcher to live company list**
+- [x] **AURA-015 — Entity Switcher: Wire EntitySwitcher to live company list**
   - **Status:** Not Started
   - **Assignee:** Kiruthiga
   - **Due Date:** 2026-01-07 (Excel serial: 46029)
@@ -212,7 +212,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `GET /api/v1/companies or GET /api/companies`
   - **Description / Acceptance Criteria:** Hardcoded 4 entities; Manage Legal Entities button has no href/handler. Used on Core HR hub.
 
-- [ ] **AURA-016 — API Duplication: Consolidate company dropdown source**
+- [x] **AURA-016 — API Duplication: Consolidate company dropdown source**
   - **Status:** Not Started
   - **Assignee:** Kiruthiga
   - **Due Date:** 01/07/0206 (verify year; source value appears unusual)
@@ -1068,7 +1068,7 @@ This document is intended for AI Developer execution. It converts the tracker in
 
 ## HR Policies Compliance Module
 
-- [ ] **AURA-121 — Policies: Add create/edit policy and document viewer**
+- [x] **AURA-121 — Policies: Add create/edit policy and document viewer**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1076,7 +1076,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `POST /api/v1/hr-policies-compliance/policies (publish/archive only); hrPolicyService`
   - **Description / Acceptance Criteria:** UI only lists/publishes/archives; no create or edit policy form. Table shows metadata only; no document viewer or download.
 
-- [ ] **AURA-122 — Acknowledgements: Add per-policy ack list and employee workflow**
+- [x] **AURA-122 — Acknowledgements: Add per-policy ack list and employee workflow**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1084,7 +1084,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `GET /api/v1/hr-policies-compliance/dashboard; PolicyAcknowledgement model`
   - **Description / Acceptance Criteria:** Page shows aggregate KPIs only; no per-employee or per-policy acknowledgement table. No employee self-acknowledge UI.
 
-- [ ] **AURA-123 — Exceptions: Add policy picker UX**
+- [x] **AURA-123 — Exceptions: Add policy picker UX**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1092,7 +1092,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `GET /api/v1/hr-policies-compliance/policies`
   - **Description / Acceptance Criteria:** Raise form requires raw policyId UUID; no dropdown/search against policies list.
 
-- [ ] **AURA-124 — Reviews: Structured review form and policy context**
+- [x] **AURA-124 — Reviews: Structured review form and policy context**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1100,7 +1100,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `POST /api/v1/hr-policies-compliance/reviews`
   - **Description / Acceptance Criteria:** Complete Review uses window.prompt for outcome/notes. Table shows truncated policyId only; no policy title or link.
 
-- [ ] **AURA-125 — Certificate: Attestation UI and certificate export**
+- [x] **AURA-125 — Certificate: Attestation UI and certificate export**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1108,7 +1108,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `POST /api/v1/hr-policies-compliance/certificate; hrPolicyCertificateService`
   - **Description / Acceptance Criteria:** Sign sends hardcoded attestations [{field:attest,value:OK}]. No PDF/download or signed certificate viewer after sign.
 
-- [ ] **AURA-126 — Dashboard: Loading/error states and KPI drill-down**
+- [x] **AURA-126 — Dashboard: Loading/error states and KPI drill-down**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1116,7 +1116,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `GET /api/v1/hr-policies-compliance/dashboard`
   - **Description / Acceptance Criteria:** No loading spinner or error UI when dashboard fetch fails. KPI tiles not clickable links to filtered sub-pages.
 
-- [ ] **AURA-127 — API: Add create-draft and dedicated acknowledgements API**
+- [x] **AURA-127 — API: Add create-draft and dedicated acknowledgements API**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1126,7 +1126,7 @@ This document is intended for AI Developer execution. It converts the tracker in
 
 ## HR Forms Compliance Module
 
-- [ ] **AURA-128 — Signatures: Build signatures UI**
+- [x] **AURA-128 — Signatures: Build signatures UI**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1134,7 +1134,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `GET /api/v1/hr-forms-compliance/signatures; hrFormSubmissionService.listSignatures`
   - **Description / Acceptance Criteria:** GET /api/v1/hr-forms-compliance/signatures exists but no page consumes it.
 
-- [ ] **AURA-129 — Templates: Create custom template and wire supersede**
+- [x] **AURA-129 — Templates: Create custom template and wire supersede**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1142,7 +1142,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `POST /api/v1/hr-forms-compliance/templates; hrFormTemplateService`
   - **Description / Acceptance Criteria:** Only seed-defaults and publish; no create/edit template or schema editor. API supports supersede action but UI has no Supersede button.
 
-- [ ] **AURA-130 — Routings: Template picker and stage management**
+- [x] **AURA-130 — Routings: Template picker and stage management**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1150,7 +1150,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `GET /api/v1/hr-forms-compliance/templates; hrFormRoutingService.upsertStage`
   - **Description / Acceptance Criteria:** Stage form requires manual templateId entry. Only upsert-stage supported; no delete or reorder controls.
 
-- [ ] **AURA-131 — Submissions: Dynamic form render and e-signature audit trail**
+- [x] **AURA-131 — Submissions: Dynamic form render and e-signature audit trail**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1158,7 +1158,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `POST /api/v1/hr-forms-compliance/submissions; GET /signatures`
   - **Description / Acceptance Criteria:** Start submission collects IDs only; no form fields from template schema. No UI to view per-stage signatures. Reject uses window.prompt.
 
-- [ ] **AURA-132 — Submissions: Fix status filter and automate writeback**
+- [x] **AURA-132 — Submissions: Fix status filter and automate writeback**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1166,7 +1166,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `GET/POST /api/v1/hr-forms-compliance/submissions`
   - **Description / Acceptance Criteria:** Filter dropdown omits SUBMITTED. Writeback success/failure marked manually; no integrated writeback engine UI.
 
-- [ ] **AURA-133 — Certificate: Attestation UI and certificate export**
+- [x] **AURA-133 — Certificate: Attestation UI and certificate export**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1174,7 +1174,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `POST /api/v1/hr-forms-compliance/certificate; hrFormCertificateService`
   - **Description / Acceptance Criteria:** Sign sends hardcoded attestations array. No PDF/download or signed certificate viewer.
 
-- [ ] **AURA-134 — Dashboard: Loading/error states and KPI drill-down**
+- [x] **AURA-134 — Dashboard: Loading/error states and KPI drill-down**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1674,7 +1674,7 @@ This document is intended for AI Developer execution. It converts the tracker in
 
 ## DEI Module
 
-- [ ] **AURA-195 — Platform: Implement /api/dei/\* API surface**
+- [x] **AURA-195 — Platform: Implement /api/dei/\* API surface**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1682,7 +1682,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `dashboard/dei/services.ts (30+ endpoints missing)`
   - **Description / Acceptance Criteria:** All 8 sub-pages call /api/dei/\* → 501 via catch-all. Pages render hardcoded data; fetched state unused. useDEI hook never imported.
 
-- [ ] **AURA-196 — Diversity Metrics: Fix API and render live data**
+- [x] **AURA-196 — Diversity Metrics: Fix API and render live data**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1690,7 +1690,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `DiversityMetricsService; alt: GET /api/v1/analytics/diversity`
   - **Description / Acceptance Criteria:** Fetches /api/dei/metrics (501); renders hardcoded charts; metrics state unused. Filter and Export Report unwired.
 
-- [ ] **AURA-197 — Inclusion Survey: Fix API and wire Launch New Survey**
+- [x] **AURA-197 — Inclusion Survey: Fix API and wire Launch New Survey**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1698,7 +1698,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `InclusionSurveyService → /api/dei/surveys (missing)`
   - **Description / Acceptance Criteria:** Fetches surveys (501); displays hardcoded list. Launch New Survey unwired.
 
-- [ ] **AURA-198 — Pay Equity: Fix API schema and wire live compensation data**
+- [x] **AURA-198 — Pay Equity: Fix API schema and wire live compensation data**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1706,7 +1706,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `PayEquityService; alt: GET /api/v1/analytics/compensation`
   - **Description / Acceptance Criteria:** API type ≠ chart fields; summary cards hardcoded.
 
-- [ ] **AURA-199 — Bias Training: Fix API schema mapping**
+- [x] **AURA-199 — Bias Training: Fix API schema mapping**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1714,7 +1714,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `BiasTrainingService → /api/dei/training (missing)`
   - **Description / Acceptance Criteria:** UI expects title/thumb/status; API returns trainingName/modules.
 
-- [ ] **AURA-200 — ERG Management: Fix API and wire ERG actions**
+- [x] **AURA-200 — ERG Management: Fix API and wire ERG actions**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1722,7 +1722,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `ERGService → /api/dei/ergs (missing)`
   - **Description / Acceptance Criteria:** Fetches ERGs (501); renders hardcoded ergs array. Propose New ERG, Join Group, message unwired.
 
-- [ ] **AURA-201 — Mentorship: Wire to v1 mentorship API**
+- [x] **AURA-201 — Mentorship: Wire to v1 mentorship API**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1730,7 +1730,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `MentorshipService; alt: GET /api/v1/learning/mentorship (real)`
   - **Description / Acceptance Criteria:** Fetches programs (501); shows hardcoded mentors. Request, Message, Reschedule unwired.
 
-- [ ] **AURA-202 — Accessibility: Fix API and wire review actions**
+- [x] **AURA-202 — Accessibility: Fix API and wire review actions**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1738,7 +1738,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `AccessibilityService → /api/dei/accessibility (missing)`
   - **Description / Acceptance Criteria:** Fetches requests (501); hardcoded pending list. Review and View Audit Report unwired.
 
-- [ ] **AURA-203 — DEI Goals: Fix schema and wire goal CRUD**
+- [x] **AURA-203 — DEI Goals: Fix schema and wire goal CRUD**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1746,7 +1746,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `DEIGoalsService → /api/dei/goals (missing)`
   - **Description / Acceptance Criteria:** Field mismatch (goalName vs title). Add New Goal, Create Annual Goal, View Key Results unwired.
 
-- [ ] **AURA-204 — Analytics (parallel): Consolidate with DEI module**
+- [x] **AURA-204 — Analytics (parallel): Consolidate with DEI module**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1754,7 +1754,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `GET /api/v1/analytics/diversity`
   - **Description / Acceptance Criteria:** Only DEI page with live Prisma API; disconnected from /dashboard/dei/\* module.
 
-- [ ] **AURA-205 — Recruitment (parallel): Mount or remove orphan DEI dashboard**
+- [x] **AURA-205 — Recruitment (parallel): Mount or remove orphan DEI dashboard**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1762,7 +1762,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `deiHiringService.ts (mock)`
   - **Description / Acceptance Criteria:** DEIDashboard + deiHiringService fully built but never imported anywhere.
 
-- [ ] **AURA-206 — Hub: Mark as preview until APIs ship**
+- [x] **AURA-206 — Hub: Mark as preview until APIs ship**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1906,7 +1906,7 @@ This document is intended for AI Developer execution. It converts the tracker in
 
 ## Payroll Components Module
 
-- [ ] **AURA-223 — Payroll Run: Mount component and wire run lifecycle to v1 API**
+- [x] **AURA-223 — Payroll Run: Mount component and wire run lifecycle to v1 API**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1914,7 +1914,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/v1/payroll/runs; /calculate; /finalize; /approve; PayrollRunService`
   - **Description / Acceptance Criteria:** PayrollRunDashboard has zero page imports; full mock pipeline via setTimeout. payroll-processing page only calls createPayrollRun; no calculate/finalize/approve.
 
-- [ ] **AURA-224 — GL Posting: Mount GL UI and wire Post/Reverse/Download**
+- [x] **AURA-224 — GL Posting: Mount GL UI and wire Post/Reverse/Download**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1922,7 +1922,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/v1/payroll/gl/generate; /gl/journals; /gl/journals/[id]/post; /export`
   - **Description / Acceptance Criteria:** GLPostingDashboard orphan; Post/Reverse are local mock. Download journal has empty onClick.
 
-- [ ] **AURA-225 — Bank File: Merge with bank-file-generation page**
+- [x] **AURA-225 — Bank File: Merge with bank-file-generation page**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1930,7 +1930,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `BankFileService → /api/payroll/bank-file/generate`
   - **Description / Acceptance Criteria:** BankFileManager orphan with richer multi-format UI unused. bank-file-generation page: Configure Formats unwired; download generates client-side sample CSV.
 
-- [ ] **AURA-226 — Payslips: Mount or merge with payslip-generation page**
+- [x] **AURA-226 — Payslips: Mount or merge with payslip-generation page**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1938,7 +1938,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `PayslipService; /api/v1/payroll/pay-stubs/[id]/download`
   - **Description / Acceptance Criteria:** PayslipGenerator orphan with mock employees. payslip-generation page: Publish All uses alert() stub; Bulk Email/Download PDF unwired.
 
-- [ ] **AURA-227 — Variance Report: Mount on payroll-reports page**
+- [x] **AURA-227 — Variance Report: Mount on payroll-reports page**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1946,7 +1946,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/payroll/reports; /api/payroll/reports/stats`
   - **Description / Acceptance Criteria:** PayrollVarianceReport orphan with full MoM mock report. payroll-reports: PDF/Excel buttons have no handlers.
 
-- [ ] **AURA-228 — Salary Structure: Mount in compensation salary-structure page**
+- [x] **AURA-228 — Salary Structure: Mount in compensation salary-structure page**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1954,7 +1954,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/v1/payroll/salary-structures; /simulate; SalaryStructureService`
   - **Description / Acceptance Criteria:** SalaryStructureBuilder orphan; jurisdiction-aware builder unused. compensation/salary-structure page read-only; Add/Edit unwired.
 
-- [ ] **AURA-229 — Salary Revision: Mount in compensation increment-planning**
+- [x] **AURA-229 — Salary Revision: Mount in compensation increment-planning**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2756,7 +2756,7 @@ This document is intended for AI Developer execution. It converts the tracker in
 
 ## DEI Module
 
-- [ ] **AURA-327 — DEI: Replace hub with functional page or add child route**
+- [x] **AURA-327 — DEI: Replace hub with functional page or add child route**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2764,7 +2764,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page is a ModuleGrid navigation shell with no data/API integration.
 
-- [ ] **AURA-328 — Diversity Metrics: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-328 — Diversity Metrics: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2772,7 +2772,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains.
 
-- [ ] **AURA-329 — Mentorship Program: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-329 — Mentorship Program: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2782,7 +2782,7 @@ This document is intended for AI Developer execution. It converts the tracker in
 
 ## ESS Module
 
-- [ ] **AURA-330 — ESS: Replace hub with functional page or add child route**
+- [x] **AURA-330 — ESS: Replace hub with functional page or add child route**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2790,7 +2790,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page is a ModuleGrid navigation shell with no data/API integration.
 
-- [ ] **AURA-331 — Grievances: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-331 — Grievances: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2798,7 +2798,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains.
 
-- [ ] **AURA-332 — My Documents: Manual review required**
+- [x] **AURA-332 — My Documents: Manual review required**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2806,7 +2806,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page exists; automated heuristics could not classify wiring.
 
-- [ ] **AURA-333 — Profile Changes: Wire page to backend API**
+- [x] **AURA-333 — Profile Changes: Wire page to backend API**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2814,7 +2814,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page renders inline static arrays with no fetch/service detected.
 
-- [ ] **AURA-334 — Request Center: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-334 — Request Center: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2822,7 +2822,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains.
 
-- [ ] **AURA-335 — Tax Declaration: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-335 — Tax Declaration: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2830,7 +2830,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains.
 
-- [ ] **AURA-336 — Team Directory: Replace mock/hardcoded data with live API**
+- [x] **AURA-336 — Team Directory: Replace mock/hardcoded data with live API**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified

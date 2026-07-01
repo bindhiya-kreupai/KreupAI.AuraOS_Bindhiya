@@ -39,12 +39,15 @@ export default function DepartmentsPage() {
 
       const [depsRes, compsRes, costsRes] = await Promise.all([
         fetch(depsUrl),
-        fetch('/api/master-data/companies'),
+        fetch('/api/v1/companies'),
         fetch('/api/master-data/cost-centers'),
       ]);
 
       if (depsRes.ok) setData(await depsRes.json());
-      if (compsRes.ok) setCompanies(await compsRes.json());
+      if (compsRes.ok) {
+        const compsJson = await compsRes.json();
+        setCompanies(compsJson?.data?.data ?? compsJson?.data ?? []);
+      }
       if (costsRes.ok) setCostCenters(await costsRes.json());
     } catch (error: any) {
       console.error('Failed to fetch data:', error);

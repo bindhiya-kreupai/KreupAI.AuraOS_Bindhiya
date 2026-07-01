@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
 import { handleValuesExport } from '@/lib/master-data-utils';
@@ -10,9 +10,17 @@ interface Company {
   id: string;
   code: string;
   name: string;
-  taxId: string;
+  taxId?: string;
+  email?: string;
+  phoneNumber?: string;
+  address?: string;
+  city?: string;
+  state?: string;
+  postalCode?: string;
   status?: string;
   industry?: string;
+  website?: string;
+  registrationNumber?: string;
   country?: string;
 }
 
@@ -28,10 +36,12 @@ export default function CompaniesPage() {
   const [data, setData] = useState<Company[]>([]);
   const [stats, setStats] = useState<CompanyStats | null>(null);
   const [actionLoading, setActionLoading] = useState<string | null>(null);
+  const [importing, setImporting] = useState(false);
   const [statusMessage, setStatusMessage] = useState<{
     kind: 'success' | 'error';
     text: string;
   } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchCompanies = useCallback(async (search?: string) => {
     try {
@@ -186,6 +196,7 @@ export default function CompaniesPage() {
   ];
 
   const handleSave = async (record: Partial<Company>) => {
+    setStatusMessage(null);
     try {
       const isUpdate = !!record.id;
       const response = await fetch(
@@ -198,49 +209,171 @@ export default function CompaniesPage() {
       );
 
       if (response.ok) {
+        setStatusMessage({
+          kind: 'success',
+          text: `Company ${isUpdate ? 'updated' : 'created'} successfully.`,
+        });
         await fetchCompanies();
         await fetchStats();
       } else {
         const errorData = await response.json().catch(() => ({}));
-        console.error('Failed to save company:', errorData);
-        alert(`Failed to save company: ${errorData.error || errorData.message || 'Unknown error'}`);
+        setStatusMessage({
+          kind: 'error',
+          text: `Failed to save company: ${errorData.error || errorData.message || 'Unknown error'}`,
+        });
       }
     } catch (error: any) {
-      console.error('Error saving company:', error);
-      alert(`Error saving company: ${error.message}`);
+      setStatusMessage({ kind: 'error', text: `Error saving company: ${error?.message}` });
     }
   };
 
   const handleDelete = async (record: Company) => {
-    if (confirm(`Are you sure you want to delete ${record.name}?`)) {
-      try {
-        const response = await fetch(`/api/master-data/companies/${record.id}`, {
-          method: 'DELETE',
-        });
+    if (!confirm(`Are you sure you want to delete ${record.name}?`)) return;
+    setStatusMessage(null);
+    try {
+      const response = await fetch(`/api/master-data/companies/${record.id}`, {
+        method: 'DELETE',
+      });
 
-        if (response.ok) {
-          await fetchCompanies();
-          await fetchStats();
-        } else {
-          alert('Failed to delete company');
-        }
-      } catch (error: any) {
-        console.error('Error deleting company:', error);
-        alert(`Error deleting company: ${error.message}`);
+      if (response.ok) {
+        setStatusMessage({ kind: 'success', text: `${record.name} deleted successfully.` });
+        await fetchCompanies();
+        await fetchStats();
+      } else {
+        const errorData = await response.json().catch(() => ({}));
+        setStatusMessage({
+          kind: 'error',
+          text: `Failed to delete company: ${errorData.error || errorData.message || 'Unknown error'}`,
+        });
       }
+    } catch (error: any) {
+      setStatusMessage({ kind: 'error', text: `Error deleting company: ${error?.message}` });
     }
   };
 
   const handleExport = () => handleValuesExport('companies');
-  const handleImport = () => alert('Import functionality coming soon!');
+
+  const parseCsv = (text: string): Record<string, string>[] => {
+    const rows: string[][] = [];
+    let field = '';
+    let row: string[] = [];
+    let inQuotes = false;
+    for (let i = 0; i < text.length; i += 1) {
+      const char = text[i];
+      if (inQuotes) {
+        if (char === '"') {
+          if (text[i + 1] === '"') {
+            field += '"';
+            i += 1;
+          } else {
+            inQuotes = false;
+          }
+        } else {
+          field += char;
+        }
+      } else if (char === '"') {
+        inQuotes = true;
+      } else if (char === ',') {
+        row.push(field);
+        field = '';
+      } else if (char === '\n' || char === '\r') {
+        if (char === '\r' && text[i + 1] === '\n') i += 1;
+        row.push(field);
+        rows.push(row);
+        field = '';
+        row = [];
+      } else {
+        field += char;
+      }
+    }
+    if (field !== '' || row.length > 0) {
+      row.push(field);
+      rows.push(row);
+    }
+    const nonEmpty = rows.filter((r) => r.some((c) => c.trim() !== ''));
+    if (nonEmpty.length < 2) return [];
+    const headers = nonEmpty[0].map((h) => h.trim());
+    return nonEmpty.slice(1).map((cells) => {
+      const record: Record<string, string> = {};
+      headers.forEach((h, idx) => {
+        record[h] = (cells[idx] ?? '').trim();
+      });
+      return record;
+    });
+  };
+
+  const handleImportFile = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (event.target) event.target.value = '';
+    if (!file) return;
+    setImporting(true);
+    setStatusMessage(null);
+    try {
+      const text = await file.text();
+      const records = parseCsv(text);
+      if (records.length === 0) {
+        setStatusMessage({
+          kind: 'error',
+          text: 'No valid rows found. CSV must have a header row (code,name,...) and at least one record.',
+        });
+        return;
+      }
+      let created = 0;
+      const errors: string[] = [];
+      for (const record of records) {
+        if (!record.code || !record.name) {
+          errors.push(`Skipped row missing code/name: ${JSON.stringify(record).slice(0, 60)}`);
+          continue;
+        }
+        const response = await fetch('/api/master-data/companies', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(record),
+        });
+        if (response.ok) {
+          created += 1;
+        } else {
+          const err = await response.json().catch(() => ({}));
+          errors.push(`${record.code}: ${err.error || err.message || 'failed'}`);
+        }
+      }
+      await fetchCompanies();
+      await fetchStats();
+      setStatusMessage({
+        kind: errors.length === 0 ? 'success' : 'error',
+        text:
+          errors.length === 0
+            ? `Imported ${created} company(ies) successfully.`
+            : `Imported ${created}, ${errors.length} failed: ${errors.slice(0, 3).join('; ')}`,
+      });
+    } catch (error: any) {
+      setStatusMessage({ kind: 'error', text: `Import failed: ${error?.message}` });
+    } finally {
+      setImporting(false);
+    }
+  };
+
+  const handleImport = () => fileInputRef.current?.click();
   const handleFilter = () => {
-    const query = prompt('Search companies:');
+    const query = window.prompt('Search companies:');
     if (query !== null) fetchCompanies(query);
   };
 
   return (
     <>
+      <input
+        ref={fileInputRef}
+        type="file"
+        accept=".csv,text/csv"
+        className="hidden"
+        onChange={handleImportFile}
+      />
       <div className="px-6 pt-6 space-y-6">
+        {importing && (
+          <div className="rounded-lg border border-indigo-200 bg-indigo-50 px-4 py-2 text-sm text-indigo-800">
+            Importing companies from CSV...
+          </div>
+        )}
         {/* Stats Widgets */}
         {stats && (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -332,46 +465,165 @@ export default function CompaniesPage() {
         onImport={handleImport}
         onFilter={handleFilter}
         defaultValues={{}}
-        renderForm={(record, onChange) => (
-          <>
-            <div>
-              <label className="block text-xs font-medium text-silver-mist mb-1">
-                Company Code
-              </label>
-              <input
-                type="text"
-                value={record.code || ''}
-                onChange={(e) => onChange('code', e.target.value)}
-                className="w-full px-3 py-2 bg-pearl dark:bg-stellar-blue rounded-lg text-sm border border-cloud dark:border-nebula-purple/50 focus:ring-2 focus:ring-celestial-indigo/50 outline-none"
-                placeholder="e.g. US_HQ"
-              />
+        renderForm={(record, onChange) => {
+          const inputCls =
+            'w-full px-3 py-2 bg-pearl dark:bg-stellar-blue rounded-lg text-sm border border-cloud dark:border-nebula-purple/50 focus:ring-2 focus:ring-celestial-indigo/50 outline-none';
+          return (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-medium text-silver-mist mb-1">
+                  Company Code *
+                </label>
+                <input
+                  type="text"
+                  value={record.code || ''}
+                  onChange={(e) => onChange('code', e.target.value)}
+                  className={inputCls}
+                  placeholder="e.g. US_HQ"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-silver-mist mb-1">
+                  Company Name *
+                </label>
+                <input
+                  type="text"
+                  value={record.name || ''}
+                  onChange={(e) => onChange('name', e.target.value)}
+                  className={inputCls}
+                  placeholder="e.g. KreupAI Inc."
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-silver-mist mb-1">Email</label>
+                <input
+                  type="email"
+                  value={record.email || ''}
+                  onChange={(e) => onChange('email', e.target.value)}
+                  className={inputCls}
+                  placeholder="e.g. info@kreupai.com"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-silver-mist mb-1">Phone</label>
+                <input
+                  type="text"
+                  value={record.phoneNumber || ''}
+                  onChange={(e) => onChange('phoneNumber', e.target.value)}
+                  className={inputCls}
+                  placeholder="e.g. +971 4 000 0000"
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <label className="block text-xs font-medium text-silver-mist mb-1">Address</label>
+                <input
+                  type="text"
+                  value={record.address || ''}
+                  onChange={(e) => onChange('address', e.target.value)}
+                  className={inputCls}
+                  placeholder="Street address"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-silver-mist mb-1">City</label>
+                <input
+                  type="text"
+                  value={record.city || ''}
+                  onChange={(e) => onChange('city', e.target.value)}
+                  className={inputCls}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-silver-mist mb-1">
+                  State / Province
+                </label>
+                <input
+                  type="text"
+                  value={record.state || ''}
+                  onChange={(e) => onChange('state', e.target.value)}
+                  className={inputCls}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-silver-mist mb-1">
+                  Postal Code
+                </label>
+                <input
+                  type="text"
+                  value={record.postalCode || ''}
+                  onChange={(e) => onChange('postalCode', e.target.value)}
+                  className={inputCls}
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-silver-mist mb-1">Country</label>
+                <input
+                  type="text"
+                  value={record.country || ''}
+                  onChange={(e) => onChange('country', e.target.value)}
+                  className={inputCls}
+                  placeholder="e.g. UAE"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-silver-mist mb-1">Industry</label>
+                <input
+                  type="text"
+                  value={record.industry || ''}
+                  onChange={(e) => onChange('industry', e.target.value)}
+                  className={inputCls}
+                  placeholder="e.g. Technology"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-silver-mist mb-1">Website</label>
+                <input
+                  type="text"
+                  value={record.website || ''}
+                  onChange={(e) => onChange('website', e.target.value)}
+                  className={inputCls}
+                  placeholder="https://..."
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-silver-mist mb-1">
+                  Tax ID / TRN
+                </label>
+                <input
+                  type="text"
+                  value={record.taxId || ''}
+                  onChange={(e) => onChange('taxId', e.target.value)}
+                  className={inputCls}
+                  placeholder="e.g. EIN-123456789"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-silver-mist mb-1">
+                  Registration No.
+                </label>
+                <input
+                  type="text"
+                  value={record.registrationNumber || ''}
+                  onChange={(e) => onChange('registrationNumber', e.target.value)}
+                  className={inputCls}
+                  placeholder="Company registration number"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-medium text-silver-mist mb-1">Status</label>
+                <select
+                  value={record.status || 'Active'}
+                  onChange={(e) => onChange('status', e.target.value)}
+                  className={inputCls}
+                >
+                  <option value="Active">Active</option>
+                  <option value="Inactive">Inactive</option>
+                  <option value="Suspended">Suspended</option>
+                </select>
+              </div>
             </div>
-            <div>
-              <label className="block text-xs font-medium text-silver-mist mb-1">
-                Company Name
-              </label>
-              <input
-                type="text"
-                value={record.name || ''}
-                onChange={(e) => onChange('name', e.target.value)}
-                className="w-full px-3 py-2 bg-pearl dark:bg-stellar-blue rounded-lg text-sm border border-cloud dark:border-nebula-purple/50 focus:ring-2 focus:ring-celestial-indigo/50 outline-none"
-                placeholder="e.g. KreupAI Inc."
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-medium text-silver-mist mb-1">
-                Tax ID / Registration No.
-              </label>
-              <input
-                type="text"
-                value={record.taxId || ''}
-                onChange={(e) => onChange('taxId', e.target.value)}
-                className="w-full px-3 py-2 bg-pearl dark:bg-stellar-blue rounded-lg text-sm border border-cloud dark:border-nebula-purple/50 focus:ring-2 focus:ring-celestial-indigo/50 outline-none"
-                placeholder="e.g. EIN-123456789"
-              />
-            </div>
-          </>
-        )}
+          );
+        }}
       />
     </>
   );

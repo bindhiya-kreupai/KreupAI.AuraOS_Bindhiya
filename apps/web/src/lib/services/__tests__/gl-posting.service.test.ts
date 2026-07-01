@@ -87,6 +87,21 @@ describe('GLPostingService transitions', () => {
   });
 });
 
+describe('GLPostingService.reverse — transition contract', () => {
+  // The POST /gl/journals/[id]/reverse route relies on these transitions being
+  // valid so an offsetting entry can be created from any live journal state.
+  it('allows reversing a DRAFT, POSTED, or EXPORTED journal', () => {
+    expect(svc.canTransition('DRAFT', 'REVERSED')).toBe(true);
+    expect(svc.canTransition('POSTED', 'REVERSED')).toBe(true);
+    expect(svc.canTransition('EXPORTED', 'REVERSED')).toBe(true);
+  });
+
+  it('rejects reversing an already-reversed journal', () => {
+    expect(svc.canTransition('REVERSED', 'REVERSED')).toBe(false);
+    expect(() => svc.assertTransition('REVERSED', 'REVERSED')).toThrow(InvalidGLTransitionError);
+  });
+});
+
 describe('GL error contracts', () => {
   it('UnbalancedJournalError carries totals in the message', () => {
     const err = new UnbalancedJournalError(120.5, 100);

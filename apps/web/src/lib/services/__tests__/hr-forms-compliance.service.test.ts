@@ -21,9 +21,12 @@ beforeEach(() => {
     update: vi.fn().mockImplementation(async ({ data }: any) => ({ id: 't-1', ...data })),
   };
   m.hrFormRouting = {
+    findUnique: vi.fn().mockResolvedValue(null),
     findMany: vi.fn().mockResolvedValue([]),
     count: vi.fn().mockResolvedValue(0),
     upsert: vi.fn().mockImplementation(async ({ create }: any) => ({ id: 'r-1', ...create })),
+    update: vi.fn().mockImplementation(async ({ data }: any) => ({ id: 'r-1', ...data })),
+    delete: vi.fn().mockResolvedValue({}),
   };
   m.hrFormSubmissionState = {
     findUnique: vi.fn().mockResolvedValue(null),
@@ -132,7 +135,9 @@ describe('hrFormSubmissionService.approveStage', () => {
     await hrFormSubmissionService.approveStage({ id: 's-1' }, auth);
     const sig = m.hrFormSignature.create.mock.calls[0][0];
     expect(sig.data.action).toBe('APPROVE');
-    expect(sig.data.signatureHash).toMatch(/^hash:user-1:/);
+    // Cryptographic HMAC-SHA256 signature (audit Pattern 7) — versioned
+    // `v1:<payload>:<mac>` shape produced by signWithHmac.
+    expect(sig.data.signatureHash).toMatch(/^v1:/);
   });
 });
 
@@ -176,6 +181,154 @@ describe('detectSlaBreach', () => {
         routing
       )
     ).toBe(true);
+  });
+});
+
+describe('hrFormTemplateService.create', () => {
+  it('creates a DRAFT template with schema and audit metadata', async () => {
+    const tpl = await hrFormTemplateService.create(
+      {
+        templateCode: 'CUSTOM_FORM',
+        formGroup: 'COMPLIANCE',
+        label: 'Custom Form',
+        schemaJson: { fields: [{ code: 'reason', label: 'Reason', type: 'text' }] },
+      },
+      auth
+    );
+    expect(m.hrFormTemplate.create).toHaveBeenCalled();
+    const data = m.hrFormTemplate.create.mock.calls[0][0].data;
+    expect(data.status).toBe('DRAFT');
+    expect(data.tenantId).toBe('tenant-1');
+    expect(data.createdBy).toBe('user-1');
+    expect(tpl.templateCode).toBe('CUSTOM_FORM');
+  });
+  it('rejects missing templateCode', async () => {
+    await expect(
+      hrFormTemplateService.create({ templateCode: '', formGroup: 'COMPLIANCE', label: 'x' }, auth)
+    ).rejects.toThrow(/templateCode required/);
+  });
+});
+
+describe('hrFormTemplateService.update', () => {
+  it('refuses to edit a non-DRAFT template', async () => {
+    m.hrFormTemplate.findUnique = vi
+      .fn()
+      .mockResolvedValue({ id: 't-1', tenantId: 'tenant-1', status: 'PUBLISHED' });
+    await expect(hrFormTemplateService.update('t-1', { label: 'new' }, auth)).rejects.toThrow(
+      /only DRAFT/
+    );
+  });
+});
+
+describe('hrFormTemplateService.createSupersedingVersion', () => {
+  it('creates a new DRAFT version and supersedes the original', async () => {
+    m.hrFormTemplate.findUnique = vi.fn().mockResolvedValue({
+      id: 't-1',
+      tenantId: 'tenant-1',
+      status: 'PUBLISHED',
+      templateCode: 'LEAVE_REQUEST',
+      formGroup: 'LEAVE_ATTENDANCE',
+      label: 'Leave Request',
+      version: '1.0',
+      schemaJson: { fields: [] },
+    });
+    m.hrFormTemplate.create = vi
+      .fn()
+      .mockResolvedValue({ id: 't-2', version: '2.0', status: 'DRAFT' });
+    const draft = await hrFormTemplateService.createSupersedingVersion('t-1', auth);
+    expect(draft.version).toBe('2.0');
+    const updateArgs = m.hrFormTemplate.update.mock.calls[0][0];
+    expect(updateArgs.data.status).toBe('SUPERSEDED');
+    expect(updateArgs.data.supersededById).toBe('t-2');
+  });
+  it('refuses to supersede a non-PUBLISHED template', async () => {
+    m.hrFormTemplate.findUnique = vi
+      .fn()
+      .mockResolvedValue({ id: 't-1', tenantId: 'tenant-1', status: 'DRAFT' });
+    await expect(hrFormTemplateService.createSupersedingVersion('t-1', auth)).rejects.toThrow(
+      /only PUBLISHED/
+    );
+  });
+});
+
+describe('hrFormRoutingService.deleteStage', () => {
+  it('deletes and compacts stage order', async () => {
+    m.hrFormRouting.findUnique = vi
+      .fn()
+      .mockResolvedValue({ id: 'r-2', tenantId: 'tenant-1', templateId: 't-1', stageOrder: 2 });
+    m.hrFormRouting.delete = vi.fn().mockResolvedValue({});
+    m.hrFormRouting.findMany = vi.fn().mockResolvedValue([
+      { id: 'r-1', stageOrder: 1 },
+      { id: 'r-3', stageOrder: 3 },
+    ]);
+    m.hrFormRouting.update = vi.fn().mockResolvedValue({});
+    const res = await hrFormRoutingService.deleteStage('r-2', auth);
+    expect(m.hrFormRouting.delete).toHaveBeenCalledWith({ where: { id: 'r-2' } });
+    // r-3 had order 3, should be compacted to 2.
+    expect(m.hrFormRouting.update).toHaveBeenCalledWith({
+      where: { id: 'r-3' },
+      data: { stageOrder: 2, updatedBy: 'user-1' },
+    });
+    expect(res.deleted).toBe('r-2');
+  });
+});
+
+describe('hrFormRoutingService.reorderStage', () => {
+  it('swaps stage order with the previous sibling', async () => {
+    m.hrFormRouting.findUnique = vi
+      .fn()
+      .mockResolvedValue({ id: 'r-2', tenantId: 'tenant-1', templateId: 't-1', stageOrder: 2 });
+    m.hrFormRouting.findMany = vi.fn().mockResolvedValue([
+      { id: 'r-1', stageOrder: 1 },
+      { id: 'r-2', stageOrder: 2 },
+    ]);
+    m.hrFormRouting.update = vi.fn().mockResolvedValue({ id: 'r-2', stageOrder: 1 });
+    await hrFormRoutingService.reorderStage('r-2', 'up', auth);
+    // First moves self to sentinel, then other to self's order, then self to other's order.
+    const calls = m.hrFormRouting.update.mock.calls.map((c: any) => c[0]);
+    expect(calls[0]).toEqual({ where: { id: 'r-2' }, data: { stageOrder: -1 } });
+    expect(calls[1].data.stageOrder).toBe(2);
+    expect(calls[2].data.stageOrder).toBe(1);
+  });
+});
+
+describe('hrFormSubmissionService.attemptWriteback', () => {
+  it('marks SUCCESS with a deterministic ref when target configured', async () => {
+    m.hrFormSubmissionState.findUnique = vi.fn().mockResolvedValue({
+      id: 's-1',
+      tenantId: 'tenant-1',
+      status: 'APPROVED',
+      templateId: 't-1',
+      submissionRef: 'REF-9',
+    });
+    m.hrFormTemplate.findUnique = vi
+      .fn()
+      .mockResolvedValue({ id: 't-1', writebackTarget: 'leave.request' });
+    await hrFormSubmissionService.attemptWriteback('s-1', auth);
+    const data = m.hrFormSubmissionState.update.mock.calls[0][0].data;
+    expect(data.writebackStatus).toBe('SUCCESS');
+    expect(data.writebackRef).toBe('LEAVE-REQUEST:REF-9');
+  });
+  it('marks FAILED when template has no writeback target', async () => {
+    m.hrFormSubmissionState.findUnique = vi.fn().mockResolvedValue({
+      id: 's-1',
+      tenantId: 'tenant-1',
+      status: 'APPROVED',
+      templateId: 't-1',
+      submissionRef: 'REF-9',
+    });
+    m.hrFormTemplate.findUnique = vi.fn().mockResolvedValue({ id: 't-1', writebackTarget: null });
+    await hrFormSubmissionService.attemptWriteback('s-1', auth);
+    const data = m.hrFormSubmissionState.update.mock.calls[0][0].data;
+    expect(data.writebackStatus).toBe('FAILED');
+  });
+  it('refuses writeback when submission not APPROVED', async () => {
+    m.hrFormSubmissionState.findUnique = vi
+      .fn()
+      .mockResolvedValue({ id: 's-1', tenantId: 'tenant-1', status: 'IN_REVIEW' });
+    await expect(hrFormSubmissionService.attemptWriteback('s-1', auth)).rejects.toThrow(
+      /not APPROVED/
+    );
   });
 });
 

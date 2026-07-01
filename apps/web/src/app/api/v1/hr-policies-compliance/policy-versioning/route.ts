@@ -57,7 +57,7 @@ export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext)
     const raw = await req.json();
     const parsed = inputSchema.safeParse(raw);
     if (!parsed.success) {
-      return badRequest('Invalid input', { issues: parsed.error.flatten() });
+      return badRequest('Invalid input', undefined, { issues: parsed.error.flatten() });
     }
     const body = parsed.data;
     const auth = {
