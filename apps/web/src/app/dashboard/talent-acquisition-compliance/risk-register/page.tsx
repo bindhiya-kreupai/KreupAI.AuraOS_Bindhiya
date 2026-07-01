@@ -23,6 +23,34 @@ const bandColor: Record<string, string> = {
 };
 
 const STAGES = ['PLANNING', 'SOURCING', 'SELECTION', 'OFFER', 'PRE_EMPLOYMENT'];
+const CATEGORIES = [
+  'WORKFORCE_PLAN',
+  'NATIONALIZATION_PLAN',
+  'HEADCOUNT_BUDGET',
+  'SUCCESSION_PLAN',
+  'CONTRACTOR_PLAN',
+  'WORKFORCE_RISK',
+  'REQUISITION',
+  'JOB_DESCRIPTION',
+  'SOURCING_AUTHORITY',
+  'AGENCY_VENDOR',
+  'NATIONALIZATION_RECRUIT',
+  'SCREENING',
+  'INTERVIEW',
+  'ANTI_BIAS',
+  'ASSESSMENT',
+  'BGV',
+  'IMMIGRATION_ELIGIBILITY',
+  'COMPENSATION_BENCHMARK',
+  'PRIVACY_CONSENT',
+  'OFFER_APPROVAL',
+  'OFFER_LETTER',
+  'OFFER_NEGOTIATION',
+  'PRE_EMPLOYMENT',
+  'MEDICAL_VISA',
+  'RIGHT_TO_WORK',
+  'CONTRACT_GENERATION',
+];
 
 export default function TaRiskPage() {
   const [rows, setRows] = useState<Risk[]>([]);
@@ -40,7 +68,7 @@ export default function TaRiskPage() {
   async function load() {
     const r = await fetch('/api/v1/talent-acquisition-compliance/risk-register');
     const p = await r.json();
-    if (p.success) setRows(p.data ?? []);
+    if (p.success) setRows(p.data?.items ?? []);
   }
   useEffect(() => {
     load();
@@ -78,7 +106,7 @@ export default function TaRiskPage() {
 
         <section className="rounded-lg border border-slate-200 bg-white p-4">
           <h2 className="text-base font-semibold">New / Update</h2>
-          <div className="mt-3 grid grid-cols-2 gap-3 text-sm md:grid-cols-6">
+          <div className="mt-3 grid grid-cols-2 gap-3 text-sm md:grid-cols-7">
             <input
               value={form.riskCode}
               onChange={(e) => setForm({ ...form, riskCode: e.target.value })}
@@ -99,6 +127,17 @@ export default function TaRiskPage() {
               {STAGES.map((s) => (
                 <option key={s} value={s}>
                   {s}
+                </option>
+              ))}
+            </select>
+            <select
+              value={form.category}
+              onChange={(e) => setForm({ ...form, category: e.target.value })}
+              className="rounded-md border border-slate-300 px-2 py-1.5"
+            >
+              {CATEGORIES.map((c) => (
+                <option key={c} value={c}>
+                  {c}
                 </option>
               ))}
             </select>

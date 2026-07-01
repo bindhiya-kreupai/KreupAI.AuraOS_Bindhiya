@@ -59,6 +59,8 @@ export default function TaChecklistPage() {
   const [rows, setRows] = useState<Item[]>([]);
   const [stageFilter, setStageFilter] = useState('');
   const [message, setMessage] = useState('');
+  const [reviewNote, setReviewNote] = useState('');
+  const [busyId, setBusyId] = useState<string | null>(null);
   const [form, setForm] = useState({
     itemCode: '',
     label: '',
@@ -90,15 +92,30 @@ export default function TaChecklistPage() {
     load();
   }
   async function record(id: string, result: string) {
-    const notes = prompt('Notes (optional)?') ?? '';
-    const r = await fetch('/api/v1/talent-acquisition-compliance/audit-checklist', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'record', id, result, notes }),
-    });
-    const p = await r.json();
-    setMessage(p.success ? 'Recorded' : (p.error?.details?.error ?? p.error?.message ?? 'failed'));
-    load();
+    setBusyId(id);
+    setMessage('');
+    try {
+      const r = await fetch('/api/v1/talent-acquisition-compliance/audit-checklist', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'record',
+          id,
+          result,
+          notes: reviewNote.trim() || undefined,
+        }),
+      });
+      const p = await r.json();
+      setMessage(
+        p.success ? 'Recorded' : (p.error?.details?.error ?? p.error?.message ?? 'failed')
+      );
+      if (p.success) {
+        setReviewNote('');
+        await load();
+      }
+    } finally {
+      setBusyId(null);
+    }
   }
 
   return (
@@ -123,6 +140,18 @@ export default function TaChecklistPage() {
           </select>
         </header>
         {message ? <p className="text-sm">{message}</p> : null}
+
+        <section className="rounded-lg border border-slate-200 bg-white p-4">
+          <label className="text-sm">
+            Review note (optional) — applied to the next PASS / FAIL / OBS you record
+            <input
+              value={reviewNote}
+              onChange={(e) => setReviewNote(e.target.value)}
+              placeholder="e.g. verified requisition approvals in ATS"
+              className="mt-1 block w-full rounded-md border border-slate-300 px-2 py-1.5"
+            />
+          </label>
+        </section>
 
         <section className="rounded-lg border border-slate-200 bg-white p-4">
           <h2 className="text-base font-semibold">New / Update</h2>
@@ -219,22 +248,25 @@ export default function TaChecklistPage() {
                   <td className="px-3 py-2 flex gap-1">
                     <button
                       type="button"
+                      disabled={busyId === r.id}
                       onClick={() => record(r.id, 'PASS')}
-                      className="rounded-md bg-emerald-700 px-2 py-1 text-xs text-white"
+                      className="rounded-md bg-emerald-700 px-2 py-1 text-xs text-white disabled:opacity-50"
                     >
                       PASS
                     </button>
                     <button
                       type="button"
+                      disabled={busyId === r.id}
                       onClick={() => record(r.id, 'FAIL')}
-                      className="rounded-md bg-rose-700 px-2 py-1 text-xs text-white"
+                      className="rounded-md bg-rose-700 px-2 py-1 text-xs text-white disabled:opacity-50"
                     >
                       FAIL
                     </button>
                     <button
                       type="button"
+                      disabled={busyId === r.id}
                       onClick={() => record(r.id, 'OBSERVATION')}
-                      className="rounded-md bg-amber-700 px-2 py-1 text-xs text-white"
+                      className="rounded-md bg-amber-700 px-2 py-1 text-xs text-white disabled:opacity-50"
                     >
                       OBS
                     </button>
