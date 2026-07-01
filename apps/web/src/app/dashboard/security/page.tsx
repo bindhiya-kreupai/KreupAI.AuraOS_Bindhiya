@@ -3,7 +3,7 @@
 import React from 'react';
 import Link from 'next/link';
 import { ModuleGrid } from '@/components/dashboard/module-grid';
-import { ShieldCheck, BookLock } from 'lucide-react';
+import { ShieldCheck, BookLock, SlidersHorizontal } from 'lucide-react';
 
 export default function AuditSecurityPage() {
   const features = [
@@ -68,6 +68,27 @@ export default function AuditSecurityPage() {
             <p className="text-sm text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors">
               Segregation of duties rule engine, access certification campaigns, role-permission
               matrix, and violation detection.
+            </p>
+          </Link>
+
+          <Link
+            href="/dashboard/security/settings"
+            className="group rounded-2xl border border-slate-200 dark:border-slate-800 bg-white/70 dark:bg-slate-900/60 p-5 hover:border-indigo-500 hover:shadow-lg transition-all"
+          >
+            <div className="flex items-center gap-3 mb-3">
+              <div className="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-900/30 flex items-center justify-center text-emerald-600">
+                <SlidersHorizontal className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-emerald-500">Settings</p>
+                <h2 className="text-lg font-bold group-hover:text-indigo-600 transition-colors">
+                  Security Settings
+                </h2>
+              </div>
+            </div>
+            <p className="text-sm text-slate-500 group-hover:text-slate-700 dark:group-hover:text-slate-200 transition-colors">
+              Password policy, session management, MFA methods, IP allow-listing, audit retention,
+              and encryption configuration.
             </p>
           </Link>
         </div>

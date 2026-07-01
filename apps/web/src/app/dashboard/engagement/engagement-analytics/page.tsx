@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   Heart,
   Trophy,
@@ -13,7 +13,7 @@ import {
   Sparkles,
   RefreshCw,
   Download,
-  Loader2
+  Loader2,
 } from 'lucide-react';
 import { EngagementAnalyticsService } from '../services';
 
@@ -30,12 +30,16 @@ function StatCard({ title, value, subtitle, change, icon, color }: StatCardProps
   return (
     <div className="bg-white dark:bg-stellar-blue p-5 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
       <div className="flex items-start justify-between">
-        <div className={`p-3 rounded-xl ${color}`}>
-          {icon}
-        </div>
+        <div className={`p-3 rounded-xl ${color}`}>{icon}</div>
         {change !== undefined && (
-          <div className={`flex items-center gap-1 text-sm font-medium ${change >= 0 ? 'text-emerald-500' : 'text-red-500'}`}>
-            {change >= 0 ? <ArrowUpRight className="w-4 h-4" /> : <ArrowDownRight className="w-4 h-4" />}
+          <div
+            className={`flex items-center gap-1 text-sm font-medium ${change >= 0 ? 'text-emerald-500' : 'text-red-500'}`}
+          >
+            {change >= 0 ? (
+              <ArrowUpRight className="w-4 h-4" />
+            ) : (
+              <ArrowDownRight className="w-4 h-4" />
+            )}
             {Math.abs(change)}%
           </div>
         )}
@@ -49,7 +53,12 @@ function StatCard({ title, value, subtitle, change, icon, color }: StatCardProps
   );
 }
 
-function ProgressRing({ value, size = 80, strokeWidth = 8, color = '#8B5CF6' }: {
+function ProgressRing({
+  value,
+  size = 80,
+  strokeWidth = 8,
+  color = '#8B5CF6',
+}: {
   value: number;
   size?: number;
   strokeWidth?: number;
@@ -62,8 +71,25 @@ function ProgressRing({ value, size = 80, strokeWidth = 8, color = '#8B5CF6' }: 
   return (
     <div className="relative" style={{ width: size, height: size }}>
       <svg className="transform -rotate-90" width={size} height={size}>
-        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke="#E2E8F0" strokeWidth={strokeWidth} />
-        <circle cx={size / 2} cy={size / 2} r={radius} fill="none" stroke={color} strokeWidth={strokeWidth} strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke="#E2E8F0"
+          strokeWidth={strokeWidth}
+        />
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="none"
+          stroke={color}
+          strokeWidth={strokeWidth}
+          strokeDasharray={circumference}
+          strokeDashoffset={offset}
+          strokeLinecap="round"
+        />
       </svg>
       <div className="absolute inset-0 flex items-center justify-center">
         <span className="text-lg font-bold text-ink-black dark:text-pearl">{value}%</span>
@@ -77,26 +103,51 @@ export default function EngagementAnalyticsPage() {
   const [isRefreshing, setIsRefreshing] = useState(false);
   const [loading, setLoading] = useState(true);
   const [metrics, setMetrics] = useState<any>(null);
+  const [toast, setToast] = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
 
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  const fetchData = async () => {
+  const fetchData = useCallback(async (range: string) => {
     try {
       setLoading(true);
-      const result = await EngagementAnalyticsService.getMetrics();
-      const data = (result as any)?.data || result;
-      setMetrics(data);
+      const result = await EngagementAnalyticsService.getMetrics(range);
+      setMetrics(result);
     } catch {
+      setToast({ type: 'error', msg: 'Failed to load analytics.' });
     } finally {
       setLoading(false);
     }
+  }, []);
+
+  useEffect(() => {
+    fetchData(timeRange);
+  }, [fetchData, timeRange]);
+
+  const showToast = (type: 'success' | 'error', msg: string) => {
+    setToast({ type, msg });
+    setTimeout(() => setToast(null), 3000);
   };
 
   const handleRefresh = () => {
     setIsRefreshing(true);
-    fetchData().finally(() => setIsRefreshing(false));
+    fetchData(timeRange).finally(() => setIsRefreshing(false));
+  };
+
+  const handleExport = () => {
+    if (!metrics) {
+      showToast('error', 'No data to export.');
+      return;
+    }
+    const rows = Object.entries(metrics)
+      .filter(([, v]) => typeof v === 'string' || typeof v === 'number')
+      .map(([k, v]) => `${k},${String(v).replace(/,/g, ';')}`);
+    const csv = `metric,value\n${rows.join('\n')}`;
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `engagement-analytics-${timeRange}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    showToast('success', 'Analytics exported.');
   };
 
   if (loading) {
@@ -108,12 +159,14 @@ export default function EngagementAnalyticsPage() {
   }
 
   const recognitionsGiven = metrics?.recognitionsGiven || 0;
-  const recognitionsReceived = metrics?.recognitionsReceived || 0;
   const totalRecognitionPoints = metrics?.totalRecognitionPoints || 0;
   const surveyParticipationRate = metrics?.surveyParticipationRate || 0;
   const overallEngagementScore = metrics?.overallEngagementScore || 0;
   const socialPosts = metrics?.socialPosts || 0;
   const eNPSScore = metrics?.eNPSScore || 0;
+  const badgesAwarded = metrics?.badgesAwarded || 0;
+  const challengesCompleted = metrics?.challengesCompleted || 0;
+  const wellnessScore = metrics?.wellnessScore || 0;
 
   return (
     <div className="space-y-4 pb-6">
@@ -145,15 +198,30 @@ export default function EngagementAnalyticsPage() {
             disabled={isRefreshing}
             className="p-2 border border-cloud dark:border-nebula-purple/50 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800"
           >
-            <RefreshCw className={`w-5 h-5 text-silver-mist ${isRefreshing ? 'animate-spin' : ''}`} />
+            <RefreshCw
+              className={`w-5 h-5 text-silver-mist ${isRefreshing ? 'animate-spin' : ''}`}
+            />
           </button>
 
-          <button className="flex items-center gap-2 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-sm font-medium">
+          <button
+            onClick={handleExport}
+            className="flex items-center gap-2 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-sm font-medium"
+          >
             <Download className="w-4 h-4" />
             Export
           </button>
         </div>
       </div>
+
+      {toast && (
+        <div
+          className={`fixed top-4 right-4 z-50 px-4 py-2 rounded-lg text-sm font-bold text-white shadow-lg ${
+            toast.type === 'success' ? 'bg-emerald-600' : 'bg-rose-600'
+          }`}
+        >
+          {toast.msg}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
         <StatCard
@@ -216,17 +284,19 @@ export default function EngagementAnalyticsPage() {
           </h2>
           <div className="grid grid-cols-2 gap-3 mb-4">
             <div className="p-3 bg-purple-50 dark:bg-purple-900/20 rounded-xl text-center">
-              <p className="text-xl font-bold text-purple-600">0</p>
+              <p className="text-xl font-bold text-purple-600">{badgesAwarded}</p>
               <p className="text-xs text-silver-mist">Badges Awarded</p>
             </div>
             <div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl text-center">
-              <p className="text-xl font-bold text-indigo-600">0</p>
+              <p className="text-xl font-bold text-indigo-600">{challengesCompleted}</p>
               <p className="text-xs text-silver-mist">Challenges Done</p>
             </div>
           </div>
-          <div className="text-center py-8 text-slate-400 text-sm">
-            Gamification metrics will appear as the program is activated.
-          </div>
+          {badgesAwarded === 0 && challengesCompleted === 0 && (
+            <div className="text-center py-8 text-slate-400 text-sm">
+              Gamification metrics will appear as the program is activated.
+            </div>
+          )}
         </div>
 
         <div className="bg-white dark:bg-stellar-blue p-6 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
@@ -235,12 +305,14 @@ export default function EngagementAnalyticsPage() {
             Wellness
           </h2>
           <div className="flex items-center justify-center mb-4">
-            <ProgressRing value={0} size={100} color="#10B981" />
+            <ProgressRing value={wellnessScore} size={100} color="#10B981" />
           </div>
           <p className="text-center text-sm text-silver-mist mb-4">Average Wellness Score</p>
-          <div className="text-center py-4 text-slate-400 text-sm">
-            Wellness data will appear as wellness programs are launched.
-          </div>
+          {wellnessScore === 0 && (
+            <div className="text-center py-4 text-slate-400 text-sm">
+              Wellness data will appear as wellness programs are launched.
+            </div>
+          )}
         </div>
       </div>
 
@@ -288,7 +360,8 @@ export default function EngagementAnalyticsPage() {
                 <>
                   <li className="flex items-start gap-2">
                     <span className="text-amber-300">-</span>
-                    {recognitionsGiven} recognition(s) recorded with {totalRecognitionPoints} total points awarded
+                    {recognitionsGiven} recognition(s) recorded with {totalRecognitionPoints} total
+                    points awarded
                   </li>
                   <li className="flex items-start gap-2">
                     <span className="text-emerald-300">-</span>
@@ -308,4 +381,3 @@ export default function EngagementAnalyticsPage() {
     </div>
   );
 }
-

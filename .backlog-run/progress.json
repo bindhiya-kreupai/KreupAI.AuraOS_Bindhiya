@@ -48,55 +48,55 @@
     "state": "pending"
   },
   "AURA-017": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-018": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-019": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-020": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-021": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-022": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-023": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-024": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-025": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-026": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-027": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-028": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-029": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-030": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-031": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-032": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-033": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-034": {
     "state": "pending"
@@ -279,52 +279,52 @@
     "state": "pending"
   },
   "AURA-094": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-095": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-096": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-097": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-098": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-099": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-100": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-101": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-102": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-103": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-104": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-105": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-106": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-107": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-108": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-109": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-110": {
     "state": "done"
@@ -498,61 +498,63 @@
     "state": "pending"
   },
   "AURA-167": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-168": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-169": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-170": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-171": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-172": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-173": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-174": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-175": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-176": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-177": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-178": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-179": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-180": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-181": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-182": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-183": {
-    "state": "pending"
+    "state": "partial",
+    "note": "~17 orphan learning components not mounted (GamificationHub, SCORMPlayer, etc.)"
   },
   "AURA-184": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-185": {
-    "state": "pending"
+    "state": "partial",
+    "note": "src/hooks/useLearning.ts still seeds sample data; used by (modules)/learning-paths \u2014 rewire then delete"
   },
   "AURA-186": {
     "state": "pending"
@@ -636,19 +638,20 @@
     "state": "pending"
   },
   "AURA-213": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-214": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-215": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-216": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-217": {
-    "state": "pending"
+    "state": "partial",
+    "note": "legacy mobility/services.ts + hooks/useMobility.ts (@ts-nocheck, dead) not realigned"
   },
   "AURA-218": {
     "state": "pending"
@@ -789,58 +792,58 @@
     "state": "pending"
   },
   "AURA-264": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-265": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-266": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-267": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-268": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-269": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-270": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-271": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-272": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-273": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-274": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-275": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-276": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-277": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-278": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-279": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-280": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-281": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-282": {
     "state": "done"
@@ -904,40 +907,41 @@
     "note": "7 orphaned components need deletion or rewire to real v1 API"
   },
   "AURA-301": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-302": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-303": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-304": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-305": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-306": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-307": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-308": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-309": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-310": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-311": {
-    "state": "pending"
+    "state": "partial",
+    "note": "recruitment InternalMobilityPortal.tsx + internalMobilityService mock (unrouted) not rewired"
   },
   "AURA-312": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-313": {
     "state": "pending"
@@ -1639,25 +1643,25 @@
     "state": "pending"
   },
   "AURA-546": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-547": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-548": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-549": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-550": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-551": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-552": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-553": {
     "state": "pending"
