@@ -1,0 +1,316 @@
+// HR Helpdesk Module — new Prisma models (AURA-135..148).
+// Merged into schema.prisma by the orchestrator. Access in route code via
+// (prisma as any).<camelCaseModelName>. All tables are tenant-scoped.
+//
+// Existing models already in schema.prisma (do NOT redefine here):
+//   - HelpdeskTicket  (aura_helpdesk_ticket)
+//   - HelpdeskSLA     (aura_helpdesk_sla)
+//
+// These models cover the helpdesk-owned entities that had no persistence:
+// knowledge-base articles, service requests, service-catalog items, cases +
+// case notes, live-chat sessions + messages, omnichannel channels, service
+// automations, continuous-improvement items, ticket comments, canned
+// responses, escalation matrices, and helpdesk alerts.
+
+model HelpdeskKnowledgeArticle {
+  id          String    @id @default(uuid())
+  tenantId    String
+  title       String
+  summary     String?
+  content     String?
+  category    String    @default("general")
+  tags        Json?
+  status      String    @default("published") // draft | published | archived
+  visibility  String    @default("internal")  // public | internal | restricted
+  views       Int       @default(0)
+  helpful     Int       @default(0)
+  notHelpful  Int       @default(0)
+  readMinutes Int       @default(3)
+  author      String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  deletedAt   DateTime?
+  isDeleted   Boolean   @default(false)
+
+  @@index([tenantId], map: "HelpdeskKnowledgeArticle_tenantId_idx")
+  @@index([tenantId, category], map: "HelpdeskKnowledgeArticle_tenant_cat_idx")
+  @@map("aura_helpdesk_knowledge_article")
+}
+
+model HelpdeskServiceRequest {
+  id             String    @id @default(uuid())
+  tenantId       String
+  requestNumber  String
+  service        String
+  catalogItemId  String?
+  description    String?
+  requesterId    String
+  currentStage   String?
+  status         String    @default("SUBMITTED") // SUBMITTED | IN_PROGRESS | COMPLETED | REJECTED | CANCELLED
+  estCompletion  DateTime?
+  submittedAt    DateTime  @default(now())
+  completedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  createdBy      String?
+  updatedBy      String?
+  deletedAt      DateTime?
+  isDeleted      Boolean   @default(false)
+
+  @@unique([tenantId, requestNumber], map: "HelpdeskServiceRequest_number_uq")
+  @@index([tenantId], map: "HelpdeskServiceRequest_tenantId_idx")
+  @@index([tenantId, requesterId], map: "HelpdeskServiceRequest_tenant_req_idx")
+  @@map("aura_helpdesk_service_request")
+}
+
+model HelpdeskCatalogItem {
+  id           String    @id @default(uuid())
+  tenantId     String
+  title        String
+  description  String?
+  category     String    @default("general")
+  iconKey      String?
+  slaHours     Int       @default(24)
+  isActive     Boolean   @default(true)
+  requestCount Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  createdBy    String?
+  updatedBy    String?
+  deletedAt    DateTime?
+  isDeleted    Boolean   @default(false)
+
+  @@index([tenantId], map: "HelpdeskCatalogItem_tenantId_idx")
+  @@index([tenantId, category], map: "HelpdeskCatalogItem_tenant_cat_idx")
+  @@map("aura_helpdesk_catalog_item")
+}
+
+model HelpdeskCase {
+  id           String    @id @default(uuid())
+  tenantId     String
+  caseNumber   String
+  title        String
+  description  String?
+  category     String    @default("general")
+  priority     String    @default("MEDIUM")
+  status       String    @default("OPEN") // OPEN | INVESTIGATION | PENDING | APPROVAL | CLOSED
+  stage        String?
+  assigneeId   String?
+  reporterId   String?
+  isConfidential Boolean @default(false)
+  closedAt     DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  createdBy    String?
+  updatedBy    String?
+  deletedAt    DateTime?
+  isDeleted    Boolean   @default(false)
+
+  notes        HelpdeskCaseNote[]
+
+  @@unique([tenantId, caseNumber], map: "HelpdeskCase_number_uq")
+  @@index([tenantId], map: "HelpdeskCase_tenantId_idx")
+  @@index([tenantId, status], map: "HelpdeskCase_tenant_status_idx")
+  @@map("aura_helpdesk_case")
+}
+
+model HelpdeskCaseNote {
+  id         String   @id @default(uuid())
+  tenantId   String
+  caseId     String
+  authorId   String?
+  authorName String?
+  noteType   String   @default("internal") // internal | system | update
+  content    String
+  createdAt  DateTime @default(now())
+
+  case       HelpdeskCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, caseId], map: "HelpdeskCaseNote_tenant_case_idx")
+  @@map("aura_helpdesk_case_note")
+}
+
+model HelpdeskChatSession {
+  id          String    @id @default(uuid())
+  tenantId    String
+  subject     String?
+  requesterId String
+  agentId     String?
+  status      String    @default("ACTIVE") // ACTIVE | WAITING | CLOSED
+  lastMessageAt DateTime @default(now())
+  closedAt    DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdBy   String?
+
+  messages    HelpdeskChatMessage[]
+
+  @@index([tenantId], map: "HelpdeskChatSession_tenantId_idx")
+  @@index([tenantId, requesterId], map: "HelpdeskChatSession_tenant_req_idx")
+  @@map("aura_helpdesk_chat_session")
+}
+
+model HelpdeskChatMessage {
+  id         String   @id @default(uuid())
+  tenantId   String
+  sessionId  String
+  senderId   String
+  senderType String   @default("requester") // requester | agent | system
+  content    String
+  createdAt  DateTime @default(now())
+
+  session    HelpdeskChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, sessionId], map: "HelpdeskChatMessage_tenant_session_idx")
+  @@map("aura_helpdesk_chat_message")
+}
+
+model HelpdeskChannel {
+  id          String    @id @default(uuid())
+  tenantId    String
+  channelType String    // email | slack | teams | phone | whatsapp | web
+  name        String
+  config      String?   // human-readable target e.g. mailbox address, channel name
+  status      String    @default("DISCONNECTED") // CONNECTED | DISCONNECTED | ERROR
+  isActive    Boolean   @default(true)
+  connectedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdBy   String?
+  updatedBy   String?
+
+  @@unique([tenantId, channelType], map: "HelpdeskChannel_type_uq")
+  @@index([tenantId], map: "HelpdeskChannel_tenantId_idx")
+  @@map("aura_helpdesk_channel")
+}
+
+model HelpdeskAutomation {
+  id           String    @id @default(uuid())
+  tenantId     String
+  name         String
+  description  String?
+  triggerType  String    @default("ticket_created") // ticket_created | request_created | profile_update | new_hire | sla_breach | manual
+  triggerLabel String?
+  steps        Json?
+  stepCount    Int       @default(0)
+  executions   Int       @default(0)
+  status       String    @default("ACTIVE") // ACTIVE | PAUSED | DRAFT
+  lastRunAt    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  createdBy    String?
+  updatedBy    String?
+
+  logs         HelpdeskAutomationLog[]
+
+  @@index([tenantId], map: "HelpdeskAutomation_tenantId_idx")
+  @@map("aura_helpdesk_automation")
+}
+
+model HelpdeskAutomationLog {
+  id           String   @id @default(uuid())
+  tenantId     String
+  automationId String
+  status       String   @default("SUCCESS") // SUCCESS | FAILED | RUNNING
+  message      String?
+  createdAt    DateTime @default(now())
+
+  automation   HelpdeskAutomation @relation(fields: [automationId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, automationId], map: "HelpdeskAutomationLog_tenant_auto_idx")
+  @@map("aura_helpdesk_automation_log")
+}
+
+model HelpdeskImprovement {
+  id          String    @id @default(uuid())
+  tenantId    String
+  title       String
+  description String?
+  source      String    @default("survey") // survey | ticket_trend | agent | employee
+  impact      String    @default("Medium") // Low | Medium | High
+  effort      String    @default("Medium") // Low | Medium | High
+  status      String    @default("PLANNED") // PLANNED | IN_PROGRESS | COMPLETED | DISMISSED
+  feedbackQuote String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdBy   String?
+  updatedBy   String?
+
+  @@index([tenantId], map: "HelpdeskImprovement_tenantId_idx")
+  @@map("aura_helpdesk_improvement")
+}
+
+model HelpdeskTicketComment {
+  id          String   @id @default(uuid())
+  tenantId    String
+  ticketId    String
+  authorId    String?
+  authorName  String?
+  commentType String   @default("public") // public | internal | system
+  content     String
+  createdAt   DateTime @default(now())
+
+  @@index([tenantId, ticketId], map: "HelpdeskTicketComment_tenant_ticket_idx")
+  @@map("aura_helpdesk_ticket_comment")
+}
+
+model HelpdeskCannedResponse {
+  id         String    @id @default(uuid())
+  tenantId   String
+  title      String
+  shortcut   String?
+  content    String
+  category   String    @default("general")
+  visibility String    @default("team") // personal | team | global
+  usageCount Int       @default(0)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  createdBy  String?
+  updatedBy  String?
+  deletedAt  DateTime?
+  isDeleted  Boolean   @default(false)
+
+  @@index([tenantId], map: "HelpdeskCannedResponse_tenantId_idx")
+  @@map("aura_helpdesk_canned_response")
+}
+
+model HelpdeskEscalationMatrix {
+  id          String    @id @default(uuid())
+  tenantId    String
+  name        String
+  description String?
+  levels      Json?
+  triggers    Json?
+  status      String    @default("active") // active | inactive
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  deletedAt   DateTime?
+  isDeleted   Boolean   @default(false)
+
+  @@index([tenantId], map: "HelpdeskEscalationMatrix_tenantId_idx")
+  @@map("aura_helpdesk_escalation_matrix")
+}
+
+model HelpdeskAlert {
+  id             String    @id @default(uuid())
+  tenantId       String
+  alertType      String    @default("sla_breach") // sla_breach | high_backlog | agent_capacity | low_satisfaction
+  severity       String    @default("medium") // low | medium | high | critical
+  title          String
+  message        String?
+  relatedType    String?
+  relatedId      String?
+  status         String    @default("active") // active | acknowledged | resolved
+  acknowledgedBy String?
+  acknowledgedAt DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  createdBy      String?
+
+  @@index([tenantId], map: "HelpdeskAlert_tenantId_idx")
+  @@map("aura_helpdesk_alert")
+}

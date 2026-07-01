@@ -1,0 +1,94 @@
+// Job Library Module — new Prisma models (AURA-163, 164, 165).
+// Merged into schema.prisma by orchestrator. Access in route code via
+// (prisma as any).<camelCaseModelName>. All tables are tenant-scoped.
+//
+// Existing models reused elsewhere in this module (NOT re-declared here):
+//   - JobFunction / JobFamily / JobProfile  (job catalog + families)
+//
+// These models cover the Job-Library-owned persisted entities that had no
+// backing table: job evaluations (point-factor / Hay grading), reusable job
+// posting templates, and market-pricing benchmarks + compensation strategy.
+
+model JobEvaluation {
+  id             String    @id @default(uuid())
+  tenantId       String
+  jobTitle       String
+  jobProfileId   String?
+  familyName     String?
+  method         String    @default("point_factor") // point_factor | hay_system | classification | ranking
+  status         String    @default("pending") // pending | information_requested | in_progress | completed
+  score          Int?
+  assignedGrade  String?
+  evaluatorId    String?
+  evaluatorName  String?
+  factors        Json?
+  notes          String?
+  submittedAt    DateTime  @default(now())
+  completedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  createdBy      String?
+  updatedBy      String?
+
+  @@index([tenantId], map: "JobEvaluation_tenantId_idx")
+  @@index([tenantId, status], map: "JobEvaluation_tenant_status_idx")
+  @@map("aura_job_evaluation")
+}
+
+model JobPostingTemplate {
+  id           String    @id @default(uuid())
+  tenantId     String
+  name         String
+  category     String    @default("general") // engineering | sales | executive | early_talent | general
+  sections     Json      @default("[]") // string[] of section titles
+  body         String?
+  isActive     Boolean   @default(true)
+  usageCount   Int       @default(0)
+  lastUsedAt   DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  createdBy    String?
+  updatedBy    String?
+
+  @@index([tenantId], map: "JobPostingTemplate_tenantId_idx")
+  @@map("aura_job_posting_template")
+}
+
+model JobMarketPricing {
+  id             String   @id @default(uuid())
+  tenantId       String
+  jobTitle       String
+  gradeLabel     String?
+  region         String   @default("Global")
+  industry       String   @default("Technology")
+  companySize    String?
+  marketMin      Decimal  @db.Decimal(14, 2)
+  marketMid      Decimal  @db.Decimal(14, 2)
+  marketMax      Decimal  @db.Decimal(14, 2)
+  internalMedian Decimal? @db.Decimal(14, 2)
+  currency       String   @default("USD")
+  marketTrend    String   @default("stable") // high_demand | stable | declining
+  source         String?
+  effectiveDate  DateTime @default(now())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  createdBy      String?
+  updatedBy      String?
+
+  @@index([tenantId], map: "JobMarketPricing_tenantId_idx")
+  @@index([tenantId, region], map: "JobMarketPricing_tenant_region_idx")
+  @@map("aura_job_market_pricing")
+}
+
+model JobCompensationStrategy {
+  id                 String   @id @default(uuid())
+  tenantId           String   @unique
+  targetPercentile   Int      @default(50)
+  scope              String   @default("All roles")
+  description        String?
+  updatedAt          DateTime @updatedAt
+  createdAt          DateTime @default(now())
+  updatedBy          String?
+
+  @@map("aura_job_compensation_strategy")
+}

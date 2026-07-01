@@ -14358,3 +14358,1111 @@ model DeiAccessibilityRequest {
   @@index([tenantId], map: "DeiAccessibilityRequest_tenantId_idx")
   @@map("aura_dei_accessibility_request")
 }
+
+// ===== Wave E fragments =====
+
+// ---- compliance recruitment-components hr-helpdesk finance job-library ----
+
+// ===== Wave E fragments =====
+
+// ---- compliance.prisma ----
+// Compliance / Labor-Relations Module — new Prisma models
+// (merged into schema.prisma by orchestrator). Access in route code via
+// (prisma as any).<camelCaseModelName>. All tables are tenant-scoped.
+//
+// NOTE: Grievances and disciplinary actions REUSE existing models
+// (ErGrievanceCase, ErDisciplinaryAction). Security frameworks reuse
+// ComplianceFramework/ComplianceControl/ComplianceEvidence. These models
+// cover the remaining Labor-Relations entities that had no backing table:
+// labor laws + records, POSH complaints/committees, audits, unions, CBAs,
+// whistleblower reports, arbitrations, strikes and a communication log.
+
+model LaborLawEntry {
+  id             String    @id @default(uuid())
+  tenantId       String
+  lawCode        String
+  lawName        String
+  lawNameAr      String?
+  description    String?
+  jurisdiction   String    @default("federal") // federal | state | local | international
+  category       String    @default("general")
+  effectiveDate  DateTime?
+  responsibleDept String?
+  status         String    @default("compliant") // compliant | non_compliant | pending_review | action_required
+  lastAuditDate  DateTime?
+  riskLevel      String    @default("low") // low | medium | high | critical
+  referenceUrl   String?
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  createdBy      String?
+  updatedBy      String?
+
+  @@index([tenantId], map: "LaborLawEntry_tenantId_idx")
+  @@map("aura_compliance_labor_law")
+}
+
+model ComplianceRecordEntry {
+  id                String    @id @default(uuid())
+  tenantId          String
+  recordCode        String
+  lawId             String?
+  lawName           String?
+  complianceType    String    @default("labor_law")
+  requirement       String
+  dueDate           DateTime?
+  completedDate     DateTime?
+  status            String    @default("pending_review") // compliant | non_compliant | pending_review | resolved
+  responsiblePerson String?
+  verifiedBy        String?
+  verifiedDate      DateTime?
+  findings          String?
+  notes             String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  createdBy         String?
+
+  @@index([tenantId], map: "ComplianceRecordEntry_tenantId_idx")
+  @@index([tenantId, lawId], map: "ComplianceRecordEntry_law_idx")
+  @@map("aura_compliance_record")
+}
+
+model PoshCommittee {
+  id             String    @id @default(uuid())
+  tenantId       String
+  committeeCode  String
+  committeeName  String
+  location       String?
+  establishedDate DateTime?
+  members        Json      @default("[]")
+  casesHandled   Int       @default(0)
+  casesResolved  Int       @default(0)
+  nextMeetingDate DateTime?
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  createdBy      String?
+
+  @@index([tenantId], map: "PoshCommittee_tenantId_idx")
+  @@map("aura_compliance_posh_committee")
+}
+
+model PoshComplaint {
+  id                 String    @id @default(uuid())
+  tenantId           String
+  complaintCode      String
+  complaintDate      DateTime  @default(now())
+  isAnonymous        Boolean   @default(false)
+  complainantId      String?
+  complainantName    String?
+  respondentName     String
+  respondentDept     String?
+  incidentDate       DateTime?
+  incidentLocation   String?
+  incidentDescription String?
+  status             String    @default("received") // received | under_investigation | inquiry_committee_formed | hearing_scheduled | resolved | closed
+  severity           String    @default("medium")
+  committeeId        String?
+  committeeName      String?
+  findings           String?
+  resolutionDate     DateTime?
+  resolutionDetails  String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  createdBy          String?
+
+  @@index([tenantId], map: "PoshComplaint_tenantId_idx")
+  @@map("aura_compliance_posh_complaint")
+}
+
+model ComplianceAuditEntry {
+  id               String    @id @default(uuid())
+  tenantId         String
+  auditCode        String
+  auditName        String
+  auditType        String    @default("internal") // internal | external | regulatory | surprise | follow_up
+  scope            String?
+  scheduledDate    DateTime?
+  actualStartDate  DateTime?
+  completionDate   DateTime?
+  status           String    @default("scheduled") // scheduled | in_progress | completed | report_pending | closed
+  auditors         Json      @default("[]")
+  departments      Json      @default("[]")
+  overallRating    String?
+  complianceScore  Int?
+  findingsCount    Int       @default(0)
+  criticalCount    Int       @default(0)
+  recommendations  String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  createdBy        String?
+
+  @@index([tenantId], map: "ComplianceAuditEntry_tenantId_idx")
+  @@map("aura_compliance_audit_entry")
+}
+
+model UnionEntry {
+  id                 String    @id @default(uuid())
+  tenantId           String
+  unionCode          String
+  unionName          String
+  registrationNumber String?
+  status             String    @default("active") // active | inactive | dissolved | suspended
+  unionType          String    @default("local") // local | national | international
+  memberCount        Int       @default(0)
+  eligibleEmployees  Int       @default(0)
+  representativeName String?
+  representativeContact String?
+  officeAddress      String?
+  recognitionDate    DateTime?
+  isActive           Boolean   @default(true)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  createdBy          String?
+
+  @@index([tenantId], map: "UnionEntry_tenantId_idx")
+  @@map("aura_compliance_union")
+}
+
+model CbaEntry {
+  id                  String    @id @default(uuid())
+  tenantId            String
+  agreementCode       String
+  agreementName       String
+  unionId             String?
+  unionName           String?
+  negotiationStartDate DateTime?
+  agreementDate       DateTime?
+  effectiveDate       DateTime?
+  expiryDate          DateTime?
+  status              String    @default("draft") // draft | negotiation | active | expired | terminated
+  terms               Json      @default("[]")
+  estimatedCost       Decimal?  @db.Decimal(14, 2)
+  currency            String    @default("AED")
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  createdBy           String?
+
+  @@index([tenantId], map: "CbaEntry_tenantId_idx")
+  @@map("aura_compliance_cba")
+}
+
+model WhistleblowerReport {
+  id                 String    @id @default(uuid())
+  tenantId           String
+  reportCode         String
+  submittedDate      DateTime  @default(now())
+  reporterIdentity   String    @default("anonymous") // anonymous | confidential | disclosed
+  reporterName       String?
+  reporterContact    String?
+  allegationType     String    @default("misconduct")
+  severity           String    @default("medium")
+  subject            String
+  detailedDescription String?
+  locationOfIncident String?
+  dateOfIncident     DateTime?
+  status             String    @default("received") // received | under_review | investigating | substantiated | unsubstantiated | closed
+  assignedInvestigator String?
+  findings           String?
+  retaliationReported Boolean  @default(false)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  createdBy          String?
+
+  @@index([tenantId], map: "WhistleblowerReport_tenantId_idx")
+  @@index([tenantId, reportCode], map: "WhistleblowerReport_code_idx")
+  @@map("aura_compliance_whistleblower")
+}
+
+model ArbitrationCase {
+  id               String    @id @default(uuid())
+  tenantId         String
+  arbitrationCode  String
+  caseTitle        String
+  disputeType      String    @default("labor")
+  filingDate       DateTime  @default(now())
+  claimantName     String
+  claimantType     String    @default("employee")
+  respondentName   String
+  respondentType   String    @default("company")
+  disputeDescription String?
+  claimAmount      Decimal?  @db.Decimal(14, 2)
+  currency         String    @default("AED")
+  arbitratorName   String?
+  status           String    @default("filed") // filed | hearing_scheduled | in_progress | award_pending | completed | appealed
+  venue            String?
+  awardSummary     String?
+  awardInFavorOf   String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  createdBy        String?
+
+  @@index([tenantId], map: "ArbitrationCase_tenantId_idx")
+  @@map("aura_compliance_arbitration")
+}
+
+model StrikeEntry {
+  id                 String    @id @default(uuid())
+  tenantId           String
+  strikeCode         String
+  strikeName         String
+  unionId            String?
+  unionName          String?
+  noticeDate         DateTime?
+  proposedStartDate  DateTime?
+  actualStartDate    DateTime?
+  endDate            DateTime?
+  status             String    @default("notice_received") // notice_received | in_negotiation | active | resolved | cancelled
+  strikeType         String    @default("full")
+  affectedDepartments Json     @default("[]")
+  affectedEmployeeCount Int    @default(0)
+  responseMode       String    @default("standby") // standby | deployed
+  resolutionDate     DateTime?
+  resolutionTerms    String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  createdBy          String?
+
+  @@index([tenantId], map: "StrikeEntry_tenantId_idx")
+  @@map("aura_compliance_strike")
+}
+
+model ComplianceCommunicationLog {
+  id                String    @id @default(uuid())
+  tenantId          String
+  communicationDate DateTime  @default(now())
+  communicationType String    @default("meeting") // meeting | negotiation | grievance_discussion | notice | other
+  category          String    @default("union") // union | grievance | disciplinary | audit | general
+  subject           String
+  summary           String?
+  fromParty         String?
+  toParty           String?
+  relatedEntityId   String?
+  attachments       Json      @default("[]")
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  createdBy         String?
+
+  @@index([tenantId], map: "ComplianceCommunicationLog_tenantId_idx")
+  @@index([tenantId, category], map: "ComplianceCommunicationLog_category_idx")
+  @@map("aura_compliance_communication_log")
+}
+
+model ComplianceSettingEntry {
+  id        String   @id @default(uuid())
+  tenantId  String   @unique(map: "ComplianceSettingEntry_tenant_unique")
+  settings  Json     @default("{}")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  updatedBy String?
+
+  @@map("aura_compliance_setting")
+}
+
+// ---- recruitment-components.prisma ----
+// Schema fragment for Recruitment Components Module (AURA-252).
+// DO NOT edit the main schema.prisma directly (SCHEMA RULE). This documents the
+// new model; the deployed DB is created via the defensive migration
+// 20260702150000_add_recruitment_candidate_messages/migration.sql.
+// Access at runtime via (prisma as any).candidateMessage.
+
+/// Candidate outbound/inbound communication log (email / SMS) for the
+/// Candidate Communication Hub. Threads are derived by grouping on candidateId.
+model CandidateMessage {
+  id            String    @id @default(uuid())
+  tenantId      String
+  candidateId   String
+  applicationId String?
+  channel       String    @default("email") // 'email' | 'sms'
+  direction     String    @default("outbound") // 'outbound' | 'inbound'
+  status        String    @default("sent") // pending | sent | delivered | read | failed
+  subject       String?
+  body          String
+  sender        String?
+  senderRole    String?
+  sentAt        DateTime  @default(now())
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  createdBy     String?
+  deletedAt     DateTime?
+  isDeleted     Boolean   @default(false)
+
+  @@index([tenantId])
+  @@index([tenantId, candidateId])
+  @@map("aura_candidate_message")
+}
+
+// ---- hr-helpdesk.prisma ----
+// HR Helpdesk Module — new Prisma models (AURA-135..148).
+// Merged into schema.prisma by the orchestrator. Access in route code via
+// (prisma as any).<camelCaseModelName>. All tables are tenant-scoped.
+//
+// Existing models already in schema.prisma (do NOT redefine here):
+//   - HelpdeskTicket  (aura_helpdesk_ticket)
+//   - HelpdeskSLA     (aura_helpdesk_sla)
+//
+// These models cover the helpdesk-owned entities that had no persistence:
+// knowledge-base articles, service requests, service-catalog items, cases +
+// case notes, live-chat sessions + messages, omnichannel channels, service
+// automations, continuous-improvement items, ticket comments, canned
+// responses, escalation matrices, and helpdesk alerts.
+
+model HelpdeskKnowledgeArticle {
+  id          String    @id @default(uuid())
+  tenantId    String
+  title       String
+  summary     String?
+  content     String?
+  category    String    @default("general")
+  tags        Json?
+  status      String    @default("published") // draft | published | archived
+  visibility  String    @default("internal")  // public | internal | restricted
+  views       Int       @default(0)
+  helpful     Int       @default(0)
+  notHelpful  Int       @default(0)
+  readMinutes Int       @default(3)
+  author      String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  deletedAt   DateTime?
+  isDeleted   Boolean   @default(false)
+
+  @@index([tenantId], map: "HelpdeskKnowledgeArticle_tenantId_idx")
+  @@index([tenantId, category], map: "HelpdeskKnowledgeArticle_tenant_cat_idx")
+  @@map("aura_helpdesk_knowledge_article")
+}
+
+model HelpdeskServiceRequest {
+  id             String    @id @default(uuid())
+  tenantId       String
+  requestNumber  String
+  service        String
+  catalogItemId  String?
+  description    String?
+  requesterId    String
+  currentStage   String?
+  status         String    @default("SUBMITTED") // SUBMITTED | IN_PROGRESS | COMPLETED | REJECTED | CANCELLED
+  estCompletion  DateTime?
+  submittedAt    DateTime  @default(now())
+  completedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  createdBy      String?
+  updatedBy      String?
+  deletedAt      DateTime?
+  isDeleted      Boolean   @default(false)
+
+  @@unique([tenantId, requestNumber], map: "HelpdeskServiceRequest_number_uq")
+  @@index([tenantId], map: "HelpdeskServiceRequest_tenantId_idx")
+  @@index([tenantId, requesterId], map: "HelpdeskServiceRequest_tenant_req_idx")
+  @@map("aura_helpdesk_service_request")
+}
+
+model HelpdeskCatalogItem {
+  id           String    @id @default(uuid())
+  tenantId     String
+  title        String
+  description  String?
+  category     String    @default("general")
+  iconKey      String?
+  slaHours     Int       @default(24)
+  isActive     Boolean   @default(true)
+  requestCount Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  createdBy    String?
+  updatedBy    String?
+  deletedAt    DateTime?
+  isDeleted    Boolean   @default(false)
+
+  @@index([tenantId], map: "HelpdeskCatalogItem_tenantId_idx")
+  @@index([tenantId, category], map: "HelpdeskCatalogItem_tenant_cat_idx")
+  @@map("aura_helpdesk_catalog_item")
+}
+
+model HelpdeskCase {
+  id           String    @id @default(uuid())
+  tenantId     String
+  caseNumber   String
+  title        String
+  description  String?
+  category     String    @default("general")
+  priority     String    @default("MEDIUM")
+  status       String    @default("OPEN") // OPEN | INVESTIGATION | PENDING | APPROVAL | CLOSED
+  stage        String?
+  assigneeId   String?
+  reporterId   String?
+  isConfidential Boolean @default(false)
+  closedAt     DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  createdBy    String?
+  updatedBy    String?
+  deletedAt    DateTime?
+  isDeleted    Boolean   @default(false)
+
+  notes        HelpdeskCaseNote[]
+
+  @@unique([tenantId, caseNumber], map: "HelpdeskCase_number_uq")
+  @@index([tenantId], map: "HelpdeskCase_tenantId_idx")
+  @@index([tenantId, status], map: "HelpdeskCase_tenant_status_idx")
+  @@map("aura_helpdesk_case")
+}
+
+model HelpdeskCaseNote {
+  id         String   @id @default(uuid())
+  tenantId   String
+  caseId     String
+  authorId   String?
+  authorName String?
+  noteType   String   @default("internal") // internal | system | update
+  content    String
+  createdAt  DateTime @default(now())
+
+  case       HelpdeskCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, caseId], map: "HelpdeskCaseNote_tenant_case_idx")
+  @@map("aura_helpdesk_case_note")
+}
+
+model HelpdeskChatSession {
+  id          String    @id @default(uuid())
+  tenantId    String
+  subject     String?
+  requesterId String
+  agentId     String?
+  status      String    @default("ACTIVE") // ACTIVE | WAITING | CLOSED
+  lastMessageAt DateTime @default(now())
+  closedAt    DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdBy   String?
+
+  messages    HelpdeskChatMessage[]
+
+  @@index([tenantId], map: "HelpdeskChatSession_tenantId_idx")
+  @@index([tenantId, requesterId], map: "HelpdeskChatSession_tenant_req_idx")
+  @@map("aura_helpdesk_chat_session")
+}
+
+model HelpdeskChatMessage {
+  id         String   @id @default(uuid())
+  tenantId   String
+  sessionId  String
+  senderId   String
+  senderType String   @default("requester") // requester | agent | system
+  content    String
+  createdAt  DateTime @default(now())
+
+  session    HelpdeskChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, sessionId], map: "HelpdeskChatMessage_tenant_session_idx")
+  @@map("aura_helpdesk_chat_message")
+}
+
+model HelpdeskChannel {
+  id          String    @id @default(uuid())
+  tenantId    String
+  channelType String    // email | slack | teams | phone | whatsapp | web
+  name        String
+  config      String?   // human-readable target e.g. mailbox address, channel name
+  status      String    @default("DISCONNECTED") // CONNECTED | DISCONNECTED | ERROR
+  isActive    Boolean   @default(true)
+  connectedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdBy   String?
+  updatedBy   String?
+
+  @@unique([tenantId, channelType], map: "HelpdeskChannel_type_uq")
+  @@index([tenantId], map: "HelpdeskChannel_tenantId_idx")
+  @@map("aura_helpdesk_channel")
+}
+
+model HelpdeskAutomation {
+  id           String    @id @default(uuid())
+  tenantId     String
+  name         String
+  description  String?
+  triggerType  String    @default("ticket_created") // ticket_created | request_created | profile_update | new_hire | sla_breach | manual
+  triggerLabel String?
+  steps        Json?
+  stepCount    Int       @default(0)
+  executions   Int       @default(0)
+  status       String    @default("ACTIVE") // ACTIVE | PAUSED | DRAFT
+  lastRunAt    DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  createdBy    String?
+  updatedBy    String?
+
+  logs         HelpdeskAutomationLog[]
+
+  @@index([tenantId], map: "HelpdeskAutomation_tenantId_idx")
+  @@map("aura_helpdesk_automation")
+}
+
+model HelpdeskAutomationLog {
+  id           String   @id @default(uuid())
+  tenantId     String
+  automationId String
+  status       String   @default("SUCCESS") // SUCCESS | FAILED | RUNNING
+  message      String?
+  createdAt    DateTime @default(now())
+
+  automation   HelpdeskAutomation @relation(fields: [automationId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId, automationId], map: "HelpdeskAutomationLog_tenant_auto_idx")
+  @@map("aura_helpdesk_automation_log")
+}
+
+model HelpdeskImprovement {
+  id          String    @id @default(uuid())
+  tenantId    String
+  title       String
+  description String?
+  source      String    @default("survey") // survey | ticket_trend | agent | employee
+  impact      String    @default("Medium") // Low | Medium | High
+  effort      String    @default("Medium") // Low | Medium | High
+  status      String    @default("PLANNED") // PLANNED | IN_PROGRESS | COMPLETED | DISMISSED
+  feedbackQuote String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdBy   String?
+  updatedBy   String?
+
+  @@index([tenantId], map: "HelpdeskImprovement_tenantId_idx")
+  @@map("aura_helpdesk_improvement")
+}
+
+model HelpdeskTicketComment {
+  id          String   @id @default(uuid())
+  tenantId    String
+  ticketId    String
+  authorId    String?
+  authorName  String?
+  commentType String   @default("public") // public | internal | system
+  content     String
+  createdAt   DateTime @default(now())
+
+  @@index([tenantId, ticketId], map: "HelpdeskTicketComment_tenant_ticket_idx")
+  @@map("aura_helpdesk_ticket_comment")
+}
+
+model HelpdeskCannedResponse {
+  id         String    @id @default(uuid())
+  tenantId   String
+  title      String
+  shortcut   String?
+  content    String
+  category   String    @default("general")
+  visibility String    @default("team") // personal | team | global
+  usageCount Int       @default(0)
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  createdBy  String?
+  updatedBy  String?
+  deletedAt  DateTime?
+  isDeleted  Boolean   @default(false)
+
+  @@index([tenantId], map: "HelpdeskCannedResponse_tenantId_idx")
+  @@map("aura_helpdesk_canned_response")
+}
+
+model HelpdeskEscalationMatrix {
+  id          String    @id @default(uuid())
+  tenantId    String
+  name        String
+  description String?
+  levels      Json?
+  triggers    Json?
+  status      String    @default("active") // active | inactive
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  deletedAt   DateTime?
+  isDeleted   Boolean   @default(false)
+
+  @@index([tenantId], map: "HelpdeskEscalationMatrix_tenantId_idx")
+  @@map("aura_helpdesk_escalation_matrix")
+}
+
+model HelpdeskAlert {
+  id             String    @id @default(uuid())
+  tenantId       String
+  alertType      String    @default("sla_breach") // sla_breach | high_backlog | agent_capacity | low_satisfaction
+  severity       String    @default("medium") // low | medium | high | critical
+  title          String
+  message        String?
+  relatedType    String?
+  relatedId      String?
+  status         String    @default("active") // active | acknowledged | resolved
+  acknowledgedBy String?
+  acknowledgedAt DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  createdBy      String?
+
+  @@index([tenantId], map: "HelpdeskAlert_tenantId_idx")
+  @@map("aura_helpdesk_alert")
+}
+
+// ---- finance.prisma ----
+// Finance Module — new Prisma models (AURA-149..160).
+// Merged into schema.prisma by orchestrator. Access in route code via
+// (prisma as any).<camelCaseModelName>. All tables are tenant-scoped.
+//
+// Reuses existing models where possible:
+//   - CostCenter (aura_cost_center) for AURA-155 cost centers
+//   - Asset (aura_asset) is the HR/admin asset register; finance keeps its own
+//     FinanceAsset register (capital/operational) with finance-specific fields.
+//
+// Rich nested collections (budget lines, contract schedules, vendor documents,
+// scenario assumptions) are stored as JSON columns; scalar fields that pages
+// filter/sort on are promoted to real columns.
+
+model FinanceVendor {
+  id                String    @id @default(uuid())
+  tenantId          String
+  vendorCode        String
+  vendorName        String
+  vendorType        String    @default("company") // individual | company | contractor | consultant
+  status            String    @default("pending_approval") // active | inactive | pending_approval | blacklisted
+  email             String?
+  phone             String?
+  website           String?
+  taxId             String?
+  categories        Json?
+  servicesProvided  Json?
+  paymentTerms      String    @default("net_30")
+  preferredPaymentMethod String @default("bank_transfer")
+  primaryContact    Json?
+  billingAddress    Json?
+  bankDetails       Json?
+  documents         Json?
+  performanceRating Decimal   @default(0) @db.Decimal(4, 2)
+  totalTransactions Int       @default(0)
+  totalSpend        Decimal   @default(0) @db.Decimal(15, 2)
+  onTimePaymentRate Decimal   @default(0) @db.Decimal(5, 2)
+  qualityScore      Decimal   @default(0) @db.Decimal(5, 2)
+  w9OnFile          Boolean   @default(false)
+  backgroundCheckCompleted Boolean @default(false)
+  contractOnFile    Boolean   @default(false)
+  contractExpiryDate DateTime?
+  insuranceExpiryDate DateTime?
+  approvalStatus    String    @default("pending") // pending | approved | rejected
+  approvedBy        String?
+  approvedDate      DateTime?
+  rejectionReason   String?
+  notes             String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  createdBy         String?
+  updatedBy         String?
+
+  @@unique([tenantId, vendorCode], map: "FinanceVendor_tenantId_vendorCode_key")
+  @@index([tenantId], map: "FinanceVendor_tenantId_idx")
+  @@index([status], map: "FinanceVendor_status_idx")
+  @@map("aura_finance_vendor")
+}
+
+model FinanceContract {
+  id                 String    @id @default(uuid())
+  tenantId           String
+  contractCode       String
+  contractName       String
+  vendorId           String?
+  vendorName         String?
+  contractType       String    @default("fixed_price")
+  status             String    @default("draft")
+  startDate          DateTime?
+  endDate            DateTime?
+  autoRenew          Boolean   @default(false)
+  renewalNoticeDays  Int?
+  totalContractValue Decimal   @default(0) @db.Decimal(15, 2)
+  currency           String    @default("USD")
+  paymentTerms       String    @default("net_30")
+  totalSpent         Decimal   @default(0) @db.Decimal(15, 2)
+  remainingValue     Decimal   @default(0) @db.Decimal(15, 2)
+  utilizationRate    Decimal   @default(0) @db.Decimal(5, 2)
+  servicesIncluded   Json?
+  paymentSchedule    Json?
+  deliverables       Json?
+  kpis               Json?
+  amendments         Json?
+  documentUrl        String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  createdBy          String?
+  updatedBy          String?
+
+  @@unique([tenantId, contractCode], map: "FinanceContract_tenantId_contractCode_key")
+  @@index([tenantId], map: "FinanceContract_tenantId_idx")
+  @@index([vendorId], map: "FinanceContract_vendorId_idx")
+  @@map("aura_finance_contract")
+}
+
+model FinanceBudget {
+  id              String    @id @default(uuid())
+  tenantId        String
+  budgetCode      String
+  budgetName      String
+  budgetType      String    @default("operations")
+  status          String    @default("draft")
+  description     String?
+  fiscalYear      Int
+  period          String    @default("annual")
+  startDate       DateTime?
+  endDate         DateTime?
+  department      String?
+  costCenter      String?
+  project         String?
+  location        String?
+  lines           Json?
+  totalBudget     Decimal   @default(0) @db.Decimal(15, 2)
+  totalAllocated  Decimal   @default(0) @db.Decimal(15, 2)
+  totalSpent      Decimal   @default(0) @db.Decimal(15, 2)
+  totalRemaining  Decimal   @default(0) @db.Decimal(15, 2)
+  utilizationRate Decimal   @default(0) @db.Decimal(5, 2)
+  approvalStatus  String    @default("pending")
+  approvedBy      String?
+  approvedByName  String?
+  approvedDate    DateTime?
+  rejectionReason String?
+  version         String    @default("1.0")
+  tags            Json?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  createdBy       String?
+  createdByName   String?
+  updatedBy       String?
+
+  @@unique([tenantId, budgetCode], map: "FinanceBudget_tenantId_budgetCode_key")
+  @@index([tenantId], map: "FinanceBudget_tenantId_idx")
+  @@index([status], map: "FinanceBudget_status_idx")
+  @@map("aura_finance_budget")
+}
+
+model FinanceBudgetTemplate {
+  id                    String    @id @default(uuid())
+  tenantId              String
+  templateCode          String
+  templateName          String
+  templateType          String    @default("operations")
+  status                String    @default("active")
+  description           String?
+  templateLines         Json?
+  defaultPeriod         String    @default("annual")
+  defaultCurrency       String    @default("USD")
+  includeHeadcount      Boolean   @default(false)
+  includeContingency    Boolean   @default(false)
+  contingencyPercentage Decimal?  @db.Decimal(5, 2)
+  usageCount            Int       @default(0)
+  lastUsedDate          DateTime?
+  allowedDepartments    Json?
+  allowedRoles          Json?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  createdBy             String?
+  updatedBy             String?
+
+  @@unique([tenantId, templateCode], map: "FinanceBudgetTemplate_tenantId_templateCode_key")
+  @@index([tenantId], map: "FinanceBudgetTemplate_tenantId_idx")
+  @@map("aura_finance_budget_template")
+}
+
+model FinanceScenario {
+  id                    String    @id @default(uuid())
+  tenantId              String
+  scenarioCode          String
+  scenarioName          String
+  scenarioType          String    @default("custom")
+  status                String    @default("draft")
+  description           String?
+  baseBudgetId          String?
+  baseBudgetName        String?
+  assumptions           Json?
+  adjustedLines         Json?
+  totalAdjustedBudget   Decimal   @default(0) @db.Decimal(15, 2)
+  totalVarianceFromBase Decimal   @default(0) @db.Decimal(15, 2)
+  variancePercentage    Decimal   @default(0) @db.Decimal(6, 2)
+  headcountImpact       Json?
+  cashFlowImpact        Json?
+  lastRunAt             DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  createdBy             String?
+  updatedBy             String?
+
+  @@unique([tenantId, scenarioCode], map: "FinanceScenario_tenantId_scenarioCode_key")
+  @@index([tenantId], map: "FinanceScenario_tenantId_idx")
+  @@map("aura_finance_scenario")
+}
+
+model FinancePettyCashFund {
+  id                   String    @id @default(uuid())
+  tenantId             String
+  fundCode             String
+  fundName             String
+  status               String    @default("active")
+  department           String?
+  location             String?
+  custodian            String?
+  custodianName        String?
+  initialBalance       Decimal   @default(0) @db.Decimal(15, 2)
+  currentBalance       Decimal   @default(0) @db.Decimal(15, 2)
+  totalDisbursed       Decimal   @default(0) @db.Decimal(15, 2)
+  totalReplenished     Decimal   @default(0) @db.Decimal(15, 2)
+  fundLimit            Decimal   @default(0) @db.Decimal(15, 2)
+  transactionLimit     Decimal   @default(0) @db.Decimal(15, 2)
+  minimumBalance       Decimal   @default(0) @db.Decimal(15, 2)
+  requireReceipt       Boolean   @default(true)
+  requireApproval      Boolean   @default(true)
+  approvalThreshold    Decimal?  @db.Decimal(15, 2)
+  lastReconciledDate   DateTime?
+  lastReconciledBy     String?
+  nextReconciliationDue DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  createdBy            String?
+  updatedBy            String?
+
+  @@unique([tenantId, fundCode], map: "FinancePettyCashFund_tenantId_fundCode_key")
+  @@index([tenantId], map: "FinancePettyCashFund_tenantId_idx")
+  @@map("aura_finance_petty_cash_fund")
+}
+
+model FinancePettyCashTransaction {
+  id              String    @id @default(uuid())
+  tenantId        String
+  transactionCode String
+  fundId          String
+  transactionType String    @default("disbursement")
+  transactionDate DateTime  @default(now())
+  amount          Decimal   @default(0) @db.Decimal(15, 2)
+  category        String?
+  description     String?
+  requestedBy     String?
+  requestedByName String?
+  receiptNumber   String?
+  receiptAttachment String?
+  vendor          String?
+  requiresApproval Boolean  @default(false)
+  approvalStatus  String?
+  approvedBy      String?
+  approvedDate    DateTime?
+  reconciled      Boolean   @default(false)
+  reconciledDate  DateTime?
+  balanceAfter    Decimal   @default(0) @db.Decimal(15, 2)
+  notes           String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  createdBy       String?
+
+  @@unique([tenantId, transactionCode], map: "FinancePettyCashTransaction_tenantId_transactionCode_key")
+  @@index([tenantId], map: "FinancePettyCashTransaction_tenantId_idx")
+  @@index([fundId], map: "FinancePettyCashTransaction_fundId_idx")
+  @@map("aura_finance_petty_cash_transaction")
+}
+
+model FinancePettyCashReconciliation {
+  id                  String    @id @default(uuid())
+  tenantId            String
+  reconciliationCode  String
+  fundId              String
+  fundName            String?
+  reconciliationDate  DateTime  @default(now())
+  expectedBalance     Decimal   @default(0) @db.Decimal(15, 2)
+  actualBalance       Decimal   @default(0) @db.Decimal(15, 2)
+  variance            Decimal   @default(0) @db.Decimal(15, 2)
+  transactionCount    Int       @default(0)
+  totalDisbursements  Decimal   @default(0) @db.Decimal(15, 2)
+  totalReplenishments Decimal   @default(0) @db.Decimal(15, 2)
+  unreconciledTransactions Int  @default(0)
+  cashOnHand          Decimal   @default(0) @db.Decimal(15, 2)
+  receipts            Decimal   @default(0) @db.Decimal(15, 2)
+  ious                Decimal   @default(0) @db.Decimal(15, 2)
+  status              String    @default("in_progress")
+  varianceExplanation String?
+  varianceResolution  String?
+  reconciledBy        String?
+  reconciledByName    String?
+  reviewedBy          String?
+  reviewedDate        DateTime?
+  supportingDocuments Json?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  createdBy           String?
+
+  @@unique([tenantId, reconciliationCode], map: "FinancePettyCashReconciliation_tenantId_code_key")
+  @@index([tenantId], map: "FinancePettyCashReconciliation_tenantId_idx")
+  @@index([fundId], map: "FinancePettyCashReconciliation_fundId_idx")
+  @@map("aura_finance_petty_cash_reconciliation")
+}
+
+model FinancePettyCashPolicy {
+  id            String    @id @default(uuid())
+  tenantId      String
+  policyType    String    @default("approval") // approval | category | spending_limit
+  name          String
+  description   String?
+  threshold     Decimal?  @db.Decimal(15, 2)
+  approverRole  String?
+  monthlyLimit  Decimal?  @db.Decimal(15, 2)
+  requireReceipt Boolean  @default(true)
+  active        Boolean   @default(true)
+  config        Json?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  createdBy     String?
+  updatedBy     String?
+
+  @@index([tenantId], map: "FinancePettyCashPolicy_tenantId_idx")
+  @@index([policyType], map: "FinancePettyCashPolicy_policyType_idx")
+  @@map("aura_finance_petty_cash_policy")
+}
+
+model FinanceAsset {
+  id                      String    @id @default(uuid())
+  tenantId                String
+  assetCode               String
+  assetName               String
+  assetType               String    @default("capital") // capital | operational | it_equipment | ...
+  status                  String    @default("active")
+  description             String?
+  purchasePrice           Decimal   @default(0) @db.Decimal(15, 2)
+  currentValue            Decimal   @default(0) @db.Decimal(15, 2)
+  depreciationMethod      String    @default("straight_line")
+  usefulLife              Int       @default(5)
+  salvageValue            Decimal   @default(0) @db.Decimal(15, 2)
+  accumulatedDepreciation Decimal   @default(0) @db.Decimal(15, 2)
+  purchaseDate            DateTime?
+  vendor                  String?
+  invoiceNumber           String?
+  warrantyExpiryDate      DateTime?
+  assignedTo              String?
+  assignedToName          String?
+  department              String?
+  costCenter              String?
+  location                String?
+  serialNumber            String?
+  quantity                Int       @default(1)
+  reorderPoint            Int       @default(0)
+  unitCost                Decimal   @default(0) @db.Decimal(15, 2)
+  supplier                String?
+  lastRestocked           DateTime?
+  maintenanceSchedule     Json?
+  maintenanceHistory      Json?
+  disposalDate            DateTime?
+  disposalMethod          String?
+  disposalValue           Decimal?  @db.Decimal(15, 2)
+  notes                   String?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+  createdBy               String?
+  updatedBy               String?
+
+  @@unique([tenantId, assetCode], map: "FinanceAsset_tenantId_assetCode_key")
+  @@index([tenantId], map: "FinanceAsset_tenantId_idx")
+  @@index([assetType], map: "FinanceAsset_assetType_idx")
+  @@map("aura_finance_asset")
+}
+
+// ---- job-library.prisma ----
+// Job Library Module — new Prisma models (AURA-163, 164, 165).
+// Merged into schema.prisma by orchestrator. Access in route code via
+// (prisma as any).<camelCaseModelName>. All tables are tenant-scoped.
+//
+// Existing models reused elsewhere in this module (NOT re-declared here):
+//   - JobFunction / JobFamily / JobProfile  (job catalog + families)
+//
+// These models cover the Job-Library-owned persisted entities that had no
+// backing table: job evaluations (point-factor / Hay grading), reusable job
+// posting templates, and market-pricing benchmarks + compensation strategy.
+
+model JobEvaluation {
+  id             String    @id @default(uuid())
+  tenantId       String
+  jobTitle       String
+  jobProfileId   String?
+  familyName     String?
+  method         String    @default("point_factor") // point_factor | hay_system | classification | ranking
+  status         String    @default("pending") // pending | information_requested | in_progress | completed
+  score          Int?
+  assignedGrade  String?
+  evaluatorId    String?
+  evaluatorName  String?
+  factors        Json?
+  notes          String?
+  submittedAt    DateTime  @default(now())
+  completedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  createdBy      String?
+  updatedBy      String?
+
+  @@index([tenantId], map: "JobEvaluation_tenantId_idx")
+  @@index([tenantId, status], map: "JobEvaluation_tenant_status_idx")
+  @@map("aura_job_evaluation")
+}
+
+model JobPostingTemplate {
+  id           String    @id @default(uuid())
+  tenantId     String
+  name         String
+  category     String    @default("general") // engineering | sales | executive | early_talent | general
+  sections     Json      @default("[]") // string[] of section titles
+  body         String?
+  isActive     Boolean   @default(true)
+  usageCount   Int       @default(0)
+  lastUsedAt   DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  createdBy    String?
+  updatedBy    String?
+
+  @@index([tenantId], map: "JobPostingTemplate_tenantId_idx")
+  @@map("aura_job_posting_template")
+}
+
+model JobMarketPricing {
+  id             String   @id @default(uuid())
+  tenantId       String
+  jobTitle       String
+  gradeLabel     String?
+  region         String   @default("Global")
+  industry       String   @default("Technology")
+  companySize    String?
+  marketMin      Decimal  @db.Decimal(14, 2)
+  marketMid      Decimal  @db.Decimal(14, 2)
+  marketMax      Decimal  @db.Decimal(14, 2)
+  internalMedian Decimal? @db.Decimal(14, 2)
+  currency       String   @default("USD")
+  marketTrend    String   @default("stable") // high_demand | stable | declining
+  source         String?
+  effectiveDate  DateTime @default(now())
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  createdBy      String?
+  updatedBy      String?
+
+  @@index([tenantId], map: "JobMarketPricing_tenantId_idx")
+  @@index([tenantId, region], map: "JobMarketPricing_tenant_region_idx")
+  @@map("aura_job_market_pricing")
+}
+
+model JobCompensationStrategy {
+  id                 String   @id @default(uuid())
+  tenantId           String   @unique
+  targetPercentile   Int      @default(50)
+  scope              String   @default("All roles")
+  description        String?
+  updatedAt          DateTime @updatedAt
+  createdAt          DateTime @default(now())
+  updatedBy          String?
+
+  @@map("aura_job_compensation_strategy")
+}
