@@ -1,4 +1,3 @@
-// @ts-nocheck — Presentation-layer drift from service signatures / mock-data shapes. Tracked under #29 for proper realignment.
 /**
  * @module ReportDashboard
  * @description Report dashboard with favorites, recent history, scheduled reports, and quick generate.
@@ -92,7 +91,13 @@ function FavoriteCard({
 
 // ── History Row ───────────────────────────────────────────────────────────────
 
-function HistoryRow({ report }: { report: GeneratedReport }) {
+function HistoryRow({
+  report,
+  onView,
+}: {
+  report: GeneratedReport;
+  onView?: (report: GeneratedReport) => void;
+}) {
   const meta = CATEGORY_META[report.category];
 
   const formatFileSize = (bytes?: number) => {
@@ -109,11 +114,15 @@ function HistoryRow({ report }: { report: GeneratedReport }) {
       >
         <FileText className={`w-3.5 h-3.5 ${meta.color}`} />
       </div>
-      <div className="flex-1 min-w-0">
-        <p className="text-sm font-medium text-ink-black dark:text-pearl truncate">
+      <button
+        onClick={() => onView?.(report)}
+        className="flex-1 min-w-0 text-left"
+        aria-label={`View ${report.title}`}
+      >
+        <p className="text-sm font-medium text-ink-black dark:text-pearl truncate hover:text-celestial-indigo transition-colors">
           {report.title}
         </p>
-        <div className="flex items-center gap-2 mt-0.5">
+        <span className="flex items-center gap-2 mt-0.5">
           <span className={`text-[10px] font-medium ${meta.color}`}>{meta.label}</span>
           <span className="text-[10px] text-silver-mist">·</span>
           <span className="text-[10px] text-silver-mist">
@@ -125,8 +134,8 @@ function HistoryRow({ report }: { report: GeneratedReport }) {
               <span className="text-[10px] text-silver-mist">{report.rowCount} rows</span>
             </>
           )}
-        </div>
-      </div>
+        </span>
+      </button>
       <div className="flex items-center gap-2">
         <StatusBadge status={report.status} />
         <span className="text-[11px] text-silver-mist uppercase font-medium">{report.format}</span>
@@ -209,12 +218,15 @@ interface ReportDashboardProps {
   onViewReport?: (report: GeneratedReport) => void;
 }
 
-export function ReportDashboard({ onOpenBuilder, _onViewReport }: ReportDashboardProps) {
+export function ReportDashboard({ onOpenBuilder, onViewReport }: ReportDashboardProps) {
   const [favorites, setFavorites] = useState<ReportTemplate[]>([]);
   const [history, setHistory] = useState<GeneratedReport[]>([]);
   const [scheduled, setScheduled] = useState<ScheduledReport[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [activeCategory, setActiveCategory] = useState<ReportCategory | 'all'>('all');
+  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; text: string } | null>(
+    null
+  );
 
   useEffect(() => {
     setIsLoading(true);
@@ -232,17 +244,27 @@ export function ReportDashboard({ onOpenBuilder, _onViewReport }: ReportDashboar
   }, []);
 
   const handleQuickGenerate = async (tpl: ReportTemplate) => {
-    await ReportGenerationService.generateReport({
-      templateId: tpl.id,
-      format: tpl.defaultFormat,
-    });
-    const hist = await ReportGenerationService.getReportHistory({ pageSize: 10 });
-    setHistory(hist);
+    try {
+      await ReportGenerationService.generateReport({
+        templateId: tpl.id,
+        format: tpl.defaultFormat,
+      });
+      const hist = await ReportGenerationService.getReportHistory({ pageSize: 10 });
+      setHistory(hist);
+      setFeedback({ type: 'success', text: `${tpl.name} generated` });
+    } catch {
+      setFeedback({ type: 'error', text: `Failed to generate ${tpl.name}` });
+    }
   };
 
   const handleDeleteSchedule = async (id: string) => {
-    await ReportGenerationService.deleteScheduledReport(id);
-    setScheduled((prev) => prev.filter((s) => s.id !== id));
+    try {
+      await ReportGenerationService.deleteScheduledReport(id);
+      setScheduled((prev) => prev.filter((s) => s.id !== id));
+      setFeedback({ type: 'success', text: 'Schedule removed' });
+    } catch {
+      setFeedback({ type: 'error', text: 'Failed to remove schedule' });
+    }
   };
 
   const CATEGORIES: { value: ReportCategory | 'all'; label: string }[] = [
@@ -283,6 +305,18 @@ export function ReportDashboard({ onOpenBuilder, _onViewReport }: ReportDashboar
           New Report
         </button>
       </div>
+
+      {feedback && (
+        <div
+          className={`rounded-xl p-3 text-sm border ${
+            feedback.type === 'success'
+              ? 'bg-emerald-50 dark:bg-emerald-900/20 border-emerald-200 dark:border-emerald-800 text-emerald-700 dark:text-emerald-300'
+              : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800 text-red-700 dark:text-red-300'
+          }`}
+        >
+          {feedback.text}
+        </div>
+      )}
 
       {/* Favorites */}
       {favorites.length > 0 && (
@@ -344,7 +378,9 @@ export function ReportDashboard({ onOpenBuilder, _onViewReport }: ReportDashboar
             </button>
           </div>
         ) : (
-          filteredHistory.map((report) => <HistoryRow key={report.id} report={report} />)
+          filteredHistory.map((report) => (
+            <HistoryRow key={report.id} report={report} onView={onViewReport} />
+          ))
         )}
       </div>
 
