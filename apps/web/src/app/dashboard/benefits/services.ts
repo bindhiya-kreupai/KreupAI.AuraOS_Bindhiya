@@ -17,6 +17,7 @@ import type {
   PremiumDeduction,
   EmployeeEligibility,
   BenefitSettings,
+  BenefitCampaign,
   BenefitStats,
   EnrollmentStatus,
   ClaimStatus,
@@ -389,5 +390,30 @@ export class BenefitSettingsService {
 export class BenefitAnalyticsService {
   static async getStats(): Promise<BenefitStats> {
     return APIClient.get<BenefitStats>('/benefits/analytics');
+  }
+}
+
+export class BenefitCampaignService {
+  static async getCampaigns(): Promise<BenefitCampaign[]> {
+    try {
+      const response = await APIClient.get<{ success: boolean; data: BenefitCampaign[] }>(
+        '/benefits/campaigns'
+      );
+      return response?.data ?? [];
+    } catch {
+      return [];
+    }
+  }
+
+  static async createCampaign(input: {
+    title: string;
+    type: 'Urgent' | 'Info';
+    channel: string;
+    message: string;
+  }): Promise<{ success: boolean; data?: BenefitCampaign }> {
+    return APIClient.post<{ success: boolean; data?: BenefitCampaign }>(
+      '/benefits/campaigns',
+      input
+    );
   }
 }

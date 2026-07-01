@@ -2,8 +2,8 @@
 
 import React, { useEffect, useState } from 'react';
 import { ModuleGrid } from '@/components/dashboard/module-grid';
-import { ComplianceAnalyticsService } from './services';
-import type { ComplianceMetrics } from './types';
+import { ComplianceAnalyticsService, ComplianceCatalogApi } from './services';
+import type { ComplianceMetrics, ComplianceCatalog } from './types';
 
 const FEATURES = [
   'Union Database',
@@ -18,16 +18,21 @@ const FEATURES = [
 
 export default function LaborRelationsPage() {
   const [metrics, setMetrics] = useState<ComplianceMetrics | null>(null);
+  const [catalog, setCatalog] = useState<ComplianceCatalog | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     let active = true;
     (async () => {
       try {
-        const data = await ComplianceAnalyticsService.getMetrics();
-        if (active) setMetrics(data);
+        const [metricsRes, catalogRes] = await Promise.allSettled([
+          ComplianceAnalyticsService.getMetrics(),
+          ComplianceCatalogApi.getCatalog(),
+        ]);
+        if (active && metricsRes.status === 'fulfilled') setMetrics(metricsRes.value);
+        if (active && catalogRes.status === 'fulfilled') setCatalog(catalogRes.value);
       } catch {
-        // Overview banner is non-critical; the module grid still renders.
+        // Overview banners are non-critical; the module grid still renders.
       } finally {
         if (active) setLoading(false);
       }
@@ -70,6 +75,55 @@ export default function LaborRelationsPage() {
         features={FEATURES}
         basePath="/dashboard/compliance"
       />
+
+      {!loading && catalog && (
+        <section className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6">
+          <div className="mb-4">
+            <h2 className="text-lg font-bold text-slate-900 dark:text-slate-100">
+              Statutory Compliance Catalogue
+            </h2>
+            <p className="text-xs text-slate-500 mt-1">
+              {catalog.name} · v{catalog.version} · {catalog.services.length} statutory service
+              {catalog.services.length === 1 ? '' : 's'}
+              {catalog.supportedCountries.length > 0
+                ? ` · ${catalog.supportedCountries.length} supported countries`
+                : ''}
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {catalog.services.map((s) => (
+              <div
+                key={s.endpoint}
+                className="rounded-xl border border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 p-4"
+              >
+                <div className="flex items-center justify-between gap-2">
+                  <p className="font-bold text-sm text-slate-900 dark:text-slate-100">{s.name}</p>
+                  <span className="text-[10px] uppercase font-bold text-slate-400 bg-white dark:bg-slate-900 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 whitespace-nowrap">
+                    {s.country}
+                  </span>
+                </div>
+                <p className="text-xs text-slate-500 mt-1.5">{s.description}</p>
+                <code className="text-[10px] text-indigo-600 dark:text-indigo-400 mt-2 inline-block">
+                  {s.endpoint}
+                </code>
+              </div>
+            ))}
+          </div>
+          {catalog.features.length > 0 && (
+            <div className="mt-4 flex flex-wrap gap-2">
+              {catalog.features.map((f) => (
+                <span
+                  key={f.name}
+                  title={f.description}
+                  className="text-xs font-bold text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 px-2.5 py-1 rounded-full"
+                >
+                  {f.name}
+                </span>
+              ))}
+            </div>
+          )}
+        </section>
+      )}
     </div>
   );
 }

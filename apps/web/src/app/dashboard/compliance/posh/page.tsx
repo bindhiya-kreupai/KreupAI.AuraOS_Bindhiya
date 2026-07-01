@@ -12,6 +12,7 @@ import {
   X,
   GraduationCap,
   Plus,
+  CalendarClock,
 } from 'lucide-react';
 import { POSHService } from '../services';
 import type { POSHComplaint, POSHCommittee, CommitteeMember, Toast } from '../types';
@@ -45,6 +46,8 @@ export default function POSHPage() {
   const [showComplaintModal, setShowComplaintModal] = useState(false);
   const [showCommitteeModal, setShowCommitteeModal] = useState(false);
   const [showPolicyModal, setShowPolicyModal] = useState(false);
+  const [showSessionModal, setShowSessionModal] = useState(false);
+  const [sessionDate, setSessionDate] = useState('');
   const [submitting, setSubmitting] = useState(false);
 
   const notify = (type: Toast['type'], message: string) =>
@@ -145,6 +148,33 @@ export default function POSHPage() {
 
   const activeCommittee = committees.find((c) => c.isActive) ?? committees[0];
   const iccMembers: CommitteeMember[] = activeCommittee?.members ?? [];
+
+  // Schedule Awareness Session — persists nextMeetingDate on the active committee.
+  const submitSession = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!activeCommittee) {
+      notify('error', 'Create an Internal Complaints Committee first');
+      return;
+    }
+    if (!sessionDate) {
+      notify('error', 'Select a session date');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await POSHService.updateCommittee(activeCommittee.id, {
+        nextMeetingDate: new Date(sessionDate).toISOString(),
+      });
+      setShowSessionModal(false);
+      setSessionDate('');
+      await fetchData();
+      notify('success', 'Awareness session scheduled');
+    } catch {
+      notify('error', 'Failed to schedule awareness session');
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const totalCasesHandled = committees.reduce((sum, c) => sum + (c.casesHandled ?? 0), 0);
   const totalCasesResolved = committees.reduce((sum, c) => sum + (c.casesResolved ?? 0), 0);
@@ -257,6 +287,30 @@ export default function POSHPage() {
             <p className="text-sm text-center text-slate-500 mb-4">
               {totalCasesResolved} of {totalCasesHandled} cases resolved across committees
             </p>
+            {activeCommittee?.nextMeetingDate && (
+              <p className="text-xs text-center text-indigo-600 dark:text-indigo-400 font-bold mb-3">
+                Next session:{' '}
+                {new Date(activeCommittee.nextMeetingDate).toLocaleDateString(undefined, {
+                  year: 'numeric',
+                  month: 'short',
+                  day: 'numeric',
+                })}
+              </p>
+            )}
+            <button
+              type="button"
+              onClick={() => {
+                if (!activeCommittee) {
+                  notify('error', 'Create an Internal Complaints Committee first');
+                  return;
+                }
+                setSessionDate('');
+                setShowSessionModal(true);
+              }}
+              className="w-full text-center py-2 border border-indigo-200 dark:border-indigo-800 text-indigo-600 rounded-xl font-bold text-sm hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors flex items-center justify-center gap-2 mb-2"
+            >
+              <CalendarClock className="w-4 h-4" /> Schedule Awareness Session
+            </button>
             <Link
               href="/dashboard/compliance"
               className="w-full text-center py-2 border border-indigo-200 dark:border-indigo-800 text-indigo-600 rounded-xl font-bold text-sm hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors flex items-center justify-center gap-2"
@@ -509,6 +563,65 @@ export default function POSHPage() {
                 className="px-4 py-2 rounded-xl text-sm font-bold bg-indigo-600 hover:bg-indigo-700 text-white disabled:opacity-50"
               >
                 {submitting ? 'Creating…' : 'Create'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {/* Schedule Awareness Session Modal */}
+      {showSessionModal && (
+        <div className="fixed inset-0 z-[9998] bg-black/40 flex items-center justify-center p-4">
+          <form
+            onSubmit={submitSession}
+            className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 w-full max-w-md shadow-2xl"
+          >
+            <div className="flex items-center justify-between p-5 border-b border-slate-100 dark:border-slate-800">
+              <h3 className="font-bold text-lg flex items-center gap-2">
+                <CalendarClock className="w-5 h-5 text-indigo-500" /> Schedule Awareness Session
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowSessionModal(false)}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="p-5 space-y-4">
+              {activeCommittee && (
+                <p className="text-sm text-slate-500">
+                  Committee: <span className="font-bold">{activeCommittee.committeeName}</span> ·{' '}
+                  {activeCommittee.location}
+                </p>
+              )}
+              <div>
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1.5">
+                  Session Date
+                </label>
+                <input
+                  type="date"
+                  required
+                  value={sessionDate}
+                  onChange={(e) => setSessionDate(e.target.value)}
+                  className="w-full p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 text-sm outline-none"
+                />
+              </div>
+            </div>
+            <div className="flex items-center justify-end gap-2 p-5 border-t border-slate-100 dark:border-slate-800">
+              <button
+                type="button"
+                onClick={() => setShowSessionModal(false)}
+                className="px-4 py-2 rounded-xl text-sm font-bold text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={submitting}
+                className="px-4 py-2 rounded-xl text-sm font-bold bg-indigo-600 hover:bg-indigo-700 text-white disabled:opacity-50 flex items-center gap-2"
+              >
+                <CalendarClock className="w-4 h-4" /> {submitting ? 'Scheduling…' : 'Schedule'}
               </button>
             </div>
           </form>

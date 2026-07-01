@@ -25,6 +25,7 @@ import type {
   Strike,
   ComplianceMetrics,
   ComplianceSettings,
+  ComplianceCatalog,
 } from './types';
 
 // Labor Law Compliance Service
@@ -337,6 +338,18 @@ export class CommunicationLogService {
   static async createLog(data: Record<string, unknown>): Promise<CommunicationLogEntry> {
     const res = await APIClient.post<unknown>(this.endpoint, data);
     return APIClient.unwrapItem<CommunicationLogEntry>(res) as CommunicationLogEntry;
+  }
+}
+
+// Compliance Catalog Service — root GET /api/compliance overview endpoint.
+// Returns the static statutory-service catalogue (supported countries,
+// service surfaces, platform features). Public metadata only, no tenant data.
+export class ComplianceCatalogApi {
+  private static endpoint = '/compliance';
+
+  static async getCatalog(): Promise<ComplianceCatalog> {
+    const res = await APIClient.get<unknown>(this.endpoint);
+    return APIClient.unwrapItem<ComplianceCatalog>(res) as ComplianceCatalog;
   }
 }
 

@@ -248,6 +248,12 @@ export class BenefitsEnrollmentService {
     const entries = Object.values(submission.selections).filter((s): s is EnrollmentSelection =>
       Boolean(s)
     );
+    // Map the wizard enrollment-type token onto the v1 contract's enrollmentType.
+    const ENROLLMENT_TYPE: Record<EnrollmentSubmission['enrollmentType'], string> = {
+      annual: 'OPEN_ENROLLMENT',
+      new_hire: 'NEW_HIRE',
+      qualifying_event: 'QUALIFYING_EVENT',
+    };
     let firstId = '';
     for (const selection of entries) {
       const response = await APIClient.post<{ success: boolean; data?: { id?: string } }>(
@@ -256,6 +262,7 @@ export class BenefitsEnrollmentService {
           employeeId: submission.employeeId,
           planId: selection.planId,
           coverageTier: selection.coverageLevel.toUpperCase(),
+          enrollmentType: ENROLLMENT_TYPE[submission.enrollmentType],
           effectiveDate: submission.effectiveDate,
           dependents: selection.dependentIds,
         }

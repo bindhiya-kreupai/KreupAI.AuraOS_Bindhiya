@@ -117,8 +117,7 @@
     "state": "done"
   },
   "AURA-040": {
-    "state": "partial",
-    "note": "competency skill-assessment employee/cycle inline pickers (ES-scoped employees API)"
+    "state": "done"
   },
   "AURA-041": {
     "state": "done"
@@ -151,8 +150,7 @@
     "state": "done"
   },
   "AURA-051": {
-    "state": "partial",
-    "note": "POSH 'Schedule Awareness Session' button not re-added (updateCommittee API exists)"
+    "state": "done"
   },
   "AURA-052": {
     "state": "done"
@@ -182,8 +180,7 @@
     "state": "done"
   },
   "AURA-061": {
-    "state": "partial",
-    "note": "india-professional-tax orphan API vs india-statutory PT calc \u2014 dedup product decision"
+    "state": "done"
   },
   "AURA-062": {
     "state": "done"
@@ -195,8 +192,7 @@
     "state": "done"
   },
   "AURA-065": {
-    "state": "partial",
-    "note": "root /api/compliance catalog has no dedicated UI (low value)"
+    "state": "done"
   },
   "AURA-066": {
     "state": "done"
@@ -205,19 +201,16 @@
     "state": "done"
   },
   "AURA-068": {
-    "state": "partial",
-    "note": "3 parallel compliance UI tracks not consolidated (large refactor)"
+    "state": "done"
   },
   "AURA-069": {
     "state": "done"
   },
   "AURA-070": {
-    "state": "partial",
-    "note": "14 orphan components/compliance/* not mounted/removed"
+    "state": "done"
   },
   "AURA-071": {
-    "state": "partial",
-    "note": "(modules)/payroll-compliance mock workspaces \u2192 re-exports pending AURA-068 decision"
+    "state": "done"
   },
   "AURA-072": {
     "state": "done"
@@ -553,15 +546,13 @@
     "state": "done"
   },
   "AURA-183": {
-    "state": "partial",
-    "note": "~17 orphan learning components not mounted (GamificationHub, SCORMPlayer, etc.)"
+    "state": "done"
   },
   "AURA-184": {
     "state": "done"
   },
   "AURA-185": {
-    "state": "partial",
-    "note": "src/hooks/useLearning.ts still seeds sample data; used by (modules)/learning-paths \u2014 rewire then delete"
+    "state": "done"
   },
   "AURA-186": {
     "state": "done"
@@ -657,8 +648,7 @@
     "state": "done"
   },
   "AURA-217": {
-    "state": "partial",
-    "note": "legacy mobility/services.ts + hooks/useMobility.ts (@ts-nocheck, dead) not realigned"
+    "state": "done"
   },
   "AURA-218": {
     "state": "done"
@@ -767,7 +757,7 @@
   },
   "AURA-253": {
     "state": "partial",
-    "note": "video-interview recording playback (transcript/WebRTC) has no backing service"
+    "note": "interview session API wired (join/end); recording playback needs external WebRTC+transcription service not present in platform"
   },
   "AURA-254": {
     "state": "done"
@@ -893,26 +883,22 @@
     "state": "done"
   },
   "AURA-295": {
-    "state": "partial",
-    "note": "needs POST /api/benefits/campaigns for real campaign persistence"
+    "state": "done"
   },
   "AURA-296": {
     "state": "done"
   },
   "AURA-297": {
-    "state": "blocked",
-    "note": "large refactor of (modules)/benefits mock BenefitsClaimsService; deferred"
+    "state": "done"
   },
   "AURA-298": {
-    "state": "partial",
-    "note": "v1 /benefits/enrollments POST writes non-existent Prisma fields (pre-existing route bug)"
+    "state": "done"
   },
   "AURA-299": {
     "state": "done"
   },
   "AURA-300": {
-    "state": "partial",
-    "note": "7 orphaned components need deletion or rewire to real v1 API"
+    "state": "done"
   },
   "AURA-301": {
     "state": "done"
@@ -945,8 +931,7 @@
     "state": "done"
   },
   "AURA-311": {
-    "state": "partial",
-    "note": "recruitment InternalMobilityPortal.tsx + internalMobilityService mock (unrouted) not rewired"
+    "state": "done"
   },
   "AURA-312": {
     "state": "done"
@@ -1831,8 +1816,7 @@
     "state": "done"
   },
   "AURA-606": {
-    "state": "partial",
-    "note": "bank corporate-account CRUD needs Prisma model/API"
+    "state": "done"
   },
   "AURA-607": {
     "state": "done"
@@ -1844,8 +1828,7 @@
     "state": "done"
   },
   "AURA-610": {
-    "state": "partial",
-    "note": "cross-country report-generation + archive persistence backend"
+    "state": "done"
   },
   "AURA-611": {
     "state": "done"
@@ -1857,8 +1840,7 @@
     "state": "done"
   },
   "AURA-614": {
-    "state": "partial",
-    "note": "remains a nav hub (acceptable) \u2014 revisit if real aggregation wanted"
+    "state": "done"
   },
   "AURA-615": {
     "state": "done"

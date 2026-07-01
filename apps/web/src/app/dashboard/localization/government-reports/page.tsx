@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
-import { FileText, Calendar, Loader2, ArrowRight } from 'lucide-react';
+import { FileText, Calendar, Loader2, ArrowRight, Archive, CheckCircle2 } from 'lucide-react';
 
 interface Country {
   id: string;
@@ -17,10 +17,24 @@ interface FilingDefinition {
   authority: string;
 }
 
+interface ArchivedReport {
+  id: string;
+  country: string;
+  countryName: string | null;
+  reportType: string;
+  authority: string | null;
+  frequency: string | null;
+  period: string;
+  status: string;
+  fileRef: string | null;
+  generatedAt: string;
+}
+
 /**
  * Statutory filing catalog keyed by ISO code. Config-driven — the country list is
  * loaded from the real /api/master-data/countries endpoint. "Prepare" routes to the
- * real compliance module that generates the filing (no mock report records).
+ * real compliance module that generates the filing; "Generate" persists a filing
+ * record to the government-report archive via /api/localization/government-reports.
  */
 const FILING_CATALOG: Record<string, { module: string; filings: FilingDefinition[] }> = {
   IN: {
@@ -45,12 +59,22 @@ const FILING_CATALOG: Record<string, { module: string; filings: FilingDefinition
   },
 };
 
+function currentPeriod(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+}
+
 export default function GovernmentReportsPage() {
   const router = useRouter();
   const [countries, setCountries] = useState<Country[]>([]);
   const [selectedIso, setSelectedIso] = useState<string>('');
+  const [period, setPeriod] = useState<string>(currentPeriod());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  const [archive, setArchive] = useState<ArchivedReport[]>([]);
+  const [archiveLoading, setArchiveLoading] = useState(false);
+  const [generatingKey, setGeneratingKey] = useState<string | null>(null);
 
   const fetchCountries = useCallback(async () => {
     try {
@@ -75,9 +99,34 @@ export default function GovernmentReportsPage() {
     }
   }, []);
 
+  const fetchArchive = useCallback(async (iso: string) => {
+    if (!iso) return;
+    try {
+      setArchiveLoading(true);
+      const response = await fetch(
+        `/api/localization/government-reports?country=${encodeURIComponent(iso)}`
+      );
+      if (!response.ok) {
+        throw new Error('Failed to load past filings');
+      }
+      const result = await response.json();
+      setArchive(result.items ?? []);
+    } catch (err) {
+      console.error('Failed to fetch government report archive:', err);
+    } finally {
+      setArchiveLoading(false);
+    }
+  }, []);
+
   useEffect(() => {
     fetchCountries();
   }, [fetchCountries]);
+
+  useEffect(() => {
+    if (selectedIso) {
+      fetchArchive(selectedIso);
+    }
+  }, [selectedIso, fetchArchive]);
 
   const selectedCountry = countries.find((c) => c.isoCode === selectedIso);
   const catalog = selectedIso ? FILING_CATALOG[selectedIso] : undefined;
@@ -87,6 +136,42 @@ export default function GovernmentReportsPage() {
       router.push(catalog.module);
     }
   };
+
+  const handleGenerate = useCallback(
+    async (form: FilingDefinition) => {
+      if (!selectedCountry) return;
+      const key = form.name;
+      try {
+        setGeneratingKey(key);
+        setError(null);
+        const response = await fetch('/api/localization/government-reports', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            country: selectedCountry.isoCode,
+            countryName: selectedCountry.name,
+            reportType: form.name,
+            authority: form.authority,
+            frequency: form.frequency,
+            period,
+          }),
+        });
+        if (!response.ok) {
+          const body = await response.json().catch(() => null);
+          throw new Error(body?.message ?? 'Failed to generate filing');
+        }
+        await fetchArchive(selectedCountry.isoCode);
+      } catch (err) {
+        console.error('Failed to generate government report:', err);
+        setError(
+          err instanceof Error ? err.message : 'Unable to generate the filing. Please try again.'
+        );
+      } finally {
+        setGeneratingKey(null);
+      }
+    },
+    [selectedCountry, period, fetchArchive]
+  );
 
   return (
     <div className="space-y-4 pb-6 text-slate-900 dark:text-slate-100">
@@ -101,6 +186,12 @@ export default function GovernmentReportsPage() {
           </p>
         </div>
         <div className="flex items-center gap-2">
+          <input
+            value={period}
+            onChange={(e) => setPeriod(e.target.value)}
+            placeholder="Period (e.g. 2026-06)"
+            className="px-3 py-2 border border-slate-200 dark:border-slate-700 rounded-lg bg-transparent text-sm w-36"
+          />
           <select
             value={selectedIso}
             onChange={(e) => setSelectedIso(e.target.value)}
@@ -155,18 +246,75 @@ export default function GovernmentReportsPage() {
                   <span className="px-2 py-1 rounded text-xs font-bold bg-indigo-100 text-indigo-600">
                     {form.authority}
                   </span>
-                  <button
-                    onClick={handlePrepare}
-                    className="text-sm font-bold text-indigo-600 hover:underline"
-                  >
-                    Prepare
-                  </button>
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={handlePrepare}
+                      className="text-sm font-bold text-slate-500 hover:underline"
+                    >
+                      Prepare
+                    </button>
+                    <button
+                      onClick={() => handleGenerate(form)}
+                      disabled={generatingKey === form.name}
+                      className="text-sm font-bold text-indigo-600 hover:underline flex items-center gap-1 disabled:opacity-60"
+                    >
+                      {generatingKey === form.name && <Loader2 className="w-3 h-3 animate-spin" />}
+                      Generate
+                    </button>
+                  </div>
                 </div>
               </div>
             ))}
           </div>
         </div>
       )}
+
+      {/* Past filings (archive) */}
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
+        <h3 className="font-bold text-lg flex items-center gap-2 mb-4">
+          <Archive className="w-5 h-5 text-indigo-500" /> Past Filings — {selectedCountry?.name}
+        </h3>
+        {archiveLoading ? (
+          <div className="flex items-center justify-center gap-2 py-10 text-slate-500">
+            <Loader2 className="w-4 h-4 animate-spin" /> Loading filings...
+          </div>
+        ) : archive.length === 0 ? (
+          <div className="py-10 text-center text-slate-500 text-sm">
+            No filings generated yet for this country. Use Generate above to record one.
+          </div>
+        ) : (
+          <table className="w-full text-sm text-left">
+            <thead className="text-slate-500 font-bold border-b border-slate-100 dark:border-slate-800">
+              <tr>
+                <th className="p-3">Report</th>
+                <th className="p-3">Authority</th>
+                <th className="p-3">Period</th>
+                <th className="p-3">Reference</th>
+                <th className="p-3">Status</th>
+                <th className="p-3">Generated</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              {archive.map((row) => (
+                <tr key={row.id}>
+                  <td className="p-3 font-medium">{row.reportType}</td>
+                  <td className="p-3 text-slate-500">{row.authority ?? '—'}</td>
+                  <td className="p-3 text-slate-500">{row.period}</td>
+                  <td className="p-3 font-mono text-xs text-slate-500">{row.fileRef ?? '—'}</td>
+                  <td className="p-3">
+                    <span className="inline-flex items-center gap-1 px-2 py-1 rounded text-xs font-bold bg-emerald-100 text-emerald-600">
+                      <CheckCircle2 className="w-3 h-3" /> {row.status}
+                    </span>
+                  </td>
+                  <td className="p-3 text-slate-500">
+                    {new Date(row.generatedAt).toLocaleDateString()}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        )}
+      </div>
     </div>
   );
 }

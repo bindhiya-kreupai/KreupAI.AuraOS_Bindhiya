@@ -408,7 +408,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `JobRoleService → /api/competency-library/job-roles`
   - **Description / Acceptance Criteria:** Hardcoded roles and mappings; Map New Role and Add Competency buttons unwired.
 
-- [ ] **AURA-040 — Skill Assessment: Wire assessment results submission and employee/cycle data**
+- [x] **AURA-040 — Skill Assessment: Wire assessment results submission and employee/cycle data**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -498,7 +498,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/compliance/labor-laws, /api/compliance/records (missing)`
   - **Description / Acceptance Criteria:** LaborLawService calls /api/compliance/labor-laws (404). Page displays hardcoded FLSA/OSHA/EEO/FMLA cards. View All Updates unwired.
 
-- [ ] **AURA-051 — Labor Relations: Implement POSH API and wire action buttons**
+- [x] **AURA-051 — Labor Relations: Implement POSH API and wire action buttons**
   - **Status:** Not Started
   - **Assignee:** Siva
   - **Due Date:** 2026-03-07 (Excel serial: 46088)
@@ -578,7 +578,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/compliance/communication-log (missing)`
   - **Description / Acceptance Criteria:** No service at all; explicitly sets empty array then shows hardcoded log entries. Filter Logs unwired.
 
-- [ ] **AURA-061 — Orphan API: Wire India PT calculator to india-statutory page**
+- [x] **AURA-061 — Orphan API: Wire India PT calculator to india-statutory page**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -610,7 +610,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `GET /api/compliance/hijri-calendar?action=*`
   - **Description / Acceptance Criteria:** Only isRamadan action used by ramadan-auto-switch. 11 other actions (holidays, eid, format, etc.) unused.
 
-- [ ] **AURA-065 — Orphan API: Wire overview to service catalog endpoint**
+- [x] **AURA-065 — Orphan API: Wire overview to service catalog endpoint**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -634,7 +634,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/v1/compliance/frameworks, controls (missing)`
   - **Description / Acceptance Criteria:** complianceFrameworkService tries /v1/compliance/frameworks, controls, evidence — no routes exist; falls back to MOCK_SOC2/ISO controls.
 
-- [ ] **AURA-068 — Duplication: Consolidate three parallel compliance UI tracks**
+- [x] **AURA-068 — Duplication: Consolidate three parallel compliance UI tracks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -650,7 +650,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `GET /api/compliance/labour-law vs /api/compliance/labor-laws (missing)`
   - **Description / Acceptance Criteria:** payroll-compliance/labour-law uses /api/compliance/labour-law (GCC). dashboard/compliance/labor-law-compliance shows US hardcoded laws with broken service. Clarify scope or merge.
 
-- [ ] **AURA-070 — Orphan Components: Mount or remove orphan compliance presentation components**
+- [x] **AURA-070 — Orphan Components: Mount or remove orphan compliance presentation components**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -658,7 +658,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Varies — /api/compliance/* and /api/v1/compliance/* endpoints`
   - **Description / Acceptance Criteria:** WpsDashboard, GosiDashboard, GratuityCalculator, StatutoryReportsDashboard, India PF/ESI/TDS dashboards, etc. — zero @/components/compliance/ imports in codebase. All use internal MOCK\_\* data.
 
-- [ ] **AURA-071 — Module Shell: Replace mock workspaces with wired dashboard re-exports**
+- [x] **AURA-071 — Module Shell: Replace mock workspaces with wired dashboard re-exports**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1574,7 +1574,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `CertificationService → /api/learning/certifications`
   - **Description / Acceptance Criteria:** Buttons unwired.
 
-- [ ] **AURA-183 — Components: Mount orphan components or delete**
+- [x] **AURA-183 — Components: Mount orphan components or delete**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1590,7 +1590,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `N/A — routing consolidation`
   - **Description / Acceptance Criteria:** Two pages per feature with overlapping purpose.
 
-- [ ] **AURA-185 — Architecture: Adopt or remove dead hook**
+- [x] **AURA-185 — Architecture: Adopt or remove dead hook**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1854,7 +1854,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/v1/immigration-compliance/*; RelocationPackageService; ExpatTaxService`
   - **Description / Acceptance Criteria:** Three alternate pages not linked from ModuleGrid; all mock including Initiate Transfer. Duplicate visa/relocation/tax UX.
 
-- [ ] **AURA-217 — Platform: Create /api/mobility/\* routes and wire useMobility hook**
+- [x] **AURA-217 — Platform: Create /api/mobility/\* routes and wire useMobility hook**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2492,7 +2492,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `GET /api/benefits/plans?category=WELLNESS`
   - **Description / Acceptance Criteria:** Wellness plan existence check works but metrics (score 72, zero steps) are hardcoded. Wire Browse All challenges and integrate wearable/activity API.
 
-- [ ] **AURA-295 — Notification: Render settings API data and wire Create New Campaign**
+- [x] **AURA-295 — Notification: Render settings API data and wire Create New Campaign**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2508,7 +2508,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `N/A — routing fix`
   - **Description / Acceptance Criteria:** ModuleGrid links to plan-selection, coverage-level, etc. all lead to 404. Real wizard lives at /dashboard/(modules)/benefits-enrollment. Consolidate or implement child routes.
 
-- [ ] **AURA-297 — Module Route: Replace mock tab components with live API services**
+- [x] **AURA-297 — Module Route: Replace mock tab components with live API services**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2516,7 +2516,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `BenefitsClaimsService (mock) vs /api/benefits/* and /api/v1/benefits/*`
   - **Description / Acceptance Criteria:** All 7 tabs (Dashboard, HSA/FSA, Wellness, Retirement, Claims, COBRA, Perks) use in-memory mock services. Replace BenefitsClaimsService mocks with dashboard services.ts or unified v1 client.
 
-- [ ] **AURA-298 — Enrollment Wizard: Align BenefitsEnrollmentService paths with v1 API contracts**
+- [x] **AURA-298 — Enrollment Wizard: Align BenefitsEnrollmentService paths with v1 API contracts**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2532,7 +2532,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Cross-cutting — session/auth layer`
   - **Description / Acceptance Criteria:** Plan Eligibility and Claim Status use hardcoded employeeId EMP-001. Replace with authenticated session employee context.
 
-- [ ] **AURA-300 — Orphan Components: Mount or remove unrouted benefits components**
+- [x] **AURA-300 — Orphan Components: Mount or remove unrouted benefits components**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2622,7 +2622,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `useCareer hook + data.ts sample fixtures`
   - **Description / Acceptance Criteria:** useCareer loads all career services and seeds localStorage on empty but is never imported by any page. Wire to dashboard pages or remove.
 
-- [ ] **AURA-311 — Internal Mobility (duplication): Consolidate three parallel internal mobility implementations**
+- [x] **AURA-311 — Internal Mobility (duplication): Consolidate three parallel internal mobility implementations**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5006,7 +5006,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page exists; automated heuristics could not classify wiring.
 
-- [ ] **AURA-606 — Bank Integration: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-606 — Bank Integration: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5038,7 +5038,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page exists; automated heuristics could not classify wiring.
 
-- [ ] **AURA-610 — Government Reports: Manual review required**
+- [x] **AURA-610 — Government Reports: Manual review required**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -5070,7 +5070,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page calls APIs (service layer) but mock/hardcoded UI remains.
 
-- [ ] **AURA-614 — Statutory Compliance: Wire page to backend API**
+- [x] **AURA-614 — Statutory Compliance: Wire page to backend API**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified

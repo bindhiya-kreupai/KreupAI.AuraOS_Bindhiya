@@ -2,10 +2,10 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { Bell, Mail, AlertTriangle, CheckCircle2, Send, X, Loader2, Inbox } from 'lucide-react';
-import { BenefitSettingsService } from '../services';
+import { BenefitSettingsService, BenefitCampaignService } from '../services';
 import { useToast } from '../hooks/useToast';
 import { ToastContainer } from '../components/Toast';
-import type { BenefitSettings } from '../types';
+import type { BenefitSettings, BenefitCampaign } from '../types';
 
 type CampaignType = 'Urgent' | 'Info';
 
@@ -64,20 +64,26 @@ const QUICK_TEMPLATES = [
 
 export default function NotificationPage() {
   const [settings, setSettings] = useState<BenefitSettings | null>(null);
+  const [campaigns, setCampaigns] = useState<BenefitCampaign[]>([]);
   const [loading, setLoading] = useState(true);
   const [savingField, setSavingField] = useState<string | null>(null);
+  const [submitting, setSubmitting] = useState(false);
 
   const [modalOpen, setModalOpen] = useState(false);
   const [draft, setDraft] = useState<CampaignDraft>(EMPTY_DRAFT);
   const [errors, setErrors] = useState<{ title?: string; message?: string }>({});
 
-  const { toasts, removeToast, success, error: toastError, info } = useToast();
+  const { toasts, removeToast, success, error: toastError } = useToast();
 
   const fetchSettings = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await BenefitSettingsService.getSettings();
+      const [data, campaignList] = await Promise.all([
+        BenefitSettingsService.getSettings(),
+        BenefitCampaignService.getCampaigns(),
+      ]);
       setSettings(data);
+      setCampaigns(campaignList);
     } catch (err) {
       console.error('Error:', err);
       toastError('Failed to load notification settings.');
@@ -85,6 +91,11 @@ export default function NotificationPage() {
       setLoading(false);
     }
   }, [toastError]);
+
+  const refreshCampaigns = useCallback(async () => {
+    const campaignList = await BenefitCampaignService.getCampaigns();
+    setCampaigns(campaignList);
+  }, []);
 
   useEffect(() => {
     void fetchSettings();
@@ -124,8 +135,9 @@ export default function NotificationPage() {
     setErrors({});
   };
 
-  const handleSubmitCampaign = (e: React.FormEvent) => {
+  const handleSubmitCampaign = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (submitting) return;
     const nextErrors: { title?: string; message?: string } = {};
     if (!draft.title.trim()) nextErrors.title = 'Title is required.';
     if (!draft.message.trim()) nextErrors.message = 'Message is required.';
@@ -133,11 +145,27 @@ export default function NotificationPage() {
       setErrors(nextErrors);
       return;
     }
-    // No campaigns backend endpoint exists yet. We do not fake persistence.
-    info(
-      'Campaign queued locally. Persistence pending — backend endpoint (POST /api/benefits/campaigns) is not yet available.'
-    );
-    closeModal();
+    setSubmitting(true);
+    try {
+      const response = await BenefitCampaignService.createCampaign({
+        title: draft.title.trim(),
+        type: draft.type,
+        channel: draft.channel.trim() || 'Email',
+        message: draft.message.trim(),
+      });
+      if (response?.success) {
+        await refreshCampaigns();
+        success('Campaign queued successfully.');
+        closeModal();
+      } else {
+        toastError('Failed to queue campaign.');
+      }
+    } catch (err) {
+      console.error('Error:', err);
+      toastError('Failed to queue campaign.');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   const reminderDays = settings?.reminderDaysBefore ?? [];
@@ -243,22 +271,57 @@ export default function NotificationPage() {
           {/* Campaigns */}
           <div>
             <h3 className="font-bold text-slate-500 text-sm uppercase mb-2">Campaigns</h3>
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 flex flex-col items-center text-center gap-3">
-              <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
-                <Inbox className="w-6 h-6 text-slate-400" />
+            {campaigns.length === 0 ? (
+              <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-8 flex flex-col items-center text-center gap-3">
+                <div className="w-12 h-12 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                  <Inbox className="w-6 h-6 text-slate-400" />
+                </div>
+                <div>
+                  <p className="font-bold text-sm">No campaigns yet.</p>
+                  <p className="text-xs text-slate-400">Create one to get started.</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => openModal()}
+                  className="mt-1 flex items-center gap-2 bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-indigo-700 transition-all"
+                >
+                  <Send className="w-3.5 h-3.5" /> Create New Campaign
+                </button>
               </div>
-              <div>
-                <p className="font-bold text-sm">No campaigns yet.</p>
-                <p className="text-xs text-slate-400">Create one to get started.</p>
+            ) : (
+              <div className="space-y-2">
+                {campaigns.map((campaign) => (
+                  <div
+                    key={campaign.id}
+                    className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4 flex items-start gap-3"
+                  >
+                    <div
+                      className={`w-9 h-9 rounded-lg flex items-center justify-center shrink-0 ${
+                        campaign.type === 'Urgent'
+                          ? 'text-amber-500 bg-amber-50 dark:bg-amber-900/20'
+                          : 'text-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                      }`}
+                    >
+                      {campaign.type === 'Urgent' ? (
+                        <AlertTriangle className="w-4 h-4" />
+                      ) : (
+                        <Mail className="w-4 h-4" />
+                      )}
+                    </div>
+                    <div className="min-w-0 flex-1">
+                      <div className="flex items-center gap-2">
+                        <p className="font-bold text-sm truncate">{campaign.title}</p>
+                        <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-[10px] font-bold uppercase text-slate-500 shrink-0">
+                          {campaign.status}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-400 truncate">{campaign.channel}</p>
+                      <p className="text-xs text-slate-500 mt-1 line-clamp-2">{campaign.message}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
-              <button
-                type="button"
-                onClick={() => openModal()}
-                className="mt-1 flex items-center gap-2 bg-indigo-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold hover:bg-indigo-700 transition-all"
-              >
-                <Send className="w-3.5 h-3.5" /> Create New Campaign
-              </button>
-            </div>
+            )}
           </div>
         </div>
 
@@ -390,9 +453,15 @@ export default function NotificationPage() {
                 </button>
                 <button
                   type="submit"
-                  className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-indigo-700 transition-all"
+                  disabled={submitting}
+                  className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-indigo-700 transition-all disabled:opacity-60"
                 >
-                  <Send className="w-4 h-4" /> Queue Campaign
+                  {submitting ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Send className="w-4 h-4" />
+                  )}{' '}
+                  Queue Campaign
                 </button>
               </div>
             </form>

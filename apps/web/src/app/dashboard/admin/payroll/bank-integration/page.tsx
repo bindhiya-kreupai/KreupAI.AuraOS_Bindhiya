@@ -8,9 +8,11 @@ import {
   CheckCircle2,
   MoreVertical,
   RefreshCw,
-  AlertCircle,
   Shield,
   Loader2,
+  Plus,
+  Trash2,
+  Star,
 } from 'lucide-react';
 
 interface BankFile {
@@ -26,12 +28,47 @@ interface BankFile {
   currency: string | null;
 }
 
+interface CorporateBankAccount {
+  id: string;
+  accountName: string;
+  bankName: string;
+  accountNumber: string;
+  ifscCode: string | null;
+  swiftCode: string | null;
+  currency: string;
+  disbursementFormat: string;
+  isPrimary: boolean;
+  status: string;
+}
+
+interface AccountFormState {
+  accountName: string;
+  bankName: string;
+  accountNumber: string;
+  ifscCode: string;
+  swiftCode: string;
+  currency: string;
+  disbursementFormat: string;
+  isPrimary: boolean;
+}
+
+const EMPTY_ACCOUNT_FORM: AccountFormState = {
+  accountName: '',
+  bankName: '',
+  accountNumber: '',
+  ifscCode: '',
+  swiftCode: '',
+  currency: 'USD',
+  disbursementFormat: 'NEFT',
+  isPrimary: false,
+};
+
 type TabKey = 'Accounts' | 'Configuration' | 'History';
 
 /**
- * Corporate disbursement gateway formats (config-driven). Corporate bank-account
- * records are not persisted yet; the History tab is backed by the real
- * /api/payroll/bank-file endpoint (generated bank files from payroll runs).
+ * Corporate disbursement gateway formats (config-driven). The Accounts tab is
+ * backed by /api/payroll/corporate-bank-accounts (real CRUD); the History tab is
+ * backed by /api/payroll/bank-file (generated bank files from payroll runs).
  */
 const OUTPUT_FORMATS = ['NEFT', 'NACH', 'Excel', 'CSV'];
 
@@ -54,6 +91,13 @@ export default function BankIntegrationPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
+  const [accounts, setAccounts] = useState<CorporateBankAccount[]>([]);
+  const [accountsLoading, setAccountsLoading] = useState(false);
+  const [accountsError, setAccountsError] = useState<string | null>(null);
+  const [showAccountForm, setShowAccountForm] = useState(false);
+  const [accountForm, setAccountForm] = useState<AccountFormState>(EMPTY_ACCOUNT_FORM);
+  const [savingAccount, setSavingAccount] = useState(false);
+
   const fetchData = useCallback(async () => {
     try {
       setLoading(true);
@@ -72,9 +116,103 @@ export default function BankIntegrationPage() {
     }
   }, []);
 
+  const fetchAccounts = useCallback(async () => {
+    try {
+      setAccountsLoading(true);
+      setAccountsError(null);
+      const response = await fetch('/api/payroll/corporate-bank-accounts');
+      if (!response.ok) {
+        throw new Error('Failed to load corporate bank accounts');
+      }
+      const result = await response.json();
+      setAccounts(result.items ?? []);
+    } catch (err) {
+      console.error('Failed to fetch corporate bank accounts:', err);
+      setAccountsError('Unable to load corporate bank accounts. Please try again.');
+    } finally {
+      setAccountsLoading(false);
+    }
+  }, []);
+
+  const handleCreateAccount = useCallback(async () => {
+    if (!accountForm.accountName || !accountForm.bankName || !accountForm.accountNumber) {
+      setAccountsError('Account name, bank name and account number are required.');
+      return;
+    }
+    try {
+      setSavingAccount(true);
+      setAccountsError(null);
+      const response = await fetch('/api/payroll/corporate-bank-accounts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(accountForm),
+      });
+      if (!response.ok) {
+        const body = await response.json().catch(() => null);
+        throw new Error(body?.message ?? 'Failed to create bank account');
+      }
+      setAccountForm(EMPTY_ACCOUNT_FORM);
+      setShowAccountForm(false);
+      await fetchAccounts();
+    } catch (err) {
+      console.error('Failed to create corporate bank account:', err);
+      setAccountsError(
+        err instanceof Error ? err.message : 'Unable to save the bank account. Please try again.'
+      );
+    } finally {
+      setSavingAccount(false);
+    }
+  }, [accountForm, fetchAccounts]);
+
+  const handleDeleteAccount = useCallback(
+    async (id: string) => {
+      try {
+        setAccountsError(null);
+        const response = await fetch(`/api/payroll/corporate-bank-accounts/${id}`, {
+          method: 'DELETE',
+        });
+        if (!response.ok) {
+          throw new Error('Failed to delete bank account');
+        }
+        await fetchAccounts();
+      } catch (err) {
+        console.error('Failed to delete corporate bank account:', err);
+        setAccountsError('Unable to delete the bank account. Please try again.');
+      }
+    },
+    [fetchAccounts]
+  );
+
+  const handleSetPrimary = useCallback(
+    async (id: string) => {
+      try {
+        setAccountsError(null);
+        const response = await fetch(`/api/payroll/corporate-bank-accounts/${id}`, {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ isPrimary: true }),
+        });
+        if (!response.ok) {
+          throw new Error('Failed to update bank account');
+        }
+        await fetchAccounts();
+      } catch (err) {
+        console.error('Failed to update corporate bank account:', err);
+        setAccountsError('Unable to update the bank account. Please try again.');
+      }
+    },
+    [fetchAccounts]
+  );
+
   useEffect(() => {
     fetchData();
   }, [fetchData]);
+
+  useEffect(() => {
+    if (activeTab === 'Accounts') {
+      fetchAccounts();
+    }
+  }, [activeTab, fetchAccounts]);
 
   return (
     <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative">
@@ -213,15 +351,189 @@ export default function BankIntegrationPage() {
             )}
 
             {activeTab === 'Accounts' && (
-              <div className="bg-white dark:bg-stellar-blue p-8 rounded-2xl border border-cloud dark:border-nebula-purple/50 text-center">
-                <AlertCircle className="w-8 h-8 text-slate-400 mx-auto mb-3" />
-                <h3 className="font-bold text-ink-black dark:text-pearl mb-1">
-                  Corporate accounts not configured
-                </h3>
-                <p className="text-sm text-silver-mist">
-                  Corporate bank account records are managed via the banking connector. Generated
-                  disbursement files appear under the History tab.
-                </p>
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <h3 className="font-bold text-ink-black dark:text-pearl flex items-center gap-2">
+                    <Landmark className="w-5 h-5 text-indigo-500" /> Corporate Bank Accounts
+                  </h3>
+                  <button
+                    onClick={() => setShowAccountForm((s) => !s)}
+                    className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-bold transition-colors"
+                  >
+                    <Plus className="w-4 h-4" /> Add Account
+                  </button>
+                </div>
+
+                {accountsError && (
+                  <div className="rounded-lg border border-red-200 bg-red-50 px-4 py-2 text-sm font-medium text-red-700 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-400">
+                    {accountsError}
+                  </div>
+                )}
+
+                {showAccountForm && (
+                  <div className="bg-white dark:bg-stellar-blue p-6 rounded-2xl border border-cloud dark:border-nebula-purple/50 space-y-3">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      <input
+                        value={accountForm.accountName}
+                        onChange={(e) =>
+                          setAccountForm((f) => ({ ...f, accountName: e.target.value }))
+                        }
+                        placeholder="Account Name"
+                        className="p-3 rounded-xl border border-cloud dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm"
+                      />
+                      <input
+                        value={accountForm.bankName}
+                        onChange={(e) =>
+                          setAccountForm((f) => ({ ...f, bankName: e.target.value }))
+                        }
+                        placeholder="Bank Name"
+                        className="p-3 rounded-xl border border-cloud dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm"
+                      />
+                      <input
+                        value={accountForm.accountNumber}
+                        onChange={(e) =>
+                          setAccountForm((f) => ({ ...f, accountNumber: e.target.value }))
+                        }
+                        placeholder="Account Number"
+                        className="p-3 rounded-xl border border-cloud dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm"
+                      />
+                      <input
+                        value={accountForm.ifscCode}
+                        onChange={(e) =>
+                          setAccountForm((f) => ({ ...f, ifscCode: e.target.value }))
+                        }
+                        placeholder="IFSC (optional)"
+                        className="p-3 rounded-xl border border-cloud dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm"
+                      />
+                      <input
+                        value={accountForm.swiftCode}
+                        onChange={(e) =>
+                          setAccountForm((f) => ({ ...f, swiftCode: e.target.value }))
+                        }
+                        placeholder="SWIFT (optional)"
+                        className="p-3 rounded-xl border border-cloud dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm"
+                      />
+                      <input
+                        value={accountForm.currency}
+                        onChange={(e) =>
+                          setAccountForm((f) => ({ ...f, currency: e.target.value }))
+                        }
+                        placeholder="Currency"
+                        className="p-3 rounded-xl border border-cloud dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm"
+                      />
+                      <select
+                        value={accountForm.disbursementFormat}
+                        onChange={(e) =>
+                          setAccountForm((f) => ({ ...f, disbursementFormat: e.target.value }))
+                        }
+                        className="p-3 rounded-xl border border-cloud dark:border-slate-700 bg-slate-50 dark:bg-slate-900 text-sm"
+                      >
+                        {OUTPUT_FORMATS.map((fmt) => (
+                          <option key={fmt} value={fmt}>
+                            {fmt}
+                          </option>
+                        ))}
+                      </select>
+                      <label className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+                        <input
+                          type="checkbox"
+                          checked={accountForm.isPrimary}
+                          onChange={(e) =>
+                            setAccountForm((f) => ({ ...f, isPrimary: e.target.checked }))
+                          }
+                        />
+                        Set as primary disbursement account
+                      </label>
+                    </div>
+                    <div className="flex justify-end gap-2">
+                      <button
+                        onClick={() => {
+                          setShowAccountForm(false);
+                          setAccountForm(EMPTY_ACCOUNT_FORM);
+                        }}
+                        className="px-4 py-2 rounded-xl text-sm font-bold text-slate-500 hover:text-slate-700"
+                      >
+                        Cancel
+                      </button>
+                      <button
+                        onClick={handleCreateAccount}
+                        disabled={savingAccount}
+                        className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 disabled:opacity-60 text-white px-4 py-2 rounded-xl text-sm font-bold transition-colors"
+                      >
+                        {savingAccount && <Loader2 className="w-4 h-4 animate-spin" />}
+                        Save Account
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                <div className="bg-white dark:bg-stellar-blue rounded-2xl border border-cloud dark:border-nebula-purple/50 overflow-hidden">
+                  {accountsLoading ? (
+                    <div className="flex items-center justify-center gap-2 py-16 text-slate-500">
+                      <Loader2 className="w-4 h-4 animate-spin" /> Loading accounts...
+                    </div>
+                  ) : accounts.length === 0 ? (
+                    <div className="py-16 text-center text-slate-500">
+                      No corporate bank accounts configured yet. Add one to enable disbursement.
+                    </div>
+                  ) : (
+                    <table className="w-full text-sm text-left">
+                      <thead className="bg-slate-50 dark:bg-slate-900/50 text-slate-500 font-bold">
+                        <tr>
+                          <th className="p-4">Account</th>
+                          <th className="p-4">Bank</th>
+                          <th className="p-4">Number</th>
+                          <th className="p-4">Format</th>
+                          <th className="p-4">Currency</th>
+                          <th className="p-4 text-right">Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-cloud dark:divide-slate-800">
+                        {accounts.map((acc) => (
+                          <tr
+                            key={acc.id}
+                            className="hover:bg-slate-50 dark:hover:bg-slate-900/20 transition-colors"
+                          >
+                            <td className="p-4 font-medium text-ink-black dark:text-pearl">
+                              <span className="flex items-center gap-2">
+                                {acc.accountName}
+                                {acc.isPrimary && (
+                                  <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-bold bg-amber-100 text-amber-600">
+                                    <Star className="w-3 h-3" /> Primary
+                                  </span>
+                                )}
+                              </span>
+                            </td>
+                            <td className="p-4 text-slate-500">{acc.bankName}</td>
+                            <td className="p-4 font-mono text-slate-500">{acc.accountNumber}</td>
+                            <td className="p-4 text-slate-500">{acc.disbursementFormat}</td>
+                            <td className="p-4 text-slate-500">{acc.currency}</td>
+                            <td className="p-4">
+                              <div className="flex items-center justify-end gap-2">
+                                {!acc.isPrimary && (
+                                  <button
+                                    onClick={() => handleSetPrimary(acc.id)}
+                                    title="Set as primary"
+                                    className="text-slate-400 hover:text-amber-500"
+                                  >
+                                    <Star className="w-4 h-4" />
+                                  </button>
+                                )}
+                                <button
+                                  onClick={() => handleDeleteAccount(acc.id)}
+                                  title="Delete account"
+                                  className="text-slate-400 hover:text-red-500"
+                                >
+                                  <Trash2 className="w-4 h-4" />
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
               </div>
             )}
           </div>

@@ -991,32 +991,61 @@ export default function SkillAssessmentPage() {
     instructions: '',
   });
 
-  // Available employees for selection
-  const EMPLOYEES = [
-    {
-      id: 'EMP-001',
-      name: 'Sarah Chen',
-      role: 'Senior Software Engineer',
-      department: 'Engineering',
-    },
-    { id: 'EMP-002', name: 'Michael Torres', role: 'Product Manager', department: 'Product' },
-    {
-      id: 'EMP-003',
-      name: 'Emily Rodriguez',
-      role: 'Engineering Manager',
-      department: 'Engineering',
-    },
-    { id: 'EMP-004', name: 'Alex Johnson', role: 'UX Designer', department: 'Design' },
-    { id: 'EMP-005', name: 'David Kim', role: 'Data Analyst', department: 'Analytics' },
-    {
-      id: 'EMP-006',
-      name: 'Jennifer Lee',
-      role: 'HR Business Partner',
-      department: 'People & Culture',
-    },
-    { id: 'EMP-007', name: 'Robert Martinez', role: 'Sales Representative', department: 'Sales' },
-    { id: 'EMP-008', name: 'Lisa Wang', role: 'Financial Analyst', department: 'Finance' },
-  ];
+  // Employee picker — real, debounced, tenant-scoped search against
+  // GET /api/v1/employees?search= (tenant scope is applied server-side from
+  // the authenticated user context). Replaces the former hardcoded list.
+  const [employeeQuery, setEmployeeQuery] = useState('');
+  const [employeeOptions, setEmployeeOptions] = useState<
+    { id: string; name: string; role: string; department: string }[]
+  >([]);
+  const [employeeSearching, setEmployeeSearching] = useState(false);
+
+  useEffect(() => {
+    if (!isSheetOpen) return;
+    let active = true;
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      const term = employeeQuery.trim();
+      if (term.length < 2) {
+        if (active) setEmployeeOptions([]);
+        return;
+      }
+      setEmployeeSearching(true);
+      try {
+        const params = new URLSearchParams({ limit: '25', search: term });
+        const res = await fetch(`/api/v1/employees?${params.toString()}`, {
+          credentials: 'same-origin',
+          signal: controller.signal,
+        });
+        if (!res.ok) throw new Error('Failed to load employees');
+        const json = await res.json();
+        if (!active) return;
+        const rows = (json?.data ?? []) as Array<{
+          id: string;
+          name?: string;
+          role?: string | null;
+          dept?: string | null;
+        }>;
+        setEmployeeOptions(
+          rows.map((r) => ({
+            id: r.id,
+            name: r.name ?? 'Unknown',
+            role: r.role ?? '',
+            department: r.dept ?? '',
+          }))
+        );
+      } catch (err) {
+        if ((err as Error)?.name !== 'AbortError' && active) setEmployeeOptions([]);
+      } finally {
+        if (active) setEmployeeSearching(false);
+      }
+    }, 300);
+    return () => {
+      active = false;
+      controller.abort();
+      clearTimeout(timer);
+    };
+  }, [employeeQuery, isSheetOpen]);
 
   // Available competencies for selection are loaded from the real catalog
   // (see catalogCompetencies above).
@@ -1116,7 +1145,7 @@ export default function SkillAssessmentPage() {
   };
 
   const handleSelectEmployee = (employeeId: string) => {
-    const emp = EMPLOYEES.find((e) => e.id === employeeId);
+    const emp = employeeOptions.find((e) => e.id === employeeId);
     if (emp) {
       setFormData((prev) => ({
         ...prev,
@@ -1124,6 +1153,8 @@ export default function SkillAssessmentPage() {
         employeeRole: emp.role,
         employeeDepartment: emp.department,
       }));
+      setEmployeeQuery('');
+      setEmployeeOptions([]);
     }
   };
 
@@ -1858,23 +1889,47 @@ export default function SkillAssessmentPage() {
             </h3>
 
             <div className="grid grid-cols-2 gap-3">
-              {/* Employee Select */}
+              {/* Employee Search — debounced, tenant-scoped */}
               <div className="col-span-2">
                 <label className="block text-xs font-bold text-slate-600 dark:text-slate-300 mb-1">
                   Select Employee *
                 </label>
-                <select
-                  value={EMPLOYEES.find((e) => e.name === formData.employeeName)?.id || ''}
-                  onChange={(e) => handleSelectEmployee(e.target.value)}
-                  className="w-full px-3 py-2 bg-white dark:bg-stellar-blue border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-celestial-indigo/50 text-ink-black dark:text-pearl cursor-pointer"
-                >
-                  <option value="">Select an employee</option>
-                  {EMPLOYEES.map((emp) => (
-                    <option key={emp.id} value={emp.id}>
-                      {emp.name} - {emp.role} ({emp.department})
-                    </option>
-                  ))}
-                </select>
+                <div className="relative">
+                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+                  <input
+                    type="text"
+                    value={employeeQuery}
+                    onChange={(e) => setEmployeeQuery(e.target.value)}
+                    placeholder="Search employees by name, code or email…"
+                    className="w-full pl-9 pr-3 py-2 bg-white dark:bg-stellar-blue border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-celestial-indigo/50 text-ink-black dark:text-pearl"
+                  />
+                  {employeeQuery.trim().length >= 2 && (
+                    <div className="absolute z-20 mt-1 w-full max-h-56 overflow-y-auto bg-white dark:bg-stellar-blue border border-slate-200 dark:border-slate-700 rounded-lg shadow-lg">
+                      {employeeSearching ? (
+                        <div className="px-3 py-2 text-xs text-slate-500">Searching…</div>
+                      ) : employeeOptions.length === 0 ? (
+                        <div className="px-3 py-2 text-xs text-slate-500">No employees found</div>
+                      ) : (
+                        employeeOptions.map((emp) => (
+                          <button
+                            key={emp.id}
+                            type="button"
+                            onClick={() => handleSelectEmployee(emp.id)}
+                            className="w-full text-left px-3 py-2 text-sm hover:bg-celestial-indigo/10 text-ink-black dark:text-pearl"
+                          >
+                            <span className="font-medium">{emp.name}</span>
+                            {(emp.role || emp.department) && (
+                              <span className="text-xs text-slate-500">
+                                {' '}
+                                — {[emp.role, emp.department].filter(Boolean).join(' · ')}
+                              </span>
+                            )}
+                          </button>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </div>
               </div>
 
               {/* Display selected employee info */}

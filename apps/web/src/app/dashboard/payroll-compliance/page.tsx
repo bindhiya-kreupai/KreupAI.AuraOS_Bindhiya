@@ -22,6 +22,49 @@ interface ComplianceCounts {
   certificatesSigned: number;
 }
 
+interface StatutoryRecord {
+  id: string;
+  status?: string;
+  dueDate?: string | null;
+  completedDate?: string | null;
+}
+
+interface StatutorySummary {
+  total: number;
+  compliant: number;
+  overdue: number;
+  pending: number;
+  healthPct: number;
+}
+
+function summarizeStatutory(records: StatutoryRecord[]): StatutorySummary {
+  const now = Date.now();
+  let compliant = 0;
+  let overdue = 0;
+  let pending = 0;
+  for (const r of records) {
+    const status = (r.status || '').toUpperCase();
+    const isDone =
+      status === 'COMPLIANT' ||
+      status === 'COMPLETED' ||
+      status === 'CLOSED' ||
+      Boolean(r.completedDate);
+    if (isDone) {
+      compliant += 1;
+      continue;
+    }
+    const due = r.dueDate ? new Date(r.dueDate).getTime() : null;
+    if (due !== null && due < now) {
+      overdue += 1;
+    } else {
+      pending += 1;
+    }
+  }
+  const total = records.length;
+  const healthPct = total > 0 ? Math.round((compliant / total) * 100) : 0;
+  return { total, compliant, overdue, pending, healthPct };
+}
+
 const complianceModules = [
   {
     id: 'wps',
@@ -135,15 +178,25 @@ const supportedCountries = [
 
 export default function PayrollCompliancePage() {
   const [counts, setCounts] = useState<ComplianceCounts | null>(null);
+  const [statutory, setStatutory] = useState<StatutorySummary | null>(null);
 
   useEffect(() => {
     let active = true;
     const load = async () => {
       try {
-        const res = await fetch('/api/v1/payroll-compliance/dashboard');
-        const body = await res.json();
-        if (active && body?.success && body?.data?.counts) {
-          setCounts(body.data.counts as ComplianceCounts);
+        const [dashRes, recordsRes] = await Promise.all([
+          fetch('/api/v1/payroll-compliance/dashboard'),
+          fetch('/api/compliance/records?pageSize=500'),
+        ]);
+        const dashBody = await dashRes.json();
+        if (active && dashBody?.success && dashBody?.data?.counts) {
+          setCounts(dashBody.data.counts as ComplianceCounts);
+        }
+        const recordsBody = await recordsRes.json();
+        const records: StatutoryRecord[] =
+          recordsBody?.data?.items ?? recordsBody?.items ?? recordsBody?.data ?? [];
+        if (active && Array.isArray(records)) {
+          setStatutory(summarizeStatutory(records));
         }
       } catch {
         // Non-fatal: hub still renders navigation without live governance counts.
@@ -200,6 +253,75 @@ export default function PayrollCompliancePage() {
             </div>
           ))}
         </div>
+      </div>
+
+      {/* Statutory Compliance Status (live, aggregated from real compliance records) */}
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
+            <Scale className="w-5 h-5 text-indigo-500" />
+            Statutory Compliance Status
+            <span className="text-sm font-normal text-slate-500 mr-2"> | </span>
+            <span className="text-base font-medium text-slate-600 dark:text-slate-400" dir="rtl">
+              حالة الامتثال القانوني
+            </span>
+          </h2>
+          {statutory && (
+            <span
+              className={`px-3 py-1 rounded-full text-sm font-bold ${
+                statutory.healthPct >= 80
+                  ? 'bg-emerald-100 text-emerald-600'
+                  : statutory.healthPct >= 50
+                    ? 'bg-amber-100 text-amber-600'
+                    : 'bg-red-100 text-red-600'
+              }`}
+            >
+              {statutory.healthPct}% Compliant
+            </span>
+          )}
+        </div>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700">
+            <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+              {statutory ? statutory.total : '—'}
+            </div>
+            <div className="text-sm text-slate-500">Total Requirements</div>
+          </div>
+          <div className="p-4 rounded-xl bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-100 dark:border-emerald-800/30">
+            <div className="text-2xl font-bold text-emerald-600">
+              {statutory ? statutory.compliant : '—'}
+            </div>
+            <div className="text-sm text-slate-500">Compliant</div>
+          </div>
+          <div className="p-4 rounded-xl bg-amber-50 dark:bg-amber-900/20 border border-amber-100 dark:border-amber-800/30">
+            <div className="text-2xl font-bold text-amber-600">
+              {statutory ? statutory.pending : '—'}
+            </div>
+            <div className="text-sm text-slate-500">Pending</div>
+          </div>
+          <div className="p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800/30">
+            <div className="text-2xl font-bold text-red-600">
+              {statutory ? statutory.overdue : '—'}
+            </div>
+            <div className="text-sm text-slate-500">Overdue</div>
+          </div>
+        </div>
+        {counts && (
+          <div className="mt-4 flex flex-wrap gap-4 text-sm text-slate-500">
+            <span>
+              Controls overdue:{' '}
+              <span className="font-bold text-slate-700 dark:text-slate-300">
+                {counts.controlsOverdue}
+              </span>
+            </span>
+            <span>
+              Certificates signed:{' '}
+              <span className="font-bold text-slate-700 dark:text-slate-300">
+                {counts.certificatesSigned}/{counts.certificates}
+              </span>
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Compliance Modules Grid */}
