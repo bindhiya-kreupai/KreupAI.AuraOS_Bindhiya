@@ -331,6 +331,9 @@ model Employee {
   taxDocuments         TaxDocument[]
   wpsRecords           WPSRecord[]
 
+  // ESS career interests (self-service marketplace profile) — re-added after concurrent-edit loss.
+  careerInterests      Json?
+
   @@map("aura_employee")
 }
 
@@ -1350,6 +1353,22 @@ model AuditLog {
   user         User?         @relation(fields: [userId], references: [id], map: "AuditLog_userId_fkey")
 
   @@map("aura_audit_log")
+}
+
+model DocumentAccessLog {
+  id           String   @id @default(uuid())
+  tenantId     String
+  documentId   String
+  documentName String
+  action       String
+  userId       String
+  userName     String?
+  ipAddress    String?
+  createdAt    DateTime @default(now())
+
+  @@index([tenantId, createdAt])
+  @@index([tenantId, action])
+  @@map("aura_document_access_log")
 }
 
 model AuditLogArchive {
@@ -6466,6 +6485,44 @@ model PolicyAcknowledgement {
   @@index([policyId])
   @@index([employeeId])
   @@map("aura_policy_acknowledgement")
+}
+
+model MfaPolicy {
+  id                  String   @id @default(uuid())
+  tenantId            String   @unique
+  enforced            Boolean  @default(false)
+  allowedMethods      Json     @default("[\"totp\"]")
+  enforceForAdmins    Boolean  @default(true)
+  enforceForAllUsers  Boolean  @default(false)
+  enforceForRemote    Boolean  @default(false)
+  graceperiodDays     Int      @default(7)
+  rememberDeviceDays  Int      @default(30)
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @default(now()) @updatedAt
+  createdBy           String?
+  updatedBy           String?
+
+  @@index([tenantId])
+  @@map("aura_mfa_policy")
+}
+
+model FieldSecurityRule {
+  id         String   @id @default(uuid())
+  tenantId   String
+  roleName   String
+  entityType String
+  fieldName  String
+  access     String   @default("view")
+  masked     Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @default(now()) @updatedAt
+  createdBy  String?
+  updatedBy  String?
+
+  @@unique([tenantId, roleName, entityType, fieldName])
+  @@index([tenantId])
+  @@index([tenantId, roleName])
+  @@map("aura_field_security_rule")
 }
 
 model AdminForm {
@@ -12156,6 +12213,74 @@ model OrgChangeInitiative {
   @@map("aura_org_change_initiative")
 }
 
+model DsarRequest {
+  id          String    @id @default(uuid())
+  tenantId    String
+  requestType String    @default("access")
+  subjectName String
+  subjectEmail String
+  subjectId   String?
+  status      String    @default("new")
+  priority    String    @default("medium")
+  dueDate     DateTime?
+  details     String?
+  assignedTo  String?
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  deletedAt   DateTime?
+  isDeleted   Boolean   @default(false)
+
+  @@index([tenantId])
+  @@index([status])
+  @@index([subjectId])
+  @@map("aura_dsar_request")
+}
+
+model ConsentRecord {
+  id         String    @id @default(uuid())
+  tenantId   String
+  subjectId  String
+  category   String
+  granted    Boolean   @default(false)
+  source     String?
+  grantedAt  DateTime?
+  revokedAt  DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  createdBy  String?
+  updatedBy  String?
+  deletedAt  DateTime?
+  isDeleted  Boolean   @default(false)
+
+  @@unique([tenantId, subjectId, category])
+  @@index([tenantId])
+  @@map("aura_consent_record")
+}
+
+model DataRetentionPolicy {
+  id            String    @id @default(uuid())
+  tenantId      String
+  category      String
+  description   String?
+  retentionDays Int       @default(365)
+  action        String    @default("archive")
+  isActive      Boolean   @default(true)
+  lastRunAt     DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  createdBy     String?
+  updatedBy     String?
+  deletedAt     DateTime?
+  isDeleted     Boolean   @default(false)
+
+  @@unique([tenantId, category])
+  @@index([tenantId])
+  @@map("aura_data_retention_policy")
+}
+
 enum LocationType {
   HEADQUARTERS
   BRANCH
@@ -12544,4 +12669,961 @@ enum EOSBStatus {
   APPROVED
   PAID
   CANCELLED
+}
+
+// ============================================================================
+// Global Mobility Module — Relocation Packages & Expat Tax Profiles
+// (Visa/immigration is handled by the existing VisaPermit model + services.)
+// ============================================================================
+
+model RelocationPackage {
+  id             String    @id @default(uuid())
+  tenantId       String
+  employeeId     String
+  employeeName   String
+  tier           String    @default("standard") // executive | senior | standard
+  originLocation String
+  destination    String
+  status         String    @default("INITIATED") // INITIATED | PLANNING | IN_TRANSIT | HOUSING_SEARCH | CLOSING | COMPLETED | CANCELLED
+  budgetAmount   Decimal   @default(0) @db.Decimal(15, 2)
+  spentAmount    Decimal   @default(0) @db.Decimal(15, 2)
+  currency       String    @default("USD")
+  startDate      DateTime?
+  targetDate     DateTime?
+  completedAt    DateTime?
+  satisfaction   Int?
+  notes          String?
+  metadata       Json?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  createdBy      String?
+  updatedBy      String?
+  deletedAt      DateTime?
+  isDeleted      Boolean   @default(false)
+
+  @@index([tenantId], map: "aura_relocation_package_tenantId_idx")
+  @@index([employeeId], map: "aura_relocation_package_employeeId_idx")
+  @@index([status], map: "aura_relocation_package_status_idx")
+  @@map("aura_relocation_package")
+}
+
+model ExpatTaxProfile {
+  id               String    @id @default(uuid())
+  tenantId         String
+  employeeId       String
+  employeeName     String
+  homeCountry      String
+  hostCountry      String
+  taxYear          Int
+  baseSalary       Decimal   @default(0) @db.Decimal(15, 2)
+  currency         String    @default("USD")
+  hypoTax          Decimal?  @db.Decimal(15, 2)
+  hostTax          Decimal?  @db.Decimal(15, 2)
+  companyCost      Decimal?  @db.Decimal(15, 2)
+  equalizationType String    @default("gross_up")
+  filingStatus     String    @default("PENDING") // PENDING | IN_REVIEW | FILED | COMPLETED
+  filingType       String?
+  filingDueDate    DateTime?
+  filedAt          DateTime?
+  notes            String?
+  metadata         Json?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  createdBy        String?
+  updatedBy        String?
+  deletedAt        DateTime?
+  isDeleted        Boolean   @default(false)
+
+  @@index([tenantId], map: "aura_expat_tax_profile_tenantId_idx")
+  @@index([employeeId], map: "aura_expat_tax_profile_employeeId_idx")
+  @@index([filingStatus], map: "aura_expat_tax_profile_filingStatus_idx")
+  @@map("aura_expat_tax_profile")
+}
+
+// ============================================================================
+// Compensation Module — extended models (AURA-019..026)
+// Enums stored as String (repo uses db-push; TEXT columns). JSON used for
+// nested criteria / schedules. All rows tenant-scoped.
+// ============================================================================
+
+model IncrementProposal {
+  id                  String    @id @default(uuid())
+  tenantId            String
+  cycleId             String
+  employeeId          String
+  currentSalary       Decimal   @db.Decimal(18, 2)
+  proposedSalary      Decimal   @db.Decimal(18, 2)
+  incrementAmount     Decimal   @db.Decimal(18, 2)
+  incrementPercentage Float     @default(0)
+  incrementType       String    @default("merit")
+  effectiveDate       DateTime?
+  performanceRating   String?
+  justification       String?
+  status              String    @default("draft")
+  submittedBy         String?
+  submittedDate       DateTime?
+  approvedBy          String?
+  approvedDate        DateTime?
+  rejectionReason     String?
+  processedDate       DateTime?
+  notes               String?
+  createdBy           String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  updatedBy           String?
+  deletedAt           DateTime?
+  isDeleted           Boolean   @default(false)
+
+  @@index([tenantId], map: "IncrementProposal_tenantId_idx")
+  @@index([cycleId], map: "IncrementProposal_cycleId_idx")
+  @@index([employeeId], map: "IncrementProposal_employeeId_idx")
+  @@index([status], map: "IncrementProposal_status_idx")
+  @@map("aura_increment_proposal")
+}
+
+model BonusScheme {
+  id                  String    @id @default(uuid())
+  tenantId            String
+  schemeCode          String
+  schemeName          String
+  bonusType           String    @default("performance")
+  description         String?
+  fiscalYear          String?
+  eligibilityCriteria Json?
+  payoutCriteria      Json?
+  budgetAmount        Decimal   @default(0) @db.Decimal(18, 2)
+  currency            String    @default("USD")
+  payoutDate          DateTime?
+  status              String    @default("draft")
+  isRecurring         Boolean   @default(false)
+  frequency           String?
+  applicableGrades    Json?
+  createdBy           String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  updatedBy           String?
+  deletedAt           DateTime?
+  isDeleted           Boolean   @default(false)
+
+  @@index([tenantId], map: "BonusScheme_tenantId_idx")
+  @@index([status], map: "BonusScheme_status_idx")
+  @@map("aura_bonus_scheme")
+}
+
+model StockGrant {
+  id                     String    @id @default(uuid())
+  tenantId               String
+  grantCode              String
+  employeeId             String
+  stockType              String    @default("RSU")
+  grantDate              DateTime
+  numberOfUnits          Float     @default(0)
+  grantPrice             Decimal   @default(0) @db.Decimal(18, 4)
+  fairMarketValue        Decimal   @default(0) @db.Decimal(18, 4)
+  totalValue             Decimal   @default(0) @db.Decimal(18, 2)
+  currency               String    @default("USD")
+  vestingSchedule        String    @default("graded")
+  vestingStartDate       DateTime?
+  vestingEndDate         DateTime?
+  vestingPeriodYears     Float     @default(4)
+  cliffPeriodMonths      Int?
+  vestingScheduleDetails Json?
+  exercisePrice          Decimal?  @db.Decimal(18, 4)
+  expirationDate         DateTime?
+  status                 String    @default("granted")
+  vestedUnits            Float     @default(0)
+  unvestedUnits          Float     @default(0)
+  exercisedUnits         Float     @default(0)
+  forfeitedUnits         Float     @default(0)
+  reason                 String?
+  grantedBy              String?
+  approvedBy             String?
+  notes                  String?
+  createdBy              String?
+  createdAt              DateTime  @default(now())
+  updatedAt              DateTime  @updatedAt
+  updatedBy              String?
+  deletedAt              DateTime?
+  isDeleted              Boolean   @default(false)
+
+  @@index([tenantId], map: "StockGrant_tenantId_idx")
+  @@index([employeeId], map: "StockGrant_employeeId_idx")
+  @@index([status], map: "StockGrant_status_idx")
+  @@map("aura_stock_grant")
+}
+
+model LoanScheme {
+  id                  String    @id @default(uuid())
+  tenantId            String
+  schemeCode          String
+  schemeName          String
+  loanType            String    @default("personal")
+  description         String?
+  maxAmount           Decimal   @default(0) @db.Decimal(18, 2)
+  minAmount           Decimal   @default(0) @db.Decimal(18, 2)
+  maxTenureMonths     Int       @default(12)
+  minTenureMonths     Int       @default(1)
+  interestRate        Float     @default(0)
+  isInterestBearing   Boolean   @default(false)
+  eligibilityCriteria Json?
+  currency            String    @default("USD")
+  isActive            Boolean   @default(true)
+  createdBy           String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  updatedBy           String?
+  deletedAt           DateTime?
+  isDeleted           Boolean   @default(false)
+
+  @@index([tenantId], map: "LoanScheme_tenantId_idx")
+  @@index([isActive], map: "LoanScheme_isActive_idx")
+  @@map("aura_loan_scheme")
+}
+
+model EmployeeLoan {
+  id                   String    @id @default(uuid())
+  tenantId             String
+  loanCode             String
+  schemeId             String?
+  employeeId           String
+  loanType             String    @default("personal")
+  applicationDate      DateTime  @default(now())
+  principalAmount      Decimal   @default(0) @db.Decimal(18, 2)
+  interestRate         Float     @default(0)
+  tenureMonths         Int       @default(12)
+  emiAmount            Decimal   @default(0) @db.Decimal(18, 2)
+  totalRepayable       Decimal   @default(0) @db.Decimal(18, 2)
+  disbursementDate     DateTime?
+  currency             String    @default("USD")
+  purpose              String?
+  status               String    @default("pending")
+  outstandingPrincipal Decimal   @default(0) @db.Decimal(18, 2)
+  outstandingInterest  Decimal   @default(0) @db.Decimal(18, 2)
+  totalOutstanding     Decimal   @default(0) @db.Decimal(18, 2)
+  principalPaid        Decimal   @default(0) @db.Decimal(18, 2)
+  interestPaid         Decimal   @default(0) @db.Decimal(18, 2)
+  totalPaid            Decimal   @default(0) @db.Decimal(18, 2)
+  emiSchedule          Json?
+  guarantorId          String?
+  collateralDetails    String?
+  submittedBy          String?
+  submittedDate        DateTime?
+  approvedBy           String?
+  approvedDate         DateTime?
+  rejectedBy           String?
+  rejectionReason      String?
+  closedDate           DateTime?
+  notes                String?
+  createdBy            String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  updatedBy            String?
+  deletedAt            DateTime?
+  isDeleted            Boolean   @default(false)
+
+  @@index([tenantId], map: "EmployeeLoan_tenantId_idx")
+  @@index([employeeId], map: "EmployeeLoan_employeeId_idx")
+  @@index([status], map: "EmployeeLoan_status_idx")
+  @@map("aura_employee_loan")
+}
+
+model ArrearsRequest {
+  id                   String    @id @default(uuid())
+  tenantId             String
+  requestCode          String
+  employeeId           String
+  arrearsType          String    @default("salary_revision")
+  reason               String?
+  effectiveFrom        DateTime
+  effectiveTo          DateTime
+  oldSalary            Decimal   @default(0) @db.Decimal(18, 2)
+  newSalary            Decimal   @default(0) @db.Decimal(18, 2)
+  difference           Decimal   @default(0) @db.Decimal(18, 2)
+  numberOfMonths       Int       @default(0)
+  totalArrears         Decimal   @default(0) @db.Decimal(18, 2)
+  currency             String    @default("USD")
+  paymentMode          String    @default("lumpsum")
+  numberOfInstallments Int?
+  status               String    @default("draft")
+  submittedBy          String?
+  submittedDate        DateTime?
+  approvedBy           String?
+  approvedDate         DateTime?
+  rejectedBy           String?
+  rejectionReason      String?
+  processedDate        DateTime?
+  paymentSchedule      Json?
+  notes                String?
+  createdBy            String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  updatedBy            String?
+  deletedAt            DateTime?
+  isDeleted            Boolean   @default(false)
+
+  @@index([tenantId], map: "ArrearsRequest_tenantId_idx")
+  @@index([employeeId], map: "ArrearsRequest_employeeId_idx")
+  @@index([status], map: "ArrearsRequest_status_idx")
+  @@map("aura_arrears_request")
+}
+
+model TotalRewardsStatement {
+  id                 String    @id @default(uuid())
+  tenantId           String
+  employeeId         String
+  fiscalYear         String
+  generatedDate      DateTime  @default(now())
+  directCompensation Json?
+  benefits           Json?
+  stockCompensation  Json?
+  otherCompensation  Json?
+  totalRewards       Decimal   @default(0) @db.Decimal(18, 2)
+  currency           String    @default("USD")
+  createdBy          String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  updatedBy          String?
+  deletedAt          DateTime?
+  isDeleted          Boolean   @default(false)
+
+  @@index([tenantId], map: "TotalRewardsStatement_tenantId_idx")
+  @@index([employeeId], map: "TotalRewardsStatement_employeeId_idx")
+  @@map("aura_total_rewards_statement")
+}
+
+model MarketBenchmark {
+  id                String    @id @default(uuid())
+  tenantId          String
+  benchmarkCode     String
+  jobTitle          String
+  jobFamily         String?
+  jobLevel          String?
+  geography         String?
+  industry          String?
+  source            String    @default("market_survey")
+  sourceName        String?
+  surveyDate        DateTime?
+  currency          String    @default("USD")
+  sampleSize        Int       @default(0)
+  percentile10      Decimal   @default(0) @db.Decimal(18, 2)
+  percentile25      Decimal   @default(0) @db.Decimal(18, 2)
+  percentile50      Decimal   @default(0) @db.Decimal(18, 2)
+  percentile75      Decimal   @default(0) @db.Decimal(18, 2)
+  percentile90      Decimal   @default(0) @db.Decimal(18, 2)
+  average           Decimal   @default(0) @db.Decimal(18, 2)
+  standardDeviation Decimal   @default(0) @db.Decimal(18, 2)
+  effectiveFrom     DateTime?
+  effectiveTo       DateTime?
+  notes             String?
+  createdBy         String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  updatedBy         String?
+  deletedAt         DateTime?
+  isDeleted         Boolean   @default(false)
+
+  @@index([tenantId], map: "MarketBenchmark_tenantId_idx")
+  @@index([jobTitle], map: "MarketBenchmark_jobTitle_idx")
+  @@map("aura_market_benchmark")
+}
+
+model BudgetSimulation {
+  id             String    @id @default(uuid())
+  tenantId       String
+  simulationCode String
+  simulationName String
+  description    String?
+  fiscalYear     String?
+  scenarios      Json?
+  comparison     Json?
+  createdBy      String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  updatedBy      String?
+  deletedAt      DateTime?
+  isDeleted      Boolean   @default(false)
+
+  @@index([tenantId], map: "BudgetSimulation_tenantId_idx")
+  @@map("aura_budget_simulation")
+}
+
+// ============================================================================
+// AUDIT & SECURITY MODULE (compliance + access-governance + security settings)
+// Re-appended 2026-07-01 (backlog AURA-267/268/278). Sibling GDPR/retention/
+// MFA/field/document models were added separately above.
+// ============================================================================
+
+model ComplianceFramework {
+  id                  String              @id @default(uuid())
+  tenantId            String
+  code                String
+  name                String
+  fullName            String
+  description         String?
+  version             String              @default("1.0")
+  status              String              @default("in-progress")
+  readinessScore      Int                 @default(0)
+  certificationDate   DateTime?
+  certificationExpiry DateTime?
+  nextAuditDate       DateTime?
+  auditor             String?
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @default(now()) @updatedAt
+  createdBy           String?
+  updatedBy           String?
+  deletedAt           DateTime?
+  isDeleted           Boolean             @default(false)
+  controls            ComplianceControl[]
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@map("aura_compliance_framework")
+}
+
+model ComplianceControl {
+  id              String               @id @default(uuid())
+  tenantId        String
+  frameworkId     String
+  code            String
+  name            String
+  description     String?
+  category        String
+  status          String               @default("partial")
+  ownerId         String?
+  ownerName       String?
+  riskLevel       String               @default("medium")
+  lastTested      DateTime?
+  nextTestDue     DateTime?
+  remediationPlan String?
+  relatedControls Json?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @default(now()) @updatedAt
+  createdBy       String?
+  updatedBy       String?
+  deletedAt       DateTime?
+  isDeleted       Boolean              @default(false)
+  framework       ComplianceFramework  @relation(fields: [frameworkId], references: [id], onDelete: Cascade)
+  evidence        ComplianceEvidence[]
+  tests           ComplianceTest[]
+
+  @@index([tenantId])
+  @@index([frameworkId])
+  @@map("aura_compliance_control")
+}
+
+model ComplianceEvidence {
+  id            String            @id @default(uuid())
+  tenantId      String
+  controlId     String
+  fileName      String
+  fileType      String
+  fileSize      Int               @default(0)
+  fileUrl       String?
+  description   String?
+  status        String            @default("pending")
+  uploadedBy    String?
+  effectiveDate DateTime?
+  expiresAt     DateTime?
+  verifiedBy    String?
+  verifiedAt    DateTime?
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @default(now()) @updatedAt
+  createdBy     String?
+  updatedBy     String?
+  deletedAt     DateTime?
+  isDeleted     Boolean           @default(false)
+  control       ComplianceControl @relation(fields: [controlId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([controlId])
+  @@map("aura_compliance_evidence")
+}
+
+model ComplianceTest {
+  id                  String            @id @default(uuid())
+  tenantId            String
+  controlId           String
+  testName            String
+  result              String
+  details             String?
+  remediationRequired String?
+  duration            Int               @default(0)
+  runBy               String?
+  runAt               DateTime          @default(now())
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @default(now()) @updatedAt
+  createdBy           String?
+  updatedBy           String?
+  deletedAt           DateTime?
+  isDeleted           Boolean           @default(false)
+  control             ComplianceControl @relation(fields: [controlId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([controlId])
+  @@map("aura_compliance_test")
+}
+
+model ComplianceTimelineEvent {
+  id            String    @id @default(uuid())
+  tenantId      String
+  frameworkId   String?
+  frameworkName String?
+  type          String
+  title         String
+  description   String?
+  date          DateTime
+  priority      String    @default("medium")
+  completed     Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @default(now()) @updatedAt
+  createdBy     String?
+  updatedBy     String?
+  deletedAt     DateTime?
+  isDeleted     Boolean   @default(false)
+
+  @@index([tenantId])
+  @@map("aura_compliance_timeline_event")
+}
+
+model SodRule {
+  id                String         @id @default(uuid())
+  tenantId          String
+  name              String
+  description       String?
+  category          String         @default("general")
+  riskLevel         String         @default("medium")
+  conflictingRoles  Json
+  isActive          Boolean        @default(true)
+  createdAt         DateTime       @default(now())
+  updatedAt         DateTime       @default(now()) @updatedAt
+  createdBy         String?
+  updatedBy         String?
+  deletedAt         DateTime?
+  isDeleted         Boolean        @default(false)
+  violations        SodViolation[]
+
+  @@index([tenantId])
+  @@map("aura_sod_rule")
+}
+
+model SodViolation {
+  id           String    @id @default(uuid())
+  tenantId     String
+  ruleId       String
+  userId       String
+  userName     String?
+  conflictA    String
+  conflictB    String
+  riskLevel    String    @default("medium")
+  status       String    @default("open")
+  detectedAt   DateTime  @default(now())
+  resolvedAt   DateTime?
+  resolvedBy   String?
+  resolution   String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @default(now()) @updatedAt
+  createdBy    String?
+  updatedBy    String?
+  deletedAt    DateTime?
+  isDeleted    Boolean   @default(false)
+  rule         SodRule   @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([ruleId])
+  @@map("aura_sod_violation")
+}
+
+model AccessReviewCampaign {
+  id             String             @id @default(uuid())
+  tenantId       String
+  name           String
+  description    String?
+  scope          String             @default("all")
+  status         String             @default("draft")
+  dueDate        DateTime?
+  reviewerId     String?
+  reviewerName   String?
+  totalItems     Int                @default(0)
+  reviewedItems  Int                @default(0)
+  startedAt      DateTime?
+  completedAt    DateTime?
+  createdAt      DateTime           @default(now())
+  updatedAt      DateTime           @default(now()) @updatedAt
+  createdBy      String?
+  updatedBy      String?
+  deletedAt      DateTime?
+  isDeleted      Boolean            @default(false)
+  items          AccessReviewItem[]
+
+  @@index([tenantId])
+  @@map("aura_access_review_campaign")
+}
+
+model AccessReviewItem {
+  id           String               @id @default(uuid())
+  tenantId     String
+  campaignId   String
+  userId       String
+  userName     String?
+  roleName     String
+  resource     String?
+  decision     String               @default("pending")
+  comment      String?
+  reviewedBy   String?
+  reviewedAt   DateTime?
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @default(now()) @updatedAt
+  createdBy    String?
+  updatedBy    String?
+  deletedAt    DateTime?
+  isDeleted    Boolean              @default(false)
+  campaign     AccessReviewCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+
+  @@index([tenantId])
+  @@index([campaignId])
+  @@map("aura_access_review_item")
+}
+
+model SecuritySetting {
+  id                        String    @id @default(uuid())
+  tenantId                  String    @unique
+  passwordMinLength         Int       @default(8)
+  passwordRequireUppercase  Boolean   @default(true)
+  passwordRequireNumber     Boolean   @default(true)
+  passwordRequireSymbol     Boolean   @default(false)
+  passwordExpiryDays        Int       @default(90)
+  sessionTimeoutMinutes     Int       @default(30)
+  maxLoginAttempts          Int       @default(5)
+  lockoutDurationMinutes    Int       @default(15)
+  ipAllowlist               Json?
+  enforceSSO                Boolean   @default(false)
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @default(now()) @updatedAt
+  createdBy                 String?
+  updatedBy                 String?
+  deletedAt                 DateTime?
+  isDeleted                 Boolean   @default(false)
+
+  @@map("aura_security_setting")
+}
+
+// ============================================================================
+// Re-added after Wave-B concurrent-edit loss (Learning + Career modules).
+// Reconstructed from surviving migration SQL. Enums as TEXT per db-push convention.
+// ============================================================================
+
+model ExternalTraining {
+  id             String    @id @default(uuid())
+  tenantId       String
+  employeeId     String
+  title          String
+  provider       String?
+  category       String?
+  startDate      DateTime?
+  endDate        DateTime?
+  cost           Float?
+  currency       String    @default("AED")
+  status         String    @default("pending")
+  certificateUrl String?
+  notes          String?
+  approvedBy     String?
+  approvedAt     DateTime?
+  createdBy      String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  updatedBy      String?
+  deletedAt      DateTime?
+  isDeleted      Boolean   @default(false)
+
+  @@index([tenantId], map: "ExternalTraining_tenantId_idx")
+  @@index([employeeId], map: "ExternalTraining_employeeId_idx")
+  @@index([status], map: "ExternalTraining_status_idx")
+  @@map("aura_external_training")
+}
+
+model TrainingBudget {
+  id             String    @id @default(uuid())
+  tenantId       String
+  fiscalYear     String
+  departmentId   String?
+  departmentName String?
+  allocated      Float     @default(0)
+  spent          Float     @default(0)
+  committed      Float     @default(0)
+  currency       String    @default("AED")
+  notes          String?
+  createdBy      String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  updatedBy      String?
+  deletedAt      DateTime?
+  isDeleted      Boolean   @default(false)
+
+  @@index([tenantId], map: "TrainingBudget_tenantId_idx")
+  @@index([fiscalYear], map: "TrainingBudget_fiscalYear_idx")
+  @@map("aura_training_budget")
+}
+
+model KnowledgeArticle {
+  id         String    @id @default(uuid())
+  tenantId   String
+  title      String
+  content    String
+  summary    String?
+  categoryId String?
+  category   String?
+  tags       String[]
+  authorId   String
+  status     String    @default("published")
+  viewCount  Int       @default(0)
+  likeCount  Int       @default(0)
+  createdBy  String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  updatedBy  String?
+  deletedAt  DateTime?
+  isDeleted  Boolean   @default(false)
+
+  @@index([tenantId], map: "KnowledgeArticle_tenantId_idx")
+  @@index([categoryId], map: "KnowledgeArticle_categoryId_idx")
+  @@map("aura_knowledge_article")
+}
+
+model TrainingFeedback {
+  id             String    @id @default(uuid())
+  tenantId       String
+  courseId       String?
+  sessionId      String?
+  learnerId      String
+  rating         Int
+  comments       String?
+  wouldRecommend Boolean?
+  createdBy      String
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  updatedBy      String?
+  deletedAt      DateTime?
+  isDeleted      Boolean   @default(false)
+
+  @@index([tenantId], map: "TrainingFeedback_tenantId_idx")
+  @@index([courseId], map: "TrainingFeedback_courseId_idx")
+  @@index([learnerId], map: "TrainingFeedback_learnerId_idx")
+  @@map("aura_training_feedback")
+}
+
+model CareerEntity {
+  id         String    @id @default(uuid())
+  tenantId   String
+  kind       String
+  employeeId String?
+  status     String?
+  department String?
+  data       Json
+  createdBy  String?
+  updatedBy  String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  deletedAt  DateTime?
+  isDeleted  Boolean   @default(false)
+
+  @@index([tenantId], map: "CareerEntity_tenantId_idx")
+  @@index([tenantId, kind], map: "CareerEntity_tenant_kind_idx")
+  @@index([tenantId, kind, employeeId], map: "CareerEntity_tenant_kind_employee_idx")
+  @@index([tenantId, kind, status], map: "CareerEntity_tenant_kind_status_idx")
+  @@map("aura_career_entity")
+}
+
+model CareerSetting {
+  id        String   @id @default(uuid())
+  tenantId  String   @unique
+  data      Json
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("aura_career_setting")
+}
+
+// ============================================================================
+// Engagement module — re-added after Wave-B concurrent-edit loss.
+// Delegate names must match (prisma as any).engagement* usage in routes.
+// ============================================================================
+
+model EngagementSurveyResponse {
+  id           String   @id @default(uuid())
+  tenantId     String
+  surveyId     String
+  respondentId String
+  isAnonymous  Boolean  @default(false)
+  answers      Json
+  sentiment    Int?
+  submittedAt  DateTime @default(now())
+  createdAt    DateTime @default(now())
+
+  @@index([tenantId], map: "EngSurveyResponse_tenantId_idx")
+  @@index([surveyId], map: "EngSurveyResponse_surveyId_idx")
+  @@map("aura_engagement_survey_response")
+}
+
+model EngagementRsvp {
+  id         String   @id @default(uuid())
+  tenantId   String
+  eventId    String
+  employeeId String
+  status     String   @default("GOING")
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([eventId, employeeId], map: "aura_engagement_rsvp_eventId_employeeId_key")
+  @@index([tenantId], map: "EngRsvp_tenantId_idx")
+  @@map("aura_engagement_rsvp")
+}
+
+model EngagementIdea {
+  id           String    @id @default(uuid())
+  tenantId     String
+  title        String
+  description  String?
+  category     String    @default("OTHER")
+  status       String    @default("SUBMITTED")
+  submittedBy  String
+  authorName   String?
+  department   String?
+  voteCount    Int       @default(0)
+  commentCount Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+  isDeleted    Boolean   @default(false)
+
+  @@index([tenantId], map: "EngIdea_tenantId_idx")
+  @@map("aura_engagement_idea")
+}
+
+model EngagementIdeaVote {
+  id        String   @id @default(uuid())
+  tenantId  String
+  ideaId    String
+  voterId   String
+  voteType  String   @default("up")
+  createdAt DateTime @default(now())
+
+  @@unique([ideaId, voterId], map: "aura_engagement_idea_vote_ideaId_voterId_key")
+  @@index([tenantId], map: "EngIdeaVote_tenantId_idx")
+  @@map("aura_engagement_idea_vote")
+}
+
+model EngagementCsrActivity {
+  id                   String    @id @default(uuid())
+  tenantId             String
+  title                String
+  description          String?
+  cause                String    @default("COMMUNITY")
+  activityType         String    @default("VOLUNTEERING")
+  status               String    @default("PLANNED")
+  startDate            DateTime?
+  endDate              DateTime?
+  location             String?
+  volunteerSlots       Int?
+  volunteersRegistered Int       @default(0)
+  volunteerHours       Int       @default(0)
+  createdBy            String
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  deletedAt            DateTime?
+  isDeleted            Boolean   @default(false)
+
+  @@index([tenantId], map: "EngCsr_tenantId_idx")
+  @@map("aura_engagement_csr_activity")
+}
+
+model EngagementNewsletter {
+  id            String    @id @default(uuid())
+  tenantId      String
+  title         String
+  excerpt       String?
+  content       String?
+  category      String?
+  editionNumber Int       @default(1)
+  status        String    @default("DRAFT")
+  publishDate   DateTime?
+  coverImageUrl String?
+  editorId      String
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+  isDeleted     Boolean   @default(false)
+
+  @@index([tenantId], map: "EngNewsletter_tenantId_idx")
+  @@map("aura_engagement_newsletter")
+}
+
+model EngagementClassified {
+  id          String    @id @default(uuid())
+  tenantId    String
+  title       String
+  description String?
+  category    String    @default("OTHER")
+  price       Float?
+  currency    String    @default("USD")
+  condition   String?
+  status      String    @default("ACTIVE")
+  sellerId    String
+  sellerName  String?
+  imageUrl    String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+  isDeleted   Boolean   @default(false)
+
+  @@index([tenantId], map: "EngClassified_tenantId_idx")
+  @@map("aura_engagement_classified")
+}
+
+model EngagementReward {
+  id          String   @id @default(uuid())
+  tenantId    String
+  title       String
+  description String?
+  category    String   @default("MERCHANDISE")
+  pointsCost  Int      @default(0)
+  stock       Int?
+  imageUrl    String?
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([tenantId], map: "EngReward_tenantId_idx")
+  @@map("aura_engagement_reward")
+}
+
+model EngagementRewardRedemption {
+  id         String   @id @default(uuid())
+  tenantId   String
+  rewardId   String
+  employeeId String
+  pointsCost Int
+  status     String   @default("PENDING")
+  createdAt  DateTime @default(now())
+
+  @@index([tenantId], map: "EngRewardRedemption_tenantId_idx")
+  @@map("aura_engagement_reward_redemption")
+}
+
+model EngagementReferral {
+  id             String   @id @default(uuid())
+  tenantId       String
+  referrerId     String
+  candidateName  String
+  candidateEmail String?
+  role           String?
+  status         String   @default("SUBMITTED")
+  bonusAmount    Float?
+  currency       String   @default("USD")
+  referralCode   String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@index([tenantId], map: "EngReferral_tenantId_idx")
+  @@map("aura_engagement_referral")
 }
