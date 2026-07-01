@@ -1,113 +1,48 @@
 /**
- * Vendor Contracts API Routes
- * Finance Module - Contract Management
+ * Vendor Contract API — Finance Module (AURA-158, AURA-160)
+ * DB-backed, tenant-scoped.
  */
 
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { createProtectedRoute } from '@/lib/api/route-wrapper';
+import { ContractRepo } from '@/lib/services/finance/finance.service';
 
-/**
- * GET /api/finance/contracts
- * Get all vendor contracts
- */
-export async function GET(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const vendorId = searchParams.get('vendorId');
-    const status = searchParams.get('status');
+export const GET = createProtectedRoute(async (request: NextRequest, { auth }) => {
+  const { searchParams } = new URL(request.url);
+  const status = searchParams.get('status') || undefined;
+  const vendorId = searchParams.get('vendorId') || undefined;
+  const result = await ContractRepo.list((auth as any).tenantId, { status, vendorId });
+  const now = Date.now();
+  const soon = 1000 * 60 * 60 * 24 * 60;
+  return NextResponse.json({
+    success: true,
+    contracts: result.items,
+    ...result,
+    summary: {
+      activeContracts: result.items.filter((c: any) => c.status === 'active').length,
+      totalContractValue: result.items.reduce(
+        (s: number, c: any) => s + Number(c.totalContractValue || 0),
+        0
+      ),
+      expiringContracts: result.items.filter(
+        (c: any) =>
+          c.endDate &&
+          new Date(c.endDate).getTime() - now < soon &&
+          new Date(c.endDate).getTime() > now
+      ).length,
+    },
+  });
+});
 
-    return NextResponse.json({
-      success: true,
-      contracts: [],
-      summary: {
-        activeContracts: 0,
-        totalContractValue: 0,
-        expiringContracts: 0,
-      },
-    });
-  } catch (error: any) {
-    return NextResponse.json({ error: 'Failed to fetch contracts' }, { status: 500 });
+export const POST = createProtectedRoute(async (request: NextRequest, { auth }) => {
+  const body = await request.json().catch(() => ({}));
+  if (!body.contractName) {
+    return NextResponse.json(
+      { success: false, message: 'contractName is required.', messageAr: 'اسم العقد مطلوب.' },
+      { status: 400 }
+    );
   }
-}
-
-/**
- * POST /api/finance/contracts
- * Create new contract or record payment
- */
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const { contractId, scheduleId, invoiceNumber } = body;
-
-    // If payment data exists, this is a payment recording
-    if (contractId && scheduleId && invoiceNumber) {
-      return NextResponse.json({
-        success: true,
-        message: 'Payment recorded successfully',
-      });
-    }
-
-    // Otherwise, create new contract
-    return NextResponse.json({
-      success: true,
-      contract: {
-        id: `contract-${Date.now()}`,
-        contractNumber: `CON-${Date.now()}`,
-        ...body,
-        createdDate: new Date().toISOString(),
-        lastModified: new Date().toISOString(),
-      },
-    });
-  } catch (error: any) {
-    return NextResponse.json({ error: 'Failed to process contract' }, { status: 500 });
-  }
-}
-
-/**
- * PUT /api/finance/contracts
- * Update contract
- */
-export async function PUT(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-    const body = await request.json();
-
-    if (!id) {
-      return NextResponse.json({ error: 'Contract ID is required' }, { status: 400 });
-    }
-
-    return NextResponse.json({
-      success: true,
-      contract: {
-        id,
-        ...body,
-        lastModified: new Date().toISOString(),
-      },
-    });
-  } catch (error: any) {
-    return NextResponse.json({ error: 'Failed to update contract' }, { status: 500 });
-  }
-}
-
-/**
- * DELETE /api/finance/contracts
- * Delete contract
- */
-export async function DELETE(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-
-    if (!id) {
-      return NextResponse.json({ error: 'Contract ID is required' }, { status: 400 });
-    }
-
-    return NextResponse.json({
-      success: true,
-      message: 'Contract deleted successfully',
-    });
-  } catch (error: any) {
-    return NextResponse.json({ error: 'Failed to delete contract' }, { status: 500 });
-  }
-}
+  const contract = await ContractRepo.create((auth as any).tenantId, (auth as any).userId, body);
+  return NextResponse.json({ success: true, contract }, { status: 201 });
+});

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { CalendarDays, Moon, Sun, Loader2 } from 'lucide-react';
+import { CalendarDays, Moon, Sun, Loader2, Plane, Sparkles } from 'lucide-react';
 
 interface HijriDate {
   year: number;
@@ -32,6 +32,217 @@ const CALENDAR_SYSTEMS = [
     icon: Moon,
   },
 ];
+
+function formatRange(start?: string, end?: string): string {
+  const fmt = (d?: string) => {
+    if (!d) return '';
+    const dt = new Date(d);
+    if (isNaN(dt.getTime())) return d;
+    return dt.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
+  };
+  if (start && end) return `${fmt(start)} → ${fmt(end)}`;
+  return fmt(start || end);
+}
+
+type ToolKey = 'eidAlFitr' | 'eidAlAdha' | 'hajjSeason' | 'ramadanPeriod' | 'format';
+
+function IslamicCalendarTools() {
+  const [hijriYear, setHijriYear] = useState('');
+  const [formatDate, setFormatDate] = useState(new Date().toISOString().slice(0, 10));
+  const [busy, setBusy] = useState<ToolKey | null>(null);
+  const [results, setResults] = useState<Partial<Record<ToolKey, string>>>({});
+  const [error, setError] = useState<string | null>(null);
+
+  // Default the year input to the current Hijri year
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch('/api/compliance/hijri-calendar?action=currentYear');
+        const json = await res.json().catch(() => ({}));
+        if (!cancelled && json?.success && json.data?.hijriYear) {
+          setHijriYear(String(json.data.hijriYear));
+        }
+      } catch {
+        /* leave blank — API will fall back to current year */
+      }
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  const runTool = async (tool: ToolKey) => {
+    setBusy(tool);
+    setError(null);
+    try {
+      const params = new URLSearchParams({ action: tool });
+      if (tool === 'format') {
+        params.set('date', formatDate);
+        params.set('locale', 'ar');
+      } else if (hijriYear) {
+        params.set('hijriYear', hijriYear);
+      }
+      const res = await fetch(`/api/compliance/hijri-calendar?${params.toString()}`);
+      const json = await res.json().catch(() => ({}));
+      if (!res.ok || json?.success === false) {
+        const msg = json?.error || json?.message || 'Request failed';
+        const msgAr = json?.errorAr || json?.messageAr;
+        throw new Error(msgAr ? `${msg} — ${msgAr}` : msg);
+      }
+      const data = json.data;
+      let display = '';
+      if (tool === 'format') {
+        display = data?.formatted ?? JSON.stringify(data);
+      } else if (tool === 'ramadanPeriod') {
+        display = `${formatRange(data?.startDate, data?.endDate)}  ·  ${data?.totalDays ?? '?'} days`;
+      } else {
+        // eidAlFitr / eidAlAdha / hajjSeason -> { start, end }
+        display = formatRange(data?.start, data?.end);
+      }
+      setResults((prev) => ({ ...prev, [tool]: display }));
+    } catch (e: any) {
+      setError(e?.message || 'Failed to load Islamic calendar data.');
+    } finally {
+      setBusy(null);
+    }
+  };
+
+  const TOOLS: { key: ToolKey; label: string; labelAr: string; icon: React.ReactNode }[] = [
+    {
+      key: 'ramadanPeriod',
+      label: 'Ramadan Period',
+      labelAr: 'شهر رمضان',
+      icon: <Moon className="w-4 h-4" />,
+    },
+    {
+      key: 'eidAlFitr',
+      label: 'Eid al-Fitr',
+      labelAr: 'عيد الفطر',
+      icon: <Sparkles className="w-4 h-4" />,
+    },
+    {
+      key: 'eidAlAdha',
+      label: 'Eid al-Adha',
+      labelAr: 'عيد الأضحى',
+      icon: <Sparkles className="w-4 h-4" />,
+    },
+    {
+      key: 'hajjSeason',
+      label: 'Hajj Season',
+      labelAr: 'موسم الحج',
+      icon: <Plane className="w-4 h-4" />,
+    },
+  ];
+
+  return (
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
+      <h3 className="font-bold text-lg mb-1 flex items-center gap-2">
+        <Moon className="w-5 h-5 text-indigo-500" /> Islamic Calendar Tools
+      </h3>
+      <p className="text-sm text-slate-500 mb-4">
+        Look up key Islamic dates for a given Hijri year using the Umm al-Qura calendar.
+      </p>
+
+      <div className="mb-4">
+        <label className="block text-xs font-medium text-slate-500 mb-1">Hijri Year</label>
+        <input
+          type="number"
+          value={hijriYear}
+          onChange={(e) => setHijriYear(e.target.value)}
+          placeholder="e.g. 1447"
+          className="w-40 px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400"
+        />
+      </div>
+
+      {error && (
+        <div className="mb-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-xs font-medium text-red-700 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-400">
+          {error}
+        </div>
+      )}
+
+      <div className="space-y-2">
+        {TOOLS.map((t) => (
+          <div
+            key={t.key}
+            className="flex items-center justify-between gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl"
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 flex items-center justify-center flex-shrink-0">
+                {t.icon}
+              </div>
+              <div className="min-w-0">
+                <div className="text-sm font-semibold truncate">{t.label}</div>
+                {results[t.key] ? (
+                  <div className="text-xs text-indigo-600 dark:text-indigo-400 font-mono truncate">
+                    {results[t.key]}
+                  </div>
+                ) : (
+                  <div className="text-xs text-slate-400" dir="rtl">
+                    {t.labelAr}
+                  </div>
+                )}
+              </div>
+            </div>
+            <button
+              onClick={() => runTool(t.key)}
+              disabled={busy === t.key}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors disabled:opacity-60 flex-shrink-0"
+            >
+              {busy === t.key ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <CalendarDays className="w-3.5 h-3.5" />
+              )}
+              Fetch
+            </button>
+          </div>
+        ))}
+
+        {/* Format a Gregorian date to Hijri */}
+        <div className="flex items-center justify-between gap-3 p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl flex-wrap">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-8 h-8 rounded-lg bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600 flex items-center justify-center flex-shrink-0">
+              <CalendarDays className="w-4 h-4" />
+            </div>
+            <div className="min-w-0">
+              <div className="text-sm font-semibold">Format Date → Hijri</div>
+              {results.format ? (
+                <div className="text-xs text-indigo-600 dark:text-indigo-400 truncate" dir="rtl">
+                  {results.format}
+                </div>
+              ) : (
+                <div className="text-xs text-slate-400">
+                  Formats the selected date in Arabic Hijri
+                </div>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            <input
+              type="date"
+              value={formatDate}
+              onChange={(e) => setFormatDate(e.target.value)}
+              className="px-2 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-xs focus:outline-none focus:ring-2 focus:ring-indigo-400"
+            />
+            <button
+              onClick={() => runTool('format')}
+              disabled={busy === 'format'}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors disabled:opacity-60 flex-shrink-0"
+            >
+              {busy === 'format' ? (
+                <Loader2 className="w-3.5 h-3.5 animate-spin" />
+              ) : (
+                <CalendarDays className="w-3.5 h-3.5" />
+              )}
+              Format
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 export default function CalendarTypesPage() {
   const [hijriToday, setHijriToday] = useState<HijriDate | null>(null);
@@ -150,6 +361,8 @@ export default function CalendarTypesPage() {
               </div>
             )}
           </div>
+
+          <IslamicCalendarTools />
         </div>
 
         <div className="bg-indigo-600 text-white p-6 rounded-2xl shadow-xl">

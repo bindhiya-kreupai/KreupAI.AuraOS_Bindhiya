@@ -99,121 +99,128 @@
     "state": "done"
   },
   "AURA-034": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-035": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-036": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-037": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-038": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-039": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-040": {
-    "state": "pending"
+    "state": "partial",
+    "note": "competency skill-assessment employee/cycle inline pickers (ES-scoped employees API)"
   },
   "AURA-041": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-042": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-043": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-044": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-045": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-046": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-047": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-048": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-049": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-050": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-051": {
-    "state": "pending"
+    "state": "partial",
+    "note": "POSH 'Schedule Awareness Session' button not re-added (updateCommittee API exists)"
   },
   "AURA-052": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-053": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-054": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-055": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-056": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-057": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-058": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-059": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-060": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-061": {
-    "state": "pending"
+    "state": "partial",
+    "note": "india-professional-tax orphan API vs india-statutory PT calc \u2014 dedup product decision"
   },
   "AURA-062": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-063": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-064": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-065": {
-    "state": "pending"
+    "state": "partial",
+    "note": "root /api/compliance catalog has no dedicated UI (low value)"
   },
   "AURA-066": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-067": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-068": {
-    "state": "pending"
+    "state": "partial",
+    "note": "3 parallel compliance UI tracks not consolidated (large refactor)"
   },
   "AURA-069": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-070": {
-    "state": "pending"
+    "state": "partial",
+    "note": "14 orphan components/compliance/* not mounted/removed"
   },
   "AURA-071": {
-    "state": "pending"
+    "state": "partial",
+    "note": "(modules)/payroll-compliance mock workspaces \u2192 re-exports pending AURA-068 decision"
   },
   "AURA-072": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-073": {
     "state": "done"
@@ -402,100 +409,100 @@
     "state": "done"
   },
   "AURA-135": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-136": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-137": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-138": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-139": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-140": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-141": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-142": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-143": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-144": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-145": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-146": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-147": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-148": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-149": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-150": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-151": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-152": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-153": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-154": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-155": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-156": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-157": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-158": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-159": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-160": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-161": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-162": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-163": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-164": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-165": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-166": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-167": {
     "state": "done"
@@ -714,52 +721,53 @@
     "state": "pending"
   },
   "AURA-238": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-239": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-240": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-241": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-242": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-243": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-244": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-245": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-246": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-247": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-248": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-249": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-250": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-251": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-252": {
-    "state": "pending"
+    "state": "done"
   },
   "AURA-253": {
-    "state": "pending"
+    "state": "partial",
+    "note": "video-interview recording playback (transcript/WebRTC) has no backing service"
   },
   "AURA-254": {
     "state": "done"

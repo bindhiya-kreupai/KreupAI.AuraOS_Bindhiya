@@ -10,7 +10,10 @@ import {
   Loader2,
   AlertCircle,
   CheckCircle2,
+  XCircle,
   Save,
+  Calculator,
+  Clock,
 } from 'lucide-react';
 
 type Country = 'AE' | 'SA' | 'BH' | 'QA' | 'OM' | 'KW';
@@ -63,6 +66,395 @@ async function fetchJson<T>(url: string): Promise<T | null> {
   } catch {
     return null;
   }
+}
+
+// POST helper for the working-hours engine — returns .data or throws a bilingual message
+async function postWorkingHours(body: Record<string, unknown>): Promise<any> {
+  const res = await fetch('/api/compliance/working-hours', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const json = await res.json().catch(() => ({}));
+  if (!res.ok || json?.success === false) {
+    const msg = json?.error || json?.message || 'Calculation failed';
+    const msgAr = json?.errorAr || json?.messageAr || '';
+    throw new Error(msgAr ? `${msg} — ${msgAr}` : msg);
+  }
+  return json.data;
+}
+
+const whInputCls =
+  'w-full px-3 py-2 rounded-lg border border-cloud dark:border-nebula-purple/50 bg-white dark:bg-stellar-blue text-sm focus:outline-none focus:ring-2 focus:ring-indigo-400';
+const whBtnCls =
+  'inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors disabled:opacity-60';
+
+function WhCard({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="p-4 bg-slate-50 dark:bg-slate-900/40 rounded-lg border border-cloud dark:border-nebula-purple/40">
+      <h4 className="text-sm font-semibold text-ink-black dark:text-pearl mb-3 flex items-center gap-1.5">
+        <Clock className="w-4 h-4 text-indigo-500" /> {title}
+      </h4>
+      {children}
+    </div>
+  );
+}
+
+// Daily working hours (country + date)
+function DailyHoursCalc({ country }: { country: string }) {
+  const today = new Date().toISOString().slice(0, 10);
+  const [date, setDate] = useState(today);
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<number | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+
+  const run = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setErr(null);
+    setResult(null);
+    try {
+      const data = await postWorkingHours({
+        action: 'calculateDailyHours',
+        countryCode: country,
+        date,
+      });
+      setResult(typeof data === 'number' ? data : (data?.dailyHours ?? data));
+    } catch (e: any) {
+      setErr(e?.message || 'Failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <WhCard title="Daily working hours">
+      <form onSubmit={run} className="space-y-2">
+        <label className="block text-xs text-silver-mist">Date (Ramadan-aware)</label>
+        <input
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          className={whInputCls}
+        />
+        <button type="submit" disabled={loading} className={whBtnCls}>
+          {loading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Calculator className="w-4 h-4" />
+          )}
+          Calculate
+        </button>
+      </form>
+      {err && <p className="text-xs text-red-600 dark:text-red-400 mt-2">{err}</p>}
+      {result !== null && (
+        <div className="mt-3 p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg text-center">
+          <div className="text-2xl font-bold text-indigo-700 dark:text-indigo-300">{result}h</div>
+          <div className="text-xs text-silver-mist">per working day</div>
+        </div>
+      )}
+    </WhCard>
+  );
+}
+
+// Overtime
+function OvertimeCalc({ country }: { country: string }) {
+  const [actual, setActual] = useState('10');
+  const [shift, setShift] = useState('8');
+  const [rate, setRate] = useState('100');
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<any | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+
+  const run = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setErr(null);
+    setResult(null);
+    try {
+      const data = await postWorkingHours({
+        action: 'calculateOvertime',
+        countryCode: country,
+        actualHours: Number(actual),
+        shiftHours: Number(shift),
+      });
+      setResult(data);
+    } catch (e: any) {
+      setErr(e?.message || 'Failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const otHours = result?.overtimeHours ?? result?.totalOvertimeHours ?? null;
+  const otMultiplier = result?.rate ?? result?.multiplier ?? result?.overtimeRate ?? null;
+
+  return (
+    <WhCard title="Overtime">
+      <form onSubmit={run} className="space-y-2">
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="block text-xs text-silver-mist">Actual hours</label>
+            <input
+              type="number"
+              min="0"
+              step="0.5"
+              value={actual}
+              onChange={(e) => setActual(e.target.value)}
+              className={whInputCls}
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-silver-mist">Shift hours</label>
+            <input
+              type="number"
+              min="0"
+              step="0.5"
+              value={shift}
+              onChange={(e) => setShift(e.target.value)}
+              className={whInputCls}
+            />
+          </div>
+        </div>
+        <label className="block text-xs text-silver-mist">Hourly rate (for amount)</label>
+        <input
+          type="number"
+          min="0"
+          step="0.01"
+          value={rate}
+          onChange={(e) => setRate(e.target.value)}
+          className={whInputCls}
+        />
+        <button type="submit" disabled={loading} className={whBtnCls}>
+          {loading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Calculator className="w-4 h-4" />
+          )}
+          Calculate
+        </button>
+      </form>
+      {err && <p className="text-xs text-red-600 dark:text-red-400 mt-2">{err}</p>}
+      {result && (
+        <div className="mt-3 p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg space-y-1 text-sm">
+          {otHours !== null && (
+            <div className="text-slate-700 dark:text-slate-200">
+              OT hours: <span className="font-bold">{otHours}</span>
+            </div>
+          )}
+          {otMultiplier !== null && (
+            <div className="text-slate-700 dark:text-slate-200">
+              Rate: <span className="font-bold">{otMultiplier}×</span>
+            </div>
+          )}
+          {otHours !== null && otMultiplier !== null && (
+            <div className="text-lg font-bold text-amber-700 dark:text-amber-400">
+              {(Number(otHours) * Number(otMultiplier) * Number(rate)).toFixed(2)}{' '}
+              <span className="text-xs font-normal text-silver-mist">OT pay</span>
+            </div>
+          )}
+          {result?.amount !== undefined && (
+            <div className="text-xs text-silver-mist">Engine amount: {result.amount}</div>
+          )}
+        </div>
+      )}
+    </WhCard>
+  );
+}
+
+// Daily compliance validation
+function ValidateDailyCalc({ country }: { country: string }) {
+  const [hours, setHours] = useState('9');
+  const [ot, setOt] = useState('1');
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<{
+    isValid: boolean;
+    maxDailyHours?: number;
+    violations?: string[];
+  } | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+
+  const run = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setErr(null);
+    setResult(null);
+    try {
+      const data = await postWorkingHours({
+        action: 'validateDaily',
+        countryCode: country,
+        hoursWorked: Number(hours),
+        overtimeHours: Number(ot),
+      });
+      setResult({
+        isValid: !!(data.isCompliant ?? data.valid ?? data.isValid),
+        maxDailyHours: data.maxDailyHours ?? data.maxHours ?? data.limit,
+        violations: data.violations ?? (data.reason ? [data.reason] : undefined),
+      });
+    } catch (e: any) {
+      setErr(e?.message || 'Failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  return (
+    <WhCard title="Daily compliance">
+      <form onSubmit={run} className="space-y-2">
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="block text-xs text-silver-mist">Hours worked</label>
+            <input
+              type="number"
+              min="0"
+              step="0.5"
+              value={hours}
+              onChange={(e) => setHours(e.target.value)}
+              className={whInputCls}
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-silver-mist">Overtime hours</label>
+            <input
+              type="number"
+              min="0"
+              step="0.5"
+              value={ot}
+              onChange={(e) => setOt(e.target.value)}
+              className={whInputCls}
+            />
+          </div>
+        </div>
+        <button type="submit" disabled={loading} className={whBtnCls}>
+          {loading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Calculator className="w-4 h-4" />
+          )}
+          Validate
+        </button>
+      </form>
+      {err && <p className="text-xs text-red-600 dark:text-red-400 mt-2">{err}</p>}
+      {result && (
+        <div
+          className={`mt-3 p-3 rounded-lg ${result.isValid ? 'bg-emerald-50 dark:bg-emerald-900/20' : 'bg-red-50 dark:bg-red-900/20'}`}
+        >
+          <div className="flex items-center gap-2 font-semibold">
+            {result.isValid ? (
+              <>
+                <CheckCircle2 className="w-5 h-5 text-emerald-600" />
+                <span className="text-emerald-700 dark:text-emerald-300">Compliant</span>
+              </>
+            ) : (
+              <>
+                <XCircle className="w-5 h-5 text-red-600" />
+                <span className="text-red-700 dark:text-red-400">Non-compliant</span>
+              </>
+            )}
+          </div>
+          {result.maxDailyHours !== undefined && (
+            <div className="text-xs text-silver-mist mt-1">
+              Max allowed: {result.maxDailyHours}h/day
+            </div>
+          )}
+          {result.violations && result.violations.length > 0 && (
+            <ul className="mt-1 list-disc list-inside text-xs text-red-600 dark:text-red-400">
+              {result.violations.map((v, i) => (
+                <li key={i}>{v}</li>
+              ))}
+            </ul>
+          )}
+        </div>
+      )}
+    </WhCard>
+  );
+}
+
+// Friday compensation
+function FridayCompCalc({ country }: { country: string }) {
+  const [hours, setHours] = useState('8');
+  const [baseSalary, setBaseSalary] = useState('5000');
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<any | null>(null);
+  const [err, setErr] = useState<string | null>(null);
+
+  const run = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setErr(null);
+    setResult(null);
+    try {
+      const data = await postWorkingHours({
+        action: 'fridayCompensation',
+        countryCode: country,
+        hoursWorked: Number(hours),
+        baseSalary: Number(baseSalary),
+      });
+      setResult(data);
+    } catch (e: any) {
+      setErr(e?.message || 'Failed');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const comp = result?.compensation ?? result?.amount ?? result?.totalCompensation ?? null;
+
+  return (
+    <WhCard title="Friday compensation">
+      <form onSubmit={run} className="space-y-2">
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="block text-xs text-silver-mist">Hours worked</label>
+            <input
+              type="number"
+              min="0"
+              step="0.5"
+              value={hours}
+              onChange={(e) => setHours(e.target.value)}
+              className={whInputCls}
+            />
+          </div>
+          <div>
+            <label className="block text-xs text-silver-mist">Monthly base salary</label>
+            <input
+              type="number"
+              min="0"
+              step="1"
+              value={baseSalary}
+              onChange={(e) => setBaseSalary(e.target.value)}
+              className={whInputCls}
+            />
+          </div>
+        </div>
+        <button type="submit" disabled={loading} className={whBtnCls}>
+          {loading ? (
+            <Loader2 className="w-4 h-4 animate-spin" />
+          ) : (
+            <Calculator className="w-4 h-4" />
+          )}
+          Calculate
+        </button>
+      </form>
+      {err && <p className="text-xs text-red-600 dark:text-red-400 mt-2">{err}</p>}
+      {result && (
+        <div className="mt-3 p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg text-center">
+          {comp !== null ? (
+            <>
+              <div className="text-2xl font-bold text-emerald-700 dark:text-emerald-300">
+                {Number(comp).toFixed(2)}
+              </div>
+              <div className="text-xs text-silver-mist">Friday compensation</div>
+            </>
+          ) : (
+            <pre className="text-xs text-left text-slate-600 dark:text-slate-300 whitespace-pre-wrap">
+              {JSON.stringify(result, null, 2)}
+            </pre>
+          )}
+        </div>
+      )}
+    </WhCard>
+  );
 }
 
 export default function RamadanAutoSwitchPage() {
@@ -342,6 +734,24 @@ export default function RamadanAutoSwitchPage() {
             </table>
           </div>
         )}
+      </div>
+
+      {/* Working Hours Validator */}
+      <div className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
+        <div className="px-4 py-3 border-b border-cloud dark:border-nebula-purple/40">
+          <h2 className="font-semibold text-ink-black dark:text-pearl flex items-center gap-2">
+            <Clock className="w-4 h-4 text-indigo-500" /> Working Hours Validator
+          </h2>
+          <p className="text-xs text-silver-mist mt-0.5">
+            Live checks against {country}&apos;s labour-law working-hours engine (Ramadan-aware).
+          </p>
+        </div>
+        <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <DailyHoursCalc country={country} />
+          <OvertimeCalc country={country} />
+          <ValidateDailyCalc country={country} />
+          <FridayCompCalc country={country} />
+        </div>
       </div>
 
       <div className="rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-800 px-4 py-3 text-xs text-amber-800 dark:text-amber-200 flex gap-2">

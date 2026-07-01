@@ -360,7 +360,7 @@ This document is intended for AI Developer execution. It converts the tracker in
 
 ## Competency Library Module
 
-- [ ] **AURA-034 — Service Layer: Remove or gate silent mock fallback**
+- [x] **AURA-034 — Service Layer: Remove or gate silent mock fallback**
   - **Status:** Not Started
   - **Assignee:** Deeksha
   - **Due Date:** 2026-02-07 (Excel serial: 46060)
@@ -368,7 +368,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `competency-library.service.ts`
   - **Description / Acceptance Criteria:** fetchWithFallback returns embedded MOCK\_\* data on API error with success: true, hiding integration failures from UI.
 
-- [ ] **AURA-035 — Competency Catalog: Fix category filter and wire CategoryService**
+- [x] **AURA-035 — Competency Catalog: Fix category filter and wire CategoryService**
   - **Status:** Not Started
   - **Assignee:** Deeksha
   - **Due Date:** 2026-02-07 (Excel serial: 46060)
@@ -376,7 +376,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `GET /api/competency-library/categories, GET/POST /competencies`
   - **Description / Acceptance Criteria:** CategoryService imported but never called; filter pills use hardcoded COMPETENCY_CATEGORIES and send category name as categoryId (API expects UUID). Import button is alert-only stub.
 
-- [ ] **AURA-036 — Competency Catalog: Replace stub with service-backed catalog page**
+- [x] **AURA-036 — Competency Catalog: Replace stub with service-backed catalog page**
   - **Status:** Not Started
   - **Assignee:** Deeksha
   - **Due Date:** 2026-02-07 (Excel serial: 46060)
@@ -384,7 +384,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `CompetencyService → /api/competency-library/competencies`
   - **Description / Acceptance Criteria:** 6 hardcoded competency cards; search/filters non-functional. Imports CompetencyService but never calls it.
 
-- [ ] **AURA-037 — Proficiency Levels: Replace stub with FrameworkService-backed page**
+- [x] **AURA-037 — Proficiency Levels: Replace stub with FrameworkService-backed page**
   - **Status:** Not Started
   - **Assignee:** Deeksha
   - **Due Date:** 2026-02-07 (Excel serial: 46060)
@@ -392,7 +392,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `FrameworkService → /api/competency-library/frameworks`
   - **Description / Acceptance Criteria:** Static L1–L5 sidebar and content with no API integration. Real page exists at competency-library/proficiency-levels.
 
-- [ ] **AURA-038 — Job-Competency Map: Load departments from org API**
+- [x] **AURA-038 — Job-Competency Map: Load departments from org API**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -400,7 +400,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `JobRoleService → /api/competency-library/job-roles`
   - **Description / Acceptance Criteria:** CRUD via JobRoleService works with mock fallback. Department filter uses hardcoded DEPARTMENTS array instead of org structure.
 
-- [ ] **AURA-039 — Job-Competency Map: Replace stub with service-backed mapping page**
+- [x] **AURA-039 — Job-Competency Map: Replace stub with service-backed mapping page**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -416,7 +416,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `POST /api/competency-library/assessments/[id]/results; AssessmentService.submitResults`
   - **Description / Acceptance Criteria:** AssessmentService CRUD works with mock fallback. No UI to rate/submit competency results. Employee picker and cycle banners use inline arrays. Send Reminders, Continue Assessment, Start Assessment unwired.
 
-- [ ] **AURA-041 — Skill Assessment: Replace stub with service-backed assessment page**
+- [x] **AURA-041 — Skill Assessment: Replace stub with service-backed assessment page**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -424,7 +424,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `AssessmentService → /api/competency-library/assessments`
   - **Description / Acceptance Criteria:** Hardcoded cycles and assessments; all action buttons unwired.
 
-- [ ] **AURA-042 — Gap Analysis: Wire gap-analysis CRUD and development plan list/detail**
+- [x] **AURA-042 — Gap Analysis: Wire gap-analysis CRUD and development plan list/detail**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -432,7 +432,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `POST/PUT/DELETE /api/competency-library/gap-analysis; GET/PUT/DELETE /development-plans`
   - **Description / Acceptance Criteria:** Reads analyses via GapAnalysisService; creates dev plans only. Cannot create/edit/delete gap analyses. Cannot list/view/update existing development plans. Refresh and Export Report unwired.
 
-- [ ] **AURA-043 — Gap Analysis: Wire Assign Training and scope filter**
+- [x] **AURA-043 — Gap Analysis: Wire Assign Training and scope filter**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -440,7 +440,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `GET /api/competency-library/gap-analysis`
   - **Description / Acceptance Criteria:** GET /api/competency-library/gap-analysis wired (read-only). Scope dropdown and Assign Training button unwired.
 
-- [ ] **AURA-044 — Legacy Split: Unify competency data model**
+- [x] **AURA-044 — Legacy Split: Unify competency data model**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -448,7 +448,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/performance/competencies vs /api/competency-library/competencies`
   - **Description / Acceptance Criteria:** Landing page uses performance/core/services.CompetencyService → /api/performance/competencies (prisma.competency) not competency-library catalog. Add Competency button unwired.
 
-- [ ] **AURA-045 — Orphan API: Build assessment results rating UI**
+- [x] **AURA-045 — Orphan API: Build assessment results rating UI**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -456,7 +456,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `GET/POST /api/competency-library/assessments/[id]/results`
   - **Description / Acceptance Criteria:** GET/POST assessment results endpoint has no UI consumer. AssessmentService.submitResults defined but never called.
 
-- [ ] **AURA-046 — Orphan Hooks: Wire useCompetencyLibrary hooks to pages or remove**
+- [x] **AURA-046 — Orphan Hooks: Wire useCompetencyLibrary hooks to pages or remove**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -464,7 +464,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `All competency-library services`
   - **Description / Acceptance Criteria:** Full hook suite (useCompetencies, useFrameworks, etc.) wrapping all services — zero page imports found.
 
-- [ ] **AURA-047 — Validators: Enforce Zod validators in API routes**
+- [x] **AURA-047 — Validators: Enforce Zod validators in API routes**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -472,7 +472,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `All POST/PUT /api/competency-library/* endpoints`
   - **Description / Acceptance Criteria:** Zod schemas exported but not wired into any POST/PUT API route handlers.
 
-- [ ] **AURA-048 — Module Shell: Replace placeholder with dashboard hub link**
+- [x] **AURA-048 — Module Shell: Replace placeholder with dashboard hub link**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -480,7 +480,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `N/A — routing/IA fix`
   - **Description / Acceptance Criteria:** ModulePage isImplemented=false stub while 5 dashboard subpages exist under competency-library/.
 
-- [ ] **AURA-049 — Cross-Module: Align workforce gap analysis with competency-library API**
+- [x] **AURA-049 — Cross-Module: Align workforce gap analysis with competency-library API**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -490,7 +490,7 @@ This document is intended for AI Developer execution. It converts the tracker in
 
 ## Compliance Module
 
-- [ ] **AURA-050 — Labor Relations: Implement labor-laws API and wire UI**
+- [x] **AURA-050 — Labor Relations: Implement labor-laws API and wire UI**
   - **Status:** Not Started
   - **Assignee:** Siva
   - **Due Date:** 2026-03-07 (Excel serial: 46088)
@@ -506,7 +506,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/compliance/posh/* (missing)`
   - **Description / Acceptance Criteria:** Service calls /api/compliance/posh/complaints and /committees (404). Renders hardcoded ICC members. Policy Doc, Secure Report, View Training Records, Schedule Awareness Session unwired.
 
-- [ ] **AURA-052 — Labor Relations: Implement grievances API and wire View Details**
+- [x] **AURA-052 — Labor Relations: Implement grievances API and wire View Details**
   - **Status:** Not Started
   - **Assignee:** Siva
   - **Due Date:** 2026-03-07 (Excel serial: 46088)
@@ -514,7 +514,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/compliance/grievances (missing)`
   - **Description / Acceptance Criteria:** Service call fails; hardcoded stats/cases shown. View Details button unwired.
 
-- [ ] **AURA-053 — Labor Relations: Implement disciplinary API and merge duplicate pages**
+- [x] **AURA-053 — Labor Relations: Implement disciplinary API and merge duplicate pages**
   - **Status:** Not Started
   - **Assignee:** Siva
   - **Due Date:** 2026-03-07 (Excel serial: 46088)
@@ -522,7 +522,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/compliance/disciplinary (missing)`
   - **Description / Acceptance Criteria:** Two duplicate pages call /api/compliance/disciplinary (404). Falls back to hardcoded CASES. New Case and row action menu unwired.
 
-- [ ] **AURA-054 — Labor Relations: Implement audits API and wire Schedule Audit**
+- [x] **AURA-054 — Labor Relations: Implement audits API and wire Schedule Audit**
   - **Status:** Not Started
   - **Assignee:** Siva
   - **Due Date:** 2026-03-07 (Excel serial: 46088)
@@ -530,7 +530,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/compliance/audits (missing)`
   - **Description / Acceptance Criteria:** Service call fails; hardcoded 92% score. Schedule Audit button unwired.
 
-- [ ] **AURA-055 — Labor Relations: Implement unions API and wire CRUD actions**
+- [x] **AURA-055 — Labor Relations: Implement unions API and wire CRUD actions**
   - **Status:** Not Started
   - **Assignee:** Siva
   - **Due Date:** 2026-03-07 (Excel serial: 46088)
@@ -538,7 +538,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/compliance/unions (missing)`
   - **Description / Acceptance Criteria:** Hardcoded union cards. Add Union, View Members, Contact Rep buttons unwired.
 
-- [ ] **AURA-056 — Labor Relations: Implement CBA API and wire Draft New Proposal**
+- [x] **AURA-056 — Labor Relations: Implement CBA API and wire Draft New Proposal**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -546,7 +546,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/compliance/unions/cba (missing)`
   - **Description / Acceptance Criteria:** Hardcoded negotiations. Draft New Proposal button unwired.
 
-- [ ] **AURA-057 — Labor Relations: Implement whistleblower API and wire report form**
+- [x] **AURA-057 — Labor Relations: Implement whistleblower API and wire report form**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -554,7 +554,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/compliance/whistleblower (missing)`
   - **Description / Acceptance Criteria:** Report form exists but Submit Report and Track Case Status buttons have no handlers.
 
-- [ ] **AURA-058 — Labor Relations: Implement arbitrations API**
+- [x] **AURA-058 — Labor Relations: Implement arbitrations API**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -562,7 +562,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/compliance/arbitrations (missing)`
   - **Description / Acceptance Criteria:** Hardcoded arbitrator list and cases. No service backend.
 
-- [ ] **AURA-059 — Labor Relations: Implement strikes API and wire Deploy/Standby**
+- [x] **AURA-059 — Labor Relations: Implement strikes API and wire Deploy/Standby**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -570,7 +570,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/compliance/strikes (missing)`
   - **Description / Acceptance Criteria:** Hardcoded strike cards. Deploy and Standby buttons unwired.
 
-- [ ] **AURA-060 — Labor Relations: Implement communication log API and wire Filter Logs**
+- [x] **AURA-060 — Labor Relations: Implement communication log API and wire Filter Logs**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -586,7 +586,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `GET/POST /api/compliance/india-professional-tax`
   - **Description / Acceptance Criteria:** GET/POST india-professional-tax endpoint exists but no page calls it. india-statutory page uses /api/india-statutory instead.
 
-- [ ] **AURA-062 — Partial API: Wire POST calculator actions on labour-law page**
+- [x] **AURA-062 — Partial API: Wire POST calculator actions on labour-law page**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -594,7 +594,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `POST /api/compliance/labour-law`
   - **Description / Acceptance Criteria:** Page only GETs config by country. POST actions (calculateAnnualLeave, validateWorkingHours, etc.) unused.
 
-- [ ] **AURA-063 — Orphan API: Wire overtime/validation engine to attendance pages**
+- [x] **AURA-063 — Orphan API: Wire overtime/validation engine to attendance pages**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -602,7 +602,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `POST /api/compliance/working-hours`
   - **Description / Acceptance Criteria:** Working-hours POST engine (7 actions) has no UI consumer. Only GET used by ramadan-auto-switch.
 
-- [ ] **AURA-064 — Partial API: Wire remaining hijri-calendar actions**
+- [x] **AURA-064 — Partial API: Wire remaining hijri-calendar actions**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -618,7 +618,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `GET /api/compliance`
   - **Description / Acceptance Criteria:** GET /api/compliance returns supported countries/service catalog but no page calls root endpoint.
 
-- [ ] **AURA-066 — Payroll Compliance: Replace MOCK_ALERTS with live observability API**
+- [x] **AURA-066 — Payroll Compliance: Replace MOCK_ALERTS with live observability API**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -626,7 +626,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/v1/compliance/observability`
   - **Description / Acceptance Criteria:** Alerts page uses hardcoded MOCK_ALERTS despite /api/v1/compliance/observability existing.
 
-- [ ] **AURA-067 — Security Framework: Implement /v1/compliance/frameworks backend or remove mock**
+- [x] **AURA-067 — Security Framework: Implement /v1/compliance/frameworks backend or remove mock**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -642,7 +642,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/compliance/* vs /api/v1/wps-compliance/* vs /api/v1/gosi-compliance/*`
   - **Description / Acceptance Criteria:** Three tracks: payroll-compliance/_ (calculators wired to /api/compliance/_), EPIC dashboards (/api/v1/_-compliance/_), and (modules)/payroll-compliance/\* mock workspaces. Pick one surface per domain.
 
-- [ ] **AURA-069 — Duplication: Differentiate payroll labour-law vs labor-law-compliance**
+- [x] **AURA-069 — Duplication: Differentiate payroll labour-law vs labor-law-compliance**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -666,7 +666,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `N/A — routing/IA fix`
   - **Description / Acceptance Criteria:** 4 key module workspaces are standalone mock UIs while dashboard pages are API-wired. Most other module routes re-export dashboard pages.
 
-- [ ] **AURA-072 — Analytics/Settings: Implement compliance analytics and settings APIs**
+- [x] **AURA-072 — Analytics/Settings: Implement compliance analytics and settings APIs**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1184,7 +1184,7 @@ This document is intended for AI Developer execution. It converts the tracker in
 
 ## HR Helpdesk Module
 
-- [ ] **AURA-135 — Architecture: Consolidate duplicate helpdesk modules**
+- [x] **AURA-135 — Architecture: Consolidate duplicate helpdesk modules**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1192,7 +1192,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `TicketManagementService; useHelpdesk; dashboard/helpdesk/services.ts`
   - **Description / Acceptance Criteria:** Parallel wired helpdesk exists at /dashboard/helpdesk with TicketManagementService and useHelpdesk; hr-helpdesk is separate mock UI with no services.ts.
 
-- [ ] **AURA-136 — Tickets: Wire ticket list, create, and kanban drag-drop**
+- [x] **AURA-136 — Tickets: Wire ticket list, create, and kanban drag-drop**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1200,7 +1200,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `GET/POST /api/helpdesk/tickets; TicketManagementService`
   - **Description / Acceptance Criteria:** Page uses hardcoded TICKETS mock array. Create Ticket unwired. handleDragEnd is no-op; status changes not saved.
 
-- [ ] **AURA-137 — Tickets: Wire assign ticket**
+- [x] **AURA-137 — Tickets: Wire assign ticket**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1208,7 +1208,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `TicketManagementService.updateTicket`
   - **Description / Acceptance Criteria:** Assign buttons on cards unwired. POST /helpdesk/tickets/{id}/assign route missing.
 
-- [ ] **AURA-138 — Knowledge Base: Wire article API**
+- [x] **AURA-138 — Knowledge Base: Wire article API**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1216,7 +1216,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `KnowledgeBaseService → /helpdesk/knowledge-base (missing)`
   - **Description / Acceptance Criteria:** Uses MOCK CATEGORIES/ARTICLES arrays. Wired sibling at /dashboard/helpdesk/knowledge-base calls KnowledgeBaseService but API route missing.
 
-- [ ] **AURA-139 — Request Portal: Wire requests list and new request**
+- [x] **AURA-139 — Request Portal: Wire requests list and new request**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1224,7 +1224,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Missing service-request API`
   - **Description / Acceptance Criteria:** Table populated from hardcoded inline array of 3 requests. New Request button unwired.
 
-- [ ] **AURA-140 — Service Catalog: Wire catalog API**
+- [x] **AURA-140 — Service Catalog: Wire catalog API**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1232,7 +1232,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Missing service-catalog API`
   - **Description / Acceptance Criteria:** Category cards and search hardcoded/static. Browse Services links go nowhere.
 
-- [ ] **AURA-141 — Case Management: Wire cases API and actions**
+- [x] **AURA-141 — Case Management: Wire cases API and actions**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1240,7 +1240,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Missing case-management API`
   - **Description / Acceptance Criteria:** Hardcoded 3-case list and static detail thread. Close Case, attach, and send note unwired.
 
-- [ ] **AURA-142 — Chat Support: Wire realtime chat**
+- [x] **AURA-142 — Chat Support: Wire realtime chat**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1248,7 +1248,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Missing chat API`
   - **Description / Acceptance Criteria:** Static mock conversation; Send button and input unwired; no websocket/chat backend.
 
-- [ ] **AURA-143 — Omnichannel: Wire channel integrations**
+- [x] **AURA-143 — Omnichannel: Wire channel integrations**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1256,7 +1256,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `GET /api/helpdesk/settings; missing omnichannel API`
   - **Description / Acceptance Criteria:** Hardcoded Email/Slack/Teams/Phone cards. Connect Now and Manage Settings unwired.
 
-- [ ] **AURA-144 — Performance Metrics: Wire analytics**
+- [x] **AURA-144 — Performance Metrics: Wire analytics**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1264,7 +1264,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `GET /api/helpdesk/analytics; AnalyticsService`
   - **Description / Acceptance Criteria:** KPI cards and chart area are hardcoded placeholders.
 
-- [ ] **AURA-145 — Service Automation: Wire workflow engine**
+- [x] **AURA-145 — Service Automation: Wire workflow engine**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1272,7 +1272,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `workflow-engine module (not linked)`
   - **Description / Acceptance Criteria:** Hardcoded workflow cards. Edit Workflow, View Logs, Create New Automation unwired.
 
-- [ ] **AURA-146 — Continuous Improvement: Wire feedback API**
+- [x] **AURA-146 — Continuous Improvement: Wire feedback API**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1280,7 +1280,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Missing feedback/improvement API`
   - **Description / Acceptance Criteria:** Improvement opportunities and survey quote hardcoded. Create Task unwired.
 
-- [ ] **AURA-147 — Navigation: Add orphan routes to hub grid**
+- [x] **AURA-147 — Navigation: Add orphan routes to hub grid**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1288,7 +1288,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `ModuleGrid`
   - **Description / Acceptance Criteria:** ModuleGrid features omit tickets and knowledge-base even though both pages exist.
 
-- [ ] **AURA-148 — Helpdesk Services: Implement missing API routes and fix SLA path**
+- [x] **AURA-148 — Helpdesk Services: Implement missing API routes and fix SLA path**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1298,7 +1298,7 @@ This document is intended for AI Developer execution. It converts the tracker in
 
 ## Finance Module
 
-- [ ] **AURA-149 — Vendors: Wire vendor list and actions**
+- [x] **AURA-149 — Vendors: Wire vendor list and actions**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1306,7 +1306,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `VendorService; GET/POST /api/finance/vendors`
   - **Description / Acceptance Criteria:** Page uses MOCK_VENDORS inline; ignores VendorService and /api/finance/vendors. Add Vendor and Filter buttons unwired.
 
-- [ ] **AURA-150 — Vendors: Wire approve/reject/edit actions**
+- [x] **AURA-150 — Vendors: Wire approve/reject/edit actions**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1314,7 +1314,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `VendorService.approveVendor, rejectVendor`
   - **Description / Acceptance Criteria:** Icon buttons have no onClick; data from empty API stub.
 
-- [ ] **AURA-151 — Budget: Wire Approve/Reject buttons**
+- [x] **AURA-151 — Budget: Wire Approve/Reject buttons**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1322,7 +1322,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `BudgetService.approveBudget, rejectBudget`
   - **Description / Acceptance Criteria:** Approve/Reject buttons decorative only on both pages.
 
-- [ ] **AURA-152 — Budget: Wire Preview/Use and remove mock fallback**
+- [x] **AURA-152 — Budget: Wire Preview/Use and remove mock fallback**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1330,7 +1330,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `BudgetTemplateService; GET/POST /api/finance/templates`
   - **Description / Acceptance Criteria:** Buttons unwired; shows hardcoded templates when API empty.
 
-- [ ] **AURA-153 — Budget: Wire Run/Save/New Scenario and remove mock fallback**
+- [x] **AURA-153 — Budget: Wire Run/Save/New Scenario and remove mock fallback**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1338,7 +1338,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `BudgetScenarioService; GET/POST /api/finance/scenarios`
   - **Description / Acceptance Criteria:** Play/Save/Trash buttons unwired; mock scenarios when API empty.
 
-- [ ] **AURA-154 — Assets: Persist asset create to API**
+- [x] **AURA-154 — Assets: Persist asset create to API**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1346,7 +1346,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `FinancialAssetService.createAsset; POST /api/finance/assets`
   - **Description / Acceptance Criteria:** handleSubmit updates local state only, never calls API.
 
-- [ ] **AURA-155 — Assets: Fix data model**
+- [x] **AURA-155 — Assets: Fix data model**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1354,7 +1354,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Needs dedicated cost-center API`
   - **Description / Acceptance Criteria:** Uses FinancialAssetService.getAssets() mapped to cost-center shape incorrectly.
 
-- [ ] **AURA-156 — Assets: Fix route target**
+- [x] **AURA-156 — Assets: Fix route target**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1362,7 +1362,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `N/A — routing fix`
   - **Description / Acceptance Criteria:** Re-exports admin assets page, not finance asset hub.
 
-- [ ] **AURA-157 — Petty Cash: Wire policy CRUD**
+- [x] **AURA-157 — Petty Cash: Wire policy CRUD**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1370,7 +1370,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `PettyCashService; new policy API`
   - **Description / Acceptance Criteria:** Approval/category rules hardcoded; only funds fetched from empty API.
 
-- [ ] **AURA-158 — API: Implement DB-backed finance routes**
+- [x] **AURA-158 — API: Implement DB-backed finance routes**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1378,7 +1378,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Prisma + tenant scoping for /api/finance/*`
   - **Description / Acceptance Criteria:** All /api/finance/\* GET routes return empty arrays; sub-routes missing despite services calling /budgets/{id}, /transactions, etc.
 
-- [ ] **AURA-159 — Architecture: Adopt useFinance or remove dead code**
+- [x] **AURA-159 — Architecture: Adopt useFinance or remove dead code**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1386,7 +1386,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `hooks/useFinance.ts`
   - **Description / Acceptance Criteria:** Hook duplicates page-level fetch logic but is unused by any page.
 
-- [ ] **AURA-160 — Cross-cutting: Wire Export/Download buttons**
+- [x] **AURA-160 — Cross-cutting: Wire Export/Download buttons**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1396,7 +1396,7 @@ This document is intended for AI Developer execution. It converts the tracker in
 
 ## Job Library Module
 
-- [ ] **AURA-161 — Catalog: Wire Add Role, search/filter, and row actions**
+- [x] **AURA-161 — Catalog: Wire Add Role, search/filter, and row actions**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1404,7 +1404,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `GET/POST /api/job-library/catalog`
   - **Description / Acceptance Criteria:** POST exists at /api/job-library/catalog but Add Role button has no handler. Search, Filter, row actions unwired.
 
-- [ ] **AURA-162 — Families: Create API and wire UI**
+- [x] **AURA-162 — Families: Create API and wire UI**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1412,7 +1412,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/job-library/families (missing)`
   - **Description / Acceptance Criteria:** Entire page is inline mock cards. New Family button unwired.
 
-- [ ] **AURA-163 — Evaluation: Create API and wire Start Grading**
+- [x] **AURA-163 — Evaluation: Create API and wire Start Grading**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1420,7 +1420,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/job-library/evaluations (missing)`
   - **Description / Acceptance Criteria:** Pending/completed evaluations hardcoded; chart placeholder. Start Grading unwired.
 
-- [ ] **AURA-164 — Templates: Create API and wire Preview/Edit/Use Template**
+- [x] **AURA-164 — Templates: Create API and wire Preview/Edit/Use Template**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1428,7 +1428,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/job-library/posting-templates (missing)`
   - **Description / Acceptance Criteria:** Templates hardcoded. All action buttons unwired.
 
-- [ ] **AURA-165 — Compensation: Create API and wire Adjust Strategy**
+- [x] **AURA-165 — Compensation: Create API and wire Adjust Strategy**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -1436,7 +1436,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/job-library/market-pricing (missing) or compensation integration`
   - **Description / Acceptance Criteria:** Salary benchmarks hardcoded. Adjust Strategy and filter buttons unwired.
 
-- [ ] **AURA-166 — Architecture: Add service layer**
+- [x] **AURA-166 — Architecture: Add service layer**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2030,7 +2030,7 @@ This document is intended for AI Developer execution. It converts the tracker in
 
 ## Recruitment Components Module
 
-- [ ] **AURA-238 — Dashboard: Mount or delete recruitment KPI dashboard**
+- [x] **AURA-238 — Dashboard: Mount or delete recruitment KPI dashboard**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2038,7 +2038,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `RecruitmentService → /v1/recruitment/jobs, /candidates, /stats`
   - **Description / Acceptance Criteria:** Full KPI dashboard with service-backed jobs/candidates/stats never imported; duplicate vs scattered recruitment pages.
 
-- [ ] **AURA-239 — Pipeline: Wire to application-tracking page**
+- [x] **AURA-239 — Pipeline: Wire to application-tracking page**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2046,7 +2046,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/v1/recruitment/candidates; /candidates/[id]/stage`
   - **Description / Acceptance Criteria:** Kanban with drag-drop stage moves via moveCandidateStage; application-tracking reimplements pipeline inline.
 
-- [ ] **AURA-240 — Job Distribution: Wire or remove job distribution UI**
+- [x] **AURA-240 — Job Distribution: Wire or remove job distribution UI**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2054,7 +2054,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `JobDistributionService (mock); no distribution API`
   - **Description / Acceptance Criteria:** Job board publishing, source effectiveness, referral programs — entire JobDistributionService is mock.
 
-- [ ] **AURA-241 — Interviews: Fix service contract and mount component**
+- [x] **AURA-241 — Interviews: Fix service contract and mount component**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2062,7 +2062,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/v1/recruitment/interviews; /interviews/[id]/feedback`
   - **Description / Acceptance Criteria:** Calls non-existent RecruitmentService.getInterviews/getAnalytics; would fail at runtime. Superseded by interview-management page.
 
-- [ ] **AURA-242 — Talent CRM: Wire to talent pool page**
+- [x] **AURA-242 — Talent CRM: Wire to talent pool page**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2070,7 +2070,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/v1/recruitment/candidates; /stats`
   - **Description / Acceptance Criteria:** CRM tabs call missing getAnalytics(); campaigns are mock. talent-pool page uses separate inline UI.
 
-- [ ] **AURA-243 — Internal Mobility: Replace career/internal-mobility inline UI**
+- [x] **AURA-243 — Internal Mobility: Replace career/internal-mobility inline UI**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2078,7 +2078,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `InternalMobilityService (mock)`
   - **Description / Acceptance Criteria:** Career page uses hardcoded job cards; rich portal component orphaned; InternalMobilityService is mock.
 
-- [ ] **AURA-244 — Assessments: Wire to assessment-tests page**
+- [x] **AURA-244 — Assessments: Wire to assessment-tests page**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2086,7 +2086,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `AssessmentService (mock); needs assessment API`
   - **Description / Acceptance Criteria:** Assessment page explicitly disabled; AssessmentCenter + AssessmentService mock-only.
 
-- [ ] **AURA-245 — DEI Hiring: Consolidate with analytics/dei-dashboard**
+- [x] **AURA-245 — DEI Hiring: Consolidate with analytics/dei-dashboard**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2094,7 +2094,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Page: /api/v1/analytics/diversity; Component: DEIHiringService (mock)`
   - **Description / Acceptance Criteria:** Two DEI implementations: live /api/v1/analytics/diversity on page vs mock DEIHiringService in component.
 
-- [ ] **AURA-246 — Interview Scheduler: Wire schedule confirmation to API**
+- [x] **AURA-246 — Interview Scheduler: Wire schedule confirmation to API**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2102,7 +2102,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/v1/recruitment/interviews/schedule`
   - **Description / Acceptance Criteria:** Confirm/send only toggles UI state; MOCK_INTERVIEWERS. No POST to schedule endpoint.
 
-- [ ] **AURA-247 — Background Check: Wire to live background-check API**
+- [x] **AURA-247 — Background Check: Wire to live background-check API**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2110,7 +2110,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/v1/recruitment/background-check`
   - **Description / Acceptance Criteria:** Portal uses default mocks; no onInitiateCheck. Live flow exists at /dashboard/recruitment/background-verification.
 
-- [ ] **AURA-248 — E-Signature: Wire envelope actions to offers API**
+- [x] **AURA-248 — E-Signature: Wire envelope actions to offers API**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2118,7 +2118,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/v1/recruitment/offers/e-sign`
   - **Description / Acceptance Criteria:** All envelopes mock; Send/Void/Resend/Download callbacks not provided. Live offers at offer-management via JobOfferService.
 
-- [ ] **AURA-249 — Resume Parsing: Call parse API instead of mock**
+- [x] **AURA-249 — Resume Parsing: Call parse API instead of mock**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2126,7 +2126,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `POST /api/v1/recruitment/resume/parse`
   - **Description / Acceptance Criteria:** Upload simulates with MOCK_RESUME. API exists at /api/v1/recruitment/resume/parse.
 
-- [ ] **AURA-250 — AI Matching: Wire match API**
+- [x] **AURA-250 — AI Matching: Wire match API**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2134,7 +2134,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/v1/recruitment/candidates/match`
   - **Description / Acceptance Criteria:** Page injects mock candidates/job. No rank/shortlist API calls.
 
-- [ ] **AURA-251 — Referrals: Wire referral submit and consolidate with live page**
+- [x] **AURA-251 — Referrals: Wire referral submit and consolidate with live page**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2142,7 +2142,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/v1/recruitment/referrals`
   - **Description / Acceptance Criteria:** handleSubmitReferral is empty; all tabs use mocks. Live referrals page at /dashboard/recruitment/referrals.
 
-- [ ] **AURA-252 — Communication: Wire messaging API**
+- [x] **AURA-252 — Communication: Wire messaging API**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified

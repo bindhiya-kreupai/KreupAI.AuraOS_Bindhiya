@@ -564,6 +564,123 @@ export class FinanceAnalyticsService {
 }
 
 // ============================================================================
+// Cost Center Service (AURA-155)
+// ============================================================================
+
+export interface CostCenterRecord {
+  id: string;
+  code: string;
+  name: string;
+  fiscalYear: number | null;
+  allocatedBudget: number;
+  spentBudget: number;
+}
+
+export class CostCenterService {
+  private static endpoint = '/finance/cost-centers';
+
+  static async getCostCenters(): Promise<CostCenterRecord[]> {
+    try {
+      const response = await APIClient.get<unknown>(this.endpoint);
+      return APIClient.unwrapList<CostCenterRecord>(response, 'costCenters');
+    } catch {
+      return [];
+    }
+  }
+
+  static async createCostCenter(data: Partial<CostCenterRecord>): Promise<CostCenterRecord> {
+    const response = await APIClient.post<{ costCenter: CostCenterRecord }>(this.endpoint, data);
+    return response.costCenter;
+  }
+}
+
+// ============================================================================
+// Petty Cash Policy Service (AURA-157)
+// ============================================================================
+
+export interface PettyCashPolicy {
+  id: string;
+  policyType: 'approval' | 'category' | 'spending_limit';
+  name: string;
+  description?: string | null;
+  threshold?: number | null;
+  approverRole?: string | null;
+  monthlyLimit?: number | null;
+  requireReceipt: boolean;
+  active: boolean;
+  config?: Record<string, unknown> | null;
+}
+
+export class PettyCashPolicyService {
+  private static endpoint = '/finance/petty-cash/policies';
+
+  static async getPolicies(policyType?: string): Promise<PettyCashPolicy[]> {
+    try {
+      const url = policyType ? `${this.endpoint}?policyType=${policyType}` : this.endpoint;
+      const response = await APIClient.get<unknown>(url);
+      return APIClient.unwrapList<PettyCashPolicy>(response, 'policies');
+    } catch {
+      return [];
+    }
+  }
+
+  static async createPolicy(data: Partial<PettyCashPolicy>): Promise<PettyCashPolicy> {
+    const response = await APIClient.post<{ policy: PettyCashPolicy }>(this.endpoint, data);
+    return response.policy;
+  }
+
+  static async updatePolicy(
+    id: string,
+    updates: Partial<PettyCashPolicy>
+  ): Promise<PettyCashPolicy> {
+    const response = await APIClient.put<{ policy: PettyCashPolicy }>(
+      `${this.endpoint}/${id}`,
+      updates
+    );
+    return response.policy;
+  }
+
+  static async deletePolicy(id: string): Promise<void> {
+    await APIClient.delete(`${this.endpoint}/${id}`);
+  }
+}
+
+// ============================================================================
+// Finance CSV export helper (AURA-160)
+// ============================================================================
+
+/**
+ * Builds a CSV from an array of records and triggers a browser download.
+ * Columns are the union of keys of the supplied rows (or an explicit list).
+ * Real client-side export — no server round-trip required.
+ */
+export function exportToCsv(
+  filename: string,
+  rows: Array<Record<string, unknown>>,
+  columns?: string[]
+): void {
+  if (typeof window === 'undefined') return;
+  const cols = columns ?? Array.from(new Set(rows.flatMap((r) => Object.keys(r))));
+  const escape = (val: unknown): string => {
+    if (val == null) return '';
+    const s = typeof val === 'object' ? JSON.stringify(val) : String(val);
+    return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+  };
+  const header = cols.join(',');
+  const body = rows.map((r) => cols.map((c) => escape(r[c])).join(',')).join('\n');
+  const csv = `${header}\n${body}`;
+  const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = filename.endsWith('.csv') ? filename : `${filename}.csv`;
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+  URL.revokeObjectURL(url);
+}
+
+// ============================================================================
 // Settings Service
 // ============================================================================
 
