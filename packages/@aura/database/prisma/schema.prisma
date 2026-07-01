@@ -15839,3 +15839,100 @@ model GoalTemplate {
   @@index([category])
   @@map("aura_goal_template")
 }
+
+// ---- cleanup fragments ----
+// ─────────────────────────────────────────────────────────────────────────────
+// Benefits Module backlog — schema fragment (AURA-295)
+//
+// SCHEMA RULE: This fragment is NOT applied to schema.prisma directly. The model
+// below is created by the defensive migration at
+//   packages/@aura/database/prisma/migrations/20260702190001_cleanup_benefits/migration.sql
+// and accessed at runtime via `(prisma as any).benefitCampaign`.
+//
+// Delegate: (prisma as any).benefitCampaign
+// Table:    aura_benefit_campaign
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Benefit notification campaign — an HR-authored message (reminder / info) that
+/// is queued for delivery to employees over one or more channels. Persists the
+/// "Create New Campaign" action from /dashboard/benefits/notification.
+model BenefitCampaign {
+  id        String   @id @default(uuid())
+  tenantId  String
+  title     String
+  /// 'Urgent' | 'Info'
+  type      String   @default("Info")
+  /// Free-text delivery channel, e.g. "Email & Push", "Email".
+  channel   String   @default("Email")
+  message   String
+  /// 'DRAFT' | 'QUEUED' | 'SENT' | 'CANCELLED'
+  status    String   @default("QUEUED")
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  isDeleted Boolean  @default(false)
+  deletedAt DateTime?
+
+  @@index([tenantId])
+  @@index([status])
+  @@map("aura_benefit_campaign")
+}
+
+// Localization cleanup — new Prisma models (AURA-606, AURA-610).
+// Merged into schema.prisma by the orchestrator. Access in route code via
+// (prisma as any).<camelCaseDelegate>. All tables are tenant-scoped.
+//
+// AURA-606 — CorporateBankAccount: real corporate disbursement bank accounts
+//   used by the Bank Integration "Accounts" tab. Delegate: corporateBankAccount.
+// AURA-610 — GovernmentReportArchive: persisted record of generated statutory
+//   filings (country / reportType / period / status / fileRef). Delegate:
+//   governmentReportArchive.
+
+model CorporateBankAccount {
+  id            String   @id @default(uuid())
+  tenantId      String
+  accountName   String
+  bankName      String
+  accountNumber String
+  ifscCode      String?
+  swiftCode     String?
+  iban          String?
+  branchName    String?
+  currency      String   @default("USD")
+  disbursementFormat String @default("NEFT") // NEFT | NACH | RTGS | WPS | Excel | CSV
+  isPrimary     Boolean  @default(false)
+  status        String   @default("active") // active | inactive
+  notes         String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  createdBy     String?
+  updatedBy     String?
+
+  @@index([tenantId], map: "CorporateBankAccount_tenantId_idx")
+  @@index([tenantId, status], map: "CorporateBankAccount_tenantId_status_idx")
+  @@map("aura_corporate_bank_account")
+}
+
+model GovernmentReportArchive {
+  id           String   @id @default(uuid())
+  tenantId     String
+  country      String // ISO code, e.g. IN / AE / SA
+  countryName  String?
+  reportType   String // e.g. "Form 16", "WPS SIF File", "GOSI Contribution File"
+  authority    String?
+  frequency    String? // Monthly | Quarterly | Annual
+  period       String // e.g. "2026-06" or "2026-Q1" or "2026"
+  status       String   @default("generated") // generated | submitted | accepted | rejected
+  fileRef      String? // reference / path to generated artifact
+  notes        String?
+  generatedAt  DateTime @default(now())
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  createdBy    String?
+
+  @@index([tenantId], map: "GovernmentReportArchive_tenantId_idx")
+  @@index([tenantId, country], map: "GovernmentReportArchive_tenantId_country_idx")
+  @@map("aura_government_report_archive")
+}
+
