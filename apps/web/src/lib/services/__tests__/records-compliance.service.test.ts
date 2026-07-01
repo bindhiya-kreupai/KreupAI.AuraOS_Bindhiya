@@ -217,6 +217,44 @@ describe('recordsComplianceCertificateService', () => {
   });
 });
 
+describe('paginated list envelopes (UI contract: data.items)', () => {
+  it('document matrix list returns { items, total, page, pageSize, hasNextPage }', async () => {
+    m.recordsDocumentMatrix.findMany = vi.fn().mockResolvedValue([{ id: 'dm-1' }]);
+    m.recordsDocumentMatrix.count = vi.fn().mockResolvedValue(1);
+    const res: any = await recordsDocumentMatrixService.list('tenant-1');
+    expect(Array.isArray(res.items)).toBe(true);
+    expect(res.items).toHaveLength(1);
+    expect(res).toMatchObject({ total: 1 });
+    expect(res).toHaveProperty('page');
+    expect(res).toHaveProperty('pageSize');
+    expect(res).toHaveProperty('hasNextPage');
+  });
+
+  it('completeness list returns items array', async () => {
+    m.recordsCompletenessSnapshot.findMany = vi.fn().mockResolvedValue([{ id: 'cs-1' }]);
+    m.recordsCompletenessSnapshot.count = vi.fn().mockResolvedValue(1);
+    const res: any = await recordsCompletenessService.list('tenant-1', '2026-06');
+    expect(Array.isArray(res.items)).toBe(true);
+    expect(res.total).toBe(1);
+  });
+
+  it('audit checklist list returns items array', async () => {
+    m.recordsAuditChecklistItem.findMany = vi.fn().mockResolvedValue([{ id: 'ci-1' }]);
+    m.recordsAuditChecklistItem.count = vi.fn().mockResolvedValue(1);
+    const res: any = await recordsAuditChecklistService.list('tenant-1');
+    expect(Array.isArray(res.items)).toBe(true);
+    expect(res.total).toBe(1);
+  });
+
+  it('risk register list returns items array', async () => {
+    m.recordsRiskEntry.findMany = vi.fn().mockResolvedValue([{ id: 'rr-1' }]);
+    m.recordsRiskEntry.count = vi.fn().mockResolvedValue(1);
+    const res: any = await recordsRiskService.list('tenant-1');
+    expect(Array.isArray(res.items)).toBe(true);
+    expect(res.total).toBe(1);
+  });
+});
+
 describe('RECORDS_COMPLIANCE_CONSTANTS', () => {
   it('covers identity, contract, visa, work permit', () => {
     expect(RECORDS_COMPLIANCE_CONSTANTS.CATEGORIES).toContain('IDENTITY');

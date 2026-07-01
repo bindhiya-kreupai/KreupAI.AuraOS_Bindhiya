@@ -21,9 +21,14 @@ const periodNow = () => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 };
 
+interface ListResponse<T> {
+  items?: T[];
+}
+
 export default function OrgPositionControlPage() {
   const [rows, setRows] = useState<Row[]>([]);
   const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
   const [form, setForm] = useState({
     period: periodNow(),
     departmentId: '',
@@ -36,15 +41,26 @@ export default function OrgPositionControlPage() {
   });
 
   async function load() {
-    const r = await fetch('/api/v1/org-compliance/position-control');
-    const p = await r.json();
-    if (p.success) setRows(p.data ?? []);
+    setLoading(true);
+    try {
+      const r = await fetch('/api/v1/org-compliance/position-control');
+      const p = await r.json();
+      if (p.success) {
+        const data = p.data as ListResponse<Row> | Row[] | undefined;
+        setRows(Array.isArray(data) ? data : (data?.items ?? []));
+      } else {
+        setMessage(p.error?.message ?? 'Failed to load');
+      }
+    } finally {
+      setLoading(false);
+    }
   }
   useEffect(() => {
     load();
   }, []);
 
   async function save() {
+    setMessage('');
     const r = await fetch('/api/v1/org-compliance/position-control', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -52,7 +68,7 @@ export default function OrgPositionControlPage() {
     });
     const p = await r.json();
     setMessage(p.success ? 'Saved' : (p.error?.details?.error ?? p.error?.message ?? 'failed'));
-    load();
+    if (p.success) await load();
   }
 
   return (
@@ -148,7 +164,7 @@ export default function OrgPositionControlPage() {
               {rows.length === 0 && (
                 <tr>
                   <td colSpan={9} className="px-3 py-6 text-center text-slate-500">
-                    No rows.
+                    {loading ? 'Loading…' : 'No rows.'}
                   </td>
                 </tr>
               )}

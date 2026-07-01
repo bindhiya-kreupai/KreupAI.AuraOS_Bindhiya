@@ -1,15 +1,12 @@
-"use client";
+'use client';
 
 import React, { useState, useEffect } from 'react';
-import {
-  Shield,
-  Calculator,
-  FileText,
-  TrendingUp,
-  ArrowLeft,
-  AlertCircle,
-} from 'lucide-react';
+import { Shield, Calculator, FileText, TrendingUp, ArrowLeft, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
+import EmployeeContributionRows, {
+  type EmployeeRow,
+  makeEmptyRow,
+} from '../_components/EmployeeContributionRows';
 
 interface ContributionResult {
   employeeId: string;
@@ -35,6 +32,8 @@ export default function OmanSPFPage() {
   const [results, setResults] = useState<ContributionResult[]>([]);
   const [referenceData, setReferenceData] = useState<any>(null);
   const [totals, setTotals] = useState<any>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [employees, setEmployees] = useState<EmployeeRow[]>([makeEmptyRow()]);
 
   useEffect(() => {
     // Fetch reference data
@@ -45,28 +44,35 @@ export default function OmanSPFPage() {
         if (data.success) {
           setReferenceData(data.data);
         }
-      } catch (error: any) {
-            console.error('Error:', error);
-              }
+      } catch {
+        setError('Failed to load Oman SPF reference data');
+      }
     };
     fetchReferenceData();
   }, []);
 
   const handleCalculate = async () => {
+    setError(null);
+    const payload = employees
+      .filter((e) => e.employeeName.trim() && e.nationality.trim() && e.basicSalary.trim())
+      .map((e, idx) => ({
+        employeeId: e.employeeId.trim() || String(idx + 1),
+        employeeName: e.employeeName.trim(),
+        nationality: e.nationality.trim().toUpperCase(),
+        basicSalary: Number(e.basicSalary) || 0,
+        housingAllowance: Number(e.housingAllowance) || 0,
+      }));
+    if (payload.length === 0) {
+      setError('Add at least one employee with name, nationality and basic salary.');
+      return;
+    }
     setLoading(true);
     try {
-      // Mock employee data
-      const mockEmployees = [
-        { employeeId: '1', employeeName: 'Mohammed Al-Balushi', nationality: 'OM', basicSalary: 800, housingAllowance: 200 },
-        { employeeId: '2', employeeName: 'Fatima Al-Harthi', nationality: 'OM', basicSalary: 1200, housingAllowance: 300 },
-        { employeeId: '3', employeeName: 'Ahmed Al-Zadjali', nationality: 'SA', basicSalary: 1500, housingAllowance: 0 },
-      ];
-
       const response = await fetch('/api/compliance/oman-spf', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          employees: mockEmployees,
+          employees: payload,
           month: new Date().toISOString().slice(0, 7),
         }),
       });
@@ -75,10 +81,12 @@ export default function OmanSPFPage() {
       if (data.success) {
         setResults(data.data.results);
         setTotals(data.data.totals);
+      } else {
+        setError(data.error || 'Failed to calculate SPF contributions');
       }
-    } catch (error: any) {
-            console.error('Error:', error);
-          } finally {
+    } catch {
+      setError('Failed to connect to Oman SPF service');
+    } finally {
       setLoading(false);
     }
   };
@@ -88,19 +96,26 @@ export default function OmanSPFPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
-          <Link href="/dashboard/payroll-compliance" className="text-indigo-600 hover:text-indigo-700 text-sm flex items-center gap-1 mb-2">
+          <Link
+            href="/dashboard/payroll-compliance"
+            className="text-indigo-600 hover:text-indigo-700 text-sm flex items-center gap-1 mb-2"
+          >
             <ArrowLeft className="w-4 h-4" /> Back to Compliance
           </Link>
           <h1 className="text-2xl font-bold flex items-center gap-3 text-slate-900 dark:text-slate-100">
             <Shield className="w-7 h-7 text-green-500" />
             Oman SPF - Social Protection Fund
             <span className="text-sm font-normal text-slate-500 mr-2">|</span>
-            <span className="text-lg font-semibold text-slate-600 dark:text-slate-400" dir="rtl">صندوق الحماية الاجتماعية</span>
+            <span className="text-lg font-semibold text-slate-600 dark:text-slate-400" dir="rtl">
+              صندوق الحماية الاجتماعية
+            </span>
           </h1>
           <p className="text-slate-500 text-sm mt-1">
             Calculate social protection contributions under Royal Decree No. 52/2023
             <span className="mx-2">•</span>
-            <span dir="rtl">حساب مساهمات الحماية الاجتماعية بموجب المرسوم السلطاني رقم 52/2023</span>
+            <span dir="rtl">
+              حساب مساهمات الحماية الاجتماعية بموجب المرسوم السلطاني رقم 52/2023
+            </span>
           </p>
         </div>
         <div className="flex items-center gap-2 px-4 py-2 bg-green-50 dark:bg-green-900/20 rounded-xl border border-green-200 dark:border-green-800">
@@ -112,8 +127,18 @@ export default function OmanSPFPage() {
       {/* Tabs */}
       <div className="flex gap-2 border-b border-slate-200 dark:border-slate-800">
         {[
-          { id: 'calculate', label: 'Calculate Contributions', labelAr: 'حساب المساهمات', icon: Calculator },
-          { id: 'rates', label: 'Contribution Rates', labelAr: 'معدلات المساهمة', icon: TrendingUp },
+          {
+            id: 'calculate',
+            label: 'Calculate Contributions',
+            labelAr: 'حساب المساهمات',
+            icon: Calculator,
+          },
+          {
+            id: 'rates',
+            label: 'Contribution Rates',
+            labelAr: 'معدلات المساهمة',
+            icon: TrendingUp,
+          },
           { id: 'legislation', label: 'Legislation', labelAr: 'التشريع', icon: FileText },
         ].map((tab) => {
           const Icon = tab.icon;
@@ -129,7 +154,9 @@ export default function OmanSPFPage() {
             >
               <Icon className="w-4 h-4" />
               <span className="font-medium">{tab.label}</span>
-              <span className="text-sm opacity-75" dir="rtl">({tab.labelAr})</span>
+              <span className="text-sm opacity-75" dir="rtl">
+                ({tab.labelAr})
+              </span>
             </button>
           );
         })}
@@ -153,6 +180,55 @@ export default function OmanSPFPage() {
               </button>
             </div>
 
+            {error && (
+              <div className="mb-4 flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-800 dark:bg-red-900/20 dark:text-red-400">
+                <AlertCircle className="h-4 w-4" />
+                <span>{error}</span>
+                <button
+                  onClick={() => setError(null)}
+                  className="ml-auto text-red-500 hover:text-red-700"
+                >
+                  Dismiss
+                </button>
+              </div>
+            )}
+
+            <div className="mb-6">
+              <EmployeeContributionRows
+                rows={employees}
+                onChange={setEmployees}
+                accentClass="bg-green-600 hover:bg-green-700"
+                columns={[
+                  {
+                    key: 'employeeName',
+                    label: 'Employee',
+                    labelAr: 'الموظف',
+                    placeholder: 'Full name',
+                  },
+                  {
+                    key: 'nationality',
+                    label: 'Nationality',
+                    labelAr: 'الجنسية',
+                    placeholder: 'OM / SA',
+                  },
+                  {
+                    key: 'basicSalary',
+                    label: 'Basic (OMR)',
+                    labelAr: 'الأساسي',
+                    type: 'number',
+                    placeholder: '0',
+                  },
+                  {
+                    key: 'housingAllowance',
+                    label: 'Housing (OMR)',
+                    labelAr: 'السكن',
+                    type: 'number',
+                    placeholder: '0',
+                  },
+                ]}
+              />
+            </div>
+
             {results.length > 0 && (
               <div className="overflow-x-auto">
                 <table className="w-full text-sm">
@@ -170,25 +246,48 @@ export default function OmanSPFPage() {
                   </thead>
                   <tbody>
                     {results.map((result) => (
-                      <tr key={result.employeeId} className="border-t border-slate-200 dark:border-slate-700">
+                      <tr
+                        key={result.employeeId}
+                        className="border-t border-slate-200 dark:border-slate-700"
+                      >
                         <td className="px-4 py-2 font-medium">{result.employeeName}</td>
                         <td className="px-4 py-2">{result.nationality}</td>
-                        <td className="px-4 py-2 text-right">OMR {result.basicSalary.toFixed(2)}</td>
-                        <td className="px-4 py-2 text-right">OMR {result.housingAllowance.toFixed(2)}</td>
-                        <td className="px-4 py-2 text-right">OMR {result.contributorySalary.toFixed(2)}</td>
-                        <td className="px-4 py-2 text-right">OMR {result.contribution.employeeShare.toFixed(2)}</td>
-                        <td className="px-4 py-2 text-right">OMR {result.contribution.employerShare.toFixed(2)}</td>
-                        <td className="px-4 py-2 text-right font-semibold">OMR {result.contribution.totalContribution.toFixed(2)}</td>
+                        <td className="px-4 py-2 text-right">
+                          OMR {result.basicSalary.toFixed(2)}
+                        </td>
+                        <td className="px-4 py-2 text-right">
+                          OMR {result.housingAllowance.toFixed(2)}
+                        </td>
+                        <td className="px-4 py-2 text-right">
+                          OMR {result.contributorySalary.toFixed(2)}
+                        </td>
+                        <td className="px-4 py-2 text-right">
+                          OMR {result.contribution.employeeShare.toFixed(2)}
+                        </td>
+                        <td className="px-4 py-2 text-right">
+                          OMR {result.contribution.employerShare.toFixed(2)}
+                        </td>
+                        <td className="px-4 py-2 text-right font-semibold">
+                          OMR {result.contribution.totalContribution.toFixed(2)}
+                        </td>
                       </tr>
                     ))}
                   </tbody>
                   {totals && (
                     <tfoot className="bg-slate-50 dark:bg-slate-900 font-semibold">
                       <tr>
-                        <td colSpan={5} className="px-4 py-2">Total</td>
-                        <td className="px-4 py-2 text-right">OMR {totals.totalEmployeeContribution.toFixed(2)}</td>
-                        <td className="px-4 py-2 text-right">OMR {totals.totalEmployerContribution.toFixed(2)}</td>
-                        <td className="px-4 py-2 text-right">OMR {totals.totalContribution.toFixed(2)}</td>
+                        <td colSpan={5} className="px-4 py-2">
+                          Total
+                        </td>
+                        <td className="px-4 py-2 text-right">
+                          OMR {totals.totalEmployeeContribution.toFixed(2)}
+                        </td>
+                        <td className="px-4 py-2 text-right">
+                          OMR {totals.totalEmployerContribution.toFixed(2)}
+                        </td>
+                        <td className="px-4 py-2 text-right">
+                          OMR {totals.totalContribution.toFixed(2)}
+                        </td>
                       </tr>
                     </tfoot>
                   )}
@@ -217,7 +316,9 @@ export default function OmanSPFPage() {
               </div>
               <div className="flex justify-between pt-2 border-t border-slate-200 dark:border-slate-700">
                 <span className="text-slate-900 dark:text-white font-medium">Total Rate:</span>
-                <span className="font-bold text-green-600">{referenceData.rates.OMANI.total * 100}%</span>
+                <span className="font-bold text-green-600">
+                  {referenceData.rates.OMANI.total * 100}%
+                </span>
               </div>
             </div>
           </div>
@@ -237,7 +338,9 @@ export default function OmanSPFPage() {
               </div>
               <div className="flex justify-between pt-2 border-t border-slate-200 dark:border-slate-700">
                 <span className="text-slate-900 dark:text-white font-medium">Total Rate:</span>
-                <span className="font-bold text-green-600">{referenceData.rates.GCC.total * 100}%</span>
+                <span className="font-bold text-green-600">
+                  {referenceData.rates.GCC.total * 100}%
+                </span>
               </div>
             </div>
           </div>
@@ -256,7 +359,9 @@ export default function OmanSPFPage() {
           <div className="space-y-2 text-sm">
             <div className="flex justify-between">
               <span className="text-slate-600 dark:text-slate-400">Effective Date:</span>
-              <span className="font-medium">{new Date(referenceData.legislation.effectiveDate).toLocaleDateString()}</span>
+              <span className="font-medium">
+                {new Date(referenceData.legislation.effectiveDate).toLocaleDateString()}
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="text-slate-600 dark:text-slate-400">Description:</span>
@@ -267,15 +372,11 @@ export default function OmanSPFPage() {
           <div className="mt-6 grid grid-cols-1 md:grid-cols-2 gap-3">
             {referenceData.schemes.map((scheme: any) => (
               <div key={scheme.id} className="p-4 bg-slate-50 dark:bg-slate-900 rounded-lg">
-                <h4 className="font-semibold text-slate-900 dark:text-white mb-1">
-                  {scheme.name}
-                </h4>
+                <h4 className="font-semibold text-slate-900 dark:text-white mb-1">{scheme.name}</h4>
                 <p className="text-sm text-slate-600 dark:text-slate-400 mb-2" dir="rtl">
                   {scheme.nameAr}
                 </p>
-                <p className="text-xs text-slate-700 dark:text-slate-300">
-                  {scheme.description}
-                </p>
+                <p className="text-xs text-slate-700 dark:text-slate-300">{scheme.description}</p>
               </div>
             ))}
           </div>
@@ -287,9 +388,12 @@ export default function OmanSPFPage() {
         <div className="flex items-start gap-3">
           <AlertCircle className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5" />
           <div className="flex-1">
-            <h4 className="font-medium text-blue-900 dark:text-blue-200 mb-1">Coverage Information</h4>
+            <h4 className="font-medium text-blue-900 dark:text-blue-200 mb-1">
+              Coverage Information
+            </h4>
             <p className="text-sm text-blue-800 dark:text-blue-300">
-              Oman SPF covers pension and unemployment insurance for Omani and GCC nationals. Contributory salary includes basic salary and housing allowance.
+              Oman SPF covers pension and unemployment insurance for Omani and GCC nationals.
+              Contributory salary includes basic salary and housing allowance.
             </p>
           </div>
         </div>
@@ -297,4 +401,3 @@ export default function OmanSPFPage() {
     </div>
   );
 }
-

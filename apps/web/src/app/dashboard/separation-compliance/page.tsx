@@ -109,6 +109,14 @@ export default function SepHome() {
             </li>
             <li>
               <a
+                href="/dashboard/separation-compliance/notice-buyout"
+                className="text-blue-700 hover:underline"
+              >
+                Notice / Garden Leave / Buyout Tracking (S08)
+              </a>
+            </li>
+            <li>
+              <a
                 href="/dashboard/separation-compliance/certificate"
                 className="text-blue-700 hover:underline"
               >

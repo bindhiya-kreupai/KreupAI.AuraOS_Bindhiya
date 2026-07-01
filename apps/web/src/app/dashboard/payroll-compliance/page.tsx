@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import Link from 'next/link';
 import {
   Shield,
@@ -12,6 +12,15 @@ import {
   ArrowRight,
   Globe,
 } from 'lucide-react';
+
+interface ComplianceCounts {
+  controls: number;
+  controlsOverdue: number;
+  findingsOpen: number;
+  risksOpen: number;
+  certificates: number;
+  certificatesSigned: number;
+}
 
 const complianceModules = [
   {
@@ -125,6 +134,27 @@ const supportedCountries = [
 ];
 
 export default function PayrollCompliancePage() {
+  const [counts, setCounts] = useState<ComplianceCounts | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    const load = async () => {
+      try {
+        const res = await fetch('/api/v1/payroll-compliance/dashboard');
+        const body = await res.json();
+        if (active && body?.success && body?.data?.counts) {
+          setCounts(body.data.counts as ComplianceCounts);
+        }
+      } catch {
+        // Non-fatal: hub still renders navigation without live governance counts.
+      }
+    };
+    load();
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <div className="space-y-8 pb-6">
       {/* Header */}
@@ -222,7 +252,7 @@ export default function PayrollCompliancePage() {
         })}
       </div>
 
-      {/* Quick Stats */}
+      {/* Governance Snapshot (live) */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <div className="bg-gradient-to-br from-emerald-500 to-emerald-600 rounded-2xl p-5 text-white">
           <div className="text-3xl font-bold">{supportedCountries.length}</div>
@@ -232,24 +262,24 @@ export default function PayrollCompliancePage() {
           </div>
         </div>
         <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-2xl p-5 text-white">
-          <div className="text-3xl font-bold">{complianceModules.length}</div>
-          <div className="text-sm opacity-90">Compliance Modules</div>
+          <div className="text-3xl font-bold">{counts ? counts.controls : '—'}</div>
+          <div className="text-sm opacity-90">Active Controls</div>
           <div className="text-xs opacity-75 mt-1" dir="rtl">
-            وحدات الامتثال
+            ضوابط نشطة
           </div>
         </div>
         <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-2xl p-5 text-white">
-          <div className="text-3xl font-bold">3</div>
-          <div className="text-sm opacity-90">File Formats</div>
+          <div className="text-3xl font-bold">{counts ? counts.findingsOpen : '—'}</div>
+          <div className="text-sm opacity-90">Open Findings</div>
           <div className="text-xs opacity-75 mt-1" dir="rtl">
-            صيغ الملفات
+            نتائج مفتوحة
           </div>
         </div>
         <div className="bg-gradient-to-br from-amber-500 to-amber-600 rounded-2xl p-5 text-white">
-          <div className="text-3xl font-bold">2</div>
-          <div className="text-sm opacity-90">Languages</div>
+          <div className="text-3xl font-bold">{counts ? counts.risksOpen : '—'}</div>
+          <div className="text-sm opacity-90">Open Risks</div>
           <div className="text-xs opacity-75 mt-1" dir="rtl">
-            اللغات
+            مخاطر مفتوحة
           </div>
         </div>
       </div>

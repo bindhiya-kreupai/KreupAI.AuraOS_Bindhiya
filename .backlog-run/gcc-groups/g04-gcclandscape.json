@@ -1,0 +1,167 @@
+[
+  {
+    "id": "AURA-390",
+    "title": "Compliance Risk Register: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/gcc-landscape/compliance-risk-register",
+    "api": "Not specified",
+    "desc": "Menu feature 'Compliance Risk Register' resolves to /dashboard/gcc-landscape/compliance-risk-register but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-391",
+    "title": "Countries & Entities: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/gcc-landscape/countries-entities",
+    "api": "Not specified",
+    "desc": "Menu feature 'Countries & Entities' resolves to /dashboard/gcc-landscape/countries-entities but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-392",
+    "title": "Country Reference Dataset: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/gcc-landscape/country-reference-dataset",
+    "api": "Not specified",
+    "desc": "Menu feature 'Country Reference Dataset' resolves to /dashboard/gcc-landscape/country-reference-dataset but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-393",
+    "title": "Digital Maturity Scorecard: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/gcc-landscape/digital-maturity-scorecard",
+    "api": "Not specified",
+    "desc": "Menu feature 'Digital Maturity Scorecard' resolves to /dashboard/gcc-landscape/digital-maturity-scorecard but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-394",
+    "title": "Executive Landscape: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/gcc-landscape/executive-landscape",
+    "api": "Not specified",
+    "desc": "Menu feature 'Executive Landscape' resolves to /dashboard/gcc-landscape/executive-landscape but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-395",
+    "title": "GCC Personas / RBAC: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/gcc-landscape/gcc-personas-rbac",
+    "api": "Not specified",
+    "desc": "Menu feature 'GCC Personas / RBAC' resolves to /dashboard/gcc-landscape/gcc-personas-rbac but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-396",
+    "title": "Platform Alerts: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/gcc-landscape/platform-alerts",
+    "api": "Not specified",
+    "desc": "Menu feature 'Platform Alerts' resolves to /dashboard/gcc-landscape/platform-alerts but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-397",
+    "title": "Workforce Classification: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/gcc-landscape/workforce-classification",
+    "api": "Not specified",
+    "desc": "Menu feature 'Workforce Classification' resolves to /dashboard/gcc-landscape/workforce-classification but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-398",
+    "title": "Workforce KPI Baseline: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/gcc-landscape/workforce-kpi-baseline",
+    "api": "Not specified",
+    "desc": "Menu feature 'Workforce KPI Baseline' resolves to /dashboard/gcc-landscape/workforce-kpi-baseline but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-399",
+    "title": "Change Requests: Complete API integration and remove mock/local fallbacks",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/gcc-rule-library/change-requests",
+    "api": "/api/v1/gcc-rule-library/rule-change-requests, /api/v1/gcc-rule-library/rule-change-requests${qs}",
+    "desc": "Page calls APIs (/api/v1/gcc-rule-library/rule-change-requests, /api/v1/gcc-rule-library/rule-change-requests${qs}) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-400",
+    "title": "Country Risk Matrix: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/gcc-rule-library/country-risk-matrix",
+    "api": "Not specified",
+    "desc": "Menu feature 'Country Risk Matrix' resolves to /dashboard/gcc-rule-library/country-risk-matrix but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-401",
+    "title": "GCC Comparison Tables: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/gcc-rule-library/gcc-comparison-tables",
+    "api": "Not specified",
+    "desc": "Menu feature 'GCC Comparison Tables' resolves to /dashboard/gcc-rule-library/gcc-comparison-tables but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-402",
+    "title": "Monthly Country Certificate: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/gcc-rule-library/monthly-country-certificate",
+    "api": "Not specified",
+    "desc": "Menu feature 'Monthly Country Certificate' resolves to /dashboard/gcc-rule-library/monthly-country-certificate but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-403",
+    "title": "Rule Change Requests (Maker-Checker, Rollback): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/gcc-rule-library/rule-change-requests-maker-checker-rollback",
+    "api": "Not specified",
+    "desc": "Menu feature 'Rule Change Requests (Maker-Checker, Rollback)' resolves to /dashboard/gcc-rule-library/rule-change-requests-maker-checker-rollback but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-404",
+    "title": "Rule Packs (UAE/KSA/BH/QA/OM/KW): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/gcc-rule-library/rule-packs-uae-ksa-bh-qa-om-kw",
+    "api": "Not specified",
+    "desc": "Menu feature 'Rule Packs (UAE/KSA/BH/QA/OM/KW)' resolves to /dashboard/gcc-rule-library/rule-packs-uae-ksa-bh-qa-om-kw but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  }
+]

@@ -20,9 +20,16 @@ const statusColor: Record<string, string> = {
   FILLED: 'bg-emerald-100 text-emerald-800',
 };
 
+interface ListResponse<T> {
+  items?: T[];
+}
+
 export default function OrgVacancyPage() {
   const [rows, setRows] = useState<Vac[]>([]);
   const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [fillFor, setFillFor] = useState<string | null>(null);
+  const [candidateId, setCandidateId] = useState('');
   const [form, setForm] = useState({
     vacancyNumber: '',
     positionId: '',
@@ -31,15 +38,26 @@ export default function OrgVacancyPage() {
   });
 
   async function load() {
-    const r = await fetch('/api/v1/org-compliance/vacancy');
-    const p = await r.json();
-    if (p.success) setRows(p.data ?? []);
+    setLoading(true);
+    try {
+      const r = await fetch('/api/v1/org-compliance/vacancy');
+      const p = await r.json();
+      if (p.success) {
+        const data = p.data as ListResponse<Vac> | Vac[] | undefined;
+        setRows(Array.isArray(data) ? data : (data?.items ?? []));
+      } else {
+        setMessage(p.error?.message ?? 'Failed to load');
+      }
+    } finally {
+      setLoading(false);
+    }
   }
   useEffect(() => {
     load();
   }, []);
 
   async function raise() {
+    setMessage('');
     const r = await fetch('/api/v1/org-compliance/vacancy', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -47,9 +65,13 @@ export default function OrgVacancyPage() {
     });
     const p = await r.json();
     setMessage(p.success ? 'Raised' : (p.error?.details?.error ?? p.error?.message ?? 'failed'));
-    load();
+    if (p.success) {
+      setForm({ vacancyNumber: '', positionId: '', departmentId: '', country: '' });
+      await load();
+    }
   }
   async function approve(id: string) {
+    setMessage('');
     const r = await fetch('/api/v1/org-compliance/vacancy', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -57,19 +79,23 @@ export default function OrgVacancyPage() {
     });
     const p = await r.json();
     setMessage(p.success ? 'Approved' : (p.error?.details?.error ?? p.error?.message ?? 'failed'));
-    load();
+    if (p.success) await load();
   }
-  async function fill(id: string) {
-    const candidateId = prompt('Candidate ID?') ?? '';
-    if (!candidateId) return;
+  async function submitFill() {
+    if (!fillFor || !candidateId) return;
+    setMessage('');
     const r = await fetch('/api/v1/org-compliance/vacancy', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'fill', id, candidateId }),
+      body: JSON.stringify({ action: 'fill', id: fillFor, candidateId }),
     });
     const p = await r.json();
     setMessage(p.success ? 'Filled' : (p.error?.details?.error ?? p.error?.message ?? 'failed'));
-    load();
+    if (p.success) {
+      setFillFor(null);
+      setCandidateId('');
+      await load();
+    }
   }
 
   return (
@@ -167,7 +193,10 @@ export default function OrgVacancyPage() {
                     {r.status !== 'FILLED' && (
                       <button
                         type="button"
-                        onClick={() => fill(r.id)}
+                        onClick={() => {
+                          setFillFor(r.id);
+                          setCandidateId('');
+                        }}
                         className="rounded-md bg-emerald-700 px-2 py-1 text-xs text-white"
                       >
                         Fill
@@ -179,7 +208,7 @@ export default function OrgVacancyPage() {
               {rows.length === 0 && (
                 <tr>
                   <td colSpan={9} className="px-3 py-6 text-center text-slate-500">
-                    No vacancies.
+                    {loading ? 'Loading…' : 'No vacancies.'}
                   </td>
                 </tr>
               )}
@@ -187,6 +216,41 @@ export default function OrgVacancyPage() {
           </table>
         </section>
       </div>
+
+      {fillFor ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
+          <div className="w-full max-w-md rounded-lg border border-slate-200 bg-white p-5 shadow-lg">
+            <h3 className="text-base font-semibold">Fill Vacancy</h3>
+            <p className="mt-1 text-sm text-slate-600">Enter the candidate identifier.</p>
+            <input
+              value={candidateId}
+              onChange={(e) => setCandidateId(e.target.value)}
+              placeholder="Candidate ID"
+              className="mt-3 w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+            />
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setFillFor(null);
+                  setCandidateId('');
+                }}
+                className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={submitFill}
+                disabled={!candidateId}
+                className="rounded-md bg-emerald-700 px-3 py-2 text-sm text-white disabled:opacity-50"
+              >
+                Fill
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }

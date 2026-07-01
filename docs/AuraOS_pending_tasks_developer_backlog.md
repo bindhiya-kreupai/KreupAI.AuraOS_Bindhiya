@@ -2912,7 +2912,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Monthly Compliance Certificate' resolves to /dashboard/attendance-compliance/monthly-compliance-certificate but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-346 — Bahraini Hires & Artificial-Risk: Create feature page or link from module hub**
+- [x] **AURA-346 — Bahraini Hires & Artificial-Risk: Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2920,7 +2920,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Bahraini Hires & Artificial-Risk' resolves to /dashboard/bahrainization-compliance/bahraini-hires-artificial-risk but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-347 — Establishment Scope: Create feature page or link from module hub**
+- [x] **AURA-347 — Establishment Scope: Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2928,7 +2928,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Establishment Scope' resolves to /dashboard/bahrainization-compliance/establishment-scope but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-348 — Monthly Certificate: Create feature page or link from module hub**
+- [x] **AURA-348 — Monthly Certificate: Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2936,7 +2936,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Monthly Certificate' resolves to /dashboard/bahrainization-compliance/monthly-certificate but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-349 — Ratio Snapshots & LMRA Gating: Create feature page or link from module hub**
+- [x] **AURA-349 — Ratio Snapshots & LMRA Gating: Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2944,7 +2944,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Ratio Snapshots & LMRA Gating' resolves to /dashboard/bahrainization-compliance/ratio-snapshots-lmra-gating but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-350 — Sector × Size Targets: Create feature page or link from module hub**
+- [x] **AURA-350 — Sector × Size Targets: Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -2952,7 +2952,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Sector × Size Targets' resolves to /dashboard/bahrainization-compliance/sector-size-targets but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-351 — Tender Eligibility: Create feature page or link from module hub**
+- [x] **AURA-351 — Tender Eligibility: Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3096,7 +3096,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Task Register' resolves to /dashboard/compliance-calendar/task-register but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-369 — HR Audit Cycles & Findings: Create feature page or link from module hub**
+- [x] **AURA-369 — HR Audit Cycles & Findings: Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3104,7 +3104,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'HR Audit Cycles & Findings' resolves to /dashboard/document-retention-compliance/hr-audit-cycles-findings but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-370 — HR Document Register (auto retentionUntil): Create feature page or link from module hub**
+- [x] **AURA-370 — HR Document Register (auto retentionUntil): Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3112,7 +3112,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'HR Document Register (auto retentionUntil)' resolves to /dashboard/document-retention-compliance/hr-document-register-auto-retentionuntil but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-371 — Monthly Compliance Certificate: Create feature page or link from module hub**
+- [x] **AURA-371 — Monthly Compliance Certificate: Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3120,7 +3120,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Monthly Compliance Certificate' resolves to /dashboard/document-retention-compliance/monthly-compliance-certificate but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-372 — Retention Schedule (per record type × country): Create feature page or link from module hub**
+- [x] **AURA-372 — Retention Schedule (per record type × country): Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3128,7 +3128,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Retention Schedule (per record type × country)' resolves to /dashboard/document-retention-compliance/retention-schedule-per-record-type-country but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-373 — Schedule: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-373 — Schedule: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3264,7 +3264,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Executive Monthly Certificate' resolves to /dashboard/executive-compliance/executive-monthly-certificate but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-390 — Compliance Risk Register: Create feature page or link from module hub**
+- [x] **AURA-390 — Compliance Risk Register: Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3272,7 +3272,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Compliance Risk Register' resolves to /dashboard/gcc-landscape/compliance-risk-register but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-391 — Countries & Entities: Create feature page or link from module hub**
+- [x] **AURA-391 — Countries & Entities: Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3280,7 +3280,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Countries & Entities' resolves to /dashboard/gcc-landscape/countries-entities but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-392 — Country Reference Dataset: Create feature page or link from module hub**
+- [x] **AURA-392 — Country Reference Dataset: Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3288,7 +3288,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Country Reference Dataset' resolves to /dashboard/gcc-landscape/country-reference-dataset but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-393 — Digital Maturity Scorecard: Create feature page or link from module hub**
+- [x] **AURA-393 — Digital Maturity Scorecard: Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3296,7 +3296,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Digital Maturity Scorecard' resolves to /dashboard/gcc-landscape/digital-maturity-scorecard but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-394 — Executive Landscape: Create feature page or link from module hub**
+- [x] **AURA-394 — Executive Landscape: Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3304,7 +3304,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Executive Landscape' resolves to /dashboard/gcc-landscape/executive-landscape but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-395 — GCC Personas / RBAC: Create feature page or link from module hub**
+- [x] **AURA-395 — GCC Personas / RBAC: Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3312,7 +3312,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'GCC Personas / RBAC' resolves to /dashboard/gcc-landscape/gcc-personas-rbac but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-396 — Platform Alerts: Create feature page or link from module hub**
+- [x] **AURA-396 — Platform Alerts: Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3320,7 +3320,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Platform Alerts' resolves to /dashboard/gcc-landscape/platform-alerts but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-397 — Workforce Classification: Create feature page or link from module hub**
+- [x] **AURA-397 — Workforce Classification: Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3328,7 +3328,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Workforce Classification' resolves to /dashboard/gcc-landscape/workforce-classification but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-398 — Workforce KPI Baseline: Create feature page or link from module hub**
+- [x] **AURA-398 — Workforce KPI Baseline: Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3336,7 +3336,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Workforce KPI Baseline' resolves to /dashboard/gcc-landscape/workforce-kpi-baseline but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-399 — Change Requests: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-399 — Change Requests: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3344,7 +3344,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/v1/gcc-rule-library/rule-change-requests, /api/v1/gcc-rule-library/rule-change-requests${qs}`
   - **Description / Acceptance Criteria:** Page calls APIs (/api/v1/gcc-rule-library/rule-change-requests, /api/v1/gcc-rule-library/rule-change-requests${qs}) but mock/hardcoded UI remains.
 
-- [ ] **AURA-400 — Country Risk Matrix: Create feature page or link from module hub**
+- [x] **AURA-400 — Country Risk Matrix: Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3352,7 +3352,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Country Risk Matrix' resolves to /dashboard/gcc-rule-library/country-risk-matrix but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-401 — GCC Comparison Tables: Create feature page or link from module hub**
+- [x] **AURA-401 — GCC Comparison Tables: Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3360,7 +3360,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'GCC Comparison Tables' resolves to /dashboard/gcc-rule-library/gcc-comparison-tables but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-402 — Monthly Country Certificate: Create feature page or link from module hub**
+- [x] **AURA-402 — Monthly Country Certificate: Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3368,7 +3368,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Monthly Country Certificate' resolves to /dashboard/gcc-rule-library/monthly-country-certificate but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-403 — Rule Change Requests (Maker-Checker, Rollback): Create feature page or link from module hub**
+- [x] **AURA-403 — Rule Change Requests (Maker-Checker, Rollback): Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3376,7 +3376,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Rule Change Requests (Maker-Checker, Rollback)' resolves to /dashboard/gcc-rule-library/rule-change-requests-maker-checker-rollback but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-404 — Rule Packs (UAE/KSA/BH/QA/OM/KW): Create feature page or link from module hub**
+- [x] **AURA-404 — Rule Packs (UAE/KSA/BH/QA/OM/KW): Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3384,7 +3384,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Rule Packs (UAE/KSA/BH/QA/OM/KW)' resolves to /dashboard/gcc-rule-library/rule-packs-uae-ksa-bh-qa-om-kw but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-405 — Employee Registrations: Create feature page or link from module hub**
+- [x] **AURA-405 — Employee Registrations: Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3392,7 +3392,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Employee Registrations' resolves to /dashboard/gosi-compliance/employee-registrations but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-406 — Monthly Certificate: Create feature page or link from module hub**
+- [x] **AURA-406 — Monthly Certificate: Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3400,7 +3400,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Monthly Certificate' resolves to /dashboard/gosi-compliance/monthly-certificate but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-407 — Wages & Contributions: Create feature page or link from module hub**
+- [x] **AURA-407 — Wages & Contributions: Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3544,7 +3544,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Scheduled Reviews' resolves to /dashboard/hr-policies-compliance/scheduled-reviews but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-425 — Approval Templates: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-425 — Approval Templates: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3552,7 +3552,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/v1/hrms-config/approval-templates`
   - **Description / Acceptance Criteria:** Page calls APIs (/api/v1/hrms-config/approval-templates) but mock/hardcoded UI remains.
 
-- [ ] **AURA-426 — Approval Workflow Templates: Create feature page or link from module hub**
+- [x] **AURA-426 — Approval Workflow Templates: Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3560,7 +3560,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Approval Workflow Templates' resolves to /dashboard/hrms-config/approval-workflow-templates but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-427 — Audit Settings: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-427 — Audit Settings: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3568,7 +3568,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/v1/hrms-config/audit-settings`
   - **Description / Acceptance Criteria:** Page calls APIs (/api/v1/hrms-config/audit-settings) but mock/hardcoded UI remains.
 
-- [ ] **AURA-428 — Audit Trail Capture Policy per Domain: Create feature page or link from module hub**
+- [x] **AURA-428 — Audit Trail Capture Policy per Domain: Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3576,7 +3576,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Audit Trail Capture Policy per Domain' resolves to /dashboard/hrms-config/audit-trail-capture-policy-per-domain but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-429 — Config Objects: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-429 — Config Objects: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3584,7 +3584,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/v1/hrms-config/config-objects, /api/v1/hrms-config/workspaces`
   - **Description / Acceptance Criteria:** Page calls APIs (/api/v1/hrms-config/config-objects, /api/v1/hrms-config/workspaces) but mock/hardcoded UI remains.
 
-- [ ] **AURA-430 — Config Objects Registry · Maker-Checker (21 domains): Create feature page or link from module hub**
+- [x] **AURA-430 — Config Objects Registry · Maker-Checker (21 domains): Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3592,7 +3592,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Config Objects Registry · Maker-Checker (21 domains)' resolves to /dashboard/hrms-config/config-objects-registry-maker-checker-21-domains but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-431 — Data Migration Plans · Run Validation: Create feature page or link from module hub**
+- [x] **AURA-431 — Data Migration Plans · Run Validation: Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3600,7 +3600,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Data Migration Plans · Run Validation' resolves to /dashboard/hrms-config/data-migration-plans-run-validation but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-432 — Integration Connectors · Health + Secret Rotation: Create feature page or link from module hub**
+- [x] **AURA-432 — Integration Connectors · Health + Secret Rotation: Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3608,7 +3608,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Integration Connectors · Health + Secret Rotation' resolves to /dashboard/hrms-config/integration-connectors-health-secret-rotation but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-433 — Monthly + Go-Live Certificate (with gating): Create feature page or link from module hub**
+- [x] **AURA-433 — Monthly + Go-Live Certificate (with gating): Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3616,7 +3616,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Monthly + Go-Live Certificate (with gating)' resolves to /dashboard/hrms-config/monthly-go-live-certificate-with-gating but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-434 — Notification Rules: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-434 — Notification Rules: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3624,7 +3624,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/v1/hrms-config/notification-rules`
   - **Description / Acceptance Criteria:** Page calls APIs (/api/v1/hrms-config/notification-rules) but mock/hardcoded UI remains.
 
-- [ ] **AURA-435 — Notification Rules (multi-channel, bilingual): Create feature page or link from module hub**
+- [x] **AURA-435 — Notification Rules (multi-channel, bilingual): Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3632,7 +3632,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Notification Rules (multi-channel, bilingual)' resolves to /dashboard/hrms-config/notification-rules-multi-channel-bilingual but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-436 — Rule Sets: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-436 — Rule Sets: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3640,7 +3640,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/v1/hrms-config/rule-sets`
   - **Description / Acceptance Criteria:** Page calls APIs (/api/v1/hrms-config/rule-sets) but mock/hardcoded UI remains.
 
-- [ ] **AURA-437 — Versioned Country Rule Sets: Create feature page or link from module hub**
+- [x] **AURA-437 — Versioned Country Rule Sets: Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3728,7 +3728,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Visa-Exit Dependents Register (cascade)' resolves to /dashboard/hse-visa-extensions/visa-exit-dependents-register-cascade but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-448 — Audit Checklist: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-448 — Audit Checklist: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3736,7 +3736,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/v1/immigration-compliance/audit-checklist`
   - **Description / Acceptance Criteria:** Page calls APIs (/api/v1/immigration-compliance/audit-checklist) but mock/hardcoded UI remains.
 
-- [ ] **AURA-449 — Authorization Matrix: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-449 — Authorization Matrix: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3744,7 +3744,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/v1/immigration-compliance/authorization-matrix`
   - **Description / Acceptance Criteria:** Page calls APIs (/api/v1/immigration-compliance/authorization-matrix) but mock/hardcoded UI remains.
 
-- [ ] **AURA-450 — Country Authorization Matrix (MOHRE/ICP/GDRFA/MHRSD/Qiwa/LMRA/PAM): Create feature page or link from module hub**
+- [x] **AURA-450 — Country Authorization Matrix (MOHRE/ICP/GDRFA/MHRSD/Qiwa/LMRA/PAM): Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3752,7 +3752,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Country Authorization Matrix (MOHRE/ICP/GDRFA/MHRSD/Qiwa/LMRA/PAM)' resolves to /dashboard/immigration-compliance/country-authorization-matrix-mohre-icp-gdrfa-mhrsd-qiwa-lmra-pam but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-451 — Immigration Audit Checklist & Risk Register: Create feature page or link from module hub**
+- [x] **AURA-451 — Immigration Audit Checklist & Risk Register: Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3760,7 +3760,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Immigration Audit Checklist & Risk Register' resolves to /dashboard/immigration-compliance/immigration-audit-checklist-risk-register but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-452 — Monthly Compliance Certificate: Create feature page or link from module hub**
+- [x] **AURA-452 — Monthly Compliance Certificate: Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3768,7 +3768,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Monthly Compliance Certificate' resolves to /dashboard/immigration-compliance/monthly-compliance-certificate but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-453 — Renewal Alert Ladder (60/30/7-day + EXPIRED): Create feature page or link from module hub**
+- [x] **AURA-453 — Renewal Alert Ladder (60/30/7-day + EXPIRED): Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3776,7 +3776,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Renewal Alert Ladder (60/30/7-day + EXPIRED)' resolves to /dashboard/immigration-compliance/renewal-alert-ladder-60-30-7-day-expired but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-454 — Renewal Alerts: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-454 — Renewal Alerts: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3784,7 +3784,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/v1/immigration-compliance/renewal-alerts`
   - **Description / Acceptance Criteria:** Page calls APIs (/api/v1/immigration-compliance/renewal-alerts) but mock/hardcoded UI remains.
 
-- [ ] **AURA-455 — Risk Register: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-455 — Risk Register: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3792,7 +3792,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/v1/immigration-compliance/risk-register`
   - **Description / Acceptance Criteria:** Page calls APIs (/api/v1/immigration-compliance/risk-register) but mock/hardcoded UI remains.
 
-- [ ] **AURA-456 — Transfer Case: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-456 — Transfer Case: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3800,7 +3800,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/v1/immigration-compliance/transfer-case`
   - **Description / Acceptance Criteria:** Page calls APIs (/api/v1/immigration-compliance/transfer-case) but mock/hardcoded UI remains.
 
-- [ ] **AURA-457 — Transfer & Mobility Cases (REQUESTED → APPROVED → COMPLETED): Create feature page or link from module hub**
+- [x] **AURA-457 — Transfer & Mobility Cases (REQUESTED → APPROVED → COMPLETED): Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3872,7 +3872,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Monthly Compliance Certificate' resolves to /dashboard/leave-compliance/monthly-compliance-certificate but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-466 — Fake / Artificial Detection (GPSSA × Payroll × WPS): Create feature page or link from module hub**
+- [x] **AURA-466 — Fake / Artificial Detection (GPSSA × Payroll × WPS): Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3880,7 +3880,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Fake / Artificial Detection (GPSSA × Payroll × WPS)' resolves to /dashboard/nationalisation-overlay/fake-artificial-detection-gpssa-payroll-wps but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-467 — National L&D Plans: Create feature page or link from module hub**
+- [x] **AURA-467 — National L&D Plans: Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3888,7 +3888,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'National L&D Plans' resolves to /dashboard/nationalisation-overlay/national-l-d-plans but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-468 — Saudi Profession-Localisation Codes (S09): Create feature page or link from module hub**
+- [x] **AURA-468 — Saudi Profession-Localisation Codes (S09): Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3896,7 +3896,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Saudi Profession-Localisation Codes (S09)' resolves to /dashboard/nationalisation-overlay/saudi-profession-localisation-codes-s09 but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-469 — Saudi Professions: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-469 — Saudi Professions: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3904,7 +3904,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/v1/nationalisation-overlay/saudi-professions, /api/v1/nationalisation-overlay/saudi-professions${qs}`
   - **Description / Acceptance Criteria:** Page calls APIs (/api/v1/nationalisation-overlay/saudi-professions, /api/v1/nationalisation-overlay/saudi-professions${qs}) but mock/hardcoded UI remains.
 
-- [ ] **AURA-470 — TA Pipeline Tags · Requisition + Job/Position: Create feature page or link from module hub**
+- [x] **AURA-470 — TA Pipeline Tags · Requisition + Job/Position: Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3912,7 +3912,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'TA Pipeline Tags · Requisition + Job/Position' resolves to /dashboard/nationalisation-overlay/ta-pipeline-tags-requisition-job-position but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-471 — Band Snapshots: Create feature page or link from module hub**
+- [x] **AURA-471 — Band Snapshots: Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3920,7 +3920,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Band Snapshots' resolves to /dashboard/nitaqat-compliance/band-snapshots but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-472 — Band Thresholds: Create feature page or link from module hub**
+- [x] **AURA-472 — Band Thresholds: Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3928,7 +3928,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Band Thresholds' resolves to /dashboard/nitaqat-compliance/band-thresholds but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-473 — Establishment Scope: Create feature page or link from module hub**
+- [x] **AURA-473 — Establishment Scope: Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3936,7 +3936,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Establishment Scope' resolves to /dashboard/nitaqat-compliance/establishment-scope but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-474 — Monthly Certificate: Create feature page or link from module hub**
+- [x] **AURA-474 — Monthly Certificate: Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3944,7 +3944,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Monthly Certificate' resolves to /dashboard/nitaqat-compliance/monthly-certificate but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-475 — Privilege Check: Create feature page or link from module hub**
+- [x] **AURA-475 — Privilege Check: Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3952,7 +3952,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Privilege Check' resolves to /dashboard/nitaqat-compliance/privilege-check but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-476 — Audit Checklist: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-476 — Audit Checklist: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3960,7 +3960,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/v1/org-compliance/audit-checklist`
   - **Description / Acceptance Criteria:** Page calls APIs (/api/v1/org-compliance/audit-checklist) but mock/hardcoded UI remains.
 
-- [ ] **AURA-477 — Monthly Compliance Certificate (Overhire/Aged>90d/Unapproved): Create feature page or link from module hub**
+- [x] **AURA-477 — Monthly Compliance Certificate (Overhire/Aged>90d/Unapproved): Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3968,7 +3968,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Monthly Compliance Certificate (Overhire/Aged>90d/Unapproved)' resolves to /dashboard/org-compliance/monthly-compliance-certificate-overhire-aged-90d-unapproved but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-478 — Org Audit Checklist (13 categories): Create feature page or link from module hub**
+- [x] **AURA-478 — Org Audit Checklist (13 categories): Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3976,7 +3976,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Org Audit Checklist (13 categories)' resolves to /dashboard/org-compliance/org-audit-checklist-13-categories but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-479 — Position Control: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-479 — Position Control: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3984,7 +3984,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/v1/org-compliance/position-control`
   - **Description / Acceptance Criteria:** Page calls APIs (/api/v1/org-compliance/position-control) but mock/hardcoded UI remains.
 
-- [ ] **AURA-480 — Position Control & Headcount Budget: Create feature page or link from module hub**
+- [x] **AURA-480 — Position Control & Headcount Budget: Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -3992,7 +3992,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Position Control & Headcount Budget' resolves to /dashboard/org-compliance/position-control-headcount-budget but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-481 — Vacancy: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-481 — Vacancy: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4000,7 +4000,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/v1/org-compliance/vacancy`
   - **Description / Acceptance Criteria:** Page calls APIs (/api/v1/org-compliance/vacancy) but mock/hardcoded UI remains.
 
-- [ ] **AURA-482 — Vacancy Register (raise/approve/fill with ageing): Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-482 — Vacancy Register (raise/approve/fill with ageing): Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4040,7 +4040,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Rate Cards (country × OT type)' resolves to /dashboard/overtime-compliance/rate-cards-country-ot-type but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-487 — Payroll Governance & Compliance: Wire page to backend API**
+- [x] **AURA-487 — Payroll Governance & Compliance: Wire page to backend API**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4048,7 +4048,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page renders inline static arrays with no fetch/service detected.
 
-- [ ] **AURA-488 — Alerts: Replace mock/hardcoded data with live API**
+- [x] **AURA-488 — Alerts: Replace mock/hardcoded data with live API**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4056,7 +4056,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page uses hardcoded or mock data; no fetch/service calls detected.
 
-- [ ] **AURA-489 — Audit Finding: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-489 — Audit Finding: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4064,7 +4064,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/v1/payroll-compliance/audit-finding`
   - **Description / Acceptance Criteria:** Page calls APIs (/api/v1/payroll-compliance/audit-finding) but mock/hardcoded UI remains.
 
-- [ ] **AURA-490 — Audit Findings Register: Create feature page or link from module hub**
+- [x] **AURA-490 — Audit Findings Register: Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4072,7 +4072,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Audit Findings Register' resolves to /dashboard/payroll-compliance/audit-findings-register but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-491 — Bahrain Sio: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-491 — Bahrain Sio: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4080,7 +4080,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/compliance/bahrain-sio`
   - **Description / Acceptance Criteria:** Page calls APIs (/api/compliance/bahrain-sio) but mock/hardcoded UI remains.
 
-- [ ] **AURA-492 — Eosb: Manual review required**
+- [x] **AURA-492 — Eosb: Manual review required**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4088,7 +4088,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Page exists; automated heuristics could not classify wiring.
 
-- [ ] **AURA-493 — End Of Service Benefits Calculator: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-493 — End Of Service Benefits Calculator: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4096,7 +4096,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/compliance/eosb`
   - **Description / Acceptance Criteria:** Page calls APIs (/api/compliance/eosb) but mock/hardcoded UI remains.
 
-- [ ] **AURA-494 — Gosi: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-494 — Gosi: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4104,7 +4104,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/compliance/gosi`
   - **Description / Acceptance Criteria:** Page calls APIs (/api/compliance/gosi) but mock/hardcoded UI remains.
 
-- [ ] **AURA-495 — Governance: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-495 — Governance: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4112,7 +4112,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/v1/payroll-compliance/governance`
   - **Description / Acceptance Criteria:** Page calls APIs (/api/v1/payroll-compliance/governance) but mock/hardcoded UI remains.
 
-- [ ] **AURA-496 — Governance Controls (8 categories): Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-496 — Governance Controls (8 categories): Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4120,7 +4120,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/v1/payroll-compliance/governance`
   - **Description / Acceptance Criteria:** Page calls APIs (/api/v1/payroll-compliance/governance) but mock/hardcoded UI remains.
 
-- [ ] **AURA-497 — India Statutory: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-497 — India Statutory: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4128,7 +4128,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/india-statutory`
   - **Description / Acceptance Criteria:** Page calls APIs (/api/india-statutory) but mock/hardcoded UI remains.
 
-- [ ] **AURA-498 — Monthly Compliance Certificate (Recon/Bank-File/GL): Create feature page or link from module hub**
+- [x] **AURA-498 — Monthly Compliance Certificate (Recon/Bank-File/GL): Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4136,7 +4136,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Monthly Compliance Certificate (Recon/Bank-File/GL)' resolves to /dashboard/payroll-compliance/monthly-compliance-certificate-recon-bank-file-gl but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-499 — Oman Spf: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-499 — Oman Spf: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4144,7 +4144,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/compliance/oman-spf`
   - **Description / Acceptance Criteria:** Page calls APIs (/api/compliance/oman-spf) but mock/hardcoded UI remains.
 
-- [ ] **AURA-500 — Overview: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-500 — Overview: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4152,7 +4152,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/compliance/bahrain-sio, /api/compliance/eosb, /api/compliance/gosi, /api/compliance/kuwait-pifss, /api/compliance/labour-law`
   - **Description / Acceptance Criteria:** Page calls APIs (/api/compliance/bahrain-sio, /api/compliance/eosb, /api/compliance/gosi) but @ts-nocheck contract drift.
 
-- [ ] **AURA-501 — Payroll Risk Register (L×I bands): Create feature page or link from module hub**
+- [x] **AURA-501 — Payroll Risk Register (L×I bands): Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4160,7 +4160,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Payroll Risk Register (L×I bands)' resolves to /dashboard/payroll-compliance/payroll-risk-register-l-i-bands but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-502 — Qatar Wps: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-502 — Qatar Wps: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4168,7 +4168,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/compliance/qatar-wps`
   - **Description / Acceptance Criteria:** Page calls APIs (/api/compliance/qatar-wps) but mock/hardcoded UI remains.
 
-- [ ] **AURA-503 — Risk Register: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-503 — Risk Register: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4176,7 +4176,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/v1/payroll-compliance/risk-register`
   - **Description / Acceptance Criteria:** Page calls APIs (/api/v1/payroll-compliance/risk-register) but mock/hardcoded UI remains.
 
-- [ ] **AURA-504 — Audit Checklist: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-504 — Audit Checklist: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4184,7 +4184,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/v1/records-compliance/audit-checklist`
   - **Description / Acceptance Criteria:** Page calls APIs (/api/v1/records-compliance/audit-checklist) but mock/hardcoded UI remains.
 
-- [ ] **AURA-505 — Completeness: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-505 — Completeness: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4192,7 +4192,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/v1/records-compliance/completeness`
   - **Description / Acceptance Criteria:** Page calls APIs (/api/v1/records-compliance/completeness) but mock/hardcoded UI remains.
 
-- [ ] **AURA-506 — Document Matrix: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-506 — Document Matrix: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4200,7 +4200,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/v1/records-compliance/document-matrix`
   - **Description / Acceptance Criteria:** Page calls APIs (/api/v1/records-compliance/document-matrix) but mock/hardcoded UI remains.
 
-- [ ] **AURA-507 — Mandatory Document Matrix (country × code): Create feature page or link from module hub**
+- [x] **AURA-507 — Mandatory Document Matrix (country × code): Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4208,7 +4208,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Mandatory Document Matrix (country × code)' resolves to /dashboard/records-compliance/mandatory-document-matrix-country-code but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-508 — Monthly Compliance Certificate: Create feature page or link from module hub**
+- [x] **AURA-508 — Monthly Compliance Certificate: Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4216,7 +4216,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Monthly Compliance Certificate' resolves to /dashboard/records-compliance/monthly-compliance-certificate but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-509 — Per-Employee Completeness Score (GREEN/AMBER/RED): Create feature page or link from module hub**
+- [x] **AURA-509 — Per-Employee Completeness Score (GREEN/AMBER/RED): Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4224,7 +4224,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Per-Employee Completeness Score (GREEN/AMBER/RED)' resolves to /dashboard/records-compliance/per-employee-completeness-score-green-amber-red but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-510 — Records Audit Checklist: Create feature page or link from module hub**
+- [x] **AURA-510 — Records Audit Checklist: Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4232,7 +4232,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Records Audit Checklist' resolves to /dashboard/records-compliance/records-audit-checklist but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-511 — Records Risk Register (L×I): Create feature page or link from module hub**
+- [x] **AURA-511 — Records Risk Register (L×I): Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4240,7 +4240,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Records Risk Register (L×I)' resolves to /dashboard/records-compliance/records-risk-register-l-i but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-512 — Risk Register: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-512 — Risk Register: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4248,7 +4248,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/v1/records-compliance/risk-register`
   - **Description / Acceptance Criteria:** Page calls APIs (/api/v1/records-compliance/risk-register) but mock/hardcoded UI remains.
 
-- [ ] **AURA-513 — Clearance: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-513 — Clearance: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4256,7 +4256,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/v1/separation-compliance/clearance`
   - **Description / Acceptance Criteria:** Page calls APIs (/api/v1/separation-compliance/clearance) but mock/hardcoded UI remains.
 
-- [ ] **AURA-514 — Exit Clearance Checklist (HR/IT/FIN/SEC/LM/ADMIN): Create feature page or link from module hub**
+- [x] **AURA-514 — Exit Clearance Checklist (HR/IT/FIN/SEC/LM/ADMIN): Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4264,7 +4264,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Exit Clearance Checklist (HR/IT/FIN/SEC/LM/ADMIN)' resolves to /dashboard/separation-compliance/exit-clearance-checklist-hr-it-fin-sec-lm-admin but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-515 — Handover: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-515 — Handover: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4272,7 +4272,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/v1/separation-compliance/handover`
   - **Description / Acceptance Criteria:** Page calls APIs (/api/v1/separation-compliance/handover) but mock/hardcoded UI remains.
 
-- [ ] **AURA-516 — Handover & Exit Interview: Complete API integration and remove mock/local fallbacks**
+- [x] **AURA-516 — Handover & Exit Interview: Complete API integration and remove mock/local fallbacks**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4280,7 +4280,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `/api/v1/separation-compliance/handover`
   - **Description / Acceptance Criteria:** Page calls APIs (/api/v1/separation-compliance/handover) but mock/hardcoded UI remains.
 
-- [ ] **AURA-517 — Monthly Compliance Certificate: Create feature page or link from module hub**
+- [x] **AURA-517 — Monthly Compliance Certificate: Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4288,7 +4288,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Monthly Compliance Certificate' resolves to /dashboard/separation-compliance/monthly-compliance-certificate but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-518 — Notice / Garden Leave / Buyout Tracking: Create feature page or link from module hub**
+- [x] **AURA-518 — Notice / Garden Leave / Buyout Tracking: Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4296,7 +4296,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Notice / Garden Leave / Buyout Tracking' resolves to /dashboard/separation-compliance/notice-garden-leave-buyout-tracking but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-519 — Separation Case Orchestration (10 types): Create feature page or link from module hub**
+- [x] **AURA-519 — Separation Case Orchestration (10 types): Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4496,7 +4496,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Uniform / PPE / Tools Issuance Register' resolves to /dashboard/workforce-extensions/uniform-ppe-tools-issuance-register but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-544 — Monthly Certificate: Create feature page or link from module hub**
+- [x] **AURA-544 — Monthly Certificate: Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified
@@ -4504,7 +4504,7 @@ This document is intended for AI Developer execution. It converts the tracker in
   - **Related API / Service:** `Not specified`
   - **Description / Acceptance Criteria:** Menu feature 'Monthly Certificate' resolves to /dashboard/wps-compliance/monthly-certificate but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile.
 
-- [ ] **AURA-545 — WPS Submissions: Create feature page or link from module hub**
+- [x] **AURA-545 — WPS Submissions: Create feature page or link from module hub**
   - **Status:** Not Started
   - **Assignee:** Unassigned
   - **Due Date:** Not specified

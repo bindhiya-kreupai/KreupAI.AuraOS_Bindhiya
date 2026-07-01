@@ -50,7 +50,7 @@ export default function PayrollAuditFindingPage() {
   async function load() {
     const r = await fetch('/api/v1/payroll-compliance/audit-finding');
     const p = await r.json();
-    if (p.success) setRows(p.data ?? []);
+    if (p.success) setRows(p.data?.items ?? p.data ?? []);
   }
   useEffect(() => {
     load();

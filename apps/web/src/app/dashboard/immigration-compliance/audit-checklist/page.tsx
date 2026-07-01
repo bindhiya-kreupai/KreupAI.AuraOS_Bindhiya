@@ -47,6 +47,7 @@ const resColor: Record<string, string> = {
 export default function ImmigrationChecklistPage() {
   const [rows, setRows] = useState<Item[]>([]);
   const [message, setMessage] = useState('');
+  const [notesById, setNotesById] = useState<Record<string, string>>({});
   const [form, setForm] = useState({
     itemCode: '',
     label: '',
@@ -76,7 +77,7 @@ export default function ImmigrationChecklistPage() {
     load();
   }
   async function record(id: string, result: string) {
-    const notes = prompt('Notes (optional)?') ?? '';
+    const notes = notesById[id] ?? '';
     const r = await fetch('/api/v1/immigration-compliance/audit-checklist', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -84,6 +85,13 @@ export default function ImmigrationChecklistPage() {
     });
     const p = await r.json();
     setMessage(p.success ? 'Recorded' : (p.error?.details?.error ?? p.error?.message ?? 'failed'));
+    if (p.success) {
+      setNotesById((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
+    }
     load();
   }
 
@@ -183,7 +191,15 @@ export default function ImmigrationChecklistPage() {
                     {r.lastResult ?? '—'}
                   </td>
                   <td className="px-3 py-2 text-xs">{r.lastReviewedAt?.slice(0, 10) ?? '—'}</td>
-                  <td className="px-3 py-2 flex gap-1">
+                  <td className="px-3 py-2 flex flex-wrap items-center gap-1">
+                    <input
+                      value={notesById[r.id] ?? ''}
+                      onChange={(e) =>
+                        setNotesById((prev) => ({ ...prev, [r.id]: e.target.value }))
+                      }
+                      placeholder="Notes (optional)"
+                      className="w-32 rounded-md border border-slate-300 px-2 py-1 text-xs"
+                    />
                     <button
                       type="button"
                       onClick={() => record(r.id, 'PASS')}

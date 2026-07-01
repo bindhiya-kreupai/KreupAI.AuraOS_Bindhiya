@@ -1,0 +1,123 @@
+[
+  {
+    "id": "AURA-419",
+    "title": "Acknowledgement Coverage (\u226590% required): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-policies-compliance/acknowledgement-coverage-90-required",
+    "api": "Not specified",
+    "desc": "Menu feature 'Acknowledgement Coverage (\u226590% required)' resolves to /dashboard/hr-policies-compliance/acknowledgement-coverage-90-required but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-420",
+    "title": "Certificate: Complete API integration and remove mock/local fallbacks",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-policies-compliance/certificate",
+    "api": "/api/v1/hr-policies-compliance/certificate",
+    "desc": "Page calls APIs (/api/v1/hr-policies-compliance/certificate) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-421",
+    "title": "Exception Register: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-policies-compliance/exception-register",
+    "api": "Not specified",
+    "desc": "Menu feature 'Exception Register' resolves to /dashboard/hr-policies-compliance/exception-register but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-422",
+    "title": "Monthly Compliance Certificate: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-policies-compliance/monthly-compliance-certificate",
+    "api": "Not specified",
+    "desc": "Menu feature 'Monthly Compliance Certificate' resolves to /dashboard/hr-policies-compliance/monthly-compliance-certificate but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-423",
+    "title": "Policy Lifecycle (publish auto-creates 12-month review): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-policies-compliance/policy-lifecycle-publish-auto-creates-12-month-review",
+    "api": "Not specified",
+    "desc": "Menu feature 'Policy Lifecycle (publish auto-creates 12-month review)' resolves to /dashboard/hr-policies-compliance/policy-lifecycle-publish-auto-creates-12-month-review but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-424",
+    "title": "Scheduled Reviews: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-policies-compliance/scheduled-reviews",
+    "api": "Not specified",
+    "desc": "Menu feature 'Scheduled Reviews' resolves to /dashboard/hr-policies-compliance/scheduled-reviews but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-414",
+    "title": "Monthly Compliance Certificate: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-forms-compliance/monthly-compliance-certificate",
+    "api": "Not specified",
+    "desc": "Menu feature 'Monthly Compliance Certificate' resolves to /dashboard/hr-forms-compliance/monthly-compliance-certificate but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-415",
+    "title": "Routing & SLA Config: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-forms-compliance/routing-sla-config",
+    "api": "Not specified",
+    "desc": "Menu feature 'Routing & SLA Config' resolves to /dashboard/hr-forms-compliance/routing-sla-config but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-416",
+    "title": "Routings: Complete API integration and remove mock/local fallbacks",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-forms-compliance/routings",
+    "api": "/api/v1/hr-forms-compliance/routings",
+    "desc": "Page calls APIs (/api/v1/hr-forms-compliance/routings) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-417",
+    "title": "Template Catalogue (8 lifecycle groups, versioned): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-forms-compliance/template-catalogue-8-lifecycle-groups-versioned",
+    "api": "Not specified",
+    "desc": "Menu feature 'Template Catalogue (8 lifecycle groups, versioned)' resolves to /dashboard/hr-forms-compliance/template-catalogue-8-lifecycle-groups-versioned but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-418",
+    "title": "Writeback Status & SLA Breach Detection: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-forms-compliance/writeback-status-sla-breach-detection",
+    "api": "Not specified",
+    "desc": "Menu feature 'Writeback Status & SLA Breach Detection' resolves to /dashboard/hr-forms-compliance/writeback-status-sla-breach-detection but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  }
+]
