@@ -1,0 +1,178 @@
+[
+  {
+    "id": "AURA-034",
+    "title": "Service Layer: Remove or gate silent mock fallback",
+    "module": "Competency Library Module",
+    "status": "Not Started",
+    "assignee": "Deeksha",
+    "due": "2026-02-07 (Excel serial: 46060)",
+    "route": "competency-library.service.ts",
+    "api": "competency-library.service.ts",
+    "desc": "fetchWithFallback returns embedded MOCK_* data on API error with success: true, hiding integration failures from UI."
+  },
+  {
+    "id": "AURA-035",
+    "title": "Competency Catalog: Fix category filter and wire CategoryService",
+    "module": "Competency Library Module",
+    "status": "Not Started",
+    "assignee": "Deeksha",
+    "due": "2026-02-07 (Excel serial: 46060)",
+    "route": "/dashboard/performance/competency-library/competency-catalog",
+    "api": "GET /api/competency-library/categories, GET/POST /competencies",
+    "desc": "CategoryService imported but never called; filter pills use hardcoded COMPETENCY_CATEGORIES and send category name as categoryId (API expects UUID). Import button is alert-only stub."
+  },
+  {
+    "id": "AURA-036",
+    "title": "Competency Catalog: Replace stub with service-backed catalog page",
+    "module": "Competency Library Module",
+    "status": "Not Started",
+    "assignee": "Deeksha",
+    "due": "2026-02-07 (Excel serial: 46060)",
+    "route": "/dashboard/performance/competency-assessment/competency-catalog",
+    "api": "CompetencyService \u2192 /api/competency-library/competencies",
+    "desc": "6 hardcoded competency cards; search/filters non-functional. Imports CompetencyService but never calls it."
+  },
+  {
+    "id": "AURA-037",
+    "title": "Proficiency Levels: Replace stub with FrameworkService-backed page",
+    "module": "Competency Library Module",
+    "status": "Not Started",
+    "assignee": "Deeksha",
+    "due": "2026-02-07 (Excel serial: 46060)",
+    "route": "/dashboard/performance/competency-assessment/proficiency-levels",
+    "api": "FrameworkService \u2192 /api/competency-library/frameworks",
+    "desc": "Static L1\u2013L5 sidebar and content with no API integration. Real page exists at competency-library/proficiency-levels."
+  },
+  {
+    "id": "AURA-038",
+    "title": "Job-Competency Map: Load departments from org API",
+    "module": "Competency Library Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/performance/competency-library/job-competency-map",
+    "api": "JobRoleService \u2192 /api/competency-library/job-roles",
+    "desc": "CRUD via JobRoleService works with mock fallback. Department filter uses hardcoded DEPARTMENTS array instead of org structure."
+  },
+  {
+    "id": "AURA-039",
+    "title": "Job-Competency Map: Replace stub with service-backed mapping page",
+    "module": "Competency Library Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/performance/competency-assessment/job-competency-map",
+    "api": "JobRoleService \u2192 /api/competency-library/job-roles",
+    "desc": "Hardcoded roles and mappings; Map New Role and Add Competency buttons unwired."
+  },
+  {
+    "id": "AURA-040",
+    "title": "Skill Assessment: Wire assessment results submission and employee/cycle data",
+    "module": "Competency Library Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/performance/competency-library/skill-assessment",
+    "api": "POST /api/competency-library/assessments/[id]/results; AssessmentService.submitResults",
+    "desc": "AssessmentService CRUD works with mock fallback. No UI to rate/submit competency results. Employee picker and cycle banners use inline arrays. Send Reminders, Continue Assessment, Start Assessment unwired."
+  },
+  {
+    "id": "AURA-041",
+    "title": "Skill Assessment: Replace stub with service-backed assessment page",
+    "module": "Competency Library Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/performance/competency-assessment/skill-assessment",
+    "api": "AssessmentService \u2192 /api/competency-library/assessments",
+    "desc": "Hardcoded cycles and assessments; all action buttons unwired."
+  },
+  {
+    "id": "AURA-042",
+    "title": "Gap Analysis: Wire gap-analysis CRUD and development plan list/detail",
+    "module": "Competency Library Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/performance/competency-library/gap-analysis",
+    "api": "POST/PUT/DELETE /api/competency-library/gap-analysis; GET/PUT/DELETE /development-plans",
+    "desc": "Reads analyses via GapAnalysisService; creates dev plans only. Cannot create/edit/delete gap analyses. Cannot list/view/update existing development plans. Refresh and Export Report unwired."
+  },
+  {
+    "id": "AURA-043",
+    "title": "Gap Analysis: Wire Assign Training and scope filter",
+    "module": "Competency Library Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/performance/competency-assessment/gap-analysis",
+    "api": "GET /api/competency-library/gap-analysis",
+    "desc": "GET /api/competency-library/gap-analysis wired (read-only). Scope dropdown and Assign Training button unwired."
+  },
+  {
+    "id": "AURA-044",
+    "title": "Legacy Split: Unify competency data model",
+    "module": "Competency Library Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/performance/competency-assessment/page.tsx",
+    "api": "/api/performance/competencies vs /api/competency-library/competencies",
+    "desc": "Landing page uses performance/core/services.CompetencyService \u2192 /api/performance/competencies (prisma.competency) not competency-library catalog. Add Competency button unwired."
+  },
+  {
+    "id": "AURA-045",
+    "title": "Orphan API: Build assessment results rating UI",
+    "module": "Competency Library Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/api/competency-library/assessments/[id]/results",
+    "api": "GET/POST /api/competency-library/assessments/[id]/results",
+    "desc": "GET/POST assessment results endpoint has no UI consumer. AssessmentService.submitResults defined but never called."
+  },
+  {
+    "id": "AURA-046",
+    "title": "Orphan Hooks: Wire useCompetencyLibrary hooks to pages or remove",
+    "module": "Competency Library Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "hooks/useCompetencyLibrary.ts",
+    "api": "All competency-library services",
+    "desc": "Full hook suite (useCompetencies, useFrameworks, etc.) wrapping all services \u2014 zero page imports found."
+  },
+  {
+    "id": "AURA-047",
+    "title": "Validators: Enforce Zod validators in API routes",
+    "module": "Competency Library Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "lib/validators/competency-library.ts",
+    "api": "All POST/PUT /api/competency-library/* endpoints",
+    "desc": "Zod schemas exported but not wired into any POST/PUT API route handlers."
+  },
+  {
+    "id": "AURA-048",
+    "title": "Module Shell: Replace placeholder with dashboard hub link",
+    "module": "Competency Library Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/(modules)/competency-library",
+    "api": "N/A \u2014 routing/IA fix",
+    "desc": "ModulePage isImplemented=false stub while 5 dashboard subpages exist under competency-library/."
+  },
+  {
+    "id": "AURA-049",
+    "title": "Cross-Module: Align workforce gap analysis with competency-library API",
+    "module": "Competency Library Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/workforce-planning/gap-analysis",
+    "api": "GET /api/competency-library/gap-analysis?type=workforce",
+    "desc": "Uses GET /api/competency-library/gap-analysis?type=workforce (direct fetch). Ensure consistent data model with competency-library gap-analysis page."
+  }
+]

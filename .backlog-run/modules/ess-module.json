@@ -1,0 +1,79 @@
+[
+  {
+    "id": "AURA-330",
+    "title": "ESS: Replace hub with functional page or add child route",
+    "module": "ESS Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/my-services",
+    "api": "Not specified",
+    "desc": "Page is a ModuleGrid navigation shell with no data/API integration."
+  },
+  {
+    "id": "AURA-331",
+    "title": "Grievances: Complete API integration and remove mock/local fallbacks",
+    "module": "ESS Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/my-services/grievances",
+    "api": "Not specified",
+    "desc": "Page calls APIs (service layer) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-332",
+    "title": "My Documents: Manual review required",
+    "module": "ESS Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/my-services/my-documents",
+    "api": "Not specified",
+    "desc": "Page exists; automated heuristics could not classify wiring."
+  },
+  {
+    "id": "AURA-333",
+    "title": "Profile Changes: Wire page to backend API",
+    "module": "ESS Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/my-services/profile-changes",
+    "api": "Not specified",
+    "desc": "Page renders inline static arrays with no fetch/service detected."
+  },
+  {
+    "id": "AURA-334",
+    "title": "Request Center: Complete API integration and remove mock/local fallbacks",
+    "module": "ESS Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/my-services/request-center",
+    "api": "Not specified",
+    "desc": "Page calls APIs (service layer) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-335",
+    "title": "Tax Declaration: Complete API integration and remove mock/local fallbacks",
+    "module": "ESS Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/my-services/tax-declaration",
+    "api": "Not specified",
+    "desc": "Page calls APIs (service layer) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-336",
+    "title": "Team Directory: Replace mock/hardcoded data with live API",
+    "module": "ESS Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/my-services/team-directory",
+    "api": "Not specified",
+    "desc": "Page uses hardcoded or mock data; no fetch/service calls detected."
+  }
+]

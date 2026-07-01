@@ -1,0 +1,90 @@
+[
+  {
+    "id": "AURA-001",
+    "title": "Shift Swapping: Wire 'View Full Roster' button",
+    "module": "Attendance Module",
+    "status": "In Progress",
+    "assignee": "Nivithrasri",
+    "due": "24/06/2026",
+    "route": "/dashboard/attendance/shift-swapping",
+    "api": "/api/v1/attendance/schedules",
+    "desc": "Add navigation so View Full Roster opens/links to the full roster view instead of doing nothing."
+  },
+  {
+    "id": "AURA-002",
+    "title": "Shift Swapping: Replace 'current-user-id' placeholder with session employee ID",
+    "module": "Attendance Module",
+    "status": "Not Started",
+    "assignee": "Nivithrasri",
+    "due": "25/06/2026",
+    "route": "/dashboard/attendance/shift-swapping",
+    "api": "/api/attendance/shift-swap",
+    "desc": "Shift swap requests currently use a hardcoded current-user-id placeholder instead of the authenticated session's employee ID. Replace with real session-derived employee ID."
+  },
+  {
+    "id": "AURA-003",
+    "title": "Roster Assignment: Implement Filter button functionality",
+    "module": "Attendance Module",
+    "status": "Not Started",
+    "assignee": "Badmasri",
+    "due": "24/06/2026",
+    "route": "/dashboard/attendance/roster-assignment",
+    "api": "/api/v1/employees, /api/v1/shifts, /api/v1/shift-rosters",
+    "desc": "Filter control is currently disabled or has no handler. Implement filtering of the roster grid by relevant criteria (employee, shift, date range)."
+  },
+  {
+    "id": "AURA-004",
+    "title": "Attendance Exceptions: Add bulk row selection and wire 'Approve Selected'",
+    "module": "Attendance Module",
+    "status": "In Progress",
+    "assignee": "Bindhiya",
+    "due": "22/06/2026",
+    "route": "/dashboard/attendance/attendance-exceptions",
+    "api": "POST /api/attendance/exceptions",
+    "desc": "Per-row approve/reject actions work, but there is no row selection UI, so the bulk 'Approve Selected' action has nothing to act on. Add checkboxes/row selection and connect bulk approve to POST /api/attendance/exceptions."
+  },
+  {
+    "id": "AURA-005",
+    "title": "Attendance Exceptions: Implement Filter button functionality",
+    "module": "Attendance Module",
+    "status": "In Progress",
+    "assignee": "Bindhiya",
+    "due": "22/06/2026",
+    "route": "/dashboard/attendance/attendance-exceptions",
+    "api": "GET /api/attendance/exceptions",
+    "desc": "Filter control currently has no handler. Implement filtering of exceptions list by type, date, or employee."
+  },
+  {
+    "id": "AURA-006",
+    "title": "Field Force: Persist beat planning via API instead of prompt-only flow",
+    "module": "Attendance Module",
+    "status": "In Progress",
+    "assignee": "Badmasri",
+    "due": "24/06/2026",
+    "route": "/dashboard/attendance/field-force",
+    "api": "FieldForceService / /api/attendance/field-force",
+    "desc": "Plan Beat' currently only shows a browser prompt() with no API persistence. Build a proper beat-planning form/modal and connect it to FieldForceService so plans are saved server-side. Replace decorative map with real visit/location data."
+  },
+  {
+    "id": "AURA-007",
+    "title": "Regularization Request: Wire per-row 'MoreHorizontal' action menu",
+    "module": "Attendance Module",
+    "status": "In Progress",
+    "assignee": "Sandhiya",
+    "due": "23/06/2026",
+    "route": "/dashboard/attendance/regularization-request",
+    "api": "/api/attendance/regularization-request, /api/attendance/regularization",
+    "desc": "The per-row overflow menu (MoreHorizontal icon) currently has no handler. Implement the menu with relevant row actions (view detail, edit, cancel, etc.) and wire them to the regularization API."
+  },
+  {
+    "id": "AURA-008",
+    "title": "GPS Attendance: Wire 'Live Tracking', 'Add Geofence', 'Import KML', 'Enable Tracking' buttons",
+    "module": "Attendance Module",
+    "status": "In Progress",
+    "assignee": "Hirudhanya",
+    "due": "26/06/2026",
+    "route": "/attendance/gps-attendance",
+    "api": "TBD \u2014 likely shares /api/attendance/geo-fencing and field-force endpoints",
+    "desc": "API data is fetched but the UI renders hardcoded pins/zones and none of these four buttons have handlers. Connect each to live geofence/tracking data and appropriate write actions; remove hardcoded pins once live data is wired."
+  }
+]

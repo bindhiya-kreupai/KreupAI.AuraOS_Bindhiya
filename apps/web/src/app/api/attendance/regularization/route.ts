@@ -160,8 +160,79 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
         });
       }
 
+      case 'cancel': {
+        if (!body.regularizationId) {
+          return NextResponse.json(
+            {
+              error: 'regularizationId is required',
+              message: 'regularizationId is required',
+              messageAr: 'معرف طلب التسوية مطلوب',
+            },
+            { status: 400 }
+          );
+        }
+
+        const existing = await prisma.attendanceRegularization.findFirst({
+          where: {
+            id: body.regularizationId,
+            tenantId: user.tenantId,
+          },
+        });
+
+        if (!existing) {
+          return NextResponse.json(
+            {
+              error: 'Regularization request not found',
+              message: 'Regularization request not found',
+              messageAr: 'طلب التسوية غير موجود',
+            },
+            { status: 404 }
+          );
+        }
+
+        // Only the owning employee may cancel, and only while still pending.
+        if (existing.employeeId !== user.employeeId) {
+          return NextResponse.json(
+            {
+              error: 'You can only cancel your own requests',
+              message: 'You can only cancel your own requests',
+              messageAr: 'يمكنك إلغاء طلباتك الخاصة فقط',
+            },
+            { status: 403 }
+          );
+        }
+
+        if (existing.status !== 'PENDING') {
+          return NextResponse.json(
+            {
+              error: 'Only pending requests can be cancelled',
+              message: 'Only pending requests can be cancelled',
+              messageAr: 'يمكن إلغاء الطلبات المعلقة فقط',
+            },
+            { status: 409 }
+          );
+        }
+
+        // tenant-ok: id-based op preceded by tenant-scoped findFirst above
+        const cancelled = await prisma.attendanceRegularization.update({
+          where: { id: existing.id },
+          data: {
+            status: 'CANCELLED',
+            rejectionReason: body.comments || 'Cancelled by employee',
+          },
+        });
+
+        return NextResponse.json({
+          success: true,
+          data: cancelled,
+        });
+      }
+
       default:
-        return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+        return NextResponse.json(
+          { error: 'Invalid action', message: 'Invalid action', messageAr: 'إجراء غير صالح' },
+          { status: 400 }
+        );
     }
   } catch (error: any) {
     return NextResponse.json(

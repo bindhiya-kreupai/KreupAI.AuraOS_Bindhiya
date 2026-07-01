@@ -1,0 +1,211 @@
+[
+  {
+    "id": "AURA-282",
+    "title": "Benefit Types: Wire Add New Benefit, Edit, and Delete to plans API",
+    "module": "Benefits Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/benefits/benefit-types",
+    "api": "BenefitPlanService / GET/POST/PUT/DELETE /api/benefits/plans",
+    "desc": "Page loads plans via GET /api/benefits/plans but Add New Benefit, Edit, and Delete have no onClick handlers. Wire CRUD to BenefitPlanService."
+  },
+  {
+    "id": "AURA-283",
+    "title": "Dependent Management: Wire Add Dependent, menu actions, and Upload Verification Docs",
+    "module": "Benefits Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/benefits/dependent-management",
+    "api": "DependentService / /api/benefits/dependents",
+    "desc": "Page loads dependents via GET /api/benefits/dependents but write actions are missing. Wire Add Dependent form, MoreVertical menu, and document upload to DependentService."
+  },
+  {
+    "id": "AURA-284",
+    "title": "Claims: Wire Filter, Submit Claim, and row click navigation",
+    "module": "Benefits Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/benefits/claims",
+    "api": "ClaimService / /api/benefits/claims",
+    "desc": "Page loads claims read-only. Wire Filter control, Submit Claim button, and ChevronRight row click to open claim detail. Fix hardcoded 0% deductible bar."
+  },
+  {
+    "id": "AURA-285",
+    "title": "Open Enrollment: Wire Confirm Enrollment to POST enrollments",
+    "module": "Benefits Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/benefits/enrollment",
+    "api": "EnrollmentService / POST /api/benefits/enrollments",
+    "desc": "Plans load via GET /api/benefits/plans?status=ACTIVE but Confirm Enrollment has no handler. Connect to POST /api/benefits/enrollments via EnrollmentService."
+  },
+  {
+    "id": "AURA-286",
+    "title": "Insurance Coverage: Wire Download All Cards, Copy, Contact carrier, Find a Doctor",
+    "module": "Benefits Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/benefits/insurance-coverage",
+    "api": "GET /api/benefits/plans, /api/benefits/enrollments",
+    "desc": "Page derives active plan from live plans + enrollments but action buttons have no handlers. Wire carrier contact, card download, and provider lookup actions."
+  },
+  {
+    "id": "AURA-287",
+    "title": "HSA / FSA: Wire View All, Submit Claim, Change Contribution, Order New Card",
+    "module": "Benefits Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/benefits/hsa-fsa",
+    "api": "GET /api/benefits/plans?category=FSA_HSA; /api/v1/benefits HSA/FSA routes exist",
+    "desc": "Page proxies FSA_HSA plans and claims with fake account balances. Wire action buttons to dedicated HSA/FSA v1 endpoints or build dashboard routes."
+  },
+  {
+    "id": "AURA-288",
+    "title": "Plan Eligibility: Implement eligibility API route and wire Create Rule",
+    "module": "Benefits Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/benefits/plan-eligibility",
+    "api": "EligibilityService \u2014 /api/benefits/eligibility/* (missing)",
+    "desc": "GET /api/benefits/eligibility/employee/EMP-001 returns 404. Route missing. Replace hardcoded EMP-001 with session employee. Wire Create New Eligibility Rule."
+  },
+  {
+    "id": "AURA-289",
+    "title": "Enrollment Window: Implement enrollment-windows API and render live data",
+    "module": "Benefits Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/benefits/enrollment-window",
+    "api": "EnrollmentWindowService \u2014 /api/benefits/enrollment-windows (missing)",
+    "desc": "GET /api/benefits/enrollment-windows returns 404. Fetch runs but UI shows hardcoded 'Annual Open Enrollment 2025'. Implement route and bind windows state to UI."
+  },
+  {
+    "id": "AURA-290",
+    "title": "Provider Directory: Implement providers API or proxy to v1 and wire Search/Call/Book",
+    "module": "Benefits Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/benefits/provider-directory",
+    "api": "/api/benefits/providers (missing) or /api/v1/benefits/providers",
+    "desc": "GET /api/benefits/providers returns 404 (v1 providers API exists). Wire Search, Call, and Book Online buttons."
+  },
+  {
+    "id": "AURA-291",
+    "title": "Exception Handling: Implement qualifying-events API and wire Approve/Reject/Message",
+    "module": "Benefits Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/benefits/exception-handling",
+    "api": "QualifyingEventService \u2014 /api/benefits/qualifying-events (missing)",
+    "desc": "GET /api/benefits/qualifying-events returns 404. Wire Approve, Reject, and Message row actions once API exists (v1 life-event route may apply)."
+  },
+  {
+    "id": "AURA-292",
+    "title": "Claim Status: Fix response unwrapping and bind UI to selected claim",
+    "module": "Benefits Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/benefits/claim-status",
+    "api": "ClaimService / GET /api/benefits/claims",
+    "desc": "Calls ClaimService.getClaims but sets setClaims(data) instead of data.data. Fetched claims state unused; hardcoded demo claim #CLM-002 shown. Fix unwrap and wire document download."
+  },
+  {
+    "id": "AURA-293",
+    "title": "Perks Marketplace: Wire View Details navigation",
+    "module": "Benefits Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/benefits/perks-marketplace",
+    "api": "GET /api/benefits/plans?status=ACTIVE",
+    "desc": "Page maps active plans to perk cards. View Details has no handler or navigation."
+  },
+  {
+    "id": "AURA-294",
+    "title": "Wellness Tracker: Wire Browse All and replace hardcoded wellness metrics",
+    "module": "Benefits Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/benefits/wellness-tracker",
+    "api": "GET /api/benefits/plans?category=WELLNESS",
+    "desc": "Wellness plan existence check works but metrics (score 72, zero steps) are hardcoded. Wire Browse All challenges and integrate wearable/activity API."
+  },
+  {
+    "id": "AURA-295",
+    "title": "Notification: Render settings API data and wire Create New Campaign",
+    "module": "Benefits Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/benefits/notification",
+    "api": "BenefitSettingsService / GET/PUT /api/benefits/settings",
+    "desc": "GET /api/benefits/settings is fetched but never rendered. Page shows hardcoded campaigns + templates. Wire settings to UI and Create New Campaign action."
+  },
+  {
+    "id": "AURA-296",
+    "title": "Benefits Enrollment (stub): Implement sub-feature pages or remove dead ModuleGrid links",
+    "module": "Benefits Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/benefits/benefits-enrollment",
+    "api": "N/A \u2014 routing fix",
+    "desc": "ModuleGrid links to plan-selection, coverage-level, etc. all lead to 404. Real wizard lives at /dashboard/(modules)/benefits-enrollment. Consolidate or implement child routes."
+  },
+  {
+    "id": "AURA-297",
+    "title": "Module Route: Replace mock tab components with live API services",
+    "module": "Benefits Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/benefits",
+    "api": "BenefitsClaimsService (mock) vs /api/benefits/* and /api/v1/benefits/*",
+    "desc": "All 7 tabs (Dashboard, HSA/FSA, Wellness, Retirement, Claims, COBRA, Perks) use in-memory mock services. Replace BenefitsClaimsService mocks with dashboard services.ts or unified v1 client."
+  },
+  {
+    "id": "AURA-298",
+    "title": "Enrollment Wizard: Align BenefitsEnrollmentService paths with v1 API contracts",
+    "module": "Benefits Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/(modules)/benefits-enrollment",
+    "api": "BenefitsEnrollmentService / /api/v1/benefits/*",
+    "desc": "Wizard calls /api/v1/benefits/* with path mismatches (/v1/benefits vs /v1/benefits/plans, missing dependents/window routes). Fix service paths and DependentSelection submit."
+  },
+  {
+    "id": "AURA-299",
+    "title": "Session / Identity: Replace hardcoded EMP-001 with session employee ID",
+    "module": "Benefits Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "plan-eligibility, claim-status",
+    "api": "Cross-cutting \u2014 session/auth layer",
+    "desc": "Plan Eligibility and Claim Status use hardcoded employeeId EMP-001. Replace with authenticated session employee context."
+  },
+  {
+    "id": "AURA-300",
+    "title": "Orphan Components: Mount or remove unrouted benefits components",
+    "module": "Benefits Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "components/benefits/*.tsx",
+    "api": "Varies \u2014 v1 COBRA/compliance APIs exist but unused",
+    "desc": "BenefitsAnalyticsDashboard, BenefitsComplianceDashboard, ACAComplianceDashboard, COBRAAdministration, LifeInsuranceDashboard, PensionEOSBDashboard, and ProviderDirectory.tsx have no page routes. Mount or delete."
+  }
+]

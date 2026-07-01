@@ -14,6 +14,7 @@ import {
   Filter,
   ArrowRight,
   Map,
+  X,
 } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { FieldForceService } from '../services';
@@ -44,25 +45,48 @@ interface VisitLog {
   outcome: string;
 }
 
+interface BeatPlan {
+  id: string;
+  agentName: string;
+  date: string;
+  stops: string[];
+  notes?: string;
+}
+
 export default function FieldForcePage() {
   const [agents, setAgents] = useState<FieldAgent[]>([]);
   const [visitLogs, setVisitLogs] = useState<VisitLog[]>([]);
+  const [beatPlans, setBeatPlans] = useState<BeatPlan[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedAgent, setSelectedAgent] = useState<FieldAgent | null>(null);
   const [search, setSearch] = useState('');
-  const [info, setInfo] = useState<string | null>(null);
+  const [info, setInfo] = useState<{ kind: 'success' | 'error' | 'info'; text: string } | null>(
+    null
+  );
+  const [beatModalOpen, setBeatModalOpen] = useState(false);
+  const [savingBeat, setSavingBeat] = useState(false);
 
   useEffect(() => {
     fetchFieldData();
   }, []);
 
+  useEffect(() => {
+    if (!info) return;
+    const t = setTimeout(() => setInfo(null), 5000);
+    return () => clearTimeout(t);
+  }, [info]);
+
   const fetchFieldData = async () => {
     try {
       setLoading(true);
-      const agentsResult = await FieldForceService.getFieldAgents();
+      const [agentsResult, visitsResult, beatsResult] = await Promise.all([
+        FieldForceService.getFieldAgents(),
+        FieldForceService.getVisitLogs(),
+        FieldForceService.getBeatPlans(),
+      ]);
       setAgents((agentsResult || []) as any);
-      const visitsResult = await FieldForceService.getVisitLogs();
       setVisitLogs((visitsResult || []) as any);
+      setBeatPlans(beatsResult || []);
     } catch (error: any) {
       console.error('Error:', error);
     } finally {
@@ -82,24 +106,40 @@ export default function FieldForcePage() {
 
   const handlePlanBeat = () => {
     if (!selectedAgent) {
-      setInfo('Select an agent on the left to plan their beat.');
+      setInfo({ kind: 'info', text: 'Select an agent on the left to plan their beat.' });
       return;
     }
-    const stops = prompt(
-      `Plan a beat for ${selectedAgent.name}.\nEnter stops separated by commas (e.g. Client A, Client B, Client C):`
-    );
-    if (!stops?.trim()) return;
-    setInfo(
-      `Beat saved for ${selectedAgent.name}: ${stops
-        .split(',')
-        .map((s) => s.trim())
-        .join(' → ')}. Persistence to be wired once a Beat schema is added.`
-    );
+    setBeatModalOpen(true);
+  };
+
+  const handleSaveBeat = async (payload: { date: string; stops: string[]; notes: string }) => {
+    if (!selectedAgent) return;
+    setSavingBeat(true);
+    try {
+      await FieldForceService.saveBeatPlan({
+        agentId: String(selectedAgent.id),
+        agentName: selectedAgent.name,
+        date: payload.date,
+        stops: payload.stops,
+        notes: payload.notes,
+      });
+      setBeatModalOpen(false);
+      await fetchFieldData();
+      setInfo({
+        kind: 'success',
+        text: `Beat saved for ${selectedAgent.name}: ${payload.stops.join(' → ')}.`,
+      });
+    } catch (error: any) {
+      console.error('Error:', error);
+      setInfo({ kind: 'error', text: error?.message || 'Failed to save beat plan.' });
+    } finally {
+      setSavingBeat(false);
+    }
   };
 
   const handleDownloadReport = () => {
     if (visitLogs.length === 0) {
-      setInfo('No visits to export.');
+      setInfo({ kind: 'info', text: 'No visits to export.' });
       return;
     }
     const header = ['Time', 'Agent', 'Client', 'Type', 'Status', 'Outcome', 'Notes'];
@@ -149,8 +189,16 @@ export default function FieldForcePage() {
       </div>
 
       {info && (
-        <div className="rounded-lg border border-indigo-200 bg-indigo-50 dark:bg-indigo-900/20 dark:border-indigo-800 px-4 py-2 text-sm text-indigo-800 dark:text-indigo-200 shrink-0">
-          {info}
+        <div
+          className={`rounded-lg border px-4 py-2 text-sm shrink-0 ${
+            info.kind === 'success'
+              ? 'border-emerald-200 bg-emerald-50 text-emerald-800 dark:bg-emerald-900/20 dark:border-emerald-800 dark:text-emerald-200'
+              : info.kind === 'error'
+                ? 'border-rose-200 bg-rose-50 text-rose-800 dark:bg-rose-900/20 dark:border-rose-800 dark:text-rose-200'
+                : 'border-indigo-200 bg-indigo-50 text-indigo-800 dark:bg-indigo-900/20 dark:border-indigo-800 dark:text-indigo-200'
+          }`}
+        >
+          {info.text}
         </div>
       )}
 
@@ -236,43 +284,59 @@ export default function FieldForcePage() {
           </div>
         </div>
 
-        {/* Right: Map & Activity Feed */}
+        {/* Right: Planned Beats & Activity Feed */}
         <div className="lg:col-span-2 space-y-4 flex flex-col h-full overflow-hidden">
-          {/* Map Widget (Mock) */}
-          <div className="h-64 sm:h-96 bg-slate-100 dark:bg-slate-900 rounded-2xl border border-cloud dark:border-nebula-purple/50 overflow-hidden relative group">
-            {/* Map Background Pattern */}
-            <div className="absolute inset-0 bg-[url('https://upload.wikimedia.org/wikipedia/commons/e/ec/World_map_blank_without_borders.svg')] bg-cover bg-center opacity-10 dark:opacity-20 pointer-events-none"></div>
-
-            {/* Mock Pins */}
-            {agents.map(
-              (agent, i) =>
-                agent.status !== 'Offline' && (
-                  <div
-                    key={agent.id}
-                    className="absolute flex flex-col items-center gap-1 cursor-pointer hover:scale-110 transition-transform"
-                    style={{ top: `${30 + i * 15}%`, left: `${40 + i * 20}%` }}
-                  >
-                    <div
-                      className={`px-2 py-1 rounded bg-white dark:bg-slate-800 shadow-md text-[10px] font-bold whitespace-nowrap border ${selectedAgent?.id === agent.id ? 'border-indigo-500 text-indigo-600' : 'border-cloud text-slate-600'}`}
-                    >
-                      {agent.name}
-                    </div>
-                    <div
-                      className={`w-4 h-4 rounded-full border-2 border-white shadow-lg ${agent.status === 'Active' ? 'bg-emerald-500 animate-pulse' : 'bg-amber-500'}`}
-                    ></div>
-                  </div>
-                )
-            )}
-
-            <div className="absolute top-4 right-4 bg-white dark:bg-slate-800 p-2 rounded-lg shadow-lg border border-cloud dark:border-slate-700">
-              <div className="text-[10px] font-bold uppercase text-silver-mist mb-1">Map View</div>
-              <div className="flex gap-1">
-                <div className="w-2 h-2 rounded-full bg-emerald-500"></div>{' '}
-                <span className="text-[10px]">Active</span>
-                <div className="w-2 h-2 rounded-full bg-amber-500 ml-2"></div>{' '}
-                <span className="text-[10px]">Idle</span>
-              </div>
+          {/* Planned Beats — real persisted beat plans from FieldForceService */}
+          <div className="bg-white dark:bg-stellar-blue rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm p-6 shrink-0">
+            <div className="flex justify-between items-center mb-4">
+              <h3 className="font-bold text-ink-black dark:text-pearl flex items-center gap-2">
+                <Navigation className="w-5 h-5 text-indigo-500" /> Planned Beats
+              </h3>
+              <span className="text-xs text-silver-mist">{beatPlans.length} plan(s)</span>
             </div>
+            {loading ? (
+              <div className="p-6 text-center">
+                <div className="animate-spin w-6 h-6 border-4 border-indigo-500 border-t-transparent rounded-full mx-auto"></div>
+              </div>
+            ) : beatPlans.length === 0 ? (
+              <div className="p-6 text-center text-sm text-slate-400">
+                No beats planned yet. Select an agent and click{' '}
+                <span className="font-bold">Plan Beat</span>.
+              </div>
+            ) : (
+              <div className="space-y-3 max-h-64 overflow-y-auto pr-1">
+                {beatPlans.map((beat) => (
+                  <div
+                    key={beat.id}
+                    className="p-3 border border-cloud dark:border-slate-800 rounded-xl bg-slate-50 dark:bg-slate-900/40"
+                  >
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="font-bold text-sm text-ink-black dark:text-pearl">
+                        {beat.agentName}
+                      </span>
+                      <span className="text-xs text-silver-mist flex items-center gap-1">
+                        <Calendar className="w-3 h-3" /> {beat.date}
+                      </span>
+                    </div>
+                    <div className="flex flex-wrap items-center gap-1 text-xs text-slate-600 dark:text-slate-300">
+                      {beat.stops.map((stop, idx) => (
+                        <React.Fragment key={`${beat.id}-${idx}`}>
+                          <span className="px-2 py-0.5 rounded bg-white dark:bg-slate-800 border border-cloud dark:border-slate-700">
+                            {stop}
+                          </span>
+                          {idx < beat.stops.length - 1 && (
+                            <ArrowRight className="w-3 h-3 text-slate-400" />
+                          )}
+                        </React.Fragment>
+                      ))}
+                    </div>
+                    {beat.notes && (
+                      <p className="text-xs text-silver-mist italic mt-1">{beat.notes}</p>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Visit Logs */}
@@ -344,6 +408,126 @@ export default function FieldForcePage() {
             </div>
           </div>
         </div>
+      </div>
+
+      {beatModalOpen && selectedAgent && (
+        <BeatPlanModal
+          agentName={selectedAgent.name}
+          saving={savingBeat}
+          onClose={() => setBeatModalOpen(false)}
+          onSave={handleSaveBeat}
+        />
+      )}
+    </div>
+  );
+}
+
+function BeatPlanModal({
+  agentName,
+  saving,
+  onClose,
+  onSave,
+}: {
+  agentName: string;
+  saving: boolean;
+  onClose: () => void;
+  onSave: (payload: { date: string; stops: string[]; notes: string }) => void;
+}) {
+  const [date, setDate] = useState<string>(() => new Date().toISOString().split('T')[0]);
+  const [stopsText, setStopsText] = useState('');
+  const [notes, setNotes] = useState('');
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    const stops = stopsText
+      .split(',')
+      .map((s) => s.trim())
+      .filter(Boolean);
+    if (!date) {
+      setError('Please choose a date for the beat.');
+      return;
+    }
+    if (stops.length === 0) {
+      setError('Enter at least one stop (comma-separated).');
+      return;
+    }
+    setError(null);
+    onSave({ date, stops, notes: notes.trim() });
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center p-0 sm:p-4">
+      <div className="bg-white dark:bg-stellar-blue w-full max-w-md rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col">
+        <div className="flex items-center justify-between px-5 py-3 border-b border-cloud dark:border-nebula-purple/30">
+          <h3 className="font-bold flex items-center gap-2">
+            <Navigation className="w-4 h-4 text-indigo-500" /> Plan Beat · {agentName}
+          </h3>
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        <form onSubmit={handleSubmit} className="px-5 py-4 space-y-4 text-sm">
+          {error && (
+            <div className="rounded-lg border border-rose-200 bg-rose-50 dark:bg-rose-900/20 dark:border-rose-800 px-3 py-2 text-xs text-rose-800 dark:text-rose-200">
+              {error}
+            </div>
+          )}
+          <label className="block">
+            <span className="block text-xs font-bold text-silver-mist mb-1 uppercase">Date</span>
+            <input
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
+              required
+              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900/50 border border-cloud dark:border-nebula-purple/50 rounded-lg focus:outline-none"
+            />
+          </label>
+          <label className="block">
+            <span className="block text-xs font-bold text-silver-mist mb-1 uppercase">
+              Stops (comma-separated)
+            </span>
+            <textarea
+              rows={3}
+              value={stopsText}
+              onChange={(e) => setStopsText(e.target.value)}
+              placeholder="Client A, Client B, Warehouse C"
+              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900/50 border border-cloud dark:border-nebula-purple/50 rounded-lg focus:outline-none resize-none"
+            />
+          </label>
+          <label className="block">
+            <span className="block text-xs font-bold text-silver-mist mb-1 uppercase">
+              Notes (optional)
+            </span>
+            <input
+              type="text"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Route or priority notes"
+              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900/50 border border-cloud dark:border-nebula-purple/50 rounded-lg focus:outline-none"
+            />
+          </label>
+          <div className="flex justify-end gap-2 pt-1">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
+            >
+              Cancel
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="px-4 py-2 text-sm font-bold bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {saving ? 'Saving…' : 'Save Beat'}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

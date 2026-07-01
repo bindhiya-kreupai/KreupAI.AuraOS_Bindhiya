@@ -1,0 +1,156 @@
+[
+  {
+    "id": "AURA-135",
+    "title": "Architecture: Consolidate duplicate helpdesk modules",
+    "module": "HR Helpdesk Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-helpdesk vs /dashboard/helpdesk",
+    "api": "TicketManagementService; useHelpdesk; dashboard/helpdesk/services.ts",
+    "desc": "Parallel wired helpdesk exists at /dashboard/helpdesk with TicketManagementService and useHelpdesk; hr-helpdesk is separate mock UI with no services.ts."
+  },
+  {
+    "id": "AURA-136",
+    "title": "Tickets: Wire ticket list, create, and kanban drag-drop",
+    "module": "HR Helpdesk Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-helpdesk/tickets",
+    "api": "GET/POST /api/helpdesk/tickets; TicketManagementService",
+    "desc": "Page uses hardcoded TICKETS mock array. Create Ticket unwired. handleDragEnd is no-op; status changes not saved."
+  },
+  {
+    "id": "AURA-137",
+    "title": "Tickets: Wire assign ticket",
+    "module": "HR Helpdesk Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-helpdesk/tickets",
+    "api": "TicketManagementService.updateTicket",
+    "desc": "Assign buttons on cards unwired. POST /helpdesk/tickets/{id}/assign route missing."
+  },
+  {
+    "id": "AURA-138",
+    "title": "Knowledge Base: Wire article API",
+    "module": "HR Helpdesk Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-helpdesk/knowledge-base",
+    "api": "KnowledgeBaseService \u2192 /helpdesk/knowledge-base (missing)",
+    "desc": "Uses MOCK CATEGORIES/ARTICLES arrays. Wired sibling at /dashboard/helpdesk/knowledge-base calls KnowledgeBaseService but API route missing."
+  },
+  {
+    "id": "AURA-139",
+    "title": "Request Portal: Wire requests list and new request",
+    "module": "HR Helpdesk Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-helpdesk/request-portal",
+    "api": "Missing service-request API",
+    "desc": "Table populated from hardcoded inline array of 3 requests. New Request button unwired."
+  },
+  {
+    "id": "AURA-140",
+    "title": "Service Catalog: Wire catalog API",
+    "module": "HR Helpdesk Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-helpdesk/service-catalog",
+    "api": "Missing service-catalog API",
+    "desc": "Category cards and search hardcoded/static. Browse Services links go nowhere."
+  },
+  {
+    "id": "AURA-141",
+    "title": "Case Management: Wire cases API and actions",
+    "module": "HR Helpdesk Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-helpdesk/case-management",
+    "api": "Missing case-management API",
+    "desc": "Hardcoded 3-case list and static detail thread. Close Case, attach, and send note unwired."
+  },
+  {
+    "id": "AURA-142",
+    "title": "Chat Support: Wire realtime chat",
+    "module": "HR Helpdesk Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-helpdesk/chat-support",
+    "api": "Missing chat API",
+    "desc": "Static mock conversation; Send button and input unwired; no websocket/chat backend."
+  },
+  {
+    "id": "AURA-143",
+    "title": "Omnichannel: Wire channel integrations",
+    "module": "HR Helpdesk Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-helpdesk/omnichannel",
+    "api": "GET /api/helpdesk/settings; missing omnichannel API",
+    "desc": "Hardcoded Email/Slack/Teams/Phone cards. Connect Now and Manage Settings unwired."
+  },
+  {
+    "id": "AURA-144",
+    "title": "Performance Metrics: Wire analytics",
+    "module": "HR Helpdesk Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-helpdesk/performance-metrics",
+    "api": "GET /api/helpdesk/analytics; AnalyticsService",
+    "desc": "KPI cards and chart area are hardcoded placeholders."
+  },
+  {
+    "id": "AURA-145",
+    "title": "Service Automation: Wire workflow engine",
+    "module": "HR Helpdesk Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-helpdesk/service-automation",
+    "api": "workflow-engine module (not linked)",
+    "desc": "Hardcoded workflow cards. Edit Workflow, View Logs, Create New Automation unwired."
+  },
+  {
+    "id": "AURA-146",
+    "title": "Continuous Improvement: Wire feedback API",
+    "module": "HR Helpdesk Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-helpdesk/continuous-improvement",
+    "api": "Missing feedback/improvement API",
+    "desc": "Improvement opportunities and survey quote hardcoded. Create Task unwired."
+  },
+  {
+    "id": "AURA-147",
+    "title": "Navigation: Add orphan routes to hub grid",
+    "module": "HR Helpdesk Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-helpdesk",
+    "api": "ModuleGrid",
+    "desc": "ModuleGrid features omit tickets and knowledge-base even though both pages exist."
+  },
+  {
+    "id": "AURA-148",
+    "title": "Helpdesk Services: Implement missing API routes and fix SLA path",
+    "module": "HR Helpdesk Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "dashboard/helpdesk/services.ts",
+    "api": "Existing: /api/helpdesk/tickets, /agents, /sla, /analytics, /settings",
+    "desc": "Missing routes: /helpdesk/knowledge-base, /canned-responses, /escalation-matrices, /alerts, /sla-policies, ticket PUT/assign/comments. SLATrackingService calls /sla-policies but API is /api/helpdesk/sla."
+  }
+]
