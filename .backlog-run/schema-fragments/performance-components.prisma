@@ -1,0 +1,67 @@
+// Performance Components Module (AURA-230..AURA-237) schema fragment.
+// NOT applied to schema.prisma (per backlog rule). Access via (prisma as any).<delegate>.
+// Backing migration:
+//   packages/@aura/database/prisma/migrations/20260702160000_add_perfcomponents_feedback/migration.sql
+//
+// Notes:
+//  - The existing `ContinuousFeedback` model (aura_continuous_feedback) is EXTENDED
+//    by the migration with `tags text[]`, `status text`, and `reactions`/`comments`
+//    relations. Those extra scalar columns are read/written via (prisma as any) since
+//    the typed client does not know them.
+//  - New tables below are tenant-scoped and soft-delete aware to match repo convention.
+
+/// Emoji reaction on a continuous-feedback / recognition item.
+model ContinuousFeedbackReaction {
+  id         String   @id @default(uuid())
+  tenantId   String
+  feedbackId String
+  userId     String
+  type       String // 👏 ❤️ 💡 🙏 🔥
+  createdAt  DateTime @default(now())
+
+  @@unique([feedbackId, userId, type], map: "CFReaction_feedback_user_type_key")
+  @@index([tenantId], map: "CFReaction_tenantId_idx")
+  @@index([feedbackId], map: "CFReaction_feedbackId_idx")
+  @@map("aura_continuous_feedback_reaction")
+}
+
+/// Threaded comment on a continuous-feedback / recognition item.
+model ContinuousFeedbackComment {
+  id         String    @id @default(uuid())
+  tenantId   String
+  feedbackId String
+  authorId   String
+  body       String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @default(now())
+  deletedAt  DateTime?
+  isDeleted  Boolean   @default(false)
+
+  @@index([tenantId], map: "CFComment_tenantId_idx")
+  @@index([feedbackId], map: "CFComment_feedbackId_idx")
+  @@map("aura_continuous_feedback_comment")
+}
+
+/// Reusable check-in / 1:1 template (question bank + cadence). Tenant-scoped.
+model CheckInTemplate {
+  id          String    @id @default(uuid())
+  tenantId    String
+  name        String
+  description String?
+  category    String    @default("one_on_one") // one_on_one | weekly_checkin | monthly_review | quarterly
+  cadence     String    @default("weekly") // weekly | biweekly | monthly | quarterly
+  questions   Json      @default("[]") // [{ id, text, type }]
+  isDefault   Boolean   @default(false)
+  isActive    Boolean   @default(true)
+  usageCount  Int       @default(0)
+  createdBy   String?
+  updatedBy   String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now())
+  deletedAt   DateTime?
+  isDeleted   Boolean   @default(false)
+
+  @@index([tenantId], map: "CheckInTemplate_tenantId_idx")
+  @@index([tenantId, category], map: "CheckInTemplate_tenant_category_idx")
+  @@map("aura_check_in_template")
+}

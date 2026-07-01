@@ -4588,6 +4588,10 @@ model ContinuousFeedback {
   deletedAt     DateTime?
   isDeleted     Boolean   @default(false)
 
+  // Added by performance-components wave (matches ALTER in 20260702160000_add_perfcomponents_feedback).
+  tags          String[]
+  status        String    @default("active")
+
   @@index([fromUserId], map: "ContinuousFeedback_fromUserId_idx")
   @@index([tenantId], map: "ContinuousFeedback_tenantId_idx")
   @@index([toEmployeeId], map: "ContinuousFeedback_toEmployeeId_idx")
@@ -15465,4 +15469,270 @@ model JobCompensationStrategy {
   updatedBy          String?
 
   @@map("aura_job_compensation_strategy")
+}
+
+// ===== Wave F fragments =====
+
+// ---- contract-workforce.prisma ----
+// Schema fragment for Contract Workforce Module (AURA-318..AURA-325).
+// DO NOT edit the main schema.prisma directly (SCHEMA RULE). This documents the
+// new vendor sub-domain models; the deployed DB is created via the defensive
+// migration 20260702160000_add_contractworkforce_vendor_ops/migration.sql.
+// Access at runtime via (prisma as any).<delegate>:
+//   vendorComplianceDoc, vendorContractType, vendorContractRenewal,
+//   vendorRateCard, vendorPerformanceReview, vendorInvoice, vendorTimesheet.
+// All models are tenant-scoped and reference RecruitmentVendor.id (vendorId).
+
+/// Compliance / legal / security documents attached to a recruitment vendor,
+/// with expiry tracking and review metadata. Backs /vendors/compliance-docs.
+model VendorComplianceDoc {
+  id            String    @id @default(uuid())
+  tenantId      String
+  vendorId      String
+  documentType  String // trade_license | insurance | iso_cert | vat_cert | wps | other
+  title         String
+  documentNumber String?
+  status        String    @default("pending") // pending | valid | expiring | expired | rejected
+  issueDate     DateTime?
+  expiryDate    DateTime?
+  documentUrl   String?
+  reviewedBy    String?
+  reviewedAt    DateTime?
+  notes         String?
+  createdBy     String?
+  updatedBy     String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+  isDeleted     Boolean   @default(false)
+
+  @@index([tenantId])
+  @@index([tenantId, vendorId])
+  @@index([tenantId, status])
+  @@map("aura_vendor_compliance_doc")
+}
+
+/// Vendor engagement models / standard terms (contract type templates).
+/// Backs /vendors/contract-types.
+model VendorContractType {
+  id             String    @id @default(uuid())
+  tenantId       String
+  code           String
+  name           String
+  engagementModel String   @default("staff_augmentation") // staff_augmentation | fixed_price | managed_service | rpo
+  noticePeriodDays Int      @default(30)
+  paymentTermsDays Int      @default(30)
+  description    String?
+  isActive       Boolean   @default(true)
+  createdBy      String?
+  updatedBy      String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime?
+  isDeleted      Boolean   @default(false)
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@map("aura_vendor_contract_type")
+}
+
+/// Vendor contract renewal / extension decisions and lifecycle history.
+/// Backs /vendors/contract-renewal.
+model VendorContractRenewal {
+  id              String    @id @default(uuid())
+  tenantId        String
+  vendorId        String
+  currentEndDate  DateTime?
+  proposedEndDate DateTime?
+  status          String    @default("pending") // pending | approved | rejected | renewed | expired
+  decision        String? // renew | extend | terminate
+  decisionNotes   String?
+  reviewedBy      String?
+  reviewedAt      DateTime?
+  createdBy       String?
+  updatedBy       String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime?
+  isDeleted       Boolean   @default(false)
+
+  @@index([tenantId])
+  @@index([tenantId, vendorId])
+  @@index([tenantId, status])
+  @@map("aura_vendor_contract_renewal")
+}
+
+/// Vendor commercial rate cards by role / location / experience.
+/// Backs /vendors/rate-cards.
+model VendorRateCard {
+  id           String    @id @default(uuid())
+  tenantId     String
+  vendorId     String
+  roleTitle    String
+  experienceLevel String  @default("mid") // junior | mid | senior | lead
+  location     String?
+  ratePeriod   String    @default("hourly") // hourly | daily | monthly
+  rate         Float     @default(0)
+  currency     String    @default("USD")
+  effectiveFrom DateTime?
+  effectiveTo  DateTime?
+  isActive     Boolean   @default(true)
+  createdBy    String?
+  updatedBy    String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+  isDeleted    Boolean   @default(false)
+
+  @@index([tenantId])
+  @@index([tenantId, vendorId])
+  @@map("aura_vendor_rate_card")
+}
+
+/// Vendor performance scorecards / review notes. Backs /vendors/performance-rating.
+model VendorPerformanceReview {
+  id            String    @id @default(uuid())
+  tenantId      String
+  vendorId      String
+  periodLabel   String // e.g. "Q1 2026"
+  qualityScore  Float     @default(0)
+  timelinessScore Float   @default(0)
+  communicationScore Float @default(0)
+  overallScore  Float     @default(0)
+  reviewNotes   String?
+  reviewedBy    String?
+  reviewedAt    DateTime?
+  createdBy     String?
+  updatedBy     String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+  isDeleted     Boolean   @default(false)
+
+  @@index([tenantId])
+  @@index([tenantId, vendorId])
+  @@map("aura_vendor_performance_review")
+}
+
+/// Vendor invoices with approval / payment reconciliation. Backs /vendors/invoice-processing.
+model VendorInvoice {
+  id            String    @id @default(uuid())
+  tenantId      String
+  vendorId      String
+  invoiceNumber String
+  invoiceDate   DateTime?
+  dueDate       DateTime?
+  amount        Float     @default(0)
+  currency      String    @default("USD")
+  status        String    @default("pending") // pending | approved | rejected | paid
+  description   String?
+  approvedBy    String?
+  approvedAt    DateTime?
+  paidAt        DateTime?
+  createdBy     String?
+  updatedBy     String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+  isDeleted     Boolean   @default(false)
+
+  @@index([tenantId])
+  @@index([tenantId, vendorId])
+  @@index([tenantId, status])
+  @@map("aura_vendor_invoice")
+}
+
+/// Vendor contractor timesheets with approval workflow. Backs /vendors/timesheet.
+model VendorTimesheet {
+  id            String    @id @default(uuid())
+  tenantId      String
+  vendorId      String
+  workerName    String
+  periodStart   DateTime?
+  periodEnd     DateTime?
+  hours         Float     @default(0)
+  status        String    @default("submitted") // submitted | approved | rejected
+  notes         String?
+  approvedBy    String?
+  approvedAt    DateTime?
+  createdBy     String?
+  updatedBy     String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+  isDeleted     Boolean   @default(false)
+
+  @@index([tenantId])
+  @@index([tenantId, vendorId])
+  @@index([tenantId, status])
+  @@map("aura_vendor_timesheet")
+}
+
+// ---- performance-components.prisma ----
+// Performance Components Module (AURA-230..AURA-237) schema fragment.
+// NOT applied to schema.prisma (per backlog rule). Access via (prisma as any).<delegate>.
+// Backing migration:
+//   packages/@aura/database/prisma/migrations/20260702160000_add_perfcomponents_feedback/migration.sql
+//
+// Notes:
+//  - The existing `ContinuousFeedback` model (aura_continuous_feedback) is EXTENDED
+//    by the migration with `tags text[]`, `status text`, and `reactions`/`comments`
+//    relations. Those extra scalar columns are read/written via (prisma as any) since
+//    the typed client does not know them.
+//  - New tables below are tenant-scoped and soft-delete aware to match repo convention.
+
+/// Emoji reaction on a continuous-feedback / recognition item.
+model ContinuousFeedbackReaction {
+  id         String   @id @default(uuid())
+  tenantId   String
+  feedbackId String
+  userId     String
+  type       String // 👏 ❤️ 💡 🙏 🔥
+  createdAt  DateTime @default(now())
+
+  @@unique([feedbackId, userId, type], map: "CFReaction_feedback_user_type_key")
+  @@index([tenantId], map: "CFReaction_tenantId_idx")
+  @@index([feedbackId], map: "CFReaction_feedbackId_idx")
+  @@map("aura_continuous_feedback_reaction")
+}
+
+/// Threaded comment on a continuous-feedback / recognition item.
+model ContinuousFeedbackComment {
+  id         String    @id @default(uuid())
+  tenantId   String
+  feedbackId String
+  authorId   String
+  body       String
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @default(now())
+  deletedAt  DateTime?
+  isDeleted  Boolean   @default(false)
+
+  @@index([tenantId], map: "CFComment_tenantId_idx")
+  @@index([feedbackId], map: "CFComment_feedbackId_idx")
+  @@map("aura_continuous_feedback_comment")
+}
+
+/// Reusable check-in / 1:1 template (question bank + cadence). Tenant-scoped.
+model CheckInTemplate {
+  id          String    @id @default(uuid())
+  tenantId    String
+  name        String
+  description String?
+  category    String    @default("one_on_one") // one_on_one | weekly_checkin | monthly_review | quarterly
+  cadence     String    @default("weekly") // weekly | biweekly | monthly | quarterly
+  questions   Json      @default("[]") // [{ id, text, type }]
+  isDefault   Boolean   @default(false)
+  isActive    Boolean   @default(true)
+  usageCount  Int       @default(0)
+  createdBy   String?
+  updatedBy   String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @default(now())
+  deletedAt   DateTime?
+  isDeleted   Boolean   @default(false)
+
+  @@index([tenantId], map: "CheckInTemplate_tenantId_idx")
+  @@index([tenantId, category], map: "CheckInTemplate_tenant_category_idx")
+  @@map("aura_check_in_template")
 }
