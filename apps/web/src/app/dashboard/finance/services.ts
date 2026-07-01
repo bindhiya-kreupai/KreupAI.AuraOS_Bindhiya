@@ -23,6 +23,22 @@ import type {
 // Budget Service
 // ============================================================================
 
+export interface BudgetSummary {
+  totalBudgets: number;
+  activeBudgets: number;
+  totalBudgetAmount: number;
+  totalSpent: number;
+  totalRemaining: number;
+}
+
+const EMPTY_BUDGET_SUMMARY: BudgetSummary = {
+  totalBudgets: 0,
+  activeBudgets: 0,
+  totalBudgetAmount: 0,
+  totalSpent: 0,
+  totalRemaining: 0,
+};
+
 export class BudgetService {
   private static endpoint = '/finance/budgets';
 
@@ -32,6 +48,27 @@ export class BudgetService {
       return APIClient.unwrapList<Budget>(response, 'budgets');
     } catch (error: any) {
       return [];
+    }
+  }
+
+  /**
+   * Returns the tenant-scoped budget rollup computed server-side by the
+   * budgets endpoint (`summary` block). Falls back to zeros on failure.
+   */
+  static async getBudgetSummary(): Promise<BudgetSummary> {
+    try {
+      const response = await APIClient.get<{ summary?: Partial<BudgetSummary> }>(this.endpoint);
+      const s = response?.summary;
+      if (!s) return { ...EMPTY_BUDGET_SUMMARY };
+      return {
+        totalBudgets: Number(s.totalBudgets || 0),
+        activeBudgets: Number(s.activeBudgets || 0),
+        totalBudgetAmount: Number(s.totalBudgetAmount || 0),
+        totalSpent: Number(s.totalSpent || 0),
+        totalRemaining: Number(s.totalRemaining || 0),
+      };
+    } catch (error: any) {
+      return { ...EMPTY_BUDGET_SUMMARY };
     }
   }
 

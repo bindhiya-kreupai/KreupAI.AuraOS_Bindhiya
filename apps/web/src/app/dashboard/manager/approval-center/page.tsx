@@ -54,6 +54,7 @@ export default function ApprovalCenterPage() {
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
   const [processing, setProcessing] = useState<string | null>(null);
+  const [showHistory, setShowHistory] = useState(false);
   const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(
     null
   );
@@ -73,12 +74,15 @@ export default function ApprovalCenterPage() {
   ];
 
   useEffect(() => {
-    fetchApprovals();
-  }, []);
+    fetchApprovals(showHistory);
+  }, [showHistory]);
 
-  async function fetchApprovals() {
+  async function fetchApprovals(includeHistory: boolean) {
+    setLoading(true);
     try {
-      const res = await fetch('/api/manager/approvals');
+      const res = await fetch(
+        `/api/manager/approvals${includeHistory ? '?includeHistory=true' : ''}`
+      );
       if (res.ok) {
         const data = await res.json();
         setApprovals(data.approvals || []);
@@ -314,9 +318,21 @@ export default function ApprovalCenterPage() {
                         <span className="font-bold text-slate-900 dark:text-slate-100 text-lg">
                           {item.requestTitle}
                         </span>
-                        <span className="bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 text-[10px] font-bold px-2 py-0.5 rounded uppercase">
-                          New
-                        </span>
+                        {item.approvalStatus === 'pending' ? (
+                          <span className="bg-indigo-100 text-indigo-700 dark:bg-indigo-900/30 dark:text-indigo-300 text-[10px] font-bold px-2 py-0.5 rounded uppercase">
+                            New
+                          </span>
+                        ) : (
+                          <span
+                            className={`text-[10px] font-bold px-2 py-0.5 rounded uppercase ${
+                              item.approvalStatus === 'approved'
+                                ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300'
+                                : 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-300'
+                            }`}
+                          >
+                            {item.approvalStatus}
+                          </span>
+                        )}
                       </div>
                       <span className="text-xs text-slate-400 whitespace-nowrap">
                         {new Date(item.requestDate).toLocaleDateString()}
@@ -341,7 +357,11 @@ export default function ApprovalCenterPage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-2 md:opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div
+                    className={`flex items-center gap-2 md:opacity-0 group-hover:opacity-100 transition-opacity ${
+                      item.approvalStatus === 'pending' ? '' : 'hidden'
+                    }`}
+                  >
                     <button
                       disabled={processing === item.requestId}
                       onClick={() => handleAction(item.requestId, item.requestType, 'approve')}
@@ -372,8 +392,12 @@ export default function ApprovalCenterPage() {
           <div className="text-sm text-slate-500">
             Showing <span className="font-bold">{filteredApprovals.length}</span> requests
           </div>
-          <button className="text-sm font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1">
-            View All History <ArrowRight className="w-4 h-4" />
+          <button
+            onClick={() => setShowHistory((prev) => !prev)}
+            className="text-sm font-bold text-indigo-600 hover:text-indigo-700 flex items-center gap-1"
+          >
+            {showHistory ? 'Show Pending Only' : 'View All History'}{' '}
+            <ArrowRight className="w-4 h-4" />
           </button>
         </div>
       </div>

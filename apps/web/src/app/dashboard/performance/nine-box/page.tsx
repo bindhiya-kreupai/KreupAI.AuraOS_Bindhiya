@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { PerformanceReviewService } from '../core/services';
+import { PerformanceReviewService, CalibrationService } from '../core/services';
 import {
   AlertCircle,
   CheckCircle2,
@@ -79,7 +79,9 @@ interface EmployeeBox {
   avatar: string;
 }
 
-const STORAGE_KEY = 'auraos.performance.nineBoxCalibration.v1';
+// A single tenant-wide calibration session backs the 9-box overrides so HR
+// teams share one view. Identified by this reserved session name.
+const NINE_BOX_SESSION_NAME = 'nine-box-grid';
 
 function computeBoxFromRating(rating: number): string {
   const col = rating >= 4 ? 3 : rating >= 3 ? 2 : 1;
@@ -92,6 +94,7 @@ export default function NineBoxGridPage() {
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [dirty, setDirty] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
   const [status, setStatus] = useState<{ kind: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
@@ -103,15 +106,14 @@ export default function NineBoxGridPage() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const reviews = await PerformanceReviewService.getReviews();
-      const overrides: Record<string, string> = (() => {
-        try {
-          const raw = localStorage.getItem(STORAGE_KEY);
-          return raw ? JSON.parse(raw) : {};
-        } catch {
-          return {};
-        }
-      })();
+      const [reviews, sessions] = await Promise.all([
+        PerformanceReviewService.getReviews(),
+        CalibrationService.getSessions(),
+      ]);
+      const nineBox = (sessions as any[]).find((s) => s.sessionName === NINE_BOX_SESSION_NAME);
+      setSessionId(nineBox?.id ?? null);
+      const overrides: Record<string, string> =
+        (nineBox?.adjustments && (nineBox.adjustments as any).overrides) || {};
       const mapped: EmployeeBox[] = reviews
         .filter((r: any) => r.finalRating !== null && r.finalRating !== undefined)
         .map((r: any) => {
@@ -147,27 +149,45 @@ export default function NineBoxGridPage() {
     setDirty(true);
   };
 
-  const handleReset = () => {
+  const handleReset = async () => {
+    setSaving(true);
     try {
-      localStorage.removeItem(STORAGE_KEY);
-    } catch {
-      /* ignore */
+      if (sessionId) {
+        await CalibrationService.updateSession(sessionId, {
+          adjustments: { type: 'nine-box', overrides: {} },
+        });
+      }
+      setEmployees((all) => all.map((e) => ({ ...e, box: e.originalBox })));
+      setDirty(false);
+      setStatus({ kind: 'success', text: 'Calibration reset.' });
+    } catch (e: any) {
+      setStatus({ kind: 'error', text: e?.message || 'Failed to reset calibration.' });
+    } finally {
+      setSaving(false);
     }
-    setEmployees((all) => all.map((e) => ({ ...e, box: e.originalBox })));
-    setDirty(false);
-    setStatus({ kind: 'success', text: 'Calibration reset.' });
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setSaving(true);
     try {
       const overrides: Record<string, string> = {};
       employees.forEach((e) => {
         if (e.box !== e.originalBox) overrides[e.id] = e.box;
       });
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(overrides));
+      const adjustments = { type: 'nine-box', overrides };
+      if (sessionId) {
+        await CalibrationService.updateSession(sessionId, { adjustments });
+      } else {
+        const created = await CalibrationService.createRaw({
+          sessionName: NINE_BOX_SESSION_NAME,
+          status: 'in_progress',
+          adjustments,
+        });
+        setSessionId(created?.id ?? null);
+      }
+      setEmployees((all) => all.map((e) => ({ ...e, originalBox: e.box })));
       setDirty(false);
-      setStatus({ kind: 'success', text: 'Calibration saved (browser-local).' });
+      setStatus({ kind: 'success', text: 'Calibration saved.' });
     } catch (e: any) {
       setStatus({ kind: 'error', text: e?.message || 'Failed to save calibration.' });
     } finally {
@@ -313,16 +333,11 @@ export default function NineBoxGridPage() {
         )}
       </div>
 
-      <div className="rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-800 px-4 py-3 text-xs text-amber-800 dark:text-amber-200 flex gap-2">
-        <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+      <div className="rounded-lg border border-slate-200 bg-slate-50 dark:bg-slate-900/40 dark:border-slate-800 px-4 py-3 text-xs text-slate-600 dark:text-slate-300 flex gap-2">
+        <Info className="w-4 h-4 flex-shrink-0 mt-0.5" />
         <p>
-          Calibration overrides are stored per-browser. Adding a
-          <code className="px-1 mx-1 bg-amber-100 dark:bg-amber-900/40 rounded">calibratedBox</code>
-          column on{' '}
-          <code className="px-1 bg-amber-100 dark:bg-amber-900/40 rounded">
-            PerformanceReview
-          </code>{' '}
-          is the natural follow-up so HR teams share one view.
+          Calibration overrides are persisted to a shared tenant-wide calibration session, so every
+          HR reviewer sees the same 9-box placement.
         </p>
       </div>
     </div>

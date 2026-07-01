@@ -29,7 +29,14 @@ export const GET = withEnhancedAuth(async (request, context) => {
     return NextResponse.json({ sessions }, { status: 200 });
   } catch (error: any) {
     console.error('Error fetching calibration sessions:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: 'Internal server error',
+        message: 'Internal server error',
+        messageAr: 'خطأ في الخادم الداخلي',
+      },
+      { status: 500 }
+    );
   }
 });
 
@@ -48,6 +55,7 @@ export const POST = withEnhancedAuth(async (request, context) => {
         facilitatorId: body.facilitatorId || user.userId,
         department: body.department || null,
         participants: body.participants || [],
+        adjustments: body.adjustments ?? undefined,
         notes: body.notes || null,
         createdBy: user.userId,
       },
@@ -56,7 +64,14 @@ export const POST = withEnhancedAuth(async (request, context) => {
     return NextResponse.json({ session }, { status: 201 });
   } catch (error: any) {
     console.error('Error creating calibration session:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: 'Internal server error',
+        message: 'Internal server error',
+        messageAr: 'خطأ في الخادم الداخلي',
+      },
+      { status: 500 }
+    );
   }
 });
 
@@ -66,7 +81,14 @@ export const PUT = withEnhancedAuth(async (request, context) => {
     const body = await request.json();
 
     if (!body.id) {
-      return NextResponse.json({ error: 'Session ID is required' }, { status: 400 });
+      return NextResponse.json(
+        {
+          error: 'Session ID is required',
+          message: 'Session ID is required',
+          messageAr: 'معرّف الجلسة مطلوب',
+        },
+        { status: 400 }
+      );
     }
 
     const existing = await prisma.calibrationSession.findFirst({
@@ -74,7 +96,14 @@ export const PUT = withEnhancedAuth(async (request, context) => {
     });
 
     if (!existing) {
-      return NextResponse.json({ error: 'Calibration session not found' }, { status: 404 });
+      return NextResponse.json(
+        {
+          error: 'Calibration session not found',
+          message: 'Calibration session not found',
+          messageAr: 'جلسة المعايرة غير موجودة',
+        },
+        { status: 404 }
+      );
     }
 
     const { id, ...updateFields } = body;
@@ -84,7 +113,8 @@ export const PUT = withEnhancedAuth(async (request, context) => {
     if (updateFields.status !== undefined) dataToUpdate.status = updateFields.status;
     if (updateFields.adjustments !== undefined) dataToUpdate.adjustments = updateFields.adjustments;
     if (updateFields.notes !== undefined) dataToUpdate.notes = updateFields.notes;
-    if (updateFields.participants !== undefined) dataToUpdate.participants = updateFields.participants;
+    if (updateFields.participants !== undefined)
+      dataToUpdate.participants = updateFields.participants;
 
     if (updateFields.status === 'completed' && existing.status !== 'completed') {
       dataToUpdate.completedDate = new Date();
@@ -98,6 +128,13 @@ export const PUT = withEnhancedAuth(async (request, context) => {
     return NextResponse.json({ session }, { status: 200 });
   } catch (error: any) {
     console.error('Error updating calibration session:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: 'Internal server error',
+        message: 'Internal server error',
+        messageAr: 'خطأ في الخادم الداخلي',
+      },
+      { status: 500 }
+    );
   }
 });

@@ -64,6 +64,43 @@ describe('Finance module client services (AURA-149..160)', () => {
     expect(budgets).toEqual([]);
   });
 
+  it('BudgetService.getBudgetSummary reads the tenant-scoped summary rollup (AURA-553)', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(
+      jsonResponse({
+        success: true,
+        budgets: [],
+        summary: {
+          totalBudgets: 4,
+          activeBudgets: 2,
+          totalBudgetAmount: 500000,
+          totalSpent: 120000,
+          totalRemaining: 380000,
+        },
+      })
+    );
+    const summary = await BudgetService.getBudgetSummary();
+    expect(summary).toEqual({
+      totalBudgets: 4,
+      activeBudgets: 2,
+      totalBudgetAmount: 500000,
+      totalSpent: 120000,
+      totalRemaining: 380000,
+    });
+    expect(String(vi.mocked(fetch).mock.calls[0]?.[0])).toContain('/api/finance/budgets');
+  });
+
+  it('BudgetService.getBudgetSummary returns zeros on error (AURA-553)', async () => {
+    vi.mocked(fetch).mockResolvedValueOnce(jsonResponse({ error: 'boom' }, 500));
+    const summary = await BudgetService.getBudgetSummary();
+    expect(summary).toEqual({
+      totalBudgets: 0,
+      activeBudgets: 0,
+      totalBudgetAmount: 0,
+      totalSpent: 0,
+      totalRemaining: 0,
+    });
+  });
+
   it('CostCenterService.getCostCenters unwraps the costCenters key', async () => {
     vi.mocked(fetch).mockResolvedValueOnce(
       jsonResponse({

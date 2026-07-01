@@ -148,6 +148,24 @@ export class CalibrationService {
     const response = await APIClient.post<{ session: CalibrationSession }>(this.endpoint, session);
     return response.session;
   }
+
+  /**
+   * Create a raw calibration session (used by the 9-box grid, which persists a
+   * `sessionName` + `adjustments` payload that is looser than the strict
+   * CalibrationSession type). Returns the created row.
+   */
+  static async createRaw(payload: Record<string, unknown>): Promise<any> {
+    const response = await APIClient.post<{ session: any }>(this.endpoint, payload);
+    return response.session;
+  }
+
+  /**
+   * Update an existing calibration session (e.g. persist adjustments/status).
+   */
+  static async updateSession(id: string, updates: Record<string, unknown>): Promise<any> {
+    const response = await APIClient.put<{ session: any }>(this.endpoint, { id, ...updates });
+    return response.session;
+  }
 }
 
 export class PerformanceAnalyticsService {

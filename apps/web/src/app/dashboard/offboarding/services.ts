@@ -484,6 +484,23 @@ export class AccessRevocationService {
 // ============================================================================
 
 export class ClearanceService {
+  // Persist a single clearance item's status via the dedicated clearances API.
+  static async updateClearanceStatus(
+    clearanceId: string,
+    status: 'pending' | 'approved' | 'rejected',
+    notes?: string
+  ): Promise<{ id: string; status: string; clearanceStatus: string }> {
+    const response = await APIClient.patch<{
+      clearance?: { id: string; status: string };
+      clearanceStatus?: string;
+    }>(`/offboarding/clearances/${clearanceId}`, { status, notes });
+    return {
+      id: response.clearance?.id || clearanceId,
+      status: response.clearance?.status || status,
+      clearanceStatus: response.clearanceStatus || 'PENDING',
+    };
+  }
+
   static async clearDepartment(
     instanceId: string,
     clearanceId: string,
