@@ -26,7 +26,6 @@ export async function GET(request: NextRequest) {
       prisma.skillAssessment.findMany({
         where,
         include: {
-          jobRole: true,
           competencies: {
             include: {
               competency: {
@@ -123,7 +122,6 @@ export async function POST(request: NextRequest) {
         },
       },
       include: {
-        jobRole: true,
         competencies: {
           include: {
             competency: { include: { category: true } },

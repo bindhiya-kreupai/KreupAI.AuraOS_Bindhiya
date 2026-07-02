@@ -48,7 +48,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     }
 
     const [data, total] = await Promise.all([
-      prisma.salaryStructure.findMany({
+      (prisma as any).salaryStructure.findMany({
         where,
         skip,
         take: limit,
@@ -58,7 +58,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
           _count: { select: { employees: true } },
         },
       }),
-      prisma.salaryStructure.count({ where }),
+      (prisma as any).salaryStructure.count({ where }),
     ]);
 
     return NextResponse.json({
@@ -110,7 +110,7 @@ export const POST = withAudit(
         );
       }
 
-      const structure = await prisma.salaryStructure.create({
+      const structure = await (prisma as any).salaryStructure.create({
         data: {
           tenantId: user.tenantId,
           name: body.name,

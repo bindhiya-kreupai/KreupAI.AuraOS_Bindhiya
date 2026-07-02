@@ -42,7 +42,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
       ];
     }
 
-    const flags = await prisma.featureFlag.findMany({
+    const flags = await (prisma as any).featureFlag.findMany({
       where,
       orderBy: [{ module: 'asc' }, { key: 'asc' }],
     });

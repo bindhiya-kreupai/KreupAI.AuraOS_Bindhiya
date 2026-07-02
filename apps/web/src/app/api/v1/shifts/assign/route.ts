@@ -188,9 +188,10 @@ export const POST = withAudit(
       }
 
       // Create new shift assignments for all employees
+      // Cast: the `shift` relation is not declared on ShiftAssignment in schema.prisma
       const assignments = await prisma.$transaction(
         data.employeeIds.map((employeeId) =>
-          prisma.shiftAssignment.create({
+          (prisma as any).shiftAssignment.create({
             data: {
               tenantId: user.tenantId,
               employeeId,

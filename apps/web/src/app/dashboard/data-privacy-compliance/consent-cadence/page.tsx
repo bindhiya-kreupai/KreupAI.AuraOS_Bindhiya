@@ -38,7 +38,7 @@ export default function ConsentCadencePage() {
               key: 'grantedAt',
               label: 'Granted',
               labelAr: 'منح',
-              type: 'date',
+              type: 'text',
               required: true,
               widthClass: 'w-40',
             },
@@ -46,7 +46,7 @@ export default function ConsentCadencePage() {
               key: 'withdrawnAt',
               label: 'Withdrawn',
               labelAr: 'سحب',
-              type: 'date',
+              type: 'text',
               widthClass: 'w-40',
             },
             {

@@ -54,7 +54,7 @@ export default function CctvCadencePage() {
               key: 'checkedAt',
               label: 'Checked at',
               labelAr: 'التاريخ',
-              type: 'date',
+              type: 'text',
               required: true,
               widthClass: 'w-36',
             },

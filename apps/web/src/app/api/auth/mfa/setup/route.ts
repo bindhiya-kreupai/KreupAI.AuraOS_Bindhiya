@@ -126,6 +126,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user }) => {
         tenantId: user.tenantId,
         userId: user.userId,
         action: 'MFA_SETUP_INITIATED',
+        module: 'AUTH',
         resourceType: 'Authentication',
         errorMessage: 'MFA setup initiated - waiting for verification',
         ipAddress,

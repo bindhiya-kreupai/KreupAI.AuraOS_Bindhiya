@@ -81,7 +81,7 @@ export class GLPostingService extends BaseService {
     actorId: string;
   }) {
     const { totalDebit, totalCredit } = this.assertBalanced(input.lines);
-    return prisma.gLJournalEntry.create({
+    return (prisma as any).gLJournalEntry.create({
       data: {
         tenantId: input.tenantId,
         countryCode: input.countryCode,
@@ -112,10 +112,10 @@ export class GLPostingService extends BaseService {
   }
 
   async post(id: string, tenantId: string, actorId: string) {
-    const entry = await prisma.gLJournalEntry.findFirst({ where: { id, tenantId } });
+    const entry = await (prisma as any).gLJournalEntry.findFirst({ where: { id, tenantId } });
     if (!entry) return null;
     this.assertTransition(entry.status as GLEntryStatus, 'POSTED');
-    return prisma.gLJournalEntry.update({
+    return (prisma as any).gLJournalEntry.update({
       where: { id },
       data: { status: 'POSTED', postedAt: new Date(), postedById: actorId, updatedBy: actorId },
     });
@@ -135,10 +135,10 @@ export class GLPostingService extends BaseService {
     if (!exportReference || exportReference.trim().length < 3) {
       throw new Error('A real downstream-system export reference is required (no placeholders).');
     }
-    const entry = await prisma.gLJournalEntry.findFirst({ where: { id, tenantId } });
+    const entry = await (prisma as any).gLJournalEntry.findFirst({ where: { id, tenantId } });
     if (!entry) return null;
     this.assertTransition(entry.status as GLEntryStatus, 'EXPORTED');
-    return prisma.gLJournalEntry.update({
+    return (prisma as any).gLJournalEntry.update({
       where: { id },
       data: {
         status: 'EXPORTED',
@@ -151,7 +151,7 @@ export class GLPostingService extends BaseService {
   }
 
   async reverse(id: string, tenantId: string, actorId: string) {
-    const original = await prisma.gLJournalEntry.findFirst({
+    const original = await (prisma as any).gLJournalEntry.findFirst({
       where: { id, tenantId },
       include: { lines: true },
     });
@@ -160,7 +160,7 @@ export class GLPostingService extends BaseService {
 
     return prisma.$transaction(async (tx) => {
       // Flip debit/credit on each line for the reversal entry.
-      const reversal = await tx.gLJournalEntry.create({
+      const reversal = await (tx as any).gLJournalEntry.create({
         data: {
           tenantId: original.tenantId,
           countryCode: original.countryCode,
@@ -178,7 +178,7 @@ export class GLPostingService extends BaseService {
           reversalOfId: original.id,
           createdBy: actorId,
           lines: {
-            create: original.lines.map((l) => ({
+            create: (original.lines as any[]).map((l: any) => ({
               accountId: l.accountId,
               costCenterId: l.costCenterId,
               departmentId: l.departmentId,
@@ -192,7 +192,7 @@ export class GLPostingService extends BaseService {
         include: { lines: true },
       });
 
-      await tx.gLJournalEntry.update({
+      await (tx as any).gLJournalEntry.update({
         where: { id },
         data: { status: 'REVERSED', updatedBy: actorId },
       });
@@ -227,14 +227,14 @@ export class GLPostingService extends BaseService {
       where.entryDate = range;
     }
     const [items, total] = await Promise.all([
-      prisma.gLJournalEntry.findMany({
+      (prisma as any).gLJournalEntry.findMany({
         where,
         skip,
         take: limit,
         orderBy: { entryDate: 'desc' },
         include: { lines: true },
       }),
-      prisma.gLJournalEntry.count({ where }),
+      (prisma as any).gLJournalEntry.count({ where }),
     ]);
     return { items, total, page, pageSize: limit, hasNextPage: skip + items.length < total };
   }
@@ -262,7 +262,7 @@ export class GLPostingService extends BaseService {
     });
     if (!run) throw new Error('Payroll run not found');
 
-    const mappings = await prisma.payrollAccountMapping.findMany({
+    const mappings = await (prisma as any).payrollAccountMapping.findMany({
       where: {
         tenantId: input.tenantId,
         isDeleted: false,
@@ -270,11 +270,11 @@ export class GLPostingService extends BaseService {
       },
     });
     const mapByCode = new Map(
-      mappings.map((m) => [
+      (mappings as any[]).map((m: any) => [
         m.componentCode,
         {
-          debitAccountId: m.debitAccountId,
-          creditAccountId: m.creditAccountId,
+          debitAccountId: m.debitAccountId as string,
+          creditAccountId: m.creditAccountId as string | null,
           kind: m.componentKind,
         },
       ])

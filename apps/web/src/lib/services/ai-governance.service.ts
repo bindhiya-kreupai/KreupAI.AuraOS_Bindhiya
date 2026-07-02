@@ -88,7 +88,7 @@ export class AIGovernanceService extends BaseService {
     knownLimitations?: string;
     actorId: string;
   }) {
-    return prisma.aIModelCard.create({
+    return (prisma as any).aIModelCard.create({
       data: {
         tenantId: input.tenantId ?? null,
         modelName: input.modelName,
@@ -145,7 +145,7 @@ export class AIGovernanceService extends BaseService {
   }
 
   async publishModel(id: string, actorId: string) {
-    const card = await prisma.aIModelCard.findFirst({
+    const card = await (prisma as any).aIModelCard.findFirst({
       where: { id, isDeleted: false },
       include: { biasAudits: true },
     });
@@ -158,11 +158,14 @@ export class AIGovernanceService extends BaseService {
       knownLimitations: card.knownLimitations,
       fairnessMetrics: card.fairnessMetrics,
       performanceMetrics: card.performanceMetrics,
-      biasAudits: card.biasAudits.map((b) => ({ passed: b.passed, auditDate: b.auditDate })),
+      biasAudits: (card.biasAudits as any[]).map((b: any) => ({
+        passed: b.passed,
+        auditDate: b.auditDate,
+      })),
     });
     if (reasons.length > 0) throw new UnpublishableHighRiskModelError(reasons);
 
-    return prisma.aIModelCard.update({
+    return (prisma as any).aIModelCard.update({
       where: { id },
       data: {
         status: 'PUBLISHED',
@@ -175,20 +178,20 @@ export class AIGovernanceService extends BaseService {
   }
 
   async deprecateModel(id: string, actorId: string) {
-    const card = await prisma.aIModelCard.findFirst({ where: { id, isDeleted: false } });
+    const card = await (prisma as any).aIModelCard.findFirst({ where: { id, isDeleted: false } });
     if (!card) return null;
     this.assertModelTransition(card.status as ModelStatus, 'DEPRECATED');
-    return prisma.aIModelCard.update({
+    return (prisma as any).aIModelCard.update({
       where: { id },
       data: { status: 'DEPRECATED', deprecatedAt: new Date(), updatedBy: actorId },
     });
   }
 
   async recallModel(id: string, actorId: string) {
-    const card = await prisma.aIModelCard.findFirst({ where: { id, isDeleted: false } });
+    const card = await (prisma as any).aIModelCard.findFirst({ where: { id, isDeleted: false } });
     if (!card) return null;
     this.assertModelTransition(card.status as ModelStatus, 'RECALLED');
-    return prisma.aIModelCard.update({
+    return (prisma as any).aIModelCard.update({
       where: { id },
       data: { status: 'RECALLED', updatedBy: actorId },
     });
@@ -220,7 +223,7 @@ export class AIGovernanceService extends BaseService {
     const passed =
       input.forcePassed !== undefined ? input.forcePassed : ratio.worstRatio >= threshold;
 
-    return prisma.aIBiasAudit.create({
+    return (prisma as any).aIBiasAudit.create({
       data: {
         tenantId: input.tenantId ?? null,
         modelCardId: input.modelCardId,
@@ -254,14 +257,14 @@ export class AIGovernanceService extends BaseService {
     if (params.status) where.status = params.status;
     if (params.riskTier) where.riskTier = params.riskTier;
     const [items, total] = await Promise.all([
-      prisma.aIModelCard.findMany({
+      (prisma as any).aIModelCard.findMany({
         where,
         orderBy: { updatedAt: 'desc' },
         skip,
         take: limit,
         include: { biasAudits: { orderBy: { auditDate: 'desc' }, take: 1 } },
       }),
-      prisma.aIModelCard.count({ where }),
+      (prisma as any).aIModelCard.count({ where }),
     ]);
     return { items, total, page, pageSize: limit, hasNextPage: skip + items.length < total };
   }

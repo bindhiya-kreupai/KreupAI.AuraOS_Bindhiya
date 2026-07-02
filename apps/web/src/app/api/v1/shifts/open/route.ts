@@ -48,8 +48,9 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
       where.rosterDate = { lte: new Date(endDate) };
     }
 
+    // Cast: the `shift` relation is not declared on ShiftRoster in schema.prisma
     const [data, total] = await Promise.all([
-      prisma.shiftRoster.findMany({
+      (prisma as any).shiftRoster.findMany({
         where,
         include: { shift: true },
         skip: (page - 1) * limit,

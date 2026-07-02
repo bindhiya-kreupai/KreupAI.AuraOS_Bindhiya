@@ -44,7 +44,7 @@ export abstract class BaseService {
       );
 
       // Create database audit log
-      return await this.prisma.auditLog.create({
+      return await (this.prisma.auditLog.create as any)({
         data: {
           tenantId: params.tenantId || 'system',
           userId: params.userId,

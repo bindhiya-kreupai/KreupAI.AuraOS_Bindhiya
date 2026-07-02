@@ -72,6 +72,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
         tenantId: user.tenantId,
         userId: user.userId,
         action: 'CREATE',
+        module: 'LEAVE',
         resourceType: 'Leave - Types',
         metadata: { description: `Created leave type: ${data.name} (${data.code})` } as any,
         ipAddress: request.headers.get('x-forwarded-for') || 'unknown',

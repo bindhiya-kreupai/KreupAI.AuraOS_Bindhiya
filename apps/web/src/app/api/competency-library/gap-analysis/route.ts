@@ -33,10 +33,23 @@ export async function GET(request: NextRequest) {
           },
           orderBy: [{ priority: 'asc' }, { gapScore: 'desc' }],
         },
-        developmentPlan: true,
       },
       orderBy: { analysisDate: 'desc' },
     });
+
+    // GapAnalysis has no direct developmentPlan relation; DevelopmentPlan
+    // references it via the scalar gapAnalysisId. Resolve linkage separately.
+    const analysisIds = gapAnalyses.map((a) => a.id);
+    const linkedPlanGapIds = new Set<string>();
+    if (analysisIds.length > 0) {
+      const linkedPlans = await prisma.developmentPlan.findMany({
+        where: { gapAnalysisId: { in: analysisIds } },
+        select: { gapAnalysisId: true },
+      });
+      for (const p of linkedPlans) {
+        if (p.gapAnalysisId) linkedPlanGapIds.add(p.gapAnalysisId);
+      }
+    }
 
     // Calculate summary stats for each analysis
     const transformed = gapAnalyses.map((analysis) => {
@@ -53,7 +66,7 @@ export async function GET(request: NextRequest) {
         highGaps,
         totalGaps: analysis.items.length,
         avgGapScore: Math.round(avgGapScore * 100) / 100,
-        hasDevelopmentPlan: !!analysis.developmentPlan,
+        hasDevelopmentPlan: linkedPlanGapIds.has(analysis.id),
       };
     });
 

@@ -32,11 +32,13 @@ const WorkflowSchema = z.object({
       autoApproveAfterDays: z.number().optional(),
     })
   ),
-  escalationRules: z.object({
-    enabled: z.boolean().default(false),
-    escalateAfterDays: z.number().optional(),
-    escalateTo: z.array(z.string()).optional(),
-  }).optional(),
+  escalationRules: z
+    .object({
+      enabled: z.boolean().default(false),
+      escalateAfterDays: z.number().optional(),
+      escalateTo: z.array(z.string()).optional(),
+    })
+    .optional(),
   isActive: z.boolean().default(true),
 });
 
@@ -101,7 +103,13 @@ function getDefaultWorkflows(tenantId: string): StoredWorkflow[] {
       requestType: 'OVERTIME',
       applicableTo: 'ALL',
       approvalLevels: [
-        { level: 1, approverType: 'REPORTING_MANAGER', isRequired: true, canSkip: false, autoApproveAfterDays: 2 },
+        {
+          level: 1,
+          approverType: 'REPORTING_MANAGER',
+          isRequired: true,
+          canSkip: false,
+          autoApproveAfterDays: 2,
+        },
       ],
       escalationRules: { enabled: false },
       isActive: true,
@@ -179,212 +187,203 @@ function getTenantWorkflows(tenantId: string): StoredWorkflow[] {
 }
 
 // GET - Fetch approval workflows
-export const GET = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions }) => {
-    try {
-      const permissionError = requirePermission(Resource.ATTENDANCE, Action.READ, permissions);
-      if (permissionError) return permissionError;
+export const GET = withEnhancedAuth(async (request: NextRequest, { user, permissions }) => {
+  try {
+    const permissionError = requirePermission(Resource.ATTENDANCE, Action.READ, permissions);
+    if (permissionError) return permissionError;
 
-      const { searchParams } = new URL(request.url);
-      const requestType = searchParams.get('requestType');
-      const isActive = searchParams.get('isActive');
+    const { searchParams } = new URL(request.url);
+    const requestType = searchParams.get('requestType');
+    const isActive = searchParams.get('isActive');
 
-      let workflows = getTenantWorkflows(user.tenantId);
+    let workflows = getTenantWorkflows(user.tenantId);
 
-      if (requestType) {
-        workflows = workflows.filter(w => w.requestType === requestType);
-      }
-      if (isActive !== null && isActive !== undefined && isActive !== '') {
-        workflows = workflows.filter(w => w.isActive === (isActive === 'true'));
-      }
-
-      const summary = {
-        total: workflows.length,
-        active: workflows.filter(w => w.isActive).length,
-        inactive: workflows.filter(w => !w.isActive).length,
-        byRequestType: {
-          leave: workflows.filter(w => w.requestType === 'LEAVE').length,
-          overtime: workflows.filter(w => w.requestType === 'OVERTIME').length,
-          compOff: workflows.filter(w => w.requestType === 'COMP_OFF').length,
-          wfh: workflows.filter(w => w.requestType === 'WFH').length,
-          shiftSwap: workflows.filter(w => w.requestType === 'SHIFT_SWAP').length,
-          regularization: workflows.filter(w => w.requestType === 'REGULARIZATION').length,
-          timesheet: workflows.filter(w => w.requestType === 'TIMESHEET').length,
-        },
-      };
-
-      return NextResponse.json({
-        success: true,
-        data: { workflows, summary },
-        meta: { total: workflows.length },
-      });
-    } catch (error: any) {
-      logger.error({ error }, 'Error fetching approval workflows:');
-      return NextResponse.json(
-        { success: false, error: 'Failed to fetch approval workflows' },
-        { status: 500 }
-      );
+    if (requestType) {
+      workflows = workflows.filter((w) => w.requestType === requestType);
     }
+    if (isActive !== null && isActive !== undefined && isActive !== '') {
+      workflows = workflows.filter((w) => w.isActive === (isActive === 'true'));
+    }
+
+    const summary = {
+      total: workflows.length,
+      active: workflows.filter((w) => w.isActive).length,
+      inactive: workflows.filter((w) => !w.isActive).length,
+      byRequestType: {
+        leave: workflows.filter((w) => w.requestType === 'LEAVE').length,
+        overtime: workflows.filter((w) => w.requestType === 'OVERTIME').length,
+        compOff: workflows.filter((w) => w.requestType === 'COMP_OFF').length,
+        wfh: workflows.filter((w) => w.requestType === 'WFH').length,
+        shiftSwap: workflows.filter((w) => w.requestType === 'SHIFT_SWAP').length,
+        regularization: workflows.filter((w) => w.requestType === 'REGULARIZATION').length,
+        timesheet: workflows.filter((w) => w.requestType === 'TIMESHEET').length,
+      },
+    };
+
+    return NextResponse.json({
+      success: true,
+      data: { workflows, summary },
+      meta: { total: workflows.length },
+    });
+  } catch (error: any) {
+    logger.error({ error }, 'Error fetching approval workflows:');
+    return NextResponse.json(
+      { success: false, error: 'Failed to fetch approval workflows' },
+      { status: 500 }
+    );
   }
-);
+});
 
 // POST - Create approval workflow
-export const POST = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions }) => {
-    try {
-      const permissionError = requirePermission(Resource.ATTENDANCE, Action.CREATE, permissions);
-      if (permissionError) return permissionError;
+export const POST = withEnhancedAuth(async (request: NextRequest, { user, permissions }) => {
+  try {
+    const permissionError = requirePermission(Resource.ATTENDANCE, Action.CREATE, permissions);
+    if (permissionError) return permissionError;
 
-      const body = await request.json();
-      const data = WorkflowSchema.parse(body);
+    const body = await request.json();
+    const data = WorkflowSchema.parse(body);
 
-      const now = new Date().toISOString();
-      const newWorkflow: StoredWorkflow = {
-        id: crypto.randomUUID(),
+    const now = new Date().toISOString();
+    const newWorkflow: StoredWorkflow = {
+      id: crypto.randomUUID(),
+      tenantId: user.tenantId,
+      ...data,
+      createdAt: now,
+      updatedAt: now,
+      createdBy: user.userId,
+    };
+
+    const workflows = getTenantWorkflows(user.tenantId);
+    workflows.push(newWorkflow);
+    workflowStore.set(user.tenantId, workflows);
+
+    await prisma.auditLog.create({
+      data: {
         tenantId: user.tenantId,
-        ...data,
-        createdAt: now,
-        updatedAt: now,
-        createdBy: user.userId,
-      };
+        userId: user.userId,
+        action: 'CREATE',
+        module: 'ATTENDANCE',
+        entityType: 'Attendance - Approval Workflow',
+        metadata: {
+          description: `Created approval workflow: ${data.name} for ${data.requestType}`,
+        } as any,
+        ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
+      },
+    });
 
-      const workflows = getTenantWorkflows(user.tenantId);
-      workflows.push(newWorkflow);
-      workflowStore.set(user.tenantId, workflows);
-
-      await prisma.auditLog.create({
-        data: {
-          tenantId: user.tenantId,
-          userId: user.userId,
-          action: 'CREATE',
-          entityType: 'Attendance - Approval Workflow',
-          metadata: { description: `Created approval workflow: ${data.name} for ${data.requestType}` } as any,
-          ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
-        },
-      });
-
-      return NextResponse.json({ success: true, data: newWorkflow }, { status: 201 });
-    } catch (error: any) {
-      if (error instanceof z.ZodError) {
-        return NextResponse.json(
-          { success: false, error: 'Validation error', details: error.errors },
-          { status: 400 }
-        );
-      }
-      logger.error({ error }, 'Error creating approval workflow:');
+    return NextResponse.json({ success: true, data: newWorkflow }, { status: 201 });
+  } catch (error: any) {
+    if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { success: false, error: 'Failed to create approval workflow' },
-        { status: 500 }
+        { success: false, error: 'Validation error', details: error.errors },
+        { status: 400 }
       );
     }
+    logger.error({ error }, 'Error creating approval workflow:');
+    return NextResponse.json(
+      { success: false, error: 'Failed to create approval workflow' },
+      { status: 500 }
+    );
   }
-);
+});
 
 // PUT - Update approval workflow
-export const PUT = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions }) => {
-    try {
-      const permissionError = requirePermission(Resource.ATTENDANCE, Action.UPDATE, permissions);
-      if (permissionError) return permissionError;
+export const PUT = withEnhancedAuth(async (request: NextRequest, { user, permissions }) => {
+  try {
+    const permissionError = requirePermission(Resource.ATTENDANCE, Action.UPDATE, permissions);
+    if (permissionError) return permissionError;
 
-      const body = await request.json();
-      const { id, ...updates } = body;
+    const body = await request.json();
+    const { id, ...updates } = body;
 
-      if (!id) {
-        return NextResponse.json(
-          { success: false, error: 'Workflow ID is required' },
-          { status: 400 }
-        );
-      }
-
-      const workflows = getTenantWorkflows(user.tenantId);
-      const index = workflows.findIndex(w => w.id === id);
-
-      if (index === -1) {
-        return NextResponse.json(
-          { success: false, error: 'Workflow not found' },
-          { status: 404 }
-        );
-      }
-
-      const updated: StoredWorkflow = {
-        ...workflows[index],
-        ...updates,
-        updatedAt: new Date().toISOString(),
-      };
-      workflows[index] = updated;
-      workflowStore.set(user.tenantId, workflows);
-
-      await prisma.auditLog.create({
-        data: {
-          tenantId: user.tenantId,
-          userId: user.userId,
-          action: 'UPDATE',
-          entityType: 'Attendance - Approval Workflow',
-          metadata: { description: `Updated approval workflow: ${id}` } as any,
-          ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
-        },
-      });
-
-      return NextResponse.json({ success: true, data: updated });
-    } catch (error: any) {
-      logger.error({ error }, 'Error updating approval workflow:');
+    if (!id) {
       return NextResponse.json(
-        { success: false, error: 'Failed to update approval workflow' },
-        { status: 500 }
+        { success: false, error: 'Workflow ID is required' },
+        { status: 400 }
       );
     }
+
+    const workflows = getTenantWorkflows(user.tenantId);
+    const index = workflows.findIndex((w) => w.id === id);
+
+    if (index === -1) {
+      return NextResponse.json({ success: false, error: 'Workflow not found' }, { status: 404 });
+    }
+
+    const updated: StoredWorkflow = {
+      ...workflows[index],
+      ...updates,
+      updatedAt: new Date().toISOString(),
+    };
+    workflows[index] = updated;
+    workflowStore.set(user.tenantId, workflows);
+
+    await prisma.auditLog.create({
+      data: {
+        tenantId: user.tenantId,
+        userId: user.userId,
+        action: 'UPDATE',
+        module: 'ATTENDANCE',
+        entityType: 'Attendance - Approval Workflow',
+        metadata: { description: `Updated approval workflow: ${id}` } as any,
+        ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
+      },
+    });
+
+    return NextResponse.json({ success: true, data: updated });
+  } catch (error: any) {
+    logger.error({ error }, 'Error updating approval workflow:');
+    return NextResponse.json(
+      { success: false, error: 'Failed to update approval workflow' },
+      { status: 500 }
+    );
   }
-);
+});
 
 // DELETE - Delete approval workflow
-export const DELETE = withEnhancedAuth(
-  async (request: NextRequest, { user, permissions }) => {
-    try {
-      const permissionError = requirePermission(Resource.ATTENDANCE, Action.DELETE, permissions);
-      if (permissionError) return permissionError;
+export const DELETE = withEnhancedAuth(async (request: NextRequest, { user, permissions }) => {
+  try {
+    const permissionError = requirePermission(Resource.ATTENDANCE, Action.DELETE, permissions);
+    if (permissionError) return permissionError;
 
-      const { searchParams } = new URL(request.url);
-      const id = searchParams.get('id');
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
 
-      if (!id) {
-        return NextResponse.json(
-          { success: false, error: 'Workflow ID is required' },
-          { status: 400 }
-        );
-      }
-
-      const workflows = getTenantWorkflows(user.tenantId);
-      const index = workflows.findIndex(w => w.id === id);
-
-      if (index === -1) {
-        return NextResponse.json(
-          { success: false, error: 'Workflow not found' },
-          { status: 404 }
-        );
-      }
-
-      workflows.splice(index, 1);
-      workflowStore.set(user.tenantId, workflows);
-
-      await prisma.auditLog.create({
-        data: {
-          tenantId: user.tenantId,
-          userId: user.userId,
-          action: 'DELETE',
-          entityType: 'Attendance - Approval Workflow',
-          metadata: { description: `Deleted approval workflow: ${id}` } as any,
-          ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
-        },
-      });
-
-      return NextResponse.json({ success: true, message: 'Approval workflow deleted successfully' });
-    } catch (error: any) {
-      logger.error({ error }, 'Error deleting approval workflow:');
+    if (!id) {
       return NextResponse.json(
-        { success: false, error: 'Failed to delete approval workflow' },
-        { status: 500 }
+        { success: false, error: 'Workflow ID is required' },
+        { status: 400 }
       );
     }
+
+    const workflows = getTenantWorkflows(user.tenantId);
+    const index = workflows.findIndex((w) => w.id === id);
+
+    if (index === -1) {
+      return NextResponse.json({ success: false, error: 'Workflow not found' }, { status: 404 });
+    }
+
+    workflows.splice(index, 1);
+    workflowStore.set(user.tenantId, workflows);
+
+    await prisma.auditLog.create({
+      data: {
+        tenantId: user.tenantId,
+        userId: user.userId,
+        action: 'DELETE',
+        module: 'ATTENDANCE',
+        entityType: 'Attendance - Approval Workflow',
+        metadata: { description: `Deleted approval workflow: ${id}` } as any,
+        ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
+      },
+    });
+
+    return NextResponse.json({ success: true, message: 'Approval workflow deleted successfully' });
+  } catch (error: any) {
+    logger.error({ error }, 'Error deleting approval workflow:');
+    return NextResponse.json(
+      { success: false, error: 'Failed to delete approval workflow' },
+      { status: 500 }
+    );
   }
-);
+});

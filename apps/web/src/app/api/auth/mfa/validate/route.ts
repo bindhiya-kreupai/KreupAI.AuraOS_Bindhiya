@@ -142,6 +142,7 @@ export async function POST(request: NextRequest) {
           tenantId: user.tenantId,
           userId: user.id,
           action: 'MFA_VALIDATION_FAILED',
+          module: 'AUTH',
           entityType: 'Authentication',
           metadata: {
             description: `Invalid MFA code attempt${validatedData.useBackupCode ? ' (backup code)' : ''}`,
@@ -182,6 +183,7 @@ export async function POST(request: NextRequest) {
         tenantId: user.tenantId,
         userId: user.id,
         action: 'LOGIN_SUCCESS',
+        module: 'AUTH',
         entityType: 'Authentication',
         metadata: {
           description: `Login successful with MFA${usedBackupCode ? ' (backup code used)' : ''}`,

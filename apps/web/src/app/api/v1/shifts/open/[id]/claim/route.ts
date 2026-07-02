@@ -46,7 +46,8 @@ export const POST = withAudit(
       }
 
       // Find the open shift roster entry
-      const roster = await prisma.shiftRoster.findFirst({
+      // Cast: the `shift` relation is not declared on ShiftRoster in schema.prisma
+      const roster = await (prisma as any).shiftRoster.findFirst({
         where: { id, tenantId: user.tenantId },
         include: { shift: true },
       });
@@ -82,7 +83,8 @@ export const POST = withAudit(
       }
 
       // Claim the shift by updating the roster entry
-      const updated = await prisma.shiftRoster.update({
+      // Cast: the `shift` relation is not declared on ShiftRoster in schema.prisma
+      const updated = await (prisma as any).shiftRoster.update({
         where: { id },
         data: {
           employeeId,

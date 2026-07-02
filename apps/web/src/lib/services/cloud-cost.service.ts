@@ -38,7 +38,7 @@ export class CloudCostService extends BaseService {
     provider: CloudProvider;
     metadata?: Record<string, unknown>;
   }) {
-    return prisma.cloudCostRecord.create({
+    return (prisma as any).cloudCostRecord.create({
       data: {
         tenantId: input.tenantId ?? null,
         region: input.region,
@@ -91,12 +91,12 @@ export class CloudCostService extends BaseService {
   async monthSoFar(tenantId: string | null, year: number, month: number): Promise<CostRollup> {
     const from = new Date(Date.UTC(year, month - 1, 1));
     const to = new Date(Date.UTC(year, month, 0, 23, 59, 59));
-    const rows = await prisma.cloudCostRecord.findMany({
+    const rows = await (prisma as any).cloudCostRecord.findMany({
       where: { tenantId: tenantId ?? null, day: { gte: from, lte: to } },
       select: { costAmount: true, service: true, provider: true, region: true, currency: true },
     });
     return this.rollup(
-      rows.map((r) => ({
+      (rows as any[]).map((r: any) => ({
         costAmount: r.costAmount.toString(),
         service: r.service,
         provider: r.provider,
@@ -131,13 +131,13 @@ export class CloudCostService extends BaseService {
       where.day = day;
     }
     const [items, total] = await Promise.all([
-      prisma.cloudCostRecord.findMany({
+      (prisma as any).cloudCostRecord.findMany({
         where,
         orderBy: { day: 'desc' },
         skip,
         take: limit,
       }),
-      prisma.cloudCostRecord.count({ where }),
+      (prisma as any).cloudCostRecord.count({ where }),
     ]);
     return { items, total, page, pageSize: limit, hasNextPage: skip + items.length < total };
   }

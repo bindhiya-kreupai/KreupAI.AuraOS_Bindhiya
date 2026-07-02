@@ -171,7 +171,8 @@ export const POST = withAudit(
       });
 
       // Check for active shift assignment to determine late status
-      const shiftAssignment = await prisma.shiftAssignment.findFirst({
+      // Cast: the `shift` relation is not declared on ShiftAssignment in schema.prisma
+      const shiftAssignment = await (prisma as any).shiftAssignment.findFirst({
         where: {
           tenantId,
           employeeId: data.employeeId,
@@ -192,7 +193,7 @@ export const POST = withAudit(
         shiftEndTime = shiftAssignment.shift.endTime;
 
         // Parse shift start time (HH:MM)
-        const [shiftHour, shiftMin] = shiftStartTime.split(':').map(Number);
+        const [shiftHour, shiftMin] = shiftStartTime!.split(':').map(Number);
         const graceMinutes = shiftAssignment.shift.graceInMinutes || 0;
         const shiftStartDate = new Date(today);
         shiftStartDate.setHours(shiftHour, shiftMin + graceMinutes, 0, 0);

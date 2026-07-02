@@ -1,6 +1,10 @@
 import { prisma } from '@aura/database';
 import { BaseService } from './base.service';
 
+// statutoryReport exists in the deployed db-push database but is not in
+// schema.prisma, so it is absent from the generated PrismaClient types.
+const db = prisma as any;
+
 export type StatutoryReportStatus = 'DRAFT' | 'GENERATED' | 'SUBMITTED' | 'ACKNOWLEDGED' | 'FAILED';
 
 export type StatutoryReportFormat = 'json' | 'excel' | 'pdf' | 'csv' | 'sif' | 'fvu';
@@ -90,26 +94,26 @@ export class StatutoryReportService extends BaseService {
     if (params.countryCode) where.countryCode = params.countryCode.toUpperCase();
     if (params.status) where.status = params.status;
     const [items, total] = await Promise.all([
-      prisma.statutoryReport.findMany({
+      db.statutoryReport.findMany({
         where,
         orderBy: { createdAt: 'desc' },
         skip,
         take: limit,
       }),
-      prisma.statutoryReport.count({ where }),
+      db.statutoryReport.count({ where }),
     ]);
     return { items, total, page, pageSize: limit, hasNextPage: skip + items.length < total };
   }
 
   async getById(id: string, tenantId: string) {
-    return prisma.statutoryReport.findFirst({ where: { id, tenantId, isDeleted: false } });
+    return db.statutoryReport.findFirst({ where: { id, tenantId, isDeleted: false } });
   }
 
   async generate(
     code: string,
     ctx: ReportContext
   ): Promise<{
-    record: Awaited<ReturnType<typeof prisma.statutoryReport.create>>;
+    record: Awaited<ReturnType<typeof db.statutoryReport.create>>;
     payload: ReportPayload;
   }> {
     const spec = REGISTRY.get(code);
@@ -119,7 +123,7 @@ export class StatutoryReportService extends BaseService {
     try {
       payload = await spec.generate(ctx);
     } catch (error) {
-      const record = await prisma.statutoryReport.create({
+      const record = await db.statutoryReport.create({
         data: {
           tenantId: ctx.tenantId,
           code,
@@ -144,7 +148,7 @@ export class StatutoryReportService extends BaseService {
       };
     }
 
-    const record = await prisma.statutoryReport.create({
+    const record = await db.statutoryReport.create({
       data: {
         tenantId: ctx.tenantId,
         code,
@@ -182,7 +186,7 @@ export class StatutoryReportService extends BaseService {
     ) {
       throw new InvalidReportTransitionError(existing.status as StatutoryReportStatus, 'SUBMITTED');
     }
-    return prisma.statutoryReport.update({
+    return db.statutoryReport.update({
       where: { id },
       data: {
         status: 'SUBMITTED',
@@ -206,7 +210,7 @@ export class StatutoryReportService extends BaseService {
         'ACKNOWLEDGED'
       );
     }
-    return prisma.statutoryReport.update({
+    return db.statutoryReport.update({
       where: { id },
       data: { status: 'ACKNOWLEDGED', acknowledgedAt: new Date(), updatedBy: actorId },
     });
@@ -1599,6 +1603,9 @@ function periodKey(start: Date): string {
 interface CertMetric {
   metric: string;
   value: string | number;
+  // Index signature so CertMetric[] is assignable to ReportPayload.lines
+  // (Array<Record<string, unknown>>).
+  [key: string]: unknown;
 }
 
 async function loadCert(model: string, tenantId: string, period: string) {

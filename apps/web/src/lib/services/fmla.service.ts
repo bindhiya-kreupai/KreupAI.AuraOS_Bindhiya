@@ -1,6 +1,10 @@
 import { prisma } from '@aura/database';
 import { BaseService } from './base.service';
 
+// fMLACase / fMLAUsage exist in the deployed db-push database but are not in
+// schema.prisma, so they are absent from the generated PrismaClient types.
+const db = prisma as any;
+
 export type FMLAStatus =
   | 'DRAFT'
   | 'NOTICE_SENT'
@@ -256,7 +260,7 @@ export class FMLAService extends BaseService {
     const certDue = new Date(input.startDate);
     certDue.setDate(certDue.getDate() + 21);
 
-    return prisma.fMLACase.create({
+    return db.fMLACase.create({
       data: {
         tenantId: input.tenantId,
         employeeId: input.employeeId,
@@ -284,7 +288,7 @@ export class FMLAService extends BaseService {
   async sumUsageInPriorYear(tenantId: string, employeeId: string, asOf: Date): Promise<number> {
     const oneYearBack = new Date(asOf);
     oneYearBack.setFullYear(oneYearBack.getFullYear() - 1);
-    const agg = await prisma.fMLAUsage.aggregate({
+    const agg = await db.fMLAUsage.aggregate({
       where: {
         tenantId,
         employeeId,
@@ -299,10 +303,10 @@ export class FMLAService extends BaseService {
     if (!noticeReference || noticeReference.trim().length < 3) {
       throw new Error('A real WH-381 notice reference is required (no placeholders).');
     }
-    const caseRow = await prisma.fMLACase.findFirst({ where: { id, tenantId, isDeleted: false } });
+    const caseRow = await db.fMLACase.findFirst({ where: { id, tenantId, isDeleted: false } });
     if (!caseRow) return null;
     this.assertTransition(caseRow.status as FMLAStatus, 'NOTICE_SENT');
-    return prisma.fMLACase.update({
+    return db.fMLACase.update({
       where: { id },
       data: {
         status: 'NOTICE_SENT',
@@ -314,51 +318,51 @@ export class FMLAService extends BaseService {
   }
 
   async recordCertification(id: string, tenantId: string, actorId: string) {
-    const caseRow = await prisma.fMLACase.findFirst({ where: { id, tenantId, isDeleted: false } });
+    const caseRow = await db.fMLACase.findFirst({ where: { id, tenantId, isDeleted: false } });
     if (!caseRow) return null;
     this.assertTransition(caseRow.status as FMLAStatus, 'CERTIFIED');
-    return prisma.fMLACase.update({
+    return db.fMLACase.update({
       where: { id },
       data: { status: 'CERTIFIED', certificationReceived: new Date(), updatedBy: actorId },
     });
   }
 
   async approve(id: string, tenantId: string, actorId: string) {
-    const caseRow = await prisma.fMLACase.findFirst({ where: { id, tenantId, isDeleted: false } });
+    const caseRow = await db.fMLACase.findFirst({ where: { id, tenantId, isDeleted: false } });
     if (!caseRow) return null;
     this.assertTransition(caseRow.status as FMLAStatus, 'APPROVED');
-    return prisma.fMLACase.update({
+    return db.fMLACase.update({
       where: { id },
       data: { status: 'APPROVED', updatedBy: actorId },
     });
   }
 
   async activate(id: string, tenantId: string, actorId: string, intermittent = false) {
-    const caseRow = await prisma.fMLACase.findFirst({ where: { id, tenantId, isDeleted: false } });
+    const caseRow = await db.fMLACase.findFirst({ where: { id, tenantId, isDeleted: false } });
     if (!caseRow) return null;
     const target: FMLAStatus = intermittent ? 'INTERMITTENT' : 'ACTIVE';
     this.assertTransition(caseRow.status as FMLAStatus, target);
-    return prisma.fMLACase.update({
+    return db.fMLACase.update({
       where: { id },
       data: { status: target, updatedBy: actorId },
     });
   }
 
   async deny(id: string, tenantId: string, actorId: string, reason: string) {
-    const caseRow = await prisma.fMLACase.findFirst({ where: { id, tenantId, isDeleted: false } });
+    const caseRow = await db.fMLACase.findFirst({ where: { id, tenantId, isDeleted: false } });
     if (!caseRow) return null;
     this.assertTransition(caseRow.status as FMLAStatus, 'DENIED');
-    return prisma.fMLACase.update({
+    return db.fMLACase.update({
       where: { id },
       data: { status: 'DENIED', denialReason: reason, updatedBy: actorId },
     });
   }
 
   async cancel(id: string, tenantId: string, actorId: string) {
-    const caseRow = await prisma.fMLACase.findFirst({ where: { id, tenantId, isDeleted: false } });
+    const caseRow = await db.fMLACase.findFirst({ where: { id, tenantId, isDeleted: false } });
     if (!caseRow) return null;
     this.assertTransition(caseRow.status as FMLAStatus, 'CANCELED');
-    return prisma.fMLACase.update({
+    return db.fMLACase.update({
       where: { id },
       data: { status: 'CANCELED', updatedBy: actorId },
     });
@@ -380,7 +384,7 @@ export class FMLAService extends BaseService {
     actorId: string;
   }) {
     if (input.hours <= 0) throw new Error('hours must be > 0');
-    const caseRow = await prisma.fMLACase.findFirst({
+    const caseRow = await db.fMLACase.findFirst({
       where: { id: input.caseId, tenantId: input.tenantId, isDeleted: false },
     });
     if (!caseRow) return null;
@@ -388,7 +392,7 @@ export class FMLAService extends BaseService {
       throw new EntitlementExceededError(input.hours, caseRow.remainingHours);
     }
 
-    return prisma.$transaction(async (tx) => {
+    return prisma.$transaction(async (tx: any) => {
       const usage = await tx.fMLAUsage.create({
         data: {
           caseId: input.caseId,
@@ -438,14 +442,14 @@ export class FMLAService extends BaseService {
     if (params.status) where.status = params.status;
     if (params.framework) where.framework = params.framework;
     const [items, total] = await Promise.all([
-      prisma.fMLACase.findMany({
+      db.fMLACase.findMany({
         where,
         skip,
         take: limit,
         orderBy: { startDate: 'desc' },
         include: { usages: true },
       }),
-      prisma.fMLACase.count({ where }),
+      db.fMLACase.count({ where }),
     ]);
     return { items, total, page, pageSize: limit, hasNextPage: skip + items.length < total };
   }

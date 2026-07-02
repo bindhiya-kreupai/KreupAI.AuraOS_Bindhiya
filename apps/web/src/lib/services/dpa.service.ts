@@ -87,7 +87,7 @@ export class DPAService extends BaseService {
     notes?: string;
     actorId: string;
   }) {
-    return prisma.dataProcessingAgreement.create({
+    return (prisma as any).dataProcessingAgreement.create({
       data: {
         tenantId: input.tenantId,
         vendorName: input.vendorName,
@@ -116,7 +116,7 @@ export class DPAService extends BaseService {
     ) {
       throw new MissingTransferMechanismError(existing.vendorCountry ?? 'UNKNOWN');
     }
-    return prisma.dataProcessingAgreement.update({
+    return (prisma as any).dataProcessingAgreement.update({
       where: { id },
       data: {
         status: 'ACTIVE',
@@ -130,7 +130,7 @@ export class DPAService extends BaseService {
     const existing = await this.assertExists(id, tenantId);
     if (!existing) return null;
     this.assertTransition(existing.status as DPAStatus, 'EXPIRED');
-    return prisma.dataProcessingAgreement.update({
+    return (prisma as any).dataProcessingAgreement.update({
       where: { id },
       data: { status: 'EXPIRED', updatedBy: actorId },
     });
@@ -143,7 +143,7 @@ export class DPAService extends BaseService {
     const existing = await this.assertExists(id, tenantId);
     if (!existing) return null;
     this.assertTransition(existing.status as DPAStatus, 'TERMINATED');
-    return prisma.dataProcessingAgreement.update({
+    return (prisma as any).dataProcessingAgreement.update({
       where: { id },
       data: {
         status: 'TERMINATED',
@@ -156,7 +156,7 @@ export class DPAService extends BaseService {
   async recordReview(id: string, tenantId: string, reviewerId: string, notes?: string) {
     const existing = await this.assertExists(id, tenantId);
     if (!existing) return null;
-    return prisma.dataProcessingAgreement.update({
+    return (prisma as any).dataProcessingAgreement.update({
       where: { id },
       data: {
         reviewedAt: new Date(),
@@ -174,7 +174,7 @@ export class DPAService extends BaseService {
   async expiryWatch(tenantId: string, withinDays = 60) {
     const horizon = new Date();
     horizon.setDate(horizon.getDate() + withinDays);
-    return prisma.dataProcessingAgreement.findMany({
+    return (prisma as any).dataProcessingAgreement.findMany({
       where: {
         tenantId,
         isDeleted: false,
@@ -199,19 +199,19 @@ export class DPAService extends BaseService {
     if (params.status) where.status = params.status;
     if (params.vendorName) where.vendorName = { contains: params.vendorName, mode: 'insensitive' };
     const [items, total] = await Promise.all([
-      prisma.dataProcessingAgreement.findMany({
+      (prisma as any).dataProcessingAgreement.findMany({
         where,
         orderBy: { effectiveFrom: 'desc' },
         skip,
         take: limit,
       }),
-      prisma.dataProcessingAgreement.count({ where }),
+      (prisma as any).dataProcessingAgreement.count({ where }),
     ]);
     return { items, total, page, pageSize: limit, hasNextPage: skip + items.length < total };
   }
 
   private async assertExists(id: string, tenantId: string) {
-    return prisma.dataProcessingAgreement.findFirst({
+    return (prisma as any).dataProcessingAgreement.findFirst({
       where: { id, tenantId, isDeleted: false },
     });
   }

@@ -23,15 +23,6 @@ export async function GET(request: NextRequest) {
     const plans = await prisma.developmentPlan.findMany({
       where,
       include: {
-        gapAnalysis: {
-          include: {
-            items: {
-              include: {
-                competency: true,
-              },
-            },
-          },
-        },
         activities: {
           orderBy: { sortOrder: 'asc' },
         },
@@ -41,6 +32,23 @@ export async function GET(request: NextRequest) {
       },
       orderBy: { createdAt: 'desc' },
     });
+
+    // DevelopmentPlan links to GapAnalysis via the scalar gapAnalysisId only
+    // (no direct relation), so resolve competency counts with a separate query.
+    const gapAnalysisIds = Array.from(
+      new Set(plans.map((p) => p.gapAnalysisId).filter((v): v is string => Boolean(v)))
+    );
+    const gapItemCounts = new Map<string, number>();
+    if (gapAnalysisIds.length > 0) {
+      const grouped = await prisma.gapAnalysisItem.groupBy({
+        by: ['gapAnalysisId'],
+        where: { gapAnalysisId: { in: gapAnalysisIds } },
+        _count: { _all: true },
+      });
+      for (const g of grouped) {
+        gapItemCounts.set(g.gapAnalysisId, g._count._all);
+      }
+    }
 
     // Calculate progress and stats for each plan
     const transformed = plans.map((plan) => {
@@ -67,7 +75,7 @@ export async function GET(request: NextRequest) {
         progressPercent,
         totalCost,
         actualCost,
-        competenciesAddressed: plan.gapAnalysis?.items.length || 0,
+        competenciesAddressed: plan.gapAnalysisId ? gapItemCounts.get(plan.gapAnalysisId) || 0 : 0,
       };
     });
 
@@ -149,7 +157,6 @@ export async function POST(request: NextRequest) {
         },
       },
       include: {
-        gapAnalysis: true,
         activities: { orderBy: { sortOrder: 'asc' } },
         milestones: { orderBy: { targetDate: 'asc' } },
       },

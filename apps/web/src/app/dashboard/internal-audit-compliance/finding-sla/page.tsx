@@ -37,7 +37,7 @@ export default function FindingSlaPage() {
               key: 'raisedAt',
               label: 'Raised',
               labelAr: 'تاريخ الإصدار',
-              type: 'date',
+              type: 'text',
               required: true,
               widthClass: 'w-40',
             },
@@ -54,7 +54,7 @@ export default function FindingSlaPage() {
               key: 'closedAt',
               label: 'Closed',
               labelAr: 'تاريخ الإغلاق',
-              type: 'date',
+              type: 'text',
               widthClass: 'w-40',
             },
             {

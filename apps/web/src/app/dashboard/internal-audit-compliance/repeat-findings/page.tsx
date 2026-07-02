@@ -53,7 +53,7 @@ export default function RepeatFindingsPage() {
               key: 'raisedAt',
               label: 'Raised',
               labelAr: 'تاريخ',
-              type: 'date',
+              type: 'text',
               required: true,
               widthClass: 'w-40',
             },
