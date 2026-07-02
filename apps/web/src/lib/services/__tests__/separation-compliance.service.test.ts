@@ -152,19 +152,10 @@ describe('separationCertificateService', () => {
     expect(cert.gatingReason).toMatch(/clearance/);
   });
   it('refuses to sign while gated', async () => {
-<<<<<<< HEAD
     m.separationCertificate.findUnique = vi.fn().mockResolvedValue({
       id: 'c-1',
       gatingReason: 'Blocked: 1 closed case(s) with IT access still open',
     });
-=======
-    m.separationCertificate.findUnique = vi
-      .fn()
-      .mockResolvedValue({
-        id: 'c-1',
-        gatingReason: 'Blocked: 1 closed case(s) with IT access still open',
-      });
->>>>>>> 8492df9bd42d74db150a3648a1db92b18beba01c
     await expect(separationCertificateService.sign('2026-06', [], auth)).rejects.toThrow(
       /cannot sign while gated/
     );
