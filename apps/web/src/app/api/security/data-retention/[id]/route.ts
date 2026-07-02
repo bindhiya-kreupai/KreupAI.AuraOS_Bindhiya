@@ -10,7 +10,7 @@ import {
   successItem,
   validationError,
 } from '@/lib/api/crud-helpers';
-import { DEFAULT_POLICIES } from '../route';
+import { DEFAULT_POLICIES } from '../constants';
 
 const VALID_ACTIONS = ['archive', 'delete', 'anonymize'];
 

@@ -9,46 +9,9 @@ import {
   successList,
   validationError,
 } from '@/lib/api/crud-helpers';
+import { DEFAULT_POLICIES } from './constants';
 
 const VALID_ACTIONS = ['archive', 'delete', 'anonymize'];
-
-export const DEFAULT_POLICIES: {
-  category: string;
-  description: string;
-  retentionDays: number;
-  action: string;
-}[] = [
-  {
-    category: 'audit-logs',
-    description: 'System audit and access logs',
-    retentionDays: 365,
-    action: 'archive',
-  },
-  {
-    category: 'employee-records',
-    description: 'Employee records after termination',
-    retentionDays: 2555,
-    action: 'archive',
-  },
-  {
-    category: 'payroll-records',
-    description: 'Payroll history records',
-    retentionDays: 2555,
-    action: 'archive',
-  },
-  {
-    category: 'application-data',
-    description: 'Rejected candidate application data',
-    retentionDays: 180,
-    action: 'delete',
-  },
-  {
-    category: 'session-logs',
-    description: 'User session logs',
-    retentionDays: 90,
-    action: 'delete',
-  },
-];
 
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
