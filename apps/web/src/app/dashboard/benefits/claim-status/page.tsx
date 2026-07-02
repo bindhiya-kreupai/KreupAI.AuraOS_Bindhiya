@@ -1,7 +1,7 @@
 // @ts-nocheck — Presentation-layer drift from service signatures / mock-data shapes. Tracked under #29 for proper realignment.
 'use client';
 
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Activity, CheckCircle, Clock, FileText } from 'lucide-react';
 import { ClaimService } from '../services';
@@ -107,7 +107,7 @@ function buildTimeline(claim: any) {
   return steps;
 }
 
-export default function ClaimStatusPage() {
+function ClaimStatusPageInner() {
   const { user, loading: authLoading } = useCurrentUser();
   const searchParams = useSearchParams();
   const claimIdParam = searchParams?.get('claimId') || null;
@@ -369,5 +369,13 @@ export default function ClaimStatusPage() {
 
       <ToastContainer toasts={toast.toasts} onClose={toast.removeToast} />
     </div>
+  );
+}
+
+export default function ClaimStatusPage() {
+  return (
+    <Suspense fallback={null}>
+      <ClaimStatusPageInner />
+    </Suspense>
   );
 }

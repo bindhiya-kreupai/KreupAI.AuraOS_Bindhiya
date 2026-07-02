@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback, useMemo, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import {
   Plug,
@@ -109,7 +109,7 @@ const SUB_PAGES = [
   },
 ];
 
-export default function IntegrationHubPage() {
+function IntegrationHubPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -545,5 +545,13 @@ export default function IntegrationHubPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function IntegrationHubPage() {
+  return (
+    <Suspense fallback={null}>
+      <IntegrationHubPageInner />
+    </Suspense>
   );
 }
