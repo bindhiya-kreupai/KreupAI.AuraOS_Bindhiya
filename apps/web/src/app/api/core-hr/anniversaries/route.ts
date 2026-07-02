@@ -19,19 +19,20 @@ export const GET = withEnhancedAuth(async (request, context) => {
     const endMonth = endDate.getMonth() + 1;
     const endDay = endDate.getDate();
 
-    // Fetch all employees for this tenant who have a joiningDate
+    // Employee has no tenantId scalar — filter via Company relation.
+    // Employee.status is a relation; use isDeleted:false as the "active" proxy.
     const employees = await prisma.employee.findMany({
       where: {
-        tenantId: user.tenantId,
-        joiningDate: { not: null },
-        status: 'ACTIVE',
+        company: { tenantId: user.tenantId },
+        isDeleted: false,
       },
       select: {
         id: true,
         firstName: true,
         lastName: true,
         employeeCode: true,
-        department: true,
+        departmentId: true,
+        department: { select: { id: true, name: true, code: true } },
         joiningDate: true,
       },
     });

@@ -39,24 +39,37 @@ export const GET = withEnhancedAuth(async (request, context) => {
       where.status = status;
     }
 
+    // AssetAssignment has no `employee` relation in schema.prisma:3479 — only employeeId.
+    // Fetch assignments first, then batch-load employees separately.
     const assignments = await prisma.assetAssignment.findMany({
       where,
-      include: {
-        asset: true,
-        employee: {
+      include: { asset: true },
+      orderBy: { assignedDate: 'desc' },
+    });
+
+    const employeeIds = Array.from(
+      new Set(assignments.map((a: any) => a.employeeId).filter(Boolean))
+    );
+    const employees = employeeIds.length
+      ? await prisma.employee.findMany({
+          where: { id: { in: employeeIds } },
           select: {
             id: true,
             firstName: true,
             lastName: true,
             employeeCode: true,
-            department: true,
+            departmentId: true,
+            department: { select: { id: true, name: true, code: true } },
           },
-        },
-      },
-      orderBy: { assignedDate: 'desc' },
-    });
+        })
+      : [];
+    const employeeMap = new Map(employees.map((e) => [e.id, e]));
+    const enriched = assignments.map((a: any) => ({
+      ...a,
+      employee: employeeMap.get(a.employeeId) ?? null,
+    }));
 
-    return NextResponse.json({ assignments }, { status: 200 });
+    return NextResponse.json({ assignments: enriched }, { status: 200 });
   } catch (error: any) {
     console.error('Error fetching asset assignments:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
