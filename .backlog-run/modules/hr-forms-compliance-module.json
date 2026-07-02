@@ -1,0 +1,79 @@
+[
+  {
+    "id": "AURA-128",
+    "title": "Signatures: Build signatures UI",
+    "module": "HR Forms Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "No page (orphan API)",
+    "api": "GET /api/v1/hr-forms-compliance/signatures; hrFormSubmissionService.listSignatures",
+    "desc": "GET /api/v1/hr-forms-compliance/signatures exists but no page consumes it."
+  },
+  {
+    "id": "AURA-129",
+    "title": "Templates: Create custom template and wire supersede",
+    "module": "HR Forms Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-forms-compliance/templates",
+    "api": "POST /api/v1/hr-forms-compliance/templates; hrFormTemplateService",
+    "desc": "Only seed-defaults and publish; no create/edit template or schema editor. API supports supersede action but UI has no Supersede button."
+  },
+  {
+    "id": "AURA-130",
+    "title": "Routings: Template picker and stage management",
+    "module": "HR Forms Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-forms-compliance/routings",
+    "api": "GET /api/v1/hr-forms-compliance/templates; hrFormRoutingService.upsertStage",
+    "desc": "Stage form requires manual templateId entry. Only upsert-stage supported; no delete or reorder controls."
+  },
+  {
+    "id": "AURA-131",
+    "title": "Submissions: Dynamic form render and e-signature audit trail",
+    "module": "HR Forms Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-forms-compliance/submissions",
+    "api": "POST /api/v1/hr-forms-compliance/submissions; GET /signatures",
+    "desc": "Start submission collects IDs only; no form fields from template schema. No UI to view per-stage signatures. Reject uses window.prompt."
+  },
+  {
+    "id": "AURA-132",
+    "title": "Submissions: Fix status filter and automate writeback",
+    "module": "HR Forms Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-forms-compliance/submissions",
+    "api": "GET/POST /api/v1/hr-forms-compliance/submissions",
+    "desc": "Filter dropdown omits SUBMITTED. Writeback success/failure marked manually; no integrated writeback engine UI."
+  },
+  {
+    "id": "AURA-133",
+    "title": "Certificate: Attestation UI and certificate export",
+    "module": "HR Forms Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-forms-compliance/certificate",
+    "api": "POST /api/v1/hr-forms-compliance/certificate; hrFormCertificateService",
+    "desc": "Sign sends hardcoded attestations array. No PDF/download or signed certificate viewer."
+  },
+  {
+    "id": "AURA-134",
+    "title": "Dashboard: Loading/error states and KPI drill-down",
+    "module": "HR Forms Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-forms-compliance",
+    "api": "GET /api/v1/hr-forms-compliance/dashboard",
+    "desc": "No loading spinner or error UI. KPI tiles not linked to filtered views."
+  }
+]

@@ -1,0 +1,156 @@
+[
+  {
+    "id": "AURA-476",
+    "title": "Audit Checklist: Complete API integration and remove mock/local fallbacks",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/org-compliance/audit-checklist",
+    "api": "/api/v1/org-compliance/audit-checklist",
+    "desc": "Page calls APIs (/api/v1/org-compliance/audit-checklist) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-477",
+    "title": "Monthly Compliance Certificate (Overhire/Aged>90d/Unapproved): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/org-compliance/monthly-compliance-certificate-overhire-aged-90d-unapproved",
+    "api": "Not specified",
+    "desc": "Menu feature 'Monthly Compliance Certificate (Overhire/Aged>90d/Unapproved)' resolves to /dashboard/org-compliance/monthly-compliance-certificate-overhire-aged-90d-unapproved but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-478",
+    "title": "Org Audit Checklist (13 categories): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/org-compliance/org-audit-checklist-13-categories",
+    "api": "Not specified",
+    "desc": "Menu feature 'Org Audit Checklist (13 categories)' resolves to /dashboard/org-compliance/org-audit-checklist-13-categories but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-479",
+    "title": "Position Control: Complete API integration and remove mock/local fallbacks",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/org-compliance/position-control",
+    "api": "/api/v1/org-compliance/position-control",
+    "desc": "Page calls APIs (/api/v1/org-compliance/position-control) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-480",
+    "title": "Position Control & Headcount Budget: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/org-compliance/position-control-headcount-budget",
+    "api": "Not specified",
+    "desc": "Menu feature 'Position Control & Headcount Budget' resolves to /dashboard/org-compliance/position-control-headcount-budget but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-481",
+    "title": "Vacancy: Complete API integration and remove mock/local fallbacks",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/org-compliance/vacancy",
+    "api": "/api/v1/org-compliance/vacancy",
+    "desc": "Page calls APIs (/api/v1/org-compliance/vacancy) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-482",
+    "title": "Vacancy Register (raise/approve/fill with ageing): Complete API integration and remove mock/local fallbacks",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/org-compliance/vacancy-register-raise-approve-fill-with-ageing",
+    "api": "/api/v1/org-compliance/vacancy",
+    "desc": "Page calls APIs (/api/v1/org-compliance/vacancy) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-513",
+    "title": "Clearance: Complete API integration and remove mock/local fallbacks",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/separation-compliance/clearance",
+    "api": "/api/v1/separation-compliance/clearance",
+    "desc": "Page calls APIs (/api/v1/separation-compliance/clearance) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-514",
+    "title": "Exit Clearance Checklist (HR/IT/FIN/SEC/LM/ADMIN): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/separation-compliance/exit-clearance-checklist-hr-it-fin-sec-lm-admin",
+    "api": "Not specified",
+    "desc": "Menu feature 'Exit Clearance Checklist (HR/IT/FIN/SEC/LM/ADMIN)' resolves to /dashboard/separation-compliance/exit-clearance-checklist-hr-it-fin-sec-lm-admin but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-515",
+    "title": "Handover: Complete API integration and remove mock/local fallbacks",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/separation-compliance/handover",
+    "api": "/api/v1/separation-compliance/handover",
+    "desc": "Page calls APIs (/api/v1/separation-compliance/handover) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-516",
+    "title": "Handover & Exit Interview: Complete API integration and remove mock/local fallbacks",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/separation-compliance/handover-exit-interview",
+    "api": "/api/v1/separation-compliance/handover",
+    "desc": "Page calls APIs (/api/v1/separation-compliance/handover) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-517",
+    "title": "Monthly Compliance Certificate: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/separation-compliance/monthly-compliance-certificate",
+    "api": "Not specified",
+    "desc": "Menu feature 'Monthly Compliance Certificate' resolves to /dashboard/separation-compliance/monthly-compliance-certificate but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-518",
+    "title": "Notice / Garden Leave / Buyout Tracking: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/separation-compliance/notice-garden-leave-buyout-tracking",
+    "api": "Not specified",
+    "desc": "Menu feature 'Notice / Garden Leave / Buyout Tracking' resolves to /dashboard/separation-compliance/notice-garden-leave-buyout-tracking but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-519",
+    "title": "Separation Case Orchestration (10 types): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/separation-compliance/separation-case-orchestration-10-types",
+    "api": "Not specified",
+    "desc": "Menu feature 'Separation Case Orchestration (10 types)' resolves to /dashboard/separation-compliance/separation-case-orchestration-10-types but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  }
+]

@@ -1,0 +1,134 @@
+[
+  {
+    "id": "AURA-301",
+    "title": "Backend Foundation: Implement all /api/career/* routes matching services.ts contracts",
+    "module": "Career Planning Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/api/career/*",
+    "api": "CareerLadderService, MobilityService, CareerGoalService, etc. \u2014 all /api/career/* (missing)",
+    "desc": "Full service layer exists in dashboard/career/services.ts but zero /api/career/* routes are implemented. All service calls would 404. Implement ladders, paths, mobility, goals, aspirations, mentorship, and settings endpoints."
+  },
+  {
+    "id": "AURA-302",
+    "title": "Career Hub: Add index page or redirect to first sub-feature",
+    "module": "Career Planning Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/career",
+    "api": "N/A \u2014 routing fix",
+    "desc": "No page.tsx exists at /dashboard/career \u2014 likely 404. Super-admin menu may point here. Add ModuleGrid hub or redirect to career-ladders."
+  },
+  {
+    "id": "AURA-303",
+    "title": "Career Ladders: Wire page to CareerLadderService and View Detailed Rubric",
+    "module": "Career Planning Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/career/career-ladders",
+    "api": "CareerLadderService / GET /api/career/ladders (missing)",
+    "desc": "Page uses hardcoded L1-L5 engineer ladder. Wire to GET /api/career/ladders. Connect View Detailed Rubric button and ladder step node clicks."
+  },
+  {
+    "id": "AURA-304",
+    "title": "Internal Mobility: Wire job cards, My Applications, and View Details to mobility API",
+    "module": "Career Planning Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/career/internal-mobility",
+    "api": "MobilityService / /api/career/mobility-* (missing)",
+    "desc": "Page uses hardcoded recommended jobs (3) and job board (6). Wire My Applications, job card clicks, and View Details to MobilityService."
+  },
+  {
+    "id": "AURA-305",
+    "title": "Career Goals: Wire Add New Goal, row menu, and checkboxes to goals API",
+    "module": "Career Planning Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/career/career-goals",
+    "api": "CareerGoalService / /api/career/goals (missing)",
+    "desc": "Page uses hardcoded 4 goals with progress %. Wire Add New Goal, MoreVertical menu, and checkbox toggles to CareerGoalService CRUD."
+  },
+  {
+    "id": "AURA-306",
+    "title": "Career Aspirations: Wire Save Changes, path/department toggles, and form to aspirations API",
+    "module": "Career Planning Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/career/aspirations",
+    "api": "CareerAspirationService / /api/career/aspirations (missing)",
+    "desc": "Page uses hardcoded form defaults and static AI suggestion. Wire Save Changes, path/department toggle buttons, relocate select, and AI Coach to CareerAspirationService."
+  },
+  {
+    "id": "AURA-307",
+    "title": "Module Route: Replace placeholder with links to /dashboard/career/* subpages",
+    "module": "Career Planning Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/career-planning",
+    "api": "N/A \u2014 routing/IA fix",
+    "desc": "(modules)/career-planning shows ModulePage isImplemented=false while 4 dashboard subpages already exist. Replace placeholder with hub linking to dashboard career pages."
+  },
+  {
+    "id": "AURA-308",
+    "title": "ESS Career Marketplace: Wire Save Interests and Apply to profile API and mobility service",
+    "module": "Career Planning Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/(modules)/career",
+    "api": "CareerInterestService / /api/my-services/profile; MobilityService (missing)",
+    "desc": "InternalJobMarketplace uses MOCK_JOBS. CareerInterestsProfile uses hardcoded defaults. Save Interests shows local toast only. Apply generates fake APP-{timestamp}. Wire to /api/my-services/profile careerInterests and mobility applications API."
+  },
+  {
+    "id": "AURA-309",
+    "title": "Career Site Builder: Wire Preview and Publish to recruitment career-site API",
+    "module": "Career Planning Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/(modules)/career-site",
+    "api": "GET/PUT /api/v1/recruitment/career-site (exists, not wired)",
+    "desc": "CareerSiteBuilder uses MOCK_LISTINGS and local state. Preview button has no handler. Publish sets local flag only. Wire to GET/PUT /api/v1/recruitment/career-site."
+  },
+  {
+    "id": "AURA-310",
+    "title": "Orphaned Infrastructure: Wire useCareer hook to pages or remove dead code",
+    "module": "Career Planning Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "dashboard/career/hooks/useCareer.ts",
+    "api": "useCareer hook + data.ts sample fixtures",
+    "desc": "useCareer loads all career services and seeds localStorage on empty but is never imported by any page. Wire to dashboard pages or remove."
+  },
+  {
+    "id": "AURA-311",
+    "title": "Internal Mobility (duplication): Consolidate three parallel internal mobility implementations",
+    "module": "Career Planning Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "Multiple implementations",
+    "api": "InternalMobilityService (mock) + MobilityService (missing API)",
+    "desc": "Static internal-mobility page, InternalJobMarketplace component, and InternalMobilityService mock class are separate unconnected implementations. Unify into one service-backed flow."
+  },
+  {
+    "id": "AURA-312",
+    "title": "Career Site (duplication): Consolidate career site builder implementations",
+    "module": "Career Planning Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "Multiple implementations",
+    "api": "/api/v1/recruitment/career-site",
+    "desc": "Three implementations: (modules)/career-site (mock), recruitment/career-site (API-backed), legacy components/career/CareerSiteBuilder. Consolidate on API-backed version."
+  }
+]

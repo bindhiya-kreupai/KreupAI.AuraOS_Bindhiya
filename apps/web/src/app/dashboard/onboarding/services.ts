@@ -17,9 +17,9 @@ import type {
   OnboardingMetrics,
   OnboardingSettings,
   TaskStatus,
+  OnboardingTask,
 } from './types';
 import {
-  OnboardingTask,
   OnboardingDocument,
   OnboardingEquipment,
   OnboardingAccess,
@@ -169,42 +169,32 @@ export class OnboardingInstanceService {
 export class OnboardingTaskService {
   private static endpoint = '/onboarding/tasks';
 
+  /**
+   * Persist a task status change.
+   * Contract: PUT /api/onboarding/tasks with { id, status, completedBy, completedDate }.
+   * The API scopes the task to the caller's tenant before updating.
+   */
   static async updateTaskStatus(
-    instanceId: string,
     taskId: string,
     status: TaskStatus,
     completedBy?: string
-  ): Promise<OnboardingInstance> {
-    const response = await APIClient.put<{ instance: OnboardingInstance }>(
-      `${this.endpoint}/${instanceId}/tasks/${taskId}/status`,
-      { status, completedBy }
-    );
-    return response.instance;
+  ): Promise<OnboardingTask> {
+    const completing = status === ('completed' as TaskStatus);
+    const response = await APIClient.put<{ task: OnboardingTask }>(this.endpoint, {
+      id: taskId,
+      status,
+      completedBy: completing ? completedBy : null,
+      completedDate: completing ? new Date().toISOString() : null,
+    });
+    return response.task;
   }
 
-  static async addTaskComment(
-    instanceId: string,
-    taskId: string,
-    comment: string
-  ): Promise<OnboardingInstance> {
-    const response = await APIClient.post<{ instance: OnboardingInstance }>(
-      `${this.endpoint}/${instanceId}/tasks/${taskId}/comment`,
-      { comment }
-    );
-    return response.instance;
-  }
-
-  static async assignTask(
-    instanceId: string,
-    taskId: string,
-    assignedTo: string,
-    assignedToName: string
-  ): Promise<OnboardingInstance> {
-    const response = await APIClient.post<{ instance: OnboardingInstance }>(
-      `${this.endpoint}/${instanceId}/tasks/${taskId}/assign`,
-      { assignedTo, assignedToName }
-    );
-    return response.instance;
+  static async assignTask(taskId: string, assignedTo: string): Promise<OnboardingTask> {
+    const response = await APIClient.put<{ task: OnboardingTask }>(this.endpoint, {
+      id: taskId,
+      assignedTo,
+    });
+    return response.task;
   }
 }
 

@@ -1,0 +1,90 @@
+[
+  {
+    "id": "AURA-086",
+    "title": "Platform: Create entire /api/gamification/* API surface",
+    "module": "Gamification Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "Module-wide",
+    "api": "dashboard/gamification/services.ts; lib/services/engagement/gamification.service.ts",
+    "desc": "Zero /api/gamification/* routes exist. All 8 sub-pages attempt API fetch and get 404. Backend ref exists at lib/services/engagement/gamification.service.ts but no HTTP route exposes it."
+  },
+  {
+    "id": "AURA-087",
+    "title": "Points System: Fix data binding and wire Redeem Rewards",
+    "module": "Gamification Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/gamification/points-system",
+    "api": "PointsService \u2192 /gamification/points/*",
+    "desc": "Fetches accounts via API (404) but renders hardcoded balance 2,450 and stats. Redeem Rewards button has no handler."
+  },
+  {
+    "id": "AURA-088",
+    "title": "Leaderboards: Handle empty response and wire scope tabs",
+    "module": "Gamification Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/gamification/leaderboards",
+    "api": "LeaderboardsService \u2192 /gamification/leaderboards",
+    "desc": "Assumes leaderboard[0..2] exist; will crash on empty array after 404. Global/Team/Regional tabs have no filter logic."
+  },
+  {
+    "id": "AURA-089",
+    "title": "Challenges: Wire Join Challenge and render API list",
+    "module": "Gamification Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/gamification/challenges",
+    "api": "ChallengesService \u2192 /gamification/challenges",
+    "desc": "Hero + list use hardcoded content; Join button unwired. Fetches challenges but UI ignores challenges state for main cards."
+  },
+  {
+    "id": "AURA-090",
+    "title": "Missions: Bind missions from API",
+    "module": "Gamification Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/gamification/missions",
+    "api": "MissionsService \u2192 /gamification/missions",
+    "desc": "Fetches missions but renders hardcoded 3-item list; streak banner hardcoded."
+  },
+  {
+    "id": "AURA-091",
+    "title": "Virtual Currency: Bind wallet and wire Transfer/Cash Out/Convert",
+    "module": "Gamification Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/gamification/virtual-currency",
+    "api": "VirtualCurrencyService \u2192 /gamification/currency/*",
+    "desc": "Hardcoded 2,450 AC, username, exchange rate. Three action buttons unwired."
+  },
+  {
+    "id": "AURA-092",
+    "title": "Badges: Fix badge shape mapping",
+    "module": "Gamification Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/gamification/badges",
+    "api": "BadgesService.getBadges",
+    "desc": "UI expects badge.icon, badge.title; API types use different shape."
+  },
+  {
+    "id": "AURA-093",
+    "title": "Architecture: Wire or remove useGamification hook",
+    "module": "Gamification Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "hooks/useGamification.ts",
+    "api": "hooks/useGamification.ts; components/learning/GamificationHub.tsx",
+    "desc": "Full CRUD hook never imported by any page. Duplicate gamification: services/gamificationService.ts mock for learning vs dashboard REST."
+  }
+]

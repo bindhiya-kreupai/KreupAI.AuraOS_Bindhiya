@@ -22,7 +22,10 @@ import {
   Upload,
   X,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import type { InternalJob } from './InternalJobMarketplace';
+import { useCurrentUser } from '@/lib/auth/AuthProvider';
+import { MobilityApplicationService } from '@/app/dashboard/career/services';
 
 // ── Props ──────────────────────────────────────────────────────────────────────
 
@@ -39,6 +42,7 @@ export const InternalApplicationForm: React.FC<InternalApplicationFormProps> = (
   onBack,
   onSubmitted,
 }) => {
+  const { user } = useCurrentUser();
   const [motivation, setMotivation] = useState('');
   const [relevantExperience, setRelevantExperience] = useState('');
   const [additionalNotes, setAdditionalNotes] = useState('');
@@ -52,12 +56,36 @@ export const InternalApplicationForm: React.FC<InternalApplicationFormProps> = (
 
   const handleSubmit = useCallback(async () => {
     if (!canSubmit) return;
+    if (!user?.employeeId) {
+      toast.error('Unable to determine your employee profile');
+      return;
+    }
     setSubmitting(true);
-    await new Promise((resolve) => setTimeout(resolve, 1500));
-    setApplicationId(`APP-${Date.now()}`);
-    setSubmitted(true);
-    setSubmitting(false);
-  }, [canSubmit]);
+    try {
+      const created = await MobilityApplicationService.createApplication({
+        opportunityId: job.id,
+        opportunityTitle: job.title,
+        employeeId: user.employeeId,
+        motivation: motivation.trim(),
+        relevantExperience: relevantExperience
+          .split('\n')
+          .map((s) => s.trim())
+          .filter(Boolean),
+        relevantSkills: job.preferredSkills ?? [],
+        coverLetter: additionalNotes.trim() || undefined,
+        applicationStatus: 'submitted',
+      });
+      const createdRecord = created as { applicationId?: string; id?: string } | null;
+      setApplicationId(createdRecord?.applicationId ?? createdRecord?.id ?? null);
+      setSubmitted(true);
+      toast.success('Application submitted');
+    } catch (error) {
+      console.error('Failed to submit internal application', error);
+      toast.error('Failed to submit application');
+    } finally {
+      setSubmitting(false);
+    }
+  }, [canSubmit, user?.employeeId, job, motivation, relevantExperience, additionalNotes]);
 
   // ── Success State ──────────────────────────────────────────────────────────
 

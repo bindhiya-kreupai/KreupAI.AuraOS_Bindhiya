@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 
 interface Comp {
   id: string;
@@ -44,13 +44,17 @@ export default function ComplaintsPage() {
     slaHours: '48',
   });
   const [message, setMessage] = useState('');
+  const [busy, setBusy] = useState(false);
+  const [panel, setPanel] = useState<{ id: string; mode: 'assign' | 'resolve' } | null>(null);
+  const [assigneeInput, setAssigneeInput] = useState('');
+  const [notesInput, setNotesInput] = useState('');
 
   async function load() {
     const url = new URL('/api/v1/accommodation-compliance/complaints', window.location.origin);
     if (filter) url.searchParams.set('status', filter);
     const r = await fetch(url.toString());
     const p = await r.json();
-    if (p.success) setRows(p.data ?? []);
+    if (p.success) setRows(p.data?.items ?? []);
   }
   useEffect(() => {
     load();
@@ -74,18 +78,43 @@ export default function ComplaintsPage() {
     load();
   }
 
-  async function call(action: string, id: string) {
+  function openPanel(id: string, mode: 'assign' | 'resolve') {
+    setPanel({ id, mode });
+    setAssigneeInput('');
+    setNotesInput('');
+    setMessage('');
+  }
+
+  async function submitPanel(id: string, mode: 'assign' | 'resolve') {
     const extra: Record<string, unknown> = {};
-    if (action === 'assign') extra.assigneeId = window.prompt('Assignee ID?') ?? '';
-    if (action === 'resolve') extra.notes = window.prompt('Resolution notes?') ?? '';
-    const r = await fetch('/api/v1/accommodation-compliance/complaints', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action, id, ...extra }),
-    });
-    const p = await r.json();
-    setMessage(p.success ? action : p.error?.message);
-    load();
+    if (mode === 'assign') {
+      const assigneeId = assigneeInput.trim();
+      if (!assigneeId) {
+        setMessage('Assignee ID is required');
+        return;
+      }
+      extra.assigneeId = assigneeId;
+    }
+    if (mode === 'resolve') {
+      extra.notes = notesInput.trim() || undefined;
+    }
+    setBusy(true);
+    setMessage('');
+    try {
+      const r = await fetch('/api/v1/accommodation-compliance/complaints', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: mode, id, ...extra }),
+      });
+      const p = await r.json();
+      setMessage(p.success ? mode : (p.error?.details?.error ?? p.error?.message ?? 'Failed'));
+      if (p.success) {
+        setPanel(null);
+        await load();
+      }
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -203,54 +232,118 @@ export default function ComplaintsPage() {
               {rows.map((c) => {
                 const ageHours = (Date.now() - new Date(c.raisedAt).getTime()) / (3600 * 1000);
                 const breached = c.status !== 'RESOLVED' && ageHours > c.slaHours;
+                const openHere = panel?.id === c.id;
                 return (
-                  <tr key={c.id} className="border-b border-slate-100">
-                    <td className="px-3 py-2 text-xs">{c.raisedAt?.slice(0, 10)}</td>
-                    <td className="px-3 py-2 font-mono text-xs">{c.siteId.slice(0, 8)}</td>
-                    <td className="px-3 py-2 text-xs">{c.category}</td>
-                    <td className="px-3 py-2">
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-xs font-semibold ${sevColor[c.severity] ?? ''}`}
+                  <Fragment key={c.id}>
+                    <tr className="border-b border-slate-100">
+                      <td className="px-3 py-2 text-xs">{c.raisedAt?.slice(0, 10)}</td>
+                      <td className="px-3 py-2 font-mono text-xs">{c.siteId.slice(0, 8)}</td>
+                      <td className="px-3 py-2 text-xs">{c.category}</td>
+                      <td className="px-3 py-2">
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-xs font-semibold ${sevColor[c.severity] ?? ''}`}
+                        >
+                          {c.severity}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2 text-xs">{c.subject}</td>
+                      <td
+                        className={`px-3 py-2 text-xs ${breached ? 'font-semibold text-rose-700' : ''}`}
                       >
-                        {c.severity}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2 text-xs">{c.subject}</td>
-                    <td
-                      className={`px-3 py-2 text-xs ${breached ? 'font-semibold text-rose-700' : ''}`}
-                    >
-                      {c.slaHours}h{breached ? ' ⚠' : ''}
-                    </td>
-                    <td className="px-3 py-2">
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-xs font-semibold ${statusColor[c.status] ?? ''}`}
-                      >
-                        {c.status}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2">
-                      <div className="flex gap-1">
-                        {c.status === 'OPEN' && (
-                          <button
-                            type="button"
-                            onClick={() => call('assign', c.id)}
-                            className="rounded-md border border-slate-300 px-2 py-1 text-xs"
-                          >
-                            Assign
-                          </button>
-                        )}
-                        {(c.status === 'OPEN' || c.status === 'IN_PROGRESS') && (
-                          <button
-                            type="button"
-                            onClick={() => call('resolve', c.id)}
-                            className="rounded-md bg-emerald-700 px-2 py-1 text-xs text-white"
-                          >
-                            Resolve
-                          </button>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
+                        {c.slaHours}h{breached ? ' ⚠' : ''}
+                      </td>
+                      <td className="px-3 py-2">
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-xs font-semibold ${statusColor[c.status] ?? ''}`}
+                        >
+                          {c.status}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2">
+                        <div className="flex gap-1">
+                          {c.status === 'OPEN' && (
+                            <button
+                              type="button"
+                              onClick={() => openPanel(c.id, 'assign')}
+                              className="rounded-md border border-slate-300 px-2 py-1 text-xs"
+                            >
+                              Assign
+                            </button>
+                          )}
+                          {(c.status === 'OPEN' || c.status === 'IN_PROGRESS') && (
+                            <button
+                              type="button"
+                              onClick={() => openPanel(c.id, 'resolve')}
+                              className="rounded-md bg-emerald-700 px-2 py-1 text-xs text-white"
+                            >
+                              Resolve
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                    {openHere && (
+                      <tr className="border-b border-slate-100 bg-slate-50">
+                        <td colSpan={8} className="px-3 py-3">
+                          {panel?.mode === 'assign' ? (
+                            <div className="flex flex-wrap items-end gap-2">
+                              <label className="text-xs">
+                                Assignee ID
+                                <input
+                                  value={assigneeInput}
+                                  onChange={(e) => setAssigneeInput(e.target.value)}
+                                  placeholder="employee / warden id"
+                                  className="mt-1 block w-64 rounded-md border border-slate-300 px-2 py-1.5 font-mono text-xs"
+                                />
+                              </label>
+                              <button
+                                type="button"
+                                disabled={busy}
+                                onClick={() => submitPanel(c.id, 'assign')}
+                                className="rounded-md bg-slate-900 px-3 py-2 text-xs text-white disabled:opacity-50"
+                              >
+                                Save assignee
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setPanel(null)}
+                                className="rounded-md border border-slate-300 px-3 py-2 text-xs"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex flex-wrap items-end gap-2">
+                              <label className="text-xs">
+                                Resolution notes (optional)
+                                <textarea
+                                  value={notesInput}
+                                  onChange={(e) => setNotesInput(e.target.value)}
+                                  rows={2}
+                                  className="mt-1 block w-96 rounded-md border border-slate-300 px-2 py-1.5 text-xs"
+                                />
+                              </label>
+                              <button
+                                type="button"
+                                disabled={busy}
+                                onClick={() => submitPanel(c.id, 'resolve')}
+                                className="rounded-md bg-emerald-700 px-3 py-2 text-xs text-white disabled:opacity-50"
+                              >
+                                Confirm resolve
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setPanel(null)}
+                                className="rounded-md border border-slate-300 px-3 py-2 text-xs"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
                 );
               })}
               {rows.length === 0 && (

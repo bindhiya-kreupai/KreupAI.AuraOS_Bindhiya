@@ -1,1 +1,1 @@
-export { default } from '../../../dashboard/payroll/payroll-processing/page';
+export { default } from '../../../dashboard/payroll/payroll-run/page';

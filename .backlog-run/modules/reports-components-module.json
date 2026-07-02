@@ -1,0 +1,112 @@
+[
+  {
+    "id": "AURA-254",
+    "title": "Dashboard: Mount as reports home",
+    "module": "Reports Components Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "components/reports/ReportDashboard.tsx (orphan)",
+    "api": "ReportGenerationService; missing /v1/reports/* routes",
+    "desc": "Favorites, history, scheduled reports UI never used. ReportGenerationService targets missing /v1/reports/templates, /history, /schedules."
+  },
+  {
+    "id": "AURA-255",
+    "title": "Template Builder: Mount or merge with CustomReportBuilder",
+    "module": "Reports Components Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "components/reports/ReportBuilder.tsx (orphan)",
+    "api": "/v1/reports/generate; /templates/*/preview (missing routes)",
+    "desc": "Full template-picker wizard with generate/preview orphaned. Templates fallback to mock list."
+  },
+  {
+    "id": "AURA-256",
+    "title": "Viewer: Wire post-generation preview/download",
+    "module": "Reports Components Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "components/reports/ReportViewer.tsx (orphan)",
+    "api": "ReportGenerationService.getGeneratedReport",
+    "desc": "Report preview/download component never mounted."
+  },
+  {
+    "id": "AURA-257",
+    "title": "Scheduler: Wire to schedule API",
+    "module": "Reports Components Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "components/reports/ReportScheduler.tsx (orphan)",
+    "api": "GET/POST /api/v1/analytics/reports/schedule",
+    "desc": "Uses mockSchedules local state. Schedule API exists but unused."
+  },
+  {
+    "id": "AURA-258",
+    "title": "Recipients: Wire recipient selector to directory API",
+    "module": "Reports Components Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "components/reports/RecipientSelector.tsx (orphan)",
+    "api": "Employee/directory API TBD",
+    "desc": "Mock recipient list; needed by scheduler."
+  },
+  {
+    "id": "AURA-259",
+    "title": "Custom Builder: Wire Run Report, filters, and preview",
+    "module": "Reports Components Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/(modules)/report-builder",
+    "api": "/api/v1/analytics/reports/custom/; /api/v1/reports/[id]/execute",
+    "desc": "Save/delete wired to /api/v1/analytics/reports/custom/. Run button has no handler. FilterBuilder not connected; preview is static mock."
+  },
+  {
+    "id": "AURA-260",
+    "title": "Custom Builder (sub): Replace mock column/preview data",
+    "module": "Reports Components Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "ColumnPicker, ReportPreview, DataSourceSelector",
+    "api": "Schema/metadata API needed",
+    "desc": "Static catalogs and mockPreviewData/mockChartData; ignores selected columns/filters."
+  },
+  {
+    "id": "AURA-261",
+    "title": "Analytics: Consolidate duplicate inline builders",
+    "module": "Reports Components Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/analytics/report-builder, /dashboard-builder",
+    "api": "/api/v1/analytics/headcount",
+    "desc": "Third and fourth report-builder implementations. Save/Run/Export buttons unwired. Preview from /api/v1/analytics/headcount only."
+  },
+  {
+    "id": "AURA-262",
+    "title": "People Analytics: Wire secondary analytics tabs",
+    "module": "Reports Components Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/(modules)/people-analytics",
+    "api": "GET /api/v1/analytics/people/",
+    "desc": "Main fetch wired to /api/v1/analytics/people/. Secondary tabs (turnover/diversity/flight-risk) are display shells."
+  },
+  {
+    "id": "AURA-263",
+    "title": "Service Layer: Align service with actual API routes",
+    "module": "Reports Components Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "ReportGenerationService",
+    "api": "/api/v1/reports; /api/v1/report-executions; /api/v1/analytics/reports/*",
+    "desc": "Service references /v1/reports/templates, /generate, /history, /schedules \u2014 routes missing. Retarget to /api/v1/reports + /api/v1/analytics/reports/*."
+  }
+]

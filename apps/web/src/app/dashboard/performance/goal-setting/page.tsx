@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { GoalService } from '../core/services';
+import { useCurrentUser } from '@/lib/auth/AuthProvider';
 import {
   AlertCircle,
   Calendar,
@@ -39,6 +40,7 @@ const emptyForm: GoalForm = {
 };
 
 export default function GoalSettingPage() {
+  const { user } = useCurrentUser();
   const [activeTab, setActiveTab] = useState<'active' | 'archived'>('active');
   const [loading, setLoading] = useState(true);
   const [goals, setGoals] = useState<any[]>([]);
@@ -87,15 +89,17 @@ export default function GoalSettingPage() {
 
   const save = async () => {
     if (!editing) return;
-    if (!editing.title.trim() || !editing.employeeId.trim()) {
-      setStatus({ kind: 'error', text: 'Title and employee ID are required.' });
+    if (!editing.title.trim()) {
+      setStatus({ kind: 'error', text: 'Title is required.' });
       return;
     }
     setSaving(true);
     setStatus(null);
     try {
+      // Own the goal to the current user by default; keep the existing owner on edit.
+      const employeeId = editing.employeeId || user?.employeeId || '';
       const payload = {
-        employeeId: editing.employeeId,
+        employeeId,
         title: editing.title,
         description: editing.description || undefined,
         category: editing.category,
@@ -141,7 +145,7 @@ export default function GoalSettingPage() {
           </p>
         </div>
         <button
-          onClick={() => setEditing({ ...emptyForm })}
+          onClick={() => setEditing({ ...emptyForm, employeeId: user?.employeeId || '' })}
           className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold hover:bg-indigo-700 transition-colors shadow-lg shadow-indigo-200 dark:shadow-none flex items-center gap-2"
         >
           <Plus className="w-4 h-4" /> New Goal
@@ -295,7 +299,7 @@ export default function GoalSettingPage() {
       )}
 
       <button
-        onClick={() => setEditing({ ...emptyForm })}
+        onClick={() => setEditing({ ...emptyForm, employeeId: user?.employeeId || '' })}
         className="w-full py-4 border-2 border-dashed border-slate-200 dark:border-slate-800 rounded-2xl flex items-center justify-center gap-2 text-slate-400 font-bold hover:border-indigo-300 hover:text-indigo-500 transition-all"
       >
         <Plus className="w-5 h-5" /> Add New Goal
@@ -355,15 +359,6 @@ function GoalModal({
               value={form.description}
               onChange={(e) => onChange({ ...form, description: e.target.value })}
               className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700 resize-none"
-            />
-          </label>
-          <label className="block">
-            <span className="block text-xs font-medium text-slate-500 mb-1">Employee ID</span>
-            <input
-              value={form.employeeId}
-              onChange={(e) => onChange({ ...form, employeeId: e.target.value })}
-              placeholder="e.g. EMP-1234"
-              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700"
             />
           </label>
           <label className="block">

@@ -28,7 +28,7 @@ export default function AuditSettingsPage() {
   async function load() {
     const r = await fetch('/api/v1/hrms-config/audit-settings');
     const p = await r.json();
-    if (p.success) setRows(p.data ?? []);
+    if (p.success) setRows(p.data?.items ?? []);
   }
   useEffect(() => {
     load();

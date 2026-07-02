@@ -1,0 +1,145 @@
+[
+  {
+    "id": "AURA-073",
+    "title": "Auto-Numbering: Persist sequence config to API",
+    "module": "Core HR Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/core-hr/auto-numbering",
+    "api": "AutoNumberService \u2192 /api/core-hr/auto-numbers",
+    "desc": "Save/reset must PUT/POST to server; overrides must not be browser-only. Page uses localStorage key auraos.coreHr.autoNumbers.v1."
+  },
+  {
+    "id": "AURA-074",
+    "title": "Letter Generation: Wire Create New Letter and Preview/Download/Print",
+    "module": "Core HR Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/core-hr/letter-generation",
+    "api": "LetterService \u2192 /api/core-hr/letters; DocumentTemplateService \u2192 /api/core-hr/document-templates",
+    "desc": "Create New Letter calls handleAction with no API. Template sidebar is hardcoded (5 names). Preview/Download/Print are view-only with no PDF fetch."
+  },
+  {
+    "id": "AURA-075",
+    "title": "Document Management: Wire document delete, preview/download, and real AI scan",
+    "module": "Core HR Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/core-hr/document-management",
+    "api": "DocumentService \u2192 /api/core-hr/documents",
+    "desc": "Delete calls DocumentService.verifyDocument() which is a no-op GET stub. Preview/Download unwired. scanDocumentAI uses setTimeout fake OCR."
+  },
+  {
+    "id": "AURA-076",
+    "title": "Employee Life Events: Wire Approve/Reject to API",
+    "module": "Core HR Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/core-hr/employee-life-events",
+    "api": "LifeEventService.processEvent \u2192 /api/core-hr/life-events",
+    "desc": "handleAction only updates React state. handleWish passes employee name as eventId to processEvent instead of real event ID."
+  },
+  {
+    "id": "AURA-077",
+    "title": "Anniversary Alerts: Implement send notifications",
+    "module": "Core HR Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/core-hr/anniversary-alerts",
+    "api": "AnniversaryService \u2192 /api/core-hr/anniversaries",
+    "desc": "UI calls AnniversaryService.sendNotifications() which is empty stub."
+  },
+  {
+    "id": "AURA-078",
+    "title": "Confirmation Letters: Wire Preview and PDF download",
+    "module": "Core HR Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/core-hr/confirmation-letters",
+    "api": "ConfirmationLetterService \u2192 /api/core-hr/confirmation-letters",
+    "desc": "Eye/Preview and PDF buttons have no handlers."
+  },
+  {
+    "id": "AURA-079",
+    "title": "Employee ID Cards: Wire card generation and revoke",
+    "module": "Core HR Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/core-hr/employee-id-cards",
+    "api": "IDCardService.issueIDCard, generateCard \u2192 /api/core-hr/id-cards",
+    "desc": "No issue/generate flow; print is window.print() only."
+  },
+  {
+    "id": "AURA-080",
+    "title": "Cost Center: Wire export report and budget allocation",
+    "module": "Core HR Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/core-hr/cost-center",
+    "api": "CostCenterService \u2192 /api/core-hr/cost-centers",
+    "desc": "Download button triggers alert(). CostCenterService.allocateBudget() is no-op."
+  },
+  {
+    "id": "AURA-081",
+    "title": "Mass Updates: Upload file payload and wire preview",
+    "module": "Core HR Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/core-hr/mass-updates",
+    "api": "MassUpdateService \u2192 /api/core-hr/mass-updates",
+    "desc": "Upload creates metadata record only; CSV file not sent. MassUpdateService.previewUpdate() returns empty stub."
+  },
+  {
+    "id": "AURA-082",
+    "title": "Exit Management: Wire clearance item updates and templates",
+    "module": "Core HR Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/core-hr/exit-management",
+    "api": "ExitService \u2192 /api/core-hr/exits",
+    "desc": "Clearance shown read-only; no UI to complete items. ExitService.getAllClearanceTemplates() returns []."
+  },
+  {
+    "id": "AURA-083",
+    "title": "Position Management: Remove mock fallback data",
+    "module": "Core HR Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/core-hr/position-management",
+    "api": "PositionService.getAllPositions \u2192 /api/core-hr/positions",
+    "desc": "On API error, service returns 2 hardcoded positions instead of empty/error state."
+  },
+  {
+    "id": "AURA-084",
+    "title": "Life Events: Add workflow actions or consolidate routes",
+    "module": "Core HR Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/core-hr/life-events",
+    "api": "LifeEventService \u2192 /api/core-hr/life-events",
+    "desc": "Read-only list vs duplicate employee-life-events with actions. Consolidate or add create/approve on one page."
+  },
+  {
+    "id": "AURA-085",
+    "title": "Architecture: Wire or remove dead hook and duplicate service layer",
+    "module": "Core HR Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "hooks/useCoreHR.ts",
+    "api": "hooks/useCoreHR.ts; employee-database/services.ts",
+    "desc": "useCoreHR seeds 15+ localStorage keys when API empty but no page uses it. Orphan employee-database/services.ts calls /api/employees (wrong endpoint)."
+  }
+]

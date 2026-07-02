@@ -1,0 +1,189 @@
+[
+  {
+    "id": "AURA-528",
+    "title": "Audit Checklist: Complete API integration and remove mock/local fallbacks",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/talent-acquisition-compliance/audit-checklist",
+    "api": "/api/v1/talent-acquisition-compliance/audit-checklist, /api/v1/talent-acquisition-compliance/audit-checklist${stageFilter",
+    "desc": "Page calls APIs (/api/v1/talent-acquisition-compliance/audit-checklist, /api/v1/talent-acquisition-compliance/audit-checklist${stageFilter ) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-529",
+    "title": "Lifecycle Audit Checklist (5 stages, 25 categories): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/talent-acquisition-compliance/lifecycle-audit-checklist-5-stages-25-categories",
+    "api": "Not specified",
+    "desc": "Menu feature 'Lifecycle Audit Checklist (5 stages, 25 categories)' resolves to /dashboard/talent-acquisition-compliance/lifecycle-audit-checklist-5-stages-25-categories but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-530",
+    "title": "Monthly TA Compliance Certificate: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/talent-acquisition-compliance/monthly-ta-compliance-certificate",
+    "api": "Not specified",
+    "desc": "Menu feature 'Monthly TA Compliance Certificate' resolves to /dashboard/talent-acquisition-compliance/monthly-ta-compliance-certificate but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-531",
+    "title": "Risk Register: Complete API integration and remove mock/local fallbacks",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/talent-acquisition-compliance/risk-register",
+    "api": "/api/v1/talent-acquisition-compliance/risk-register",
+    "desc": "Page calls APIs (/api/v1/talent-acquisition-compliance/risk-register) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-532",
+    "title": "Stage Breakdown (PLANNING/SOURCING/SELECTION/OFFER/PRE-EMPLOYMENT): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/talent-acquisition-compliance/stage-breakdown-planning-sourcing-selection-offer-pre-employment",
+    "api": "Not specified",
+    "desc": "Menu feature 'Stage Breakdown (PLANNING/SOURCING/SELECTION/OFFER/PRE-EMPLOYMENT)' resolves to /dashboard/talent-acquisition-compliance/stage-breakdown-planning-sourcing-selection-offer-pre-employment but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-533",
+    "title": "TA Risk Register (L\u00d7I bands): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/talent-acquisition-compliance/ta-risk-register-l-i-bands",
+    "api": "Not specified",
+    "desc": "Menu feature 'TA Risk Register (L\u00d7I bands)' resolves to /dashboard/talent-acquisition-compliance/ta-risk-register-l-i-bands but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-534",
+    "title": "Authority Portal Evidence: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/visa-exit-compliance/authority-portal-evidence",
+    "api": "Not specified",
+    "desc": "Menu feature 'Authority Portal Evidence' resolves to /dashboard/visa-exit-compliance/authority-portal-evidence but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-535",
+    "title": "Evidence: Complete API integration and remove mock/local fallbacks",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/visa-exit-compliance/evidence",
+    "api": "/api/v1/visa-exit-compliance/evidence",
+    "desc": "Page calls APIs (/api/v1/visa-exit-compliance/evidence) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-536",
+    "title": "Exit Case Orchestration (auto-seed PRO actions): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/visa-exit-compliance/exit-case-orchestration-auto-seed-pro-actions",
+    "api": "Not specified",
+    "desc": "Menu feature 'Exit Case Orchestration (auto-seed PRO actions)' resolves to /dashboard/visa-exit-compliance/exit-case-orchestration-auto-seed-pro-actions but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-537",
+    "title": "Monthly Compliance Certificate: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/visa-exit-compliance/monthly-compliance-certificate",
+    "api": "Not specified",
+    "desc": "Menu feature 'Monthly Compliance Certificate' resolves to /dashboard/visa-exit-compliance/monthly-compliance-certificate but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-538",
+    "title": "PRO Action Register: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/visa-exit-compliance/pro-action-register",
+    "api": "Not specified",
+    "desc": "Menu feature 'PRO Action Register' resolves to /dashboard/visa-exit-compliance/pro-action-register but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-539",
+    "title": "Pro Actions: Complete API integration and remove mock/local fallbacks",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/visa-exit-compliance/pro-actions",
+    "api": "/api/v1/visa-exit-compliance/pro-actions",
+    "desc": "Page calls APIs (/api/v1/visa-exit-compliance/pro-actions) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-337",
+    "title": "Assignment Register (capacity gated): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/accommodation-compliance/assignment-register-capacity-gated",
+    "api": "Not specified",
+    "desc": "Menu feature 'Assignment Register (capacity gated)' resolves to /dashboard/accommodation-compliance/assignment-register-capacity-gated but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-338",
+    "title": "Complaint Register (48h default SLA): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/accommodation-compliance/complaint-register-48h-default-sla",
+    "api": "Not specified",
+    "desc": "Menu feature 'Complaint Register (48h default SLA)' resolves to /dashboard/accommodation-compliance/complaint-register-48h-default-sla but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-339",
+    "title": "Inspection Register (CRITICAL/MAJOR/MINOR findings): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/accommodation-compliance/inspection-register-critical-major-minor-findings",
+    "api": "Not specified",
+    "desc": "Menu feature 'Inspection Register (CRITICAL/MAJOR/MINOR findings)' resolves to /dashboard/accommodation-compliance/inspection-register-critical-major-minor-findings but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-340",
+    "title": "Monthly Compliance Certificate: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/accommodation-compliance/monthly-compliance-certificate",
+    "api": "Not specified",
+    "desc": "Menu feature 'Monthly Compliance Certificate' resolves to /dashboard/accommodation-compliance/monthly-compliance-certificate but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-341",
+    "title": "Site Master (DORMITORY / LABOUR_CAMP / VILLA): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/accommodation-compliance/site-master-dormitory-labour-camp-villa",
+    "api": "Not specified",
+    "desc": "Menu feature 'Site Master (DORMITORY / LABOUR_CAMP / VILLA)' resolves to /dashboard/accommodation-compliance/site-master-dormitory-labour-camp-villa but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  }
+]

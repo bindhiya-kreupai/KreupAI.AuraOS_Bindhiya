@@ -20,44 +20,68 @@ const statusColor: Record<string, string> = {
   CLEARED: 'bg-emerald-100 text-emerald-800',
 };
 
+interface ListResponse<T> {
+  items?: T[];
+}
+
 export default function ClearancePage() {
   const [rows, setRows] = useState<Cl[]>([]);
   const [caseFilter, setCaseFilter] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [editing, setEditing] = useState<Cl | null>(null);
+  const [editCompleted, setEditCompleted] = useState('0');
+  const [editBlocker, setEditBlocker] = useState('');
 
   async function load() {
-    const url = new URL('/api/v1/separation-compliance/clearance', window.location.origin);
-    if (caseFilter) url.searchParams.set('caseId', caseFilter);
-    if (statusFilter) url.searchParams.set('status', statusFilter);
-    const r = await fetch(url.toString());
-    const p = await r.json();
-    if (p.success) setRows(p.data ?? []);
+    setLoading(true);
+    try {
+      const url = new URL('/api/v1/separation-compliance/clearance', window.location.origin);
+      if (caseFilter) url.searchParams.set('caseId', caseFilter);
+      if (statusFilter) url.searchParams.set('status', statusFilter);
+      const r = await fetch(url.toString());
+      const p = await r.json();
+      if (p.success) {
+        const data = p.data as ListResponse<Cl> | Cl[] | undefined;
+        setRows(Array.isArray(data) ? data : (data?.items ?? []));
+      } else {
+        setMessage(p.error?.message ?? 'Failed to load');
+      }
+    } finally {
+      setLoading(false);
+    }
   }
   useEffect(() => {
     load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [caseFilter, statusFilter]);
 
-  async function update(id: string, current: Cl) {
-    const completed = window.prompt(
-      `Completed items (0–${current.totalItems})?`,
-      String(current.completedItems)
-    );
-    if (completed == null) return;
-    const blocker = window.prompt('Blocker notes? (optional)') ?? '';
+  function openEdit(current: Cl) {
+    setEditing(current);
+    setEditCompleted(String(current.completedItems));
+    setEditBlocker(current.blockerNotes ?? '');
+  }
+
+  async function submitUpdate() {
+    if (!editing) return;
+    setMessage('');
     const r = await fetch('/api/v1/separation-compliance/clearance', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         action: 'update',
-        id,
-        completedItems: Number(completed),
-        blockerNotes: blocker || undefined,
+        id: editing.id,
+        completedItems: Number(editCompleted),
+        blockerNotes: editBlocker || undefined,
       }),
     });
     const p = await r.json();
-    setMessage(p.success ? 'Updated' : p.error?.message);
-    load();
+    setMessage(p.success ? 'Updated' : (p.error?.message ?? 'failed'));
+    if (p.success) {
+      setEditing(null);
+      await load();
+    }
   }
 
   return (
@@ -125,7 +149,7 @@ export default function ClearancePage() {
                     {c.status !== 'CLEARED' && (
                       <button
                         type="button"
-                        onClick={() => update(c.id, c)}
+                        onClick={() => openEdit(c)}
                         className="rounded-md bg-slate-900 px-2 py-1 text-xs text-white"
                       >
                         Update
@@ -137,7 +161,7 @@ export default function ClearancePage() {
               {rows.length === 0 && (
                 <tr>
                   <td colSpan={8} className="px-3 py-6 text-center text-slate-500">
-                    No clearance records.
+                    {loading ? 'Loading…' : 'No clearance records.'}
                   </td>
                 </tr>
               )}
@@ -145,6 +169,50 @@ export default function ClearancePage() {
           </table>
         </section>
       </div>
+
+      {editing ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
+          <div className="w-full max-w-md rounded-lg border border-slate-200 bg-white p-5 shadow-lg">
+            <h3 className="text-base font-semibold">Update {editing.department} Clearance</h3>
+            <label className="mt-3 block text-sm">
+              Completed items (0–{editing.totalItems})
+              <input
+                type="number"
+                min={0}
+                max={editing.totalItems}
+                value={editCompleted}
+                onChange={(e) => setEditCompleted(e.target.value)}
+                className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5"
+              />
+            </label>
+            <label className="mt-3 block text-sm">
+              Blocker notes (optional)
+              <textarea
+                value={editBlocker}
+                onChange={(e) => setEditBlocker(e.target.value)}
+                rows={3}
+                className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5"
+              />
+            </label>
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setEditing(null)}
+                className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={submitUpdate}
+                className="rounded-md bg-slate-900 px-3 py-2 text-sm text-white"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }

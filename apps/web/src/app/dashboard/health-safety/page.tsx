@@ -1,15 +1,18 @@
-"use client";
+'use client';
 
 import React from 'react';
 import { ModuleGrid } from '@/components/dashboard/module-grid';
 
 export default function HealthSafetyPage() {
   const features = [
+    'Incidents',
     'Incident Reporting',
     'Safety Training',
     'Health Checkups',
     'Emergency Contacts',
-    'COVID Tracker'
+    'Emergency',
+    'COVID Tracker',
+    'Settings',
   ];
 
   return (
@@ -21,4 +24,3 @@ export default function HealthSafetyPage() {
     />
   );
 }
-

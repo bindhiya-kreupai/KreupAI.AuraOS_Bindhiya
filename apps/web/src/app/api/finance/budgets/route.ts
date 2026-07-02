@@ -1,132 +1,86 @@
 /**
- * Budget API Routes
- * Finance Module - Budget Management
+ * Budget API — Finance Module (AURA-151, AURA-158)
+ * DB-backed, tenant-scoped. Supports create + from-template via POST action.
  */
 
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { createProtectedRoute } from '@/lib/api/route-wrapper';
+import { BudgetRepo, TemplateRepo } from '@/lib/services/finance/finance.service';
 
-/**
- * GET /api/finance/budgets
- * Get all budgets
- */
-export async function GET(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const status = searchParams.get('status');
-    const fiscalYear = searchParams.get('fiscalYear');
-    const department = searchParams.get('department');
+export const GET = createProtectedRoute(async (request: NextRequest, { auth }) => {
+  const { searchParams } = new URL(request.url);
+  const status = searchParams.get('status') || undefined;
+  const approvalStatus = searchParams.get('approvalStatus') || undefined;
+  const page = Number(searchParams.get('page')) || 1;
+  const pageSize = Number(searchParams.get('pageSize')) || 100;
 
-    // This would fetch from database
-    // For now, return structure
-    return NextResponse.json({
-      success: true,
-      budgets: [],
-      summary: {
-        totalBudgets: 0,
-        activeBudgets: 0,
-        totalBudgetAmount: 0,
-        totalSpent: 0,
-        totalRemaining: 0,
-      },
-    });
-  } catch (error: any) {
-    return NextResponse.json({ error: 'Failed to fetch budgets' }, { status: 500 });
-  }
-}
+  const result = await BudgetRepo.list((auth as any).tenantId, {
+    status,
+    approvalStatus,
+    page,
+    pageSize,
+  });
+  return NextResponse.json({
+    success: true,
+    budgets: result.items,
+    ...result,
+    summary: {
+      totalBudgets: result.total,
+      activeBudgets: result.items.filter(
+        (b: any) => b.status === 'active' || b.status === 'approved'
+      ).length,
+      totalBudgetAmount: result.items.reduce(
+        (s: number, b: any) => s + Number(b.totalBudget || 0),
+        0
+      ),
+      totalSpent: result.items.reduce((s: number, b: any) => s + Number(b.totalSpent || 0), 0),
+      totalRemaining: result.items.reduce(
+        (s: number, b: any) => s + Number(b.totalRemaining || 0),
+        0
+      ),
+    },
+  });
+});
 
-/**
- * POST /api/finance/budgets
- * Create new budget or perform budget actions
- */
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const action = body.action || 'create';
+export const POST = createProtectedRoute(async (request: NextRequest, { auth }) => {
+  const body = await request.json().catch(() => ({}));
+  const action = body.action || 'create';
+  const tenantId = (auth as any).tenantId;
+  const userId = (auth as any).userId;
 
-    switch (action) {
-      case 'create':
-        // Create new budget
-        return NextResponse.json({
-          success: true,
-          budget: {
-            id: `budget-${Date.now()}`,
-            ...body,
-            createdDate: new Date().toISOString(),
-            lastModified: new Date().toISOString(),
-          },
-        });
-
-      case 'from-template':
-        // Create budget from template
-        const { templateId, budgetData } = body;
-        if (!templateId) {
-          return NextResponse.json({ error: 'templateId is required' }, { status: 400 });
-        }
-        return NextResponse.json({
-          success: true,
-          budget: {
-            id: `budget-${Date.now()}`,
-            ...budgetData,
-            templateId,
-            createdDate: new Date().toISOString(),
-            lastModified: new Date().toISOString(),
-          },
-        });
-
-      default:
-        return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+  if (action === 'from-template') {
+    const { templateId, budgetData } = body;
+    if (!templateId) {
+      return NextResponse.json(
+        { success: false, message: 'templateId is required.', messageAr: 'معرّف القالب مطلوب.' },
+        { status: 400 }
+      );
     }
-  } catch (error: any) {
-    return NextResponse.json({ error: 'Failed to create budget' }, { status: 500 });
-  }
-}
-
-/**
- * PUT /api/finance/budgets
- * Update budget
- */
-export async function PUT(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-    const body = await request.json();
-
-    if (!id) {
-      return NextResponse.json({ error: 'Budget ID is required' }, { status: 400 });
+    const template = await TemplateRepo.get(tenantId, templateId);
+    if (!template) {
+      return NextResponse.json(
+        { success: false, message: 'Template not found.', messageAr: 'القالب غير موجود.' },
+        { status: 404 }
+      );
     }
-
-    return NextResponse.json({
-      success: true,
-      budget: {
-        id,
-        ...body,
-        lastModified: new Date().toISOString(),
-      },
+    const budget = await BudgetRepo.create(tenantId, userId, {
+      budgetName: budgetData?.budgetName || `${template.templateName} Budget`,
+      budgetType: template.templateType,
+      period: template.defaultPeriod,
+      lines: template.templateLines,
+      ...budgetData,
     });
-  } catch (error: any) {
-    return NextResponse.json({ error: 'Failed to update budget' }, { status: 500 });
+    await TemplateRepo.recordUsage(tenantId, templateId);
+    return NextResponse.json({ success: true, budget }, { status: 201 });
   }
-}
 
-/**
- * DELETE /api/finance/budgets
- * Delete budget
- */
-export async function DELETE(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-
-    if (!id) {
-      return NextResponse.json({ error: 'Budget ID is required' }, { status: 400 });
-    }
-
-    return NextResponse.json({
-      success: true,
-      message: 'Budget deleted successfully',
-    });
-  } catch (error: any) {
-    return NextResponse.json({ error: 'Failed to delete budget' }, { status: 500 });
+  if (!body.budgetName) {
+    return NextResponse.json(
+      { success: false, message: 'budgetName is required.', messageAr: 'اسم الميزانية مطلوب.' },
+      { status: 400 }
+    );
   }
-}
+  const budget = await BudgetRepo.create(tenantId, userId, body);
+  return NextResponse.json({ success: true, budget }, { status: 201 });
+});

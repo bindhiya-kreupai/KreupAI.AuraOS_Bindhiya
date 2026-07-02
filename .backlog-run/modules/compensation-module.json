@@ -1,0 +1,189 @@
+[
+  {
+    "id": "AURA-017",
+    "title": "Grade Bands: Wire grade CRUD and display pay bands",
+    "module": "Compensation Module",
+    "status": "In Progress",
+    "assignee": "Anubhav",
+    "due": "2026-01-07 (Excel serial: 46029)",
+    "route": "/dashboard/compensation/grade-bands",
+    "api": "GET/POST/PUT/DELETE /api/compensation/grades",
+    "desc": "GET /api/compensation/grades works but API returns bands: [] always. Add New Grade and Edit Structure buttons have no handlers."
+  },
+  {
+    "id": "AURA-018",
+    "title": "Compensation Planning: Wire create/revise compensation actions",
+    "module": "Compensation Module",
+    "status": "In Progress",
+    "assignee": "Anubhav",
+    "due": "2026-01-07 (Excel serial: 46029)",
+    "route": "/dashboard/compensation/compensation-planning",
+    "api": "GET/POST/PUT /api/compensation/employee-compensation, GET /api/compensation/analytics",
+    "desc": "Employee comp list and metrics cards load via GET employee-compensation and analytics. No write actions in UI despite POST/PUT existing."
+  },
+  {
+    "id": "AURA-019",
+    "title": "Increment Planning: Implement increment-proposals API and wire Save/Submit",
+    "module": "Compensation Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/compensation/increment-planning",
+    "api": "GET/POST/PUT /api/compensation/increment-cycles; /increment-proposals (missing)",
+    "desc": "GET increment-cycles works. IncrementProposalService.getProposals() \u2192 /increment-proposals 404. Save and Submit buttons have no handlers. Budget utilization expects totalUsed not returned by API."
+  },
+  {
+    "id": "AURA-020",
+    "title": "Bonus Management: Wire bonus page to /api/compensation/bonuses",
+    "module": "Compensation Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/compensation/bonus-management",
+    "api": "GET/POST/PUT /api/compensation/bonuses",
+    "desc": "Page calls /bonus-schemes and /bonus-payouts (404). Should map to /bonuses. Release Bonus and Edit Rules buttons unwired."
+  },
+  {
+    "id": "AURA-021",
+    "title": "Equity / Stock: Implement stock-grants API or consolidate duplicate pages",
+    "module": "Compensation Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/compensation/equity-management, /stock-options",
+    "api": "/api/compensation/stock-grants (missing)",
+    "desc": "StockGrantService.getGrants() \u2192 /stock-grants 404. equity-management and stock-options are duplicate pages against missing API."
+  },
+  {
+    "id": "AURA-022",
+    "title": "Loans: Implement loan APIs or consolidate duplicate pages",
+    "module": "Compensation Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/compensation/loan-advances, /loans",
+    "api": "/api/compensation/loan-schemes, /employee-loans (missing)",
+    "desc": "LoanService calls /loan-schemes and /employee-loans (404). loan-advances and loans are duplicate pages. New Request button unwired."
+  },
+  {
+    "id": "AURA-023",
+    "title": "Arrears: Implement arrears-requests API and wire Run Calculation",
+    "module": "Compensation Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/compensation/arrears-processing",
+    "api": "/api/compensation/arrears-requests (missing)",
+    "desc": "ArrearsService.getRequests() \u2192 /arrears-requests 404. Run Calculation button has no handler."
+  },
+  {
+    "id": "AURA-024",
+    "title": "Total Rewards: Implement total-rewards API",
+    "module": "Compensation Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/compensation/total-rewards",
+    "api": "/api/compensation/total-rewards (missing)",
+    "desc": "TotalRewardsService.getStatements() \u2192 /total-rewards 404. Page shows empty or error state."
+  },
+  {
+    "id": "AURA-025",
+    "title": "Market Benchmarking: Implement market-benchmarks API and wire search filter",
+    "module": "Compensation Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/compensation/market-benchmarking",
+    "api": "/api/compensation/market-benchmarks (missing)",
+    "desc": "MarketBenchmarkService.getBenchmarks() \u2192 /market-benchmarks 404. Search input has no filter logic."
+  },
+  {
+    "id": "AURA-026",
+    "title": "Budget Simulation: Implement budget-simulations API and wire Save Scenario",
+    "module": "Compensation Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/compensation/budget-simulation",
+    "api": "GET /api/compensation/analytics; /budget-simulations (missing)",
+    "desc": "BudgetSimulationService.getSimulations() \u2192 /budget-simulations 404. Base metrics load from analytics. Sliders are client-side only; Save Scenario unwired."
+  },
+  {
+    "id": "AURA-027",
+    "title": "Expense Reimbursement: Wire expense claims CRUD and approve/reject",
+    "module": "Compensation Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/compensation/expense-reimbursement",
+    "api": "GET/POST/PUT/DELETE /api/compensation/expense-claims",
+    "desc": "GET expense-claims works (best-wired page). New Expense button, upload drop zone, and approve/reject row actions unwired despite POST/PUT/DELETE existing."
+  },
+  {
+    "id": "AURA-028",
+    "title": "Settings: Build compensation settings admin UI",
+    "module": "Compensation Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "No page",
+    "api": "GET/PUT /api/compensation/settings",
+    "desc": "GET/PUT /api/compensation/settings implemented but no page imports or renders settings."
+  },
+  {
+    "id": "AURA-029",
+    "title": "Legacy UI: Replace mock tab UI with dashboard services",
+    "module": "Compensation Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/(modules)/compensation",
+    "api": "None \u2014 mock only",
+    "desc": "All 11 tabs use hardcoded mock data with no API calls. SalaryReview, BudgetAllocation, BenchmarkComparison, CompReviewHistory tabs render without required props."
+  },
+  {
+    "id": "AURA-030",
+    "title": "Legacy UI: Wire CompensationPlanner to live APIs",
+    "module": "Compensation Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/(modules)/compensation-planning",
+    "api": "Compensation dashboard services.ts",
+    "desc": "CompensationPlanner uses MOCK_EMPLOYEES, MOCK_DEPARTMENTS, etc. No service integration."
+  },
+  {
+    "id": "AURA-031",
+    "title": "Orphan Components: Mount or remove orphan compensation dashboards",
+    "module": "Compensation Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "components/compensation/PayEquityDashboard.tsx, EWADashboard.tsx",
+    "api": "None \u2014 mock only",
+    "desc": "PayEquityDashboard and EWADashboard are self-contained mock components with zero page imports."
+  },
+  {
+    "id": "AURA-032",
+    "title": "Dead Code: Wire hooks to pages or remove dead code",
+    "module": "Compensation Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "dashboard/compensation/hooks/useCompensation.ts, src/hooks/useCompensation.ts",
+    "api": "useCompensation hooks; compensationService.ts \u2192 /api/v1/compensation/* (missing)",
+    "desc": "Dashboard useCompensation never imported; seeds sampleComponents/sampleGrades on init. src/hooks/useCompensation targets non-existent /api/v1/compensation/*."
+  },
+  {
+    "id": "AURA-033",
+    "title": "Analytics: Align analytics with /api/compensation/analytics",
+    "module": "Compensation Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/analytics/compensation-analytics",
+    "api": "/api/v1/analytics/compensation vs /api/compensation/analytics",
+    "desc": "Page uses /api/v1/analytics/compensation (separate from /api/compensation/analytics used by dashboard pages). Consider consolidation."
+  }
+]

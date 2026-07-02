@@ -1,9 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Settings, Edit, Trash2, Plus, Loader2, X } from 'lucide-react';
+import { Settings, Edit, Trash2, Plus, Loader2, X, CheckCircle2, AlertCircle } from 'lucide-react';
 import { LeaveTypeService } from '../services';
 import type { LeaveType } from '../types';
+
+interface Feedback {
+  type: 'success' | 'error';
+  message: string;
+}
 
 const EMPTY_FORM = {
   name: '',
@@ -23,6 +28,7 @@ export default function LeaveTypesPage() {
   const [editingType, setEditingType] = useState<LeaveType | null>(null);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
+  const [feedback, setFeedback] = useState<Feedback | null>(null);
 
   useEffect(() => {
     fetchLeaveTypes();
@@ -33,8 +39,9 @@ export default function LeaveTypesPage() {
       setLoading(true);
       const result = await LeaveTypeService.getLeaveTypes();
       setLeaveTypes(result);
-    } catch (error: any) {
-      console.error('Error:', error);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to load leave types';
+      setFeedback({ type: 'error', message });
     } finally {
       setLoading(false);
     }
@@ -44,9 +51,11 @@ export default function LeaveTypesPage() {
     if (!confirm('Are you sure you want to delete this leave type?')) return;
     try {
       await LeaveTypeService.deleteLeaveType(id);
+      setFeedback({ type: 'success', message: 'Leave type deleted successfully.' });
       await fetchLeaveTypes();
-    } catch (error: any) {
-      console.error('Delete failed:', error);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to delete leave type';
+      setFeedback({ type: 'error', message });
     }
   };
 
@@ -76,14 +85,17 @@ export default function LeaveTypesPage() {
     try {
       setSaving(true);
       if (editingType) {
-        await LeaveTypeService.updateLeaveType(editingType.id, form as any);
+        await LeaveTypeService.updateLeaveType(editingType.id, form as Partial<LeaveType>);
+        setFeedback({ type: 'success', message: `Leave type "${form.name}" updated.` });
       } else {
-        await LeaveTypeService.createLeaveType(form as any);
+        await LeaveTypeService.createLeaveType(form as unknown as LeaveType);
+        setFeedback({ type: 'success', message: `Leave type "${form.name}" created.` });
       }
       setShowModal(false);
       await fetchLeaveTypes();
-    } catch (error: any) {
-      console.error('Save failed:', error);
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to save leave type';
+      setFeedback({ type: 'error', message });
     } finally {
       setSaving(false);
     }
@@ -106,6 +118,24 @@ export default function LeaveTypesPage() {
           <Plus className="w-4 h-4" /> Add Type
         </button>
       </div>
+
+      {feedback && (
+        <div
+          role="alert"
+          className={`flex items-center gap-2 px-4 py-3 rounded-lg text-sm font-medium shrink-0 ${
+            feedback.type === 'success'
+              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
+              : 'bg-rose-50 text-rose-700 border border-rose-200'
+          }`}
+        >
+          {feedback.type === 'success' ? (
+            <CheckCircle2 className="w-4 h-4 shrink-0" />
+          ) : (
+            <AlertCircle className="w-4 h-4 shrink-0" />
+          )}
+          {feedback.message}
+        </div>
+      )}
 
       <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800">
         <div className="p-6 border-b border-slate-100 dark:border-slate-800">

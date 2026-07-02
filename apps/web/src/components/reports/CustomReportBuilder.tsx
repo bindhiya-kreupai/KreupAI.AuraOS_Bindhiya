@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect } from 'react';
 import {
   FileText,
   ChevronRight,
@@ -12,14 +12,14 @@ import {
   Trash2,
   Clock,
   Loader2,
-} from "lucide-react";
-import { DataSourceSelector } from "./DataSourceSelector";
-import { ColumnPicker } from "./ColumnPicker";
-import { FilterBuilder } from "./FilterBuilder";
-import { ChartSelector } from "./ChartSelector";
-import { ReportPreview } from "./ReportPreview";
+} from 'lucide-react';
+import { DataSourceSelector } from './DataSourceSelector';
+import { ColumnPicker } from './ColumnPicker';
+import { FilterBuilder } from './FilterBuilder';
+import { ChartSelector } from './ChartSelector';
+import { ReportPreview } from './ReportPreview';
 
-type Step = "source" | "columns" | "filters" | "visualization" | "preview";
+type Step = 'source' | 'columns' | 'filters' | 'visualization' | 'preview';
 
 interface StepConfig {
   id: Step;
@@ -42,32 +42,35 @@ interface SavedReport {
 }
 
 const steps: StepConfig[] = [
-  { id: "source", label: "Data Source", number: 1 },
-  { id: "columns", label: "Columns", number: 2 },
-  { id: "filters", label: "Filters", number: 3 },
-  { id: "visualization", label: "Visualization", number: 4 },
-  { id: "preview", label: "Preview", number: 5 },
+  { id: 'source', label: 'Data Source', number: 1 },
+  { id: 'columns', label: 'Columns', number: 2 },
+  { id: 'filters', label: 'Filters', number: 3 },
+  { id: 'visualization', label: 'Visualization', number: 4 },
+  { id: 'preview', label: 'Preview', number: 5 },
 ];
 
 export function CustomReportBuilder() {
-  const [currentStep, setCurrentStep] = useState<Step>("source");
-  const [reportName, setReportName] = useState("");
-  const [reportDescription, setReportDescription] = useState("");
-  const [dataSource, setDataSource] = useState("");
+  const [currentStep, setCurrentStep] = useState<Step>('source');
+  const [reportName, setReportName] = useState('');
+  const [reportDescription, setReportDescription] = useState('');
+  const [dataSource, setDataSource] = useState('');
   const [selectedColumns, setSelectedColumns] = useState<string[]>([]);
-  const [chartType, setChartType] = useState<string>("table");
+  const [chartType, setChartType] = useState<string>('table');
+  const [filters, setFilters] = useState<unknown[]>([]);
 
   const [savedReports, setSavedReports] = useState<SavedReport[]>([]);
   const [loadingReports, setLoadingReports] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [running, setRunning] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState<string | null>(null);
   const [showBuilder, setShowBuilder] = useState(false);
 
   // Fetch saved reports on mount
   useEffect(() => {
     fetch('/api/v1/analytics/reports/custom/')
-      .then(res => res.json())
-      .then(result => {
+      .then((res) => res.json())
+      .then((result) => {
         if (result.success && result.data) {
           setSavedReports(Array.isArray(result.data) ? result.data : result.data.reports || []);
         }
@@ -86,6 +89,7 @@ export function CustomReportBuilder() {
 
     setSaving(true);
     setError(null);
+    setSuccess(null);
 
     fetch('/api/v1/analytics/reports/custom/', {
       method: 'POST',
@@ -95,21 +99,23 @@ export function CustomReportBuilder() {
         description: reportDescription,
         dataSource,
         columns: selectedColumns,
-        filters: [],
+        filters,
         chartType,
       }),
     })
-      .then(res => res.json())
-      .then(result => {
+      .then((res) => res.json())
+      .then((result) => {
         if (result.success && result.data) {
-          setSavedReports(prev => [result.data, ...prev]);
+          setSavedReports((prev) => [result.data, ...prev]);
           setShowBuilder(false);
           setReportName('');
           setReportDescription('');
           setDataSource('');
           setSelectedColumns([]);
+          setFilters([]);
           setChartType('table');
           setCurrentStep('source');
+          setSuccess('Report saved successfully');
         } else {
           setError(result.error?.message || 'Failed to save report');
         }
@@ -122,16 +128,45 @@ export function CustomReportBuilder() {
   };
 
   const handleDeleteReport = (reportId: string) => {
+    setError(null);
     fetch(`/api/v1/analytics/reports/custom/${reportId}`, {
       method: 'DELETE',
     })
-      .then(res => res.json())
-      .then(result => {
+      .then((res) => res.json())
+      .then((result) => {
         if (result.success) {
-          setSavedReports(prev => prev.filter(r => r.id !== reportId));
+          setSavedReports((prev) => prev.filter((r) => r.id !== reportId));
+          setSuccess('Report deleted');
+        } else {
+          setError(result.error?.message || 'Failed to delete report');
         }
       })
-      .catch(console.error);
+      .catch(() => setError('Failed to delete report'));
+  };
+
+  // Execute a saved report against the real execution endpoint and refresh its lastRun.
+  const handleRunSaved = (reportId: string) => {
+    setRunning(reportId);
+    setError(null);
+    setSuccess(null);
+    fetch(`/api/v1/reports/${reportId}/execute`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ parameters: {} }),
+    })
+      .then((res) => res.json())
+      .then((result) => {
+        if (result.success) {
+          setSuccess('Report executed successfully');
+          setSavedReports((prev) =>
+            prev.map((r) => (r.id === reportId ? { ...r, lastRun: new Date().toISOString() } : r))
+          );
+        } else {
+          setError(result.error?.message || result.error || 'Failed to run report');
+        }
+      })
+      .catch(() => setError('Failed to run report'))
+      .finally(() => setRunning(null));
   };
 
   const currentStepIndex = steps.findIndex((s) => s.id === currentStep);
@@ -150,9 +185,9 @@ export function CustomReportBuilder() {
 
   const canProceed = () => {
     switch (currentStep) {
-      case "source":
-        return dataSource !== "";
-      case "columns":
+      case 'source':
+        return dataSource !== '';
+      case 'columns':
         return selectedColumns.length > 0;
       default:
         return true;
@@ -184,18 +219,35 @@ export function CustomReportBuilder() {
           </button>
         </div>
 
+        {/* Feedback banners */}
+        {success && (
+          <div className="bg-emerald-50 dark:bg-emerald-900/20 border border-emerald-200 dark:border-emerald-800 rounded-xl p-3 text-sm text-emerald-700 dark:text-emerald-300">
+            {success}
+          </div>
+        )}
+        {error && (
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-xl p-3 text-sm text-red-700 dark:text-red-300">
+            {error}
+          </div>
+        )}
+
         {/* Saved Reports */}
         {loadingReports ? (
           <div className="space-y-3 animate-pulse">
             {[...Array(3)].map((_, i) => (
-              <div key={i} className="rounded-xl border border-cloud dark:border-nebula-purple/50 p-4 h-20" />
+              <div
+                key={i}
+                className="rounded-xl border border-cloud dark:border-nebula-purple/50 p-4 h-20"
+              />
             ))}
           </div>
         ) : savedReports.length === 0 ? (
           <div className="rounded-xl border border-dashed border-cloud dark:border-nebula-purple/50 p-8 text-center">
             <FileText className="w-10 h-10 text-silver-mist mx-auto mb-3" />
             <p className="text-sm text-silver-mist">No saved reports yet</p>
-            <p className="text-xs text-silver-mist mt-1">Create your first custom report to get started</p>
+            <p className="text-xs text-silver-mist mt-1">
+              Create your first custom report to get started
+            </p>
             <button
               onClick={() => setShowBuilder(true)}
               className="mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-celestial-indigo text-white text-sm font-medium hover:bg-celestial-indigo/90 transition-colors"
@@ -216,9 +268,13 @@ export function CustomReportBuilder() {
                       <FileText className="w-5 h-5 text-celestial-indigo" />
                     </div>
                     <div>
-                      <h4 className="text-sm font-medium text-ink-black dark:text-pearl">{report.name}</h4>
+                      <h4 className="text-sm font-medium text-ink-black dark:text-pearl">
+                        {report.name}
+                      </h4>
                       {report.description && (
-                        <p className="text-xs text-silver-mist mt-0.5 line-clamp-1">{report.description}</p>
+                        <p className="text-xs text-silver-mist mt-0.5 line-clamp-1">
+                          {report.description}
+                        </p>
                       )}
                       <div className="flex items-center gap-3 mt-2 text-xs text-silver-mist">
                         <span>Source: {report.dataSource || 'N/A'}</span>
@@ -229,15 +285,22 @@ export function CustomReportBuilder() {
                             {report.schedule}
                           </span>
                         )}
-                        <span>
-                          Updated: {new Date(report.updatedAt).toLocaleDateString()}
-                        </span>
+                        <span>Updated: {new Date(report.updatedAt).toLocaleDateString()}</span>
                       </div>
                     </div>
                   </div>
                   <div className="flex items-center gap-2">
-                    <button className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-celestial-indigo bg-celestial-indigo/10 rounded-lg hover:bg-celestial-indigo/20 transition-colors">
-                      <Play className="w-3 h-3" /> Run
+                    <button
+                      onClick={() => handleRunSaved(report.id)}
+                      disabled={running === report.id}
+                      className="flex items-center gap-1 px-3 py-1.5 text-xs font-medium text-celestial-indigo bg-celestial-indigo/10 rounded-lg hover:bg-celestial-indigo/20 disabled:opacity-50 transition-colors"
+                    >
+                      {running === report.id ? (
+                        <Loader2 className="w-3 h-3 animate-spin" />
+                      ) : (
+                        <Play className="w-3 h-3" />
+                      )}{' '}
+                      Run
                     </button>
                     <button
                       onClick={() => handleDeleteReport(report.id)}
@@ -266,9 +329,7 @@ export function CustomReportBuilder() {
             <h2 className="text-lg font-semibold text-ink-black dark:text-pearl">
               Custom Report Builder
             </h2>
-            <p className="text-sm text-silver-mist">
-              Create a custom report from your HR data
-            </p>
+            <p className="text-sm text-silver-mist">Create a custom report from your HR data</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -294,9 +355,7 @@ export function CustomReportBuilder() {
       {/* Report Name */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label className="text-xs font-medium text-silver-mist block mb-1.5">
-            Report Name
-          </label>
+          <label className="text-xs font-medium text-silver-mist block mb-1.5">Report Name</label>
           <input
             type="text"
             value={reportName}
@@ -334,10 +393,10 @@ export function CustomReportBuilder() {
               onClick={() => setCurrentStep(step.id)}
               className={`flex items-center gap-2 px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                 currentStep === step.id
-                  ? "bg-celestial-indigo/10 text-celestial-indigo border border-celestial-indigo/30"
+                  ? 'bg-celestial-indigo/10 text-celestial-indigo border border-celestial-indigo/30'
                   : idx < currentStepIndex
-                  ? "text-aurora-green"
-                  : "text-silver-mist"
+                    ? 'text-aurora-green'
+                    : 'text-silver-mist'
               }`}
             >
               {idx < currentStepIndex ? (
@@ -346,8 +405,8 @@ export function CustomReportBuilder() {
                 <span
                   className={`w-5 h-5 rounded-full flex items-center justify-center text-xs ${
                     currentStep === step.id
-                      ? "bg-celestial-indigo text-white"
-                      : "bg-cloud dark:bg-nebula-purple/30 text-silver-mist"
+                      ? 'bg-celestial-indigo text-white'
+                      : 'bg-cloud dark:bg-nebula-purple/30 text-silver-mist'
                   }`}
                 >
                   {step.number}
@@ -364,30 +423,27 @@ export function CustomReportBuilder() {
 
       {/* Step Content */}
       <div className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 p-6">
-        {currentStep === "source" && (
-          <DataSourceSelector
-            selectedSource={dataSource}
-            onSelect={(id) => setDataSource(id)}
-          />
+        {currentStep === 'source' && (
+          <DataSourceSelector selectedSource={dataSource} onSelect={(id) => setDataSource(id)} />
         )}
-        {currentStep === "columns" && (
+        {currentStep === 'columns' && (
           <ColumnPicker
             dataSource={dataSource}
             selectedColumns={selectedColumns}
             onChange={setSelectedColumns}
           />
         )}
-        {currentStep === "filters" && (
-          <FilterBuilder dataSource={dataSource} />
+        {currentStep === 'filters' && (
+          <FilterBuilder dataSource={dataSource} onChange={(f) => setFilters(f)} />
         )}
-        {currentStep === "visualization" && (
+        {currentStep === 'visualization' && (
           <ChartSelector
-            selectedChart={chartType as "table" | "bar" | "line" | "pie" | "area" | "scatter"}
+            selectedChart={chartType as 'table' | 'bar' | 'line' | 'pie' | 'area' | 'scatter'}
             onChange={(chart) => setChartType(chart)}
           />
         )}
-        {currentStep === "preview" && (
-          <ReportPreview chartType={chartType} columns={selectedColumns} />
+        {currentStep === 'preview' && (
+          <ReportPreview dataSource={dataSource} chartType={chartType} columns={selectedColumns} />
         )}
       </div>
 
@@ -403,7 +459,8 @@ export function CustomReportBuilder() {
           }}
           className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-ink-black dark:text-pearl border border-cloud dark:border-nebula-purple/50 hover:border-celestial-indigo/30 transition-colors"
         >
-          <ChevronLeft className="w-4 h-4" /> {currentStepIndex === 0 ? "Back to Reports" : "Previous"}
+          <ChevronLeft className="w-4 h-4" />{' '}
+          {currentStepIndex === 0 ? 'Back to Reports' : 'Previous'}
         </button>
         <span className="text-xs text-silver-mist">
           Step {currentStepIndex + 1} of {steps.length}
@@ -414,8 +471,8 @@ export function CustomReportBuilder() {
             disabled={!canProceed()}
             className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
               canProceed()
-                ? "bg-celestial-indigo text-white hover:bg-celestial-indigo/90"
-                : "bg-cloud dark:bg-nebula-purple/30 text-silver-mist cursor-not-allowed"
+                ? 'bg-celestial-indigo text-white hover:bg-celestial-indigo/90'
+                : 'bg-cloud dark:bg-nebula-purple/30 text-silver-mist cursor-not-allowed'
             }`}
           >
             Next <ChevronRight className="w-4 h-4" />

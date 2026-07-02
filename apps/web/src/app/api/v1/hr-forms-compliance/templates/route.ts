@@ -35,6 +35,16 @@ export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext)
     if (body.action === 'seed-defaults') {
       return ok(await hrFormTemplateService.seedDefaults(auth));
     }
+    if (body.action === 'create') {
+      for (const f of ['templateCode', 'formGroup', 'label']) {
+        if (!body[f]) return badRequest(`${f} required`);
+      }
+      return ok(await hrFormTemplateService.create(body, auth), 'Created');
+    }
+    if (body.action === 'update') {
+      if (!body.id) return badRequest('id required');
+      return ok(await hrFormTemplateService.update(body.id, body, auth), 'Updated');
+    }
     if (body.action === 'publish') {
       if (!body.id) return badRequest('id required');
       return ok(await hrFormTemplateService.publish(body.id, auth), 'Published');
@@ -42,6 +52,13 @@ export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext)
     if (body.action === 'supersede') {
       if (!body.id || !body.supersededById) return badRequest('id and supersededById required');
       return ok(await hrFormTemplateService.supersede(body.id, body.supersededById, auth));
+    }
+    if (body.action === 'supersede-version') {
+      if (!body.id) return badRequest('id required');
+      return ok(
+        await hrFormTemplateService.createSupersedingVersion(body.id, auth),
+        'New draft version created'
+      );
     }
     return badRequest('unknown action');
   } catch (err) {

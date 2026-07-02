@@ -38,7 +38,7 @@ export default function NotificationRulesPage() {
   async function load() {
     const r = await fetch('/api/v1/hrms-config/notification-rules');
     const p = await r.json();
-    if (p.success) setRows(p.data ?? []);
+    if (p.success) setRows(p.data?.items ?? []);
   }
   useEffect(() => {
     load();

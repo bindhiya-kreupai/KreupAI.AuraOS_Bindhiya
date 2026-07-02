@@ -36,7 +36,7 @@ export default function SitesPage() {
     if (country) url.searchParams.set('country', country);
     const r = await fetch(url.toString());
     const p = await r.json();
-    if (p.success) setRows(p.data ?? []);
+    if (p.success) setRows(p.data?.items ?? []);
   }
   useEffect(() => {
     load();

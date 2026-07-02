@@ -1,0 +1,167 @@
+[
+  {
+    "id": "AURA-522",
+    "title": "EOS\u2194SIO Funding \u00b7 Return-to-Work Plans: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/structural-extensions/eos-sio-funding-return-to-work-plans",
+    "api": "Not specified",
+    "desc": "Menu feature 'EOS\u2194SIO Funding \u00b7 Return-to-Work Plans' resolves to /dashboard/structural-extensions/eos-sio-funding-return-to-work-plans but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-523",
+    "title": "Fatigue Rules \u00b7 OT Fraud Detection: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/structural-extensions/fatigue-rules-ot-fraud-detection",
+    "api": "Not specified",
+    "desc": "Menu feature 'Fatigue Rules \u00b7 OT Fraud Detection' resolves to /dashboard/structural-extensions/fatigue-rules-ot-fraud-detection but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-524",
+    "title": "Holiday Change-Management \u00b7 Redundancy Batches: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/structural-extensions/holiday-change-management-redundancy-batches",
+    "api": "Not specified",
+    "desc": "Menu feature 'Holiday Change-Management \u00b7 Redundancy Batches' resolves to /dashboard/structural-extensions/holiday-change-management-redundancy-batches but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-525",
+    "title": "Job Architecture \u00b7 Salary Bands \u00b7 DoA Matrix: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/structural-extensions/job-architecture-salary-bands-doa-matrix",
+    "api": "Not specified",
+    "desc": "Menu feature 'Job Architecture \u00b7 Salary Bands \u00b7 DoA Matrix' resolves to /dashboard/structural-extensions/job-architecture-salary-bands-doa-matrix but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-526",
+    "title": "Payroll Calendar Control \u00b7 Variance Register: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/structural-extensions/payroll-calendar-control-variance-register",
+    "api": "Not specified",
+    "desc": "Menu feature 'Payroll Calendar Control \u00b7 Variance Register' resolves to /dashboard/structural-extensions/payroll-calendar-control-variance-register but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-527",
+    "title": "Separation Retention \u00b7 Physical Locations \u00b7 Finding-Risk Links: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/structural-extensions/separation-retention-physical-locations-finding-risk-links",
+    "api": "Not specified",
+    "desc": "Menu feature 'Separation Retention \u00b7 Physical Locations \u00b7 Finding-Risk Links' resolves to /dashboard/structural-extensions/separation-retention-physical-locations-finding-risk-links but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-540",
+    "title": "Accommodation Transport Routes \u00b7 Clinics \u00b7 Maintenance Tickets: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/workforce-extensions/accommodation-transport-routes-clinics-maintenance-tickets",
+    "api": "Not specified",
+    "desc": "Menu feature 'Accommodation Transport Routes \u00b7 Clinics \u00b7 Maintenance Tickets' resolves to /dashboard/workforce-extensions/accommodation-transport-routes-clinics-maintenance-tickets but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-541",
+    "title": "Contractor Assignments (Attendance/Holidays/Accommodation/HSE): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/workforce-extensions/contractor-assignments-attendance-holidays-accommodation-hse",
+    "api": "Not specified",
+    "desc": "Menu feature 'Contractor Assignments (Attendance/Holidays/Accommodation/HSE)' resolves to /dashboard/workforce-extensions/contractor-assignments-attendance-holidays-accommodation-hse but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-542",
+    "title": "Employee Loans + Salary Advances (with amortization): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/workforce-extensions/employee-loans-salary-advances-with-amortization",
+    "api": "Not specified",
+    "desc": "Menu feature 'Employee Loans + Salary Advances (with amortization)' resolves to /dashboard/workforce-extensions/employee-loans-salary-advances-with-amortization but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-543",
+    "title": "Uniform / PPE / Tools Issuance Register: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/workforce-extensions/uniform-ppe-tools-issuance-register",
+    "api": "Not specified",
+    "desc": "Menu feature 'Uniform / PPE / Tools Issuance Register' resolves to /dashboard/workforce-extensions/uniform-ppe-tools-issuance-register but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-443",
+    "title": "Emergency Drill Tracker \u00b7 First-Aid Stations \u00b7 Welfare Inspections: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hse-visa-extensions/emergency-drill-tracker-first-aid-stations-welfare-inspections",
+    "api": "Not specified",
+    "desc": "Menu feature 'Emergency Drill Tracker \u00b7 First-Aid Stations \u00b7 Welfare Inspections' resolves to /dashboard/hse-visa-extensions/emergency-drill-tracker-first-aid-stations-welfare-inspections but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-444",
+    "title": "Safety Officer Registry \u00b7 Heat-Stress Rules \u00b7 Toolbox Talks: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hse-visa-extensions/safety-officer-registry-heat-stress-rules-toolbox-talks",
+    "api": "Not specified",
+    "desc": "Menu feature 'Safety Officer Registry \u00b7 Heat-Stress Rules \u00b7 Toolbox Talks' resolves to /dashboard/hse-visa-extensions/safety-officer-registry-heat-stress-rules-toolbox-talks but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-445",
+    "title": "Visa-Exit Benefits Closure (insurance/accommodation/EOS/loan): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hse-visa-extensions/visa-exit-benefits-closure-insurance-accommodation-eos-loan",
+    "api": "Not specified",
+    "desc": "Menu feature 'Visa-Exit Benefits Closure (insurance/accommodation/EOS/loan)' resolves to /dashboard/hse-visa-extensions/visa-exit-benefits-closure-insurance-accommodation-eos-loan but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-446",
+    "title": "Visa-Exit Comm Templates (bilingual) \u00b7 TRANSFER PRO chain: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hse-visa-extensions/visa-exit-comm-templates-bilingual-transfer-pro-chain",
+    "api": "Not specified",
+    "desc": "Menu feature 'Visa-Exit Comm Templates (bilingual) \u00b7 TRANSFER PRO chain' resolves to /dashboard/hse-visa-extensions/visa-exit-comm-templates-bilingual-transfer-pro-chain but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-447",
+    "title": "Visa-Exit Dependents Register (cascade): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hse-visa-extensions/visa-exit-dependents-register-cascade",
+    "api": "Not specified",
+    "desc": "Menu feature 'Visa-Exit Dependents Register (cascade)' resolves to /dashboard/hse-visa-extensions/visa-exit-dependents-register-cascade but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  }
+]

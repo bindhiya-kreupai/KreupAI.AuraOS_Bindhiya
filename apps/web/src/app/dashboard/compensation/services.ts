@@ -1,342 +1,364 @@
 /**
  * Compensation Module - Service Layer
  *
- * API-integrated service classes using APIClient
+ * API-integrated service classes using APIClient.
+ *
+ * NOTE: every compensation API route returns the wrapped envelope
+ *   { success: true, data: <payload> }
+ * so each method unwraps via APIClient.unwrapList / unwrapItem before handing
+ * data to pages. Pages can therefore treat results as plain arrays / objects.
  */
 
 import { APIClient } from '@/lib/api-client';
 import type {
-    SalaryComponent,
-    SalaryStructure,
-    EmployeeCompensation,
-    Grade,
-    IncrementCycle,
-    IncrementProposal,
-    BonusScheme,
-    BonusPayout,
-    StockGrant,
-    LoanScheme,
-    EmployeeLoan,
-    ArrearsRequest,
-    TotalRewardsStatement,
-    MarketBenchmark,
-    BudgetSimulation,
-    CompensationMetrics,
-    CompensationSettings,
+  SalaryComponent,
+  SalaryStructure,
+  EmployeeCompensation,
+  Grade,
+  IncrementCycle,
+  IncrementProposal,
+  BonusScheme,
+  BonusPayout,
+  StockGrant,
+  LoanScheme,
+  EmployeeLoan,
+  ArrearsRequest,
+  TotalRewardsStatement,
+  MarketBenchmark,
+  BudgetSimulation,
+  CompensationMetrics,
+  CompensationSettings,
 } from './types';
 
 export class SalaryComponentService {
-    static async getComponents(): Promise<SalaryComponent[]> {
-        return APIClient.get<SalaryComponent[]>('/compensation/salary-components');
-    }
+  static async getComponents(): Promise<SalaryComponent[]> {
+    const res = await APIClient.get('/compensation/salary-components');
+    return APIClient.unwrapList<SalaryComponent>(res, 'components');
+  }
 
-    static async getComponentById(id: string): Promise<SalaryComponent | null> {
-        return APIClient.get<SalaryComponent>(`/compensation/salary-components/${id}`);
-    }
+  static async getComponentById(id: string): Promise<SalaryComponent | null> {
+    const res = await APIClient.get(`/compensation/salary-components/${id}`);
+    return APIClient.unwrapItem<SalaryComponent>(res);
+  }
 
-    static async createComponent(data: SalaryComponent): Promise<SalaryComponent> {
-        return APIClient.post<SalaryComponent>('/compensation/salary-components', data);
-    }
+  static async createComponent(data: Partial<SalaryComponent>): Promise<SalaryComponent | null> {
+    const res = await APIClient.post('/compensation/salary-components', data);
+    return APIClient.unwrapItem<SalaryComponent>(res);
+  }
 
-    static async updateComponent(id: string, updates: Partial<SalaryComponent>): Promise<SalaryComponent> {
-        return APIClient.put<SalaryComponent>(`/compensation/salary-components/${id}`, updates);
-    }
+  static async updateComponent(
+    id: string,
+    updates: Partial<SalaryComponent>
+  ): Promise<SalaryComponent | null> {
+    const res = await APIClient.put('/compensation/salary-components', { id, ...updates });
+    return APIClient.unwrapItem<SalaryComponent>(res);
+  }
 
-    static async deleteComponent(id: string): Promise<void> {
-        return APIClient.delete(`/compensation/salary-components/${id}`);
-    }
+  static async deleteComponent(id: string): Promise<void> {
+    await APIClient.delete('/compensation/salary-components', { id });
+  }
 }
 
 export class SalaryStructureService {
-    static async getStructures(): Promise<SalaryStructure[]> {
-        return APIClient.get<SalaryStructure[]>('/compensation/salary-structures');
-    }
+  static async getStructures(): Promise<SalaryStructure[]> {
+    const res = await APIClient.get('/compensation/salary-structures');
+    return APIClient.unwrapList<SalaryStructure>(res, 'structures');
+  }
 
-    static async getStructureById(id: string): Promise<SalaryStructure | null> {
-        return APIClient.get<SalaryStructure>(`/compensation/salary-structures/${id}`);
-    }
+  static async createStructure(data: Partial<SalaryStructure>): Promise<SalaryStructure | null> {
+    const res = await APIClient.post('/compensation/salary-structures', data);
+    return APIClient.unwrapItem<SalaryStructure>(res);
+  }
 
-    static async createStructure(data: SalaryStructure): Promise<SalaryStructure> {
-        return APIClient.post<SalaryStructure>('/compensation/salary-structures', data);
-    }
-
-    static async updateStructure(id: string, updates: Partial<SalaryStructure>): Promise<SalaryStructure> {
-        return APIClient.put<SalaryStructure>(`/compensation/salary-structures/${id}`, updates);
-    }
-
-    static async deleteStructure(id: string): Promise<void> {
-        return APIClient.delete(`/compensation/salary-structures/${id}`);
-    }
-
-    static async cloneStructure(id: string, newName: string): Promise<SalaryStructure> {
-        return APIClient.post<SalaryStructure>(`/compensation/salary-structures/${id}/clone`, { newName });
-    }
+  static async updateStructure(
+    id: string,
+    updates: Partial<SalaryStructure>
+  ): Promise<SalaryStructure | null> {
+    const res = await APIClient.put('/compensation/salary-structures', { id, ...updates });
+    return APIClient.unwrapItem<SalaryStructure>(res);
+  }
 }
 
 export class EmployeeCompensationService {
-    static async getCompensations(): Promise<EmployeeCompensation[]> {
-        return APIClient.get<EmployeeCompensation[]>('/compensation/employee-compensation');
-    }
+  static async getCompensations(): Promise<EmployeeCompensation[]> {
+    const res = await APIClient.get('/compensation/employee-compensation');
+    return APIClient.unwrapList<EmployeeCompensation>(res, 'compensations');
+  }
 
-    static async getCompensationById(id: string): Promise<EmployeeCompensation | null> {
-        return APIClient.get<EmployeeCompensation>(`/compensation/employee-compensation/${id}`);
-    }
+  static async getByEmployeeId(employeeId: string): Promise<EmployeeCompensation | null> {
+    const res = await APIClient.get('/compensation/employee-compensation', { employeeId });
+    const list = APIClient.unwrapList<EmployeeCompensation>(res, 'compensations');
+    return list[0] ?? null;
+  }
 
-    static async getByEmployeeId(employeeId: string): Promise<EmployeeCompensation | null> {
-        return APIClient.get<EmployeeCompensation>(`/compensation/employee-compensation/employee/${employeeId}`);
-    }
+  static async createCompensation(
+    data: Partial<EmployeeCompensation>
+  ): Promise<EmployeeCompensation | null> {
+    const res = await APIClient.post('/compensation/employee-compensation', data);
+    return APIClient.unwrapItem<EmployeeCompensation>(res);
+  }
 
-    static async createCompensation(data: EmployeeCompensation): Promise<EmployeeCompensation> {
-        return APIClient.post<EmployeeCompensation>('/compensation/employee-compensation', data);
-    }
+  static async updateCompensation(
+    id: string,
+    updates: Partial<EmployeeCompensation>
+  ): Promise<EmployeeCompensation | null> {
+    const res = await APIClient.put('/compensation/employee-compensation', { id, ...updates });
+    return APIClient.unwrapItem<EmployeeCompensation>(res);
+  }
 
-    static async updateCompensation(id: string, updates: Partial<EmployeeCompensation>): Promise<EmployeeCompensation> {
-        return APIClient.put<EmployeeCompensation>(`/compensation/employee-compensation/${id}`, updates);
-    }
-
-    static async reviseCompensation(
-        employeeId: string,
-        newSalary: number,
-        effectiveFrom: string,
-        reason: string
-    ): Promise<EmployeeCompensation> {
-        return APIClient.post<EmployeeCompensation>('/compensation/employee-compensation/revise', {
-            employeeId,
-            newSalary,
-            effectiveFrom,
-            reason,
-        });
-    }
+  static async reviseCompensation(
+    employeeId: string,
+    newSalary: number,
+    effectiveFrom: string,
+    reason: string
+  ): Promise<EmployeeCompensation | null> {
+    const res = await APIClient.post('/compensation/employee-compensation', {
+      employeeId,
+      annualCTC: newSalary,
+      annualGross: newSalary,
+      annualBasic: Math.round(newSalary * 0.5),
+      effectiveFrom,
+      remarks: reason,
+      isActive: true,
+    });
+    return APIClient.unwrapItem<EmployeeCompensation>(res);
+  }
 }
 
 export class GradeService {
-    static async getGrades(): Promise<Grade[]> {
-        return APIClient.get<Grade[]>('/compensation/grades');
-    }
+  static async getGrades(): Promise<Grade[]> {
+    const res = await APIClient.get('/compensation/grades');
+    return APIClient.unwrapList<Grade>(res, 'grades');
+  }
 
-    static async getGradeById(id: string): Promise<Grade | null> {
-        return APIClient.get<Grade>(`/compensation/grades/${id}`);
-    }
+  static async createGrade(data: Partial<Grade>): Promise<Grade | null> {
+    const res = await APIClient.post('/compensation/grades', data);
+    return APIClient.unwrapItem<Grade>(res);
+  }
 
-    static async createGrade(data: Grade): Promise<Grade> {
-        return APIClient.post<Grade>('/compensation/grades', data);
-    }
+  static async updateGrade(id: string, updates: Partial<Grade>): Promise<Grade | null> {
+    const res = await APIClient.put('/compensation/grades', { id, ...updates });
+    return APIClient.unwrapItem<Grade>(res);
+  }
 
-    static async updateGrade(id: string, updates: Partial<Grade>): Promise<Grade> {
-        return APIClient.put<Grade>(`/compensation/grades/${id}`, updates);
-    }
-
-    static async deleteGrade(id: string): Promise<void> {
-        return APIClient.delete(`/compensation/grades/${id}`);
-    }
+  static async deleteGrade(id: string): Promise<void> {
+    await APIClient.delete('/compensation/grades', { id });
+  }
 }
 
 export class IncrementCycleService {
-    static async getCycles(): Promise<IncrementCycle[]> {
-        return APIClient.get<IncrementCycle[]>('/compensation/increment-cycles');
-    }
+  static async getCycles(): Promise<IncrementCycle[]> {
+    const res = await APIClient.get('/compensation/increment-cycles');
+    return APIClient.unwrapList<IncrementCycle>(res, 'cycles');
+  }
 
-    static async getCycleById(id: string): Promise<IncrementCycle | null> {
-        return APIClient.get<IncrementCycle>(`/compensation/increment-cycles/${id}`);
-    }
+  static async createCycle(data: Partial<IncrementCycle>): Promise<IncrementCycle | null> {
+    const res = await APIClient.post('/compensation/increment-cycles', data);
+    return APIClient.unwrapItem<IncrementCycle>(res);
+  }
 
-    static async createCycle(data: IncrementCycle): Promise<IncrementCycle> {
-        return APIClient.post<IncrementCycle>('/compensation/increment-cycles', data);
-    }
-
-    static async updateCycle(id: string, updates: Partial<IncrementCycle>): Promise<IncrementCycle> {
-        return APIClient.put<IncrementCycle>(`/compensation/increment-cycles/${id}`, updates);
-    }
-
-    static async approveCycle(id: string): Promise<IncrementCycle> {
-        return APIClient.post<IncrementCycle>(`/compensation/increment-cycles/${id}/approve`, {});
-    }
-
-    static async processCycle(id: string): Promise<IncrementCycle> {
-        return APIClient.post<IncrementCycle>(`/compensation/increment-cycles/${id}/process`, {});
-    }
+  static async updateCycle(
+    id: string,
+    updates: Partial<IncrementCycle>
+  ): Promise<IncrementCycle | null> {
+    const res = await APIClient.put('/compensation/increment-cycles', { id, ...updates });
+    return APIClient.unwrapItem<IncrementCycle>(res);
+  }
 }
 
 export class IncrementProposalService {
-    static async getProposals(): Promise<IncrementProposal[]> {
-        return APIClient.get<IncrementProposal[]>('/compensation/increment-proposals');
-    }
+  static async getProposals(cycleId?: string): Promise<IncrementProposal[]> {
+    const res = await APIClient.get(
+      '/compensation/increment-proposals',
+      cycleId ? { cycleId } : undefined
+    );
+    return APIClient.unwrapList<IncrementProposal>(res, 'proposals');
+  }
 
-    static async getProposalById(id: string): Promise<IncrementProposal | null> {
-        return APIClient.get<IncrementProposal>(`/compensation/increment-proposals/${id}`);
-    }
+  static async createProposal(data: Partial<IncrementProposal>): Promise<IncrementProposal | null> {
+    const res = await APIClient.post('/compensation/increment-proposals', data);
+    return APIClient.unwrapItem<IncrementProposal>(res);
+  }
 
-    static async createProposal(data: IncrementProposal): Promise<IncrementProposal> {
-        return APIClient.post<IncrementProposal>('/compensation/increment-proposals', data);
-    }
-
-    static async updateProposal(id: string, updates: Partial<IncrementProposal>): Promise<IncrementProposal> {
-        return APIClient.put<IncrementProposal>(`/compensation/increment-proposals/${id}`, updates);
-    }
-
-    static async approveProposal(id: string, approvedBy: string): Promise<IncrementProposal> {
-        return APIClient.post<IncrementProposal>(`/compensation/increment-proposals/${id}/approve`, { approvedBy });
-    }
+  static async updateProposal(
+    id: string,
+    updates: Partial<IncrementProposal>
+  ): Promise<IncrementProposal | null> {
+    const res = await APIClient.put('/compensation/increment-proposals', { id, ...updates });
+    return APIClient.unwrapItem<IncrementProposal>(res);
+  }
 }
 
 export class BonusService {
-    static async getSchemes(): Promise<BonusScheme[]> {
-        return APIClient.get<BonusScheme[]>('/compensation/bonus-schemes');
-    }
+  static async getSchemes(): Promise<BonusScheme[]> {
+    const res = await APIClient.get('/compensation/bonus-schemes');
+    return APIClient.unwrapList<BonusScheme>(res, 'schemes');
+  }
 
-    static async getSchemeById(id: string): Promise<BonusScheme | null> {
-        return APIClient.get<BonusScheme>(`/compensation/bonus-schemes/${id}`);
-    }
+  static async createScheme(data: Partial<BonusScheme>): Promise<BonusScheme | null> {
+    const res = await APIClient.post('/compensation/bonus-schemes', data);
+    return APIClient.unwrapItem<BonusScheme>(res);
+  }
 
-    static async createScheme(data: BonusScheme): Promise<BonusScheme> {
-        return APIClient.post<BonusScheme>('/compensation/bonus-schemes', data);
-    }
+  static async updateScheme(
+    id: string,
+    updates: Partial<BonusScheme>
+  ): Promise<BonusScheme | null> {
+    const res = await APIClient.put('/compensation/bonus-schemes', { id, ...updates });
+    return APIClient.unwrapItem<BonusScheme>(res);
+  }
 
-    static async updateScheme(id: string, updates: Partial<BonusScheme>): Promise<BonusScheme> {
-        return APIClient.put<BonusScheme>(`/compensation/bonus-schemes/${id}`, updates);
-    }
+  static async getPayouts(): Promise<BonusPayout[]> {
+    const res = await APIClient.get('/compensation/bonuses');
+    return APIClient.unwrapList<BonusPayout>(res, 'payouts');
+  }
 
-    static async getPayouts(): Promise<BonusPayout[]> {
-        return APIClient.get<BonusPayout[]>('/compensation/bonus-payouts');
-    }
+  static async createPayout(data: Partial<BonusPayout>): Promise<BonusPayout | null> {
+    const res = await APIClient.post('/compensation/bonuses', data);
+    return APIClient.unwrapItem<BonusPayout>(res);
+  }
 
-    static async createPayout(data: BonusPayout): Promise<BonusPayout> {
-        return APIClient.post<BonusPayout>('/compensation/bonus-payouts', data);
-    }
-
-    static async updatePayout(id: string, updates: Partial<BonusPayout>): Promise<BonusPayout> {
-        return APIClient.put<BonusPayout>(`/compensation/bonus-payouts/${id}`, updates);
-    }
-
-    static async approvePayout(id: string, approvedBy: string): Promise<BonusPayout> {
-        return APIClient.post<BonusPayout>(`/compensation/bonus-payouts/${id}/approve`, { approvedBy });
-    }
+  static async releasePayout(id: string): Promise<BonusPayout | null> {
+    const res = await APIClient.put('/compensation/bonuses', {
+      id,
+      isProcessed: true,
+      approvalStatus: 'APPROVED',
+    });
+    return APIClient.unwrapItem<BonusPayout>(res);
+  }
 }
 
 export class StockGrantService {
-    static async getGrants(): Promise<StockGrant[]> {
-        return APIClient.get<StockGrant[]>('/compensation/stock-grants');
-    }
+  static async getGrants(): Promise<StockGrant[]> {
+    const res = await APIClient.get('/compensation/stock-grants');
+    return APIClient.unwrapList<StockGrant>(res, 'grants');
+  }
 
-    static async getGrantById(id: string): Promise<StockGrant | null> {
-        return APIClient.get<StockGrant>(`/compensation/stock-grants/${id}`);
-    }
+  static async createGrant(data: Partial<StockGrant>): Promise<StockGrant | null> {
+    const res = await APIClient.post('/compensation/stock-grants', data);
+    return APIClient.unwrapItem<StockGrant>(res);
+  }
 
-    static async createGrant(data: StockGrant): Promise<StockGrant> {
-        return APIClient.post<StockGrant>('/compensation/stock-grants', data);
-    }
-
-    static async updateGrant(id: string, updates: Partial<StockGrant>): Promise<StockGrant> {
-        return APIClient.put<StockGrant>(`/compensation/stock-grants/${id}`, updates);
-    }
-
-    static async vestUnits(grantId: string, units: number): Promise<StockGrant> {
-        return APIClient.post<StockGrant>(`/compensation/stock-grants/${grantId}/vest`, { units });
-    }
+  static async updateGrant(id: string, updates: Partial<StockGrant>): Promise<StockGrant | null> {
+    const res = await APIClient.put('/compensation/stock-grants', { id, ...updates });
+    return APIClient.unwrapItem<StockGrant>(res);
+  }
 }
 
 export class LoanService {
-    static async getSchemes(): Promise<LoanScheme[]> {
-        return APIClient.get<LoanScheme[]>('/compensation/loan-schemes');
-    }
+  static async getSchemes(): Promise<LoanScheme[]> {
+    const res = await APIClient.get('/compensation/loan-schemes');
+    return APIClient.unwrapList<LoanScheme>(res, 'schemes');
+  }
 
-    static async getSchemeById(id: string): Promise<LoanScheme | null> {
-        return APIClient.get<LoanScheme>(`/compensation/loan-schemes/${id}`);
-    }
+  static async createScheme(data: Partial<LoanScheme>): Promise<LoanScheme | null> {
+    const res = await APIClient.post('/compensation/loan-schemes', data);
+    return APIClient.unwrapItem<LoanScheme>(res);
+  }
 
-    static async createScheme(data: LoanScheme): Promise<LoanScheme> {
-        return APIClient.post<LoanScheme>('/compensation/loan-schemes', data);
-    }
+  static async getLoans(): Promise<EmployeeLoan[]> {
+    const res = await APIClient.get('/compensation/employee-loans');
+    return APIClient.unwrapList<EmployeeLoan>(res, 'loans');
+  }
 
-    static async getLoans(): Promise<EmployeeLoan[]> {
-        return APIClient.get<EmployeeLoan[]>('/compensation/employee-loans');
-    }
+  static async createLoan(data: Partial<EmployeeLoan>): Promise<EmployeeLoan | null> {
+    const res = await APIClient.post('/compensation/employee-loans', data);
+    return APIClient.unwrapItem<EmployeeLoan>(res);
+  }
 
-    static async getLoanById(id: string): Promise<EmployeeLoan | null> {
-        return APIClient.get<EmployeeLoan>(`/compensation/employee-loans/${id}`);
-    }
-
-    static async createLoan(data: EmployeeLoan): Promise<EmployeeLoan> {
-        return APIClient.post<EmployeeLoan>('/compensation/employee-loans', data);
-    }
-
-    static async updateLoan(id: string, updates: Partial<EmployeeLoan>): Promise<EmployeeLoan> {
-        return APIClient.put<EmployeeLoan>(`/compensation/employee-loans/${id}`, updates);
-    }
-
-    static async approveLoan(id: string, approvedBy: string): Promise<EmployeeLoan> {
-        return APIClient.post<EmployeeLoan>(`/compensation/employee-loans/${id}/approve`, { approvedBy });
-    }
+  static async updateLoan(
+    id: string,
+    updates: Partial<EmployeeLoan>
+  ): Promise<EmployeeLoan | null> {
+    const res = await APIClient.put('/compensation/employee-loans', { id, ...updates });
+    return APIClient.unwrapItem<EmployeeLoan>(res);
+  }
 }
 
 export class ArrearsService {
-    static async getRequests(): Promise<ArrearsRequest[]> {
-        return APIClient.get<ArrearsRequest[]>('/compensation/arrears-requests');
-    }
+  static async getRequests(): Promise<ArrearsRequest[]> {
+    const res = await APIClient.get('/compensation/arrears-requests');
+    return APIClient.unwrapList<ArrearsRequest>(res, 'requests');
+  }
 
-    static async getRequestById(id: string): Promise<ArrearsRequest | null> {
-        return APIClient.get<ArrearsRequest>(`/compensation/arrears-requests/${id}`);
-    }
+  static async createRequest(data: Partial<ArrearsRequest>): Promise<ArrearsRequest | null> {
+    const res = await APIClient.post('/compensation/arrears-requests', data);
+    return APIClient.unwrapItem<ArrearsRequest>(res);
+  }
 
-    static async createRequest(data: ArrearsRequest): Promise<ArrearsRequest> {
-        return APIClient.post<ArrearsRequest>('/compensation/arrears-requests', data);
-    }
+  static async runCalculation(id: string): Promise<ArrearsRequest | null> {
+    const res = await APIClient.put('/compensation/arrears-requests', { id, action: 'calculate' });
+    return APIClient.unwrapItem<ArrearsRequest>(res);
+  }
 
-    static async updateRequest(id: string, updates: Partial<ArrearsRequest>): Promise<ArrearsRequest> {
-        return APIClient.put<ArrearsRequest>(`/compensation/arrears-requests/${id}`, updates);
-    }
-
-    static async approveRequest(id: string, approvedBy: string): Promise<ArrearsRequest> {
-        return APIClient.post<ArrearsRequest>(`/compensation/arrears-requests/${id}/approve`, { approvedBy });
-    }
+  static async updateRequest(
+    id: string,
+    updates: Partial<ArrearsRequest>
+  ): Promise<ArrearsRequest | null> {
+    const res = await APIClient.put('/compensation/arrears-requests', { id, ...updates });
+    return APIClient.unwrapItem<ArrearsRequest>(res);
+  }
 }
 
 export class TotalRewardsService {
-    static async getStatements(): Promise<TotalRewardsStatement[]> {
-        return APIClient.get<TotalRewardsStatement[]>('/compensation/total-rewards');
-    }
+  static async getStatements(): Promise<TotalRewardsStatement[]> {
+    const res = await APIClient.get('/compensation/total-rewards');
+    return APIClient.unwrapList<TotalRewardsStatement>(res, 'statements');
+  }
 
-    static async getStatementById(id: string): Promise<TotalRewardsStatement | null> {
-        return APIClient.get<TotalRewardsStatement>(`/compensation/total-rewards/${id}`);
-    }
-
-    static async generateStatement(employeeId: string, fiscalYear: string): Promise<TotalRewardsStatement> {
-        return APIClient.post<TotalRewardsStatement>('/compensation/total-rewards/generate', { employeeId, fiscalYear });
-    }
+  static async generateStatement(
+    employeeId: string,
+    fiscalYear: string
+  ): Promise<TotalRewardsStatement | null> {
+    const res = await APIClient.post('/compensation/total-rewards', { employeeId, fiscalYear });
+    return APIClient.unwrapItem<TotalRewardsStatement>(res);
+  }
 }
 
 export class MarketBenchmarkService {
-    static async getBenchmarks(): Promise<MarketBenchmark[]> {
-        return APIClient.get<MarketBenchmark[]>('/compensation/market-benchmarks');
-    }
+  static async getBenchmarks(search?: string): Promise<MarketBenchmark[]> {
+    const res = await APIClient.get(
+      '/compensation/market-benchmarks',
+      search ? { search } : undefined
+    );
+    return APIClient.unwrapList<MarketBenchmark>(res, 'benchmarks');
+  }
 
-    static async createBenchmark(data: MarketBenchmark): Promise<MarketBenchmark> {
-        return APIClient.post<MarketBenchmark>('/compensation/market-benchmarks', data);
-    }
+  static async createBenchmark(data: Partial<MarketBenchmark>): Promise<MarketBenchmark | null> {
+    const res = await APIClient.post('/compensation/market-benchmarks', data);
+    return APIClient.unwrapItem<MarketBenchmark>(res);
+  }
 }
 
 export class BudgetSimulationService {
-    static async getSimulations(): Promise<BudgetSimulation[]> {
-        return APIClient.get<BudgetSimulation[]>('/compensation/budget-simulations');
-    }
+  static async getSimulations(): Promise<BudgetSimulation[]> {
+    const res = await APIClient.get('/compensation/budget-simulations');
+    return APIClient.unwrapList<BudgetSimulation>(res, 'simulations');
+  }
 
-    static async createSimulation(data: BudgetSimulation): Promise<BudgetSimulation> {
-        return APIClient.post<BudgetSimulation>('/compensation/budget-simulations', data);
-    }
+  static async createSimulation(data: Partial<BudgetSimulation>): Promise<BudgetSimulation | null> {
+    const res = await APIClient.post('/compensation/budget-simulations', data);
+    return APIClient.unwrapItem<BudgetSimulation>(res);
+  }
 }
 
 export class CompensationAnalyticsService {
-    static async getMetrics(): Promise<CompensationMetrics> {
-        return APIClient.get<CompensationMetrics>('/compensation/analytics');
-    }
+  static async getMetrics(): Promise<CompensationMetrics | null> {
+    const res = await APIClient.get('/compensation/analytics');
+    return APIClient.unwrapItem<CompensationMetrics>(res);
+  }
 }
 
 export class CompensationSettingsService {
-    static async getSettings(): Promise<CompensationSettings> {
-        return APIClient.get<CompensationSettings>('/compensation/settings');
-    }
+  static async getSettings(): Promise<CompensationSettings | null> {
+    const res = await APIClient.get('/compensation/settings');
+    return APIClient.unwrapItem<CompensationSettings>(res);
+  }
 
-    static async updateSettings(updates: Partial<CompensationSettings>): Promise<CompensationSettings> {
-        return APIClient.put<CompensationSettings>('/compensation/settings', updates);
-    }
+  static async updateSettings(
+    updates: Partial<CompensationSettings>
+  ): Promise<CompensationSettings | null> {
+    const res = await APIClient.put('/compensation/settings', updates);
+    return APIClient.unwrapItem<CompensationSettings>(res);
+  }
 }

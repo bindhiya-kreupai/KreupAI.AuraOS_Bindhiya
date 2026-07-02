@@ -1,0 +1,156 @@
+[
+  {
+    "id": "AURA-352",
+    "title": "Benefit Catalogue (medical, life, ticket, housing, etc.): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/benefits-compliance/benefit-catalogue-medical-life-ticket-housing-etc",
+    "api": "Not specified",
+    "desc": "Menu feature 'Benefit Catalogue (medical, life, ticket, housing, etc.)' resolves to /dashboard/benefits-compliance/benefit-catalogue-medical-life-ticket-housing-etc but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-353",
+    "title": "Coverage Register + Renewal + Accrual: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/benefits-compliance/coverage-register-renewal-accrual",
+    "api": "Not specified",
+    "desc": "Menu feature 'Coverage Register + Renewal + Accrual' resolves to /dashboard/benefits-compliance/coverage-register-renewal-accrual but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-354",
+    "title": "Exceptions & Mandatory-Gap Detection: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/benefits-compliance/exceptions-mandatory-gap-detection",
+    "api": "Not specified",
+    "desc": "Menu feature 'Exceptions & Mandatory-Gap Detection' resolves to /dashboard/benefits-compliance/exceptions-mandatory-gap-detection but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-355",
+    "title": "Monthly Compliance Certificate: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/benefits-compliance/monthly-compliance-certificate",
+    "api": "Not specified",
+    "desc": "Menu feature 'Monthly Compliance Certificate' resolves to /dashboard/benefits-compliance/monthly-compliance-certificate but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-356",
+    "title": "Vendor Management & DPA Tracking: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/benefits-compliance/vendor-management-dpa-tracking",
+    "api": "Not specified",
+    "desc": "Menu feature 'Vendor Management & DPA Tracking' resolves to /dashboard/benefits-compliance/vendor-management-dpa-tracking but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-385",
+    "title": "21-Domain RAG Status Grid: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/executive-compliance/21-domain-rag-status-grid",
+    "api": "Not specified",
+    "desc": "Menu feature '21-Domain RAG Status Grid' resolves to /dashboard/executive-compliance/21-domain-rag-status-grid but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-386",
+    "title": "Compliance Review Calendar: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/executive-compliance/compliance-review-calendar",
+    "api": "Not specified",
+    "desc": "Menu feature 'Compliance Review Calendar' resolves to /dashboard/executive-compliance/compliance-review-calendar but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-387",
+    "title": "Compliance Risk Heatmap (L \u00d7 I): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/executive-compliance/compliance-risk-heatmap-l-i",
+    "api": "Not specified",
+    "desc": "Menu feature 'Compliance Risk Heatmap (L \u00d7 I)' resolves to /dashboard/executive-compliance/compliance-risk-heatmap-l-i but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-388",
+    "title": "Corrective Action Register: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/executive-compliance/corrective-action-register",
+    "api": "Not specified",
+    "desc": "Menu feature 'Corrective Action Register' resolves to /dashboard/executive-compliance/corrective-action-register but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-389",
+    "title": "Executive Monthly Certificate: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/executive-compliance/executive-monthly-certificate",
+    "api": "Not specified",
+    "desc": "Menu feature 'Executive Monthly Certificate' resolves to /dashboard/executive-compliance/executive-monthly-certificate but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-378",
+    "title": "Dispute Register: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/eosb-compliance/dispute-register",
+    "api": "Not specified",
+    "desc": "Menu feature 'Dispute Register' resolves to /dashboard/eosb-compliance/dispute-register but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-379",
+    "title": "Finalized Calculations (DRAFT\u2192APPROVED\u2192SETTLED): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/eosb-compliance/finalized-calculations-draft-approved-settled",
+    "api": "Not specified",
+    "desc": "Menu feature 'Finalized Calculations (DRAFT\u2192APPROVED\u2192SETTLED)' resolves to /dashboard/eosb-compliance/finalized-calculations-draft-approved-settled but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-380",
+    "title": "Monthly Accruals & GL Posting: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/eosb-compliance/monthly-accruals-gl-posting",
+    "api": "Not specified",
+    "desc": "Menu feature 'Monthly Accruals & GL Posting' resolves to /dashboard/eosb-compliance/monthly-accruals-gl-posting but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-381",
+    "title": "Monthly Compliance Certificate: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/eosb-compliance/monthly-compliance-certificate",
+    "api": "Not specified",
+    "desc": "Menu feature 'Monthly Compliance Certificate' resolves to /dashboard/eosb-compliance/monthly-compliance-certificate but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  }
+]

@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import { Loader2 } from 'lucide-react';
@@ -28,17 +28,22 @@ export default function EmployeeEngagementPage() {
     );
   }
 
+  // Each label kebab-cases to an existing sub-route under /dashboard/engagement.
   const features = [
     'Engagement Analytics',
-    'Pulse Surveys',
+    'Surveys',
+    'Pulse Checks',
     'Recognition Wall',
-    'Suggestion Box',
+    'Innovation',
     'Social Feed',
-    'Event Calendar',
+    'Events',
+    'Newsletter',
     'Referral Program',
-    'Polls Quizzes',
+    'Rewards Catalog',
     'CSR Activities',
-    'Classifieds'
+    'Classifieds',
+    'Polls Quizzes',
+    'Settings',
   ];
 
   return (
@@ -50,4 +55,3 @@ export default function EmployeeEngagementPage() {
     />
   );
 }
-

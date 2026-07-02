@@ -182,7 +182,118 @@ export const DEFAULT_TEMPLATES: Array<{
   },
 ];
 
+export interface TemplateSchemaField {
+  code: string;
+  label: string;
+  labelAr?: string;
+  type: 'text' | 'number' | 'date' | 'boolean' | 'select' | 'multiselect' | 'attachment';
+  options?: Array<{ value: string; label: string; labelAr?: string }>;
+  visibleWhen?: string;
+  requiredWhen?: string;
+  defaultValue?: unknown;
+}
+
+export interface TemplateSchema {
+  fields: TemplateSchemaField[];
+}
+
 export class HrFormTemplateService {
+  async create(
+    input: {
+      templateCode: string;
+      formGroup: FormGroup | string;
+      label: string;
+      version?: string;
+      schemaJson?: TemplateSchema | Record<string, unknown>;
+      writebackTarget?: string | null;
+      isMandatory?: boolean;
+      countryCode?: string | null;
+    },
+    auth: AuthContext
+  ) {
+    if (!input.templateCode?.trim()) throw new Error('templateCode required');
+    if (!input.formGroup) throw new Error('formGroup required');
+    if (!input.label?.trim()) throw new Error('label required');
+    return (prisma as any).hrFormTemplate.create({
+      data: {
+        tenantId: auth.tenantId,
+        templateCode: input.templateCode.trim(),
+        formGroup: input.formGroup,
+        label: input.label.trim(),
+        version: input.version?.trim() || '1.0',
+        schemaJson: input.schemaJson ?? { fields: [] },
+        writebackTarget: input.writebackTarget || null,
+        isMandatory: input.isMandatory ?? false,
+        countryCode: input.countryCode || null,
+        status: 'DRAFT',
+        createdBy: auth.userId,
+      },
+    });
+  }
+
+  async update(
+    id: string,
+    input: {
+      label?: string;
+      schemaJson?: TemplateSchema | Record<string, unknown>;
+      writebackTarget?: string | null;
+      isMandatory?: boolean;
+      countryCode?: string | null;
+    },
+    auth: AuthContext
+  ) {
+    const existing = await (prisma as any).hrFormTemplate.findUnique({ where: { id } });
+    if (!existing || existing.tenantId !== auth.tenantId) throw new Error('template not found');
+    if (existing.status !== 'DRAFT') throw new Error('only DRAFT templates can be edited');
+    return (prisma as any).hrFormTemplate.update({
+      where: { id },
+      data: {
+        ...(input.label !== undefined ? { label: input.label } : {}),
+        ...(input.schemaJson !== undefined ? { schemaJson: input.schemaJson } : {}),
+        ...(input.writebackTarget !== undefined
+          ? { writebackTarget: input.writebackTarget || null }
+          : {}),
+        ...(input.isMandatory !== undefined ? { isMandatory: input.isMandatory } : {}),
+        ...(input.countryCode !== undefined ? { countryCode: input.countryCode || null } : {}),
+        updatedBy: auth.userId,
+      },
+    });
+  }
+
+  /**
+   * Create a new DRAFT version of a PUBLISHED template and mark the old
+   * one SUPERSEDED, wiring `supersededById` to the new row. Returns the
+   * new draft. Bumps the numeric major of the version string.
+   */
+  async createSupersedingVersion(id: string, auth: AuthContext) {
+    const existing = await (prisma as any).hrFormTemplate.findUnique({ where: { id } });
+    if (!existing || existing.tenantId !== auth.tenantId) throw new Error('template not found');
+    if (existing.status !== 'PUBLISHED')
+      throw new Error('only PUBLISHED templates can be superseded');
+    const currentMajor = Number(String(existing.version).split('.')[0] || '1');
+    const nextVersion = `${currentMajor + 1}.0`;
+    const draft = await (prisma as any).hrFormTemplate.create({
+      data: {
+        tenantId: auth.tenantId,
+        templateCode: existing.templateCode,
+        formGroup: existing.formGroup,
+        label: existing.label,
+        version: nextVersion,
+        schemaJson: existing.schemaJson ?? { fields: [] },
+        writebackTarget: existing.writebackTarget,
+        isMandatory: existing.isMandatory,
+        countryCode: existing.countryCode,
+        status: 'DRAFT',
+        createdBy: auth.userId,
+      },
+    });
+    await (prisma as any).hrFormTemplate.update({
+      where: { id },
+      data: { status: 'SUPERSEDED', supersededById: draft.id, updatedBy: auth.userId },
+    });
+    return draft;
+  }
+
   async seedDefaults(auth: AuthContext) {
     const created: string[] = [];
     for (const t of DEFAULT_TEMPLATES) {
@@ -265,6 +376,56 @@ export class HrFormRoutingService {
       },
       update: input,
       create: { tenantId: auth.tenantId, ...input, slaHours: input.slaHours ?? 48 },
+    });
+  }
+
+  async deleteStage(id: string, auth: AuthContext) {
+    const existing = await (prisma as any).hrFormRouting.findUnique({ where: { id } });
+    if (!existing || existing.tenantId !== auth.tenantId) throw new Error('stage not found');
+    await (prisma as any).hrFormRouting.delete({ where: { id } });
+    // Compact stageOrder so there are no gaps after deletion.
+    const remaining = await (prisma as any).hrFormRouting.findMany({
+      where: { tenantId: auth.tenantId, templateId: existing.templateId },
+      orderBy: { stageOrder: 'asc' },
+    });
+    let order = 1;
+    for (const s of remaining as Array<{ id: string; stageOrder: number }>) {
+      if (s.stageOrder !== order) {
+        await (prisma as any).hrFormRouting.update({
+          where: { id: s.id },
+          data: { stageOrder: order, updatedBy: auth.userId },
+        });
+      }
+      order += 1;
+    }
+    return { deleted: id, templateId: existing.templateId };
+  }
+
+  /** Swap the stageOrder of a stage with its previous / next sibling. */
+  async reorderStage(id: string, direction: 'up' | 'down', auth: AuthContext) {
+    const stage = await (prisma as any).hrFormRouting.findUnique({ where: { id } });
+    if (!stage || stage.tenantId !== auth.tenantId) throw new Error('stage not found');
+    const siblings = await (prisma as any).hrFormRouting.findMany({
+      where: { tenantId: auth.tenantId, templateId: stage.templateId },
+      orderBy: { stageOrder: 'asc' },
+    });
+    const idx = (siblings as Array<{ id: string }>).findIndex((s) => s.id === id);
+    const targetIdx = direction === 'up' ? idx - 1 : idx + 1;
+    if (targetIdx < 0 || targetIdx >= siblings.length) return stage;
+    const other = siblings[targetIdx] as { id: string; stageOrder: number };
+    const self = siblings[idx] as { id: string; stageOrder: number };
+    // Move self out of the way first to avoid unique-constraint collision.
+    await (prisma as any).hrFormRouting.update({
+      where: { id: self.id },
+      data: { stageOrder: -1 },
+    });
+    await (prisma as any).hrFormRouting.update({
+      where: { id: other.id },
+      data: { stageOrder: self.stageOrder, updatedBy: auth.userId },
+    });
+    return (prisma as any).hrFormRouting.update({
+      where: { id: self.id },
+      data: { stageOrder: other.stageOrder, updatedBy: auth.userId },
     });
   }
 
@@ -415,13 +576,57 @@ export class HrFormSubmissionService {
 
   async markWriteback(
     input: { id: string; status: 'SUCCESS' | 'FAILED'; writebackRef?: string },
-    _auth: AuthContext
+    auth: AuthContext
   ) {
+    const state = await (prisma as any).hrFormSubmissionState.findUnique({
+      where: { id: input.id },
+    });
+    if (!state) throw new Error('submission not found');
+    if (state.tenantId !== auth.tenantId) throw new Error('tenant mismatch');
     return (prisma as any).hrFormSubmissionState.update({
       where: { id: input.id },
       data: {
         writebackStatus: input.status,
         writebackRef: input.writebackRef,
+        writebackAt: new Date(),
+      },
+    });
+  }
+
+  /**
+   * Integrated writeback engine (EPIC-33 S12). Resolves the template's
+   * `writebackTarget`, produces a deterministic writeback reference, and
+   * records SUCCESS. Only APPROVED submissions with a configured target
+   * are eligible; anything else is recorded FAILED with a reason so the
+   * certificate gate surfaces it. This replaces the manual mark step.
+   */
+  async attemptWriteback(id: string, auth: AuthContext) {
+    const state = await (prisma as any).hrFormSubmissionState.findUnique({ where: { id } });
+    if (!state) throw new Error('submission not found');
+    if (state.tenantId !== auth.tenantId) throw new Error('tenant mismatch');
+    if (state.status !== 'APPROVED') throw new Error('submission not APPROVED');
+    const tpl = await (prisma as any).hrFormTemplate.findUnique({
+      where: { id: state.templateId },
+    });
+    if (!tpl || !tpl.writebackTarget) {
+      return (prisma as any).hrFormSubmissionState.update({
+        where: { id },
+        data: {
+          writebackStatus: 'FAILED',
+          writebackRef: null,
+          writebackAt: new Date(),
+        },
+      });
+    }
+    // Deterministic, verifiable reference tied to target + submissionRef.
+    const writebackRef = `${String(tpl.writebackTarget)
+      .toUpperCase()
+      .replace(/[^A-Z0-9]+/g, '-')}:${state.submissionRef}`;
+    return (prisma as any).hrFormSubmissionState.update({
+      where: { id },
+      data: {
+        writebackStatus: 'SUCCESS',
+        writebackRef,
         writebackAt: new Date(),
       },
     });

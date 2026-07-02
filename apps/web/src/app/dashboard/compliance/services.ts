@@ -1,6 +1,12 @@
 /**
  * Compliance Management Module - Services
- * API-integrated service layer for compliance operations using APIClient
+ * API-integrated service layer for compliance operations using APIClient.
+ *
+ * All list endpoints return the shared list envelope
+ * { success, data: { items, total, page, pageSize, hasNextPage } } and all
+ * item endpoints return { success, data: <entity> }. The APIClient.unwrapList
+ * / unwrapItem helpers normalise those shapes so callers always receive plain
+ * arrays / objects.
  */
 
 import { APIClient } from '@/lib/api-client';
@@ -18,7 +24,8 @@ import type {
   Arbitration,
   Strike,
   ComplianceMetrics,
-  ComplianceSettings
+  ComplianceSettings,
+  ComplianceCatalog,
 } from './types';
 
 // Labor Law Compliance Service
@@ -26,43 +33,31 @@ export class LaborLawService {
   private static endpoint = '/compliance/labor-laws';
 
   static async getLaborLaws(): Promise<LaborLaw[]> {
-    try {
-      return await APIClient.get<LaborLaw[]>(this.endpoint);
-    } catch (error: any) {
-            throw error;
-    }
+    const res = await APIClient.get<unknown>(this.endpoint);
+    return APIClient.unwrapList<LaborLaw>(res, 'items');
   }
 
   static async getLaborLawById(id: string): Promise<LaborLaw | null> {
     try {
-      return await APIClient.get<LaborLaw>(`${this.endpoint}/${id}`);
-    } catch (error: any) {
-            return null;
+      const res = await APIClient.get<unknown>(`${this.endpoint}/${id}`);
+      return APIClient.unwrapItem<LaborLaw>(res);
+    } catch {
+      return null;
     }
   }
 
-  static async createLaborLaw(data: LaborLaw): Promise<LaborLaw> {
-    try {
-      return await APIClient.post<LaborLaw>(this.endpoint, data);
-    } catch (error: any) {
-            throw error;
-    }
+  static async createLaborLaw(data: Partial<LaborLaw>): Promise<LaborLaw> {
+    const res = await APIClient.post<unknown>(this.endpoint, data);
+    return APIClient.unwrapItem<LaborLaw>(res) as LaborLaw;
   }
 
   static async updateLaborLaw(id: string, updates: Partial<LaborLaw>): Promise<LaborLaw> {
-    try {
-      return await APIClient.put<LaborLaw>(`${this.endpoint}/${id}`, updates);
-    } catch (error: any) {
-            throw error;
-    }
+    const res = await APIClient.put<unknown>(`${this.endpoint}/${id}`, updates);
+    return APIClient.unwrapItem<LaborLaw>(res) as LaborLaw;
   }
 
   static async deleteLaborLaw(id: string): Promise<void> {
-    try {
-      await APIClient.delete<void>(`${this.endpoint}/${id}`);
-    } catch (error: any) {
-            throw error;
-    }
+    await APIClient.delete<void>(`${this.endpoint}/${id}`);
   }
 }
 
@@ -71,55 +66,26 @@ export class ComplianceRecordService {
   private static endpoint = '/compliance/records';
 
   static async getRecords(): Promise<ComplianceRecord[]> {
-    try {
-      return await APIClient.get<ComplianceRecord[]>(this.endpoint);
-    } catch (error: any) {
-            throw error;
-    }
-  }
-
-  static async getRecordById(id: string): Promise<ComplianceRecord | null> {
-    try {
-      return await APIClient.get<ComplianceRecord>(`${this.endpoint}/${id}`);
-    } catch (error: any) {
-            return null;
-    }
+    const res = await APIClient.get<unknown>(this.endpoint);
+    return APIClient.unwrapList<ComplianceRecord>(res, 'items');
   }
 
   static async getRecordsByLaw(lawId: string): Promise<ComplianceRecord[]> {
-    try {
-      return await APIClient.get<ComplianceRecord[]>(this.endpoint, { lawId });
-    } catch (error: any) {
-            throw error;
-    }
+    const res = await APIClient.get<unknown>(this.endpoint, { lawId });
+    return APIClient.unwrapList<ComplianceRecord>(res, 'items');
   }
 
-  static async createRecord(data: ComplianceRecord): Promise<ComplianceRecord> {
-    try {
-      return await APIClient.post<ComplianceRecord>(this.endpoint, data);
-    } catch (error: any) {
-            throw error;
-    }
+  static async createRecord(data: Partial<ComplianceRecord>): Promise<ComplianceRecord> {
+    const res = await APIClient.post<unknown>(this.endpoint, data);
+    return APIClient.unwrapItem<ComplianceRecord>(res) as ComplianceRecord;
   }
 
-  static async updateRecord(id: string, updates: Partial<ComplianceRecord>): Promise<ComplianceRecord> {
-    try {
-      return await APIClient.put<ComplianceRecord>(`${this.endpoint}/${id}`, updates);
-    } catch (error: any) {
-            throw error;
-    }
-  }
-
-  static async verifyCompliance(id: string, verifiedBy: string, verifiedByName: string, findings: string): Promise<ComplianceRecord> {
-    try {
-      return await APIClient.post<ComplianceRecord>(`${this.endpoint}/${id}/verify`, {
-        verifiedBy,
-        verifiedByName,
-        findings
-      });
-    } catch (error: any) {
-            throw error;
-    }
+  static async updateRecord(
+    id: string,
+    updates: Partial<ComplianceRecord>
+  ): Promise<ComplianceRecord> {
+    const res = await APIClient.put<unknown>(`${this.endpoint}/${id}`, updates);
+    return APIClient.unwrapItem<ComplianceRecord>(res) as ComplianceRecord;
   }
 }
 
@@ -129,62 +95,39 @@ export class POSHService {
   private static committeesEndpoint = '/compliance/posh/committees';
 
   static async getComplaints(): Promise<POSHComplaint[]> {
-    try {
-      return await APIClient.get<POSHComplaint[]>(this.complaintsEndpoint);
-    } catch (error: any) {
-            throw error;
-    }
+    const res = await APIClient.get<unknown>(this.complaintsEndpoint);
+    return APIClient.unwrapList<POSHComplaint>(res, 'items');
   }
 
-  static async getComplaintById(id: string): Promise<POSHComplaint | null> {
-    try {
-      return await APIClient.get<POSHComplaint>(`${this.complaintsEndpoint}/${id}`);
-    } catch (error: any) {
-            return null;
-    }
+  static async createComplaint(data: Partial<POSHComplaint>): Promise<POSHComplaint> {
+    const res = await APIClient.post<unknown>(this.complaintsEndpoint, data);
+    return APIClient.unwrapItem<POSHComplaint>(res) as POSHComplaint;
   }
 
-  static async createComplaint(data: POSHComplaint): Promise<POSHComplaint> {
-    try {
-      return await APIClient.post<POSHComplaint>(this.complaintsEndpoint, data);
-    } catch (error: any) {
-            throw error;
-    }
-  }
-
-  static async updateComplaint(id: string, updates: Partial<POSHComplaint>): Promise<POSHComplaint> {
-    try {
-      return await APIClient.put<POSHComplaint>(`${this.complaintsEndpoint}/${id}`, updates);
-    } catch (error: any) {
-            throw error;
-    }
-  }
-
-  static async assignCommittee(id: string, committeeId: string, committeeName: string): Promise<POSHComplaint> {
-    try {
-      return await APIClient.post<POSHComplaint>(`${this.complaintsEndpoint}/${id}/assign-committee`, {
-        committeeId,
-        committeeName
-      });
-    } catch (error: any) {
-            throw error;
-    }
+  static async updateComplaint(
+    id: string,
+    updates: Partial<POSHComplaint>
+  ): Promise<POSHComplaint> {
+    const res = await APIClient.put<unknown>(`${this.complaintsEndpoint}/${id}`, updates);
+    return APIClient.unwrapItem<POSHComplaint>(res) as POSHComplaint;
   }
 
   static async getCommittees(): Promise<POSHCommittee[]> {
-    try {
-      return await APIClient.get<POSHCommittee[]>(this.committeesEndpoint);
-    } catch (error: any) {
-            throw error;
-    }
+    const res = await APIClient.get<unknown>(this.committeesEndpoint);
+    return APIClient.unwrapList<POSHCommittee>(res, 'items');
   }
 
-  static async createCommittee(data: POSHCommittee): Promise<POSHCommittee> {
-    try {
-      return await APIClient.post<POSHCommittee>(this.committeesEndpoint, data);
-    } catch (error: any) {
-            throw error;
-    }
+  static async createCommittee(data: Partial<POSHCommittee>): Promise<POSHCommittee> {
+    const res = await APIClient.post<unknown>(this.committeesEndpoint, data);
+    return APIClient.unwrapItem<POSHCommittee>(res) as POSHCommittee;
+  }
+
+  static async updateCommittee(
+    id: string,
+    updates: Record<string, unknown>
+  ): Promise<POSHCommittee> {
+    const res = await APIClient.put<unknown>(`${this.committeesEndpoint}/${id}`, updates);
+    return APIClient.unwrapItem<POSHCommittee>(res) as POSHCommittee;
   }
 }
 
@@ -193,77 +136,29 @@ export class GrievanceService {
   private static endpoint = '/compliance/grievances';
 
   static async getGrievances(): Promise<Grievance[]> {
-    try {
-      return await APIClient.get<Grievance[]>(this.endpoint);
-    } catch (error: any) {
-            throw error;
-    }
+    const res = await APIClient.get<unknown>(this.endpoint);
+    return APIClient.unwrapList<Grievance>(res, 'items');
   }
 
   static async getGrievanceById(id: string): Promise<Grievance | null> {
     try {
-      return await APIClient.get<Grievance>(`${this.endpoint}/${id}`);
-    } catch (error: any) {
-            return null;
+      const res = await APIClient.get<unknown>(`${this.endpoint}/${id}`);
+      return APIClient.unwrapItem<Grievance>(res);
+    } catch {
+      return null;
     }
   }
 
-  static async getGrievancesByEmployee(employeeId: string): Promise<Grievance[]> {
-    try {
-      return await APIClient.get<Grievance[]>(this.endpoint, { employeeId });
-    } catch (error: any) {
-            throw error;
-    }
+  static async createGrievance(
+    data: Partial<Grievance> & { grievanceType: string }
+  ): Promise<Grievance> {
+    const res = await APIClient.post<unknown>(this.endpoint, data);
+    return APIClient.unwrapItem<Grievance>(res) as Grievance;
   }
 
-  static async createGrievance(data: Grievance): Promise<Grievance> {
-    try {
-      return await APIClient.post<Grievance>(this.endpoint, data);
-    } catch (error: any) {
-            throw error;
-    }
-  }
-
-  static async updateGrievance(id: string, updates: Partial<Grievance>): Promise<Grievance> {
-    try {
-      return await APIClient.put<Grievance>(`${this.endpoint}/${id}`, updates);
-    } catch (error: any) {
-            throw error;
-    }
-  }
-
-  static async assignGrievance(id: string, assignedTo: string, assignedToName: string): Promise<Grievance> {
-    try {
-      return await APIClient.post<Grievance>(`${this.endpoint}/${id}/assign`, {
-        assignedTo,
-        assignedToName
-      });
-    } catch (error: any) {
-            throw error;
-    }
-  }
-
-  static async resolveGrievance(id: string, resolutionDetails: string, satisfactionRating?: number): Promise<Grievance> {
-    try {
-      return await APIClient.post<Grievance>(`${this.endpoint}/${id}/resolve`, {
-        resolutionDetails,
-        satisfactionRating
-      });
-    } catch (error: any) {
-            throw error;
-    }
-  }
-
-  static async escalateGrievance(id: string, escalatedTo: string, escalatedToName: string, reason: string): Promise<Grievance> {
-    try {
-      return await APIClient.post<Grievance>(`${this.endpoint}/${id}/escalate`, {
-        escalatedTo,
-        escalatedToName,
-        reason
-      });
-    } catch (error: any) {
-            throw error;
-    }
+  static async updateGrievance(id: string, updates: Record<string, unknown>): Promise<Grievance> {
+    const res = await APIClient.put<unknown>(`${this.endpoint}/${id}`, updates);
+    return APIClient.unwrapItem<Grievance>(res) as Grievance;
   }
 }
 
@@ -272,75 +167,21 @@ export class DisciplinaryService {
   private static endpoint = '/compliance/disciplinary';
 
   static async getRecords(): Promise<DisciplinaryRecord[]> {
-    try {
-      return await APIClient.get<DisciplinaryRecord[]>(this.endpoint);
-    } catch (error: any) {
-            throw error;
-    }
+    const res = await APIClient.get<unknown>(this.endpoint);
+    return APIClient.unwrapList<DisciplinaryRecord>(res, 'items');
   }
 
-  static async getRecordById(id: string): Promise<DisciplinaryRecord | null> {
-    try {
-      return await APIClient.get<DisciplinaryRecord>(`${this.endpoint}/${id}`);
-    } catch (error: any) {
-            return null;
-    }
+  static async createRecord(data: Record<string, unknown>): Promise<DisciplinaryRecord> {
+    const res = await APIClient.post<unknown>(this.endpoint, data);
+    return APIClient.unwrapItem<DisciplinaryRecord>(res) as DisciplinaryRecord;
   }
 
-  static async getRecordsByEmployee(employeeId: string): Promise<DisciplinaryRecord[]> {
-    try {
-      return await APIClient.get<DisciplinaryRecord[]>(this.endpoint, { employeeId });
-    } catch (error: any) {
-            throw error;
-    }
-  }
-
-  static async createRecord(data: DisciplinaryRecord): Promise<DisciplinaryRecord> {
-    try {
-      return await APIClient.post<DisciplinaryRecord>(this.endpoint, data);
-    } catch (error: any) {
-            throw error;
-    }
-  }
-
-  static async updateRecord(id: string, updates: Partial<DisciplinaryRecord>): Promise<DisciplinaryRecord> {
-    try {
-      return await APIClient.put<DisciplinaryRecord>(`${this.endpoint}/${id}`, updates);
-    } catch (error: any) {
-            throw error;
-    }
-  }
-
-  static async acknowledgeRecord(id: string, acknowledgedBy: string): Promise<DisciplinaryRecord> {
-    try {
-      return await APIClient.post<DisciplinaryRecord>(`${this.endpoint}/${id}/acknowledge`, {
-        acknowledgedBy
-      });
-    } catch (error: any) {
-            throw error;
-    }
-  }
-
-  static async submitAppeal(id: string, appealReason: string): Promise<DisciplinaryRecord> {
-    try {
-      return await APIClient.post<DisciplinaryRecord>(`${this.endpoint}/${id}/appeal`, {
-        appealReason
-      });
-    } catch (error: any) {
-            throw error;
-    }
-  }
-
-  static async reviewAppeal(id: string, reviewedBy: string, decision: string, isApproved: boolean): Promise<DisciplinaryRecord> {
-    try {
-      return await APIClient.post<DisciplinaryRecord>(`${this.endpoint}/${id}/review-appeal`, {
-        reviewedBy,
-        decision,
-        isApproved
-      });
-    } catch (error: any) {
-            throw error;
-    }
+  static async updateRecord(
+    id: string,
+    updates: Record<string, unknown>
+  ): Promise<DisciplinaryRecord> {
+    const res = await APIClient.put<unknown>(`${this.endpoint}/${id}`, updates);
+    return APIClient.unwrapItem<DisciplinaryRecord>(res) as DisciplinaryRecord;
   }
 }
 
@@ -349,54 +190,18 @@ export class ComplianceAuditService {
   private static endpoint = '/compliance/audits';
 
   static async getAudits(): Promise<ComplianceAudit[]> {
-    try {
-      return await APIClient.get<ComplianceAudit[]>(this.endpoint);
-    } catch (error: any) {
-            throw error;
-    }
+    const res = await APIClient.get<unknown>(this.endpoint);
+    return APIClient.unwrapList<ComplianceAudit>(res, 'items');
   }
 
-  static async getAuditById(id: string): Promise<ComplianceAudit | null> {
-    try {
-      return await APIClient.get<ComplianceAudit>(`${this.endpoint}/${id}`);
-    } catch (error: any) {
-            return null;
-    }
+  static async createAudit(data: Record<string, unknown>): Promise<ComplianceAudit> {
+    const res = await APIClient.post<unknown>(this.endpoint, data);
+    return APIClient.unwrapItem<ComplianceAudit>(res) as ComplianceAudit;
   }
 
-  static async createAudit(data: ComplianceAudit): Promise<ComplianceAudit> {
-    try {
-      return await APIClient.post<ComplianceAudit>(this.endpoint, data);
-    } catch (error: any) {
-            throw error;
-    }
-  }
-
-  static async updateAudit(id: string, updates: Partial<ComplianceAudit>): Promise<ComplianceAudit> {
-    try {
-      return await APIClient.put<ComplianceAudit>(`${this.endpoint}/${id}`, updates);
-    } catch (error: any) {
-            throw error;
-    }
-  }
-
-  static async startAudit(id: string): Promise<ComplianceAudit> {
-    try {
-      return await APIClient.post<ComplianceAudit>(`${this.endpoint}/${id}/start`);
-    } catch (error: any) {
-            throw error;
-    }
-  }
-
-  static async completeAudit(id: string, overallRating: any, complianceScore: number): Promise<ComplianceAudit> {
-    try {
-      return await APIClient.post<ComplianceAudit>(`${this.endpoint}/${id}/complete`, {
-        overallRating,
-        complianceScore
-      });
-    } catch (error: any) {
-            throw error;
-    }
+  static async updateAudit(id: string, updates: Record<string, unknown>): Promise<ComplianceAudit> {
+    const res = await APIClient.put<unknown>(`${this.endpoint}/${id}`, updates);
+    return APIClient.unwrapItem<ComplianceAudit>(res) as ComplianceAudit;
   }
 }
 
@@ -406,59 +211,32 @@ export class UnionService {
   private static cbaEndpoint = '/compliance/unions/cba';
 
   static async getUnions(): Promise<Union[]> {
-    try {
-      return await APIClient.get<Union[]>(this.unionsEndpoint);
-    } catch (error: any) {
-            throw error;
-    }
+    const res = await APIClient.get<unknown>(this.unionsEndpoint);
+    return APIClient.unwrapList<Union>(res, 'items');
   }
 
-  static async getUnionById(id: string): Promise<Union | null> {
-    try {
-      return await APIClient.get<Union>(`${this.unionsEndpoint}/${id}`);
-    } catch (error: any) {
-            return null;
-    }
+  static async createUnion(data: Record<string, unknown>): Promise<Union> {
+    const res = await APIClient.post<unknown>(this.unionsEndpoint, data);
+    return APIClient.unwrapItem<Union>(res) as Union;
   }
 
-  static async createUnion(data: Union): Promise<Union> {
-    try {
-      return await APIClient.post<Union>(this.unionsEndpoint, data);
-    } catch (error: any) {
-            throw error;
-    }
-  }
-
-  static async updateUnion(id: string, updates: Partial<Union>): Promise<Union> {
-    try {
-      return await APIClient.put<Union>(`${this.unionsEndpoint}/${id}`, updates);
-    } catch (error: any) {
-            throw error;
-    }
+  static async updateUnion(id: string, updates: Record<string, unknown>): Promise<Union> {
+    const res = await APIClient.put<unknown>(`${this.unionsEndpoint}/${id}`, updates);
+    return APIClient.unwrapItem<Union>(res) as Union;
   }
 
   static async getCBAgreements(): Promise<CollectiveBargainingAgreement[]> {
-    try {
-      return await APIClient.get<CollectiveBargainingAgreement[]>(this.cbaEndpoint);
-    } catch (error: any) {
-            throw error;
-    }
+    const res = await APIClient.get<unknown>(this.cbaEndpoint);
+    return APIClient.unwrapList<CollectiveBargainingAgreement>(res, 'items');
   }
 
-  static async createCBAgreement(data: CollectiveBargainingAgreement): Promise<CollectiveBargainingAgreement> {
-    try {
-      return await APIClient.post<CollectiveBargainingAgreement>(this.cbaEndpoint, data);
-    } catch (error: any) {
-            throw error;
-    }
-  }
-
-  static async updateCBAgreement(id: string, updates: Partial<CollectiveBargainingAgreement>): Promise<CollectiveBargainingAgreement> {
-    try {
-      return await APIClient.put<CollectiveBargainingAgreement>(`${this.cbaEndpoint}/${id}`, updates);
-    } catch (error: any) {
-            throw error;
-    }
+  static async createCBAgreement(
+    data: Record<string, unknown>
+  ): Promise<CollectiveBargainingAgreement> {
+    const res = await APIClient.post<unknown>(this.cbaEndpoint, data);
+    return APIClient.unwrapItem<CollectiveBargainingAgreement>(
+      res
+    ) as CollectiveBargainingAgreement;
   }
 }
 
@@ -467,46 +245,27 @@ export class WhistleblowerService {
   private static endpoint = '/compliance/whistleblower';
 
   static async getReports(): Promise<WhistleblowerReport[]> {
-    try {
-      return await APIClient.get<WhistleblowerReport[]>(this.endpoint);
-    } catch (error: any) {
-            throw error;
-    }
+    const res = await APIClient.get<unknown>(this.endpoint);
+    return APIClient.unwrapList<WhistleblowerReport>(res, 'items');
   }
 
-  static async getReportById(id: string): Promise<WhistleblowerReport | null> {
-    try {
-      return await APIClient.get<WhistleblowerReport>(`${this.endpoint}/${id}`);
-    } catch (error: any) {
-            return null;
-    }
+  static async getReportByCode(reportCode: string): Promise<WhistleblowerReport | null> {
+    const res = await APIClient.get<unknown>(this.endpoint, { reportCode });
+    const list = APIClient.unwrapList<WhistleblowerReport>(res, 'items');
+    return list[0] ?? null;
   }
 
-  static async createReport(data: WhistleblowerReport): Promise<WhistleblowerReport> {
-    try {
-      return await APIClient.post<WhistleblowerReport>(this.endpoint, data);
-    } catch (error: any) {
-            throw error;
-    }
+  static async createReport(data: Record<string, unknown>): Promise<WhistleblowerReport> {
+    const res = await APIClient.post<unknown>(this.endpoint, data);
+    return APIClient.unwrapItem<WhistleblowerReport>(res) as WhistleblowerReport;
   }
 
-  static async updateReport(id: string, updates: Partial<WhistleblowerReport>): Promise<WhistleblowerReport> {
-    try {
-      return await APIClient.put<WhistleblowerReport>(`${this.endpoint}/${id}`, updates);
-    } catch (error: any) {
-            throw error;
-    }
-  }
-
-  static async assignInvestigator(id: string, investigatorId: string, investigatorName: string): Promise<WhistleblowerReport> {
-    try {
-      return await APIClient.post<WhistleblowerReport>(`${this.endpoint}/${id}/assign-investigator`, {
-        investigatorId,
-        investigatorName
-      });
-    } catch (error: any) {
-            throw error;
-    }
+  static async updateReport(
+    id: string,
+    updates: Record<string, unknown>
+  ): Promise<WhistleblowerReport> {
+    const res = await APIClient.put<unknown>(`${this.endpoint}/${id}`, updates);
+    return APIClient.unwrapItem<WhistleblowerReport>(res) as WhistleblowerReport;
   }
 }
 
@@ -515,35 +274,21 @@ export class ArbitrationService {
   private static endpoint = '/compliance/arbitrations';
 
   static async getArbitrations(): Promise<Arbitration[]> {
-    try {
-      return await APIClient.get<Arbitration[]>(this.endpoint);
-    } catch (error: any) {
-            throw error;
-    }
+    const res = await APIClient.get<unknown>(this.endpoint);
+    return APIClient.unwrapList<Arbitration>(res, 'items');
   }
 
-  static async getArbitrationById(id: string): Promise<Arbitration | null> {
-    try {
-      return await APIClient.get<Arbitration>(`${this.endpoint}/${id}`);
-    } catch (error: any) {
-            return null;
-    }
+  static async createArbitration(data: Record<string, unknown>): Promise<Arbitration> {
+    const res = await APIClient.post<unknown>(this.endpoint, data);
+    return APIClient.unwrapItem<Arbitration>(res) as Arbitration;
   }
 
-  static async createArbitration(data: Arbitration): Promise<Arbitration> {
-    try {
-      return await APIClient.post<Arbitration>(this.endpoint, data);
-    } catch (error: any) {
-            throw error;
-    }
-  }
-
-  static async updateArbitration(id: string, updates: Partial<Arbitration>): Promise<Arbitration> {
-    try {
-      return await APIClient.put<Arbitration>(`${this.endpoint}/${id}`, updates);
-    } catch (error: any) {
-            throw error;
-    }
+  static async updateArbitration(
+    id: string,
+    updates: Record<string, unknown>
+  ): Promise<Arbitration> {
+    const res = await APIClient.put<unknown>(`${this.endpoint}/${id}`, updates);
+    return APIClient.unwrapItem<Arbitration>(res) as Arbitration;
   }
 }
 
@@ -552,45 +297,59 @@ export class StrikeService {
   private static endpoint = '/compliance/strikes';
 
   static async getStrikes(): Promise<Strike[]> {
-    try {
-      return await APIClient.get<Strike[]>(this.endpoint);
-    } catch (error: any) {
-            throw error;
-    }
+    const res = await APIClient.get<unknown>(this.endpoint);
+    return APIClient.unwrapList<Strike>(res, 'items');
   }
 
-  static async getStrikeById(id: string): Promise<Strike | null> {
-    try {
-      return await APIClient.get<Strike>(`${this.endpoint}/${id}`);
-    } catch (error: any) {
-            return null;
-    }
+  static async createStrike(data: Record<string, unknown>): Promise<Strike> {
+    const res = await APIClient.post<unknown>(this.endpoint, data);
+    return APIClient.unwrapItem<Strike>(res) as Strike;
   }
 
-  static async createStrike(data: Strike): Promise<Strike> {
-    try {
-      return await APIClient.post<Strike>(this.endpoint, data);
-    } catch (error: any) {
-            throw error;
-    }
+  static async updateStrike(id: string, updates: Record<string, unknown>): Promise<Strike> {
+    const res = await APIClient.put<unknown>(`${this.endpoint}/${id}`, updates);
+    return APIClient.unwrapItem<Strike>(res) as Strike;
+  }
+}
+
+// Communication Log Service
+export interface CommunicationLogEntry {
+  id: string;
+  communicationDate: string;
+  communicationType: string;
+  category: string;
+  subject: string;
+  summary?: string;
+  fromParty?: string;
+  toParty?: string;
+}
+
+export class CommunicationLogService {
+  private static endpoint = '/compliance/communication-log';
+
+  static async getLogs(filters?: {
+    category?: string;
+    communicationType?: string;
+  }): Promise<CommunicationLogEntry[]> {
+    const res = await APIClient.get<unknown>(this.endpoint, filters);
+    return APIClient.unwrapList<CommunicationLogEntry>(res, 'items');
   }
 
-  static async updateStrike(id: string, updates: Partial<Strike>): Promise<Strike> {
-    try {
-      return await APIClient.put<Strike>(`${this.endpoint}/${id}`, updates);
-    } catch (error: any) {
-            throw error;
-    }
+  static async createLog(data: Record<string, unknown>): Promise<CommunicationLogEntry> {
+    const res = await APIClient.post<unknown>(this.endpoint, data);
+    return APIClient.unwrapItem<CommunicationLogEntry>(res) as CommunicationLogEntry;
   }
+}
 
-  static async resolveStrike(id: string, resolutionTerms: string[]): Promise<Strike> {
-    try {
-      return await APIClient.post<Strike>(`${this.endpoint}/${id}/resolve`, {
-        resolutionTerms
-      });
-    } catch (error: any) {
-            throw error;
-    }
+// Compliance Catalog Service — root GET /api/compliance overview endpoint.
+// Returns the static statutory-service catalogue (supported countries,
+// service surfaces, platform features). Public metadata only, no tenant data.
+export class ComplianceCatalogApi {
+  private static endpoint = '/compliance';
+
+  static async getCatalog(): Promise<ComplianceCatalog> {
+    const res = await APIClient.get<unknown>(this.endpoint);
+    return APIClient.unwrapItem<ComplianceCatalog>(res) as ComplianceCatalog;
   }
 }
 
@@ -599,11 +358,8 @@ export class ComplianceAnalyticsService {
   private static endpoint = '/compliance/analytics';
 
   static async getMetrics(): Promise<ComplianceMetrics> {
-    try {
-      return await APIClient.get<ComplianceMetrics>(this.endpoint);
-    } catch (error: any) {
-            throw error;
-    }
+    const res = await APIClient.get<unknown>(this.endpoint);
+    return APIClient.unwrapItem<ComplianceMetrics>(res) as ComplianceMetrics;
   }
 }
 
@@ -612,18 +368,12 @@ export class ComplianceSettingsService {
   private static endpoint = '/compliance/settings';
 
   static async getSettings(): Promise<ComplianceSettings> {
-    try {
-      return await APIClient.get<ComplianceSettings>(this.endpoint);
-    } catch (error: any) {
-            throw error;
-    }
+    const res = await APIClient.get<unknown>(this.endpoint);
+    return APIClient.unwrapItem<ComplianceSettings>(res) as ComplianceSettings;
   }
 
   static async updateSettings(updates: Partial<ComplianceSettings>): Promise<ComplianceSettings> {
-    try {
-      return await APIClient.put<ComplianceSettings>(this.endpoint, updates);
-    } catch (error: any) {
-            throw error;
-    }
+    const res = await APIClient.put<unknown>(this.endpoint, { settings: updates });
+    return APIClient.unwrapItem<ComplianceSettings>(res) as ComplianceSettings;
   }
 }

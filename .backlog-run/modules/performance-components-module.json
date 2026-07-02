@@ -1,0 +1,90 @@
+[
+  {
+    "id": "AURA-230",
+    "title": "Continuous Feedback: Fix routing and schema contract",
+    "module": "Performance Components Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/continuous-feedback vs /dashboard/performance/continuous-feedback",
+    "api": "/api/performance/feedback; FeedbackService",
+    "desc": "(modules)/performance/continuous-feedback re-exports 360 config page (localStorage) not ContinuousFeedback component. Service payload \u2260 API schema (category/toId vs employeeId/providedBy)."
+  },
+  {
+    "id": "AURA-231",
+    "title": "Feedback Form: Wire employee picker and persist reactions/comments",
+    "module": "Performance Components Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/continuous-feedback",
+    "api": "Employee directory API; missing /feedback/[id]/reactions, /comments routes",
+    "desc": "FeedbackForm uses hardcoded MOCK_TEAM. toggleReaction/addComment never call API."
+  },
+  {
+    "id": "AURA-232",
+    "title": "Calibration: Wire PerformanceCalibration to calibration API",
+    "module": "Performance Components Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/performance-calibration vs /dashboard/performance/calibration",
+    "api": "/api/v1/performance/calibration; /api/performance/calibrations; CalibrationService",
+    "desc": "PerformanceCalibration 100% mock; Save Calibration button has no onClick. Wired calibration page uses reviews + finalize; no 9-box DnD from component."
+  },
+  {
+    "id": "AURA-233",
+    "title": "9-Box: Persist calibration to backend",
+    "module": "Performance Components Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/performance/nine-box",
+    "api": "/api/v1/performance/calibration",
+    "desc": "Save writes localStorage only."
+  },
+  {
+    "id": "AURA-234",
+    "title": "Goal Alignment: Wire GoalAlignmentTree to goals API",
+    "module": "Performance Components Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/goal-alignment vs /dashboard/performance/goal-alignment",
+    "api": "GoalService \u2192 /api/performance/goals; /api/v1/performance/goals/alignment",
+    "desc": "goal-alignment passes MOCK_ALIGNMENT_GOALS to GoalAlignmentTree. performance/goal-alignment uses simpler inline tree instead of ReactFlow component."
+  },
+  {
+    "id": "AURA-235",
+    "title": "Check-In Templates: Wire templates CRUD and consolidate routes",
+    "module": "Performance Components Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/check-in-templates vs /dashboard/performance/check-in-templates",
+    "api": "Check-in template API (missing); /api/performance/cycles (misused)",
+    "desc": "check-in-templates uses MOCK_CHECKIN_TEMPLATES; onUseTemplate empty. performance/check-in-templates: Copy/Edit/Use unwired; create is prompt() + localStorage."
+  },
+  {
+    "id": "AURA-236",
+    "title": "1:1 Notes: Consolidate OneOnOneNotes with meetings page",
+    "module": "Performance Components Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/check-in-templates (notes tab) vs /dashboard/performance/1-on-1-meetings",
+    "api": "/api/performance/one-on-one; /api/v1/performance/one-on-ones",
+    "desc": "OneOnOneNotes with MOCK_SESSIONS; all notes/actions local. Separate 1100-line 1-on-1-meetings page uses OneOnOneMeetingService but component unused."
+  },
+  {
+    "id": "AURA-237",
+    "title": "Praise Wall: Wire PraiseWall to recognition API",
+    "module": "Performance Components Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/check-in-templates (praise tab) vs /dashboard/performance/recognition-wall",
+    "api": "/api/performance/feedback (type=RECOGNITION)",
+    "desc": "PraiseWall mock posts; reactions/comments local. recognition-wall derives from review strengths; Give Recognition likely unwired."
+  }
+]

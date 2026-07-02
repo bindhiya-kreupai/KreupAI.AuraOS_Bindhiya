@@ -14,6 +14,17 @@ const updateCostCenterSchema = z.object({
   id: z.string().uuid('Valid cost center ID is required'),
   code: z.string().min(1).optional(),
   name: z.string().min(1).optional(),
+  fiscalYear: z.number().int().optional(),
+  allocatedBudget: z.number().nonnegative().optional(),
+  spentBudget: z.number().nonnegative().optional(),
+  // Nested budget object accepted from the UI mapper for convenience
+  budget: z
+    .object({
+      totalBudget: z.number().nonnegative().optional(),
+      allocatedBudget: z.number().nonnegative().optional(),
+      spentBudget: z.number().nonnegative().optional(),
+    })
+    .optional(),
 });
 
 export const GET = withEnhancedAuth(async (request, context) => {
@@ -32,6 +43,8 @@ export const GET = withEnhancedAuth(async (request, context) => {
         { code: { contains: search, mode: 'insensitive' } },
       ];
     }
+
+    where.isDeleted = false;
 
     const costCenters = await prisma.costCenter.findMany({
       where,
@@ -52,14 +65,25 @@ export const GET = withEnhancedAuth(async (request, context) => {
       orderBy: { name: 'asc' },
     });
 
-    // Map to include departmentCount for convenience
-    const mappedCostCenters = costCenters.map((cc) => ({
-      id: cc.id,
-      code: cc.code,
-      name: cc.name,
-      departmentCount: cc._count.departments,
-      departments: cc.departments,
-    }));
+    // Map to include departmentCount and a normalized budget object for the UI
+    const mappedCostCenters = costCenters.map((cc: any) => {
+      const allocated = Number(cc.allocatedBudget ?? 0);
+      const spent = Number(cc.spentBudget ?? 0);
+      return {
+        id: cc.id,
+        code: cc.code,
+        name: cc.name,
+        fiscalYear: cc.fiscalYear,
+        departmentCount: cc._count.departments,
+        departments: cc.departments,
+        budget: {
+          totalBudget: allocated,
+          allocatedBudget: allocated,
+          spentBudget: spent,
+          remainingBudget: Math.max(allocated - spent, 0),
+        },
+      };
+    });
 
     return NextResponse.json({ costCenters: mappedCostCenters }, { status: 200 });
   } catch (error: any) {
@@ -143,7 +167,7 @@ export const PUT = withEnhancedAuth(async (request, context) => {
       );
     }
 
-    const { id, ...updateData } = validation.data;
+    const { id, budget, ...updateData } = validation.data;
 
     // Check cost center exists
     const existing = await prisma.costCenter.findUnique({ where: { id } });
@@ -164,9 +188,20 @@ export const PUT = withEnhancedAuth(async (request, context) => {
       }
     }
 
-    const costCenter = await prisma.costCenter.update({
+    // Fold the nested budget object into scalar columns.
+    const data: any = { ...updateData, updatedBy: user.userId };
+    if (budget) {
+      if (budget.totalBudget !== undefined || budget.allocatedBudget !== undefined) {
+        data.allocatedBudget = budget.allocatedBudget ?? budget.totalBudget;
+      }
+      if (budget.spentBudget !== undefined) {
+        data.spentBudget = budget.spentBudget;
+      }
+    }
+
+    const costCenter: any = await prisma.costCenter.update({
       where: { id },
-      data: updateData,
+      data,
       include: {
         _count: {
           select: { departments: true },
@@ -177,14 +212,24 @@ export const PUT = withEnhancedAuth(async (request, context) => {
       },
     });
 
+    const allocated = Number(costCenter.allocatedBudget ?? 0);
+    const spent = Number(costCenter.spentBudget ?? 0);
+
     return NextResponse.json(
       {
         costCenter: {
           id: costCenter.id,
           code: costCenter.code,
           name: costCenter.name,
+          fiscalYear: costCenter.fiscalYear,
           departmentCount: costCenter._count.departments,
           departments: costCenter.departments,
+          budget: {
+            totalBudget: allocated,
+            allocatedBudget: allocated,
+            spentBudget: spent,
+            remainingBudget: Math.max(allocated - spent, 0),
+          },
         },
       },
       { status: 200 }

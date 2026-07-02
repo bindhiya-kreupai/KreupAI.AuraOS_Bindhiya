@@ -2,6 +2,93 @@ import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@/lib/database';
 
+function computeNextRun(frequency: string): Date {
+  const next = new Date();
+  switch (frequency) {
+    case 'daily':
+      next.setDate(next.getDate() + 1);
+      break;
+    case 'weekly':
+      next.setDate(next.getDate() + 7);
+      break;
+    case 'quarterly':
+      next.setMonth(next.getMonth() + 3);
+      break;
+    default:
+      next.setMonth(next.getMonth() + 1);
+  }
+  return next;
+}
+
+export const GET = withEnhancedAuth(async (request, context) => {
+  try {
+    const { user, permissions } = context;
+    if (!permissions.includes('analytics:read')) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing analytics:read permission',
+            messageAr: 'ممنوع',
+          },
+        },
+        { status: 403 }
+      );
+    }
+    const tenantId = user.tenantId;
+
+    const reports = await prisma.reportDefinition.findMany({
+      where: { tenantId, isScheduled: true, isActive: true },
+      orderBy: { updatedAt: 'desc' },
+      include: {
+        executions: {
+          orderBy: { executedAt: 'desc' },
+          take: 1,
+          select: { executedAt: true, status: true },
+        },
+      },
+    });
+
+    const schedules = reports.map((report) => {
+      const cfg = (report.scheduleConfig as Record<string, any>) || {};
+      const frequency = cfg.frequency || 'monthly';
+      return {
+        id: report.id,
+        reportId: report.id,
+        reportName: report.name,
+        category: report.category,
+        frequency,
+        cronExpression: cfg.cronExpression || null,
+        timezone: cfg.timezone || 'UTC',
+        recipients: Array.isArray(cfg.recipients) ? cfg.recipients : [],
+        format: cfg.format || 'pdf',
+        delivery: cfg.delivery || null,
+        isActive: report.isActive,
+        lastRun: report.executions[0]?.executedAt?.toISOString() || null,
+        nextRun: computeNextRun(frequency).toISOString(),
+        createdAt: report.createdAt.toISOString(),
+        createdBy: report.createdBy,
+      };
+    });
+
+    return NextResponse.json({ success: true, data: schedules, meta: { total: schedules.length } });
+  } catch (error: any) {
+    console.error('List schedules error:', error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: {
+          code: 'E5000',
+          message: 'Failed to load report schedules',
+          messageAr: 'فشل تحميل جداول التقارير',
+        },
+      },
+      { status: 500 }
+    );
+  }
+});
+
 export const POST = withEnhancedAuth(async (request, context) => {
   try {
     const { user, permissions } = context;

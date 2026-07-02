@@ -39,6 +39,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
     // Build where clause
     const where: any = {
       tenantId: user.tenantId,
+      isDeleted: false,
     };
 
     if (employeeId) {
@@ -74,21 +75,21 @@ export const GET = withEnhancedAuth(async (request, context) => {
       prisma.employeeDocument.count({ where }),
     ]);
 
-    return NextResponse.json({
-      documents,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
+    return NextResponse.json(
+      {
+        documents,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
       },
-    }, { status: 200 });
+      { status: 200 }
+    );
   } catch (error: any) {
     console.error('Error fetching documents:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch documents' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to fetch documents' }, { status: 500 });
   }
 });
 
@@ -136,9 +137,6 @@ export const POST = withEnhancedAuth(async (request, context) => {
       );
     }
     console.error('Error creating document:', error);
-    return NextResponse.json(
-      { error: 'Failed to create document' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Failed to create document' }, { status: 500 });
   }
 });

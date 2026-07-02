@@ -37,7 +37,86 @@ function addMonths(d: Date, months: number) {
   return r;
 }
 
+/**
+ * Resolve a { policyId → title } map for a tenant so list rows can display a
+ * human-readable policy name/link instead of a bare UUID.
+ */
+async function policyTitleMap(
+  tenantId: string,
+  policyIds: string[]
+): Promise<Record<string, string>> {
+  const unique = Array.from(new Set(policyIds.filter(Boolean)));
+  if (unique.length === 0) return {};
+  const docs: Array<{ id: string; title: string }> = await (prisma as any).policyDocument.findMany({
+    where: { tenantId, id: { in: unique } },
+    select: { id: true, title: true },
+  });
+  return Object.fromEntries(docs.map((d) => [d.id, d.title]));
+}
+
+export interface CreatePolicyInput {
+  title: string;
+  category: string;
+  version?: string;
+  applicableTo?: string;
+  summary?: string;
+  contentMarkdown?: string;
+  acknowledgementsRequired?: boolean;
+  effectiveDate?: Date;
+  ownerName?: string;
+}
+
+export type UpdatePolicyInput = Partial<CreatePolicyInput>;
+
 export class HrPolicyService {
+  async getById(policyId: string, tenantId: string) {
+    const policy = await (prisma as any).policyDocument.findUnique({
+      where: { id: policyId },
+    });
+    if (!policy || policy.tenantId !== tenantId || policy.isDeleted) return null;
+    return policy;
+  }
+
+  async create(input: CreatePolicyInput, auth: AuthContext) {
+    if (!input.title?.trim() || !input.category?.trim()) {
+      throw new Error('title and category are required');
+    }
+    return (prisma as any).policyDocument.create({
+      data: {
+        tenantId: auth.tenantId,
+        title: input.title.trim(),
+        category: input.category.trim(),
+        version: input.version?.trim() || '1.0',
+        status: 'DRAFT',
+        applicableTo: input.applicableTo?.trim() || 'ALL_EMPLOYEES',
+        summary: input.summary ?? null,
+        contentMarkdown: input.contentMarkdown ?? null,
+        acknowledgementsRequired: input.acknowledgementsRequired ?? true,
+        effectiveDate: input.effectiveDate ?? null,
+        ownerId: auth.userId,
+        ownerName: input.ownerName ?? null,
+        createdBy: auth.userId,
+      },
+    });
+  }
+
+  async update(policyId: string, input: UpdatePolicyInput, auth: AuthContext) {
+    const existing = await this.getById(policyId, auth.tenantId);
+    if (!existing) throw new Error('policy not found');
+    const data: Record<string, unknown> = { updatedBy: auth.userId };
+    if (input.title !== undefined) data.title = input.title.trim();
+    if (input.category !== undefined) data.category = input.category.trim();
+    if (input.version !== undefined) data.version = input.version.trim();
+    if (input.applicableTo !== undefined) data.applicableTo = input.applicableTo.trim();
+    if (input.summary !== undefined) data.summary = input.summary;
+    if (input.contentMarkdown !== undefined) data.contentMarkdown = input.contentMarkdown;
+    if (input.acknowledgementsRequired !== undefined)
+      data.acknowledgementsRequired = input.acknowledgementsRequired;
+    if (input.effectiveDate !== undefined) data.effectiveDate = input.effectiveDate;
+    if (input.ownerName !== undefined) data.ownerName = input.ownerName;
+    return (prisma as any).policyDocument.update({ where: { id: policyId }, data });
+  }
+
   async publish(input: { policyId: string; intervalMonths?: number }, auth: AuthContext) {
     const policy = await (prisma as any).policyDocument.findUnique({
       where: { id: input.policyId },
@@ -80,7 +159,11 @@ export class HrPolicyService {
     filter: { status?: string } = {},
     paging?: PaginationInput
   ): Promise<PaginatedResult<unknown>> {
-    const where = { tenantId, ...(filter.status ? { status: filter.status } : {}) };
+    const where = {
+      tenantId,
+      isDeleted: false,
+      ...(filter.status ? { status: filter.status } : {}),
+    };
     const page = normalisePaging(paging);
     const [items, total] = await Promise.all([
       (prisma as any).policyDocument.findMany({
@@ -139,7 +222,7 @@ export class HrPolicyExceptionService {
   }
 
   async list(tenantId: string, filter: { status?: string; policyId?: string } = {}) {
-    return (prisma as any).hrPolicyException.findMany({
+    const rows: Array<{ policyId: string }> = await (prisma as any).hrPolicyException.findMany({
       where: {
         tenantId,
         ...(filter.status ? { status: filter.status } : {}),
@@ -147,6 +230,11 @@ export class HrPolicyExceptionService {
       },
       orderBy: { raisedAt: 'desc' },
     });
+    const titles = await policyTitleMap(
+      tenantId,
+      rows.map((r) => r.policyId)
+    );
+    return rows.map((r) => ({ ...r, policyTitle: titles[r.policyId] ?? null }));
   }
 }
 
@@ -193,7 +281,7 @@ export class HrPolicyReviewService {
       ...(filter.overdueOnly ? { dueAt: { lt: new Date() }, status: 'OPEN' } : {}),
     };
     const page = normalisePaging(paging);
-    const [items, total] = await Promise.all([
+    const [rawItems, total] = await Promise.all([
       (prisma as any).hrPolicyReview.findMany({
         where,
         orderBy: { dueAt: 'asc' },
@@ -201,11 +289,150 @@ export class HrPolicyReviewService {
       }),
       (prisma as any).hrPolicyReview.count({ where }),
     ]);
+    const titles = await policyTitleMap(
+      tenantId,
+      (rawItems as Array<{ policyId: string }>).map((r) => r.policyId)
+    );
+    const items = (rawItems as Array<{ policyId: string }>).map((r) => ({
+      ...r,
+      policyTitle: titles[r.policyId] ?? null,
+    }));
     return buildPaginatedResult(items, total, page);
   }
 }
 
 export const hrPolicyReviewService = new HrPolicyReviewService();
+
+/**
+ * S08 — per-policy / per-employee acknowledgement tracking plus an employee
+ * self-acknowledge workflow, backed by the existing PolicyAcknowledgement
+ * model (aura_policy_acknowledgement).
+ */
+export class HrPolicyAcknowledgementService {
+  /** Acknowledgement rows for a single policy (per-employee list). */
+  async listForPolicy(
+    tenantId: string,
+    policyId: string,
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const where = { tenantId, policyId, isDeleted: false };
+    const page = normalisePaging(paging);
+    const [items, total] = await Promise.all([
+      (prisma as any).policyAcknowledgement.findMany({
+        where,
+        orderBy: { acknowledgedAt: 'desc' },
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).policyAcknowledgement.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
+  }
+
+  /**
+   * Published-policy summary with per-policy ack counts, so the coverage page
+   * can show a real per-policy table (not just aggregate KPIs).
+   */
+  async coverageByPolicy(tenantId: string, totalEmployees = 100) {
+    const policies: Array<{
+      id: string;
+      title: string;
+      category: string;
+      version: string;
+      acknowledgementsRequired: boolean;
+    }> = await (prisma as any).policyDocument.findMany({
+      where: { tenantId, status: 'PUBLISHED', isDeleted: false },
+      select: {
+        id: true,
+        title: true,
+        category: true,
+        version: true,
+        acknowledgementsRequired: true,
+      },
+      orderBy: { title: 'asc' },
+    });
+    const rows = await Promise.all(
+      policies.map(async (p) => {
+        const acked = await (prisma as any).policyAcknowledgement.count({
+          where: { tenantId, policyId: p.id, isDeleted: false },
+        });
+        const pct =
+          !p.acknowledgementsRequired || totalEmployees <= 0
+            ? 100
+            : Number(((acked / totalEmployees) * 100).toFixed(2));
+        return { ...p, acknowledged: acked, coveragePct: pct };
+      })
+    );
+    return rows;
+  }
+
+  /** Policies the current employee still needs to acknowledge. */
+  async pendingForEmployee(tenantId: string, employeeId: string) {
+    const policies: Array<{
+      id: string;
+      title: string;
+      category: string;
+      version: string;
+    }> = await (prisma as any).policyDocument.findMany({
+      where: {
+        tenantId,
+        status: 'PUBLISHED',
+        acknowledgementsRequired: true,
+        isDeleted: false,
+      },
+      select: { id: true, title: true, category: true, version: true },
+      orderBy: { title: 'asc' },
+    });
+    const acks: Array<{ policyId: string; acknowledgedAt: Date }> = await (
+      prisma as any
+    ).policyAcknowledgement.findMany({
+      where: { tenantId, employeeId, isDeleted: false },
+      select: { policyId: true, acknowledgedAt: true },
+    });
+    const ackedMap = new Map(acks.map((a) => [a.policyId, a.acknowledgedAt]));
+    return policies.map((p) => ({
+      ...p,
+      acknowledged: ackedMap.has(p.id),
+      acknowledgedAt: ackedMap.get(p.id) ?? null,
+    }));
+  }
+
+  /**
+   * Record an acknowledgement for the authenticated employee. Idempotent — a
+   * repeat call for an already-acknowledged policy returns the existing row.
+   */
+  async acknowledge(
+    input: { policyId: string; employeeId: string; ipAddress?: string; userAgent?: string },
+    auth: AuthContext
+  ) {
+    const policy = await (prisma as any).policyDocument.findUnique({
+      where: { id: input.policyId },
+    });
+    if (!policy || policy.tenantId !== auth.tenantId || policy.isDeleted) {
+      throw new Error('policy not found');
+    }
+    if (policy.status !== 'PUBLISHED') {
+      throw new Error('policy is not published');
+    }
+    const existing = await (prisma as any).policyAcknowledgement.findUnique({
+      where: {
+        policyId_employeeId: { policyId: input.policyId, employeeId: input.employeeId },
+      },
+    });
+    if (existing) return existing;
+    return (prisma as any).policyAcknowledgement.create({
+      data: {
+        tenantId: auth.tenantId,
+        policyId: input.policyId,
+        employeeId: input.employeeId,
+        ipAddress: input.ipAddress ?? null,
+        userAgent: input.userAgent ?? null,
+        createdBy: auth.userId,
+      },
+    });
+  }
+}
+
+export const hrPolicyAcknowledgementService = new HrPolicyAcknowledgementService();
 
 export class HrPolicyCertificateService {
   async dashboard(tenantId: string, period: string, totalEmployees: number = 100) {
@@ -285,6 +512,12 @@ export class HrPolicyCertificateService {
     });
     if (!cert) throw new Error('certificate not generated');
     if (cert.gatingReason) throw new Error(`cannot sign while gated: ${cert.gatingReason}`);
+    if (!Array.isArray(attestations) || attestations.length === 0) {
+      throw new Error('at least one attestation is required to sign');
+    }
+    if (attestations.some((a) => !a || !a.field?.trim() || !a.value?.trim())) {
+      throw new Error('every attestation must have a field and value');
+    }
     return (prisma as any).hrPolicyCertificate.update({
       where: { id: cert.id },
       data: {

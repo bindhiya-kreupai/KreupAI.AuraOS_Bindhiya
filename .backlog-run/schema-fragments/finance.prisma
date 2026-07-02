@@ -1,0 +1,359 @@
+// Finance Module — new Prisma models (AURA-149..160).
+// Merged into schema.prisma by orchestrator. Access in route code via
+// (prisma as any).<camelCaseModelName>. All tables are tenant-scoped.
+//
+// Reuses existing models where possible:
+//   - CostCenter (aura_cost_center) for AURA-155 cost centers
+//   - Asset (aura_asset) is the HR/admin asset register; finance keeps its own
+//     FinanceAsset register (capital/operational) with finance-specific fields.
+//
+// Rich nested collections (budget lines, contract schedules, vendor documents,
+// scenario assumptions) are stored as JSON columns; scalar fields that pages
+// filter/sort on are promoted to real columns.
+
+model FinanceVendor {
+  id                String    @id @default(uuid())
+  tenantId          String
+  vendorCode        String
+  vendorName        String
+  vendorType        String    @default("company") // individual | company | contractor | consultant
+  status            String    @default("pending_approval") // active | inactive | pending_approval | blacklisted
+  email             String?
+  phone             String?
+  website           String?
+  taxId             String?
+  categories        Json?
+  servicesProvided  Json?
+  paymentTerms      String    @default("net_30")
+  preferredPaymentMethod String @default("bank_transfer")
+  primaryContact    Json?
+  billingAddress    Json?
+  bankDetails       Json?
+  documents         Json?
+  performanceRating Decimal   @default(0) @db.Decimal(4, 2)
+  totalTransactions Int       @default(0)
+  totalSpend        Decimal   @default(0) @db.Decimal(15, 2)
+  onTimePaymentRate Decimal   @default(0) @db.Decimal(5, 2)
+  qualityScore      Decimal   @default(0) @db.Decimal(5, 2)
+  w9OnFile          Boolean   @default(false)
+  backgroundCheckCompleted Boolean @default(false)
+  contractOnFile    Boolean   @default(false)
+  contractExpiryDate DateTime?
+  insuranceExpiryDate DateTime?
+  approvalStatus    String    @default("pending") // pending | approved | rejected
+  approvedBy        String?
+  approvedDate      DateTime?
+  rejectionReason   String?
+  notes             String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  createdBy         String?
+  updatedBy         String?
+
+  @@unique([tenantId, vendorCode], map: "FinanceVendor_tenantId_vendorCode_key")
+  @@index([tenantId], map: "FinanceVendor_tenantId_idx")
+  @@index([status], map: "FinanceVendor_status_idx")
+  @@map("aura_finance_vendor")
+}
+
+model FinanceContract {
+  id                 String    @id @default(uuid())
+  tenantId           String
+  contractCode       String
+  contractName       String
+  vendorId           String?
+  vendorName         String?
+  contractType       String    @default("fixed_price")
+  status             String    @default("draft")
+  startDate          DateTime?
+  endDate            DateTime?
+  autoRenew          Boolean   @default(false)
+  renewalNoticeDays  Int?
+  totalContractValue Decimal   @default(0) @db.Decimal(15, 2)
+  currency           String    @default("USD")
+  paymentTerms       String    @default("net_30")
+  totalSpent         Decimal   @default(0) @db.Decimal(15, 2)
+  remainingValue     Decimal   @default(0) @db.Decimal(15, 2)
+  utilizationRate    Decimal   @default(0) @db.Decimal(5, 2)
+  servicesIncluded   Json?
+  paymentSchedule    Json?
+  deliverables       Json?
+  kpis               Json?
+  amendments         Json?
+  documentUrl        String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  createdBy          String?
+  updatedBy          String?
+
+  @@unique([tenantId, contractCode], map: "FinanceContract_tenantId_contractCode_key")
+  @@index([tenantId], map: "FinanceContract_tenantId_idx")
+  @@index([vendorId], map: "FinanceContract_vendorId_idx")
+  @@map("aura_finance_contract")
+}
+
+model FinanceBudget {
+  id              String    @id @default(uuid())
+  tenantId        String
+  budgetCode      String
+  budgetName      String
+  budgetType      String    @default("operations")
+  status          String    @default("draft")
+  description     String?
+  fiscalYear      Int
+  period          String    @default("annual")
+  startDate       DateTime?
+  endDate         DateTime?
+  department      String?
+  costCenter      String?
+  project         String?
+  location        String?
+  lines           Json?
+  totalBudget     Decimal   @default(0) @db.Decimal(15, 2)
+  totalAllocated  Decimal   @default(0) @db.Decimal(15, 2)
+  totalSpent      Decimal   @default(0) @db.Decimal(15, 2)
+  totalRemaining  Decimal   @default(0) @db.Decimal(15, 2)
+  utilizationRate Decimal   @default(0) @db.Decimal(5, 2)
+  approvalStatus  String    @default("pending")
+  approvedBy      String?
+  approvedByName  String?
+  approvedDate    DateTime?
+  rejectionReason String?
+  version         String    @default("1.0")
+  tags            Json?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  createdBy       String?
+  createdByName   String?
+  updatedBy       String?
+
+  @@unique([tenantId, budgetCode], map: "FinanceBudget_tenantId_budgetCode_key")
+  @@index([tenantId], map: "FinanceBudget_tenantId_idx")
+  @@index([status], map: "FinanceBudget_status_idx")
+  @@map("aura_finance_budget")
+}
+
+model FinanceBudgetTemplate {
+  id                    String    @id @default(uuid())
+  tenantId              String
+  templateCode          String
+  templateName          String
+  templateType          String    @default("operations")
+  status                String    @default("active")
+  description           String?
+  templateLines         Json?
+  defaultPeriod         String    @default("annual")
+  defaultCurrency       String    @default("USD")
+  includeHeadcount      Boolean   @default(false)
+  includeContingency    Boolean   @default(false)
+  contingencyPercentage Decimal?  @db.Decimal(5, 2)
+  usageCount            Int       @default(0)
+  lastUsedDate          DateTime?
+  allowedDepartments    Json?
+  allowedRoles          Json?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  createdBy             String?
+  updatedBy             String?
+
+  @@unique([tenantId, templateCode], map: "FinanceBudgetTemplate_tenantId_templateCode_key")
+  @@index([tenantId], map: "FinanceBudgetTemplate_tenantId_idx")
+  @@map("aura_finance_budget_template")
+}
+
+model FinanceScenario {
+  id                    String    @id @default(uuid())
+  tenantId              String
+  scenarioCode          String
+  scenarioName          String
+  scenarioType          String    @default("custom")
+  status                String    @default("draft")
+  description           String?
+  baseBudgetId          String?
+  baseBudgetName        String?
+  assumptions           Json?
+  adjustedLines         Json?
+  totalAdjustedBudget   Decimal   @default(0) @db.Decimal(15, 2)
+  totalVarianceFromBase Decimal   @default(0) @db.Decimal(15, 2)
+  variancePercentage    Decimal   @default(0) @db.Decimal(6, 2)
+  headcountImpact       Json?
+  cashFlowImpact        Json?
+  lastRunAt             DateTime?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  createdBy             String?
+  updatedBy             String?
+
+  @@unique([tenantId, scenarioCode], map: "FinanceScenario_tenantId_scenarioCode_key")
+  @@index([tenantId], map: "FinanceScenario_tenantId_idx")
+  @@map("aura_finance_scenario")
+}
+
+model FinancePettyCashFund {
+  id                   String    @id @default(uuid())
+  tenantId             String
+  fundCode             String
+  fundName             String
+  status               String    @default("active")
+  department           String?
+  location             String?
+  custodian            String?
+  custodianName        String?
+  initialBalance       Decimal   @default(0) @db.Decimal(15, 2)
+  currentBalance       Decimal   @default(0) @db.Decimal(15, 2)
+  totalDisbursed       Decimal   @default(0) @db.Decimal(15, 2)
+  totalReplenished     Decimal   @default(0) @db.Decimal(15, 2)
+  fundLimit            Decimal   @default(0) @db.Decimal(15, 2)
+  transactionLimit     Decimal   @default(0) @db.Decimal(15, 2)
+  minimumBalance       Decimal   @default(0) @db.Decimal(15, 2)
+  requireReceipt       Boolean   @default(true)
+  requireApproval      Boolean   @default(true)
+  approvalThreshold    Decimal?  @db.Decimal(15, 2)
+  lastReconciledDate   DateTime?
+  lastReconciledBy     String?
+  nextReconciliationDue DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  createdBy            String?
+  updatedBy            String?
+
+  @@unique([tenantId, fundCode], map: "FinancePettyCashFund_tenantId_fundCode_key")
+  @@index([tenantId], map: "FinancePettyCashFund_tenantId_idx")
+  @@map("aura_finance_petty_cash_fund")
+}
+
+model FinancePettyCashTransaction {
+  id              String    @id @default(uuid())
+  tenantId        String
+  transactionCode String
+  fundId          String
+  transactionType String    @default("disbursement")
+  transactionDate DateTime  @default(now())
+  amount          Decimal   @default(0) @db.Decimal(15, 2)
+  category        String?
+  description     String?
+  requestedBy     String?
+  requestedByName String?
+  receiptNumber   String?
+  receiptAttachment String?
+  vendor          String?
+  requiresApproval Boolean  @default(false)
+  approvalStatus  String?
+  approvedBy      String?
+  approvedDate    DateTime?
+  reconciled      Boolean   @default(false)
+  reconciledDate  DateTime?
+  balanceAfter    Decimal   @default(0) @db.Decimal(15, 2)
+  notes           String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  createdBy       String?
+
+  @@unique([tenantId, transactionCode], map: "FinancePettyCashTransaction_tenantId_transactionCode_key")
+  @@index([tenantId], map: "FinancePettyCashTransaction_tenantId_idx")
+  @@index([fundId], map: "FinancePettyCashTransaction_fundId_idx")
+  @@map("aura_finance_petty_cash_transaction")
+}
+
+model FinancePettyCashReconciliation {
+  id                  String    @id @default(uuid())
+  tenantId            String
+  reconciliationCode  String
+  fundId              String
+  fundName            String?
+  reconciliationDate  DateTime  @default(now())
+  expectedBalance     Decimal   @default(0) @db.Decimal(15, 2)
+  actualBalance       Decimal   @default(0) @db.Decimal(15, 2)
+  variance            Decimal   @default(0) @db.Decimal(15, 2)
+  transactionCount    Int       @default(0)
+  totalDisbursements  Decimal   @default(0) @db.Decimal(15, 2)
+  totalReplenishments Decimal   @default(0) @db.Decimal(15, 2)
+  unreconciledTransactions Int  @default(0)
+  cashOnHand          Decimal   @default(0) @db.Decimal(15, 2)
+  receipts            Decimal   @default(0) @db.Decimal(15, 2)
+  ious                Decimal   @default(0) @db.Decimal(15, 2)
+  status              String    @default("in_progress")
+  varianceExplanation String?
+  varianceResolution  String?
+  reconciledBy        String?
+  reconciledByName    String?
+  reviewedBy          String?
+  reviewedDate        DateTime?
+  supportingDocuments Json?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  createdBy           String?
+
+  @@unique([tenantId, reconciliationCode], map: "FinancePettyCashReconciliation_tenantId_code_key")
+  @@index([tenantId], map: "FinancePettyCashReconciliation_tenantId_idx")
+  @@index([fundId], map: "FinancePettyCashReconciliation_fundId_idx")
+  @@map("aura_finance_petty_cash_reconciliation")
+}
+
+model FinancePettyCashPolicy {
+  id            String    @id @default(uuid())
+  tenantId      String
+  policyType    String    @default("approval") // approval | category | spending_limit
+  name          String
+  description   String?
+  threshold     Decimal?  @db.Decimal(15, 2)
+  approverRole  String?
+  monthlyLimit  Decimal?  @db.Decimal(15, 2)
+  requireReceipt Boolean  @default(true)
+  active        Boolean   @default(true)
+  config        Json?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  createdBy     String?
+  updatedBy     String?
+
+  @@index([tenantId], map: "FinancePettyCashPolicy_tenantId_idx")
+  @@index([policyType], map: "FinancePettyCashPolicy_policyType_idx")
+  @@map("aura_finance_petty_cash_policy")
+}
+
+model FinanceAsset {
+  id                      String    @id @default(uuid())
+  tenantId                String
+  assetCode               String
+  assetName               String
+  assetType               String    @default("capital") // capital | operational | it_equipment | ...
+  status                  String    @default("active")
+  description             String?
+  purchasePrice           Decimal   @default(0) @db.Decimal(15, 2)
+  currentValue            Decimal   @default(0) @db.Decimal(15, 2)
+  depreciationMethod      String    @default("straight_line")
+  usefulLife              Int       @default(5)
+  salvageValue            Decimal   @default(0) @db.Decimal(15, 2)
+  accumulatedDepreciation Decimal   @default(0) @db.Decimal(15, 2)
+  purchaseDate            DateTime?
+  vendor                  String?
+  invoiceNumber           String?
+  warrantyExpiryDate      DateTime?
+  assignedTo              String?
+  assignedToName          String?
+  department              String?
+  costCenter              String?
+  location                String?
+  serialNumber            String?
+  quantity                Int       @default(1)
+  reorderPoint            Int       @default(0)
+  unitCost                Decimal   @default(0) @db.Decimal(15, 2)
+  supplier                String?
+  lastRestocked           DateTime?
+  maintenanceSchedule     Json?
+  maintenanceHistory      Json?
+  disposalDate            DateTime?
+  disposalMethod          String?
+  disposalValue           Decimal?  @db.Decimal(15, 2)
+  notes                   String?
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+  createdBy               String?
+  updatedBy               String?
+
+  @@unique([tenantId, assetCode], map: "FinanceAsset_tenantId_assetCode_key")
+  @@index([tenantId], map: "FinanceAsset_tenantId_idx")
+  @@index([assetType], map: "FinanceAsset_assetType_idx")
+  @@map("aura_finance_asset")
+}

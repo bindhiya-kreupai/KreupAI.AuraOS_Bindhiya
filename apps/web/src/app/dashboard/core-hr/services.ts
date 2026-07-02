@@ -455,36 +455,40 @@ export class DocumentService {
     return response.document;
   }
 
-  static async verifyDocument(documentId: string, verifiedBy: string): Promise<void> {
-    const response = await APIClient.get<{ documents?: any[] }>(this.endpoint, { id: documentId });
-    void response;
-    void verifiedBy;
+  static async getDocumentById(documentId: string): Promise<EmployeeDocument | null> {
+    try {
+      const response = await APIClient.get<{ document?: EmployeeDocument }>(
+        `${this.endpoint}/${documentId}`
+      );
+      return response.document ?? null;
+    } catch (error: any) {
+      return null;
+    }
+  }
+
+  static async deleteDocument(documentId: string): Promise<void> {
+    await APIClient.delete(`${this.endpoint}/${documentId}`);
   }
 
   static async getAllTemplates(): Promise<DocumentTemplate[]> {
     return DocumentTemplateService.getAllTemplates();
   }
 
+  /**
+   * Extracts real, file-derived metadata from the selected file. Deep OCR field
+   * extraction (document number / expiry / nationality) requires an external OCR
+   * provider that is not yet wired, so those fields are intentionally left empty
+   * rather than fabricated.
+   */
   static async scanDocumentAI(file: File): Promise<Partial<EmployeeDocument>> {
-    try {
-      // Simulate AI OCR processing
-      return new Promise((resolve) => {
-        setTimeout(() => {
-          resolve({
-            isAIParsed: true,
-            ocrData: {
-              documentNumber: 'DXB-882-991',
-              expiryDate: new Date(2029, 11, 31),
-              nationality: 'UAE',
-              parsingConfidence: 0.94,
-            },
-            status: 'active',
-          });
-        }, 2000);
-      });
-    } catch (error: any) {
-      return {};
-    }
+    const extension = file.name.includes('.') ? file.name.split('.').pop()! : '';
+    return {
+      documentName: file.name.replace(/\.[^/.]+$/, ''),
+      fileName: file.name,
+      fileSize: file.size,
+      fileType: file.type || extension,
+      status: 'active',
+    } as Partial<EmployeeDocument>;
   }
 }
 
@@ -518,40 +522,7 @@ export class PositionService {
       const response = await APIClient.get<unknown>(this.endpoint);
       return APIClient.unwrapList<Position>(response, 'positions');
     } catch (error: any) {
-      return [
-        {
-          id: 'POS-101',
-          positionCode: 'ENG-SNR-001',
-          title: 'Senior Software Engineer',
-          departmentId: 'DEPT-01',
-          status: 'filled',
-          headcount: 1,
-          fte: 1,
-          budgetCommitted: 120000,
-          actualCost: 115000,
-          utilizationRate: 0.96,
-          isSimulated: false,
-          createdDate: new Date(),
-          lastModifiedDate: new Date(),
-          effectiveDate: new Date(),
-        },
-        {
-          id: 'POS-102',
-          positionCode: 'HR-DIR-001',
-          title: 'HR Director',
-          departmentId: 'DEPT-02',
-          status: 'open',
-          headcount: 1,
-          fte: 1,
-          budgetCommitted: 180000,
-          actualCost: 0,
-          utilizationRate: 0,
-          isSimulated: true, // Simulation example
-          createdDate: new Date(),
-          lastModifiedDate: new Date(),
-          effectiveDate: new Date(),
-        },
-      ];
+      return [];
     }
   }
 
@@ -608,11 +579,16 @@ export class CostCenterService {
   }
 
   static async allocateBudget(
-    _costCenterId: string,
-    _amount: number,
-    _year: number
-  ): Promise<void> {
-    return;
+    costCenterId: string,
+    amount: number,
+    year: number
+  ): Promise<CostCenter> {
+    const response = await APIClient.put<{ costCenter: any }>(this.endpoint, {
+      id: costCenterId,
+      fiscalYear: year,
+      allocatedBudget: amount,
+    });
+    return mapCostCenter(response.costCenter);
   }
 }
 
@@ -651,12 +627,14 @@ export class LifeEventService {
     return this.createLifeEvent(eventData);
   }
 
-  static async processEvent(eventId: string, processedBy: string): Promise<LifeEvent> {
+  static async processEvent(
+    eventId: string,
+    action: 'approve' | 'reject' = 'approve'
+  ): Promise<LifeEvent> {
     const response = await APIClient.put<{ event: LifeEvent }>(this.endpoint, {
       id: eventId,
-      status: 'COMPLETED',
-      processedBy,
-      processedDate: new Date().toISOString(),
+      status: action === 'approve' ? 'COMPLETED' : 'REJECTED',
+      verified: action === 'approve',
     });
     return response.event;
   }
@@ -706,11 +684,59 @@ export class MassUpdateService {
   }
 
   static async previewUpdate(updateId: string): Promise<any> {
-    return {
-      updateId,
-      affectedCount: 0,
-      changes: [],
-    };
+    try {
+      const response = await APIClient.get<{ data?: any } | any>(`${this.endpoint}/${updateId}`);
+      const job = APIClient.unwrapItem<any>(response) ?? response;
+      const rows = Array.isArray(job?.updateValue?.rows) ? job.updateValue.rows : [];
+      return {
+        updateId,
+        affectedCount: job?.affectedCount ?? rows.length,
+        fileName: job?.updateValue?.fileName,
+        columns: Array.isArray(job?.updateValue?.columns) ? job.updateValue.columns : [],
+        changes: rows,
+      };
+    } catch (error: any) {
+      return { updateId, affectedCount: 0, changes: [], columns: [] };
+    }
+  }
+
+  /**
+   * Parses a CSV file client-side and creates a mass-update job carrying the
+   * real parsed rows (stored in updateValue.rows) so the upload is not
+   * metadata-only. Returns the created job.
+   */
+  static async createFromFile(
+    file: File,
+    options: { updateName?: string; entityType?: string } = {}
+  ): Promise<MassUpdate> {
+    const text = await file.text();
+    const lines = text
+      .split(/\r?\n/)
+      .map((l) => l.trim())
+      .filter((l) => l.length > 0);
+    const columns = lines.length > 0 ? lines[0].split(',').map((c) => c.trim()) : [];
+    const rows = lines.slice(1).map((line) => {
+      const cells = line.split(',');
+      const record: Record<string, string> = {};
+      columns.forEach((col, i) => {
+        record[col] = (cells[i] ?? '').trim();
+      });
+      return record;
+    });
+
+    return this.createMassUpdate({
+      entityType: options.entityType || 'employee',
+      field: 'bulk',
+      filterCriteria: {},
+      affectedCount: rows.length,
+      status: 'PENDING',
+      updateValue: {
+        updateName: options.updateName || file.name.replace(/\.[^/.]+$/, ''),
+        fileName: file.name,
+        columns,
+        rows,
+      },
+    } as any);
   }
 }
 
@@ -816,8 +842,8 @@ export class LetterService {
     return response.request || response.letter || ({} as LetterRequest);
   }
 
-  static async getAllTemplates(): Promise<any[]> {
-    return [];
+  static async getAllTemplates(): Promise<DocumentTemplate[]> {
+    return DocumentTemplateService.getAllTemplates();
   }
 }
 
@@ -855,19 +881,16 @@ export class ExitService {
 
   static async updateClearanceItem(
     exitId: string,
-    itemId: string,
+    clearanceId: string,
     status: string,
-    approvedBy?: string
+    notes?: string
   ): Promise<ExitProcess> {
-    return this.updateExit(exitId, {
-      clearanceItems: [
-        {
-          itemId,
-          status,
-          approvedBy,
-        },
-      ] as any,
+    const response = await APIClient.patch<{ exit: any }>(`${this.endpoint}/${exitId}/clearances`, {
+      clearanceId,
+      status,
+      notes,
     });
+    return mapExitProcess(response.exit);
   }
 
   static async completeFinalSettlement(exitId: string, settlementData: any): Promise<ExitProcess> {
@@ -877,8 +900,15 @@ export class ExitService {
     } as any);
   }
 
-  static async getAllClearanceTemplates(): Promise<any[]> {
-    return [];
+  static async getAllClearanceTemplates(): Promise<
+    Array<{ id: string; department: string; description: string; sortOrder: number }>
+  > {
+    try {
+      const response = await APIClient.get<{ templates?: any[] }>('/core-hr/clearance-templates');
+      return Array.isArray(response.templates) ? response.templates : [];
+    } catch (error: any) {
+      return [];
+    }
   }
 }
 
@@ -913,8 +943,16 @@ export class AnniversaryService {
     return anniversaries.length;
   }
 
-  static async sendNotifications(_anniversaryId: string): Promise<void> {
-    return;
+  static async sendNotifications(
+    employeeId: string,
+    notificationType: 'wish' | 'gift' = 'wish',
+    yearsOfService?: number
+  ): Promise<void> {
+    await APIClient.post(this.endpoint, {
+      employeeId,
+      notificationType,
+      yearsOfService,
+    });
   }
 }
 
@@ -984,21 +1022,58 @@ export class AutoNumberService {
   static async createSequence(
     sequenceData: Partial<AutoNumberSequence>
   ): Promise<AutoNumberSequence> {
-    return this.mapSequence({
+    const response = await APIClient.post<{ sequence?: any } | any>(this.endpoint, {
       entityType: sequenceData.entityType || 'custom',
       prefix: sequenceData.prefix || 'SEQ',
+      suffix: sequenceData.suffix || undefined,
       padLength: sequenceData.numberLength || 4,
-      currentNumber: (sequenceData.currentNumber || 1) - 1,
-      description: sequenceData.sequenceName || 'Custom Sequence',
+      currentNumber: Math.max((sequenceData.currentNumber || 1) - 1, 0),
       incrementBy: sequenceData.incrementBy || 1,
       resetFrequency: sequenceData.resetFrequency || 'never',
-      createdDate: new Date().toISOString(),
+      description: sequenceData.sequenceName || 'Custom Sequence',
       isActive: sequenceData.isActive ?? true,
     });
+    const raw = APIClient.unwrapItem<any>(response, 'sequence') ?? response;
+    return this.mapSequence(raw);
   }
 
-  static async resetSequence(_sequenceId: string): Promise<void> {
-    return;
+  /**
+   * Upsert a sequence config server-side (tenant-wide). `nextNumber` is the
+   * next value the UI displays; we persist `currentNumber = nextNumber - 1`
+   * so the next generateNumber() call produces exactly that value.
+   */
+  static async updateSequence(
+    entityType: string,
+    config: {
+      prefix?: string;
+      suffix?: string;
+      numberLength?: number;
+      nextNumber?: number;
+      incrementBy?: number;
+      resetFrequency?: string;
+      isActive?: boolean;
+      description?: string;
+    }
+  ): Promise<AutoNumberSequence> {
+    const payload: Record<string, any> = { entityType };
+    if (config.prefix !== undefined) payload.prefix = config.prefix;
+    if (config.suffix !== undefined) payload.suffix = config.suffix;
+    if (config.numberLength !== undefined) payload.padLength = config.numberLength;
+    if (config.nextNumber !== undefined) {
+      payload.currentNumber = Math.max(config.nextNumber - 1, 0);
+    }
+    if (config.incrementBy !== undefined) payload.incrementBy = config.incrementBy;
+    if (config.resetFrequency !== undefined) payload.resetFrequency = config.resetFrequency;
+    if (config.isActive !== undefined) payload.isActive = config.isActive;
+    if (config.description !== undefined) payload.description = config.description;
+
+    const response = await APIClient.put<{ sequence?: any } | any>(this.endpoint, payload);
+    const raw = APIClient.unwrapItem<any>(response, 'sequence') ?? response;
+    return this.mapSequence(raw);
+  }
+
+  static async resetSequence(entityType: string): Promise<AutoNumberSequence> {
+    return this.updateSequence(entityType, { nextNumber: 1 });
   }
 }
 
@@ -1081,6 +1156,15 @@ export class ConfirmationLetterService {
     letterData: Partial<ConfirmationLetter>
   ): Promise<ConfirmationLetter> {
     const response = await APIClient.post<{ letter: any }>(this.endpoint, letterData);
+    return mapConfirmationLetter(response.letter);
+  }
+
+  static async issueLetter(letterId: string): Promise<ConfirmationLetter> {
+    const response = await APIClient.put<{ letter: any }>(this.endpoint, {
+      id: letterId,
+      status: 'ISSUED',
+      issuedAt: new Date().toISOString(),
+    });
     return mapConfirmationLetter(response.letter);
   }
 }

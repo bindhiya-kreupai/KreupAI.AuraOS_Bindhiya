@@ -19,7 +19,7 @@ import type {
   SubcontractorContract,
   SubcontractorInvoice,
   ConstructionSettings,
-  ConstructionAlert
+  ConstructionAlert,
 } from './types';
 
 /**
@@ -38,11 +38,16 @@ export class ProjectManagementService {
     return APIClient.get<ConstructionProject>(`${this.endpoint}/${projectId}`);
   }
 
-  static async createProject(projectData: Partial<ConstructionProject>): Promise<ConstructionProject> {
+  static async createProject(
+    projectData: Partial<ConstructionProject>
+  ): Promise<ConstructionProject> {
     return APIClient.post<ConstructionProject>(this.endpoint, projectData);
   }
 
-  static async updateProject(projectId: string, updates: Partial<ConstructionProject>): Promise<ConstructionProject> {
+  static async updateProject(
+    projectId: string,
+    updates: Partial<ConstructionProject>
+  ): Promise<ConstructionProject> {
     return APIClient.put<ConstructionProject>(`${this.endpoint}/${projectId}`, updates);
   }
 
@@ -78,15 +83,28 @@ export class ProjectManagementService {
   }
 
   static async updateBudget(projectId: string, budgetUpdates: any): Promise<ConstructionProject> {
-    return APIClient.put<ConstructionProject>(`${this.endpoint}/${projectId}/budget`, budgetUpdates);
+    return APIClient.put<ConstructionProject>(
+      `${this.endpoint}/${projectId}/budget`,
+      budgetUpdates
+    );
   }
 
   static async addChangeOrder(projectId: string, changeOrder: any): Promise<ConstructionProject> {
-    return APIClient.post<ConstructionProject>(`${this.endpoint}/${projectId}/change-orders`, changeOrder);
+    return APIClient.post<ConstructionProject>(
+      `${this.endpoint}/${projectId}/change-orders`,
+      changeOrder
+    );
   }
 
-  static async updateMilestone(projectId: string, milestoneId: string, updates: any): Promise<ConstructionProject> {
-    return APIClient.put<ConstructionProject>(`${this.endpoint}/${projectId}/milestones/${milestoneId}`, updates);
+  static async updateMilestone(
+    projectId: string,
+    milestoneId: string,
+    updates: any
+  ): Promise<ConstructionProject> {
+    return APIClient.put<ConstructionProject>(
+      `${this.endpoint}/${projectId}/milestones/${milestoneId}`,
+      updates
+    );
   }
 }
 
@@ -113,11 +131,16 @@ export class SiteSafetyService {
     return APIClient.get<SafetyInspection>(`${this.inspectionsEndpoint}/${inspectionId}`);
   }
 
-  static async createInspection(inspectionData: Partial<SafetyInspection>): Promise<SafetyInspection> {
+  static async createInspection(
+    inspectionData: Partial<SafetyInspection>
+  ): Promise<SafetyInspection> {
     return APIClient.post<SafetyInspection>(this.inspectionsEndpoint, inspectionData);
   }
 
-  static async updateInspection(inspectionId: string, updates: Partial<SafetyInspection>): Promise<SafetyInspection> {
+  static async updateInspection(
+    inspectionId: string,
+    updates: Partial<SafetyInspection>
+  ): Promise<SafetyInspection> {
     return APIClient.put<SafetyInspection>(`${this.inspectionsEndpoint}/${inspectionId}`, updates);
   }
 
@@ -143,7 +166,10 @@ export class SiteSafetyService {
     return APIClient.post<SafetyIncident>(this.incidentsEndpoint, incidentData);
   }
 
-  static async updateIncident(incidentId: string, updates: Partial<SafetyIncident>): Promise<SafetyIncident> {
+  static async updateIncident(
+    incidentId: string,
+    updates: Partial<SafetyIncident>
+  ): Promise<SafetyIncident> {
     return APIClient.put<SafetyIncident>(`${this.incidentsEndpoint}/${incidentId}`, updates);
   }
 
@@ -165,7 +191,10 @@ export class SiteSafetyService {
     return APIClient.post<SafetyTraining>(this.trainingsEndpoint, trainingData);
   }
 
-  static async updateTraining(trainingId: string, updates: Partial<SafetyTraining>): Promise<SafetyTraining> {
+  static async updateTraining(
+    trainingId: string,
+    updates: Partial<SafetyTraining>
+  ): Promise<SafetyTraining> {
     return APIClient.put<SafetyTraining>(`${this.trainingsEndpoint}/${trainingId}`, updates);
   }
 
@@ -182,7 +211,10 @@ export class SiteSafetyService {
     return APIClient.post<PPETracking>(this.ppeEndpoint, ppeData);
   }
 
-  static async updatePPETracking(ppeId: string, updates: Partial<PPETracking>): Promise<PPETracking> {
+  static async updatePPETracking(
+    ppeId: string,
+    updates: Partial<PPETracking>
+  ): Promise<PPETracking> {
     return APIClient.put<PPETracking>(`${this.ppeEndpoint}/${ppeId}`, updates);
   }
 
@@ -195,11 +227,16 @@ export class SiteSafetyService {
     return APIClient.get<HazardIdentification[]>(this.hazardsEndpoint, { projectId });
   }
 
-  static async createHazard(hazardData: Partial<HazardIdentification>): Promise<HazardIdentification> {
+  static async createHazard(
+    hazardData: Partial<HazardIdentification>
+  ): Promise<HazardIdentification> {
     return APIClient.post<HazardIdentification>(this.hazardsEndpoint, hazardData);
   }
 
-  static async updateHazard(hazardId: string, updates: Partial<HazardIdentification>): Promise<HazardIdentification> {
+  static async updateHazard(
+    hazardId: string,
+    updates: Partial<HazardIdentification>
+  ): Promise<HazardIdentification> {
     return APIClient.put<HazardIdentification>(`${this.hazardsEndpoint}/${hazardId}`, updates);
   }
 }
@@ -227,7 +264,10 @@ export class EquipmentLeasingService {
     return APIClient.post<EquipmentLease>(this.endpoint, leaseData);
   }
 
-  static async updateLease(leaseId: string, updates: Partial<EquipmentLease>): Promise<EquipmentLease> {
+  static async updateLease(
+    leaseId: string,
+    updates: Partial<EquipmentLease>
+  ): Promise<EquipmentLease> {
     return APIClient.put<EquipmentLease>(`${this.endpoint}/${leaseId}`, updates);
   }
 
@@ -237,11 +277,20 @@ export class EquipmentLeasingService {
   }
 
   static async recordUtilization(leaseId: string, utilizationData: any): Promise<EquipmentLease> {
-    return APIClient.put<EquipmentLease>(`${this.endpoint}/${leaseId}/utilization`, utilizationData);
+    return APIClient.put<EquipmentLease>(
+      `${this.endpoint}/${leaseId}/utilization`,
+      utilizationData
+    );
   }
 
-  static async addMaintenanceRecord(leaseId: string, maintenanceRecord: any): Promise<EquipmentLease> {
-    return APIClient.post<EquipmentLease>(`${this.endpoint}/${leaseId}/maintenance`, maintenanceRecord);
+  static async addMaintenanceRecord(
+    leaseId: string,
+    maintenanceRecord: any
+  ): Promise<EquipmentLease> {
+    return APIClient.post<EquipmentLease>(
+      `${this.endpoint}/${leaseId}/maintenance`,
+      maintenanceRecord
+    );
   }
 
   static async addInspection(leaseId: string, inspection: any): Promise<EquipmentLease> {
@@ -268,12 +317,20 @@ export class SubcontractorPortalService {
     return APIClient.get<SubcontractorProfile>(`${this.subcontractorsEndpoint}/${subcontractorId}`);
   }
 
-  static async createSubcontractor(subcontractorData: Partial<SubcontractorProfile>): Promise<SubcontractorProfile> {
+  static async createSubcontractor(
+    subcontractorData: Partial<SubcontractorProfile>
+  ): Promise<SubcontractorProfile> {
     return APIClient.post<SubcontractorProfile>(this.subcontractorsEndpoint, subcontractorData);
   }
 
-  static async updateSubcontractor(subcontractorId: string, updates: Partial<SubcontractorProfile>): Promise<SubcontractorProfile> {
-    return APIClient.put<SubcontractorProfile>(`${this.subcontractorsEndpoint}/${subcontractorId}`, updates);
+  static async updateSubcontractor(
+    subcontractorId: string,
+    updates: Partial<SubcontractorProfile>
+  ): Promise<SubcontractorProfile> {
+    return APIClient.put<SubcontractorProfile>(
+      `${this.subcontractorsEndpoint}/${subcontractorId}`,
+      updates
+    );
   }
 
   static async deleteSubcontractor(subcontractorId: string): Promise<boolean> {
@@ -315,11 +372,16 @@ export class SubcontractorPortalService {
     return APIClient.get<SubcontractorContract[]>(this.contractsEndpoint, { projectId });
   }
 
-  static async createContract(contractData: Partial<SubcontractorContract>): Promise<SubcontractorContract> {
+  static async createContract(
+    contractData: Partial<SubcontractorContract>
+  ): Promise<SubcontractorContract> {
     return APIClient.post<SubcontractorContract>(this.contractsEndpoint, contractData);
   }
 
-  static async updateContract(contractId: string, updates: Partial<SubcontractorContract>): Promise<SubcontractorContract> {
+  static async updateContract(
+    contractId: string,
+    updates: Partial<SubcontractorContract>
+  ): Promise<SubcontractorContract> {
     return APIClient.put<SubcontractorContract>(`${this.contractsEndpoint}/${contractId}`, updates);
   }
 
@@ -332,11 +394,16 @@ export class SubcontractorPortalService {
     return APIClient.get<SubcontractorInvoice[]>(this.invoicesEndpoint, { contractId });
   }
 
-  static async createInvoice(invoiceData: Partial<SubcontractorInvoice>): Promise<SubcontractorInvoice> {
+  static async createInvoice(
+    invoiceData: Partial<SubcontractorInvoice>
+  ): Promise<SubcontractorInvoice> {
     return APIClient.post<SubcontractorInvoice>(this.invoicesEndpoint, invoiceData);
   }
 
-  static async updateInvoice(invoiceId: string, updates: Partial<SubcontractorInvoice>): Promise<SubcontractorInvoice> {
+  static async updateInvoice(
+    invoiceId: string,
+    updates: Partial<SubcontractorInvoice>
+  ): Promise<SubcontractorInvoice> {
     return APIClient.put<SubcontractorInvoice>(`${this.invoicesEndpoint}/${invoiceId}`, updates);
   }
 }
@@ -352,8 +419,36 @@ export class ConstructionSettingsService {
     return APIClient.get<ConstructionSettings>(this.endpoint);
   }
 
-  static async updateSettings(settings: Partial<ConstructionSettings>): Promise<ConstructionSettings> {
+  static async updateSettings(
+    settings: Partial<ConstructionSettings>
+  ): Promise<ConstructionSettings> {
     return APIClient.put<ConstructionSettings>(this.endpoint, settings);
+  }
+}
+
+/**
+ * Staffing Service
+ * Manages crew allocations across construction sites.
+ * Backed by /api/construction/staffing.
+ */
+export class StaffingService {
+  private static endpoint = '/construction/staffing';
+
+  static async getAllAllocations(): Promise<any[]> {
+    return APIClient.get<any[]>(this.endpoint);
+  }
+
+  static async createAllocation(data: any): Promise<any> {
+    return APIClient.post<any>(this.endpoint, data);
+  }
+
+  static async updateAllocation(allocationId: string, updates: any): Promise<any> {
+    return APIClient.put<any>(`${this.endpoint}/${allocationId}`, updates);
+  }
+
+  static async deleteAllocation(allocationId: string): Promise<boolean> {
+    await APIClient.delete<void>(`${this.endpoint}/${allocationId}`);
+    return true;
   }
 }
 
@@ -372,7 +467,10 @@ export class AlertsService {
     return APIClient.post<ConstructionAlert>(this.endpoint, alertData);
   }
 
-  static async updateAlert(alertId: string, updates: Partial<ConstructionAlert>): Promise<ConstructionAlert> {
+  static async updateAlert(
+    alertId: string,
+    updates: Partial<ConstructionAlert>
+  ): Promise<ConstructionAlert> {
     return APIClient.put<ConstructionAlert>(`${this.endpoint}/${alertId}`, updates);
   }
 

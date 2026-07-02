@@ -1,0 +1,90 @@
+[
+  {
+    "id": "AURA-009",
+    "title": "Feature Coverage: Expand form fields and wire Import/Export",
+    "module": "Companies Module",
+    "status": "In Progress",
+    "assignee": "Sharon",
+    "due": "29/06/2026",
+    "route": "/dashboard/admin/master-data/companies",
+    "api": "createCompanySchema, updateCompanySchema; export API missing",
+    "desc": "API supports email, phone, address, industry, website, registrationNumber, status; UI only has code, name, taxId. Import shows alert stub; Export calls ?export=csv but master-data route has no export handler."
+  },
+  {
+    "id": "AURA-010",
+    "title": "Navigation: Fix Legal Entities link to existing companies page",
+    "module": "Companies Module",
+    "status": "Not Started",
+    "assignee": "Sharon",
+    "due": "29/06/2026",
+    "route": "(modules)/master-data/page.tsx",
+    "api": "GET /api/v1/hr/entities or /api/companies",
+    "desc": "Hub links Legal Entities to /core-hr/entities which has no page (404). Retarget to /master-data/companies or /core-hr/companies."
+  },
+  {
+    "id": "AURA-011",
+    "title": "Missing Page: Create Legal Entities management page",
+    "module": "Companies Module",
+    "status": "In Progress",
+    "assignee": "Kiruthiga",
+    "due": "2026-01-07 (Excel serial: 46029)",
+    "route": "/core-hr/entities",
+    "api": "GET /api/v1/hr/entities, /api/companies/*",
+    "desc": "GET /api/v1/hr/entities exists with employee/dept/location counts but no UI. Build list/detail page; optionally wire CRUD to /api/companies."
+  },
+  {
+    "id": "AURA-012",
+    "title": "Missing Page: Create company detail page",
+    "module": "Companies Module",
+    "status": "Not Started",
+    "assignee": "Kiruthiga",
+    "due": "2026-01-07 (Excel serial: 46029)",
+    "route": "/companies/[id]",
+    "api": "GET /api/companies/[id]?includeRelations=true",
+    "desc": "No detail view for single company with relations (includeRelations=true)."
+  },
+  {
+    "id": "AURA-013",
+    "title": "Orphan Components: Mount or delete mock legal entity UI",
+    "module": "Companies Module",
+    "status": "Not Started",
+    "assignee": "Devadharshni",
+    "due": "2026-02-07 (Excel serial: 46060)",
+    "route": "components/hr/LegalEntityManagement.tsx",
+    "api": "legalEntityService.ts (MOCK) \u2192 should use /api/companies",
+    "desc": "Full multi-tab UI (entities, transfers, consolidated metrics) using mock legalEntityService. Not imported by any page."
+  },
+  {
+    "id": "AURA-014",
+    "title": "Orphan Components: Mount or delete multi-entity mock components",
+    "module": "Companies Module",
+    "status": "Not Started",
+    "assignee": "Devadharshni",
+    "due": "2026-02-07 (Excel serial: 46060)",
+    "route": "components/hr/EntityManagementDashboard.tsx, InterEntityTransfer.tsx",
+    "api": "multiEntityService.ts (MOCK)",
+    "desc": "EntityManagementDashboard and InterEntityTransfer use mock multiEntityService. Not imported by any route."
+  },
+  {
+    "id": "AURA-015",
+    "title": "Entity Switcher: Wire EntitySwitcher to live company list",
+    "module": "Companies Module",
+    "status": "Not Started",
+    "assignee": "Kiruthiga",
+    "due": "2026-01-07 (Excel serial: 46029)",
+    "route": "(modules)/core-hr/components/EntitySwitcher.tsx",
+    "api": "GET /api/v1/companies or GET /api/companies",
+    "desc": "Hardcoded 4 entities; Manage Legal Entities button has no href/handler. Used on Core HR hub."
+  },
+  {
+    "id": "AURA-016",
+    "title": "API Duplication: Consolidate company dropdown source",
+    "module": "Companies Module",
+    "status": "Not Started",
+    "assignee": "Kiruthiga",
+    "due": "01/07/0206 (verify year; source value appears unusual)",
+    "route": "Employees/Departments/Locations pages",
+    "api": "/api/v1/companies, /api/master-data/companies, /api/companies",
+    "desc": "Employees/departments use /api/v1/companies; companies admin uses /api/master-data/companies; full /api/companies API is unused. Pick one canonical API."
+  }
+]

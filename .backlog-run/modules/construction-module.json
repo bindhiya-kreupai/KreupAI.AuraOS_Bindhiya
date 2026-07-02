@@ -1,0 +1,101 @@
+[
+  {
+    "id": "AURA-186",
+    "title": "Platform: Implement /api/construction/* API surface",
+    "module": "Construction Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "Module-wide",
+    "api": "dashboard/construction/services.ts; hooks/useConstruction.ts",
+    "desc": "All 8 pages use inline hardcoded data. services.ts defines 20+ endpoints; all return 501. useConstruction hook never imported."
+  },
+  {
+    "id": "AURA-187",
+    "title": "Project Management: Connect data layer and wire New Project",
+    "module": "Construction Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/construction/project-management",
+    "api": "ProjectManagementService \u2192 /api/construction/projects (missing)",
+    "desc": "Inline mock projects; no API or hook. New Project button unwired."
+  },
+  {
+    "id": "AURA-188",
+    "title": "Site Safety: Connect data layer and wire Report Incident",
+    "module": "Construction Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/construction/site-safety",
+    "api": "SiteSafetyService \u2192 /api/construction/safety/* (missing)",
+    "desc": "Hardcoded audits/incident-free counter. Report Incident unwired."
+  },
+  {
+    "id": "AURA-189",
+    "title": "Equipment Leasing: Connect data layer and wire CTAs",
+    "module": "Construction Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/construction/equipment-leasing",
+    "api": "EquipmentLeasingService \u2192 /api/construction/equipment/leases (missing)",
+    "desc": "Hardcoded equipment cards. Rent Equipment and Report Issue unwired."
+  },
+  {
+    "id": "AURA-190",
+    "title": "Subcontractor Portal: Connect data layer and wire vendor actions",
+    "module": "Construction Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/construction/subcontractor-portal",
+    "api": "SubcontractorPortalService \u2192 /api/construction/subcontractors (missing)",
+    "desc": "Hardcoded vendor table. Add Vendor and contract/invoice icons unwired."
+  },
+  {
+    "id": "AURA-191",
+    "title": "Site Safety (HSE): Orphan route \u2014 link from hub or remove",
+    "module": "Construction Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/construction/safety",
+    "api": "SiteSafetyService (missing APIs)",
+    "desc": "Duplicate safety UX not in hub ModuleGrid. Report Hazard, View Signatures, Start New Inspection unwired."
+  },
+  {
+    "id": "AURA-192",
+    "title": "Staffing: Create staffing API and wire roster actions",
+    "module": "Construction Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/construction/staffing",
+    "api": "/api/construction/staffing (missing \u2014 not in services.ts)",
+    "desc": "Orphan route; crew allocation UI with no backend. Manage Roster, transport, View Available Staff unwired."
+  },
+  {
+    "id": "AURA-193",
+    "title": "Unions: Wire union/grievance API",
+    "module": "Construction Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/construction/unions",
+    "api": "unionService (mock); /api/v1/er-compliance/grievances",
+    "desc": "Orphan route; grievance/CBA UI hardcoded. View Details unwired. Could align with /api/v1/er-compliance/grievances."
+  },
+  {
+    "id": "AURA-194",
+    "title": "Navigation: Link orphan pages in hub",
+    "module": "Construction Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/construction",
+    "api": "ModuleGrid",
+    "desc": "Hub lists 4 features; safety, staffing, unions routes unreachable from grid."
+  }
+]
