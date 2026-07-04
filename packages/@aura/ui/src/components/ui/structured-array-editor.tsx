@@ -30,7 +30,8 @@ function cn(...inputs: ClassValue[]) {
  * `onChange(rows)` so the parent can stage it for submission.
  */
 
-export type StructuredFieldType = 'text' | 'number' | 'boolean' | 'select';
+export type StructuredFieldType = 'text' | 'number' | 'boolean' | 'select'| 'date';
+
 
 export interface StructuredColumn {
     key: string;
@@ -246,6 +247,26 @@ export function StructuredArrayEditor<T extends Record<string, unknown> = Record
                                                     }
                                                     className={cn(
                                                         'w-full border border-gray-300 rounded px-1.5 py-1 text-sm tabular-nums',
+                                                        col.widthClass,
+                                                    )}
+                                                />
+                                            </td>
+                                        );
+                                    }
+                                    
+                                   if (col.type === 'date') {
+                                        return (
+                                            <td key={col.key} className="px-2 py-1">
+                                                <input
+                                                    id={cellId}
+                                                    type="date"
+                                                    aria-label={`${col.label} row ${rowIdx + 1}`}
+                                                    value={(cellValue as string) ?? ''}
+                                                    onChange={(e) =>
+                                                        update(rowIdx, col.key, e.target.value)
+                                                    }
+                                                    className={cn(
+                                                        'w-full border border-gray-300 rounded px-1.5 py-1 text-sm',
                                                         col.widthClass,
                                                     )}
                                                 />
