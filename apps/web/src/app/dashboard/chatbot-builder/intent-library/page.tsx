@@ -12,16 +12,32 @@ import {
   Save,
   AlertCircle,
   CheckCircle2,
+  ChevronDown,
+  ChevronRight,
+  Globe,
+  MessageSquare,
+  Settings,
 } from 'lucide-react';
 import { useChatbot } from '../hooks/useChatbot';
 import { ToastContainer } from '../components/Toast';
 import { LoadingSpinner } from '../components/LoadingSpinner';
+import type {
+  Intent,
+  TrainingPhrase,
+  IntentResponse,
+  IntentParameter,
+  IntentContext,
+} from '../types';
 
 interface IntentForm {
   intentName: string;
   displayName: string;
   description: string;
   category: string;
+  priority: number;
+  confidenceThreshold: number;
+  webhookEnabled: boolean;
+  webhookUrl: string;
 }
 
 const emptyForm: IntentForm = {
@@ -29,7 +45,13 @@ const emptyForm: IntentForm = {
   displayName: '',
   description: '',
   category: 'General',
+  priority: 0,
+  confidenceThreshold: 0.7,
+  webhookEnabled: false,
+  webhookUrl: '',
 };
+
+const categories = ['General', 'HR', 'IT', 'Finance', 'Operations', 'Compliance'];
 
 export default function IntentLibraryPage() {
   const {
@@ -43,19 +65,29 @@ export default function IntentLibraryPage() {
     removeToast,
   } = useChatbot();
   const [search, setSearch] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('');
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingIntent, setEditingIntent] = useState<string | null>(null);
   const [deleteConfirm, setDeleteConfirm] = useState<string | null>(null);
   const [form, setForm] = useState<IntentForm>(emptyForm);
   const [submitting, setSubmitting] = useState(false);
+  const [expandedCard, setExpandedCard] = useState<string | null>(null);
+  const [newPhrase, setNewPhrase] = useState<Record<string, string>>({});
+  const [newResponse, setNewResponse] = useState<Record<string, string>>({});
 
   const filteredIntents = useMemo(() => {
-    if (!search.trim()) return intents;
-    const q = search.toLowerCase();
-    return intents.filter(
-      (i) => i.intentName.toLowerCase().includes(q) || i.displayName.toLowerCase().includes(q)
-    );
-  }, [intents, search]);
+    let result = intents;
+    if (search.trim()) {
+      const q = search.toLowerCase();
+      result = result.filter(
+        (i) => i.intentName.toLowerCase().includes(q) || i.displayName.toLowerCase().includes(q)
+      );
+    }
+    if (categoryFilter) {
+      result = result.filter((i) => i.category === categoryFilter);
+    }
+    return result;
+  }, [intents, search, categoryFilter]);
 
   const handleCreate = async () => {
     if (!form.intentName.trim() || !form.displayName.trim()) {
@@ -69,8 +101,11 @@ export default function IntentLibraryPage() {
         displayName: form.displayName.trim(),
         description: form.description.trim(),
         category: form.category,
+        priority: form.priority,
+        confidenceThreshold: form.confidenceThreshold,
+        webhookEnabled: form.webhookEnabled,
+        webhookUrl: form.webhookEnabled ? form.webhookUrl.trim() : null,
         isActive: true,
-        confidenceThreshold: 0.7,
       });
       setForm(emptyForm);
       setShowCreateModal(false);
@@ -89,6 +124,10 @@ export default function IntentLibraryPage() {
         displayName: form.displayName.trim(),
         description: form.description.trim(),
         category: form.category,
+        priority: form.priority,
+        confidenceThreshold: form.confidenceThreshold,
+        webhookEnabled: form.webhookEnabled,
+        webhookUrl: form.webhookEnabled ? form.webhookUrl.trim() : null,
       });
       setForm(emptyForm);
       setEditingIntent(null);
@@ -98,16 +137,18 @@ export default function IntentLibraryPage() {
     }
   };
 
-  const handleEdit = (intentId: string) => {
-    const intent = intents.find((i) => i.intentId === intentId);
-    if (!intent) return;
+  const handleEdit = (intent: Intent) => {
     setForm({
       intentName: intent.intentName,
       displayName: intent.displayName,
       description: intent.description,
       category: intent.category,
+      priority: intent.priority,
+      confidenceThreshold: intent.confidenceThreshold,
+      webhookEnabled: intent.webhookEnabled,
+      webhookUrl: intent.webhookUrl ?? '',
     });
-    setEditingIntent(intentId);
+    setEditingIntent(intent.intentId);
   };
 
   const handleDelete = async (intentId: string) => {
@@ -121,9 +162,60 @@ export default function IntentLibraryPage() {
     }
   };
 
-  const toggleActive = async (intentId: string, current: boolean) => {
+  const toggleActive = async (intent: Intent) => {
     try {
-      await updateIntent(intentId, { isActive: !current });
+      await updateIntent(intent.intentId, { isActive: !intent.isActive });
+    } catch {}
+  };
+
+  const addPhrase = async (intent: Intent) => {
+    const text = newPhrase[intent.intentId];
+    if (!text?.trim()) return;
+    const phrase: TrainingPhrase = {
+      phraseId: `phrase-${Date.now()}`,
+      text: text.trim(),
+      language: 'en',
+      annotations: [],
+      addedDate: new Date(),
+    };
+    try {
+      await updateIntent(intent.intentId, {
+        trainingPhrases: [...(intent.trainingPhrases ?? []), phrase],
+      });
+      setNewPhrase((p) => ({ ...p, [intent.intentId]: '' }));
+    } catch {}
+  };
+
+  const removePhrase = async (intent: Intent, phraseId: string) => {
+    try {
+      await updateIntent(intent.intentId, {
+        trainingPhrases: (intent.trainingPhrases ?? []).filter((p) => p.phraseId !== phraseId),
+      });
+    } catch {}
+  };
+
+  const addResponse = async (intent: Intent) => {
+    const text = newResponse[intent.intentId];
+    if (!text?.trim()) return;
+    const response: IntentResponse = {
+      responseId: `resp-${Date.now()}`,
+      responseType: 'text',
+      content: { text: text.trim() },
+      language: 'en',
+    };
+    try {
+      await updateIntent(intent.intentId, {
+        responses: [...(intent.responses ?? []), response],
+      });
+      setNewResponse((p) => ({ ...p, [intent.intentId]: '' }));
+    } catch {}
+  };
+
+  const removeResponse = async (intent: Intent, responseId: string) => {
+    try {
+      await updateIntent(intent.intentId, {
+        responses: (intent.responses ?? []).filter((r) => r.responseId !== responseId),
+      });
     } catch {}
   };
 
@@ -158,15 +250,42 @@ export default function IntentLibraryPage() {
         </button>
       </div>
 
-      <div className="relative shrink-0">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-        <input
-          type="text"
-          placeholder="Search intents by name or display name..."
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 placeholder-slate-400"
-        />
+      <div className="flex items-center gap-3 shrink-0">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <input
+            type="text"
+            placeholder="Search intents..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-10 pr-4 py-2.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 placeholder-slate-400"
+          />
+        </div>
+        <div className="flex gap-1.5 flex-wrap">
+          <button
+            onClick={() => setCategoryFilter('')}
+            className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+              !categoryFilter
+                ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300'
+                : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-indigo-300'
+            }`}
+          >
+            All
+          </button>
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setCategoryFilter(categoryFilter === cat ? '' : cat)}
+              className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
+                categoryFilter === cat
+                  ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300'
+                  : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400 hover:border-indigo-300'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
       </div>
 
       {loading && intents.length === 0 ? (
@@ -177,9 +296,9 @@ export default function IntentLibraryPage() {
         <div className="flex-1 flex flex-col items-center justify-center text-slate-400 gap-3">
           <BrainCircuit className="w-12 h-12 opacity-40" />
           <p className="text-lg font-medium">
-            {search ? 'No intents match your search' : 'No intents yet'}
+            {search || categoryFilter ? 'No intents match your filters' : 'No intents yet'}
           </p>
-          {!search && (
+          {!search && !categoryFilter && (
             <button
               onClick={() => {
                 setForm(emptyForm);
@@ -217,13 +336,18 @@ export default function IntentLibraryPage() {
                     >
                       {intent.category}
                     </span>
+                    {intent.webhookEnabled && (
+                      <span title="Webhook enabled">
+                        <Globe className="w-3.5 h-3.5 text-amber-500" />
+                      </span>
+                    )}
                   </div>
                   <p className="text-sm text-slate-400 mt-0.5">{intent.displayName}</p>
                   <p className="text-sm text-slate-500 mt-1 line-clamp-2">{intent.description}</p>
                 </div>
                 <div className="flex items-center gap-1 ml-3 shrink-0">
                   <button
-                    onClick={() => handleEdit(intent.intentId)}
+                    onClick={() => handleEdit(intent)}
                     className="p-1.5 rounded-lg text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all opacity-0 group-hover:opacity-100"
                     title="Edit intent"
                   >
@@ -239,29 +363,150 @@ export default function IntentLibraryPage() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-4 pt-4 border-t border-slate-100 dark:border-slate-800">
+              <div className="grid grid-cols-2 gap-y-2 gap-x-3 pt-4 border-t border-slate-100 dark:border-slate-800">
                 <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                  <BrainCircuit className="w-4 h-4" />
-                  <span className="font-bold">{intent.trainingPhrases?.length ?? 0}</span> phrases
+                  <BrainCircuit className="w-4 h-4 shrink-0" />
+                  <span className="font-bold">{intent.trainingPhrases?.length ?? 0}</span>
+                  <span className="hidden sm:inline">phrases</span>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 justify-self-end">
+                  <span className="font-bold">{intent.usageCount ?? 0}</span>
+                  <span className="hidden sm:inline">used</span>
                 </div>
                 <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                  <CheckCircle2 className="w-4 h-4" />
+                  <CheckCircle2 className="w-4 h-4 shrink-0" />
                   <span className="font-bold">
                     {Math.round((intent.averageConfidence ?? 0) * 100)}%
-                  </span>{' '}
-                  accuracy
+                  </span>
+                  <span className="hidden sm:inline">accuracy</span>
                 </div>
-                <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400">
-                  <span className="font-bold">{intent.confidenceThreshold}</span> threshold
-                </div>
-                <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 ml-auto">
-                  <span className="font-bold">{intent.usageCount ?? 0}</span> used
+                <div className="flex items-center gap-2 text-sm text-slate-600 dark:text-slate-400 justify-self-end">
+                  <span className="font-bold">{intent.confidenceThreshold}</span>
+                  <span className="hidden sm:inline">threshold</span>
                 </div>
               </div>
 
-              <div className="flex items-center justify-between mt-3">
+              <div className="mt-3 border-t border-slate-100 dark:border-slate-800 pt-3">
                 <button
-                  onClick={() => toggleActive(intent.intentId, intent.isActive)}
+                  onClick={() =>
+                    setExpandedCard(expandedCard === intent.intentId ? null : intent.intentId)
+                  }
+                  className="flex items-center gap-2 text-xs font-medium text-slate-500 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+                >
+                  {expandedCard === intent.intentId ? (
+                    <ChevronDown className="w-3.5 h-3.5" />
+                  ) : (
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  )}
+                  {expandedCard === intent.intentId ? 'Hide' : 'Show'} Training Phrases & Responses
+                </button>
+
+                {expandedCard === intent.intentId && (
+                  <div className="mt-3 space-y-4">
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                          Training Phrases
+                        </label>
+                      </div>
+                      <div className="space-y-1 mb-2">
+                        {(intent.trainingPhrases ?? []).length === 0 && (
+                          <p className="text-xs text-slate-400 italic">No phrases yet.</p>
+                        )}
+                        {(intent.trainingPhrases ?? []).map((p) => (
+                          <div
+                            key={p.phraseId}
+                            className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-slate-800 rounded-lg"
+                          >
+                            <MessageSquare className="w-3 h-3 text-slate-400 shrink-0" />
+                            <span className="text-sm flex-1">{p.text}</span>
+                            <span className="text-[10px] text-slate-400 uppercase">
+                              {p.language}
+                            </span>
+                            <button
+                              onClick={() => removePhrase(intent, p.phraseId)}
+                              className="p-0.5 rounded hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-400 hover:text-red-500"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex gap-2">
+                        <input
+                          value={newPhrase[intent.intentId] ?? ''}
+                          onChange={(e) =>
+                            setNewPhrase((p) => ({ ...p, [intent.intentId]: e.target.value }))
+                          }
+                          placeholder="Add a training phrase..."
+                          className="flex-1 px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+                          onKeyDown={(e) => e.key === 'Enter' && addPhrase(intent)}
+                        />
+                        <button
+                          onClick={() => addPhrase(intent)}
+                          className="px-3 py-1.5 bg-indigo-600 text-white rounded-lg text-xs font-bold hover:bg-indigo-700 transition-colors shrink-0"
+                        >
+                          Add
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <div className="flex items-center justify-between mb-2">
+                        <label className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                          Bot Responses
+                        </label>
+                      </div>
+                      <div className="space-y-1 mb-2">
+                        {(intent.responses ?? []).length === 0 && (
+                          <p className="text-xs text-slate-400 italic">No responses configured.</p>
+                        )}
+                        {(intent.responses ?? []).map((r) => (
+                          <div
+                            key={r.responseId}
+                            className="flex items-center gap-2 px-3 py-1.5 bg-slate-50 dark:bg-slate-800 rounded-lg"
+                          >
+                            <CheckCircle2 className="w-3 h-3 text-emerald-500 shrink-0" />
+                            <span className="text-sm flex-1">
+                              {r.content?.text ?? JSON.stringify(r.content)}
+                            </span>
+                            <span className="text-[10px] text-slate-400 uppercase">
+                              {r.language}
+                            </span>
+                            <button
+                              onClick={() => removeResponse(intent, r.responseId)}
+                              className="p-0.5 rounded hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-400 hover:text-red-500"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="flex gap-2">
+                        <input
+                          value={newResponse[intent.intentId] ?? ''}
+                          onChange={(e) =>
+                            setNewResponse((p) => ({ ...p, [intent.intentId]: e.target.value }))
+                          }
+                          placeholder="Add a bot response..."
+                          className="flex-1 px-3 py-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+                          onKeyDown={(e) => e.key === 'Enter' && addResponse(intent)}
+                        />
+                        <button
+                          onClick={() => addResponse(intent)}
+                          className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 transition-colors shrink-0"
+                        >
+                          Add
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="flex items-center justify-between mt-3 pt-3 border-t border-slate-100 dark:border-slate-800">
+                <button
+                  onClick={() => toggleActive(intent)}
                   className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${
                     intent.isActive
                       ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 hover:bg-emerald-200 dark:hover:bg-emerald-900/50'
@@ -297,7 +542,7 @@ export default function IntentLibraryPage() {
 
       {modalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl w-full max-w-lg mx-4 p-6">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl w-full max-w-lg mx-4 p-6 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-lg font-bold">
                 {editingIntent ? 'Edit Intent' : 'Create Intent'}
@@ -343,27 +588,98 @@ export default function IntentLibraryPage() {
                   value={form.description}
                   onChange={(e) => setForm((prev) => ({ ...prev, description: e.target.value }))}
                   placeholder="Describe what this intent does..."
-                  rows={3}
+                  rows={2}
                   className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500 placeholder-slate-400 resize-none"
                 />
               </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                    Category
+                  </label>
+                  <select
+                    value={form.category}
+                    onChange={(e) => setForm((prev) => ({ ...prev, category: e.target.value }))}
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500"
+                  >
+                    {categories.map((cat) => (
+                      <option key={cat} value={cat}>
+                        {cat}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                    Priority
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    max={100}
+                    value={form.priority}
+                    onChange={(e) =>
+                      setForm((prev) => ({ ...prev, priority: parseInt(e.target.value) || 0 }))
+                    }
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500"
+                  />
+                </div>
+              </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                  Category
+                  Confidence Threshold:{' '}
+                  <span className="font-bold text-indigo-600">{form.confidenceThreshold}</span>
                 </label>
-                <select
-                  value={form.category}
-                  onChange={(e) => setForm((prev) => ({ ...prev, category: e.target.value }))}
-                  className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500"
-                >
-                  <option value="General">General</option>
-                  <option value="HR">HR</option>
-                  <option value="IT">IT</option>
-                  <option value="Finance">Finance</option>
-                  <option value="Operations">Operations</option>
-                  <option value="Compliance">Compliance</option>
-                </select>
+                <input
+                  type="range"
+                  min={0}
+                  max={1}
+                  step={0.05}
+                  value={form.confidenceThreshold}
+                  onChange={(e) =>
+                    setForm((prev) => ({
+                      ...prev,
+                      confidenceThreshold: parseFloat(e.target.value),
+                    }))
+                  }
+                  className="w-full accent-indigo-600"
+                />
+                <div className="flex justify-between text-[10px] text-slate-400">
+                  <span>0 (match anything)</span>
+                  <span>1 (exact match)</span>
+                </div>
               </div>
+              <div className="flex items-center gap-3 pt-1">
+                <input
+                  type="checkbox"
+                  id="webhookEnabled"
+                  checked={form.webhookEnabled}
+                  onChange={(e) =>
+                    setForm((prev) => ({ ...prev, webhookEnabled: e.target.checked }))
+                  }
+                  className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-indigo-600 focus:ring-indigo-500"
+                />
+                <label
+                  htmlFor="webhookEnabled"
+                  className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300"
+                >
+                  <Globe className="w-4 h-4 text-amber-500" /> Enable Webhook
+                </label>
+              </div>
+              {form.webhookEnabled && (
+                <div>
+                  <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                    Webhook URL
+                  </label>
+                  <input
+                    type="url"
+                    value={form.webhookUrl}
+                    onChange={(e) => setForm((prev) => ({ ...prev, webhookUrl: e.target.value }))}
+                    placeholder="https://api.example.com/webhook/intent"
+                    className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:border-indigo-500"
+                  />
+                </div>
+              )}
             </div>
 
             <div className="flex items-center justify-end gap-3 mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
