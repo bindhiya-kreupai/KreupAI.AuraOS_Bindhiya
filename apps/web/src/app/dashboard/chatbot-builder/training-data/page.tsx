@@ -1,10 +1,8 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useMemo } from 'react';
 import {
   DatabaseZap,
-  UploadCloud,
-  DownloadCloud,
   Filter,
   Check,
   X,
@@ -13,34 +11,64 @@ import {
   Search,
   Layers,
   Trash2,
+  Edit2,
 } from 'lucide-react';
 import { useChatbot } from '../hooks/useChatbot';
 import { TrainingExampleService, ModelTrainingService } from '../services';
+import type { TrainingExample, TrainingDataset } from '../types';
 
 export default function TrainingDataPage() {
   const {
+    intents,
     trainingDatasets,
     trainingExamples,
     loading,
     loadTrainingExamples,
     deleteTrainingExample,
     createTrainingDataset,
+    updateTrainingDataset,
     deleteTrainingDataset,
     addToast,
   } = useChatbot();
 
   const [view, setView] = useState<'datasets' | 'examples'>('examples');
   const [searchQuery, setSearchQuery] = useState('');
-  const [showImportModal, setShowImportModal] = useState(false);
-  const [showNewModal, setShowNewModal] = useState(false);
+  const [showExampleModal, setShowExampleModal] = useState(false);
+  const [editingExample, setEditingExample] = useState<TrainingExample | null>(null);
   const [showNewDatasetModal, setShowNewDatasetModal] = useState(false);
-  const [importForm, setImportForm] = useState({ text: '', intent: '', language: 'en' });
-  const [newForm, setNewForm] = useState({ text: '', intent: '', language: 'en' });
+  const [editingDataset, setEditingDataset] = useState<TrainingDataset | null>(null);
+  const [exampleForm, setExampleForm] = useState({
+    text: '',
+    intent: '',
+    language: 'en',
+    datasetId: '',
+  });
+  const [intentSearch, setIntentSearch] = useState('');
   const [datasetForm, setDatasetForm] = useState({
     datasetName: '',
     description: '',
     language: 'en',
+    intentsString: '',
   });
+
+  const defaultForm = { text: '', intent: '', language: 'en', datasetId: '' };
+  const defaultDatasetForm = {
+    datasetName: '',
+    description: '',
+    language: 'en',
+    intentsString: '',
+  };
+
+  const suggestedIntentNames = useMemo(() => {
+    const names = new Set<string>();
+    intents.forEach((i) => names.add(i.intentName));
+    trainingExamples.forEach((e) => names.add(e.intent));
+    return [...names].sort();
+  }, [intents, trainingExamples]);
+
+  const filteredIntentSuggestions = suggestedIntentNames.filter((n) =>
+    n.toLowerCase().includes(intentSearch.toLowerCase())
+  );
 
   const filteredExamples = trainingExamples.filter((e) =>
     e.intent.toLowerCase().includes(searchQuery.toLowerCase())
@@ -79,6 +107,23 @@ export default function TrainingDataPage() {
     }
   }, [addToast]);
 
+  const handleOpenEditExample = useCallback((ex: TrainingExample) => {
+    setEditingExample(ex);
+    setExampleForm({ text: ex.text, intent: ex.intent, language: ex.language, datasetId: '' });
+    setShowExampleModal(true);
+  }, []);
+
+  const handleOpenEditDataset = useCallback((ds: TrainingDataset) => {
+    setEditingDataset(ds);
+    setDatasetForm({
+      datasetName: ds.datasetName,
+      description: ds.description,
+      language: ds.language,
+      intentsString: Array.isArray(ds.intents) ? ds.intents.join(', ') : '',
+    });
+    setShowNewDatasetModal(true);
+  }, []);
+
   const handleDeleteDataset = useCallback(
     async (datasetId: string) => {
       if (
@@ -98,42 +143,58 @@ export default function TrainingDataPage() {
 
   const handleCreateDataset = useCallback(async () => {
     try {
-      await createTrainingDataset({
+      const intentsArr = datasetForm.intentsString
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
+      const payload: any = {
         datasetName: datasetForm.datasetName,
         description: datasetForm.description,
         language: datasetForm.language,
-      });
+        intents: intentsArr,
+      };
+      if (editingDataset) {
+        await updateTrainingDataset(editingDataset.datasetId, payload);
+      } else {
+        await createTrainingDataset(payload);
+      }
       setShowNewDatasetModal(false);
-      setDatasetForm({ datasetName: '', description: '', language: 'en' });
-      addToast({ type: 'success', message: 'Dataset created' });
+      setEditingDataset(null);
+      setDatasetForm(defaultDatasetForm);
+      addToast({
+        type: 'success',
+        message: editingDataset ? 'Dataset updated' : 'Dataset created',
+      });
     } catch {
-      addToast({ type: 'error', message: 'Failed to create dataset' });
+      addToast({ type: 'error', message: 'Failed to save dataset' });
     }
-  }, [createTrainingDataset, datasetForm, addToast]);
+  }, [createTrainingDataset, updateTrainingDataset, editingDataset, datasetForm, addToast]);
 
-  const handleImportSubmit = useCallback(async () => {
+  const handleExampleSubmit = useCallback(async () => {
     try {
-      await TrainingExampleService.createExample(importForm);
+      const payload: any = {
+        text: exampleForm.text,
+        intent: exampleForm.intent,
+        language: exampleForm.language,
+      };
+      if (exampleForm.datasetId) payload.datasetId = exampleForm.datasetId;
+      if (editingExample) {
+        await TrainingExampleService.updateExample(editingExample.exampleId, payload);
+      } else {
+        await TrainingExampleService.createExample(payload);
+      }
       await loadTrainingExamples();
-      setShowImportModal(false);
-      setImportForm({ text: '', intent: '', language: 'en' });
-      addToast({ type: 'success', message: 'Example imported' });
+      setShowExampleModal(false);
+      setEditingExample(null);
+      setExampleForm(defaultForm);
+      addToast({
+        type: 'success',
+        message: editingExample ? 'Example updated' : 'Example created',
+      });
     } catch {
-      addToast({ type: 'error', message: 'Failed to import example' });
+      addToast({ type: 'error', message: 'Failed to save example' });
     }
-  }, [importForm, loadTrainingExamples, addToast]);
-
-  const handleNewSubmit = useCallback(async () => {
-    try {
-      await TrainingExampleService.createExample(newForm);
-      await loadTrainingExamples();
-      setShowNewModal(false);
-      setNewForm({ text: '', intent: '', language: 'en' });
-      addToast({ type: 'success', message: 'Example created' });
-    } catch {
-      addToast({ type: 'error', message: 'Failed to create example' });
-    }
-  }, [newForm, loadTrainingExamples, addToast]);
+  }, [editingExample, exampleForm, loadTrainingExamples, addToast]);
 
   const statusColor = (status: string) => {
     switch (status) {
@@ -169,12 +230,6 @@ export default function TrainingDataPage() {
         </div>
         <div className="flex gap-2">
           <button
-            onClick={() => setShowImportModal(true)}
-            className="flex items-center gap-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 px-4 py-2 rounded-xl text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-700 transition-all"
-          >
-            <UploadCloud className="w-4 h-4" /> Import
-          </button>
-          <button
             onClick={handleRetrain}
             className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all"
           >
@@ -204,7 +259,11 @@ export default function TrainingDataPage() {
             <div className="p-4 border-b border-slate-100 dark:border-slate-800 flex items-center justify-between shrink-0">
               <h2 className="text-lg font-bold">Datasets</h2>
               <button
-                onClick={() => setShowNewDatasetModal(true)}
+                onClick={() => {
+                  setEditingDataset(null);
+                  setDatasetForm(defaultDatasetForm);
+                  setShowNewDatasetModal(true);
+                }}
                 className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-indigo-700 transition-all shrink-0"
               >
                 <Plus className="w-4 h-4" /> New Dataset
@@ -235,6 +294,13 @@ export default function TrainingDataPage() {
                             {ds.status}
                           </span>
                           <button
+                            onClick={() => handleOpenEditDataset(ds)}
+                            className="p-1.5 bg-sky-50 dark:bg-sky-900/20 text-sky-500 rounded-lg hover:bg-sky-100 dark:hover:bg-sky-900/40 transition-colors"
+                            title="Edit Dataset"
+                          >
+                            <Edit2 className="w-3.5 h-3.5" />
+                          </button>
+                          <button
                             onClick={() => handleDeleteDataset(ds.datasetId)}
                             className="p-1.5 bg-rose-50 dark:bg-rose-900/20 text-rose-500 rounded-lg hover:bg-rose-100 dark:hover:bg-rose-900/40 transition-colors"
                             title="Delete Dataset"
@@ -248,7 +314,7 @@ export default function TrainingDataPage() {
                         <span className="bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">
                           {ds.language}
                         </span>
-                        <span>{ds.intents.length} intents</span>
+                        <span>{ds.intents?.length ?? 0} intents</span>
                         <span>{ds.totalExamples} examples</span>
                       </div>
                     </div>
@@ -272,7 +338,11 @@ export default function TrainingDataPage() {
                 <Filter className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
               </div>
               <button
-                onClick={() => setShowNewModal(true)}
+                onClick={() => {
+                  setEditingExample(null);
+                  setExampleForm(defaultForm);
+                  setShowExampleModal(true);
+                }}
                 className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-indigo-700 transition-all shrink-0"
               >
                 <Plus className="w-4 h-4" /> New Example
@@ -318,6 +388,13 @@ export default function TrainingDataPage() {
                         </div>
                       </div>
                       <div className="flex gap-2 shrink-0">
+                        <button
+                          onClick={() => handleOpenEditExample(ex)}
+                          className="p-2 bg-sky-50 dark:bg-sky-900/20 text-sky-600 rounded-lg hover:bg-sky-100 transition-colors"
+                          title="Edit"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
                         {!ex.isValidated && (
                           <button
                             onClick={() => handleValidate(ex.exampleId)}
@@ -344,86 +421,18 @@ export default function TrainingDataPage() {
         )}
       </div>
 
-      {showImportModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold">Import Training Example</h2>
-              <button
-                onClick={() => setShowImportModal(false)}
-                className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                  Text
-                </label>
-                <textarea
-                  value={importForm.text}
-                  onChange={(e) => setImportForm({ ...importForm, text: e.target.value })}
-                  className="w-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
-                  rows={3}
-                  placeholder="Enter the training phrase..."
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                  Intent
-                </label>
-                <input
-                  type="text"
-                  value={importForm.intent}
-                  onChange={(e) => setImportForm({ ...importForm, intent: e.target.value })}
-                  className="w-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  placeholder="#IntentName"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                  Language
-                </label>
-                <select
-                  value={importForm.language}
-                  onChange={(e) => setImportForm({ ...importForm, language: e.target.value })}
-                  className="w-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                >
-                  <option value="en">English</option>
-                  <option value="es">Spanish</option>
-                  <option value="fr">French</option>
-                  <option value="de">German</option>
-                  <option value="ar">Arabic</option>
-                </select>
-              </div>
-            </div>
-            <div className="flex justify-end gap-2 mt-6">
-              <button
-                onClick={() => setShowImportModal(false)}
-                className="px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleImportSubmit}
-                disabled={!importForm.text || !importForm.intent}
-                className="px-4 py-2 text-sm font-bold bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Import
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {showNewDatasetModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
           <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold">New Dataset</h2>
+              <h2 className="text-lg font-bold">
+                {editingDataset ? 'Edit Dataset' : 'New Dataset'}
+              </h2>
               <button
-                onClick={() => setShowNewDatasetModal(false)}
+                onClick={() => {
+                  setShowNewDatasetModal(false);
+                  setEditingDataset(null);
+                }}
                 className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
               >
                 <X className="w-5 h-5" />
@@ -456,83 +465,26 @@ export default function TrainingDataPage() {
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  Intents
+                </label>
+                <input
+                  type="text"
+                  value={datasetForm.intentsString}
+                  onChange={(e) =>
+                    setDatasetForm({ ...datasetForm, intentsString: e.target.value })
+                  }
+                  className="w-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  placeholder="#greeting, #cancel_order, #refund"
+                />
+                <p className="text-xs text-slate-400 mt-1">Comma-separated intent names</p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
                   Language
                 </label>
                 <select
                   value={datasetForm.language}
                   onChange={(e) => setDatasetForm({ ...datasetForm, language: e.target.value })}
-                  className="w-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                >
-                  <option value="en">English</option>
-                  <option value="es">Spanish</option>
-                  <option value="fr">French</option>
-                  <option value="ar">Arabic</option>
-                </select>
-              </div>
-            </div>
-            <div className="flex justify-end gap-2 mt-6">
-              <button
-                onClick={() => setShowNewDatasetModal(false)}
-                className="px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleCreateDataset}
-                disabled={!datasetForm.datasetName || !datasetForm.description}
-                className="px-4 py-2 text-sm font-bold bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                Create Dataset
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {showNewModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-lg font-bold">New Training Example</h2>
-              <button
-                onClick={() => setShowNewModal(false)}
-                className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                  Text
-                </label>
-                <textarea
-                  value={newForm.text}
-                  onChange={(e) => setNewForm({ ...newForm, text: e.target.value })}
-                  className="w-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
-                  rows={3}
-                  placeholder="Enter the training phrase..."
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                  Intent
-                </label>
-                <input
-                  type="text"
-                  value={newForm.intent}
-                  onChange={(e) => setNewForm({ ...newForm, intent: e.target.value })}
-                  className="w-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
-                  placeholder="#IntentName"
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
-                  Language
-                </label>
-                <select
-                  value={newForm.language}
-                  onChange={(e) => setNewForm({ ...newForm, language: e.target.value })}
                   className="w-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
                 >
                   <option value="en">English</option>
@@ -545,17 +497,127 @@ export default function TrainingDataPage() {
             </div>
             <div className="flex justify-end gap-2 mt-6">
               <button
-                onClick={() => setShowNewModal(false)}
+                onClick={() => {
+                  setShowNewDatasetModal(false);
+                  setEditingDataset(null);
+                }}
                 className="px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
               >
                 Cancel
               </button>
               <button
-                onClick={handleNewSubmit}
-                disabled={!newForm.text || !newForm.intent}
+                onClick={handleCreateDataset}
+                disabled={!datasetForm.datasetName || !datasetForm.description}
                 className="px-4 py-2 text-sm font-bold bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Create
+                {editingDataset ? 'Save' : 'Create Dataset'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showExampleModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-xl w-full max-w-lg mx-4 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold">
+                {editingExample ? 'Edit Training Example' : 'New Training Example'}
+              </h2>
+              <button
+                onClick={() => {
+                  setShowExampleModal(false);
+                  setEditingExample(null);
+                }}
+                className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  Text
+                </label>
+                <textarea
+                  value={exampleForm.text}
+                  onChange={(e) => setExampleForm({ ...exampleForm, text: e.target.value })}
+                  className="w-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                  rows={3}
+                  placeholder="Enter the training phrase..."
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  Intent
+                </label>
+                <input
+                  type="text"
+                  value={exampleForm.intent}
+                  onChange={(e) => {
+                    setExampleForm({ ...exampleForm, intent: e.target.value });
+                    setIntentSearch(e.target.value);
+                  }}
+                  list="intent-suggestions"
+                  className="w-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  placeholder="#IntentName"
+                />
+                <datalist id="intent-suggestions">
+                  {filteredIntentSuggestions.map((name) => (
+                    <option key={name} value={name} />
+                  ))}
+                </datalist>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  Dataset <span className="text-slate-400 font-normal">(optional)</span>
+                </label>
+                <select
+                  value={exampleForm.datasetId}
+                  onChange={(e) => setExampleForm({ ...exampleForm, datasetId: e.target.value })}
+                  className="w-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="">— No dataset —</option>
+                  {trainingDatasets.map((ds) => (
+                    <option key={ds.datasetId} value={ds.datasetId}>
+                      {ds.datasetName} ({ds.language})
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  Language
+                </label>
+                <select
+                  value={exampleForm.language}
+                  onChange={(e) => setExampleForm({ ...exampleForm, language: e.target.value })}
+                  className="w-full border border-slate-200 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="en">English</option>
+                  <option value="es">Spanish</option>
+                  <option value="fr">French</option>
+                  <option value="de">German</option>
+                  <option value="ar">Arabic</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 mt-6">
+              <button
+                onClick={() => {
+                  setShowExampleModal(false);
+                  setEditingExample(null);
+                }}
+                className="px-4 py-2 text-sm font-bold text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleExampleSubmit}
+                disabled={!exampleForm.text || !exampleForm.intent}
+                className="px-4 py-2 text-sm font-bold bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {editingExample ? 'Save' : 'Create'}
               </button>
             </div>
           </div>

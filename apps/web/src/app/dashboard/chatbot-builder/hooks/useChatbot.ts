@@ -489,6 +489,19 @@ export const useChatbot = () => {
     }
   };
 
+  const updateTrainingDataset = async (datasetId: string, updates: Partial<TrainingDataset>) => {
+    setLoading(true);
+    try {
+      await TrainingDatasetService.updateDataset(datasetId, updates);
+      await loadTrainingDatasets();
+      addToast({ type: 'success', message: 'Dataset updated' });
+    } catch {
+      addToast({ type: 'error', message: 'Failed to update dataset' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const deleteTrainingDataset = async (datasetId: string) => {
     setLoading(true);
     try {
@@ -540,6 +553,7 @@ export const useChatbot = () => {
     deleteIntent,
     loadTrainingDatasets,
     createTrainingDataset,
+    updateTrainingDataset,
     deleteTrainingDataset,
     loadTrainingExamples,
     deleteTrainingExample,

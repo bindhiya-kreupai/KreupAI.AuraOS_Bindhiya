@@ -62,6 +62,12 @@ export const DELETE = withEnhancedAuth(async (request: NextRequest, context: any
       where: { id: exampleId },
       data: { isDeleted: true, deletedAt: new Date() },
     });
+    if (existing.datasetId) {
+      await prisma.chatbotTrainingDataset.update({
+        where: { id: existing.datasetId },
+        data: { totalExamples: { decrement: 1 } },
+      });
+    }
     return successItem({ deleted: true });
   } catch (error: any) {
     return serverError(error, 'delete training example');
