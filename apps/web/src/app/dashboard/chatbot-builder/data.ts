@@ -1,11 +1,22 @@
-// @ts-nocheck — Dev/demo seed data, intentionally loose-typed.
 // Chatbot Builder Module - Sample Data
 
 import type {
-  DialogueFlow, FlowTest, Entity, Intent, TrainingDataset, TrainingExample,
-  ModelTraining, Channel, MessageTemplate, ConversationAnalytics,
-  HandoffRule, HandoffQueue, Agent, Language, LocalizationSettings,
-  ChatbotSettings
+  DialogueFlow,
+  FlowTest,
+  Entity,
+  Intent,
+  TrainingDataset,
+  TrainingExample,
+  ModelTraining,
+  Channel,
+  MessageTemplate,
+  ConversationAnalytics,
+  HandoffRule,
+  HandoffQueue,
+  Agent,
+  Language,
+  LocalizationSettings,
+  ChatbotSettings,
 } from './types';
 
 // ============================================================================
@@ -93,7 +104,12 @@ export const sampleDialogueFlows: DialogueFlow[] = [
     ],
     variables: [
       { variableId: 'var-1', variableName: 'leave_type', variableType: 'string', isRequired: true },
-      { variableId: 'var-2', variableName: 'leave_dates', variableType: 'object', isRequired: true },
+      {
+        variableId: 'var-2',
+        variableName: 'leave_dates',
+        variableType: 'object',
+        isRequired: true,
+      },
     ],
     isActive: true,
     version: '1.0',
@@ -118,7 +134,11 @@ export const sampleFlowTests: FlowTest[] = [
         scenarioId: 'scenario-1',
         scenarioName: 'Vacation request',
         userInputs: ['I need time off', 'Vacation', '2025-01-15 to 2025-01-20'],
-        expectedResponses: ['What type of leave', 'provide start and end dates', 'submitted successfully'],
+        expectedResponses: [
+          'What type of leave',
+          'provide start and end dates',
+          'submitted successfully',
+        ],
         assertions: [
           {
             assertionId: 'assert-1',
@@ -191,10 +211,34 @@ export const sampleIntents: Intent[] = [
     description: 'User wants to request time off',
     category: 'Leave Management',
     trainingPhrases: [
-      { phraseId: 'phrase-1', text: 'I need time off', language: 'en', annotations: [], addedDate: new Date() },
-      { phraseId: 'phrase-2', text: 'I want to apply for vacation', language: 'en', annotations: [], addedDate: new Date() },
-      { phraseId: 'phrase-3', text: 'Can I request leave?', language: 'en', annotations: [], addedDate: new Date() },
-      { phraseId: 'phrase-4', text: 'I would like to take some days off', language: 'en', annotations: [], addedDate: new Date() },
+      {
+        phraseId: 'phrase-1',
+        text: 'I need time off',
+        language: 'en',
+        annotations: [],
+        addedDate: new Date(),
+      },
+      {
+        phraseId: 'phrase-2',
+        text: 'I want to apply for vacation',
+        language: 'en',
+        annotations: [],
+        addedDate: new Date(),
+      },
+      {
+        phraseId: 'phrase-3',
+        text: 'Can I request leave?',
+        language: 'en',
+        annotations: [],
+        addedDate: new Date(),
+      },
+      {
+        phraseId: 'phrase-4',
+        text: 'I would like to take some days off',
+        language: 'en',
+        annotations: [],
+        addedDate: new Date(),
+      },
     ],
     responses: [
       {
@@ -232,9 +276,27 @@ export const sampleIntents: Intent[] = [
     description: 'User wants to check remaining leave balance',
     category: 'Leave Management',
     trainingPhrases: [
-      { phraseId: 'phrase-5', text: 'How many days off do I have?', language: 'en', annotations: [], addedDate: new Date() },
-      { phraseId: 'phrase-6', text: 'Check my leave balance', language: 'en', annotations: [], addedDate: new Date() },
-      { phraseId: 'phrase-7', text: 'What is my PTO balance?', language: 'en', annotations: [], addedDate: new Date() },
+      {
+        phraseId: 'phrase-5',
+        text: 'How many days off do I have?',
+        language: 'en',
+        annotations: [],
+        addedDate: new Date(),
+      },
+      {
+        phraseId: 'phrase-6',
+        text: 'Check my leave balance',
+        language: 'en',
+        annotations: [],
+        addedDate: new Date(),
+      },
+      {
+        phraseId: 'phrase-7',
+        text: 'What is my PTO balance?',
+        language: 'en',
+        annotations: [],
+        addedDate: new Date(),
+      },
     ],
     responses: [
       {
@@ -321,7 +383,7 @@ export const sampleModelTrainings: ModelTraining[] = [
     accuracy: 0.92,
     precision: 0.89,
     recall: 0.91,
-    f1Score: 0.90,
+    f1Score: 0.9,
     trainingMetrics: {
       totalExamples: 1245,
       trainingExamples: 870,
@@ -331,8 +393,20 @@ export const sampleModelTrainings: ModelTraining[] = [
       learningRate: 0.001,
       batchSize: 32,
       intentMetrics: [
-        { intentName: 'request_leave', precision: 0.91, recall: 0.93, f1Score: 0.92, supportCount: 285 },
-        { intentName: 'check_balance', precision: 0.94, recall: 0.92, f1Score: 0.93, supportCount: 198 },
+        {
+          intentName: 'request_leave',
+          precision: 0.91,
+          recall: 0.93,
+          f1Score: 0.92,
+          supportCount: 285,
+        },
+        {
+          intentName: 'check_balance',
+          precision: 0.94,
+          recall: 0.92,
+          f1Score: 0.93,
+          supportCount: 198,
+        },
       ],
     },
     modelConfig: {
@@ -465,7 +539,12 @@ export const sampleHandoffRules: HandoffRule[] = [
       { triggerId: 'trigger-1', triggerType: 'intent', triggerValue: 'complex_payroll_question' },
     ],
     conditions: [
-      { conditionId: 'cond-1', conditionType: 'time_of_day', operator: 'between', value: { start: 9, end: 17 } },
+      {
+        conditionId: 'cond-1',
+        conditionType: 'time_of_day',
+        operator: 'between',
+        value: { start: 9, end: 17 },
+      },
     ],
     action: {
       targetType: 'department',
