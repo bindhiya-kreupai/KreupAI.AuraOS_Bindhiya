@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useMemo, useCallback } from 'react';
 import {
   Share2,
   Globe,
@@ -13,6 +13,8 @@ import {
   Trash2,
   ToggleRight,
   Plug,
+  Download,
+  Search,
 } from 'lucide-react';
 import { useChatbot } from '../hooks/useChatbot';
 import type { Channel } from '../types';
@@ -35,6 +37,15 @@ const typeColors: Record<string, string> = {
   mobile: 'text-purple-500',
 };
 
+const channelTypeLabels: Record<string, string> = {
+  web: 'Web Widget',
+  slack: 'Slack',
+  teams: 'Microsoft Teams',
+  whatsapp: 'WhatsApp',
+  facebook: 'Facebook Messenger',
+  mobile: 'Mobile App',
+};
+
 export default function MultiChannelPage() {
   const { channels, loading, createChannel, updateChannel, deleteChannel, testChannel, addToast } =
     useChatbot();
@@ -47,31 +58,54 @@ export default function MultiChannelPage() {
   const [channelType, setChannelType] = useState<string>('web');
   const [isEnabled, setIsEnabled] = useState(true);
   const [configurationJson, setConfigurationJson] = useState('{}');
+  const [featuresJson, setFeaturesJson] = useState('[]');
 
-  const openAddModal = () => {
+  const [searchQuery, setSearchQuery] = useState('');
+  const [typeFilter, setTypeFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('');
+
+  const filteredChannels = useMemo(() => {
+    let list = channels;
+    if (typeFilter) list = list.filter((c) => c.channelType === typeFilter);
+    if (statusFilter) list = list.filter((c) => c.status === statusFilter);
+    if (searchQuery)
+      list = list.filter((c) => c.channelName.toLowerCase().includes(searchQuery.toLowerCase()));
+    return list;
+  }, [channels, typeFilter, statusFilter, searchQuery]);
+
+  const openAddModal = useCallback(() => {
     setEditingChannel(null);
     setChannelName('');
     setChannelType('web');
     setIsEnabled(true);
     setConfigurationJson('{}');
+    setFeaturesJson('[]');
     setShowModal(true);
-  };
+  }, []);
 
-  const openEditModal = (channel: Channel) => {
+  const openEditModal = useCallback((channel: Channel) => {
     setEditingChannel(channel);
     setChannelName(channel.channelName);
     setChannelType(channel.channelType);
     setIsEnabled(channel.isEnabled);
     setConfigurationJson(JSON.stringify(channel.configuration, null, 2));
+    setFeaturesJson(JSON.stringify(channel.features, null, 2));
     setShowModal(true);
-  };
+  }, []);
 
   const handleSave = async () => {
     let config: any;
+    let features: any;
     try {
       config = JSON.parse(configurationJson);
     } catch {
       addToast({ type: 'error', message: 'Invalid configuration JSON' });
+      return;
+    }
+    try {
+      features = JSON.parse(featuresJson);
+    } catch {
+      addToast({ type: 'error', message: 'Invalid features JSON' });
       return;
     }
 
@@ -80,6 +114,7 @@ export default function MultiChannelPage() {
       channelType: channelType as Channel['channelType'],
       isEnabled,
       configuration: config,
+      features,
     };
 
     if (editingChannel) {
@@ -91,22 +126,43 @@ export default function MultiChannelPage() {
     setShowModal(false);
   };
 
-  const handleToggle = (channel: Channel) => {
-    const newEnabled = !channel.isEnabled;
-    updateChannel(channel.channelId, {
-      isEnabled: newEnabled,
-      status: newEnabled ? 'active' : 'inactive',
-    });
-  };
+  const handleToggle = useCallback(
+    (channel: Channel) => {
+      const newEnabled = !channel.isEnabled;
+      updateChannel(channel.channelId, {
+        isEnabled: newEnabled,
+        status: newEnabled ? 'active' : 'inactive',
+      });
+    },
+    [updateChannel]
+  );
 
-  const handleDelete = async (channelId: string) => {
-    await deleteChannel(channelId);
-    setDeleteConfirmId(null);
-  };
+  const handleDelete = useCallback(
+    async (channelId: string) => {
+      await deleteChannel(channelId);
+      setDeleteConfirmId(null);
+    },
+    [deleteChannel]
+  );
 
-  const handleTest = async (channelId: string) => {
-    await testChannel(channelId);
-  };
+  const handleTest = useCallback(
+    async (channelId: string) => {
+      await testChannel(channelId);
+    },
+    [testChannel]
+  );
+
+  const handleExport = useCallback(() => {
+    const json = JSON.stringify(channels, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `aura-channels-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    addToast({ type: 'success', message: 'Channels exported' });
+  }, [channels, addToast]);
 
   const webChannel = channels.find((c) => c.channelType === 'web' || c.channelType === 'mobile');
 
@@ -120,25 +176,88 @@ export default function MultiChannelPage() {
           </h1>
           <p className="text-slate-500 text-sm">Deploy your bot across various platforms.</p>
         </div>
-        <button
-          onClick={openAddModal}
-          className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-medium transition-colors"
+        <div className="flex gap-2">
+          <button
+            onClick={handleExport}
+            disabled={channels.length === 0}
+            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors disabled:opacity-40"
+          >
+            <Download className="w-4 h-4" />
+            Export
+          </button>
+          <button
+            onClick={openAddModal}
+            className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-sm font-medium transition-colors"
+          >
+            <Plus className="w-4 h-4" />
+            Add Channel
+          </button>
+        </div>
+      </div>
+
+      <div className="flex flex-col sm:flex-row gap-2 shrink-0">
+        <div className="relative flex-1 max-w-xs">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <input
+            type="text"
+            placeholder="Search channels..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-9 pr-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+        </div>
+        <select
+          value={typeFilter}
+          onChange={(e) => setTypeFilter(e.target.value)}
+          className="px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
         >
-          <Plus className="w-4 h-4" />
-          Add Channel
-        </button>
+          <option value="">All Types</option>
+          {Object.entries(channelTypeLabels).map(([val, label]) => (
+            <option key={val} value={val}>
+              {label}
+            </option>
+          ))}
+        </select>
+        <select
+          value={statusFilter}
+          onChange={(e) => setStatusFilter(e.target.value)}
+          className="px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+        >
+          <option value="">All Status</option>
+          <option value="active">Active</option>
+          <option value="inactive">Inactive</option>
+          <option value="error">Error</option>
+        </select>
       </div>
 
       {loading && channels.length === 0 ? (
         <div className="flex-1 flex items-center justify-center">
           <div className="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin" />
         </div>
+      ) : filteredChannels.length === 0 ? (
+        <div className="flex-1 flex flex-col items-center justify-center text-slate-400">
+          <Share2 className="w-12 h-12 mb-3" />
+          <p className="font-medium">
+            {searchQuery || typeFilter || statusFilter ? 'No matching channels' : 'No channels yet'}
+          </p>
+          <p className="text-sm">
+            {searchQuery || typeFilter || statusFilter
+              ? 'Try adjusting your filters.'
+              : 'Add a channel to deploy your bot.'}
+          </p>
+        </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {channels.map((channel) => {
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 overflow-y-auto flex-1">
+          {filteredChannels.map((channel) => {
             const Icon = iconMap[channel.channelType] || Globe;
             const color = typeColors[channel.channelType] || 'text-slate-500';
-            const statusColor =
+            const statusDotColor =
+              channel.status === 'active'
+                ? 'bg-emerald-500'
+                : channel.status === 'error'
+                  ? 'bg-red-500'
+                  : 'bg-slate-400';
+            const statusTextColor =
               channel.status === 'active'
                 ? 'text-emerald-500'
                 : channel.status === 'error'
@@ -166,11 +285,9 @@ export default function MultiChannelPage() {
                   <h3 className="font-bold text-lg capitalize">{channel.channelName}</h3>
                   <div className="flex items-center gap-2 mt-1">
                     <span
-                      className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full ${statusColor} bg-slate-50 dark:bg-slate-800`}
+                      className={`inline-flex items-center gap-1 text-xs font-semibold px-2 py-0.5 rounded-full ${statusTextColor} bg-slate-50 dark:bg-slate-800`}
                     >
-                      <span
-                        className={`w-1.5 h-1.5 rounded-full ${statusColor === 'text-emerald-500' ? 'bg-emerald-500' : statusColor === 'text-red-500' ? 'bg-red-500' : 'bg-slate-400'}`}
-                      />
+                      <span className={`w-1.5 h-1.5 rounded-full ${statusDotColor}`} />
                       {channel.status}
                     </span>
                     {channel.lastSyncDate && (
@@ -179,6 +296,27 @@ export default function MultiChannelPage() {
                       </span>
                     )}
                   </div>
+                  {channel.features && channel.features.length > 0 && (
+                    <div className="flex flex-wrap gap-1 mt-3">
+                      {channel.features.slice(0, 3).map((f, i) => (
+                        <span
+                          key={i}
+                          className={`text-xs font-medium px-1.5 py-0.5 rounded ${
+                            f.isSupported
+                              ? 'bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400'
+                              : 'bg-slate-100 text-slate-400 dark:bg-slate-800'
+                          }`}
+                        >
+                          {f.featureName}
+                        </span>
+                      ))}
+                      {channel.features.length > 3 && (
+                        <span className="text-xs text-slate-400">
+                          +{channel.features.length - 3}
+                        </span>
+                      )}
+                    </div>
+                  )}
                 </div>
                 <div className="flex items-center gap-2 mt-4 pt-4 border-t border-slate-100 dark:border-slate-800">
                   <button
@@ -226,7 +364,7 @@ export default function MultiChannelPage() {
         </div>
       )}
 
-      <div className="bg-indigo-50 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-800 rounded-2xl p-6 mt-6">
+      <div className="bg-indigo-50 dark:bg-indigo-900/10 border border-indigo-100 dark:border-indigo-800 rounded-2xl p-6 shrink-0">
         <h3 className="font-bold text-indigo-800 dark:text-indigo-300 mb-2">
           Web Widget Installation
         </h3>
@@ -287,6 +425,18 @@ export default function MultiChannelPage() {
                 >
                   <ToggleRight className="w-6 h-6" />
                 </button>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
+                  Features (JSON)
+                </label>
+                <textarea
+                  value={featuresJson}
+                  onChange={(e) => setFeaturesJson(e.target.value)}
+                  rows={3}
+                  className="w-full px-3 py-2 border border-slate-300 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 font-mono text-xs focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  placeholder='[{"featureName":"handoff","isSupported":true}]'
+                />
               </div>
               <div>
                 <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">
