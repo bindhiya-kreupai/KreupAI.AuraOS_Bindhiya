@@ -2,45 +2,44 @@
 
 import { useState, useEffect } from 'react';
 import type {
-  DialogueFlow, FlowTest, Entity, Intent, TrainingDataset, TrainingExample,
-  ModelTraining, Channel, MessageTemplate, ConversationAnalytics, HandoffRule, Agent,
-  Language, LocalizationSettings,
-  ChatbotSettings, Toast
-} from '../types';
-import { IntentMatch, ChannelMessage,
-  UserFeedback, ConversationSession, HandoffQueue, HandoffRequest, Translation, LanguageContent, LanguageDetection
+  DialogueFlow,
+  Entity,
+  Intent,
+  TrainingDataset,
+  TrainingExample,
+  Channel,
+  ConversationAnalytics,
+  HandoffRule,
+  Agent,
+  Language,
+  ChatbotSettings,
+  Toast,
 } from '../types';
 import {
-  DialogueFlowService, FlowTestService, EntityService, IntentService, IntentMatchService,
-  TrainingDatasetService, TrainingExampleService, ModelTrainingService, ChannelService,
-  MessageTemplateService, AnalyticsService, UserFeedbackService, ConversationSessionService,
-  HandoffRuleService, HandoffRequestService, AgentService, LanguageService, TranslationService,
-  LanguageContentService, LanguageDetectionService, LocalizationSettingsService,
-  ChatbotSettingsService
+  DialogueFlowService,
+  EntityService,
+  IntentService,
+  TrainingDatasetService,
+  TrainingExampleService,
+  ChannelService,
+  AnalyticsService,
+  HandoffRuleService,
+  AgentService,
+  LanguageService,
+  ChatbotSettingsService,
 } from '../services';
-import {
-  sampleDialogueFlows, sampleFlowTests, sampleEntities, sampleIntents, sampleTrainingDatasets,
-  sampleTrainingExamples, sampleModelTrainings, sampleChannels, sampleMessageTemplates,
-  sampleConversationAnalytics, sampleHandoffRules, sampleHandoffQueues, sampleAgents,
-  sampleLanguages, sampleLocalizationSettings, sampleChatbotSettings
-} from '../data';
 
 export const useChatbot = () => {
-  // State
   const [dialogueFlows, setDialogueFlows] = useState<DialogueFlow[]>([]);
-  const [flowTests, setFlowTests] = useState<FlowTest[]>([]);
   const [entities, setEntities] = useState<Entity[]>([]);
   const [intents, setIntents] = useState<Intent[]>([]);
   const [trainingDatasets, setTrainingDatasets] = useState<TrainingDataset[]>([]);
   const [trainingExamples, setTrainingExamples] = useState<TrainingExample[]>([]);
-  const [modelTrainings, setModelTrainings] = useState<ModelTraining[]>([]);
   const [channels, setChannels] = useState<Channel[]>([]);
-  const [messageTemplates, setMessageTemplates] = useState<MessageTemplate[]>([]);
   const [analytics, setAnalytics] = useState<ConversationAnalytics | null>(null);
   const [handoffRules, setHandoffRules] = useState<HandoffRule[]>([]);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [languages, setLanguages] = useState<Language[]>([]);
-  const [localizationSettings, setLocalizationSettings] = useState<LocalizationSettings | null>(null);
   const [settings, setSettings] = useState<ChatbotSettings | null>(null);
   const [loading, setLoading] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -52,38 +51,41 @@ export const useChatbot = () => {
   const loadInitialData = async () => {
     setLoading(true);
     try {
-      const existing = await DialogueFlowService.getAllFlows();
-      if (existing.length === 0) {
-        localStorage.setItem('chatbot_dialogue_flows', JSON.stringify(sampleDialogueFlows));
-        localStorage.setItem('chatbot_flow_tests', JSON.stringify(sampleFlowTests));
-        localStorage.setItem('chatbot_entities', JSON.stringify(sampleEntities));
-        localStorage.setItem('chatbot_intents', JSON.stringify(sampleIntents));
-        localStorage.setItem('chatbot_training_datasets', JSON.stringify(sampleTrainingDatasets));
-        localStorage.setItem('chatbot_training_examples', JSON.stringify(sampleTrainingExamples));
-        localStorage.setItem('chatbot_model_trainings', JSON.stringify(sampleModelTrainings));
-        localStorage.setItem('chatbot_channels', JSON.stringify(sampleChannels));
-        localStorage.setItem('chatbot_message_templates', JSON.stringify(sampleMessageTemplates));
-        localStorage.setItem('chatbot_handoff_rules', JSON.stringify(sampleHandoffRules));
-        localStorage.setItem('chatbot_agents', JSON.stringify(sampleAgents));
-        localStorage.setItem('chatbot_languages', JSON.stringify(sampleLanguages));
-      }
-
       await Promise.all([
-        loadDialogueFlows(), loadFlowTests(), loadEntities(), loadIntents(),
-        loadTrainingDatasets(), loadChannels(), loadHandoffRules(), loadAgents(),
-        loadLanguages(), loadSettings()
+        loadDialogueFlows(),
+        loadEntities(),
+        loadIntents(),
+        loadTrainingDatasets(),
+        loadTrainingExamples(),
+        loadChannels(),
+        loadHandoffRules(),
+        loadAgents(),
+        loadLanguages(),
+        loadSettings(),
       ]);
-    } catch (error: any) {
-            addToast({ type: 'error', message: 'Failed to load chatbot data' });
+    } catch {
+      addToast({ type: 'error', message: 'Failed to load chatbot data' });
     } finally {
       setLoading(false);
     }
   };
 
-  // Dialogue Flow Methods
+  const addToast = (toast: Omit<Toast, 'id'>) => {
+    const id = `toast-${Date.now()}-${Math.random()}`;
+    setToasts((prev) => [...prev, { ...toast, id }]);
+  };
+
+  const removeToast = (id: string) => {
+    setToasts((prev) => prev.filter((t) => t.id !== id));
+  };
+
   const loadDialogueFlows = async () => {
-    const data = await DialogueFlowService.getAllFlows();
-    setDialogueFlows(data);
+    try {
+      const data = await DialogueFlowService.getAllFlows();
+      setDialogueFlows(data);
+    } catch {
+      setDialogueFlows([]);
+    }
   };
 
   const createDialogueFlow = async (flowData: Partial<DialogueFlow>) => {
@@ -93,9 +95,9 @@ export const useChatbot = () => {
       await loadDialogueFlows();
       addToast({ type: 'success', message: 'Dialogue flow created' });
       return flow;
-    } catch (error: any) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to create flow' });
-      throw error;
+      throw new Error('Failed to create flow');
     } finally {
       setLoading(false);
     }
@@ -108,9 +110,9 @@ export const useChatbot = () => {
       await loadDialogueFlows();
       addToast({ type: 'success', message: 'Flow updated' });
       return flow;
-    } catch (error: any) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to update flow' });
-      throw error;
+      throw new Error('Failed to update flow');
     } finally {
       setLoading(false);
     }
@@ -122,9 +124,8 @@ export const useChatbot = () => {
       await DialogueFlowService.publishFlow(flowId);
       await loadDialogueFlows();
       addToast({ type: 'success', message: 'Flow published' });
-    } catch (error: any) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to publish flow' });
-      throw error;
     } finally {
       setLoading(false);
     }
@@ -136,18 +137,20 @@ export const useChatbot = () => {
       await DialogueFlowService.deleteFlow(flowId);
       await loadDialogueFlows();
       addToast({ type: 'success', message: 'Flow deleted' });
-    } catch (error: any) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to delete flow' });
-      throw error;
     } finally {
       setLoading(false);
     }
   };
 
-  // Entity Methods
   const loadEntities = async () => {
-    const data = await EntityService.getAllEntities();
-    setEntities(data);
+    try {
+      const data = await EntityService.getAllEntities();
+      setEntities(data);
+    } catch {
+      setEntities([]);
+    }
   };
 
   const createEntity = async (entityData: Partial<Entity>) => {
@@ -157,9 +160,8 @@ export const useChatbot = () => {
       await loadEntities();
       addToast({ type: 'success', message: 'Entity created' });
       return entity;
-    } catch (error: any) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to create entity' });
-      throw error;
     } finally {
       setLoading(false);
     }
@@ -172,9 +174,8 @@ export const useChatbot = () => {
       await loadEntities();
       addToast({ type: 'success', message: 'Entity updated' });
       return entity;
-    } catch (error: any) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to update entity' });
-      throw error;
     } finally {
       setLoading(false);
     }
@@ -186,18 +187,20 @@ export const useChatbot = () => {
       await EntityService.deleteEntity(entityId);
       await loadEntities();
       addToast({ type: 'success', message: 'Entity deleted' });
-    } catch (error: any) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to delete entity' });
-      throw error;
     } finally {
       setLoading(false);
     }
   };
 
-  // Intent Methods
   const loadIntents = async () => {
-    const data = await IntentService.getAllIntents();
-    setIntents(data);
+    try {
+      const data = await IntentService.getAllIntents();
+      setIntents(data);
+    } catch {
+      setIntents([]);
+    }
   };
 
   const createIntent = async (intentData: Partial<Intent>) => {
@@ -207,9 +210,8 @@ export const useChatbot = () => {
       await loadIntents();
       addToast({ type: 'success', message: 'Intent created' });
       return intent;
-    } catch (error: any) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to create intent' });
-      throw error;
     } finally {
       setLoading(false);
     }
@@ -222,9 +224,8 @@ export const useChatbot = () => {
       await loadIntents();
       addToast({ type: 'success', message: 'Intent updated' });
       return intent;
-    } catch (error: any) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to update intent' });
-      throw error;
     } finally {
       setLoading(false);
     }
@@ -236,18 +237,20 @@ export const useChatbot = () => {
       await IntentService.deleteIntent(intentId);
       await loadIntents();
       addToast({ type: 'success', message: 'Intent deleted' });
-    } catch (error: any) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to delete intent' });
-      throw error;
     } finally {
       setLoading(false);
     }
   };
 
-  // Training Methods
   const loadTrainingDatasets = async () => {
-    const data = await TrainingDatasetService.getAllDatasets();
-    setTrainingDatasets(data);
+    try {
+      const data = await TrainingDatasetService.getAllDatasets();
+      setTrainingDatasets(data);
+    } catch {
+      setTrainingDatasets([]);
+    }
   };
 
   const createTrainingDataset = async (datasetData: Partial<TrainingDataset>) => {
@@ -257,32 +260,20 @@ export const useChatbot = () => {
       await loadTrainingDatasets();
       addToast({ type: 'success', message: 'Dataset created' });
       return dataset;
-    } catch (error: any) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to create dataset' });
-      throw error;
     } finally {
       setLoading(false);
     }
   };
 
-  const startModelTraining = async (trainingData: Partial<ModelTraining>) => {
-    setLoading(true);
-    try {
-      const training = await ModelTrainingService.startTraining(trainingData);
-      addToast({ type: 'success', message: 'Training started' });
-      return training;
-    } catch (error: any) {
-      addToast({ type: 'error', message: 'Failed to start training' });
-      throw error;
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Channel Methods
   const loadChannels = async () => {
-    const data = await ChannelService.getAllChannels();
-    setChannels(data);
+    try {
+      const data = await ChannelService.getAllChannels();
+      setChannels(data);
+    } catch {
+      setChannels([]);
+    }
   };
 
   const createChannel = async (channelData: Partial<Channel>) => {
@@ -292,9 +283,8 @@ export const useChatbot = () => {
       await loadChannels();
       addToast({ type: 'success', message: 'Channel created' });
       return channel;
-    } catch (error: any) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to create channel' });
-      throw error;
     } finally {
       setLoading(false);
     }
@@ -307,9 +297,21 @@ export const useChatbot = () => {
       await loadChannels();
       addToast({ type: 'success', message: 'Channel updated' });
       return channel;
-    } catch (error: any) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to update channel' });
-      throw error;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteChannel = async (channelId: string) => {
+    setLoading(true);
+    try {
+      await ChannelService.deleteChannel(channelId);
+      await loadChannels();
+      addToast({ type: 'success', message: 'Channel deleted' });
+    } catch {
+      addToast({ type: 'error', message: 'Failed to delete channel' });
     } finally {
       setLoading(false);
     }
@@ -319,20 +321,26 @@ export const useChatbot = () => {
     setLoading(true);
     try {
       const result = await ChannelService.testChannel(channelId);
-      addToast({ type: 'success', message: result ? 'Channel test successful' : 'Channel test failed' });
+      addToast({
+        type: 'success',
+        message: result ? 'Channel test successful' : 'Channel test failed',
+      });
       return result;
-    } catch (error: any) {
+    } catch {
       addToast({ type: 'error', message: 'Channel test failed' });
-      throw error;
+      return false;
     } finally {
       setLoading(false);
     }
   };
 
-  // Handoff Methods
   const loadHandoffRules = async () => {
-    const data = await HandoffRuleService.getAllRules();
-    setHandoffRules(data);
+    try {
+      const data = await HandoffRuleService.getAllRules();
+      setHandoffRules(data);
+    } catch {
+      setHandoffRules([]);
+    }
   };
 
   const createHandoffRule = async (ruleData: Partial<HandoffRule>) => {
@@ -342,24 +350,56 @@ export const useChatbot = () => {
       await loadHandoffRules();
       addToast({ type: 'success', message: 'Handoff rule created' });
       return rule;
-    } catch (error: any) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to create rule' });
-      throw error;
     } finally {
       setLoading(false);
     }
   };
 
-  // Agent Methods
-  const loadAgents = async () => {
-    const data = await AgentService.getAllAgents();
-    setAgents(data);
+  const updateHandoffRule = async (ruleId: string, updates: Partial<HandoffRule>) => {
+    setLoading(true);
+    try {
+      const rule = await HandoffRuleService.updateRule(ruleId, updates);
+      await loadHandoffRules();
+      addToast({ type: 'success', message: 'Handoff rule updated' });
+      return rule;
+    } catch {
+      addToast({ type: 'error', message: 'Failed to update rule' });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  // Language Methods
+  const deleteHandoffRule = async (ruleId: string) => {
+    setLoading(true);
+    try {
+      await HandoffRuleService.deleteRule(ruleId);
+      await loadHandoffRules();
+      addToast({ type: 'success', message: 'Handoff rule deleted' });
+    } catch {
+      addToast({ type: 'error', message: 'Failed to delete rule' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadAgents = async () => {
+    try {
+      const data = await AgentService.getAllAgents();
+      setAgents(data);
+    } catch {
+      setAgents([]);
+    }
+  };
+
   const loadLanguages = async () => {
-    const data = await LanguageService.getAllLanguages();
-    setLanguages(data);
+    try {
+      const data = await LanguageService.getAllLanguages();
+      setLanguages(data);
+    } catch {
+      setLanguages([]);
+    }
   };
 
   const enableLanguage = async (languageCode: string) => {
@@ -368,18 +408,47 @@ export const useChatbot = () => {
       await LanguageService.enableLanguage(languageCode);
       await loadLanguages();
       addToast({ type: 'success', message: 'Language enabled' });
-    } catch (error: any) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to enable language' });
-      throw error;
     } finally {
       setLoading(false);
     }
   };
 
-  // Settings Methods
+  const updateLanguage = async (languageCode: string, updates: Partial<Language>) => {
+    setLoading(true);
+    try {
+      const lang = await LanguageService.updateLanguage(languageCode, updates);
+      await loadLanguages();
+      addToast({ type: 'success', message: 'Language updated' });
+      return lang;
+    } catch {
+      addToast({ type: 'error', message: 'Failed to update language' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const deleteLanguage = async (languageCode: string) => {
+    setLoading(true);
+    try {
+      await LanguageService.deleteLanguage(languageCode);
+      await loadLanguages();
+      addToast({ type: 'success', message: 'Language deleted' });
+    } catch {
+      addToast({ type: 'error', message: 'Failed to delete language' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const loadSettings = async () => {
-    const data = await ChatbotSettingsService.getSettings();
-    setSettings(data);
+    try {
+      const data = await ChatbotSettingsService.getSettings();
+      setSettings(data);
+    } catch {
+      setSettings(null);
+    }
   };
 
   const updateSettings = async (updates: Partial<ChatbotSettings>) => {
@@ -389,58 +458,108 @@ export const useChatbot = () => {
       setSettings(updated);
       addToast({ type: 'success', message: 'Settings updated' });
       return updated;
-    } catch (error: any) {
+    } catch {
       addToast({ type: 'error', message: 'Failed to update settings' });
-      throw error;
     } finally {
       setLoading(false);
     }
   };
 
-  // Flow Test Methods
-  const loadFlowTests = async () => {
-    const data = await FlowTestService.getAllTests();
-    setFlowTests(data);
+  const loadTrainingExamples = async (datasetId?: string) => {
+    try {
+      const data = await TrainingExampleService.getAllExamples(
+        datasetId ? { datasetId } : undefined
+      );
+      setTrainingExamples(data);
+    } catch {
+      setTrainingExamples([]);
+    }
   };
 
-  const runFlowTest = async (testId: string) => {
+  const deleteTrainingExample = async (exampleId: string) => {
     setLoading(true);
     try {
-      const result = await FlowTestService.runTest(testId);
-      await loadFlowTests();
-      addToast({ type: 'success', message: `Test ${result.lastRunResult}` });
-      return result;
-    } catch (error: any) {
-      addToast({ type: 'error', message: 'Test failed' });
-      throw error;
+      await TrainingExampleService.deleteExample(exampleId);
+      await loadTrainingExamples();
+      addToast({ type: 'success', message: 'Example deleted' });
+    } catch {
+      addToast({ type: 'error', message: 'Failed to delete example' });
     } finally {
       setLoading(false);
     }
   };
 
-  // Toast Methods
-  const addToast = (toast: Omit<Toast, 'id'>) => {
-    const id = `toast-${Date.now()}-${Math.random()}`;
-    setToasts(prev => [...prev, { ...toast, id }]);
+  const deleteTrainingDataset = async (datasetId: string) => {
+    setLoading(true);
+    try {
+      await TrainingDatasetService.deleteDataset(datasetId);
+      await loadTrainingDatasets();
+      addToast({ type: 'success', message: 'Dataset deleted' });
+    } catch {
+      addToast({ type: 'error', message: 'Failed to delete dataset' });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const removeToast = (id: string) => {
-    setToasts(prev => prev.filter(t => t.id !== id));
+  const loadAnalytics = async (startDate?: string, endDate?: string) => {
+    try {
+      const data = await AnalyticsService.getAnalytics({ startDate, endDate });
+      setAnalytics(data);
+    } catch {
+      setAnalytics(null);
+    }
   };
 
   return {
-    dialogueFlows, flowTests, entities, intents, trainingDatasets, trainingExamples,
-    modelTrainings, channels, messageTemplates, analytics, handoffRules, agents,
-    languages, localizationSettings, settings, loading, toasts,
-    loadDialogueFlows, createDialogueFlow, updateDialogueFlow, publishDialogueFlow, deleteDialogueFlow,
-    loadFlowTests, runFlowTest,
-    loadEntities, createEntity, updateEntity, deleteEntity,
-    loadIntents, createIntent, updateIntent, deleteIntent,
-    loadTrainingDatasets, createTrainingDataset, startModelTraining,
-    loadChannels, createChannel, updateChannel, testChannel,
-    loadHandoffRules, createHandoffRule,
-    loadLanguages, enableLanguage,
-    loadSettings, updateSettings,
-    addToast, removeToast,
+    dialogueFlows,
+    entities,
+    intents,
+    trainingDatasets,
+    trainingExamples,
+    channels,
+    analytics,
+    handoffRules,
+    agents,
+    languages,
+    settings,
+    loading,
+    toasts,
+    loadDialogueFlows,
+    createDialogueFlow,
+    updateDialogueFlow,
+    publishDialogueFlow,
+    deleteDialogueFlow,
+    loadEntities,
+    createEntity,
+    updateEntity,
+    deleteEntity,
+    loadIntents,
+    createIntent,
+    updateIntent,
+    deleteIntent,
+    loadTrainingDatasets,
+    createTrainingDataset,
+    deleteTrainingDataset,
+    loadTrainingExamples,
+    deleteTrainingExample,
+    loadChannels,
+    createChannel,
+    updateChannel,
+    deleteChannel,
+    testChannel,
+    loadHandoffRules,
+    createHandoffRule,
+    updateHandoffRule,
+    deleteHandoffRule,
+    loadLanguages,
+    enableLanguage,
+    updateLanguage,
+    deleteLanguage,
+    loadSettings,
+    updateSettings,
+    loadAnalytics,
+    addToast,
+    removeToast,
   };
 };
