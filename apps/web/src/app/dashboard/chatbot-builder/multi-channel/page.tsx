@@ -92,7 +92,11 @@ export default function MultiChannelPage() {
   };
 
   const handleToggle = (channel: Channel) => {
-    updateChannel(channel.channelId, { isEnabled: !channel.isEnabled });
+    const newEnabled = !channel.isEnabled;
+    updateChannel(channel.channelId, {
+      isEnabled: newEnabled,
+      status: newEnabled ? 'active' : 'inactive',
+    });
   };
 
   const handleDelete = async (channelId: string) => {
