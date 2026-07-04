@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { BarChart3, TrendingUp, Users, ThumbsUp, MessageSquare, AlertTriangle } from 'lucide-react';
+import { BarChart3, Users, ThumbsUp, MessageSquare, AlertTriangle } from 'lucide-react';
 import { useChatbot } from '../hooks/useChatbot';
 
 function getDateRange(period: string) {
@@ -25,13 +25,6 @@ function getDateRange(period: string) {
   }
   return { startDate: start.toISOString(), endDate: end };
 }
-
-const mockTrends: Record<string, { value: string; positive: boolean }> = {
-  totalConversations: { value: '+12%', positive: true },
-  totalMessages: { value: '+8%', positive: true },
-  totalIntents: { value: '+5%', positive: true },
-  totalEntities: { value: '+3%', positive: true },
-};
 
 const barData = [
   { day: 'Mon', volume: 40, handoffs: 8 },
@@ -73,8 +66,6 @@ export default function ChatbotAnalyticsPage() {
     setPeriod(e.target.value);
   };
 
-  const trend = (key: string) => mockTrends[key] || { value: '—', positive: true };
-
   const topIntents: { name: string; val: number }[] = analytics?.intentDistribution
     ? analytics.intentDistribution.slice(0, 5).map((i) => ({ name: i.intentName, val: i.count }))
     : [];
@@ -84,31 +75,31 @@ export default function ChatbotAnalyticsPage() {
   const statCards = [
     {
       label: 'Conversations',
-      key: 'totalConversations',
-      value: formatNumber((analytics as any)?.totalConversations),
+      value: formatNumber(analytics?.totalConversations),
       icon: MessageSquare,
       color: 'text-indigo-500',
+      badge: analytics?.totalConversations != null ? `${analytics.totalConversations}` : '—',
     },
     {
       label: 'Messages',
-      key: 'totalMessages',
-      value: formatNumber((analytics as any)?.totalMessages),
+      value: formatNumber(analytics?.totalMessages),
       icon: MessageSquare,
       color: 'text-emerald-500',
+      badge: analytics?.totalMessages != null ? `${analytics.totalMessages}` : '—',
     },
     {
       label: 'Intents',
-      key: 'totalIntents',
-      value: formatNumber((analytics as any)?.totalIntents),
+      value: formatNumber(analytics?.totalIntents),
       icon: ThumbsUp,
       color: 'text-amber-500',
+      badge: analytics?.totalIntents != null ? `${analytics.totalIntents}` : '—',
     },
     {
       label: 'Entities',
-      key: 'totalEntities',
-      value: formatNumber((analytics as any)?.totalEntities),
+      value: formatNumber(analytics?.totalEntities),
       icon: Users,
       color: 'text-rose-500',
+      badge: analytics?.totalEntities != null ? `${analytics.totalEntities}` : '—',
     },
   ];
 
@@ -152,28 +143,23 @@ export default function ChatbotAnalyticsPage() {
       ) : (
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-            {statCards.map((stat, i) => {
-              const t = trend(stat.key);
-              return (
-                <div
-                  key={i}
-                  className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6"
-                >
-                  <div className="flex justify-between items-start mb-4">
-                    <div className={`p-2 rounded-lg bg-slate-50 dark:bg-slate-800 ${stat.color}`}>
-                      <stat.icon className="w-5 h-5" />
-                    </div>
-                    <span
-                      className={`text-xs font-bold px-2 py-1 rounded-full ${t.positive ? 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400' : 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400'}`}
-                    >
-                      {t.value}
-                    </span>
+            {statCards.map((stat, i) => (
+              <div
+                key={i}
+                className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6"
+              >
+                <div className="flex justify-between items-start mb-4">
+                  <div className={`p-2 rounded-lg bg-slate-50 dark:bg-slate-800 ${stat.color}`}>
+                    <stat.icon className="w-5 h-5" />
                   </div>
-                  <h3 className="text-3xl font-bold mb-1">{stat.value}</h3>
-                  <p className="text-slate-500 text-sm">{stat.label}</p>
+                  <span className="text-xs font-bold px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
+                    {stat.badge}
+                  </span>
                 </div>
-              );
-            })}
+                <h3 className="text-3xl font-bold mb-1">{stat.value}</h3>
+                <p className="text-slate-500 text-sm">{stat.label}</p>
+              </div>
+            ))}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
