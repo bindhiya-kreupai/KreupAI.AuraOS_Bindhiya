@@ -113,6 +113,7 @@ export default function MultiChannelPage() {
       channelName,
       channelType: channelType as Channel['channelType'],
       isEnabled,
+      status: isEnabled ? 'active' : ('inactive' as Channel['status']),
       configuration: config,
       features,
     };
