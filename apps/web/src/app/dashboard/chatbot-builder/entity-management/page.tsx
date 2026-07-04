@@ -15,19 +15,34 @@ export default function EntityManagementPage() {
   const [formType, setFormType] = useState('list');
   const [formDescription, setFormDescription] = useState('');
   const [formValues, setFormValues] = useState('[]');
+  const [formRegex, setFormRegex] = useState('');
+  const [formSystemType, setFormSystemType] = useState('date');
   const [formFuzzy, setFormFuzzy] = useState(false);
 
-  const resetForm = () => {
+  const systemTypes = [
+    'date',
+    'time',
+    'number',
+    'email',
+    'phone',
+    'url',
+    'currency',
+    'percentage',
+  ] as const;
+
+  const resetForm = (forEdit = false) => {
     setFormName('');
     setFormType('list');
     setFormDescription('');
     setFormValues('[]');
+    setFormRegex('');
+    setFormSystemType('date');
     setFormFuzzy(false);
     setEditingEntity(null);
   };
 
   const openCreateModal = () => {
-    resetForm();
+    resetForm(false);
     setModalOpen(true);
   };
 
@@ -36,33 +51,54 @@ export default function EntityManagementPage() {
     setFormName(entity.entityName);
     setFormType(entity.entityType);
     setFormDescription(entity.description || '');
-    setFormValues(JSON.stringify(entity.values, null, 2));
+    setFormSystemType(entity.entityType === 'system' ? entity.entityName : 'date');
+    if (entity.entityType === 'regex') {
+      const pattern = entity.values?.[0]?.pattern ?? '';
+      setFormRegex(pattern);
+      setFormValues('[]');
+    } else {
+      setFormValues(JSON.stringify(entity.values ?? [], null, 2));
+      setFormRegex('');
+    }
     setFormFuzzy(entity.fuzzyMatching);
     setModalOpen(true);
   };
 
   const closeModal = () => {
     setModalOpen(false);
-    resetForm();
+    resetForm(!!editingEntity);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    let parsedValues: any[];
-    try {
-      parsedValues = JSON.parse(formValues);
-      if (!Array.isArray(parsedValues)) throw new Error();
-    } catch {
-      addToast({ type: 'error', message: 'Values must be a valid JSON array' });
-      return;
-    }
-    const payload = {
+    const payload: any = {
       entityName: formName,
       entityType: formType,
       description: formDescription,
-      values: parsedValues,
       fuzzyMatching: formFuzzy,
     };
+
+    if (formType === 'system') {
+      payload.entityName = formSystemType;
+      payload.values = [];
+    } else if (formType === 'regex') {
+      if (!formRegex.trim()) {
+        addToast({ type: 'error', message: 'Regex pattern is required' });
+        return;
+      }
+      payload.values = [{ pattern: formRegex.trim() }];
+    } else {
+      let parsedValues: any[];
+      try {
+        parsedValues = JSON.parse(formValues);
+        if (!Array.isArray(parsedValues)) throw new Error();
+      } catch {
+        addToast({ type: 'error', message: 'Values must be a valid JSON array' });
+        return;
+      }
+      payload.values = parsedValues;
+    }
+
     try {
       if (editingEntity) {
         await updateEntity(editingEntity.entityId, payload as any);
@@ -228,9 +264,12 @@ export default function EntityManagementPage() {
                   required
                   value={formName}
                   onChange={(e) => setFormName(e.target.value)}
-                  placeholder="@EntityName"
+                  placeholder="@department"
                   className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-500"
                 />
+                <p className="text-[11px] text-slate-400 mt-1">
+                  e.g. @department, @location, @leave_type, @document_type
+                </p>
               </div>
               <div>
                 <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">
@@ -255,35 +294,87 @@ export default function EntityManagementPage() {
                   value={formDescription}
                   onChange={(e) => setFormDescription(e.target.value)}
                   rows={2}
+                  placeholder="e.g. List of company departments used for routing support tickets"
                   className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
                 />
               </div>
-              <div>
-                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">
-                  Values <span className="text-slate-400 font-normal">(JSON array)</span>
-                </label>
-                <textarea
-                  value={formValues}
-                  onChange={(e) => setFormValues(e.target.value)}
-                  rows={4}
-                  className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-mono outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
-                />
-              </div>
-              <div className="flex items-center gap-3">
-                <input
-                  type="checkbox"
-                  id="fuzzyMatching"
-                  checked={formFuzzy}
-                  onChange={(e) => setFormFuzzy(e.target.checked)}
-                  className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-indigo-600 focus:ring-indigo-500"
-                />
-                <label
-                  htmlFor="fuzzyMatching"
-                  className="text-sm font-bold text-slate-700 dark:text-slate-300"
-                >
-                  Enable Fuzzy Matching
-                </label>
-              </div>
+              {formType === 'system' ? (
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    System Entity Type
+                  </label>
+                  <select
+                    value={formSystemType}
+                    onChange={(e) => setFormSystemType(e.target.value)}
+                    className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+                  >
+                    {systemTypes.map((st) => (
+                      <option key={st} value={st}>
+                        {st}
+                      </option>
+                    ))}
+                  </select>
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    Pre-defined entity — values are extracted automatically by the NLP engine.
+                  </p>
+                </div>
+              ) : formType === 'regex' ? (
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Regex Pattern
+                  </label>
+                  <input
+                    value={formRegex}
+                    onChange={(e) => setFormRegex(e.target.value)}
+                    placeholder="^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$"
+                    className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-mono outline-none focus:ring-2 focus:ring-indigo-500"
+                  />
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    e.g.{' '}
+                    <code className="text-indigo-500 dark:text-indigo-400">
+                      {'^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,}$'}
+                    </code>{' '}
+                    for email
+                  </p>
+                </div>
+              ) : (
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">
+                    Values <span className="text-slate-400 font-normal">(JSON array)</span>
+                  </label>
+                  <textarea
+                    value={formValues}
+                    onChange={(e) => setFormValues(e.target.value)}
+                    rows={4}
+                    placeholder='[{ "value": "Engineering", "synonyms": ["Eng", "Dev"] }]'
+                    className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-mono outline-none focus:ring-2 focus:ring-indigo-500 resize-none"
+                  />
+                  <p className="text-[11px] text-slate-400 mt-1">
+                    Format:{' '}
+                    <code className="text-indigo-500 dark:text-indigo-400">
+                      {'[ { "value": "Name", "synonyms": ["Alt1", "Alt2"] } ]'}
+                    </code>
+                  </p>
+                </div>
+              )}
+
+              {formType !== 'system' && (
+                <div className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    id="fuzzyMatching"
+                    checked={formFuzzy}
+                    onChange={(e) => setFormFuzzy(e.target.checked)}
+                    className="w-4 h-4 rounded border-slate-300 dark:border-slate-600 text-indigo-600 focus:ring-indigo-500"
+                  />
+                  <label
+                    htmlFor="fuzzyMatching"
+                    className="text-sm font-bold text-slate-700 dark:text-slate-300"
+                  >
+                    Enable Fuzzy Matching
+                  </label>
+                </div>
+              )}
               <div className="flex gap-3 pt-2">
                 <button
                   type="button"
