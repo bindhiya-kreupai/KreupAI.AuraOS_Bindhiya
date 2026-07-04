@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   MessageSquare,
   GitBranch,
@@ -12,9 +12,10 @@ import {
   Edit2,
   Trash2,
   Eye,
+  X,
 } from 'lucide-react';
 import { useChatbot } from '../hooks/useChatbot';
-import type { DialogueFlow, Status } from '../types';
+import type { DialogueFlow, DialogueNode, NodeType, Status } from '../types';
 
 export default function DialogueDesignerPage() {
   const {
@@ -35,6 +36,13 @@ export default function DialogueDesignerPage() {
   const [formName, setFormName] = useState('');
   const [formDescription, setFormDescription] = useState('');
   const [formCategory, setFormCategory] = useState('General');
+
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+  const [settingsTags, setSettingsTags] = useState('');
+  const [settingsVersion, setSettingsVersion] = useState('');
+  const [settingsIsActive, setSettingsIsActive] = useState(false);
+
+  const [showTestModal, setShowTestModal] = useState(false);
 
   const selectedFlow = dialogueFlows.find((f) => f.flowId === selectedFlowId) ?? null;
 
@@ -100,9 +108,53 @@ export default function DialogueDesignerPage() {
     }
   };
 
+  const addNode = async (nodeType: NodeType) => {
+    if (!selectedFlow) return;
+    const newNode: DialogueNode = {
+      nodeId: `node-${Date.now()}`,
+      nodeType,
+      nodeName: nodeType.charAt(0).toUpperCase() + nodeType.slice(1),
+      position: { x: 0, y: 0 },
+      configuration: {} as any,
+      nextNodes: [],
+    };
+    try {
+      await updateDialogueFlow(selectedFlow.flowId, {
+        nodes: [...selectedFlow.nodes, newNode],
+      });
+      addToast({ type: 'success', message: `${nodeType} node added` });
+    } catch {
+      /* handled by hook */
+    }
+  };
+
+  const openSettings = (flow: DialogueFlow) => {
+    setSettingsTags((flow.tags ?? []).join(', '));
+    setSettingsVersion(flow.version);
+    setSettingsIsActive(flow.isActive);
+    setShowSettingsModal(true);
+  };
+
+  const handleSettingsSave = async () => {
+    if (!selectedFlow) return;
+    try {
+      await updateDialogueFlow(selectedFlow.flowId, {
+        tags: settingsTags
+          .split(',')
+          .map((t) => t.trim())
+          .filter(Boolean),
+        version: settingsVersion,
+        isActive: settingsIsActive,
+      });
+      setShowSettingsModal(false);
+    } catch {
+      /* handled by hook */
+    }
+  };
+
   const openEdit = (flow: DialogueFlow) => {
     setFormName(flow.flowName);
-    setFormDescription(flow.description);
+    setFormDescription(flow.description ?? '');
     setFormCategory(flow.category);
     setShowEditModal(true);
   };
@@ -405,7 +457,7 @@ export default function DialogueDesignerPage() {
                 <Save className="w-4 h-4" /> Save Flow
               </button>
               <button
-                onClick={() => handlePublish(selectedFlow.flowId)}
+                onClick={() => setShowTestModal(true)}
                 className="flex items-center gap-2 bg-emerald-500 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-emerald-600 transition-all"
               >
                 <Play className="w-4 h-4" /> Test Bot
@@ -500,19 +552,25 @@ export default function DialogueDesignerPage() {
         <div className="flex-1 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl relative overflow-hidden">
           <div className="absolute left-4 top-4 bottom-4 w-12 bg-white dark:bg-slate-800 shadow-lg rounded-xl flex flex-col items-center py-4 gap-3 z-10 border border-slate-200 dark:border-slate-700">
             <button
-              className="p-2 hover:bg-indigo-50 dark:hover:bg-slate-700 rounded-lg text-indigo-600 dark:text-indigo-400"
+              onClick={() => addNode('message')}
+              disabled={!selectedFlow}
+              className="p-2 hover:bg-indigo-50 dark:hover:bg-slate-700 rounded-lg text-indigo-600 dark:text-indigo-400 disabled:opacity-30 disabled:cursor-not-allowed"
               title="Add Message"
             >
               <MessageSquare className="w-5 h-5" />
             </button>
             <button
-              className="p-2 hover:bg-indigo-50 dark:hover:bg-slate-700 rounded-lg text-indigo-600 dark:text-indigo-400"
+              onClick={() => addNode('condition')}
+              disabled={!selectedFlow}
+              className="p-2 hover:bg-indigo-50 dark:hover:bg-slate-700 rounded-lg text-indigo-600 dark:text-indigo-400 disabled:opacity-30 disabled:cursor-not-allowed"
               title="Add Condition"
             >
               <GitBranch className="w-5 h-5" />
             </button>
             <button
-              className="p-2 hover:bg-indigo-50 dark:hover:bg-slate-700 rounded-lg text-indigo-600 dark:text-indigo-400"
+              onClick={() => selectedFlow && openSettings(selectedFlow)}
+              disabled={!selectedFlow}
+              className="p-2 hover:bg-indigo-50 dark:hover:bg-slate-700 rounded-lg text-indigo-600 dark:text-indigo-400 disabled:opacity-30 disabled:cursor-not-allowed"
               title="Settings"
             >
               <Settings className="w-5 h-5" />
@@ -559,6 +617,129 @@ export default function DialogueDesignerPage() {
                 className="px-4 py-2 text-sm font-bold rounded-xl bg-red-600 text-white hover:bg-red-700 transition-colors"
               >
                 Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showSettingsModal && selectedFlow && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6 border border-slate-200 dark:border-slate-700">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold">Flow Settings</h2>
+              <button
+                onClick={() => setShowSettingsModal(false)}
+                className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">
+                  Tags (comma separated)
+                </label>
+                <input
+                  className="w-full border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-700"
+                  placeholder="e.g. onboarding, welcome"
+                  value={settingsTags}
+                  onChange={(e) => setSettingsTags(e.target.value)}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-600 dark:text-slate-300 mb-1">
+                  Version
+                </label>
+                <input
+                  className="w-full border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-2 text-sm bg-white dark:bg-slate-700"
+                  value={settingsVersion}
+                  onChange={(e) => setSettingsVersion(e.target.value)}
+                />
+              </div>
+              <div className="flex items-center gap-3">
+                <input
+                  type="checkbox"
+                  id="settingsActive"
+                  checked={settingsIsActive}
+                  onChange={(e) => setSettingsIsActive(e.target.checked)}
+                  className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                />
+                <label
+                  htmlFor="settingsActive"
+                  className="text-sm font-medium text-slate-600 dark:text-slate-300"
+                >
+                  Active
+                </label>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 mt-6">
+              <button
+                onClick={() => setShowSettingsModal(false)}
+                className="px-4 py-2 text-sm font-medium rounded-xl border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSettingsSave}
+                className="px-4 py-2 text-sm font-bold rounded-xl bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showTestModal && selectedFlow && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="bg-white dark:bg-slate-800 rounded-2xl shadow-2xl w-full max-w-lg mx-4 p-6 border border-slate-200 dark:border-slate-700">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold">Test Bot — {selectedFlow.flowName}</h2>
+              <button
+                onClick={() => setShowTestModal(false)}
+                className="p-1 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-700"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+            <div className="space-y-3 text-sm text-slate-600 dark:text-slate-400">
+              <p>
+                This flow has <strong>{selectedFlow.nodes.length}</strong> nodes and{' '}
+                <strong>{selectedFlow.connections.length}</strong> connections.
+              </p>
+              {selectedFlow.triggerIntents.length > 0 && (
+                <p>
+                  Triggered by intents: <strong>{selectedFlow.triggerIntents.join(', ')}</strong>
+                </p>
+              )}
+              <p>
+                Status: <span className="font-semibold">{selectedFlow.status}</span>
+              </p>
+              <p>
+                Version: <span className="font-semibold">{selectedFlow.version}</span>
+              </p>
+              <div className="border-t border-slate-200 dark:border-slate-700 pt-3 mt-3">
+                <p className="text-xs text-slate-400">
+                  To run a full test, publish the flow and trigger it via a connected channel.
+                </p>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 mt-6">
+              <button
+                onClick={() => {
+                  handlePublish(selectedFlow.flowId);
+                  setShowTestModal(false);
+                }}
+                className="px-4 py-2 text-sm font-bold rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 transition-colors"
+              >
+                Publish &amp; Test
+              </button>
+              <button
+                onClick={() => setShowTestModal(false)}
+                className="px-4 py-2 text-sm font-medium rounded-xl border border-slate-300 dark:border-slate-600 text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors"
+              >
+                Close
               </button>
             </div>
           </div>

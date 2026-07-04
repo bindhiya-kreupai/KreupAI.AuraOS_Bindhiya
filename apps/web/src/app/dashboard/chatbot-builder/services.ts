@@ -31,6 +31,32 @@ import type {
 } from './types';
 import { ChannelMessage, HandoffQueue } from './types';
 
+// ---------------------------------------------------------------------------
+// Mapping helpers: Prisma returns { id, createdAt, updatedAt } but the
+// frontend types expect { flowId, createdDate, lastModifiedDate } etc.
+// ---------------------------------------------------------------------------
+function mapFields<T>(obj: any, idKey: string, extra?: Record<string, string>): T {
+  if (!obj) return obj;
+  const { id, createdAt, updatedAt, deletedAt, isDeleted, ...rest } = obj;
+  const result: any = { ...rest, [idKey]: id };
+  if (createdAt) result.createdDate = createdAt;
+  if (updatedAt) result.lastModifiedDate = updatedAt;
+  if (extra) {
+    for (const [from, to] of Object.entries(extra)) {
+      if (from in result) {
+        result[to] = result[from];
+        delete result[from];
+      }
+    }
+  }
+  return result as T;
+}
+
+function mapList<T>(arr: any[], idKey: string, extra?: Record<string, string>): T[] {
+  if (!arr) return [];
+  return arr.map((item) => mapFields<T>(item, idKey, extra));
+}
+
 // ============================================================================
 // DIALOGUE DESIGNER SERVICES
 // ============================================================================
@@ -44,7 +70,7 @@ export class DialogueFlowService {
   }): Promise<DialogueFlow[]> {
     try {
       const res = await APIClient.get(this.endpoint, filters);
-      return APIClient.unwrapList<DialogueFlow>(res);
+      return mapList<DialogueFlow>(APIClient.unwrapList(res), 'flowId');
     } catch (error: any) {
       throw error;
     }
@@ -53,7 +79,7 @@ export class DialogueFlowService {
   static async getFlowById(flowId: string): Promise<DialogueFlow | null> {
     try {
       const res = await APIClient.get(`${this.endpoint}/${flowId}`);
-      return APIClient.unwrapItem<DialogueFlow>(res);
+      return mapFields<DialogueFlow>(APIClient.unwrapItem(res), 'flowId');
     } catch (error: any) {
       throw error;
     }
@@ -62,7 +88,7 @@ export class DialogueFlowService {
   static async createFlow(flowData: Partial<DialogueFlow>): Promise<DialogueFlow> {
     try {
       const res = await APIClient.post(this.endpoint, flowData);
-      return APIClient.unwrapItem<DialogueFlow>(res)!;
+      return mapFields<DialogueFlow>(APIClient.unwrapItem(res), 'flowId')!;
     } catch (error: any) {
       throw error;
     }
@@ -71,7 +97,7 @@ export class DialogueFlowService {
   static async updateFlow(flowId: string, updates: Partial<DialogueFlow>): Promise<DialogueFlow> {
     try {
       const res = await APIClient.put(`${this.endpoint}/${flowId}`, updates);
-      return APIClient.unwrapItem<DialogueFlow>(res)!;
+      return mapFields<DialogueFlow>(APIClient.unwrapItem(res), 'flowId')!;
     } catch (error: any) {
       throw error;
     }
@@ -83,7 +109,7 @@ export class DialogueFlowService {
         status: 'published',
         publishedAt: new Date().toISOString(),
       });
-      return APIClient.unwrapItem<DialogueFlow>(res)!;
+      return mapFields<DialogueFlow>(APIClient.unwrapItem(res), 'flowId')!;
     } catch (error: any) {
       throw error;
     }
@@ -104,7 +130,7 @@ export class FlowTestService {
   static async getAllTests(filters?: { flowId?: string; status?: string }): Promise<FlowTest[]> {
     try {
       const res = await APIClient.get(this.endpoint, filters);
-      return APIClient.unwrapList<FlowTest>(res);
+      return mapList<FlowTest>(APIClient.unwrapList(res), 'testId');
     } catch (error: any) {
       throw error;
     }
@@ -113,7 +139,7 @@ export class FlowTestService {
   static async createTest(testData: Partial<FlowTest>): Promise<FlowTest> {
     try {
       const res = await APIClient.post(this.endpoint, testData);
-      return APIClient.unwrapItem<FlowTest>(res)!;
+      return mapFields<FlowTest>(APIClient.unwrapItem(res), 'testId')!;
     } catch (error: any) {
       throw error;
     }
@@ -122,7 +148,7 @@ export class FlowTestService {
   static async runTest(testId: string): Promise<FlowTest> {
     try {
       const res = await APIClient.post(`${this.endpoint}/${testId}/run`, {});
-      return APIClient.unwrapItem<FlowTest>(res)!;
+      return mapFields<FlowTest>(APIClient.unwrapItem(res), 'testId')!;
     } catch (error: any) {
       throw error;
     }
@@ -142,7 +168,7 @@ export class EntityService {
   }): Promise<Entity[]> {
     try {
       const res = await APIClient.get(this.endpoint, filters);
-      return APIClient.unwrapList<Entity>(res);
+      return mapList<Entity>(APIClient.unwrapList(res), 'entityId');
     } catch (error: any) {
       throw error;
     }
@@ -151,7 +177,7 @@ export class EntityService {
   static async getEntityById(entityId: string): Promise<Entity | null> {
     try {
       const res = await APIClient.get(`${this.endpoint}/${entityId}`);
-      return APIClient.unwrapItem<Entity>(res);
+      return mapFields<Entity>(APIClient.unwrapItem(res), 'entityId');
     } catch (error: any) {
       throw error;
     }
@@ -160,7 +186,7 @@ export class EntityService {
   static async createEntity(entityData: Partial<Entity>): Promise<Entity> {
     try {
       const res = await APIClient.post(this.endpoint, entityData);
-      return APIClient.unwrapItem<Entity>(res)!;
+      return mapFields<Entity>(APIClient.unwrapItem(res), 'entityId')!;
     } catch (error: any) {
       throw error;
     }
@@ -169,7 +195,7 @@ export class EntityService {
   static async updateEntity(entityId: string, updates: Partial<Entity>): Promise<Entity> {
     try {
       const res = await APIClient.put(`${this.endpoint}/${entityId}`, updates);
-      return APIClient.unwrapItem<Entity>(res)!;
+      return mapFields<Entity>(APIClient.unwrapItem(res), 'entityId')!;
     } catch (error: any) {
       throw error;
     }
@@ -194,7 +220,7 @@ export class IntentService {
   static async getAllIntents(filters?: { category?: string; status?: string }): Promise<Intent[]> {
     try {
       const res = await APIClient.get(this.endpoint, filters);
-      return APIClient.unwrapList<Intent>(res);
+      return mapList<Intent>(APIClient.unwrapList(res), 'intentId');
     } catch (error: any) {
       throw error;
     }
@@ -203,7 +229,7 @@ export class IntentService {
   static async getIntentById(intentId: string): Promise<Intent | null> {
     try {
       const res = await APIClient.get(`${this.endpoint}/${intentId}`);
-      return APIClient.unwrapItem<Intent>(res);
+      return mapFields<Intent>(APIClient.unwrapItem(res), 'intentId');
     } catch (error: any) {
       throw error;
     }
@@ -212,7 +238,7 @@ export class IntentService {
   static async createIntent(intentData: Partial<Intent>): Promise<Intent> {
     try {
       const res = await APIClient.post(this.endpoint, intentData);
-      return APIClient.unwrapItem<Intent>(res)!;
+      return mapFields<Intent>(APIClient.unwrapItem(res), 'intentId')!;
     } catch (error: any) {
       throw error;
     }
@@ -221,7 +247,7 @@ export class IntentService {
   static async updateIntent(intentId: string, updates: Partial<Intent>): Promise<Intent> {
     try {
       const res = await APIClient.put(`${this.endpoint}/${intentId}`, updates);
-      return APIClient.unwrapItem<Intent>(res)!;
+      return mapFields<Intent>(APIClient.unwrapItem(res), 'intentId')!;
     } catch (error: any) {
       throw error;
     }
@@ -245,7 +271,7 @@ export class IntentMatchService {
   }): Promise<IntentMatch[]> {
     try {
       const res = await APIClient.get(this.endpoint, filters);
-      return APIClient.unwrapList<IntentMatch>(res);
+      return mapList<IntentMatch>(APIClient.unwrapList(res), 'matchId');
     } catch (error: any) {
       throw error;
     }
@@ -254,7 +280,7 @@ export class IntentMatchService {
   static async logMatch(matchData: Partial<IntentMatch>): Promise<IntentMatch> {
     try {
       const res = await APIClient.post(this.endpoint, matchData);
-      return APIClient.unwrapItem<IntentMatch>(res)!;
+      return mapFields<IntentMatch>(APIClient.unwrapItem(res), 'matchId')!;
     } catch (error: any) {
       throw error;
     }
@@ -274,7 +300,7 @@ export class TrainingDatasetService {
   }): Promise<TrainingDataset[]> {
     try {
       const res = await APIClient.get(this.endpoint, filters);
-      return APIClient.unwrapList<TrainingDataset>(res);
+      return mapList<TrainingDataset>(APIClient.unwrapList(res), 'datasetId');
     } catch (error: any) {
       throw error;
     }
@@ -283,7 +309,7 @@ export class TrainingDatasetService {
   static async createDataset(datasetData: Partial<TrainingDataset>): Promise<TrainingDataset> {
     try {
       const res = await APIClient.post(this.endpoint, datasetData);
-      return APIClient.unwrapItem<TrainingDataset>(res)!;
+      return mapFields<TrainingDataset>(APIClient.unwrapItem(res), 'datasetId')!;
     } catch (error: any) {
       throw error;
     }
@@ -295,7 +321,7 @@ export class TrainingDatasetService {
   ): Promise<TrainingDataset> {
     try {
       const res = await APIClient.put(`${this.endpoint}/${datasetId}`, updates);
-      return APIClient.unwrapItem<TrainingDataset>(res)!;
+      return mapFields<TrainingDataset>(APIClient.unwrapItem(res), 'datasetId')!;
     } catch (error: any) {
       throw error;
     }
@@ -319,7 +345,7 @@ export class TrainingExampleService {
   }): Promise<TrainingExample[]> {
     try {
       const res = await APIClient.get(this.endpoint, filters);
-      return APIClient.unwrapList<TrainingExample>(res);
+      return mapList<TrainingExample>(APIClient.unwrapList(res), 'exampleId');
     } catch (error: any) {
       throw error;
     }
@@ -328,7 +354,7 @@ export class TrainingExampleService {
   static async createExample(exampleData: Partial<TrainingExample>): Promise<TrainingExample> {
     try {
       const res = await APIClient.post(this.endpoint, exampleData);
-      return APIClient.unwrapItem<TrainingExample>(res)!;
+      return mapFields<TrainingExample>(APIClient.unwrapItem(res), 'exampleId')!;
     } catch (error: any) {
       throw error;
     }
@@ -340,7 +366,7 @@ export class TrainingExampleService {
   ): Promise<TrainingExample> {
     try {
       const res = await APIClient.put(`${this.endpoint}/${exampleId}`, updates);
-      return APIClient.unwrapItem<TrainingExample>(res)!;
+      return mapFields<TrainingExample>(APIClient.unwrapItem(res), 'exampleId')!;
     } catch (error: any) {
       throw error;
     }
@@ -364,7 +390,7 @@ export class ModelTrainingService {
   }): Promise<ModelTraining[]> {
     try {
       const res = await APIClient.get(this.endpoint, filters);
-      return APIClient.unwrapList<ModelTraining>(res);
+      return mapList<ModelTraining>(APIClient.unwrapList(res), 'trainingId');
     } catch (error: any) {
       throw error;
     }
@@ -373,7 +399,7 @@ export class ModelTrainingService {
   static async startTraining(trainingData: Partial<ModelTraining>): Promise<ModelTraining> {
     try {
       const res = await APIClient.post(this.endpoint, trainingData);
-      return APIClient.unwrapItem<ModelTraining>(res)!;
+      return mapFields<ModelTraining>(APIClient.unwrapItem(res), 'trainingId')!;
     } catch (error: any) {
       throw error;
     }
@@ -382,7 +408,7 @@ export class ModelTrainingService {
   static async getTrainingStatus(trainingId: string): Promise<ModelTraining | null> {
     try {
       const res = await APIClient.get(`${this.endpoint}/${trainingId}`);
-      return APIClient.unwrapItem<ModelTraining>(res);
+      return mapFields<ModelTraining>(APIClient.unwrapItem(res), 'trainingId');
     } catch (error: any) {
       throw error;
     }
@@ -402,7 +428,7 @@ export class ChannelService {
   }): Promise<Channel[]> {
     try {
       const res = await APIClient.get(this.endpoint, filters);
-      return APIClient.unwrapList<Channel>(res);
+      return mapList<Channel>(APIClient.unwrapList(res), 'channelId');
     } catch (error: any) {
       throw error;
     }
@@ -411,7 +437,7 @@ export class ChannelService {
   static async createChannel(channelData: Partial<Channel>): Promise<Channel> {
     try {
       const res = await APIClient.post(this.endpoint, channelData);
-      return APIClient.unwrapItem<Channel>(res)!;
+      return mapFields<Channel>(APIClient.unwrapItem(res), 'channelId')!;
     } catch (error: any) {
       throw error;
     }
@@ -420,7 +446,7 @@ export class ChannelService {
   static async updateChannel(channelId: string, updates: Partial<Channel>): Promise<Channel> {
     try {
       const res = await APIClient.put(`${this.endpoint}/${channelId}`, updates);
-      return APIClient.unwrapItem<Channel>(res)!;
+      return mapFields<Channel>(APIClient.unwrapItem(res), 'channelId')!;
     } catch (error: any) {
       throw error;
     }
@@ -429,7 +455,7 @@ export class ChannelService {
   static async testChannel(channelId: string): Promise<boolean> {
     try {
       const res = await APIClient.put(`${this.endpoint}/${channelId}`, { action: 'test' });
-      const data = APIClient.unwrapItem<{ success: boolean }>(res);
+      const data = mapFields<{ success: boolean }>(APIClient.unwrapItem(res), 'channelId');
       return data?.success ?? true;
     } catch (error: any) {
       throw error;
@@ -454,7 +480,7 @@ export class MessageTemplateService {
   }): Promise<MessageTemplate[]> {
     try {
       const res = await APIClient.get(this.endpoint, filters);
-      return APIClient.unwrapList<MessageTemplate>(res);
+      return mapList<MessageTemplate>(APIClient.unwrapList(res), 'templateId');
     } catch (error: any) {
       throw error;
     }
@@ -463,7 +489,7 @@ export class MessageTemplateService {
   static async createTemplate(templateData: Partial<MessageTemplate>): Promise<MessageTemplate> {
     try {
       const res = await APIClient.post(this.endpoint, templateData);
-      return APIClient.unwrapItem<MessageTemplate>(res)!;
+      return mapFields<MessageTemplate>(APIClient.unwrapItem(res), 'templateId')!;
     } catch (error: any) {
       throw error;
     }
@@ -483,7 +509,7 @@ export class AnalyticsService {
   }): Promise<ConversationAnalytics> {
     try {
       const res = await APIClient.get(this.endpoint, filters);
-      return APIClient.unwrapItem<ConversationAnalytics>(res)!;
+      return mapFields<ConversationAnalytics>(APIClient.unwrapItem(res), 'analyticsId')!;
     } catch (error: any) {
       throw error;
     }
@@ -499,7 +525,7 @@ export class UserFeedbackService {
   }): Promise<UserFeedback[]> {
     try {
       const res = await APIClient.get(this.endpoint, filters);
-      return APIClient.unwrapList<UserFeedback>(res);
+      return mapList<UserFeedback>(APIClient.unwrapList(res), 'feedbackId');
     } catch (error: any) {
       throw error;
     }
@@ -508,7 +534,7 @@ export class UserFeedbackService {
   static async submitFeedback(feedbackData: Partial<UserFeedback>): Promise<UserFeedback> {
     try {
       const res = await APIClient.post(this.endpoint, feedbackData);
-      return APIClient.unwrapItem<UserFeedback>(res)!;
+      return mapFields<UserFeedback>(APIClient.unwrapItem(res), 'feedbackId')!;
     } catch (error: any) {
       throw error;
     }
@@ -524,7 +550,7 @@ export class ConversationSessionService {
   }): Promise<ConversationSession[]> {
     try {
       const res = await APIClient.get(this.endpoint, filters);
-      return APIClient.unwrapList<ConversationSession>(res);
+      return mapList<ConversationSession>(APIClient.unwrapList(res), 'sessionId');
     } catch (error: any) {
       throw error;
     }
@@ -535,7 +561,7 @@ export class ConversationSessionService {
   ): Promise<ConversationSession> {
     try {
       const res = await APIClient.post(this.endpoint, sessionData);
-      return APIClient.unwrapItem<ConversationSession>(res)!;
+      return mapFields<ConversationSession>(APIClient.unwrapItem(res), 'sessionId')!;
     } catch (error: any) {
       throw error;
     }
@@ -547,7 +573,7 @@ export class ConversationSessionService {
   ): Promise<ConversationSession> {
     try {
       const res = await APIClient.put(`${this.endpoint}/${sessionId}`, updates);
-      return APIClient.unwrapItem<ConversationSession>(res)!;
+      return mapFields<ConversationSession>(APIClient.unwrapItem(res), 'sessionId')!;
     } catch (error: any) {
       throw error;
     }
@@ -567,7 +593,7 @@ export class HandoffRuleService {
   }): Promise<HandoffRule[]> {
     try {
       const res = await APIClient.get(this.endpoint, filters);
-      return APIClient.unwrapList<HandoffRule>(res);
+      return mapList<HandoffRule>(APIClient.unwrapList(res), 'ruleId');
     } catch (error: any) {
       throw error;
     }
@@ -576,7 +602,7 @@ export class HandoffRuleService {
   static async createRule(ruleData: Partial<HandoffRule>): Promise<HandoffRule> {
     try {
       const res = await APIClient.post(this.endpoint, ruleData);
-      return APIClient.unwrapItem<HandoffRule>(res)!;
+      return mapFields<HandoffRule>(APIClient.unwrapItem(res), 'ruleId')!;
     } catch (error: any) {
       throw error;
     }
@@ -585,7 +611,7 @@ export class HandoffRuleService {
   static async updateRule(ruleId: string, updates: Partial<HandoffRule>): Promise<HandoffRule> {
     try {
       const res = await APIClient.put(`${this.endpoint}/${ruleId}`, updates);
-      return APIClient.unwrapItem<HandoffRule>(res)!;
+      return mapFields<HandoffRule>(APIClient.unwrapItem(res), 'ruleId')!;
     } catch (error: any) {
       throw error;
     }
@@ -609,7 +635,7 @@ export class HandoffRequestService {
   }): Promise<HandoffRequest[]> {
     try {
       const res = await APIClient.get(this.endpoint, filters);
-      return APIClient.unwrapList<HandoffRequest>(res);
+      return mapList<HandoffRequest>(APIClient.unwrapList(res), 'requestId');
     } catch (error: any) {
       throw error;
     }
@@ -618,7 +644,7 @@ export class HandoffRequestService {
   static async createRequest(requestData: Partial<HandoffRequest>): Promise<HandoffRequest> {
     try {
       const res = await APIClient.post(this.endpoint, requestData);
-      return APIClient.unwrapItem<HandoffRequest>(res)!;
+      return mapFields<HandoffRequest>(APIClient.unwrapItem(res), 'requestId')!;
     } catch (error: any) {
       throw error;
     }
@@ -630,7 +656,7 @@ export class HandoffRequestService {
   ): Promise<HandoffRequest> {
     try {
       const res = await APIClient.put(`${this.endpoint}/${requestId}`, updates);
-      return APIClient.unwrapItem<HandoffRequest>(res)!;
+      return mapFields<HandoffRequest>(APIClient.unwrapItem(res), 'requestId')!;
     } catch (error: any) {
       throw error;
     }
@@ -643,7 +669,7 @@ export class AgentService {
   static async getAllAgents(filters?: { status?: string }): Promise<Agent[]> {
     try {
       const res = await APIClient.get(this.endpoint, filters);
-      return APIClient.unwrapList<Agent>(res);
+      return mapList<Agent>(APIClient.unwrapList(res), 'agentId');
     } catch (error: any) {
       throw error;
     }
@@ -652,7 +678,7 @@ export class AgentService {
   static async getAvailableAgents(): Promise<Agent[]> {
     try {
       const res = await APIClient.get(`${this.endpoint}/available`);
-      return APIClient.unwrapList<Agent>(res);
+      return mapList<Agent>(APIClient.unwrapList(res), 'agentId');
     } catch (error: any) {
       throw error;
     }
@@ -669,7 +695,7 @@ export class LanguageService {
   static async getAllLanguages(filters?: { isEnabled?: boolean }): Promise<Language[]> {
     try {
       const res = await APIClient.get(this.endpoint, filters);
-      return APIClient.unwrapList<Language>(res);
+      return mapList<Language>(APIClient.unwrapList(res), 'languageId');
     } catch (error: any) {
       throw error;
     }
@@ -678,7 +704,7 @@ export class LanguageService {
   static async enableLanguage(languageCode: string): Promise<Language> {
     try {
       const res = await APIClient.put(`${this.endpoint}/${languageCode}`, { action: 'enable' });
-      return APIClient.unwrapItem<Language>(res)!;
+      return mapFields<Language>(APIClient.unwrapItem(res), 'languageId')!;
     } catch (error: any) {
       throw error;
     }
@@ -687,7 +713,7 @@ export class LanguageService {
   static async updateLanguage(languageCode: string, updates: Partial<Language>): Promise<Language> {
     try {
       const res = await APIClient.put(`${this.endpoint}/${languageCode}`, updates);
-      return APIClient.unwrapItem<Language>(res)!;
+      return mapFields<Language>(APIClient.unwrapItem(res), 'languageId')!;
     } catch (error: any) {
       throw error;
     }
@@ -711,7 +737,7 @@ export class TranslationService {
   }): Promise<Translation[]> {
     try {
       const res = await APIClient.get(this.endpoint, filters);
-      return APIClient.unwrapList<Translation>(res);
+      return mapList<Translation>(APIClient.unwrapList(res), 'translationId');
     } catch (error: any) {
       throw error;
     }
@@ -720,7 +746,7 @@ export class TranslationService {
   static async createTranslation(translationData: Partial<Translation>): Promise<Translation> {
     try {
       const res = await APIClient.post(this.endpoint, translationData);
-      return APIClient.unwrapItem<Translation>(res)!;
+      return mapFields<Translation>(APIClient.unwrapItem(res), 'translationId')!;
     } catch (error: any) {
       throw error;
     }
@@ -737,7 +763,10 @@ export class TranslationService {
         sourceLanguage,
         targetLanguage,
       });
-      const data = APIClient.unwrapItem<{ translatedText: string }>(res);
+      const data = mapFields<{ translatedText: string }>(
+        APIClient.unwrapItem(res),
+        'translationId'
+      );
       return data?.translatedText ?? '';
     } catch (error: any) {
       throw error;
@@ -754,7 +783,7 @@ export class LanguageContentService {
   }): Promise<LanguageContent[]> {
     try {
       const res = await APIClient.get(this.endpoint, filters);
-      return APIClient.unwrapList<LanguageContent>(res);
+      return mapList<LanguageContent>(APIClient.unwrapList(res), 'contentId');
     } catch (error: any) {
       throw error;
     }
@@ -763,7 +792,7 @@ export class LanguageContentService {
   static async createContent(contentData: Partial<LanguageContent>): Promise<LanguageContent> {
     try {
       const res = await APIClient.post(this.endpoint, contentData);
-      return APIClient.unwrapItem<LanguageContent>(res)!;
+      return mapFields<LanguageContent>(APIClient.unwrapItem(res), 'contentId')!;
     } catch (error: any) {
       throw error;
     }
@@ -776,7 +805,7 @@ export class LanguageDetectionService {
   static async detectLanguage(text: string): Promise<LanguageDetection> {
     try {
       const res = await APIClient.post(this.endpoint, { text });
-      return APIClient.unwrapItem<LanguageDetection>(res)!;
+      return mapFields<LanguageDetection>(APIClient.unwrapItem(res), 'detectionId')!;
     } catch (error: any) {
       throw error;
     }
@@ -789,7 +818,7 @@ export class LocalizationSettingsService {
   static async getSettings(): Promise<LocalizationSettings> {
     try {
       const res = await APIClient.get(this.endpoint);
-      return APIClient.unwrapItem<LocalizationSettings>(res)!;
+      return mapFields<LocalizationSettings>(APIClient.unwrapItem(res), 'settingsId')!;
     } catch (error: any) {
       throw error;
     }
@@ -800,7 +829,7 @@ export class LocalizationSettingsService {
   ): Promise<LocalizationSettings> {
     try {
       const res = await APIClient.put(this.endpoint, updates);
-      return APIClient.unwrapItem<LocalizationSettings>(res)!;
+      return mapFields<LocalizationSettings>(APIClient.unwrapItem(res), 'settingsId')!;
     } catch (error: any) {
       throw error;
     }
@@ -817,7 +846,7 @@ export class ChatbotSettingsService {
   static async getSettings(): Promise<ChatbotSettings> {
     try {
       const res = await APIClient.get(this.endpoint);
-      return APIClient.unwrapItem<ChatbotSettings>(res)!;
+      return mapFields<ChatbotSettings>(APIClient.unwrapItem(res), 'settingsId')!;
     } catch (error: any) {
       throw error;
     }
@@ -826,7 +855,7 @@ export class ChatbotSettingsService {
   static async updateSettings(updates: Partial<ChatbotSettings>): Promise<ChatbotSettings> {
     try {
       const res = await APIClient.put(this.endpoint, updates);
-      return APIClient.unwrapItem<ChatbotSettings>(res)!;
+      return mapFields<ChatbotSettings>(APIClient.unwrapItem(res), 'settingsId')!;
     } catch (error: any) {
       throw error;
     }

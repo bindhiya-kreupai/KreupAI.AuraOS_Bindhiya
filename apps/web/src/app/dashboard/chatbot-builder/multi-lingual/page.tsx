@@ -69,6 +69,17 @@ export default function MultiLingualPage() {
     });
   };
 
+  const handleDownload = (lang: (typeof languages)[number]) => {
+    const data = JSON.stringify(lang, null, 2);
+    const blob = new Blob([data], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${lang.languageCode}-config.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   const handleDelete = async (code: string) => {
     try {
       await deleteLanguage(code);
@@ -205,7 +216,10 @@ export default function MultiLingualPage() {
                 >
                   <Trash2 className="w-4 h-4" />
                 </button>
-                <button className="p-2 border border-slate-200 dark:border-slate-700 rounded-lg hover:text-indigo-600 transition-colors">
+                <button
+                  onClick={() => handleDownload(lang)}
+                  className="p-2 border border-slate-200 dark:border-slate-700 rounded-lg hover:text-indigo-600 transition-colors"
+                >
                   <Download className="w-4 h-4" />
                 </button>
               </div>
