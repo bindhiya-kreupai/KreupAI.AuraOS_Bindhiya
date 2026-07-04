@@ -6,14 +6,30 @@
 
 import { APIClient } from '@/lib/api-client';
 import type {
-  DialogueFlow, FlowTest, Entity, Intent, IntentMatch, TrainingDataset, TrainingExample,
-  ModelTraining, Channel, MessageTemplate, ConversationAnalytics,
-  UserFeedback, ConversationSession, HandoffRule, HandoffRequest, Agent,
-  Language, Translation, LanguageContent, LanguageDetection, LocalizationSettings,
-  ChatbotSettings
+  DialogueFlow,
+  FlowTest,
+  Entity,
+  Intent,
+  IntentMatch,
+  TrainingDataset,
+  TrainingExample,
+  ModelTraining,
+  Channel,
+  MessageTemplate,
+  ConversationAnalytics,
+  UserFeedback,
+  ConversationSession,
+  HandoffRule,
+  HandoffRequest,
+  Agent,
+  Language,
+  Translation,
+  LanguageContent,
+  LanguageDetection,
+  LocalizationSettings,
+  ChatbotSettings,
 } from './types';
-import { ChannelMessage, HandoffQueue
-} from './types';
+import { ChannelMessage, HandoffQueue } from './types';
 
 // ============================================================================
 // DIALOGUE DESIGNER SERVICES
@@ -22,43 +38,54 @@ import { ChannelMessage, HandoffQueue
 export class DialogueFlowService {
   private static endpoint = '/chatbot/dialogue-flows';
 
-  static async getAllFlows(filters?: { category?: string; status?: string }): Promise<DialogueFlow[]> {
+  static async getAllFlows(filters?: {
+    category?: string;
+    status?: string;
+  }): Promise<DialogueFlow[]> {
     try {
-      return await APIClient.get<DialogueFlow[]>(this.endpoint, filters);
+      const res = await APIClient.get(this.endpoint, filters);
+      return APIClient.unwrapList<DialogueFlow>(res);
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
   static async getFlowById(flowId: string): Promise<DialogueFlow | null> {
     try {
-      return await APIClient.get<DialogueFlow>(`${this.endpoint}/${flowId}`);
+      const res = await APIClient.get(`${this.endpoint}/${flowId}`);
+      return APIClient.unwrapItem<DialogueFlow>(res);
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
   static async createFlow(flowData: Partial<DialogueFlow>): Promise<DialogueFlow> {
     try {
-      return await APIClient.post<DialogueFlow>(this.endpoint, flowData);
+      const res = await APIClient.post(this.endpoint, flowData);
+      return APIClient.unwrapItem<DialogueFlow>(res)!;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
   static async updateFlow(flowId: string, updates: Partial<DialogueFlow>): Promise<DialogueFlow> {
     try {
-      return await APIClient.put<DialogueFlow>(`${this.endpoint}/${flowId}`, updates);
+      const res = await APIClient.put(`${this.endpoint}/${flowId}`, updates);
+      return APIClient.unwrapItem<DialogueFlow>(res)!;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
   static async publishFlow(flowId: string): Promise<DialogueFlow> {
     try {
-      return await APIClient.post<DialogueFlow>(`${this.endpoint}/${flowId}/publish`, {});
+      const res = await APIClient.put(`${this.endpoint}/${flowId}`, {
+        status: 'published',
+        publishedAt: new Date().toISOString(),
+      });
+      return APIClient.unwrapItem<DialogueFlow>(res)!;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
@@ -66,7 +93,7 @@ export class DialogueFlowService {
     try {
       return await APIClient.delete(`${this.endpoint}/${flowId}`);
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 }
@@ -76,25 +103,28 @@ export class FlowTestService {
 
   static async getAllTests(filters?: { flowId?: string; status?: string }): Promise<FlowTest[]> {
     try {
-      return await APIClient.get<FlowTest[]>(this.endpoint, filters);
+      const res = await APIClient.get(this.endpoint, filters);
+      return APIClient.unwrapList<FlowTest>(res);
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
   static async createTest(testData: Partial<FlowTest>): Promise<FlowTest> {
     try {
-      return await APIClient.post<FlowTest>(this.endpoint, testData);
+      const res = await APIClient.post(this.endpoint, testData);
+      return APIClient.unwrapItem<FlowTest>(res)!;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
   static async runTest(testId: string): Promise<FlowTest> {
     try {
-      return await APIClient.post<FlowTest>(`${this.endpoint}/${testId}/run`, {});
+      const res = await APIClient.post(`${this.endpoint}/${testId}/run`, {});
+      return APIClient.unwrapItem<FlowTest>(res)!;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 }
@@ -106,43 +136,50 @@ export class FlowTestService {
 export class EntityService {
   private static endpoint = '/chatbot/entities';
 
-  static async getAllEntities(filters?: { entityType?: string; status?: string }): Promise<Entity[]> {
+  static async getAllEntities(filters?: {
+    entityType?: string;
+    status?: string;
+  }): Promise<Entity[]> {
     try {
-      return await APIClient.get<Entity[]>(this.endpoint, filters);
+      const res = await APIClient.get(this.endpoint, filters);
+      return APIClient.unwrapList<Entity>(res);
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
   static async getEntityById(entityId: string): Promise<Entity | null> {
     try {
-      return await APIClient.get<Entity>(`${this.endpoint}/${entityId}`);
+      const res = await APIClient.get(`${this.endpoint}/${entityId}`);
+      return APIClient.unwrapItem<Entity>(res);
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
   static async createEntity(entityData: Partial<Entity>): Promise<Entity> {
     try {
-      return await APIClient.post<Entity>(this.endpoint, entityData);
+      const res = await APIClient.post(this.endpoint, entityData);
+      return APIClient.unwrapItem<Entity>(res)!;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
   static async updateEntity(entityId: string, updates: Partial<Entity>): Promise<Entity> {
     try {
-      return await APIClient.put<Entity>(`${this.endpoint}/${entityId}`, updates);
+      const res = await APIClient.put(`${this.endpoint}/${entityId}`, updates);
+      return APIClient.unwrapItem<Entity>(res)!;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
   static async deleteEntity(entityId: string): Promise<void> {
     try {
-      return await APIClient.delete(`${this.endpoint}/${entityId}`);
+      await APIClient.delete(`${this.endpoint}/${entityId}`);
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 }
@@ -156,41 +193,45 @@ export class IntentService {
 
   static async getAllIntents(filters?: { category?: string; status?: string }): Promise<Intent[]> {
     try {
-      return await APIClient.get<Intent[]>(this.endpoint, filters);
+      const res = await APIClient.get(this.endpoint, filters);
+      return APIClient.unwrapList<Intent>(res);
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
   static async getIntentById(intentId: string): Promise<Intent | null> {
     try {
-      return await APIClient.get<Intent>(`${this.endpoint}/${intentId}`);
+      const res = await APIClient.get(`${this.endpoint}/${intentId}`);
+      return APIClient.unwrapItem<Intent>(res);
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
   static async createIntent(intentData: Partial<Intent>): Promise<Intent> {
     try {
-      return await APIClient.post<Intent>(this.endpoint, intentData);
+      const res = await APIClient.post(this.endpoint, intentData);
+      return APIClient.unwrapItem<Intent>(res)!;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
   static async updateIntent(intentId: string, updates: Partial<Intent>): Promise<Intent> {
     try {
-      return await APIClient.put<Intent>(`${this.endpoint}/${intentId}`, updates);
+      const res = await APIClient.put(`${this.endpoint}/${intentId}`, updates);
+      return APIClient.unwrapItem<Intent>(res)!;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
   static async deleteIntent(intentId: string): Promise<void> {
     try {
-      return await APIClient.delete(`${this.endpoint}/${intentId}`);
+      await APIClient.delete(`${this.endpoint}/${intentId}`);
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 }
@@ -198,19 +239,24 @@ export class IntentService {
 export class IntentMatchService {
   private static endpoint = '/chatbot/intent-matches';
 
-  static async getAllMatches(filters?: { sessionId?: string; intentId?: string }): Promise<IntentMatch[]> {
+  static async getAllMatches(filters?: {
+    sessionId?: string;
+    intentId?: string;
+  }): Promise<IntentMatch[]> {
     try {
-      return await APIClient.get<IntentMatch[]>(this.endpoint, filters);
+      const res = await APIClient.get(this.endpoint, filters);
+      return APIClient.unwrapList<IntentMatch>(res);
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
   static async logMatch(matchData: Partial<IntentMatch>): Promise<IntentMatch> {
     try {
-      return await APIClient.post<IntentMatch>(this.endpoint, matchData);
+      const res = await APIClient.post(this.endpoint, matchData);
+      return APIClient.unwrapItem<IntentMatch>(res)!;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 }
@@ -222,19 +268,44 @@ export class IntentMatchService {
 export class TrainingDatasetService {
   private static endpoint = '/chatbot/training-datasets';
 
-  static async getAllDatasets(filters?: { language?: string; status?: string }): Promise<TrainingDataset[]> {
+  static async getAllDatasets(filters?: {
+    language?: string;
+    status?: string;
+  }): Promise<TrainingDataset[]> {
     try {
-      return await APIClient.get<TrainingDataset[]>(this.endpoint, filters);
+      const res = await APIClient.get(this.endpoint, filters);
+      return APIClient.unwrapList<TrainingDataset>(res);
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
   static async createDataset(datasetData: Partial<TrainingDataset>): Promise<TrainingDataset> {
     try {
-      return await APIClient.post<TrainingDataset>(this.endpoint, datasetData);
+      const res = await APIClient.post(this.endpoint, datasetData);
+      return APIClient.unwrapItem<TrainingDataset>(res)!;
     } catch (error: any) {
-            throw error;
+      throw error;
+    }
+  }
+
+  static async updateDataset(
+    datasetId: string,
+    updates: Partial<TrainingDataset>
+  ): Promise<TrainingDataset> {
+    try {
+      const res = await APIClient.put(`${this.endpoint}/${datasetId}`, updates);
+      return APIClient.unwrapItem<TrainingDataset>(res)!;
+    } catch (error: any) {
+      throw error;
+    }
+  }
+
+  static async deleteDataset(datasetId: string): Promise<void> {
+    try {
+      await APIClient.delete(`${this.endpoint}/${datasetId}`);
+    } catch (error: any) {
+      throw error;
     }
   }
 }
@@ -242,27 +313,44 @@ export class TrainingDatasetService {
 export class TrainingExampleService {
   private static endpoint = '/chatbot/training-examples';
 
-  static async getAllExamples(filters?: { datasetId?: string; intent?: string }): Promise<TrainingExample[]> {
+  static async getAllExamples(filters?: {
+    datasetId?: string;
+    intent?: string;
+  }): Promise<TrainingExample[]> {
     try {
-      return await APIClient.get<TrainingExample[]>(this.endpoint, filters);
+      const res = await APIClient.get(this.endpoint, filters);
+      return APIClient.unwrapList<TrainingExample>(res);
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
   static async createExample(exampleData: Partial<TrainingExample>): Promise<TrainingExample> {
     try {
-      return await APIClient.post<TrainingExample>(this.endpoint, exampleData);
+      const res = await APIClient.post(this.endpoint, exampleData);
+      return APIClient.unwrapItem<TrainingExample>(res)!;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
-  static async updateExample(exampleId: string, updates: Partial<TrainingExample>): Promise<TrainingExample> {
+  static async updateExample(
+    exampleId: string,
+    updates: Partial<TrainingExample>
+  ): Promise<TrainingExample> {
     try {
-      return await APIClient.put<TrainingExample>(`${this.endpoint}/${exampleId}`, updates);
+      const res = await APIClient.put(`${this.endpoint}/${exampleId}`, updates);
+      return APIClient.unwrapItem<TrainingExample>(res)!;
     } catch (error: any) {
-            throw error;
+      throw error;
+    }
+  }
+
+  static async deleteExample(exampleId: string): Promise<void> {
+    try {
+      await APIClient.delete(`${this.endpoint}/${exampleId}`);
+    } catch (error: any) {
+      throw error;
     }
   }
 }
@@ -270,27 +358,33 @@ export class TrainingExampleService {
 export class ModelTrainingService {
   private static endpoint = '/chatbot/model-trainings';
 
-  static async getAllTrainings(filters?: { datasetId?: string; status?: string }): Promise<ModelTraining[]> {
+  static async getAllTrainings(filters?: {
+    datasetId?: string;
+    status?: string;
+  }): Promise<ModelTraining[]> {
     try {
-      return await APIClient.get<ModelTraining[]>(this.endpoint, filters);
+      const res = await APIClient.get(this.endpoint, filters);
+      return APIClient.unwrapList<ModelTraining>(res);
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
   static async startTraining(trainingData: Partial<ModelTraining>): Promise<ModelTraining> {
     try {
-      return await APIClient.post<ModelTraining>(this.endpoint, trainingData);
+      const res = await APIClient.post(this.endpoint, trainingData);
+      return APIClient.unwrapItem<ModelTraining>(res)!;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
   static async getTrainingStatus(trainingId: string): Promise<ModelTraining | null> {
     try {
-      return await APIClient.get<ModelTraining>(`${this.endpoint}/${trainingId}`);
+      const res = await APIClient.get(`${this.endpoint}/${trainingId}`);
+      return APIClient.unwrapItem<ModelTraining>(res);
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 }
@@ -302,35 +396,51 @@ export class ModelTrainingService {
 export class ChannelService {
   private static endpoint = '/chatbot/channels';
 
-  static async getAllChannels(filters?: { channelType?: string; status?: string }): Promise<Channel[]> {
+  static async getAllChannels(filters?: {
+    channelType?: string;
+    status?: string;
+  }): Promise<Channel[]> {
     try {
-      return await APIClient.get<Channel[]>(this.endpoint, filters);
+      const res = await APIClient.get(this.endpoint, filters);
+      return APIClient.unwrapList<Channel>(res);
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
   static async createChannel(channelData: Partial<Channel>): Promise<Channel> {
     try {
-      return await APIClient.post<Channel>(this.endpoint, channelData);
+      const res = await APIClient.post(this.endpoint, channelData);
+      return APIClient.unwrapItem<Channel>(res)!;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
   static async updateChannel(channelId: string, updates: Partial<Channel>): Promise<Channel> {
     try {
-      return await APIClient.put<Channel>(`${this.endpoint}/${channelId}`, updates);
+      const res = await APIClient.put(`${this.endpoint}/${channelId}`, updates);
+      return APIClient.unwrapItem<Channel>(res)!;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
   static async testChannel(channelId: string): Promise<boolean> {
     try {
-      return await APIClient.post<boolean>(`${this.endpoint}/${channelId}/test`, {});
+      const res = await APIClient.put(`${this.endpoint}/${channelId}`, { action: 'test' });
+      const data = APIClient.unwrapItem<{ success: boolean }>(res);
+      return data?.success ?? true;
     } catch (error: any) {
-            throw error;
+      throw error;
+    }
+  }
+
+  static async deleteChannel(channelId: string): Promise<void> {
+    try {
+      await APIClient.delete(`${this.endpoint}/${channelId}`);
+    } catch (error: any) {
+      throw error;
     }
   }
 }
@@ -338,19 +448,24 @@ export class ChannelService {
 export class MessageTemplateService {
   private static endpoint = '/chatbot/message-templates';
 
-  static async getAllTemplates(filters?: { channels?: string[]; status?: string }): Promise<MessageTemplate[]> {
+  static async getAllTemplates(filters?: {
+    channels?: string[];
+    status?: string;
+  }): Promise<MessageTemplate[]> {
     try {
-      return await APIClient.get<MessageTemplate[]>(this.endpoint, filters);
+      const res = await APIClient.get(this.endpoint, filters);
+      return APIClient.unwrapList<MessageTemplate>(res);
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
   static async createTemplate(templateData: Partial<MessageTemplate>): Promise<MessageTemplate> {
     try {
-      return await APIClient.post<MessageTemplate>(this.endpoint, templateData);
+      const res = await APIClient.post(this.endpoint, templateData);
+      return APIClient.unwrapItem<MessageTemplate>(res)!;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 }
@@ -362,11 +477,15 @@ export class MessageTemplateService {
 export class AnalyticsService {
   private static endpoint = '/chatbot/analytics';
 
-  static async getAnalytics(filters?: { startDate?: string; endDate?: string }): Promise<ConversationAnalytics> {
+  static async getAnalytics(filters?: {
+    startDate?: string;
+    endDate?: string;
+  }): Promise<ConversationAnalytics> {
     try {
-      return await APIClient.get<ConversationAnalytics>(this.endpoint, filters);
+      const res = await APIClient.get(this.endpoint, filters);
+      return APIClient.unwrapItem<ConversationAnalytics>(res)!;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 }
@@ -374,19 +493,24 @@ export class AnalyticsService {
 export class UserFeedbackService {
   private static endpoint = '/chatbot/user-feedback';
 
-  static async getAllFeedback(filters?: { sessionId?: string; status?: string }): Promise<UserFeedback[]> {
+  static async getAllFeedback(filters?: {
+    sessionId?: string;
+    status?: string;
+  }): Promise<UserFeedback[]> {
     try {
-      return await APIClient.get<UserFeedback[]>(this.endpoint, filters);
+      const res = await APIClient.get(this.endpoint, filters);
+      return APIClient.unwrapList<UserFeedback>(res);
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
   static async submitFeedback(feedbackData: Partial<UserFeedback>): Promise<UserFeedback> {
     try {
-      return await APIClient.post<UserFeedback>(this.endpoint, feedbackData);
+      const res = await APIClient.post(this.endpoint, feedbackData);
+      return APIClient.unwrapItem<UserFeedback>(res)!;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 }
@@ -394,27 +518,38 @@ export class UserFeedbackService {
 export class ConversationSessionService {
   private static endpoint = '/chatbot/conversation-sessions';
 
-  static async getAllSessions(filters?: { userId?: string; status?: string }): Promise<ConversationSession[]> {
+  static async getAllSessions(filters?: {
+    userId?: string;
+    status?: string;
+  }): Promise<ConversationSession[]> {
     try {
-      return await APIClient.get<ConversationSession[]>(this.endpoint, filters);
+      const res = await APIClient.get(this.endpoint, filters);
+      return APIClient.unwrapList<ConversationSession>(res);
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
-  static async createSession(sessionData: Partial<ConversationSession>): Promise<ConversationSession> {
+  static async createSession(
+    sessionData: Partial<ConversationSession>
+  ): Promise<ConversationSession> {
     try {
-      return await APIClient.post<ConversationSession>(this.endpoint, sessionData);
+      const res = await APIClient.post(this.endpoint, sessionData);
+      return APIClient.unwrapItem<ConversationSession>(res)!;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
-  static async updateSession(sessionId: string, updates: Partial<ConversationSession>): Promise<ConversationSession> {
+  static async updateSession(
+    sessionId: string,
+    updates: Partial<ConversationSession>
+  ): Promise<ConversationSession> {
     try {
-      return await APIClient.put<ConversationSession>(`${this.endpoint}/${sessionId}`, updates);
+      const res = await APIClient.put(`${this.endpoint}/${sessionId}`, updates);
+      return APIClient.unwrapItem<ConversationSession>(res)!;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 }
@@ -426,27 +561,41 @@ export class ConversationSessionService {
 export class HandoffRuleService {
   private static endpoint = '/chatbot/handoff-rules';
 
-  static async getAllRules(filters?: { priority?: number; isActive?: boolean }): Promise<HandoffRule[]> {
+  static async getAllRules(filters?: {
+    priority?: number;
+    isActive?: boolean;
+  }): Promise<HandoffRule[]> {
     try {
-      return await APIClient.get<HandoffRule[]>(this.endpoint, filters);
+      const res = await APIClient.get(this.endpoint, filters);
+      return APIClient.unwrapList<HandoffRule>(res);
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
   static async createRule(ruleData: Partial<HandoffRule>): Promise<HandoffRule> {
     try {
-      return await APIClient.post<HandoffRule>(this.endpoint, ruleData);
+      const res = await APIClient.post(this.endpoint, ruleData);
+      return APIClient.unwrapItem<HandoffRule>(res)!;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
   static async updateRule(ruleId: string, updates: Partial<HandoffRule>): Promise<HandoffRule> {
     try {
-      return await APIClient.put<HandoffRule>(`${this.endpoint}/${ruleId}`, updates);
+      const res = await APIClient.put(`${this.endpoint}/${ruleId}`, updates);
+      return APIClient.unwrapItem<HandoffRule>(res)!;
     } catch (error: any) {
-            throw error;
+      throw error;
+    }
+  }
+
+  static async deleteRule(ruleId: string): Promise<void> {
+    try {
+      await APIClient.delete(`${this.endpoint}/${ruleId}`);
+    } catch (error: any) {
+      throw error;
     }
   }
 }
@@ -454,27 +603,36 @@ export class HandoffRuleService {
 export class HandoffRequestService {
   private static endpoint = '/chatbot/handoff-requests';
 
-  static async getAllRequests(filters?: { sessionId?: string; status?: string }): Promise<HandoffRequest[]> {
+  static async getAllRequests(filters?: {
+    sessionId?: string;
+    status?: string;
+  }): Promise<HandoffRequest[]> {
     try {
-      return await APIClient.get<HandoffRequest[]>(this.endpoint, filters);
+      const res = await APIClient.get(this.endpoint, filters);
+      return APIClient.unwrapList<HandoffRequest>(res);
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
   static async createRequest(requestData: Partial<HandoffRequest>): Promise<HandoffRequest> {
     try {
-      return await APIClient.post<HandoffRequest>(this.endpoint, requestData);
+      const res = await APIClient.post(this.endpoint, requestData);
+      return APIClient.unwrapItem<HandoffRequest>(res)!;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
-  static async updateRequest(requestId: string, updates: Partial<HandoffRequest>): Promise<HandoffRequest> {
+  static async updateRequest(
+    requestId: string,
+    updates: Partial<HandoffRequest>
+  ): Promise<HandoffRequest> {
     try {
-      return await APIClient.put<HandoffRequest>(`${this.endpoint}/${requestId}`, updates);
+      const res = await APIClient.put(`${this.endpoint}/${requestId}`, updates);
+      return APIClient.unwrapItem<HandoffRequest>(res)!;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 }
@@ -484,17 +642,19 @@ export class AgentService {
 
   static async getAllAgents(filters?: { status?: string }): Promise<Agent[]> {
     try {
-      return await APIClient.get<Agent[]>(this.endpoint, filters);
+      const res = await APIClient.get(this.endpoint, filters);
+      return APIClient.unwrapList<Agent>(res);
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
   static async getAvailableAgents(): Promise<Agent[]> {
     try {
-      return await APIClient.get<Agent[]>(`${this.endpoint}/available`);
+      const res = await APIClient.get(`${this.endpoint}/available`);
+      return APIClient.unwrapList<Agent>(res);
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 }
@@ -508,17 +668,36 @@ export class LanguageService {
 
   static async getAllLanguages(filters?: { isEnabled?: boolean }): Promise<Language[]> {
     try {
-      return await APIClient.get<Language[]>(this.endpoint, filters);
+      const res = await APIClient.get(this.endpoint, filters);
+      return APIClient.unwrapList<Language>(res);
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
   static async enableLanguage(languageCode: string): Promise<Language> {
     try {
-      return await APIClient.post<Language>(`${this.endpoint}/${languageCode}/enable`, {});
+      const res = await APIClient.put(`${this.endpoint}/${languageCode}`, { action: 'enable' });
+      return APIClient.unwrapItem<Language>(res)!;
     } catch (error: any) {
-            throw error;
+      throw error;
+    }
+  }
+
+  static async updateLanguage(languageCode: string, updates: Partial<Language>): Promise<Language> {
+    try {
+      const res = await APIClient.put(`${this.endpoint}/${languageCode}`, updates);
+      return APIClient.unwrapItem<Language>(res)!;
+    } catch (error: any) {
+      throw error;
+    }
+  }
+
+  static async deleteLanguage(languageCode: string): Promise<void> {
+    try {
+      await APIClient.delete(`${this.endpoint}/${languageCode}`);
+    } catch (error: any) {
+      throw error;
     }
   }
 }
@@ -526,32 +705,42 @@ export class LanguageService {
 export class TranslationService {
   private static endpoint = '/chatbot/translations';
 
-  static async getAllTranslations(filters?: { sourceLanguage?: string; targetLanguage?: string }): Promise<Translation[]> {
+  static async getAllTranslations(filters?: {
+    sourceLanguage?: string;
+    targetLanguage?: string;
+  }): Promise<Translation[]> {
     try {
-      return await APIClient.get<Translation[]>(this.endpoint, filters);
+      const res = await APIClient.get(this.endpoint, filters);
+      return APIClient.unwrapList<Translation>(res);
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
   static async createTranslation(translationData: Partial<Translation>): Promise<Translation> {
     try {
-      return await APIClient.post<Translation>(this.endpoint, translationData);
+      const res = await APIClient.post(this.endpoint, translationData);
+      return APIClient.unwrapItem<Translation>(res)!;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
-  static async autoTranslate(text: string, sourceLanguage: string, targetLanguage: string): Promise<string> {
+  static async autoTranslate(
+    text: string,
+    sourceLanguage: string,
+    targetLanguage: string
+  ): Promise<string> {
     try {
-      const result = await APIClient.post<{ translatedText: string }>(`${this.endpoint}/auto-translate`, {
+      const res = await APIClient.post(`${this.endpoint}/auto-translate`, {
         text,
         sourceLanguage,
         targetLanguage,
       });
-      return result.translatedText;
+      const data = APIClient.unwrapItem<{ translatedText: string }>(res);
+      return data?.translatedText ?? '';
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 }
@@ -559,19 +748,24 @@ export class TranslationService {
 export class LanguageContentService {
   private static endpoint = '/chatbot/language-content';
 
-  static async getAllContent(filters?: { contentType?: string; defaultLanguage?: string }): Promise<LanguageContent[]> {
+  static async getAllContent(filters?: {
+    contentType?: string;
+    defaultLanguage?: string;
+  }): Promise<LanguageContent[]> {
     try {
-      return await APIClient.get<LanguageContent[]>(this.endpoint, filters);
+      const res = await APIClient.get(this.endpoint, filters);
+      return APIClient.unwrapList<LanguageContent>(res);
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
   static async createContent(contentData: Partial<LanguageContent>): Promise<LanguageContent> {
     try {
-      return await APIClient.post<LanguageContent>(this.endpoint, contentData);
+      const res = await APIClient.post(this.endpoint, contentData);
+      return APIClient.unwrapItem<LanguageContent>(res)!;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 }
@@ -581,9 +775,10 @@ export class LanguageDetectionService {
 
   static async detectLanguage(text: string): Promise<LanguageDetection> {
     try {
-      return await APIClient.post<LanguageDetection>(this.endpoint, { text });
+      const res = await APIClient.post(this.endpoint, { text });
+      return APIClient.unwrapItem<LanguageDetection>(res)!;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 }
@@ -593,17 +788,21 @@ export class LocalizationSettingsService {
 
   static async getSettings(): Promise<LocalizationSettings> {
     try {
-      return await APIClient.get<LocalizationSettings>(this.endpoint);
+      const res = await APIClient.get(this.endpoint);
+      return APIClient.unwrapItem<LocalizationSettings>(res)!;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
-  static async updateSettings(updates: Partial<LocalizationSettings>): Promise<LocalizationSettings> {
+  static async updateSettings(
+    updates: Partial<LocalizationSettings>
+  ): Promise<LocalizationSettings> {
     try {
-      return await APIClient.put<LocalizationSettings>(this.endpoint, updates);
+      const res = await APIClient.put(this.endpoint, updates);
+      return APIClient.unwrapItem<LocalizationSettings>(res)!;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 }
@@ -617,17 +816,19 @@ export class ChatbotSettingsService {
 
   static async getSettings(): Promise<ChatbotSettings> {
     try {
-      return await APIClient.get<ChatbotSettings>(this.endpoint);
+      const res = await APIClient.get(this.endpoint);
+      return APIClient.unwrapItem<ChatbotSettings>(res)!;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 
   static async updateSettings(updates: Partial<ChatbotSettings>): Promise<ChatbotSettings> {
     try {
-      return await APIClient.put<ChatbotSettings>(this.endpoint, updates);
+      const res = await APIClient.put(this.endpoint, updates);
+      return APIClient.unwrapItem<ChatbotSettings>(res)!;
     } catch (error: any) {
-            throw error;
+      throw error;
     }
   }
 }
