@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState } from 'react';
 import {
   MessageSquare,
   GitBranch,
@@ -8,14 +8,301 @@ import {
   Plus,
   Settings,
   Save,
-  MoreVertical,
   Edit2,
   Trash2,
   Eye,
   X,
+  ChevronDown,
+  ChevronRight,
 } from 'lucide-react';
 import { useChatbot } from '../hooks/useChatbot';
-import type { DialogueFlow, DialogueNode, NodeType, Status } from '../types';
+import type {
+  DialogueFlow,
+  DialogueNode,
+  NodeConnection,
+  Condition,
+  NodeType,
+  Status,
+} from '../types';
+
+function NodeCard({
+  node,
+  index,
+  flowId,
+  nodes,
+  connections,
+  updateDialogueFlow,
+  addToast,
+}: {
+  node: DialogueNode;
+  index: number;
+  flowId: string;
+  nodes: DialogueNode[];
+  connections: NodeConnection[];
+  updateDialogueFlow: (id: string, updates: Partial<DialogueFlow>) => Promise<any>;
+  addToast: (t: { type: 'success' | 'error'; message: string }) => void;
+}) {
+  const [expanded, setExpanded] = useState(false);
+  const [editText, setEditText] = useState(
+    node.configuration?.messageText ?? node.configuration?.questionText ?? ''
+  );
+  const [conditions, setConditions] = useState<Condition[]>(node.configuration?.conditions ?? []);
+  const [defaultPath, setDefaultPath] = useState(node.configuration?.defaultPath ?? '');
+  const [selectedNextNodes, setSelectedNextNodes] = useState<string[]>(node.nextNodes ?? []);
+
+  const addCondition = () => {
+    setConditions((prev) => [
+      ...prev,
+      {
+        conditionId: `c-${Date.now()}`,
+        variableName: '',
+        operator: 'equals',
+        value: '',
+        nextNode: '',
+      },
+    ]);
+  };
+
+  const updateCondition = (idx: number, field: string, val: any) => {
+    setConditions((prev) => prev.map((c, i) => (i === idx ? { ...c, [field]: val } : c)));
+  };
+
+  const removeCondition = (idx: number) => {
+    setConditions((prev) => prev.filter((_, i) => i !== idx));
+  };
+
+  const toggleNextNode = (targetId: string) => {
+    setSelectedNextNodes((prev) =>
+      prev.includes(targetId) ? prev.filter((id) => id !== targetId) : [...prev, targetId]
+    );
+  };
+
+  const nodeIcon = () => {
+    switch (node.nodeType) {
+      case 'message':
+      case 'question':
+        return <MessageSquare className="w-4 h-4 text-indigo-500" />;
+      case 'condition':
+        return <GitBranch className="w-4 h-4 text-amber-500" />;
+      case 'action':
+      case 'api_call':
+        return <Settings className="w-4 h-4 text-emerald-500" />;
+      case 'handoff':
+        return <GitBranch className="w-4 h-4 text-rose-500" />;
+      default:
+        return <MessageSquare className="w-4 h-4 text-slate-400" />;
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      await updateDialogueFlow(flowId, {
+        nodes: nodes.filter((n) => n.nodeId !== node.nodeId),
+        connections: connections.filter(
+          (c) => c.sourceNodeId !== node.nodeId && c.targetNodeId !== node.nodeId
+        ),
+      });
+      addToast({ type: 'success', message: 'Node removed' });
+    } catch {}
+  };
+
+  const handleSaveConfig = async () => {
+    let updatedConfig = node.configuration;
+    if (node.nodeType === 'message' || node.nodeType === 'question') {
+      updatedConfig = {
+        ...node.configuration,
+        ...(node.nodeType === 'message' ? { messageText: editText } : { questionText: editText }),
+      };
+    }
+    if (node.nodeType === 'condition') {
+      updatedConfig = { ...node.configuration, conditions, defaultPath };
+    }
+    const allUpdatedNodes = nodes.map((n) =>
+      n.nodeId === node.nodeId
+        ? { ...n, configuration: updatedConfig, nextNodes: selectedNextNodes }
+        : n
+    );
+    const allConnections: NodeConnection[] = [];
+    allUpdatedNodes.forEach((n) => {
+      n.nextNodes.forEach((targetId) => {
+        allConnections.push({
+          connectionId: `${n.nodeId}->${targetId}`,
+          sourceNodeId: n.nodeId,
+          targetNodeId: targetId,
+        });
+      });
+    });
+    try {
+      await updateDialogueFlow(flowId, {
+        nodes: allUpdatedNodes,
+        connections: allConnections,
+      });
+      addToast({ type: 'success', message: 'Node updated' });
+    } catch {}
+  };
+
+  return (
+    <div className="border border-slate-200 dark:border-slate-700 rounded-xl mb-2 overflow-hidden">
+      <button
+        onClick={() => setExpanded(!expanded)}
+        className="w-full flex items-center gap-3 p-3 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors text-left"
+      >
+        {expanded ? (
+          <ChevronDown className="w-4 h-4 text-slate-400 shrink-0" />
+        ) : (
+          <ChevronRight className="w-4 h-4 text-slate-400 shrink-0" />
+        )}
+        <span className="text-xs text-slate-400 font-mono w-6 shrink-0">#{index + 1}</span>
+        {nodeIcon()}
+        <span className="text-sm font-medium capitalize flex-1">{node.nodeName}</span>
+        <span className="px-2 py-0.5 rounded text-[10px] font-medium bg-slate-100 dark:bg-slate-700 text-slate-500">
+          {node.nodeType}
+        </span>
+      </button>
+      {expanded && (
+        <div className="px-3 pb-3 pt-0 border-t border-slate-100 dark:border-slate-700">
+          <div className="mt-2 space-y-2">
+            <div className="flex items-center gap-2 text-xs text-slate-400">
+              <span className="font-mono">ID: {node.nodeId}</span>
+            </div>
+            {(node.nodeType === 'message' || node.nodeType === 'question') && (
+              <div>
+                <label className="block text-xs font-medium text-slate-500 mb-1">
+                  {node.nodeType === 'message' ? 'Message Text' : 'Question Text'}
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    className="flex-1 border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-1.5 text-sm bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-indigo-500 outline-none"
+                    value={editText}
+                    onChange={(e) => setEditText(e.target.value)}
+                    placeholder="Enter message text..."
+                  />
+                  <button
+                    onClick={handleSaveConfig}
+                    className="px-3 py-1.5 text-xs font-bold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
+                  >
+                    Save
+                  </button>
+                </div>
+              </div>
+            )}
+            {node.nodeType === 'condition' && (
+              <div className="space-y-3">
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <label className="text-xs font-medium text-slate-500">Conditions</label>
+                    <button
+                      onClick={addCondition}
+                      className="flex items-center gap-1 text-xs font-bold text-indigo-600 dark:text-indigo-400 hover:text-indigo-700"
+                    >
+                      <Plus className="w-3 h-3" /> Add Condition
+                    </button>
+                  </div>
+                  {conditions.length === 0 && (
+                    <p className="text-xs text-slate-400 italic mb-2">No conditions defined.</p>
+                  )}
+                  {conditions.map((c, idx) => (
+                    <div key={c.conditionId} className="flex items-start gap-1.5 mb-1.5">
+                      <input
+                        className="w-[26%] border border-slate-300 dark:border-slate-600 rounded-lg px-2 py-1 text-[11px] bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 outline-none focus:ring-2 focus:ring-indigo-500"
+                        placeholder="Variable"
+                        value={c.variableName}
+                        onChange={(e) => updateCondition(idx, 'variableName', e.target.value)}
+                      />
+                      <select
+                        className="w-[20%] border border-slate-300 dark:border-slate-600 rounded-lg px-1 py-1 text-[11px] bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 outline-none focus:ring-2 focus:ring-indigo-500"
+                        value={c.operator}
+                        onChange={(e) => updateCondition(idx, 'operator', e.target.value)}
+                      >
+                        <option value="equals">equals</option>
+                        <option value="not_equals">not equals</option>
+                        <option value="greater_than">greater than</option>
+                        <option value="less_than">less than</option>
+                        <option value="contains">contains</option>
+                        <option value="exists">exists</option>
+                      </select>
+                      <input
+                        className="w-[22%] border border-slate-300 dark:border-slate-600 rounded-lg px-2 py-1 text-[11px] bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 outline-none focus:ring-2 focus:ring-indigo-500"
+                        placeholder="Value"
+                        value={c.value ?? ''}
+                        onChange={(e) => updateCondition(idx, 'value', e.target.value)}
+                      />
+                      <input
+                        className="w-[22%] border border-slate-300 dark:border-slate-600 rounded-lg px-2 py-1 text-[11px] bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 outline-none focus:ring-2 focus:ring-indigo-500"
+                        placeholder="Next Node ID"
+                        value={c.nextNode}
+                        onChange={(e) => updateCondition(idx, 'nextNode', e.target.value)}
+                      />
+                      <button
+                        onClick={() => removeCondition(idx)}
+                        className="p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/20 text-slate-400 hover:text-red-500 shrink-0 mt-0.5"
+                      >
+                        <X className="w-3 h-3" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 mb-1">
+                    Default Path (fallback node ID)
+                  </label>
+                  <input
+                    className="w-full border border-slate-300 dark:border-slate-600 rounded-lg px-3 py-1.5 text-sm bg-white dark:bg-slate-700 text-slate-900 dark:text-slate-100 outline-none focus:ring-2 focus:ring-indigo-500"
+                    value={defaultPath}
+                    onChange={(e) => setDefaultPath(e.target.value)}
+                    placeholder="e.g. node-1234567890"
+                  />
+                </div>
+                <button
+                  onClick={handleSaveConfig}
+                  className="w-full py-1.5 text-xs font-bold rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
+                >
+                  Save Conditions
+                </button>
+              </div>
+            )}
+            {node.nodeType === 'action' && (
+              <p className="text-xs text-slate-400 italic">
+                Action node — executes an API call or internal action.
+              </p>
+            )}
+            <div>
+              <label className="block text-xs font-medium text-slate-500 mb-1.5">
+                Connected To
+              </label>
+              <div className="flex flex-wrap gap-1.5">
+                {nodes
+                  .filter((n) => n.nodeId !== node.nodeId)
+                  .map((other) => {
+                    const isConnected = selectedNextNodes.includes(other.nodeId);
+                    const otherIdx = nodes.findIndex((n) => n.nodeId === other.nodeId);
+                    return (
+                      <button
+                        key={other.nodeId}
+                        onClick={() => toggleNextNode(other.nodeId)}
+                        className={`px-2 py-1 rounded-lg text-[11px] font-medium border transition-all ${
+                          isConnected
+                            ? 'bg-indigo-100 dark:bg-indigo-900/40 border-indigo-300 dark:border-indigo-600 text-indigo-700 dark:text-indigo-300'
+                            : 'bg-white dark:bg-slate-700 border-slate-200 dark:border-slate-600 text-slate-500 dark:text-slate-400 hover:border-slate-300 dark:hover:border-slate-500'
+                        }`}
+                      >
+                        #{otherIdx + 1} {other.nodeName}
+                      </button>
+                    );
+                  })}
+                {nodes.filter((n) => n.nodeId !== node.nodeId).length === 0 && (
+                  <span className="text-xs text-slate-400 italic">
+                    No other nodes to connect to.
+                  </span>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
 
 export default function DialogueDesignerPage() {
   const {
@@ -323,88 +610,28 @@ export default function DialogueDesignerPage() {
         )}
 
         <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-4">
-          <h3 className="text-sm font-semibold mb-3 text-slate-500 uppercase tracking-wider">
-            Node Composition
-          </h3>
-          <div className="space-y-2">
-            {messageNodes > 0 && (
-              <div className="flex items-center gap-3">
-                <MessageSquare className="w-4 h-4 text-indigo-500 shrink-0" />
-                <div className="flex-1 h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-indigo-500 rounded-full"
-                    style={{ width: `${(messageNodes / totalNodes) * 100}%` }}
-                  />
-                </div>
-                <span className="text-xs text-slate-500 w-8 text-right">{messageNodes}</span>
-              </div>
-            )}
-            {conditionNodes > 0 && (
-              <div className="flex items-center gap-3">
-                <GitBranch className="w-4 h-4 text-amber-500 shrink-0" />
-                <div className="flex-1 h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-amber-500 rounded-full"
-                    style={{ width: `${(conditionNodes / totalNodes) * 100}%` }}
-                  />
-                </div>
-                <span className="text-xs text-slate-500 w-8 text-right">{conditionNodes}</span>
-              </div>
-            )}
-            {actionNodes > 0 && (
-              <div className="flex items-center gap-3">
-                <Settings className="w-4 h-4 text-emerald-500 shrink-0" />
-                <div className="flex-1 h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-emerald-500 rounded-full"
-                    style={{ width: `${(actionNodes / totalNodes) * 100}%` }}
-                  />
-                </div>
-                <span className="text-xs text-slate-500 w-8 text-right">{actionNodes}</span>
-              </div>
-            )}
-            {questionNodes > 0 && (
-              <div className="flex items-center gap-3">
-                <MessageSquare className="w-4 h-4 text-sky-500 shrink-0" />
-                <div className="flex-1 h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-sky-500 rounded-full"
-                    style={{ width: `${(questionNodes / totalNodes) * 100}%` }}
-                  />
-                </div>
-                <span className="text-xs text-slate-500 w-8 text-right">{questionNodes}</span>
-              </div>
-            )}
-            {handoffNodes > 0 && (
-              <div className="flex items-center gap-3">
-                <GitBranch className="w-4 h-4 text-rose-500 shrink-0" />
-                <div className="flex-1 h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-rose-500 rounded-full"
-                    style={{ width: `${(handoffNodes / totalNodes) * 100}%` }}
-                  />
-                </div>
-                <span className="text-xs text-slate-500 w-8 text-right">{handoffNodes}</span>
-              </div>
-            )}
-            {endNodes > 0 && (
-              <div className="flex items-center gap-3">
-                <Eye className="w-4 h-4 text-slate-500 shrink-0" />
-                <div className="flex-1 h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-slate-500 rounded-full"
-                    style={{ width: `${(endNodes / totalNodes) * 100}%` }}
-                  />
-                </div>
-                <span className="text-xs text-slate-500 w-8 text-right">{endNodes}</span>
-              </div>
-            )}
-            {totalNodes === 0 && (
-              <p className="text-sm text-slate-400 italic">
-                No nodes yet — start building your flow!
-              </p>
-            )}
+          <div className="flex items-center justify-between mb-3">
+            <h3 className="text-sm font-semibold text-slate-500 uppercase tracking-wider">
+              Nodes ({totalNodes})
+            </h3>
           </div>
+          {nodes.map((node, idx) => (
+            <NodeCard
+              key={`${node.nodeId}-${JSON.stringify(node)}`}
+              node={node}
+              index={idx}
+              flowId={selectedFlow.flowId}
+              nodes={nodes}
+              connections={connections}
+              updateDialogueFlow={updateDialogueFlow}
+              addToast={addToast}
+            />
+          ))}
+          {totalNodes === 0 && (
+            <p className="text-sm text-slate-400 italic">
+              No nodes yet — use the toolbar to add a Message or Condition node.
+            </p>
+          )}
         </div>
 
         {triggerIntents.length > 0 && (
@@ -536,12 +763,24 @@ export default function DialogueDesignerPage() {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      handlePublish(flow.flowId);
+                      if (flow.status === 'published') {
+                        updateDialogueFlow(flow.flowId, { status: 'draft' });
+                      } else {
+                        handlePublish(flow.flowId);
+                      }
                     }}
-                    className="p-1.5 rounded-lg hover:bg-emerald-50 dark:hover:bg-emerald-900/30 text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-400"
-                    title="Publish"
+                    className={`p-1.5 rounded-lg text-slate-400 transition-colors ${
+                      flow.status === 'published'
+                        ? 'hover:bg-amber-50 dark:hover:bg-amber-900/30 hover:text-amber-600 dark:hover:text-amber-400'
+                        : 'hover:bg-emerald-50 dark:hover:bg-emerald-900/30 hover:text-emerald-600 dark:hover:text-emerald-400'
+                    }`}
+                    title={flow.status === 'published' ? 'Unpublish' : 'Publish'}
                   >
-                    <Eye className="w-4 h-4" />
+                    {flow.status === 'published' ? (
+                      <X className="w-4 h-4" />
+                    ) : (
+                      <Eye className="w-4 h-4" />
+                    )}
                   </button>
                 </div>
               </div>
