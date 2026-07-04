@@ -2,7 +2,14 @@
 
 export type Priority = 'low' | 'medium' | 'high' | 'critical';
 export type Status = 'active' | 'inactive' | 'draft' | 'published' | 'archived';
-export type NodeType = 'message' | 'question' | 'condition' | 'action' | 'api_call' | 'handoff' | 'end';
+export type NodeType =
+  | 'message'
+  | 'question'
+  | 'condition'
+  | 'action'
+  | 'api_call'
+  | 'handoff'
+  | 'end';
 export type ChannelType = 'web' | 'mobile' | 'slack' | 'teams' | 'whatsapp' | 'facebook' | 'sms';
 export type IntentConfidence = 'very_low' | 'low' | 'medium' | 'high' | 'very_high';
 
@@ -477,8 +484,11 @@ export interface ConversationAnalytics {
   period: { start: Date; end: Date };
   totalConversations: number;
   totalMessages: number;
+  totalIntents: number;
+  totalEntities: number;
+  totalFlows: number;
   averageConversationLength: number;
-  averageResponseTime: number; // seconds
+  averageResponseTime: number;
   userSatisfactionScore?: number;
   intentDistribution: IntentDistribution[];
   topIntents: TopIntent[];
@@ -585,7 +595,12 @@ export interface HandoffTrigger {
 
 export interface HandoffCondition {
   conditionId: string;
-  conditionType: 'time_of_day' | 'day_of_week' | 'queue_capacity' | 'user_attribute' | 'conversation_length';
+  conditionType:
+    | 'time_of_day'
+    | 'day_of_week'
+    | 'queue_capacity'
+    | 'user_attribute'
+    | 'conversation_length';
   operator: string;
   value: any;
 }

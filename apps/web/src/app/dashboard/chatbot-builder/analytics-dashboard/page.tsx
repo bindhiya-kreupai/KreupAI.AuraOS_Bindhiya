@@ -1,7 +1,20 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { BarChart3, Users, ThumbsUp, MessageSquare, AlertTriangle } from 'lucide-react';
+import {
+  BarChart3,
+  Users,
+  ThumbsUp,
+  MessageSquare,
+  AlertTriangle,
+  Download,
+  RefreshCw,
+  GitBranch,
+  Clock,
+  Zap,
+  Activity,
+  Target,
+} from 'lucide-react';
 import { useChatbot } from '../hooks/useChatbot';
 
 function getDateRange(period: string) {
@@ -26,21 +39,31 @@ function getDateRange(period: string) {
   return { startDate: start.toISOString(), endDate: end };
 }
 
-const barData = [
-  { day: 'Mon', volume: 40, handoffs: 8 },
-  { day: 'Tue', volume: 65, handoffs: 13 },
-  { day: 'Wed', volume: 45, handoffs: 9 },
-  { day: 'Thu', volume: 80, handoffs: 16 },
-  { day: 'Fri', volume: 55, handoffs: 11 },
-  { day: 'Sat', volume: 70, handoffs: 14 },
-  { day: 'Sun', volume: 60, handoffs: 12 },
-];
-
 function formatNumber(n: number | undefined | null): string {
   if (n == null) return '—';
   if (n >= 1000) return (n / 1000).toFixed(1) + 'k';
   return n.toLocaleString();
 }
+
+function formatPct(n: number | undefined | null): string {
+  if (n == null) return '—';
+  return n + '%';
+}
+
+function formatSecs(s: number | undefined | null): string {
+  if (s == null) return '—';
+  if (s < 60) return s.toFixed(1) + 's';
+  return Math.floor(s / 60) + 'm ' + Math.round(s % 60) + 's';
+}
+
+const channelLabels: Record<string, string> = {
+  web: 'Web Widget',
+  slack: 'Slack',
+  teams: 'Teams',
+  whatsapp: 'WhatsApp',
+  facebook: 'Messenger',
+  mobile: 'Mobile App',
+};
 
 export default function ChatbotAnalyticsPage() {
   const { analytics, loading, loadAnalytics, addToast } = useChatbot();
@@ -66,41 +89,63 @@ export default function ChatbotAnalyticsPage() {
     setPeriod(e.target.value);
   };
 
+  const handleRefresh = () => {
+    fetchAnalytics(period);
+  };
+
+  const handleExport = () => {
+    if (!analytics) return;
+    const json = JSON.stringify(analytics, null, 2);
+    const blob = new Blob([json], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `aura-analytics-${period}-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    addToast({ type: 'success', message: 'Analytics exported' });
+  };
+
   const topIntents: { name: string; val: number }[] = analytics?.intentDistribution
     ? analytics.intentDistribution.slice(0, 5).map((i) => ({ name: i.intentName, val: i.count }))
     : [];
 
   const intentMax = topIntents.length > 0 ? Math.max(...topIntents.map((i) => i.val)) : 100;
 
-  const statCards = [
+  const m = analytics?.conversationMetrics;
+  const cm = [
     {
-      label: 'Conversations',
-      value: formatNumber(analytics?.totalConversations),
+      label: 'Completion Rate',
+      value: formatPct(m?.completionRate),
+      icon: Target,
+      color: 'text-emerald-500',
+    },
+    {
+      label: 'Abandonment Rate',
+      value: formatPct(m?.abandonmentRate),
+      icon: Activity,
+      color: 'text-rose-500',
+    },
+    {
+      label: 'Handoff Rate',
+      value: formatPct(m?.handoffRate),
+      icon: Users,
+      color: 'text-amber-500',
+    },
+    {
+      label: 'Avg Turns',
+      value: m?.averageTurns != null ? String(m.averageTurns) : '—',
       icon: MessageSquare,
       color: 'text-indigo-500',
-      badge: analytics?.totalConversations != null ? `${analytics.totalConversations}` : '—',
     },
-    {
-      label: 'Messages',
-      value: formatNumber(analytics?.totalMessages),
-      icon: MessageSquare,
-      color: 'text-emerald-500',
-      badge: analytics?.totalMessages != null ? `${analytics.totalMessages}` : '—',
-    },
-    {
-      label: 'Intents',
-      value: formatNumber(analytics?.totalIntents),
-      icon: ThumbsUp,
-      color: 'text-amber-500',
-      badge: analytics?.totalIntents != null ? `${analytics.totalIntents}` : '—',
-    },
-    {
-      label: 'Entities',
-      value: formatNumber(analytics?.totalEntities),
-      icon: Users,
-      color: 'text-rose-500',
-      badge: analytics?.totalEntities != null ? `${analytics.totalEntities}` : '—',
-    },
+  ];
+
+  const barColors = [
+    'bg-indigo-500',
+    'bg-emerald-500',
+    'bg-amber-500',
+    'bg-cyan-500',
+    'bg-rose-300',
   ];
 
   return (
@@ -122,15 +167,33 @@ export default function ChatbotAnalyticsPage() {
           </h1>
           <p className="text-slate-500 text-sm">Monitor bot performance and user engagement.</p>
         </div>
-        <select
-          value={period}
-          onChange={handlePeriodChange}
-          className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2 text-sm outline-none"
-        >
-          <option value="7d">Last 7 Days</option>
-          <option value="30d">Last 30 Days</option>
-          <option value="quarter">This Quarter</option>
-        </select>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={handleRefresh}
+            disabled={loading}
+            className="flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors disabled:opacity-40"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+            Refresh
+          </button>
+          <button
+            onClick={handleExport}
+            disabled={!analytics}
+            className="flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 rounded-xl text-sm font-medium hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors disabled:opacity-40"
+          >
+            <Download className="w-4 h-4" />
+            Export
+          </button>
+          <select
+            value={period}
+            onChange={handlePeriodChange}
+            className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2 text-sm outline-none"
+          >
+            <option value="7d">Last 7 Days</option>
+            <option value="30d">Last 30 Days</option>
+            <option value="quarter">This Quarter</option>
+          </select>
+        </div>
       </div>
 
       {!analytics && !loading ? (
@@ -141,87 +204,104 @@ export default function ChatbotAnalyticsPage() {
           </div>
         </div>
       ) : (
-        <>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
-            {statCards.map((stat, i) => (
+        <div className="overflow-y-auto flex-1 space-y-4">
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+            {[
+              {
+                label: 'Conversations',
+                value: formatNumber(analytics?.totalConversations),
+                icon: MessageSquare,
+                color: 'text-indigo-500',
+              },
+              {
+                label: 'Messages',
+                value: formatNumber(analytics?.totalMessages),
+                icon: MessageSquare,
+                color: 'text-emerald-500',
+              },
+              {
+                label: 'Intents',
+                value: formatNumber(analytics?.totalIntents),
+                icon: ThumbsUp,
+                color: 'text-amber-500',
+              },
+              {
+                label: 'Entities',
+                value: formatNumber(analytics?.totalEntities),
+                icon: Users,
+                color: 'text-rose-500',
+              },
+              {
+                label: 'Dialogue Flows',
+                value: formatNumber(analytics?.totalFlows),
+                icon: GitBranch,
+                color: 'text-cyan-500',
+              },
+              {
+                label: 'Avg Response',
+                value: formatSecs(analytics?.averageResponseTime),
+                icon: Clock,
+                color: 'text-purple-500',
+              },
+            ].map((stat, i) => (
               <div
                 key={i}
-                className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6"
+                className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4"
               >
-                <div className="flex justify-between items-start mb-4">
-                  <div className={`p-2 rounded-lg bg-slate-50 dark:bg-slate-800 ${stat.color}`}>
-                    <stat.icon className="w-5 h-5" />
-                  </div>
-                  <span className="text-xs font-bold px-2 py-1 rounded-full bg-emerald-100 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-400">
-                    {stat.badge}
-                  </span>
+                <div
+                  className={`p-2 rounded-lg bg-slate-50 dark:bg-slate-800 ${stat.color} w-fit mb-3`}
+                >
+                  <stat.icon className="w-5 h-5" />
                 </div>
-                <h3 className="text-3xl font-bold mb-1">{stat.value}</h3>
-                <p className="text-slate-500 text-sm">{stat.label}</p>
+                <h3 className="text-2xl font-bold mb-0.5">{stat.value}</h3>
+                <p className="text-slate-500 text-xs">{stat.label}</p>
               </div>
             ))}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
-              <h3 className="font-bold mb-6">Volume vs. Handoffs</h3>
-              <div className="h-64 flex items-end justify-between px-2 gap-2">
-                {barData.map((d, i) => {
-                  const maxVal = Math.max(...barData.map((x) => x.volume));
-                  const hPct = (d.volume / maxVal) * 100;
-                  const hoPct = (d.handoffs / maxVal) * 100;
-                  return (
-                    <div
-                      key={i}
-                      className="w-full flex flex-col items-center gap-1 relative"
-                      style={{ height: '100%' }}
-                    >
-                      <div
-                        className="w-full bg-indigo-100 dark:bg-indigo-900/20 rounded-t-lg relative flex-1 self-end"
-                        style={{ height: `${hPct}%` }}
-                      >
-                        <div
-                          className="absolute bottom-0 w-full bg-indigo-500 rounded-t-lg transition-all hover:opacity-80"
-                          style={{ height: '100%' }}
-                        />
-                        <div
-                          className="absolute bottom-0 w-full bg-rose-400 rounded-t-lg opacity-50 transition-all"
-                          style={{ height: `${(d.handoffs / d.volume) * 100}%` }}
-                        />
-                      </div>
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
+              <h3 className="font-bold mb-4">Conversation Metrics</h3>
+              <div className="grid grid-cols-2 gap-3">
+                {cm.map((item, i) => (
+                  <div
+                    key={i}
+                    className="border border-slate-100 dark:border-slate-800 rounded-xl p-3"
+                  >
+                    <div className={`${item.color} mb-1`}>
+                      <item.icon className="w-4 h-4" />
                     </div>
-                  );
-                })}
-              </div>
-              <div className="flex justify-between text-xs text-slate-400 mt-4">
-                {barData.map((d, i) => (
-                  <span key={i}>{d.day}</span>
+                    <p className="text-lg font-bold">{item.value}</p>
+                    <p className="text-xs text-slate-500">{item.label}</p>
+                  </div>
                 ))}
+              </div>
+              <div className="mt-4 pt-3 border-t border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-2 text-xs text-slate-500">
+                  <Zap className="w-3.5 h-3.5" />
+                  Avg conversation length:{' '}
+                  {analytics?.averageConversationLength != null
+                    ? analytics.averageConversationLength + ' turns'
+                    : '—'}
+                </div>
               </div>
             </div>
 
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-6">
-              <h3 className="font-bold mb-6">Top Intents</h3>
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
+              <h3 className="font-bold mb-4">Top Intents</h3>
               {topIntents.length > 0 ? (
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {topIntents.map((item, i) => {
-                    const colors = [
-                      'bg-indigo-500',
-                      'bg-emerald-500',
-                      'bg-amber-500',
-                      'bg-cyan-500',
-                      'bg-rose-300',
-                    ];
                     const pct = Math.round((item.val / intentMax) * 100);
                     return (
                       <div key={i}>
                         <div className="flex justify-between text-sm font-medium mb-1">
-                          <span>{item.name}</span>
-                          <span>{item.val}</span>
+                          <span className="truncate mr-2">{item.name}</span>
+                          <span className="text-slate-500 shrink-0">{item.val}</span>
                         </div>
                         <div className="w-full bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden">
                           <div
-                            className={`h-full ${colors[i % colors.length]} transition-all`}
+                            className={`h-full ${barColors[i % barColors.length]} transition-all`}
                             style={{ width: `${pct}%` }}
                           />
                         </div>
@@ -230,13 +310,81 @@ export default function ChatbotAnalyticsPage() {
                   })}
                 </div>
               ) : (
-                <div className="h-48 flex items-center justify-center text-slate-400 text-sm">
+                <div className="h-40 flex items-center justify-center text-slate-400 text-sm">
                   No intent data available
                 </div>
               )}
             </div>
           </div>
-        </>
+
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
+              <h3 className="font-bold mb-4">Channel Breakdown</h3>
+              {analytics?.channelBreakdown && analytics.channelBreakdown.length > 0 ? (
+                <div className="space-y-3">
+                  {analytics.channelBreakdown.map((ch, i) => (
+                    <div
+                      key={i}
+                      className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-2 last:border-0 last:pb-0"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium">
+                          {channelLabels[ch.channelType] || ch.channelType}
+                        </span>
+                      </div>
+                      <div className="flex gap-4 text-xs text-slate-500">
+                        <span>{ch.conversationCount} conv</span>
+                        <span>{ch.messageCount} msgs</span>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="h-32 flex items-center justify-center text-slate-400 text-sm">
+                  No channel data available
+                </div>
+              )}
+            </div>
+
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5">
+              <h3 className="font-bold mb-4">Failed Intents</h3>
+              {analytics?.failedIntents && analytics.failedIntents.length > 0 ? (
+                <div className="space-y-3">
+                  {analytics.failedIntents.map((fi, i) => (
+                    <div
+                      key={i}
+                      className="border border-slate-100 dark:border-slate-800 rounded-xl p-3"
+                    >
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm font-medium">{fi.intentName}</span>
+                        <span className="text-xs text-rose-500 font-bold">
+                          {formatPct(fi.failureRate)}
+                        </span>
+                      </div>
+                      <p className="text-xs text-slate-400">{fi.failureCount} failures</p>
+                      {fi.commonPhrases.length > 0 && (
+                        <div className="flex flex-wrap gap-1 mt-1.5">
+                          {fi.commonPhrases.slice(0, 3).map((p, j) => (
+                            <span
+                              key={j}
+                              className="text-xs bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded text-slate-500"
+                            >
+                              &ldquo;{p}&rdquo;
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="h-32 flex items-center justify-center text-slate-400 text-sm">
+                  {analytics?.totalConversations ? 'No failed intents' : 'No intent data available'}
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );
