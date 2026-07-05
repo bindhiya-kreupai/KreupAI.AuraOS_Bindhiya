@@ -47,7 +47,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
         isEnabled: body.isEnabled ?? false,
         isDefault: body.isDefault ?? false,
         translationModel: body.translationModel ?? null,
-        confidenceThreshold: body.confidenceThreshold ?? 0.7,
+        confidenceThreshold: body.confidenceThreshold ?? 70,
         supportedFeatures: body.supportedFeatures ?? [],
       },
     });
