@@ -15,6 +15,7 @@ import {
   XCircle,
 } from 'lucide-react';
 import { useChatbot } from '../hooks/useChatbot';
+import { ToastContainer } from '../components/Toast';
 import type { HandoffRule } from '../types';
 
 const triggerIconMap: Record<string, React.ElementType> = {
@@ -51,7 +52,9 @@ export default function HandoffRulesPage() {
     createHandoffRule,
     updateHandoffRule,
     deleteHandoffRule,
+    toasts,
     addToast,
+    removeToast,
   } = useChatbot();
 
   const [showModal, setShowModal] = useState(false);
@@ -210,6 +213,7 @@ export default function HandoffRulesPage() {
 
   return (
     <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+      <ToastContainer toasts={toasts} onClose={removeToast} />
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">

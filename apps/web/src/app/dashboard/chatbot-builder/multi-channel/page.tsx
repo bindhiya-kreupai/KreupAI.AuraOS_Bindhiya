@@ -25,6 +25,7 @@ const iconMap: Record<string, React.ElementType> = {
   teams: MessagesSquare,
   whatsapp: MessageCircle,
   facebook: MessageCircle,
+  sms: Smartphone,
   mobile: Smartphone,
 };
 
@@ -34,6 +35,7 @@ const typeColors: Record<string, string> = {
   teams: 'text-blue-600',
   whatsapp: 'text-emerald-500',
   facebook: 'text-blue-500',
+  sms: 'text-yellow-500',
   mobile: 'text-purple-500',
 };
 
@@ -43,6 +45,7 @@ const channelTypeLabels: Record<string, string> = {
   teams: 'Microsoft Teams',
   whatsapp: 'WhatsApp',
   facebook: 'Facebook Messenger',
+  sms: 'SMS',
   mobile: 'Mobile App',
 };
 
@@ -413,6 +416,7 @@ export default function MultiChannelPage() {
                   <option value="teams">Microsoft Teams</option>
                   <option value="whatsapp">WhatsApp</option>
                   <option value="facebook">Facebook Messenger</option>
+                  <option value="sms">SMS</option>
                   <option value="mobile">Mobile App</option>
                 </select>
               </div>

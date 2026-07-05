@@ -109,7 +109,12 @@ export default function TrainingDataPage() {
 
   const handleOpenEditExample = useCallback((ex: TrainingExample) => {
     setEditingExample(ex);
-    setExampleForm({ text: ex.text, intent: ex.intent, language: ex.language, datasetId: '' });
+    setExampleForm({
+      text: ex.text,
+      intent: ex.intent,
+      language: ex.language,
+      datasetId: ex.datasetId ?? '',
+    });
     setShowExampleModal(true);
   }, []);
 

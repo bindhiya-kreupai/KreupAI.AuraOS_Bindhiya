@@ -325,6 +325,7 @@ export interface TrainingDataset {
 
 export interface TrainingExample {
   exampleId: string;
+  datasetId: string;
   text: string;
   intent: string;
   entities: TrainingEntity[];
