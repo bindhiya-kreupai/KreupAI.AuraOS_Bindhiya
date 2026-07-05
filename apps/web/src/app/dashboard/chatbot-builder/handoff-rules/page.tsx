@@ -1,7 +1,19 @@
 'use client';
 
-import React, { useState } from 'react';
-import { ArrowRightLeft, Plus, Edit2, Trash2, UserPlus, Clock, ThumbsDown } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import {
+  ArrowRightLeft,
+  Plus,
+  Edit2,
+  Trash2,
+  UserPlus,
+  Clock,
+  ThumbsDown,
+  Search,
+  Filter,
+  RefreshCw,
+  XCircle,
+} from 'lucide-react';
 import { useChatbot } from '../hooks/useChatbot';
 import type { HandoffRule } from '../types';
 
@@ -11,10 +23,31 @@ const triggerIconMap: Record<string, React.ElementType> = {
   timeout: Clock,
 };
 
+const triggerLabelMap: Record<string, string> = {
+  sentiment: 'Sentiment',
+  user_request: 'User Request',
+  timeout: 'Timeout',
+  intent: 'Intent Match',
+  keyword: 'Keyword',
+  failed_attempts: 'Failed Attempts',
+};
+
+const triggerColors: Record<string, string> = {
+  sentiment: 'bg-rose-100 text-rose-700 dark:bg-rose-900/30 dark:text-rose-400',
+  user_request: 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-400',
+  timeout: 'bg-amber-100 text-amber-700 dark:bg-amber-900/30 dark:text-amber-400',
+  intent: 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-400',
+  keyword: 'bg-teal-100 text-teal-700 dark:bg-teal-900/30 dark:text-teal-400',
+  failed_attempts: 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400',
+};
+
+const allTriggerTypes = Object.keys(triggerLabelMap);
+
 export default function HandoffRulesPage() {
   const {
     handoffRules,
     loading,
+    loadHandoffRules,
     createHandoffRule,
     updateHandoffRule,
     deleteHandoffRule,
@@ -24,6 +57,10 @@ export default function HandoffRulesPage() {
   const [showModal, setShowModal] = useState(false);
   const [editingRule, setEditingRule] = useState<HandoffRule | null>(null);
   const [deleteConfirmId, setDeleteConfirmId] = useState<string | null>(null);
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'inactive'>('all');
+  const [triggerFilter, setTriggerFilter] = useState('all');
 
   const [ruleName, setRuleName] = useState('');
   const [description, setDescription] = useState('');
@@ -100,14 +137,43 @@ export default function HandoffRulesPage() {
     }
   };
 
-  const handleToggle = (rule: HandoffRule) => {
-    updateHandoffRule(rule.ruleId, { isActive: !rule.isActive });
+  const handleToggle = async (rule: HandoffRule) => {
+    try {
+      await updateHandoffRule(rule.ruleId, { isActive: !rule.isActive });
+    } catch {
+      // toast already added by hook
+    }
   };
 
   const handleDelete = async (ruleId: string) => {
-    await deleteHandoffRule(ruleId);
-    setDeleteConfirmId(null);
+    try {
+      await deleteHandoffRule(ruleId);
+      setDeleteConfirmId(null);
+    } catch {
+      // toast already added by hook
+    }
   };
+
+  const filtered = useMemo(() => {
+    let result = handoffRules;
+
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(
+        (r) =>
+          r.ruleName.toLowerCase().includes(q) || (r.description || '').toLowerCase().includes(q)
+      );
+    }
+
+    if (statusFilter === 'active') result = result.filter((r) => r.isActive);
+    else if (statusFilter === 'inactive') result = result.filter((r) => !r.isActive);
+
+    if (triggerFilter !== 'all') {
+      result = result.filter((r) => r.triggers?.some((t) => t.triggerType === triggerFilter));
+    }
+
+    return result;
+  }, [handoffRules, searchQuery, statusFilter, triggerFilter]);
 
   const getTriggerIcon = (triggers: any[]) => {
     if (!triggers || triggers.length === 0) return ArrowRightLeft;
@@ -162,17 +228,79 @@ export default function HandoffRulesPage() {
         </button>
       </div>
 
+      <div className="flex flex-col sm:flex-row gap-3 shrink-0">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <input
+            type="text"
+            placeholder="Search rules by name or description..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <Filter className="w-4 h-4 text-slate-400 shrink-0" />
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as 'all' | 'active' | 'inactive')}
+            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-sm outline-none"
+          >
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="inactive">Inactive</option>
+          </select>
+          <select
+            value={triggerFilter}
+            onChange={(e) => setTriggerFilter(e.target.value)}
+            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-sm outline-none"
+          >
+            <option value="all">All Triggers</option>
+            {allTriggerTypes.map((t) => (
+              <option key={t} value={t}>
+                {triggerLabelMap[t]}
+              </option>
+            ))}
+          </select>
+          {(searchQuery || statusFilter !== 'all' || triggerFilter !== 'all') && (
+            <button
+              onClick={() => {
+                setSearchQuery('');
+                setStatusFilter('all');
+                setTriggerFilter('all');
+              }}
+              className="flex items-center gap-1 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-500 hover:text-rose-600 transition-colors"
+              title="Clear all filters"
+            >
+              <XCircle className="w-3.5 h-3.5" /> Clear
+            </button>
+          )}
+          <button
+            onClick={() => loadHandoffRules()}
+            disabled={loading}
+            className="flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-40"
+            title="Refresh rules"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          </button>
+        </div>
+      </div>
+
       {loading && handoffRules.length === 0 ? (
         <div className="flex items-center justify-center flex-1 text-slate-400">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500" />
         </div>
-      ) : handoffRules.length === 0 ? (
+      ) : filtered.length === 0 ? (
         <div className="flex items-center justify-center flex-1 text-slate-400">
-          <p>No handoff rules configured. Click Add Rule to create one.</p>
+          <p>
+            {searchQuery || statusFilter !== 'all' || triggerFilter !== 'all'
+              ? 'No rules match your filters.'
+              : 'No handoff rules configured. Click Add Rule to create one.'}
+          </p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 gap-3">
-          {handoffRules.map((rule) => {
+        <div className="overflow-y-auto flex-1 space-y-3 pr-1">
+          {filtered.map((rule) => {
             const Icon = getTriggerIcon(rule.triggers);
             return (
               <div
@@ -197,6 +325,14 @@ export default function HandoffRulesPage() {
                       >
                         P{rule.priority}
                       </span>
+                      {rule.triggers?.map((t, i) => (
+                        <span
+                          key={i}
+                          className={`text-xs font-semibold px-2 py-0.5 rounded-full ${triggerColors[t.triggerType] || 'bg-slate-100 dark:bg-slate-800 text-slate-600'}`}
+                        >
+                          {triggerLabelMap[t.triggerType] || t.triggerType}
+                        </span>
+                      ))}
                     </div>
                     {rule.description && (
                       <p className="text-sm text-slate-500 mt-0.5 truncate">{rule.description}</p>
@@ -209,6 +345,16 @@ export default function HandoffRulesPage() {
                       <span className="font-bold text-emerald-600 dark:text-emerald-400 truncate">
                         {getActionSummary(rule.action)}
                       </span>
+                    </div>
+                    <div className="flex items-center gap-3 mt-1.5 text-xs text-slate-400">
+                      {rule.conditions?.length > 0 && (
+                        <span>
+                          {rule.conditions.length} condition{rule.conditions.length > 1 ? 's' : ''}
+                        </span>
+                      )}
+                      {rule.lastModifiedDate && (
+                        <span>Updated {new Date(rule.lastModifiedDate).toLocaleDateString()}</span>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -320,32 +466,51 @@ export default function HandoffRulesPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-semibold mb-1">Triggers (JSON array)</label>
+                <label className="block text-sm font-semibold mb-1">
+                  Triggers{' '}
+                  <span className="font-normal text-slate-400">
+                    (JSON array {`[{ "triggerType": "sentiment", "triggerValue": 0.3 }]`})
+                  </span>
+                </label>
                 <textarea
                   value={triggersJson}
                   onChange={(e) => setTriggersJson(e.target.value)}
                   className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   rows={3}
+                  placeholder='[{ "triggerType": "sentiment", "triggerValue": 0.3 }]'
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold mb-1">Conditions (JSON array)</label>
+                <label className="block text-sm font-semibold mb-1">
+                  Conditions{' '}
+                  <span className="font-normal text-slate-400">
+                    (JSON array{' '}
+                    {`[{ "conditionType": "queue_capacity", "operator": ">", "value": 5 }]`})
+                  </span>
+                </label>
                 <textarea
                   value={conditionsJson}
                   onChange={(e) => setConditionsJson(e.target.value)}
                   className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   rows={3}
+                  placeholder='[{ "conditionType": "queue_capacity", "operator": ">", "value": 5 }]'
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold mb-1">Action (JSON object)</label>
+                <label className="block text-sm font-semibold mb-1">
+                  Action{' '}
+                  <span className="font-normal text-slate-400">
+                    (JSON object {`{ "targetType": "queue", "targetName": "support" }`})
+                  </span>
+                </label>
                 <textarea
                   value={actionJson}
                   onChange={(e) => setActionJson(e.target.value)}
                   className="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 rounded-xl px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500"
                   rows={3}
+                  placeholder='{ "targetType": "queue", "targetName": "support" }'
                 />
               </div>
             </div>

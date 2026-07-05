@@ -5,8 +5,15 @@ import { Languages, Plus, Edit2, Trash2, CheckCircle2, Download, X } from 'lucid
 import { useChatbot } from '../hooks/useChatbot';
 
 export default function MultiLingualPage() {
-  const { languages, loading, enableLanguage, updateLanguage, deleteLanguage, addToast } =
-    useChatbot();
+  const {
+    languages,
+    loading,
+    createLanguage,
+    updateLanguage,
+    deleteLanguage,
+    enableLanguage,
+    addToast,
+  } = useChatbot();
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingLang, setEditingLang] = useState<(typeof languages)[number] | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
@@ -34,7 +41,7 @@ export default function MultiLingualPage() {
       return;
     }
     try {
-      await updateLanguage(form.languageCode, form);
+      await createLanguage(form);
       setShowAddModal(false);
       resetForm();
     } catch {
