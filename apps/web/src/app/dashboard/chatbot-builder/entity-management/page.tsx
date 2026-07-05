@@ -3,13 +3,14 @@
 import React, { useState } from 'react';
 import { Database, Plus, Search, Edit2, Trash2, X } from 'lucide-react';
 import { useChatbot } from '../hooks/useChatbot';
+import type { Entity } from '../types';
 
 export default function EntityManagementPage() {
   const { entities, loading, createEntity, updateEntity, deleteEntity, addToast } = useChatbot();
 
   const [searchQuery, setSearchQuery] = useState('');
   const [modalOpen, setModalOpen] = useState(false);
-  const [editingEntity, setEditingEntity] = useState<any>(null);
+  const [editingEntity, setEditingEntity] = useState<Entity | null>(null);
 
   const [formName, setFormName] = useState('');
   const [formType, setFormType] = useState('list');
@@ -46,14 +47,15 @@ export default function EntityManagementPage() {
     setModalOpen(true);
   };
 
-  const openEditModal = (entity: any) => {
+  const openEditModal = (entity: Entity) => {
     setEditingEntity(entity);
     setFormName(entity.entityName);
     setFormType(entity.entityType);
     setFormDescription(entity.description || '');
     setFormSystemType(entity.entityType === 'system' ? entity.entityName : 'date');
     if (entity.entityType === 'regex') {
-      const pattern = entity.values?.[0]?.pattern ?? '';
+      const rawVals = entity.values as Array<Record<string, unknown>>;
+      const pattern = (rawVals?.[0]?.pattern as string) ?? '';
       setFormRegex(pattern);
       setFormValues('[]');
     } else {
@@ -71,7 +73,7 @@ export default function EntityManagementPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const payload: any = {
+    const payload: Record<string, unknown> = {
       entityName: formName,
       entityType: formType,
       description: formDescription,
@@ -111,13 +113,13 @@ export default function EntityManagementPage() {
     }
   };
 
-  const handleDelete = async (entity: any) => {
+  const handleDelete = async (entity: Entity) => {
     if (window.confirm(`Delete entity "${entity.entityName}"? This cannot be undone.`)) {
       await deleteEntity(entity.entityId);
     }
   };
 
-  const filtered = entities.filter((e: any) =>
+  const filtered = entities.filter((e: Entity) =>
     e.entityName.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -191,7 +193,7 @@ export default function EntityManagementPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                {filtered.map((entity: any) => (
+                {filtered.map((entity: Entity) => (
                   <tr
                     key={entity.entityId}
                     className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group"

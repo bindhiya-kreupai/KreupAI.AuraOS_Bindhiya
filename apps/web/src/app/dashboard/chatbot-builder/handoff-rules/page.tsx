@@ -70,30 +70,34 @@ export default function HandoffRulesPage() {
       return;
     }
 
-    if (editingRule) {
-      await updateHandoffRule(editingRule.ruleId, {
-        ruleName,
-        description,
-        priority,
-        isActive,
-        triggers: parsedTriggers,
-        conditions: parsedConditions,
-        action: parsedAction,
-      });
-    } else {
-      await createHandoffRule({
-        ruleName,
-        description,
-        priority,
-        isActive,
-        triggers: parsedTriggers,
-        conditions: parsedConditions,
-        action: parsedAction,
-      });
-    }
+    try {
+      if (editingRule) {
+        await updateHandoffRule(editingRule.ruleId, {
+          ruleName,
+          description,
+          priority,
+          isActive,
+          triggers: parsedTriggers,
+          conditions: parsedConditions,
+          action: parsedAction,
+        });
+      } else {
+        await createHandoffRule({
+          ruleName,
+          description,
+          priority,
+          isActive,
+          triggers: parsedTriggers,
+          conditions: parsedConditions,
+          action: parsedAction,
+        });
+      }
 
-    setShowModal(false);
-    setEditingRule(null);
+      setShowModal(false);
+      setEditingRule(null);
+    } catch {
+      // toast already added by hook
+    }
   };
 
   const handleToggle = (rule: HandoffRule) => {

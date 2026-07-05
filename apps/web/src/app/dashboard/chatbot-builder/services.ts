@@ -109,7 +109,9 @@ export class DialogueFlowService {
         status: 'published',
         publishedAt: new Date().toISOString(),
       });
-      return mapFields<DialogueFlow>(APIClient.unwrapItem(res), 'flowId')!;
+      return mapFields<DialogueFlow>(APIClient.unwrapItem(res), 'flowId', {
+        publishedAt: 'publishedDate',
+      })!;
     } catch (error: any) {
       throw error;
     }
@@ -701,6 +703,15 @@ export class LanguageService {
     }
   }
 
+  static async createLanguage(languageData: Partial<Language>): Promise<Language> {
+    try {
+      const res = await APIClient.post(this.endpoint, languageData);
+      return mapFields<Language>(APIClient.unwrapItem(res), 'languageId')!;
+    } catch (error: any) {
+      throw error;
+    }
+  }
+
   static async enableLanguage(languageCode: string): Promise<Language> {
     try {
       const res = await APIClient.put(`${this.endpoint}/${languageCode}`, { action: 'enable' });
@@ -763,10 +774,7 @@ export class TranslationService {
         sourceLanguage,
         targetLanguage,
       });
-      const data = mapFields<{ translatedText: string }>(
-        APIClient.unwrapItem(res),
-        'translationId'
-      );
+      const data = APIClient.unwrapItem<{ translatedText: string }>(res);
       return data?.translatedText ?? '';
     } catch (error: any) {
       throw error;

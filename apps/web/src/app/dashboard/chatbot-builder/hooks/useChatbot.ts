@@ -429,6 +429,20 @@ export const useChatbot = () => {
     }
   };
 
+  const createLanguage = async (languageData: Partial<Language>) => {
+    setLoading(true);
+    try {
+      const lang = await LanguageService.createLanguage(languageData);
+      await loadLanguages();
+      addToast({ type: 'success', message: 'Language added' });
+      return lang;
+    } catch {
+      addToast({ type: 'error', message: 'Failed to add language' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const deleteLanguage = async (languageCode: string) => {
     setLoading(true);
     try {
@@ -473,6 +487,34 @@ export const useChatbot = () => {
       setTrainingExamples(data);
     } catch {
       setTrainingExamples([]);
+    }
+  };
+
+  const createTrainingExample = async (exampleData: Partial<TrainingExample>) => {
+    setLoading(true);
+    try {
+      const example = await TrainingExampleService.createExample(exampleData);
+      await loadTrainingExamples();
+      addToast({ type: 'success', message: 'Training example created' });
+      return example;
+    } catch {
+      addToast({ type: 'error', message: 'Failed to create training example' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateTrainingExample = async (exampleId: string, updates: Partial<TrainingExample>) => {
+    setLoading(true);
+    try {
+      const example = await TrainingExampleService.updateExample(exampleId, updates);
+      await loadTrainingExamples();
+      addToast({ type: 'success', message: 'Training example updated' });
+      return example;
+    } catch {
+      addToast({ type: 'error', message: 'Failed to update training example' });
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -556,6 +598,8 @@ export const useChatbot = () => {
     updateTrainingDataset,
     deleteTrainingDataset,
     loadTrainingExamples,
+    createTrainingExample,
+    updateTrainingExample,
     deleteTrainingExample,
     loadChannels,
     createChannel,
@@ -567,6 +611,7 @@ export const useChatbot = () => {
     updateHandoffRule,
     deleteHandoffRule,
     loadLanguages,
+    createLanguage,
     enableLanguage,
     updateLanguage,
     deleteLanguage,
