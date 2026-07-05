@@ -430,7 +430,9 @@ export class ChannelService {
   }): Promise<Channel[]> {
     try {
       const res = await APIClient.get(this.endpoint, filters);
-      return mapList<Channel>(APIClient.unwrapList(res), 'channelId');
+      return mapList<Channel>(APIClient.unwrapList(res), 'channelId', {
+        lastSyncAt: 'lastSyncDate',
+      });
     } catch (error: any) {
       throw error;
     }
@@ -439,7 +441,9 @@ export class ChannelService {
   static async createChannel(channelData: Partial<Channel>): Promise<Channel> {
     try {
       const res = await APIClient.post(this.endpoint, channelData);
-      return mapFields<Channel>(APIClient.unwrapItem(res), 'channelId')!;
+      return mapFields<Channel>(APIClient.unwrapItem(res), 'channelId', {
+        lastSyncAt: 'lastSyncDate',
+      })!;
     } catch (error: any) {
       throw error;
     }
@@ -448,7 +452,9 @@ export class ChannelService {
   static async updateChannel(channelId: string, updates: Partial<Channel>): Promise<Channel> {
     try {
       const res = await APIClient.put(`${this.endpoint}/${channelId}`, updates);
-      return mapFields<Channel>(APIClient.unwrapItem(res), 'channelId')!;
+      return mapFields<Channel>(APIClient.unwrapItem(res), 'channelId', {
+        lastSyncAt: 'lastSyncDate',
+      })!;
     } catch (error: any) {
       throw error;
     }
@@ -826,7 +832,9 @@ export class LocalizationSettingsService {
   static async getSettings(): Promise<LocalizationSettings> {
     try {
       const res = await APIClient.get(this.endpoint);
-      return mapFields<LocalizationSettings>(APIClient.unwrapItem(res), 'settingsId')!;
+      return mapFields<LocalizationSettings>(APIClient.unwrapItem(res), 'settingsId', {
+        lastUpdatedAt: 'lastUpdatedDate',
+      })!;
     } catch (error: any) {
       throw error;
     }
@@ -837,7 +845,9 @@ export class LocalizationSettingsService {
   ): Promise<LocalizationSettings> {
     try {
       const res = await APIClient.put(this.endpoint, updates);
-      return mapFields<LocalizationSettings>(APIClient.unwrapItem(res), 'settingsId')!;
+      return mapFields<LocalizationSettings>(APIClient.unwrapItem(res), 'settingsId', {
+        lastUpdatedAt: 'lastUpdatedDate',
+      })!;
     } catch (error: any) {
       throw error;
     }

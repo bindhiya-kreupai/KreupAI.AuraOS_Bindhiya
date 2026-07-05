@@ -12,6 +12,10 @@ import type {
   HandoffRule,
   Agent,
   Language,
+  Translation,
+  LanguageContent,
+  LanguageDetection,
+  LocalizationSettings,
   ChatbotSettings,
   Toast,
 } from '../types';
@@ -26,6 +30,10 @@ import {
   HandoffRuleService,
   AgentService,
   LanguageService,
+  TranslationService,
+  LanguageContentService,
+  LanguageDetectionService,
+  LocalizationSettingsService,
   ChatbotSettingsService,
 } from '../services';
 
@@ -40,6 +48,12 @@ export const useChatbot = () => {
   const [handoffRules, setHandoffRules] = useState<HandoffRule[]>([]);
   const [agents, setAgents] = useState<Agent[]>([]);
   const [languages, setLanguages] = useState<Language[]>([]);
+  const [translations, setTranslations] = useState<Translation[]>([]);
+  const [languageContent, setLanguageContent] = useState<LanguageContent[]>([]);
+  const [detectionResult, setDetectionResult] = useState<LanguageDetection | null>(null);
+  const [localizationSettings, setLocalizationSettings] = useState<LocalizationSettings | null>(
+    null
+  );
   const [settings, setSettings] = useState<ChatbotSettings | null>(null);
   const [loading, setLoading] = useState(false);
   const [toasts, setToasts] = useState<Toast[]>([]);
@@ -456,6 +470,104 @@ export const useChatbot = () => {
     }
   };
 
+  const loadTranslations = async (filters?: {
+    sourceLanguage?: string;
+    targetLanguage?: string;
+  }) => {
+    try {
+      const data = await TranslationService.getAllTranslations(filters);
+      setTranslations(data);
+    } catch {
+      setTranslations([]);
+    }
+  };
+
+  const createTranslation = async (translationData: Partial<Translation>) => {
+    setLoading(true);
+    try {
+      const t = await TranslationService.createTranslation(translationData);
+      await loadTranslations();
+      addToast({ type: 'success', message: 'Translation created' });
+      return t;
+    } catch {
+      addToast({ type: 'error', message: 'Failed to create translation' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const autoTranslate = async (text: string, sourceLanguage: string, targetLanguage: string) => {
+    try {
+      return await TranslationService.autoTranslate(text, sourceLanguage, targetLanguage);
+    } catch {
+      addToast({ type: 'error', message: 'Auto-translate failed' });
+      return '';
+    }
+  };
+
+  const loadLanguageContent = async (filters?: {
+    contentType?: string;
+    defaultLanguage?: string;
+  }) => {
+    try {
+      const data = await LanguageContentService.getAllContent(filters);
+      setLanguageContent(data);
+    } catch {
+      setLanguageContent([]);
+    }
+  };
+
+  const createLanguageContent = async (contentData: Partial<LanguageContent>) => {
+    setLoading(true);
+    try {
+      const c = await LanguageContentService.createContent(contentData);
+      await loadLanguageContent();
+      addToast({ type: 'success', message: 'Language content created' });
+      return c;
+    } catch {
+      addToast({ type: 'error', message: 'Failed to create language content' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const detectLanguage = async (text: string) => {
+    setLoading(true);
+    try {
+      const result = await LanguageDetectionService.detectLanguage(text);
+      setDetectionResult(result);
+      return result;
+    } catch {
+      addToast({ type: 'error', message: 'Language detection failed' });
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const loadLocalizationSettings = async () => {
+    try {
+      const data = await LocalizationSettingsService.getSettings();
+      setLocalizationSettings(data);
+    } catch {
+      setLocalizationSettings(null);
+    }
+  };
+
+  const updateLocalizationSettings = async (updates: Partial<LocalizationSettings>) => {
+    setLoading(true);
+    try {
+      const updated = await LocalizationSettingsService.updateSettings(updates);
+      setLocalizationSettings(updated);
+      addToast({ type: 'success', message: 'Localization settings updated' });
+      return updated;
+    } catch {
+      addToast({ type: 'error', message: 'Failed to update localization settings' });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const loadSettings = async () => {
     try {
       const data = await ChatbotSettingsService.getSettings();
@@ -577,6 +689,10 @@ export const useChatbot = () => {
     handoffRules,
     agents,
     languages,
+    translations,
+    languageContent,
+    detectionResult,
+    localizationSettings,
     settings,
     loading,
     toasts,
@@ -615,6 +731,14 @@ export const useChatbot = () => {
     enableLanguage,
     updateLanguage,
     deleteLanguage,
+    loadTranslations,
+    createTranslation,
+    autoTranslate,
+    loadLanguageContent,
+    createLanguageContent,
+    detectLanguage,
+    loadLocalizationSettings,
+    updateLocalizationSettings,
     loadSettings,
     updateSettings,
     loadAnalytics,
