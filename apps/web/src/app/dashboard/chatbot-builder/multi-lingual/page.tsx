@@ -1,7 +1,19 @@
 'use client';
 
-import React, { useState } from 'react';
-import { Languages, Plus, Edit2, Trash2, CheckCircle2, Download, X } from 'lucide-react';
+import React, { useState, useMemo } from 'react';
+import {
+  Languages,
+  Plus,
+  Edit2,
+  Trash2,
+  CheckCircle2,
+  Download,
+  X,
+  Search,
+  Filter,
+  RefreshCw,
+  XCircle,
+} from 'lucide-react';
 import { useChatbot } from '../hooks/useChatbot';
 
 export default function MultiLingualPage() {
@@ -12,8 +24,10 @@ export default function MultiLingualPage() {
     updateLanguage,
     deleteLanguage,
     enableLanguage,
+    loadLanguages,
     addToast,
   } = useChatbot();
+
   const [showAddModal, setShowAddModal] = useState(false);
   const [editingLang, setEditingLang] = useState<(typeof languages)[number] | null>(null);
   const [confirmDelete, setConfirmDelete] = useState<string | null>(null);
@@ -24,6 +38,10 @@ export default function MultiLingualPage() {
     isDefault: false,
     confidenceThreshold: 80,
   });
+
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState<'all' | 'active' | 'disabled'>('all');
+  const [defaultFilter, setDefaultFilter] = useState<'all' | 'default' | 'non-default'>('all');
 
   const resetForm = () => {
     setForm({
@@ -65,6 +83,14 @@ export default function MultiLingualPage() {
     }
   };
 
+  const handleDisable = async (lang: (typeof languages)[number]) => {
+    try {
+      await updateLanguage(lang.languageCode, { isEnabled: false });
+    } catch {
+      // handled by hook
+    }
+  };
+
   const openEdit = (lang: (typeof languages)[number]) => {
     setEditingLang(lang);
     setForm({
@@ -96,6 +122,27 @@ export default function MultiLingualPage() {
     }
   };
 
+  const filtered = useMemo(() => {
+    let result = languages;
+
+    if (searchQuery) {
+      const q = searchQuery.toLowerCase();
+      result = result.filter(
+        (l) => l.languageName.toLowerCase().includes(q) || l.languageCode.toLowerCase().includes(q)
+      );
+    }
+
+    if (statusFilter === 'active') result = result.filter((l) => l.isEnabled);
+    else if (statusFilter === 'disabled') result = result.filter((l) => !l.isEnabled);
+
+    if (defaultFilter === 'default') result = result.filter((l) => l.isDefault);
+    else if (defaultFilter === 'non-default') result = result.filter((l) => !l.isDefault);
+
+    return result;
+  }, [languages, searchQuery, statusFilter, defaultFilter]);
+
+  const hasActiveFilters = searchQuery || statusFilter !== 'all' || defaultFilter !== 'all';
+
   return (
     <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
@@ -117,22 +164,83 @@ export default function MultiLingualPage() {
         </button>
       </div>
 
-      {loading && (
+      <div className="flex flex-col sm:flex-row gap-3 shrink-0">
+        <div className="relative flex-1 max-w-md">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <input
+            type="text"
+            placeholder="Search languages by name or code..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm outline-none focus:ring-2 focus:ring-indigo-500"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <Filter className="w-4 h-4 text-slate-400 shrink-0" />
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as 'all' | 'active' | 'disabled')}
+            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-sm outline-none"
+          >
+            <option value="all">All Status</option>
+            <option value="active">Active</option>
+            <option value="disabled">Disabled</option>
+          </select>
+          <select
+            value={defaultFilter}
+            onChange={(e) => setDefaultFilter(e.target.value as 'all' | 'default' | 'non-default')}
+            className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl px-3 py-2 text-sm outline-none"
+          >
+            <option value="all">All Languages</option>
+            <option value="default">Default Only</option>
+            <option value="non-default">Non-default</option>
+          </select>
+          {hasActiveFilters && (
+            <button
+              onClick={() => {
+                setSearchQuery('');
+                setStatusFilter('all');
+                setDefaultFilter('all');
+              }}
+              className="flex items-center gap-1 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-xs text-slate-500 hover:text-rose-600 transition-colors"
+              title="Clear all filters"
+            >
+              <XCircle className="w-3.5 h-3.5" /> Clear
+            </button>
+          )}
+          <button
+            onClick={() => loadLanguages()}
+            disabled={loading}
+            className="flex items-center gap-1.5 px-3 py-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl text-sm text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors disabled:opacity-40"
+            title="Refresh languages"
+          >
+            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+          </button>
+        </div>
+      </div>
+
+      {loading && languages.length === 0 && (
         <div className="flex items-center justify-center py-12">
           <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500" />
         </div>
       )}
 
-      {!loading && languages.length === 0 && (
+      {!loading && filtered.length === 0 && (
         <div className="flex flex-col items-center justify-center py-16 text-slate-400">
           <Languages className="w-16 h-16 mb-4" />
-          <p className="text-lg font-medium">No languages configured</p>
-          <p className="text-sm">Click &quot;Add Language&quot; to get started.</p>
+          <p className="text-lg font-medium">
+            {hasActiveFilters ? 'No languages match your filters.' : 'No languages configured'}
+          </p>
+          <p className="text-sm">
+            {hasActiveFilters
+              ? 'Try adjusting your search or filter criteria.'
+              : 'Click "Add Language" to get started.'}
+          </p>
         </div>
       )}
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-        {languages.map((lang) => {
+        {filtered.map((lang) => {
           const completeness = Math.min(
             (lang.supportedFeatures?.length || 0) * 10 + (lang.confidenceThreshold / 100) * 50,
             100
@@ -176,6 +284,12 @@ export default function MultiLingualPage() {
                   <span>Supported Features</span>
                   <span className="font-semibold">{lang.supportedFeatures?.length || 0}</span>
                 </div>
+                {lang.translationModel && (
+                  <div className="flex justify-between">
+                    <span>Translation Model</span>
+                    <span className="font-semibold text-xs font-mono">{lang.translationModel}</span>
+                  </div>
+                )}
               </div>
 
               <div className="bg-slate-100 dark:bg-slate-800 h-2 rounded-full overflow-hidden mb-1">
@@ -198,15 +312,15 @@ export default function MultiLingualPage() {
               <div className="flex gap-2">
                 {lang.isEnabled ? (
                   <button
-                    onClick={() => enableLanguage(lang.languageCode)}
-                    className="flex items-center gap-1.5 flex-1 py-2 rounded-lg border border-slate-200 dark:border-slate-700 font-bold text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                    onClick={() => handleDisable(lang)}
+                    className="flex-1 py-2 rounded-lg border border-slate-200 dark:border-slate-700 font-bold text-sm text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
                   >
-                    <CheckCircle2 className="w-4 h-4 text-emerald-500" /> Enabled
+                    Disable
                   </button>
                 ) : (
                   <button
                     onClick={() => enableLanguage(lang.languageCode)}
-                    className="flex-1 py-2 rounded-lg border border-slate-200 dark:border-slate-700 font-bold text-sm hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+                    className="flex-1 py-2 rounded-lg bg-emerald-50 text-emerald-700 dark:bg-emerald-900/20 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-800 font-bold text-sm hover:bg-emerald-100 dark:hover:bg-emerald-900/30 transition-colors"
                   >
                     Enable
                   </button>
@@ -248,6 +362,12 @@ export default function MultiLingualPage() {
                       Cancel
                     </button>
                   </div>
+                </div>
+              )}
+
+              {lang.lastModifiedDate && (
+                <div className="mt-3 text-xs text-slate-400 text-center">
+                  Updated {new Date(lang.lastModifiedDate).toLocaleDateString()}
                 </div>
               )}
             </div>

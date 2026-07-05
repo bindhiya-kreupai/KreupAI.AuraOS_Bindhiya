@@ -680,6 +680,8 @@ export interface Language {
   translationModel?: string;
   confidenceThreshold: number;
   supportedFeatures: string[];
+  createdDate?: Date;
+  lastModifiedDate?: Date;
 }
 
 export interface Translation {
