@@ -1,6 +1,3 @@
-#!/usr/bin/env sh
-. "$(dirname -- "$0")/_/husky.sh"
-
 # Phase 0 #26 — scan staged content for committed secrets before letting
 # lint-staged run. Cheap, no external dependencies. If this fires on a
 # real secret, rotate it AND remove from history; the rotation runbook

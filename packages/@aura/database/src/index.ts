@@ -30,7 +30,7 @@ function createPrismaClient(): PrismaClient {
                 const query = `${params.model}.${params.action}`;
                 console.warn(
                     `[SLOW QUERY] ${query} took ${duration}ms`,
-                    JSON.stringify(params.args).substring(0, 200)
+                    JSON.stringify(params.args || {}).substring(0, 200)
                 );
             }
 

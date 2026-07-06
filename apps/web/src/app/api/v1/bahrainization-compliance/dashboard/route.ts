@@ -1,6 +1,6 @@
 import type { NextRequest } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
-import { bahrainizationCertificateService } from '@/lib/services/bahrainization-compliance';
+import { computeDashboardFull } from '@/lib/services/bahrainization-compliance';
 import { forbidden, hasAny, ok, serverError, type RouteContext } from '../_shared';
 
 export const dynamic = 'force-dynamic';
@@ -12,7 +12,7 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
     const period =
       url.searchParams.get('period') ??
       `${new Date().getFullYear()}-${String(new Date().getMonth() + 1).padStart(2, '0')}`;
-    return ok(await bahrainizationCertificateService.dashboard(ctx.user.tenantId, period));
+    return ok(await computeDashboardFull(ctx.user.tenantId, period));
   } catch (err) {
     return serverError('Failed to load dashboard', err);
   }
