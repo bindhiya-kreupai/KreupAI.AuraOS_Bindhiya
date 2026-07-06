@@ -93,6 +93,21 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
 
 
 
+  // Check if module or any of its sub-modules is active.
+  // Guards against overly-broad paths (e.g. '/dashboard') causing cross-module matches.
+  const isModuleActive = (mod: typeof superAdminMenu.items[0]): boolean => {
+    const modPath = getModulePath(mod);
+    const segments = modPath.split('/').filter(Boolean);
+    // Only do a direct startsWith check when the path has ≥2 segments (not just '/dashboard')
+    if (segments.length >= 2) {
+      if (pathname === modPath || pathname.startsWith(modPath + '/')) return true;
+    }
+    if (mod.items) {
+      return mod.items.some(sub => isModuleActive(sub));
+    }
+    return false;
+  };
+
   // Check if feature is active
   const getFeaturePath = (module: typeof superAdminMenu.items[0], featureName: string) => {
     const modulePath = getModulePath(module);
@@ -182,16 +197,6 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
           const Icon = getMenuIcon(module.icon as MenuIconName);
           const hasSubModules = module.items && module.items.length > 0;
 
-          // Check if module or any of its sub-modules is active
-          const isModuleActive = (mod: typeof superAdminMenu.items[0]): boolean => {
-            const modPath = getModulePath(mod);
-            if (pathname.startsWith(modPath)) return true;
-            if (mod.items) {
-              return mod.items.some(sub => isModuleActive(sub));
-            }
-            return false;
-          };
-
           const isActive = isModuleActive(module);
           const isExpanded = expandedModule === module.code;
 
@@ -200,37 +205,47 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
               {/* Module Item */}
               <div
                 className={cn(
-                  'group flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-pointer transition-all duration-200 relative overflow-hidden',
+                  'group flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all duration-200 relative overflow-hidden',
                   isActive
                     ? 'bg-brand-red text-white shadow-lg font-bold scale-[1.02] z-10'
                     : 'text-white hover:bg-white/10'
                 )}
-                onClick={() => !collapsed && toggleModule(module.code)}
               >
-                <div
-                  className={cn(
-                    'flex-shrink-0 p-1.5 rounded-lg transition-colors',
-                    isActive
-                      ? 'bg-white/20'
-                      : 'text-white group-hover:bg-white/5'
-                  )}
+                {/* Icon + Label → navigate */}
+                <Link
+                  href={getModulePath(module)}
+                  onClick={() => onNavigate?.({ path: getModulePath(module), title: module.label, module: module.label })}
+                  className="flex flex-1 items-center gap-2 min-w-0"
                 >
-                  <Icon className="w-5 h-5" />
-                </div>
-
-                {!collapsed && (
-                  <>
+                  <div
+                    className={cn(
+                      'flex-shrink-0 p-1.5 rounded-lg transition-colors',
+                      isActive ? 'bg-white/20' : 'text-white group-hover:bg-white/5'
+                    )}
+                  >
+                    <Icon className="w-5 h-5" />
+                  </div>
+                  {!collapsed && (
                     <span className="flex-1 text-sm font-medium truncate">
                       {module.label}
                     </span>
-                    {/* Show item count or chevron */}
+                  )}
+                </Link>
+
+                {/* Chevron → expand/collapse only */}
+                {!collapsed && hasSubModules && (
+                  <button
+                    onClick={(e) => { e.stopPropagation(); toggleModule(module.code); }}
+                    className="p-1 rounded hover:bg-white/10 transition-colors flex-shrink-0"
+                    aria-label={isExpanded ? 'Collapse' : 'Expand'}
+                  >
                     <ChevronDown
                       className={cn(
                         'w-4 h-4 transition-transform duration-200 text-silver-mist',
                         isExpanded ? 'rotate-180' : ''
                       )}
                     />
-                  </>
+                  </button>
                 )}
               </div>
 
@@ -249,16 +264,31 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
                         <div key={subModule.code} className="mb-2">
                           <div
                             className={cn(
-                              "flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-pointer transition-colors text-sm",
+                              "flex items-center gap-2 px-2 py-1.5 rounded-lg transition-colors text-sm",
                               isSubActive
                                 ? "bg-brand-red text-white font-bold shadow-md"
                                 : "text-white hover:bg-white/10"
                             )}
-                            onClick={() => toggleSubModule(subModule.code)}
                           >
-                            <SubIcon className="w-4 h-4 opacity-70" />
-                            <span className="flex-1 truncate">{subModule.label}</span>
-                            <ChevronDown className={cn("w-3 h-3 transition-transform", isSubExpanded ? "rotate-180" : "")} />
+                            {/* Icon + Label → navigate */}
+                            <Link
+                              href={getModulePath(subModule)}
+                              onClick={() => onNavigate?.({ path: getModulePath(subModule), title: subModule.label, module: subModule.label })}
+                              className="flex flex-1 items-center gap-2 min-w-0"
+                            >
+                              <SubIcon className="w-4 h-4 opacity-70 flex-shrink-0" />
+                              <span className="flex-1 truncate">{subModule.label}</span>
+                            </Link>
+                            {/* Chevron → expand/collapse only */}
+                            {subModule.items && subModule.items.length > 0 && (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); toggleSubModule(subModule.code); }}
+                                className="p-0.5 rounded hover:bg-white/10 transition-colors flex-shrink-0"
+                                aria-label={isSubExpanded ? 'Collapse' : 'Expand'}
+                              >
+                                <ChevronDown className={cn("w-3 h-3 transition-transform", isSubExpanded ? "rotate-180" : "")} />
+                              </button>
+                            )}
                           </div>
 
                           {/* Sub-Module Features */}
