@@ -4193,6 +4193,285 @@ model AIAgentMessage {
   @@map("aura_ai_agent_message")
 }
 
+// ============================================================================
+// CHATBOT BUILDER MODELS
+// ============================================================================
+
+model ChatbotDialogueFlow {
+  id              String    @id @default(uuid())
+  tenantId        String
+  flowName        String
+  description     String?
+  category        String?
+  nodes           Json
+  connections     Json
+  variables       Json?
+  isActive        Boolean   @default(false)
+  version         String    @default("1.0")
+  status          String    @default("draft")
+  triggerIntents  Json?
+  tags            Json?
+  publishedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  createdBy       String?
+  updatedBy       String?
+  deletedAt       DateTime?
+  isDeleted       Boolean   @default(false)
+
+  @@index([tenantId], map: "ChatbotDialogueFlow_tenantId_idx")
+  @@index([tenantId, status], map: "ChatbotDialogueFlow_tenantId_status_idx")
+  @@index([tenantId, isActive], map: "ChatbotDialogueFlow_tenantId_active_idx")
+  @@map("aura_chatbot_dialogue_flow")
+}
+
+model ChatbotIntent {
+  id                  String   @id @default(uuid())
+  tenantId            String
+  intentName          String
+  displayName         String?
+  description         String?
+  category            String?
+  trainingPhrases     Json?
+  responses           Json?
+  parameters          Json?
+  contexts            Json?
+  priority            Int      @default(0)
+  webhookEnabled      Boolean  @default(false)
+  webhookUrl          String?
+  isActive            Boolean  @default(true)
+  confidenceThreshold Float    @default(0.7)
+  usageCount          Int      @default(0)
+  averageConfidence   Float?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  createdBy           String?
+  updatedBy           String?
+  deletedAt           DateTime?
+  isDeleted           Boolean  @default(false)
+
+  @@index([tenantId], map: "ChatbotIntent_tenantId_idx")
+  @@index([tenantId, isActive], map: "ChatbotIntent_tenantId_active_idx")
+  @@map("aura_chatbot_intent")
+}
+
+model ChatbotEntity {
+  id              String   @id @default(uuid())
+  tenantId        String
+  entityName      String
+  entityType      String
+  description     String?
+  values          Json?
+  fuzzyMatching   Boolean  @default(false)
+  isCaseSensitive Boolean  @default(false)
+  status          String   @default("active")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdBy       String?
+  updatedBy       String?
+  deletedAt       DateTime?
+  isDeleted       Boolean  @default(false)
+
+  @@index([tenantId], map: "ChatbotEntity_tenantId_idx")
+  @@index([tenantId, status], map: "ChatbotEntity_tenantId_status_idx")
+  @@map("aura_chatbot_entity")
+}
+
+model ChatbotTrainingDataset {
+  id            String   @id @default(uuid())
+  tenantId      String
+  datasetName   String
+  description   String?
+  language      String   @default("en")
+  totalExamples Int      @default(0)
+  intents       Json?
+  entities      Json?
+  status        String   @default("draft")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  createdBy     String?
+  updatedBy     String?
+  deletedAt     DateTime?
+  isDeleted     Boolean  @default(false)
+
+  @@index([tenantId], map: "ChatbotTrainingDataset_tenantId_idx")
+  @@index([tenantId, status], map: "ChatbotTrainingDataset_tenantId_status_idx")
+  @@map("aura_chatbot_training_dataset")
+}
+
+model ChatbotTrainingExample {
+  id          String   @id @default(uuid())
+  tenantId    String
+  datasetId   String?
+  text        String
+  intent      String
+  entities    Json?
+  language    String   @default("en")
+  source      String   @default("manual")
+  isValidated Boolean  @default(false)
+  validatedBy String?
+  addedBy     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+  isDeleted   Boolean  @default(false)
+
+  @@index([tenantId], map: "ChatbotTrainingExample_tenantId_idx")
+  @@index([datasetId], map: "ChatbotTrainingExample_datasetId_idx")
+  @@index([intent], map: "ChatbotTrainingExample_intent_idx")
+  @@map("aura_chatbot_training_example")
+}
+
+model ChatbotChannel {
+  id            String    @id @default(uuid())
+  tenantId      String
+  channelType   String
+  channelName   String
+  isEnabled     Boolean   @default(false)
+  configuration Json?
+  features      Json?
+  status        String    @default("inactive")
+  lastSyncAt    DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  createdBy     String?
+  updatedBy     String?
+  deletedAt     DateTime?
+  isDeleted     Boolean   @default(false)
+
+  @@index([tenantId], map: "ChatbotChannel_tenantId_idx")
+  @@index([tenantId, channelType], map: "ChatbotChannel_tenantId_type_idx")
+  @@map("aura_chatbot_channel")
+}
+
+model ChatbotHandoffRule {
+  id          String   @id @default(uuid())
+  tenantId    String
+  ruleName    String
+  description String?
+  priority    Int      @default(0)
+  isActive    Boolean  @default(true)
+  triggers    Json?
+  conditions  Json?
+  action      Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  deletedAt   DateTime?
+  isDeleted   Boolean  @default(false)
+
+  @@index([tenantId], map: "ChatbotHandoffRule_tenantId_idx")
+  @@index([tenantId, isActive], map: "ChatbotHandoffRule_tenantId_active_idx")
+  @@map("aura_chatbot_handoff_rule")
+}
+
+model ChatbotLanguage {
+  id                  String   @id @default(uuid())
+  tenantId            String
+  languageCode        String
+  languageName        String
+  isEnabled           Boolean  @default(false)
+  isDefault           Boolean  @default(false)
+  translationModel    String?
+  confidenceThreshold Float    @default(0.7)
+  supportedFeatures   Json?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  createdBy           String?
+  updatedBy           String?
+  deletedAt           DateTime?
+  isDeleted           Boolean  @default(false)
+
+  @@unique([tenantId, languageCode], map: "ChatbotLanguage_tenantId_code_key")
+  @@index([tenantId], map: "ChatbotLanguage_tenantId_idx")
+  @@map("aura_chatbot_language")
+}
+
+model ChatbotTranslation {
+  id                String   @id @default(uuid())
+  tenantId          String
+  sourceLanguage    String
+  targetLanguage    String
+  sourceText        String
+  translatedText    String
+  translationMethod String   @default("automatic")
+  quality           Float?
+  translatedBy      String?
+  translatedDate    DateTime @default(now())
+  isApproved        Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdBy         String?
+  updatedBy         String?
+  deletedAt         DateTime?
+  isDeleted         Boolean  @default(false)
+
+  @@index([tenantId], map: "ChatbotTranslation_tenantId_idx")
+  @@map("aura_chatbot_translation")
+}
+
+model ChatbotLanguageContent {
+  id              String   @id @default(uuid())
+  tenantId        String
+  contentType     String
+  referenceId     String
+  translations    Json
+  defaultLanguage String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdBy       String?
+  updatedBy       String?
+  deletedAt       DateTime?
+  isDeleted       Boolean  @default(false)
+
+  @@unique([tenantId, contentType, referenceId], map: "ChatbotContent_tenantId_type_ref_key")
+  @@index([tenantId], map: "ChatbotLanguageContent_tenantId_idx")
+  @@map("aura_chatbot_language_content")
+}
+
+model ChatbotLanguageDetection {
+  id                   String   @id @default(uuid())
+  tenantId             String
+  text                 String
+  detectedLanguage     String
+  confidence           Float
+  alternativeLanguages Json?
+  timestamp            DateTime @default(now())
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  createdBy            String?
+  updatedBy            String?
+  deletedAt            DateTime?
+  isDeleted            Boolean  @default(false)
+
+  @@index([tenantId], map: "ChatbotLangDetection_tenantId_idx")
+  @@map("aura_chatbot_language_detection")
+}
+
+model ChatbotLocalizationSettings {
+  id                              String   @id @default(uuid())
+  tenantId                        String   @unique(map: "ChatbotLocalization_tenantId_key")
+  autoDetectLanguage              Boolean  @default(false)
+  fallbackLanguage                String   @default("en")
+  supportedLanguages              Json?
+  translationProvider             String   @default("google")
+  translationApiKey               String?
+  enableAutoTranslation           Boolean  @default(false)
+  requireApprovalForAutoTranslation Boolean @default(true)
+  lastUpdatedAt                   DateTime @default(now())
+  lastUpdatedBy                   String?
+  createdAt                       DateTime @default(now())
+  updatedAt                       DateTime @updatedAt
+  createdBy                       String?
+  updatedBy                       String?
+  deletedAt                       DateTime?
+  isDeleted                       Boolean  @default(false)
+
+  @@index([tenantId], map: "ChatbotLocalization_tenantId_idx")
+  @@map("aura_chatbot_localization_settings")
+}
+
 model AnalyticsCache {
   id          String    @id @default(uuid())
   tenantId    String
