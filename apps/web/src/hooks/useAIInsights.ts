@@ -11,10 +11,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 // ── Insight Types ──────────────────────────────────────────────────────────────
 
 export type InsightType =
-  | 'turnover_risk'
-  | 'performance_trend'
-  | 'compliance_alert'
-  | 'training_recommendation';
+  'turnover_risk' | 'performance_trend' | 'compliance_alert' | 'training_recommendation';
 
 export type InsightSeverity = 'critical' | 'warning' | 'info' | 'success';
 

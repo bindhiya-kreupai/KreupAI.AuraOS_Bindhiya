@@ -3,13 +3,7 @@
 export type Priority = 'low' | 'medium' | 'high' | 'critical';
 export type Status = 'active' | 'inactive' | 'draft' | 'published' | 'archived';
 export type NodeType =
-  | 'message'
-  | 'question'
-  | 'condition'
-  | 'action'
-  | 'api_call'
-  | 'handoff'
-  | 'end';
+  'message' | 'question' | 'condition' | 'action' | 'api_call' | 'handoff' | 'end';
 export type ChannelType = 'web' | 'mobile' | 'slack' | 'teams' | 'whatsapp' | 'facebook' | 'sms';
 export type IntentConfidence = 'very_low' | 'low' | 'medium' | 'high' | 'very_high';
 
@@ -597,11 +591,7 @@ export interface HandoffTrigger {
 export interface HandoffCondition {
   conditionId: string;
   conditionType:
-    | 'time_of_day'
-    | 'day_of_week'
-    | 'queue_capacity'
-    | 'user_attribute'
-    | 'conversation_length';
+    'time_of_day' | 'day_of_week' | 'queue_capacity' | 'user_attribute' | 'conversation_length';
   operator: string;
   value: any;
 }

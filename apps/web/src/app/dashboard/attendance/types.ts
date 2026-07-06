@@ -16,13 +16,7 @@ export type AttendanceStatus =
   | 'weekend';
 
 export type ShiftType =
-  | 'morning'
-  | 'afternoon'
-  | 'evening'
-  | 'night'
-  | 'general'
-  | 'flexible'
-  | 'rotational';
+  'morning' | 'afternoon' | 'evening' | 'night' | 'general' | 'flexible' | 'rotational';
 
 export type CheckType = 'check_in' | 'check_out' | 'break_start' | 'break_end';
 
@@ -33,10 +27,7 @@ export type OvertimeStatus = 'pending' | 'approved' | 'rejected' | 'paid' | 'com
 export type RegularizationStatus = 'pending' | 'approved' | 'rejected' | 'cancelled';
 
 export type RegularizationType =
-  | 'missed_punch'
-  | 'late_arrival'
-  | 'early_departure'
-  | 'incorrect_punch';
+  'missed_punch' | 'late_arrival' | 'early_departure' | 'incorrect_punch';
 
 export type BiometricDeviceType = 'fingerprint' | 'face_recognition' | 'card_reader' | 'iris_scan';
 

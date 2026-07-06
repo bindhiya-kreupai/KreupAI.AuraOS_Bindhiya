@@ -5,10 +5,7 @@ export type ModelRiskTier = 'UNACCEPTABLE' | 'HIGH' | 'LIMITED' | 'MINIMAL';
 export type ModelStatus = 'DRAFT' | 'UNDER_REVIEW' | 'PUBLISHED' | 'DEPRECATED' | 'RECALLED';
 
 export type FairnessMetric =
-  | 'DEMOGRAPHIC_PARITY'
-  | 'EQUAL_OPPORTUNITY'
-  | 'DISPARATE_IMPACT_RATIO'
-  | 'CALIBRATION';
+  'DEMOGRAPHIC_PARITY' | 'EQUAL_OPPORTUNITY' | 'DISPARATE_IMPACT_RATIO' | 'CALIBRATION';
 
 const MODEL_TRANSITIONS: Record<ModelStatus, ModelStatus[]> = {
   DRAFT: ['UNDER_REVIEW', 'RECALLED'],

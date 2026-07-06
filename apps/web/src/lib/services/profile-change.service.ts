@@ -2,20 +2,10 @@ import { prisma } from '@aura/database';
 import { BaseService } from './base.service';
 
 export type ProfileChangeCategory =
-  | 'bank'
-  | 'address'
-  | 'emergency_contact'
-  | 'dependent'
-  | 'personal'
-  | 'tax';
+  'bank' | 'address' | 'emergency_contact' | 'dependent' | 'personal' | 'tax';
 
 export type ProfileChangeStatus =
-  | 'DRAFT'
-  | 'SUBMITTED'
-  | 'APPROVED'
-  | 'REJECTED'
-  | 'APPLIED'
-  | 'CANCELED';
+  'DRAFT' | 'SUBMITTED' | 'APPROVED' | 'REJECTED' | 'APPLIED' | 'CANCELED';
 
 const ALLOWED_TRANSITIONS: Record<ProfileChangeStatus, ProfileChangeStatus[]> = {
   DRAFT: ['SUBMITTED', 'CANCELED'],

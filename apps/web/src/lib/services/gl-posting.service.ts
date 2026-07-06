@@ -3,11 +3,7 @@ import { BaseService } from './base.service';
 
 export type GLEntryStatus = 'DRAFT' | 'POSTED' | 'EXPORTED' | 'REVERSED';
 export type GLSourceType =
-  | 'PAYROLL_RUN'
-  | 'FULL_FINAL'
-  | 'EXPENSE_PAY'
-  | 'ARREARS'
-  | 'BONUS_PAYOUT';
+  'PAYROLL_RUN' | 'FULL_FINAL' | 'EXPENSE_PAY' | 'ARREARS' | 'BONUS_PAYOUT';
 export type AccountingSystem = 'QUICKBOOKS' | 'XERO' | 'SAP' | 'TALLY' | 'ZOHO_BOOKS';
 
 const STATUS_TRANSITIONS: Record<GLEntryStatus, GLEntryStatus[]> = {
