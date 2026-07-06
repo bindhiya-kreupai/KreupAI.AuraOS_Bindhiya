@@ -1,0 +1,31 @@
+// Schema fragment for Recruitment Components Module (AURA-252).
+// DO NOT edit the main schema.prisma directly (SCHEMA RULE). This documents the
+// new model; the deployed DB is created via the defensive migration
+// 20260702150000_add_recruitment_candidate_messages/migration.sql.
+// Access at runtime via (prisma as any).candidateMessage.
+
+/// Candidate outbound/inbound communication log (email / SMS) for the
+/// Candidate Communication Hub. Threads are derived by grouping on candidateId.
+model CandidateMessage {
+  id            String    @id @default(uuid())
+  tenantId      String
+  candidateId   String
+  applicationId String?
+  channel       String    @default("email") // 'email' | 'sms'
+  direction     String    @default("outbound") // 'outbound' | 'inbound'
+  status        String    @default("sent") // pending | sent | delivered | read | failed
+  subject       String?
+  body          String
+  sender        String?
+  senderRole    String?
+  sentAt        DateTime  @default(now())
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  createdBy     String?
+  deletedAt     DateTime?
+  isDeleted     Boolean   @default(false)
+
+  @@index([tenantId])
+  @@index([tenantId, candidateId])
+  @@map("aura_candidate_message")
+}

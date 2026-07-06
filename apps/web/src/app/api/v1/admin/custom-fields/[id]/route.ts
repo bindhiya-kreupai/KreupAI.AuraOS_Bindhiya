@@ -26,7 +26,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     }
     const { id } = context.params;
 
-    const field = await prisma.customField.findFirst({
+    const field = await (prisma as any).customField.findFirst({
       where: { id, tenantId: user.tenantId },
     });
 
@@ -76,7 +76,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) =
     const { id } = context.params;
     const body = await request.json();
 
-    const field = await prisma.customField.findFirst({
+    const field = await (prisma as any).customField.findFirst({
       where: { id, tenantId: user.tenantId },
     });
 
@@ -88,7 +88,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) =
     }
 
     // tenant-ok: id-based op preceded by tenant-scoped findFirst above
-    const updated = await prisma.customField.update({
+    const updated = await (prisma as any).customField.update({
       where: { id },
       data: {
         fieldLabel: body.fieldLabel,
@@ -144,7 +144,7 @@ export const DELETE = withEnhancedAuth(async (request: NextRequest, context: any
     }
     const { id } = context.params;
 
-    const field = await prisma.customField.findFirst({
+    const field = await (prisma as any).customField.findFirst({
       where: { id, tenantId: user.tenantId },
     });
 
@@ -157,7 +157,7 @@ export const DELETE = withEnhancedAuth(async (request: NextRequest, context: any
 
     // Soft delete by deactivating
     // tenant-ok: id-based op preceded by tenant-scoped findFirst above
-    await prisma.customField.update({
+    await (prisma as any).customField.update({
       where: { id },
       data: { isActive: false, updatedAt: new Date(), updatedBy: user.id },
     });

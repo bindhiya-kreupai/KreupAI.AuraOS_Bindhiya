@@ -303,41 +303,27 @@ export class DepartmentService {
       includeInactive = false,
     } = options;
 
-    // Build where clause
+    // Build where clause. Tenant isolation is applied via Company relation
+    // because Department has no scalar tenantId (schema.prisma:66).
     const where: any = {
-      tenantId, // Enforce tenant isolation
+      company: { tenantId },
     };
 
     if (companyId) {
       where.companyId = companyId;
     }
 
+    // isActive is mapped to !isDeleted since Department has no isActive column.
     if (isActive !== undefined) {
-      where.isActive = isActive;
+      where.isDeleted = !isActive;
     } else if (!includeInactive) {
-      where.isActive = true;
+      where.isDeleted = false;
     }
 
     if (search) {
       where.OR = [
-        {
-          name: {
-            contains: search,
-            mode: 'insensitive',
-          },
-        },
-        {
-          code: {
-            contains: search,
-            mode: 'insensitive',
-          },
-        },
-        {
-          description: {
-            contains: search,
-            mode: 'insensitive',
-          },
-        },
+        { name: { contains: search, mode: 'insensitive' } },
+        { code: { contains: search, mode: 'insensitive' } },
       ];
     }
 
@@ -348,13 +334,6 @@ export class DepartmentService {
     const departments = await prisma.department.findMany({
       where,
       include: {
-        manager: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-          },
-        },
         company: {
           select: {
             id: true,
@@ -364,7 +343,7 @@ export class DepartmentService {
         _count: {
           select: {
             employees: true,
-            childDepartments: true,
+            children: true,
           },
         },
       },
@@ -376,12 +355,15 @@ export class DepartmentService {
     });
 
     return {
-      departments,
-      pagination: {
-        page,
-        limit,
-        total,
-        totalPages: Math.ceil(total / limit),
+      success: true,
+      data: {
+        departments,
+        pagination: {
+          page,
+          limit,
+          total,
+          totalPages: Math.ceil(total / limit),
+        },
       },
     };
   }
@@ -752,10 +734,13 @@ export class DepartmentService {
    * @returns Tree structure of departments
    */
   async getDepartmentHierarchy(tenantId: string, companyId?: string) {
+    // Tenant filtered via Company relation (Department has no tenantId scalar).
+    // isActive mapped to isDeleted:false (no isActive column).
+    // Schema uses parentId + children (not parentDepartmentId + childDepartments).
     const where: any = {
-      tenantId,
-      isActive: true,
-      parentDepartmentId: null, // Root departments only
+      company: { tenantId },
+      isDeleted: false,
+      parentId: null,
     };
 
     if (companyId) {
@@ -765,23 +750,9 @@ export class DepartmentService {
     const rootDepartments = await prisma.department.findMany({
       where,
       include: {
-        manager: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-          },
-        },
-        childDepartments: {
-          where: { isActive: true },
+        children: {
+          where: { isDeleted: false },
           include: {
-            manager: {
-              select: {
-                id: true,
-                firstName: true,
-                lastName: true,
-              },
-            },
             _count: {
               select: {
                 employees: true,
@@ -800,7 +771,7 @@ export class DepartmentService {
       },
     });
 
-    return rootDepartments;
+    return { success: true, data: rootDepartments };
   }
 
   /**

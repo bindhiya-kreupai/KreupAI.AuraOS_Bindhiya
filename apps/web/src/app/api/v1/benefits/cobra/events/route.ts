@@ -26,7 +26,7 @@ export const GET = withEnhancedAuth(
     try {
       const url = new URL(request.url);
       const employeeId = url.searchParams.get('employeeId') ?? undefined;
-      const events = await prisma.cobraQualifyingEvent.findMany({
+      const events = await (prisma as any).cobraQualifyingEvent.findMany({
         where: { tenantId: context.user.tenantId, isDeleted: false, employeeId },
         orderBy: { qualifyingDate: 'desc' },
         include: { enrollments: true },

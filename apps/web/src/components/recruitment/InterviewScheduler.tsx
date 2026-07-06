@@ -23,6 +23,7 @@ import {
   Wifi,
   Link2,
 } from 'lucide-react';
+import { APIClient } from '@/lib/api-client';
 import { CalendarSlotPicker } from './CalendarSlotPicker';
 import type { SlotData } from './CalendarSlotPicker';
 import { InterviewerAvailability } from './InterviewerAvailability';
@@ -33,6 +34,18 @@ import type { ConfirmationData } from './InterviewConfirmation';
 // ── Types ────────────────────────────────────────────────────────────────────────
 
 type SchedulerStep = 'details' | 'slot' | 'interviewers' | 'confirm';
+
+export interface SchedulableApplication {
+  id: string;
+  candidateName: string;
+  candidateEmail: string;
+  jobTitle: string;
+}
+
+interface InterviewSchedulerProps {
+  applications: SchedulableApplication[];
+  interviewers: InterviewerData[];
+}
 
 interface InterviewTypeOption {
   value: string;
@@ -108,111 +121,6 @@ const generateSlots = (weekOffset: number): SlotData[] => {
   return slots;
 };
 
-const MOCK_INTERVIEWERS: InterviewerData[] = [
-  {
-    id: 'int-001',
-    name: 'Alice Chen',
-    email: 'alice@company.com',
-    avatar: 'AC',
-    role: 'Engineering Manager',
-    department: 'Engineering',
-    skills: ['React', 'TypeScript', 'System Design', 'Leadership'],
-    interviewsToday: 1,
-    maxInterviewsPerDay: 3,
-    calendarConnected: true,
-    calendarProvider: 'google',
-    timezone: 'America/Los_Angeles',
-    slots: generateInterviewerSlots('int-001', true),
-  },
-  {
-    id: 'int-002',
-    name: 'Bob Patel',
-    email: 'bob@company.com',
-    avatar: 'BP',
-    role: 'Senior Developer',
-    department: 'Engineering',
-    skills: ['Node.js', 'AWS', 'Python', 'Microservices'],
-    interviewsToday: 2,
-    maxInterviewsPerDay: 3,
-    calendarConnected: true,
-    calendarProvider: 'outlook',
-    timezone: 'America/New_York',
-    slots: generateInterviewerSlots('int-002', true),
-  },
-  {
-    id: 'int-003',
-    name: 'Carol James',
-    email: 'carol@company.com',
-    avatar: 'CJ',
-    role: 'HR Business Partner',
-    department: 'HR',
-    skills: ['Behavioral Assessment', 'Culture Fit', 'Competency Framework'],
-    interviewsToday: 0,
-    maxInterviewsPerDay: 4,
-    calendarConnected: true,
-    calendarProvider: 'google',
-    timezone: 'America/Los_Angeles',
-    slots: generateInterviewerSlots('int-003', true),
-  },
-  {
-    id: 'int-004',
-    name: 'David Kim',
-    email: 'david@company.com',
-    avatar: 'DK',
-    role: 'Tech Lead',
-    department: 'Engineering',
-    skills: ['React', 'GraphQL', 'Docker', 'Kubernetes', 'CI/CD'],
-    interviewsToday: 1,
-    maxInterviewsPerDay: 2,
-    calendarConnected: false,
-    timezone: 'America/Chicago',
-    slots: generateInterviewerSlots('int-004', false),
-  },
-  {
-    id: 'int-005',
-    name: 'Eva Martinez',
-    email: 'eva@company.com',
-    avatar: 'EM',
-    role: 'Product Manager',
-    department: 'Product',
-    skills: ['Product Strategy', 'Agile', 'User Research', 'Roadmapping'],
-    interviewsToday: 2,
-    maxInterviewsPerDay: 3,
-    calendarConnected: true,
-    calendarProvider: 'outlook',
-    timezone: 'America/Los_Angeles',
-    slots: generateInterviewerSlots('int-005', true),
-  },
-];
-
-function generateInterviewerSlots(id: string, _connected: boolean): InterviewerData['slots'] {
-  const now = new Date();
-  const monday = new Date(now);
-  monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
-  const slots: InterviewerData['slots'] = [];
-  const seed = id.charCodeAt(4) || 0;
-
-  for (let w = 0; w < 3; w++) {
-    for (let d = 0; d < 5; d++) {
-      const date = new Date(monday);
-      date.setDate(monday.getDate() + d + w * 7);
-      const dateStr = date.toISOString().split('T')[0];
-
-      for (const hour of [9, 10, 11, 12, 13, 14, 15, 16, 17]) {
-        const hash = (seed * 13 + d * 7 + hour * 3 + w * 11) % 100;
-        const available = hash > 30;
-        slots.push({
-          date: dateStr,
-          hour,
-          available,
-          reason: available ? undefined : hash > 60 ? 'In meeting' : 'On leave',
-        });
-      }
-    }
-  }
-  return slots;
-}
-
 // ── StatCard ─────────────────────────────────────────────────────────────────────
 
 const StatCard: React.FC<StatCardProps> = ({ icon: Icon, label, value, color }) => (
@@ -246,18 +154,19 @@ const addMinutes = (hour: number, mins: number): string => {
 
 // ── Main Component ───────────────────────────────────────────────────────────────
 
-export const InterviewScheduler: React.FC = () => {
+export const InterviewScheduler: React.FC<InterviewSchedulerProps> = ({
+  applications,
+  interviewers,
+}) => {
   const [step, setStep] = useState<SchedulerStep>('details');
   const [weekOffset, setWeekOffset] = useState(0);
 
   // Form state
-  const [candidateName, setCandidateName] = useState('Sarah Johnson');
-  const [candidateEmail, setCandidateEmail] = useState('sarah.johnson@email.com');
-  const [jobTitle, setJobTitle] = useState('Senior Full-Stack Engineer');
+  const [applicationId, setApplicationId] = useState<string>(applications[0]?.id ?? '');
   const [interviewType, setInterviewType] = useState('technical');
   const [duration, setDuration] = useState(60);
   const [locationType, setLocationType] = useState<'video' | 'onsite'>('video');
-  const [meetingLink, setMeetingLink] = useState('https://meet.google.com/abc-defg-hij');
+  const [meetingLink, setMeetingLink] = useState('');
   const [location, setLocation] = useState('');
   const [notes, setNotes] = useState('');
 
@@ -265,6 +174,15 @@ export const InterviewScheduler: React.FC = () => {
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
   const [selectedInterviewerIds, setSelectedInterviewerIds] = useState<string[]>([]);
   const [confirmed, setConfirmed] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const selectedApplication = useMemo(
+    () => applications.find((a) => a.id === applicationId) ?? null,
+    [applications, applicationId]
+  );
+  const candidateName = selectedApplication?.candidateName ?? '';
+  const candidateEmail = selectedApplication?.candidateEmail ?? '';
+  const jobTitle = selectedApplication?.jobTitle ?? '';
 
   const slots = useMemo(() => generateSlots(weekOffset), [weekOffset]);
 
@@ -274,8 +192,8 @@ export const InterviewScheduler: React.FC = () => {
   );
 
   const connectedCalendars = useMemo(
-    () => MOCK_INTERVIEWERS.filter((i) => i.calendarConnected).length,
-    []
+    () => interviewers.filter((i) => i.calendarConnected).length,
+    [interviewers]
   );
 
   // ── Actions ────────────────────────────────────────────────────────────────
@@ -289,7 +207,7 @@ export const InterviewScheduler: React.FC = () => {
   const canProceed = useMemo(() => {
     switch (step) {
       case 'details':
-        return candidateName.trim() && candidateEmail.trim() && jobTitle.trim() && interviewType;
+        return Boolean(applicationId) && Boolean(interviewType);
       case 'slot':
         return selectedSlotId !== null;
       case 'interviewers':
@@ -299,15 +217,7 @@ export const InterviewScheduler: React.FC = () => {
       default:
         return false;
     }
-  }, [
-    step,
-    candidateName,
-    candidateEmail,
-    jobTitle,
-    interviewType,
-    selectedSlotId,
-    selectedInterviewerIds,
-  ]);
+  }, [step, applicationId, interviewType, selectedSlotId, selectedInterviewerIds]);
 
   const nextStep = useCallback(() => {
     const idx = STEPS.findIndex((s) => s.key === step);
@@ -319,9 +229,42 @@ export const InterviewScheduler: React.FC = () => {
     if (idx > 0) setStep(STEPS[idx - 1].key);
   }, [step]);
 
-  const handleSendConfirmation = useCallback(() => {
-    setConfirmed(true);
-  }, []);
+  const handleSendConfirmation = useCallback(async () => {
+    if (!selectedSlot || !applicationId) return;
+    setError(null);
+    try {
+      const scheduledDate = new Date(
+        `${selectedSlot.date}T${String(selectedSlot.hour).padStart(2, '0')}:00:00`
+      );
+      const selInterviewers = interviewers.filter((i) => selectedInterviewerIds.includes(i.id));
+      await APIClient.post('/v1/recruitment/interviews/schedule', {
+        applicationId,
+        scheduledDate: scheduledDate.toISOString(),
+        type: interviewType,
+        title: `${INTERVIEW_TYPES.find((t) => t.value === interviewType)?.label || interviewType} Interview`,
+        duration,
+        interviewerIds: selInterviewers.map((i) => i.id),
+        interviewerNames: selInterviewers.map((i) => i.name),
+        location: locationType === 'onsite' ? location || undefined : undefined,
+        meetingLink: locationType === 'video' ? meetingLink || undefined : undefined,
+        notes: notes || undefined,
+      });
+      setConfirmed(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to schedule interview');
+    }
+  }, [
+    selectedSlot,
+    applicationId,
+    interviewers,
+    selectedInterviewerIds,
+    interviewType,
+    duration,
+    locationType,
+    location,
+    meetingLink,
+    notes,
+  ]);
 
   const handleEdit = useCallback(() => {
     setStep('details');
@@ -332,7 +275,7 @@ export const InterviewScheduler: React.FC = () => {
 
   const confirmationData: ConfirmationData | null = useMemo(() => {
     if (!selectedSlot) return null;
-    const selInterviewers = MOCK_INTERVIEWERS.filter((i) => selectedInterviewerIds.includes(i.id));
+    const selInterviewers = interviewers.filter((i) => selectedInterviewerIds.includes(i.id));
     return {
       candidateName,
       candidateEmail,
@@ -352,6 +295,7 @@ export const InterviewScheduler: React.FC = () => {
   }, [
     selectedSlot,
     selectedInterviewerIds,
+    interviewers,
     candidateName,
     candidateEmail,
     jobTitle,
@@ -378,7 +322,7 @@ export const InterviewScheduler: React.FC = () => {
         <StatCard
           icon={Users}
           label="Interviewers"
-          value={MOCK_INTERVIEWERS.length}
+          value={interviewers.length}
           color="bg-neural-mint/10 text-neural-mint"
         />
         <StatCard
@@ -457,25 +401,28 @@ export const InterviewScheduler: React.FC = () => {
               <p className="text-sm font-bold text-ink-black dark:text-pearl">Interview Details</p>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                <FormField
-                  label="Candidate Name"
-                  value={candidateName}
-                  onChange={setCandidateName}
-                  placeholder="Full name"
-                />
-                <FormField
-                  label="Candidate Email"
-                  value={candidateEmail}
-                  onChange={setCandidateEmail}
-                  placeholder="email@example.com"
-                  type="email"
-                />
-                <FormField
-                  label="Job Title"
-                  value={jobTitle}
-                  onChange={setJobTitle}
-                  placeholder="Position title"
-                />
+                <div className="sm:col-span-2">
+                  <label className="text-[10px] font-semibold text-silver-mist block mb-1">
+                    Candidate Application
+                  </label>
+                  <select
+                    value={applicationId}
+                    onChange={(e) => setApplicationId(e.target.value)}
+                    className="w-full px-3 py-2 rounded-lg border border-cloud dark:border-nebula-purple/30 bg-white dark:bg-stellar-blue text-xs text-ink-black dark:text-pearl outline-none focus:border-celestial-indigo transition-colors"
+                  >
+                    {applications.length === 0 && (
+                      <option value="">No applications available</option>
+                    )}
+                    {applications.map((a) => (
+                      <option key={a.id} value={a.id}>
+                        {a.candidateName} — {a.jobTitle}
+                      </option>
+                    ))}
+                  </select>
+                  {selectedApplication && (
+                    <p className="mt-1 text-[10px] text-silver-mist">{candidateEmail}</p>
+                  )}
+                </div>
 
                 {/* Interview Type */}
                 <div>
@@ -607,7 +554,7 @@ export const InterviewScheduler: React.FC = () => {
 
           {step === 'interviewers' && selectedSlot && (
             <InterviewerAvailability
-              interviewers={MOCK_INTERVIEWERS}
+              interviewers={interviewers}
               selectedDate={selectedSlot.date}
               selectedHour={selectedSlot.hour}
               selectedInterviewerIds={selectedInterviewerIds}
@@ -616,11 +563,21 @@ export const InterviewScheduler: React.FC = () => {
           )}
 
           {step === 'confirm' && confirmationData && (
-            <InterviewConfirmation
-              data={confirmationData}
-              onSendConfirmation={handleSendConfirmation}
-              onEdit={handleEdit}
-            />
+            <>
+              {error && (
+                <div
+                  className="mb-3 rounded-lg border border-coral-alert/40 bg-coral-alert/10 px-3 py-2 text-[11px] font-medium text-coral-alert"
+                  role="alert"
+                >
+                  {error}
+                </div>
+              )}
+              <InterviewConfirmation
+                data={confirmationData}
+                onSendConfirmation={handleSendConfirmation}
+                onEdit={handleEdit}
+              />
+            </>
           )}
 
           {/* Navigation */}

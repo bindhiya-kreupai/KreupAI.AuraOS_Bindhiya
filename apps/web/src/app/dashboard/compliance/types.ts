@@ -3,19 +3,52 @@
  * Comprehensive compliance tracking including labor law, POSH, grievances, disciplinary actions, and audits
  */
 
-export type ComplianceStatus = 'compliant' | 'non_compliant' | 'pending_review' | 'under_investigation' | 'resolved';
-export type ComplianceType = 'labor_law' | 'posh' | 'data_privacy' | 'tax' | 'safety' | 'environmental' | 'contract' | 'ethical';
+export type ComplianceStatus =
+  'compliant' | 'non_compliant' | 'pending_review' | 'under_investigation' | 'resolved';
+export type ComplianceType =
+  | 'labor_law'
+  | 'posh'
+  | 'data_privacy'
+  | 'tax'
+  | 'safety'
+  | 'environmental'
+  | 'contract'
+  | 'ethical';
 export type Severity = 'low' | 'medium' | 'high' | 'critical';
-export type GrievanceStatus = 'submitted' | 'acknowledged' | 'under_investigation' | 'resolved' | 'closed' | 'escalated' | 'rejected';
-export type GrievanceCategory = 'harassment' | 'discrimination' | 'workplace_safety' | 'compensation' | 'work_conditions' | 'policy_violation' | 'other';
-export type DisciplinaryAction = 'verbal_warning' | 'written_warning' | 'suspension' | 'demotion' | 'termination' | 'fine';
-export type DisciplinaryStatus = 'pending' | 'under_review' | 'approved' | 'appealed' | 'completed' | 'overturned';
+export type GrievanceStatus =
+  | 'submitted'
+  | 'acknowledged'
+  | 'under_investigation'
+  | 'resolved'
+  | 'closed'
+  | 'escalated'
+  | 'rejected';
+export type GrievanceCategory =
+  | 'harassment'
+  | 'discrimination'
+  | 'workplace_safety'
+  | 'compensation'
+  | 'work_conditions'
+  | 'policy_violation'
+  | 'other';
+export type DisciplinaryAction =
+  'verbal_warning' | 'written_warning' | 'suspension' | 'demotion' | 'termination' | 'fine';
+export type DisciplinaryStatus =
+  'pending' | 'under_review' | 'approved' | 'appealed' | 'completed' | 'overturned';
 export type AuditType = 'internal' | 'external' | 'regulatory' | 'surprise' | 'follow_up';
 export type AuditStatus = 'scheduled' | 'in_progress' | 'completed' | 'report_pending' | 'closed';
-export type POSHComplaintStatus = 'received' | 'under_investigation' | 'inquiry_committee_formed' | 'hearing_scheduled' | 'resolved' | 'closed' | 'appealed';
+export type POSHComplaintStatus =
+  | 'received'
+  | 'under_investigation'
+  | 'inquiry_committee_formed'
+  | 'hearing_scheduled'
+  | 'resolved'
+  | 'closed'
+  | 'appealed';
 export type Jurisdiction = 'federal' | 'state' | 'local' | 'international';
 export type UnionStatus = 'active' | 'inactive' | 'dissolved' | 'suspended';
-export type ArbitrationStatus = 'filed' | 'hearing_scheduled' | 'in_progress' | 'award_pending' | 'completed' | 'appealed';
+export type ArbitrationStatus =
+  'filed' | 'hearing_scheduled' | 'in_progress' | 'award_pending' | 'completed' | 'appealed';
 
 // Labor Law Compliance
 export interface LaborLaw {
@@ -255,7 +288,8 @@ export interface DisciplinaryRecord {
   employeeCode: string;
   employeeDepartment: string;
   violationType: string;
-  violationCategory: 'attendance' | 'conduct' | 'performance' | 'policy' | 'safety' | 'ethics' | 'other';
+  violationCategory:
+    'attendance' | 'conduct' | 'performance' | 'policy' | 'safety' | 'ethics' | 'other';
   incidentDate: string;
   incidentDescription: string;
   severity: Severity;
@@ -446,7 +480,14 @@ export interface WhistleblowerReport {
   reporterId?: string;
   reporterName?: string;
   reporterContact?: string;
-  allegationType: 'fraud' | 'corruption' | 'misconduct' | 'safety_violation' | 'legal_violation' | 'ethical_violation' | 'other';
+  allegationType:
+    | 'fraud'
+    | 'corruption'
+    | 'misconduct'
+    | 'safety_violation'
+    | 'legal_violation'
+    | 'ethical_violation'
+    | 'other';
   severity: Severity;
   subject: string;
   detailedDescription: string;
@@ -455,7 +496,8 @@ export interface WhistleblowerReport {
   locationOfIncident: string;
   witnesses?: Witness[];
   evidenceProvided: ComplianceDocument[];
-  status: 'received' | 'under_review' | 'investigating' | 'substantiated' | 'unsubstantiated' | 'closed';
+  status:
+    'received' | 'under_review' | 'investigating' | 'substantiated' | 'unsubstantiated' | 'closed';
   assignedInvestigator?: string;
   assignedInvestigatorName?: string;
   investigationStartDate?: string;
@@ -649,7 +691,11 @@ export interface ComplianceMetrics {
   activeStrikes: number;
   whistleblowerReports: number;
   complianceScoreByArea: { area: ComplianceType; score: number }[];
-  complianceByJurisdiction: { jurisdiction: Jurisdiction; compliant: number; nonCompliant: number }[];
+  complianceByJurisdiction: {
+    jurisdiction: Jurisdiction;
+    compliant: number;
+    nonCompliant: number;
+  }[];
   trends: {
     period: string;
     complianceRate: number;
@@ -664,7 +710,13 @@ export interface ComplianceMetrics {
 // Compliance Notifications
 export interface ComplianceNotification {
   id: string;
-  notificationType: 'compliance_deadline' | 'grievance_submitted' | 'posh_complaint' | 'disciplinary_action' | 'audit_scheduled' | 'whistleblower_report';
+  notificationType:
+    | 'compliance_deadline'
+    | 'grievance_submitted'
+    | 'posh_complaint'
+    | 'disciplinary_action'
+    | 'audit_scheduled'
+    | 'whistleblower_report';
   recipientId: string;
   recipientName: string;
   title: string;
@@ -685,8 +737,24 @@ export interface ComplianceAuditLog {
   timestamp: string;
   userId: string;
   userName: string;
-  action: 'created' | 'updated' | 'deleted' | 'viewed' | 'approved' | 'rejected' | 'escalated' | 'resolved';
-  entityType: 'grievance' | 'posh' | 'disciplinary' | 'audit' | 'compliance_record' | 'union' | 'whistleblower' | 'arbitration';
+  action:
+    | 'created'
+    | 'updated'
+    | 'deleted'
+    | 'viewed'
+    | 'approved'
+    | 'rejected'
+    | 'escalated'
+    | 'resolved';
+  entityType:
+    | 'grievance'
+    | 'posh'
+    | 'disciplinary'
+    | 'audit'
+    | 'compliance_record'
+    | 'union'
+    | 'whistleblower'
+    | 'arbitration';
   entityId: string;
   details: string;
   previousValues?: { [key: string]: any };
@@ -704,4 +772,36 @@ export interface Toast {
   type: 'success' | 'error' | 'warning' | 'info';
   message: string;
   duration?: number;
+}
+
+/**
+ * Compliance service catalogue — returned by the root GET /api/compliance
+ * endpoint. Static metadata describing the supported countries, statutory
+ * service surfaces and platform features. Bilingual (English + Arabic).
+ */
+export interface ComplianceCatalogService {
+  name: string;
+  nameAr: string;
+  country: string;
+  countryAr: string;
+  endpoint: string;
+  methods: string[];
+  description: string;
+  descriptionAr: string;
+}
+
+export interface ComplianceCatalogFeature {
+  name: string;
+  nameAr: string;
+  description: string;
+  descriptionAr: string;
+}
+
+export interface ComplianceCatalog {
+  name: string;
+  nameAr: string;
+  version: string;
+  supportedCountries: unknown[];
+  services: ComplianceCatalogService[];
+  features: ComplianceCatalogFeature[];
 }

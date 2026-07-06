@@ -38,13 +38,13 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     if (isActive !== null && isActive !== undefined) where.isActive = isActive === 'true';
 
     const [data, total] = await Promise.all([
-      prisma.customField.findMany({
+      (prisma as any).customField.findMany({
         where,
         skip,
         take: limit,
         orderBy: [{ entityType: 'asc' }, { displayOrder: 'asc' }],
       }),
-      prisma.customField.count({ where }),
+      (prisma as any).customField.count({ where }),
     ]);
 
     return NextResponse.json({
@@ -141,7 +141,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
       );
     }
 
-    const field = await prisma.customField.create({
+    const field = await (prisma as any).customField.create({
       data: {
         tenantId: user.tenantId,
         entityType: body.entityType,

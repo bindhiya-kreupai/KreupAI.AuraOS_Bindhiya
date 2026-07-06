@@ -1,0 +1,35 @@
+[
+  {
+    "id": "AURA-633",
+    "title": "Approval Center: Complete API integration and remove mock/local fallbacks",
+    "module": "MSS Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/manager/approval-center",
+    "api": "/api/manager/approvals",
+    "desc": "Page calls APIs (/api/manager/approvals) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-634",
+    "title": "Delegation: Complete API integration and remove mock/local fallbacks",
+    "module": "MSS Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/manager/delegation",
+    "api": "/api/manager/delegation",
+    "desc": "Page calls APIs (/api/manager/delegation) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-635",
+    "title": "Team Dashboard: Complete API integration and remove mock/local fallbacks",
+    "module": "MSS Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/manager/team-dashboard",
+    "api": "/api/manager/approvals, /api/manager/team",
+    "desc": "Page calls APIs (/api/manager/approvals, /api/manager/team) but mock/hardcoded UI remains."
+  }
+]

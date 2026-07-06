@@ -163,24 +163,22 @@ export async function publishComplianceEvent<T extends ComplianceEventType>(
   }
 
   // 2. Best-effort AuditLog write — fire and forget; errors logged.
-  void prisma.auditLog
-    .create({
-      data: {
-        tenantId: input.tenantId,
-        userId: input.actorId,
-        action: 'COMPLIANCE_EVENT' as any,
-        resourceType: input.type,
-        resourceId: input.correlationId ?? null,
-        metadata: { eventId: event.eventId, payload: event.payload } as any,
-        ipAddress: 'system',
-      },
-    })
-    .catch((err) => {
-      logger.warn(
-        { err, eventType: input.type, eventId: event.eventId },
-        'compliance event audit-log write failed (non-fatal)'
-      );
-    });
+  void (prisma.auditLog.create as any)({
+    data: {
+      tenantId: input.tenantId,
+      userId: input.actorId,
+      action: 'COMPLIANCE_EVENT' as any,
+      resourceType: input.type,
+      resourceId: input.correlationId ?? null,
+      metadata: { eventId: event.eventId, payload: event.payload } as any,
+      ipAddress: 'system',
+    },
+  }).catch((err: any) => {
+    logger.warn(
+      { err, eventType: input.type, eventId: event.eventId },
+      'compliance event audit-log write failed (non-fatal)'
+    );
+  });
 
   return event;
 }

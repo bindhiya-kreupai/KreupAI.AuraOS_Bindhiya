@@ -13,6 +13,7 @@ import {
   ChevronRight,
   Trophy,
   CheckCircle2,
+  Loader2,
 } from 'lucide-react';
 import { ComplianceTrainingDashboard } from '@/components/compliance-training/ComplianceTrainingDashboard';
 import { TrainingModuleList } from '@/components/compliance-training/TrainingModuleList';
@@ -20,6 +21,7 @@ import { TrainingPlayer } from '@/components/compliance-training/TrainingPlayer'
 import { CertificationTracker } from '@/components/compliance-training/CertificationTracker';
 import { ComplianceReport } from '@/components/compliance-training/ComplianceReport';
 import { TrainingAssignment } from '@/components/compliance-training/TrainingAssignment';
+import { useCurrentUser } from '@/lib/auth/AuthProvider';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -185,6 +187,8 @@ function CompletionScreen({
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function ComplianceTrainingPage() {
+  const { user, loading: authLoading } = useCurrentUser();
+  const employeeId = user?.employeeId;
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
   const [subView, setSubView] = useState<SubView>('list');
   const [activeAssignmentId, setActiveAssignmentId] = useState<string | null>(null);
@@ -224,6 +228,14 @@ export default function ComplianceTrainingPage() {
   };
 
   const currentTab = TABS.find((t) => t.id === activeTab);
+
+  if (authLoading || !employeeId) {
+    return (
+      <div className="flex items-center justify-center h-64">
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col overflow-y-auto">
@@ -275,7 +287,7 @@ export default function ComplianceTrainingPage() {
         {/* Dashboard */}
         {activeTab === 'dashboard' && subView === 'list' && (
           <ComplianceTrainingDashboard
-            employeeId="emp-001"
+            employeeId={employeeId}
             onStartTraining={handleStartTraining}
             onViewAll={() => handleTabChange('trainings')}
             onViewCertifications={() => handleTabChange('certifications')}
@@ -284,7 +296,7 @@ export default function ComplianceTrainingPage() {
 
         {/* Trainings - list */}
         {activeTab === 'trainings' && subView === 'list' && (
-          <TrainingModuleList employeeId="emp-001" onStartTraining={handleStartTraining} />
+          <TrainingModuleList employeeId={employeeId} onStartTraining={handleStartTraining} />
         )}
 
         {/* Training player */}
@@ -304,7 +316,7 @@ export default function ComplianceTrainingPage() {
         {/* Certifications */}
         {activeTab === 'certifications' && (
           <CertificationTracker
-            employeeId="emp-001"
+            employeeId={employeeId}
             onRenew={(_moduleId) => {
               // Find and start the renewal assignment
               handleTabChange('trainings');

@@ -1,0 +1,90 @@
+[
+  {
+    "id": "AURA-572",
+    "title": "Labor Relations: Replace hub with functional page or add child route",
+    "module": "Labor Relations Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/compliance",
+    "api": "Not specified",
+    "desc": "Page is a ModuleGrid navigation shell with no data/API integration."
+  },
+  {
+    "id": "AURA-573",
+    "title": "Compliance Tracker: Manual review required",
+    "module": "Labor Relations Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/compliance/compliance-tracker",
+    "api": "Not specified",
+    "desc": "Page exists; automated heuristics could not classify wiring."
+  },
+  {
+    "id": "AURA-574",
+    "title": "Data Retention: Manual review required",
+    "module": "Labor Relations Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/compliance/data-retention",
+    "api": "Not specified",
+    "desc": "Page exists; automated heuristics could not classify wiring."
+  },
+  {
+    "id": "AURA-575",
+    "title": "Gdpr Tools: Manual review required",
+    "module": "Labor Relations Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/compliance/gdpr-tools",
+    "api": "Not specified",
+    "desc": "Page exists; automated heuristics could not classify wiring."
+  },
+  {
+    "id": "AURA-576",
+    "title": "Policy Acknowledgement: Manual review required",
+    "module": "Labor Relations Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/compliance/policy-acknowledgement",
+    "api": "Not specified",
+    "desc": "Page exists; automated heuristics could not classify wiring."
+  },
+  {
+    "id": "AURA-577",
+    "title": "Regulatory Reports: Manual review required",
+    "module": "Labor Relations Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/compliance/regulatory-reports",
+    "api": "Not specified",
+    "desc": "Page exists; automated heuristics could not classify wiring."
+  },
+  {
+    "id": "AURA-578",
+    "title": "Statutory Compliance: Complete API integration and remove mock/local fallbacks",
+    "module": "Labor Relations Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/compliance/statutory-compliance",
+    "api": "Not specified",
+    "desc": "Page calls APIs (service layer) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-579",
+    "title": "Whistleblower: Complete API integration and remove mock/local fallbacks",
+    "module": "Labor Relations Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/compliance/whistleblower",
+    "api": "Not specified",
+    "desc": "Page calls APIs (service layer) but mock/hardcoded UI remains."
+  }
+]

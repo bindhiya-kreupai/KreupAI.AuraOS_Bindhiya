@@ -43,7 +43,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     if (toCompanyId) where.toCompanyId = toCompanyId;
 
     const [data, total] = await Promise.all([
-      prisma.interCompanyTransfer.findMany({
+      (prisma as any).interCompanyTransfer.findMany({
         where,
         skip,
         take: limit,
@@ -54,7 +54,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
           toCompany: { select: { id: true, name: true, code: true } },
         },
       }),
-      prisma.interCompanyTransfer.count({ where }),
+      (prisma as any).interCompanyTransfer.count({ where }),
     ]);
 
     return NextResponse.json({
@@ -121,7 +121,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
       );
     }
 
-    const transfer = await prisma.interCompanyTransfer.create({
+    const transfer = await (prisma as any).interCompanyTransfer.create({
       data: {
         tenantId: user.tenantId,
         employeeId: body.employeeId,

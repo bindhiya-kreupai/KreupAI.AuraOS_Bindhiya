@@ -21,13 +21,19 @@ import {
   AlertCircle,
   Lock,
   Unlock,
+  X,
+  Save,
+  Check,
+  Ban,
 } from 'lucide-react';
 import {
   AccessGovernanceService,
   type SoDViolation,
   type AccessReviewCampaign,
+  type AccessReviewItem,
   type AccessMatrix,
   type SoDRule,
+  type CreateReviewCampaignInput,
 } from '@/services/accessGovernanceService';
 
 // ── Severity Badge ────────────────────────────────────────────────────────────
@@ -168,6 +174,325 @@ function AccessMatrixTable({ matrix }: { matrix: AccessMatrix }) {
   );
 }
 
+// ── New Campaign Modal ────────────────────────────────────────────────────────
+
+function NewCampaignModal({
+  onClose,
+  onCreated,
+}: {
+  onClose: () => void;
+  onCreated: (campaign: AccessReviewCampaign) => void;
+}) {
+  const [form, setForm] = useState<CreateReviewCampaignInput>({
+    name: '',
+    description: '',
+    reviewType: 'role-certification',
+    targetScope: '',
+    dueDate: '',
+    owners: [],
+  });
+  const [ownersText, setOwnersText] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!form.name.trim()) {
+      setError('Campaign name is required.');
+      return;
+    }
+    if (!form.dueDate) {
+      setError('Due date is required.');
+      return;
+    }
+    try {
+      setSubmitting(true);
+      setError(null);
+      const owners = ownersText
+        .split(',')
+        .map((o) => o.trim())
+        .filter(Boolean);
+      const created = await AccessGovernanceService.createAccessReview({
+        ...form,
+        dueDate: new Date(form.dueDate).toISOString(),
+        owners,
+      });
+      onCreated(created);
+    } catch {
+      setError('Failed to create campaign. Please try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-xl w-full max-w-lg max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-5 border-b border-slate-100">
+          <h3 className="font-semibold text-slate-900">New Access Review Campaign</h3>
+          <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-600">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        {error && (
+          <div className="mx-5 mt-4 p-2 bg-red-50 border border-red-200 rounded text-sm text-red-600">
+            {error}
+          </div>
+        )}
+        <form onSubmit={handleSubmit} className="p-5 space-y-4">
+          <div>
+            <label className="block text-xs font-medium text-slate-700 mb-1">Campaign Name *</label>
+            <input
+              type="text"
+              value={form.name}
+              onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
+              placeholder="Q3 2026 Role Certification"
+              className="w-full text-sm px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-700 mb-1">Description</label>
+            <input
+              type="text"
+              value={form.description}
+              onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
+              placeholder="Scope and purpose of this review"
+              className="w-full text-sm px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="block text-xs font-medium text-slate-700 mb-1">Review Type</label>
+              <select
+                value={form.reviewType}
+                onChange={(e) =>
+                  setForm((p) => ({
+                    ...p,
+                    reviewType: e.target.value as AccessReviewCampaign['reviewType'],
+                  }))
+                }
+                className="w-full text-sm px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+              >
+                <option value="role-certification">Role Certification</option>
+                <option value="access-rights">Access Rights</option>
+                <option value="privileged-access">Privileged Access</option>
+                <option value="separation-of-duties">Separation of Duties</option>
+              </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-slate-700 mb-1">Due Date *</label>
+              <input
+                type="date"
+                value={form.dueDate ? form.dueDate.slice(0, 10) : ''}
+                onChange={(e) => setForm((p) => ({ ...p, dueDate: e.target.value }))}
+                className="w-full text-sm px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+              />
+            </div>
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-700 mb-1">Target Scope</label>
+            <input
+              type="text"
+              value={form.targetScope}
+              onChange={(e) => setForm((p) => ({ ...p, targetScope: e.target.value }))}
+              placeholder="e.g., All Engineering roles"
+              className="w-full text-sm px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div>
+            <label className="block text-xs font-medium text-slate-700 mb-1">
+              Owners (comma-separated)
+            </label>
+            <input
+              type="text"
+              value={ownersText}
+              onChange={(e) => setOwnersText(e.target.value)}
+              placeholder="compliance-admin, dept-head-eng"
+              className="w-full text-sm px-3 py-2 rounded-lg border border-slate-300 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div className="flex gap-2 pt-1">
+            <button
+              type="submit"
+              disabled={submitting}
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-lg hover:bg-blue-700 disabled:opacity-60 transition-colors"
+            >
+              {submitting ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <Save className="h-4 w-4" />
+              )}
+              {submitting ? 'Creating...' : 'Create Campaign'}
+            </button>
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 text-sm text-slate-600 hover:text-slate-900"
+            >
+              Cancel
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+}
+
+// ── Review Items Panel ────────────────────────────────────────────────────────
+
+function ReviewItemsPanel({
+  campaign,
+  onClose,
+  onChanged,
+}: {
+  campaign: AccessReviewCampaign;
+  onClose: () => void;
+  onChanged: () => void;
+}) {
+  const [items, setItems] = useState<AccessReviewItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [actingId, setActingId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await AccessGovernanceService.getReviewItems(campaign.id);
+      setItems(data);
+    } catch {
+      setError('Failed to load review items.');
+    } finally {
+      setLoading(false);
+    }
+  }, [campaign.id]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const handleApprove = async (itemId: string) => {
+    try {
+      setActingId(itemId);
+      setError(null);
+      const updated = await AccessGovernanceService.approveAccess(itemId);
+      setItems((prev) => prev.map((i) => (i.id === itemId ? updated : i)));
+      onChanged();
+    } catch {
+      setError('Failed to approve access.');
+    } finally {
+      setActingId(null);
+    }
+  };
+
+  const handleRevoke = async (itemId: string) => {
+    try {
+      setActingId(itemId);
+      setError(null);
+      const updated = await AccessGovernanceService.revokeAccess(
+        itemId,
+        'Revoked during access review'
+      );
+      setItems((prev) => prev.map((i) => (i.id === itemId ? updated : i)));
+      onChanged();
+    } catch {
+      setError('Failed to revoke access.');
+    } finally {
+      setActingId(null);
+    }
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="bg-white rounded-xl border border-slate-200 shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+        <div className="flex items-center justify-between p-5 border-b border-slate-100 sticky top-0 bg-white">
+          <div>
+            <h3 className="font-semibold text-slate-900">Review — {campaign.name}</h3>
+            <p className="text-xs text-slate-500 mt-0.5">{campaign.targetScope}</p>
+          </div>
+          <button onClick={onClose} className="p-1 text-slate-400 hover:text-slate-600">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+        {error && (
+          <div className="mx-5 mt-4 p-2 bg-red-50 border border-red-200 rounded text-sm text-red-600">
+            {error}
+          </div>
+        )}
+        <div className="p-5 space-y-2">
+          {loading ? (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-6 w-6 animate-spin text-blue-600" />
+            </div>
+          ) : items.length === 0 ? (
+            <div className="text-center py-10 text-sm text-slate-500">
+              No review items in this campaign yet.
+            </div>
+          ) : (
+            items.map((item) => (
+              <div
+                key={item.id}
+                className="flex items-center gap-3 p-3 rounded-lg border border-slate-200"
+              >
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="text-sm font-medium text-slate-800">{item.userName}</span>
+                    <span className="text-xs font-mono bg-slate-100 px-1.5 py-0.5 rounded text-slate-600">
+                      {item.role}
+                    </span>
+                    <span
+                      className={`text-xs px-1.5 py-0.5 rounded-full font-medium ${
+                        item.status === 'approved'
+                          ? 'bg-emerald-100 text-emerald-700'
+                          : item.status === 'revoked'
+                            ? 'bg-red-100 text-red-700'
+                            : item.status === 'escalated'
+                              ? 'bg-amber-100 text-amber-700'
+                              : 'bg-slate-100 text-slate-600'
+                      }`}
+                    >
+                      {item.status}
+                    </span>
+                  </div>
+                </div>
+                {item.status === 'pending' ? (
+                  <div className="flex items-center gap-1 shrink-0">
+                    <button
+                      onClick={() => handleApprove(item.id)}
+                      disabled={actingId === item.id}
+                      title="Approve access"
+                      className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-emerald-700 bg-emerald-50 rounded-lg hover:bg-emerald-100 disabled:opacity-60 transition-colors"
+                    >
+                      {actingId === item.id ? (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      ) : (
+                        <Check className="h-3 w-3" />
+                      )}
+                      Approve
+                    </button>
+                    <button
+                      onClick={() => handleRevoke(item.id)}
+                      disabled={actingId === item.id}
+                      title="Revoke access"
+                      className="flex items-center gap-1 px-2 py-1 text-xs font-medium text-red-700 bg-red-50 rounded-lg hover:bg-red-100 disabled:opacity-60 transition-colors"
+                    >
+                      <Ban className="h-3 w-3" />
+                      Revoke
+                    </button>
+                  </div>
+                ) : (
+                  <span className="text-xs text-slate-400 shrink-0">
+                    {item.reviewedBy ? `by ${item.reviewedBy}` : 'reviewed'}
+                  </span>
+                )}
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ── Main Dashboard ────────────────────────────────────────────────────────────
 
 interface AccessGovernanceDashboardProps {
@@ -184,6 +509,8 @@ export function AccessGovernanceDashboard({
   const [campaigns, setCampaigns] = useState<AccessReviewCampaign[]>([]);
   const [matrix, setMatrix] = useState<AccessMatrix | null>(null);
   const [loading, setLoading] = useState(true);
+  const [showNewCampaign, setShowNewCampaign] = useState(false);
+  const [reviewingCampaign, setReviewingCampaign] = useState<AccessReviewCampaign | null>(null);
 
   const load = useCallback(async () => {
     try {
@@ -404,7 +731,10 @@ export function AccessGovernanceDashboard({
               <Eye className="h-5 w-5 text-blue-500" />
               <h3 className="font-semibold text-slate-900">Access Reviews ({campaigns.length})</h3>
             </div>
-            <button className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1">
+            <button
+              onClick={() => setShowNewCampaign(true)}
+              className="text-sm text-blue-600 hover:text-blue-700 flex items-center gap-1"
+            >
               New Campaign <ChevronRight className="h-3.5 w-3.5" />
             </button>
           </div>
@@ -431,7 +761,9 @@ export function AccessGovernanceDashboard({
                   </div>
                   {campaign.status === 'active' && (
                     <button
-                      onClick={() => onViewReview?.(campaign.id)}
+                      onClick={() =>
+                        onViewReview ? onViewReview(campaign.id) : setReviewingCampaign(campaign)
+                      }
                       className="shrink-0 text-xs text-blue-600 hover:text-blue-700 font-medium"
                     >
                       Review
@@ -503,6 +835,24 @@ export function AccessGovernanceDashboard({
             ))}
         </div>
       </div>
+
+      {showNewCampaign && (
+        <NewCampaignModal
+          onClose={() => setShowNewCampaign(false)}
+          onCreated={(campaign) => {
+            setCampaigns((prev) => [campaign, ...prev]);
+            setShowNewCampaign(false);
+          }}
+        />
+      )}
+
+      {reviewingCampaign && (
+        <ReviewItemsPanel
+          campaign={reviewingCampaign}
+          onClose={() => setReviewingCampaign(null)}
+          onChanged={load}
+        />
+      )}
     </div>
   );
 }

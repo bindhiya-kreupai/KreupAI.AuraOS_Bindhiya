@@ -54,7 +54,7 @@ export default function CoiPage() {
               key: 'declaredAt',
               label: 'Declared at',
               labelAr: 'تاريخ الإفصاح',
-              type: 'date',
+              type: 'text',
               required: true,
               widthClass: 'w-40',
             },

@@ -1,0 +1,123 @@
+[
+  {
+    "id": "AURA-110",
+    "title": "Navigation: Link orphan pages in hub",
+    "module": "Health & Safety Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/health-safety",
+    "api": "ModuleGrid",
+    "desc": "ModuleGrid lists 5 features but /incidents and /emergency pages exist and are not linked from hub."
+  },
+  {
+    "id": "AURA-111",
+    "title": "Incident Reporting: Wire submit form and photo upload",
+    "module": "Health & Safety Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/health-safety/incident-reporting",
+    "api": "POST /api/health-safety/incidents; IncidentService.create",
+    "desc": "Submit Report button and form fields are uncontrolled with no handler. Add Photo Evidence is decorative only."
+  },
+  {
+    "id": "AURA-112",
+    "title": "Incident Reporting: Wire detail view",
+    "module": "Health & Safety Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/health-safety/incident-reporting",
+    "api": "GET /api/health-safety/incidents (list only)",
+    "desc": "View Details buttons have no onClick, route, or GET-by-id API."
+  },
+  {
+    "id": "AURA-113",
+    "title": "Incidents Dashboard: Wire Report Incident and fix schema mapping",
+    "module": "Health & Safety Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/health-safety/incidents",
+    "api": "GET/POST /api/health-safety/incidents; HealthSafetyIncident model",
+    "desc": "Report Incident button unwired. UI expects date/id/status Open|Investigating|Closed; API returns incidentDate/incidentNumber/REPORTED|INVESTIGATING|RESOLVED|CLOSED. Days Without Incident uses Math.random()."
+  },
+  {
+    "id": "AURA-114",
+    "title": "Incidents Dashboard: Wire emergency sidebar from API",
+    "module": "Health & Safety Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/health-safety/incidents",
+    "api": "GET /api/health-safety/emergency; EmergencyService.getContacts",
+    "desc": "Sidebar emergency contacts hardcoded (911/EXT) instead of EmergencyService."
+  },
+  {
+    "id": "AURA-115",
+    "title": "COVID Tracker: Add dedicated COVID API and wire daily check",
+    "module": "Health & Safety Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/health-safety/covid-tracker",
+    "api": "GET /api/health-safety/checkups (proxy reuse); missing COVID API",
+    "desc": "Page reuses HealthCheckupService with string filters. Submit Report for daily temperature/symptom check is unwired."
+  },
+  {
+    "id": "AURA-116",
+    "title": "Health Checkups: Wire booking actions and fix schema mapping",
+    "module": "Health & Safety Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/health-safety/health-checkups",
+    "api": "POST /api/health-safety/checkups; HealthCheckupService.create",
+    "desc": "Book Appointment, Reschedule, Details, View Report unwired. UI expects type/date/doctor/clinic; API returns checkupType/scheduledFor/result/employeeId."
+  },
+  {
+    "id": "AURA-117",
+    "title": "Emergency Contacts: Wire add contact and fix schema mapping",
+    "module": "Health & Safety Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/health-safety/emergency-contacts",
+    "api": "POST /api/health-safety/emergency; HealthSafetyEmergencyContact model",
+    "desc": "Add Personal Contact unwired. UI filters type emergency/workplace/personal and uses contact.number; API uses FIRE|MEDICAL|SECURITY|UTILITY and phone."
+  },
+  {
+    "id": "AURA-118",
+    "title": "Emergency Response: Wire SOS dispatch and geolocation",
+    "module": "Health & Safety Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/health-safety/emergency",
+    "api": "Missing alert dispatch and GPS/workplace API",
+    "desc": "SOS countdown/alert is client-only simulation. Current location hardcoded as Office Location."
+  },
+  {
+    "id": "AURA-119",
+    "title": "Safety Training: Add enrollment/progress model and wire course actions",
+    "module": "Health & Safety Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/health-safety/safety-training",
+    "api": "GET /api/health-safety/training; missing enrollment/completion API",
+    "desc": "UI shows per-employee progress/deadline but API schema is catalog-only. Play course tiles and Download certification unwired."
+  },
+  {
+    "id": "AURA-120",
+    "title": "Services: Wire orphan settings/analytics services",
+    "module": "Health & Safety Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "dashboard/health-safety/services.ts",
+    "api": "GET/PUT /api/health-safety/settings",
+    "desc": "HealthSafetySettingsService and HealthSafetyAnalyticsService defined but no page imports them. AnalyticsService.getMetrics() calls /settings instead of metrics endpoint."
+  }
+]

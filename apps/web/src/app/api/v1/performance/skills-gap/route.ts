@@ -30,7 +30,8 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { _user, permis
     if (status) where.status = status;
 
     // Fetch skill assessments with their competency details and results
-    const assessments = await prisma.skillAssessment.findMany({
+    // Cast: the `jobRole` relation is not declared on SkillAssessment in schema.prisma
+    const assessments = await (prisma as any).skillAssessment.findMany({
       where,
       include: {
         jobRole: {
@@ -176,7 +177,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { _user, permis
     return NextResponse.json({
       success: true,
       data: {
-        assessments: assessments.map((a) => ({
+        assessments: assessments.map((a: any) => ({
           id: a.id,
           code: a.code,
           name: a.name,

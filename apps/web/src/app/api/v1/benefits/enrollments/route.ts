@@ -1,10 +1,27 @@
-// @ts-nocheck — Route expects BenefitEnrollment.employee relation and enrolledAt field. Current schema has only employeeId/employeeName denormalized and enrollmentDate. Also uses 'PENDING' status not in BenefitEnrollmentStatus enum ('PENDING_APPROVAL'). Tracked under #29.
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@/lib/database';
 
 export const dynamic = 'force-dynamic';
+
+// Map the wizard's coverage-tier tokens onto the real CoverageLevel enum.
+const COVERAGE_LEVEL_MAP: Record<string, string> = {
+  EMPLOYEE_ONLY: 'EMPLOYEE_ONLY',
+  EMPLOYEE_SPOUSE: 'EMPLOYEE_SPOUSE',
+  EMPLOYEE_CHILDREN: 'EMPLOYEE_CHILDREN',
+  FAMILY: 'FAMILY',
+};
+
+// Map the wizard's enrollment-type tokens onto the real BenefitEnrollmentType enum.
+const ENROLLMENT_TYPE_MAP: Record<string, string> = {
+  ANNUAL: 'OPEN_ENROLLMENT',
+  OPEN_ENROLLMENT: 'OPEN_ENROLLMENT',
+  NEW_HIRE: 'NEW_HIRE',
+  QUALIFYING_EVENT: 'QUALIFYING_EVENT',
+  ANNUAL_RENEWAL: 'ANNUAL_RENEWAL',
+  SPECIAL_ENROLLMENT: 'SPECIAL_ENROLLMENT',
+};
 
 /**
  * GET /api/v1/benefits/enrollments
@@ -20,7 +37,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
           error: {
             code: 'E4030',
             message: 'Forbidden: missing benefits/enrollments:read permission',
-            messageAr: 'ممنوع',
+            messageAr: 'ممنوع: صلاحية قراءة تسجيلات المزايا مفقودة',
           },
         },
         { status: 403 }
@@ -36,7 +53,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     const planId = searchParams.get('planId') || undefined;
     const status = searchParams.get('status') || undefined;
 
-    const where: Record<string, unknown> = { tenantId: user.tenantId };
+    const where: Record<string, unknown> = { tenantId: user.tenantId, isDeleted: false };
     if (employeeId) where.employeeId = employeeId;
     if (planId) where.planId = planId;
     if (status) where.status = status;
@@ -46,13 +63,10 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
         where,
         skip,
         take: limit,
-        orderBy: { enrolledAt: 'desc' },
+        orderBy: { enrollmentDate: 'desc' },
         include: {
           plan: {
             select: { id: true, planName: true, planCode: true, category: true, carrierName: true },
-          },
-          employee: {
-            select: { id: true, firstName: true, lastName: true, employeeCode: true },
           },
         },
       }),
@@ -72,7 +86,14 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
   } catch (error: any) {
     console.error('[Benefits Enrollments API] GET Error:', error);
     return NextResponse.json(
-      { success: false, error: { code: 'E5001', message: 'Failed to fetch benefit enrollments' } },
+      {
+        success: false,
+        error: {
+          code: 'E5001',
+          message: 'Failed to fetch benefit enrollments',
+          messageAr: 'فشل في جلب تسجيلات المزايا',
+        },
+      },
       { status: 500 }
     );
   }
@@ -92,7 +113,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
           error: {
             code: 'E4030',
             message: 'Forbidden: missing benefits/enrollments:create permission',
-            messageAr: 'ممنوع',
+            messageAr: 'ممنوع: صلاحية إنشاء تسجيلات المزايا مفقودة',
           },
         },
         { status: 403 }
@@ -102,18 +123,34 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
 
     if (!body.employeeId || !body.planId) {
       return NextResponse.json(
-        { success: false, error: { code: 'E2001', message: 'employeeId and planId are required' } },
+        {
+          success: false,
+          error: {
+            code: 'E2001',
+            message: 'employeeId and planId are required',
+            messageAr: 'معرّف الموظف ومعرّف الخطة مطلوبان',
+          },
+        },
         { status: 400 }
       );
     }
 
-    // Check if already enrolled in this plan
+    // Resolve the coverage level and enrollment type onto the real enums.
+    const coverageLevel =
+      COVERAGE_LEVEL_MAP[String(body.coverageTier || body.coverageLevel || '').toUpperCase()] ||
+      'EMPLOYEE_ONLY';
+    const enrollmentType =
+      ENROLLMENT_TYPE_MAP[String(body.enrollmentType || 'OPEN_ENROLLMENT').toUpperCase()] ||
+      'OPEN_ENROLLMENT';
+
+    // Check if already enrolled in this plan (active or awaiting approval).
     const existing = await prisma.benefitEnrollment.findFirst({
       where: {
         tenantId: user.tenantId,
         employeeId: body.employeeId,
         planId: body.planId,
-        status: { in: ['ACTIVE', 'PENDING'] },
+        isDeleted: false,
+        status: { in: ['ACTIVE', 'APPROVED', 'PENDING_APPROVAL', 'DRAFT'] },
       },
     });
 
@@ -121,13 +158,17 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
       return NextResponse.json(
         {
           success: false,
-          error: { code: 'E3002', message: 'Employee is already enrolled in this benefit plan' },
+          error: {
+            code: 'E3002',
+            message: 'Employee is already enrolled in this benefit plan',
+            messageAr: 'الموظف مسجّل بالفعل في خطة المزايا هذه',
+          },
         },
         { status: 409 }
       );
     }
 
-    // Verify plan exists and is active
+    // Verify plan exists and is active.
     const plan = await prisma.benefitPlan.findFirst({
       where: { id: body.planId, tenantId: user.tenantId, status: 'ACTIVE' },
     });
@@ -136,29 +177,73 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
       return NextResponse.json(
         {
           success: false,
-          error: { code: 'E4001', message: 'Benefit plan not found or not active' },
+          error: {
+            code: 'E4001',
+            message: 'Benefit plan not found or not active',
+            messageAr: 'خطة المزايا غير موجودة أو غير نشطة',
+          },
         },
         { status: 404 }
       );
     }
 
+    // Resolve the employee to populate the denormalized identity fields the model
+    // requires. Employee is tenant-scoped through its company relation.
+    const employee = await prisma.employee.findFirst({
+      where: { id: body.employeeId, company: { tenantId: user.tenantId } },
+      select: {
+        firstName: true,
+        lastName: true,
+        employeeCode: true,
+        departmentId: true,
+        department: { select: { id: true, name: true } },
+      },
+    });
+
+    if (!employee) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: {
+            code: 'E4002',
+            message: 'Employee not found',
+            messageAr: 'الموظف غير موجود',
+          },
+        },
+        { status: 404 }
+      );
+    }
+
+    const employeePremium =
+      typeof body.employeeContribution === 'number'
+        ? body.employeeContribution
+        : plan.employeePremium;
+    const employerPremium =
+      typeof body.employerContribution === 'number'
+        ? body.employerContribution
+        : plan.employerPremium;
+
     const enrollment = await prisma.benefitEnrollment.create({
       data: {
         tenantId: user.tenantId,
         employeeId: body.employeeId,
+        employeeName: `${employee.firstName} ${employee.lastName}`.trim(),
+        employeeCode: employee.employeeCode,
+        departmentId: employee.departmentId,
+        departmentName: employee.department?.name ?? null,
         planId: body.planId,
-        coverageTier: body.coverageTier || 'EMPLOYEE_ONLY',
-        effectiveDate: body.effectiveDate ? new Date(body.effectiveDate) : new Date(),
-        enrolledAt: new Date(),
-        enrolledBy: user.id,
-        status: 'PENDING',
-        dependents: body.dependents || [],
-        employeeContribution: body.employeeContribution || plan.employeePremium,
-        employerContribution: body.employerContribution || plan.employerPremium,
+        coverageLevel: coverageLevel as any,
+        enrollmentType: enrollmentType as any,
+        status: 'PENDING_APPROVAL',
+        effectiveFrom: body.effectiveDate ? new Date(body.effectiveDate) : new Date(),
+        employeePremium,
+        employerPremium,
+        totalPremium: employeePremium + employerPremium,
+        enrolledDependents: body.dependents ?? [],
+        createdBy: user.userId,
       },
       include: {
         plan: { select: { id: true, planName: true, category: true } },
-        employee: { select: { id: true, firstName: true, lastName: true } },
       },
     });
 
@@ -167,6 +252,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
         success: true,
         data: enrollment,
         message: 'Successfully enrolled in benefit plan',
+        messageAr: 'تم التسجيل في خطة المزايا بنجاح',
         meta: {
           timestamp: new Date().toISOString(),
           requestId: crypto.randomUUID(),
@@ -183,6 +269,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
         error: {
           code: 'E5001',
           message: 'Failed to create benefit enrollment',
+          messageAr: 'فشل في إنشاء تسجيل المزايا',
           details: { error: error instanceof Error ? error.message : 'Unknown error' },
         },
       },

@@ -37,6 +37,8 @@ export enum Resource {
   PAYROLL = 'payroll',
   ATTENDANCE = 'attendance',
   COMPLIANCE = 'compliance',
+  PERFORMANCE = 'performance',
+  DASHBOARD = 'dashboard',
 
   // Recruitment
   RECRUITMENT = 'recruitment',
@@ -63,6 +65,8 @@ export enum Resource {
   TRAVEL = 'travel',
   BENEFITS = 'benefits',
   SYSTEM = 'system',
+  CALIBRATION = 'calibration',
+  PERFORMANCE_COMPLIANCE = 'performance_compliance',
 }
 
 export enum Action {
@@ -105,6 +109,10 @@ export const RolePermissions: Record<string, Permission[]> = {
     'audit_logs:read',
     'system_settings:manage',
     'master_data:manage',
+    'performance:manage',
+    'dashboard:read',
+    'calibration:manage',
+    'performance_compliance:manage',
   ],
 
   ADMIN: [

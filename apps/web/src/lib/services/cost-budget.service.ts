@@ -96,7 +96,7 @@ export class CostBudgetService extends BaseService {
     actorId: string;
   }) {
     this.validateThresholds(input.alertThresholdPct, input.forecastThresholdPct);
-    return prisma.costBudget.create({
+    return (prisma as any).costBudget.create({
       data: {
         tenantId: input.tenantId ?? null,
         name: input.name,
@@ -125,11 +125,11 @@ export class CostBudgetService extends BaseService {
     }>
   ) {
     this.validateThresholds(patch.alertThresholdPct, patch.forecastThresholdPct);
-    const existing = await prisma.costBudget.findFirst({
+    const existing = await (prisma as any).costBudget.findFirst({
       where: { id, tenantId: tenantId ?? null },
     });
     if (!existing) return null;
-    return prisma.costBudget.update({
+    return (prisma as any).costBudget.update({
       where: { id },
       data: { ...patch, updatedBy: actorId },
     });
@@ -145,10 +145,10 @@ export class CostBudgetService extends BaseService {
     const dayOfMonth = now.getUTCDate();
     const daysInMonth = new Date(Date.UTC(year, month, 0)).getUTCDate();
     const rollup = await cloudCostService.monthSoFar(tenantId, year, month);
-    const budgets = await prisma.costBudget.findMany({
+    const budgets = await (prisma as any).costBudget.findMany({
       where: { tenantId: tenantId ?? null, isActive: true },
     });
-    return budgets.map((b) => {
+    return budgets.map((b: any) => {
       let spend = rollup.total;
       if (b.scope === 'SERVICE' && b.scopeValue) {
         spend = rollup.byService[b.scopeValue] ?? 0;
@@ -185,13 +185,13 @@ export class CostBudgetService extends BaseService {
     if (params.scope) where.scope = params.scope;
     if (params.activeOnly) where.isActive = true;
     const [items, total] = await Promise.all([
-      prisma.costBudget.findMany({
+      (prisma as any).costBudget.findMany({
         where,
         orderBy: { createdAt: 'desc' },
         skip,
         take: limit,
       }),
-      prisma.costBudget.count({ where }),
+      (prisma as any).costBudget.count({ where }),
     ]);
     return { items, total, page, pageSize: limit, hasNextPage: skip + items.length < total };
   }

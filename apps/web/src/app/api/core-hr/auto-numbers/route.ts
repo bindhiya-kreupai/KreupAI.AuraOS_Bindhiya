@@ -55,3 +55,61 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
     return serverError(error, 'create');
   }
 });
+
+const ALLOWED_UPDATE_FIELDS = [
+  'prefix',
+  'suffix',
+  'padLength',
+  'currentNumber',
+  'incrementBy',
+  'resetFrequency',
+  'isActive',
+  'description',
+] as const;
+
+// PUT upserts a sequence by entityType so tenant-wide edits persist server-side
+// (the config screen edits per-entity prefix / pad length / next number).
+export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) => {
+  try {
+    const { user, permissions } = context;
+    if (!permissions.includes('core-hr/auto-numbers:update'))
+      return forbidden('core-hr/auto-numbers:update');
+    const body = await safeJson(request);
+    if (!body) return validationError({ message: 'Invalid JSON body' });
+
+    const entityType = String(body.entityType || '').trim();
+    if (!entityType) {
+      return validationError({
+        message: 'entityType is required',
+        messageAr: 'نوع الكيان مطلوب',
+      });
+    }
+
+    const data: Record<string, any> = {};
+    for (const field of ALLOWED_UPDATE_FIELDS) {
+      if (body[field] !== undefined) data[field] = body[field];
+    }
+
+    const saved = await (prisma as any).autoNumberSequence.upsert({
+      where: { tenantId_entityType: { tenantId: user.tenantId, entityType } },
+      update: { ...data, updatedBy: user.userId },
+      create: {
+        tenantId: user.tenantId,
+        entityType,
+        prefix: data.prefix ?? 'SEQ',
+        suffix: data.suffix,
+        padLength: data.padLength ?? 4,
+        currentNumber: data.currentNumber ?? 0,
+        incrementBy: data.incrementBy ?? 1,
+        resetFrequency: data.resetFrequency ?? 'never',
+        isActive: data.isActive ?? true,
+        description: data.description,
+        createdBy: user.userId,
+      },
+    });
+    return successItem(saved, { status: 200 });
+  } catch (error: any) {
+    logger.error({ err: error, route: 'core-hr/auto-numbers/route.ts' }, 'Failed to update');
+    return serverError(error, 'update');
+  }
+});

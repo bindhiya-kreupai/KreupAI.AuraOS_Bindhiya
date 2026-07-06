@@ -53,7 +53,7 @@ export default function DisclosureChecklistPage() {
               key: 'filedAt',
               label: 'Filed at',
               labelAr: 'تاريخ',
-              type: 'date',
+              type: 'text',
               widthClass: 'w-40',
             },
             {

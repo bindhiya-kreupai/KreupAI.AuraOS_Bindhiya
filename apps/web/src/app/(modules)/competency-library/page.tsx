@@ -1,21 +1,9 @@
-/**
- * @module CompetencyLibraryPage
- * @description Competency Library module main page
- * @project AURA HCM Platform
- * @reference docs/aura-master-instructions.md
- */
+import { redirect } from 'next/navigation';
 
-import { ModulePage } from '@/components/ui';
-
-export default function CompetencyLibraryPage() {
-  return (
-    <ModulePage
-      moduleCode="COMPETENCY_LIBRARY"
-      moduleName="Competency Library"
-      moduleIcon="competency"
-      featureCount={5}
-      isImplemented={false}
-    />
-  );
+// AURA-048: this ModulePage shell was an isImplemented=false placeholder while
+// five service-backed subpages already exist under
+// /dashboard/performance/competency-assessment/*. Redirect to that canonical
+// dashboard hub instead of showing a "not implemented" stub.
+export default function CompetencyLibraryModuleRedirect() {
+  redirect('/dashboard/performance/competency-assessment');
 }
-

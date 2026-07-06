@@ -185,7 +185,8 @@ export const POST = withAudit(
       const workDurationMinutes = Math.floor(workDurationMs / (1000 * 60));
 
       // Get shift info to determine overtime and early leave
-      const shiftAssignment = await prisma.shiftAssignment.findFirst({
+      // Cast: the `shift` relation is not declared on ShiftAssignment in schema.prisma
+      const shiftAssignment = await (prisma as any).shiftAssignment.findFirst({
         where: {
           tenantId,
           employeeId: data.employeeId,
@@ -209,7 +210,7 @@ export const POST = withAudit(
         expectedWorkMinutes = Math.round(shiftAssignment.shift.workHours * 60);
 
         // Calculate late minutes
-        const [shiftHour, shiftMin] = shiftStartTime.split(':').map(Number);
+        const [shiftHour, shiftMin] = shiftStartTime!.split(':').map(Number);
         const graceIn = shiftAssignment.shift.graceInMinutes || 0;
         const expectedStart = new Date(today);
         expectedStart.setHours(shiftHour, shiftMin + graceIn, 0, 0);
@@ -219,7 +220,7 @@ export const POST = withAudit(
         }
 
         // Calculate early leave
-        const [endHour, endMin] = shiftEndTime.split(':').map(Number);
+        const [endHour, endMin] = shiftEndTime!.split(':').map(Number);
         const graceOut = shiftAssignment.shift.graceOutMinutes || 0;
         const expectedEnd = new Date(today);
         expectedEnd.setHours(endHour, endMin - graceOut, 0, 0);

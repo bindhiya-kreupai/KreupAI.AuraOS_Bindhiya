@@ -1,6 +1,7 @@
 'use client';
 
 import Link from 'next/link';
+import { useCallback, useEffect, useState } from 'react';
 import {
   Calculator,
   Users,
@@ -11,7 +12,13 @@ import {
   Lightbulb,
   Clock,
   Coins,
+  Loader2,
+  Wallet,
+  TrendingDown,
+  PiggyBank,
 } from 'lucide-react';
+import { BudgetService, type BudgetSummary } from '../services';
+import { ToastContainer, useToast } from '../components/Toast';
 
 const budgetAreas = [
   {
@@ -70,15 +77,101 @@ const budgetAreas = [
   },
 ];
 
+function formatCurrency(value: number): string {
+  return `$${value.toLocaleString(undefined, { maximumFractionDigits: 0 })}`;
+}
+
 export default function BudgetHubPage() {
+  const { toasts, showToast, dismissToast } = useToast();
+  const [summary, setSummary] = useState<BudgetSummary | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  const load = useCallback(async () => {
+    try {
+      setLoading(true);
+      const data = await BudgetService.getBudgetSummary();
+      setSummary(data);
+    } catch {
+      showToast('error', 'Failed to load budget summary.');
+    } finally {
+      setLoading(false);
+    }
+  }, [showToast]);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  const utilization =
+    summary && summary.totalBudgetAmount > 0
+      ? Math.round((summary.totalSpent / summary.totalBudgetAmount) * 100)
+      : 0;
+
+  const stats = [
+    {
+      label: 'Active Budgets',
+      value: summary ? `${summary.activeBudgets} / ${summary.totalBudgets}` : '—',
+      icon: PiggyBank,
+      color: 'text-indigo-600',
+    },
+    {
+      label: 'Total Budget',
+      value: summary ? formatCurrency(summary.totalBudgetAmount) : '—',
+      icon: Wallet,
+      color: 'text-emerald-600',
+    },
+    {
+      label: 'Total Spent',
+      value: summary ? `${formatCurrency(summary.totalSpent)} (${utilization}%)` : '—',
+      icon: TrendingDown,
+      color: 'text-amber-600',
+    },
+    {
+      label: 'Remaining',
+      value: summary ? formatCurrency(summary.totalRemaining) : '—',
+      icon: Coins,
+      color: 'text-blue-600',
+    },
+  ];
+
   return (
     <div className="space-y-8 pb-6 text-slate-900 dark:text-slate-100">
+      <ToastContainer toasts={toasts} onClose={dismissToast} />
+
       <div className="flex flex-col gap-3">
         <p className="text-sm font-semibold text-indigo-500">Finance</p>
         <h1 className="text-3xl font-bold">Budgeting</h1>
         <p className="text-slate-500 max-w-3xl">
           Headcount and salary budgets, department allocation, approvals, and scenario planning.
         </p>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-3">
+        {stats.map((stat) => {
+          const Icon = stat.icon;
+          return (
+            <div
+              key={stat.label}
+              className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6"
+            >
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm text-slate-500">{stat.label}</p>
+                  <p className="text-2xl font-bold mt-1">
+                    {loading ? (
+                      <Loader2 className="w-5 h-5 animate-spin text-slate-400" />
+                    ) : (
+                      stat.value
+                    )}
+                  </p>
+                </div>
+                <div className={`p-3 rounded-xl bg-slate-100 dark:bg-slate-800 ${stat.color}`}>
+                  <Icon className="w-5 h-5" />
+                </div>
+              </div>
+            </div>
+          );
+        })}
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-3">

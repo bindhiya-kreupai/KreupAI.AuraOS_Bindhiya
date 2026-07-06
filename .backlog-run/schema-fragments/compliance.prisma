@@ -1,0 +1,292 @@
+// Compliance / Labor-Relations Module — new Prisma models
+// (merged into schema.prisma by orchestrator). Access in route code via
+// (prisma as any).<camelCaseModelName>. All tables are tenant-scoped.
+//
+// NOTE: Grievances and disciplinary actions REUSE existing models
+// (ErGrievanceCase, ErDisciplinaryAction). Security frameworks reuse
+// ComplianceFramework/ComplianceControl/ComplianceEvidence. These models
+// cover the remaining Labor-Relations entities that had no backing table:
+// labor laws + records, POSH complaints/committees, audits, unions, CBAs,
+// whistleblower reports, arbitrations, strikes and a communication log.
+
+model LaborLawEntry {
+  id             String    @id @default(uuid())
+  tenantId       String
+  lawCode        String
+  lawName        String
+  lawNameAr      String?
+  description    String?
+  jurisdiction   String    @default("federal") // federal | state | local | international
+  category       String    @default("general")
+  effectiveDate  DateTime?
+  responsibleDept String?
+  status         String    @default("compliant") // compliant | non_compliant | pending_review | action_required
+  lastAuditDate  DateTime?
+  riskLevel      String    @default("low") // low | medium | high | critical
+  referenceUrl   String?
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  createdBy      String?
+  updatedBy      String?
+
+  @@index([tenantId], map: "LaborLawEntry_tenantId_idx")
+  @@map("aura_compliance_labor_law")
+}
+
+model ComplianceRecordEntry {
+  id                String    @id @default(uuid())
+  tenantId          String
+  recordCode        String
+  lawId             String?
+  lawName           String?
+  complianceType    String    @default("labor_law")
+  requirement       String
+  dueDate           DateTime?
+  completedDate     DateTime?
+  status            String    @default("pending_review") // compliant | non_compliant | pending_review | resolved
+  responsiblePerson String?
+  verifiedBy        String?
+  verifiedDate      DateTime?
+  findings          String?
+  notes             String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  createdBy         String?
+
+  @@index([tenantId], map: "ComplianceRecordEntry_tenantId_idx")
+  @@index([tenantId, lawId], map: "ComplianceRecordEntry_law_idx")
+  @@map("aura_compliance_record")
+}
+
+model PoshCommittee {
+  id             String    @id @default(uuid())
+  tenantId       String
+  committeeCode  String
+  committeeName  String
+  location       String?
+  establishedDate DateTime?
+  members        Json      @default("[]")
+  casesHandled   Int       @default(0)
+  casesResolved  Int       @default(0)
+  nextMeetingDate DateTime?
+  isActive       Boolean   @default(true)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  createdBy      String?
+
+  @@index([tenantId], map: "PoshCommittee_tenantId_idx")
+  @@map("aura_compliance_posh_committee")
+}
+
+model PoshComplaint {
+  id                 String    @id @default(uuid())
+  tenantId           String
+  complaintCode      String
+  complaintDate      DateTime  @default(now())
+  isAnonymous        Boolean   @default(false)
+  complainantId      String?
+  complainantName    String?
+  respondentName     String
+  respondentDept     String?
+  incidentDate       DateTime?
+  incidentLocation   String?
+  incidentDescription String?
+  status             String    @default("received") // received | under_investigation | inquiry_committee_formed | hearing_scheduled | resolved | closed
+  severity           String    @default("medium")
+  committeeId        String?
+  committeeName      String?
+  findings           String?
+  resolutionDate     DateTime?
+  resolutionDetails  String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  createdBy          String?
+
+  @@index([tenantId], map: "PoshComplaint_tenantId_idx")
+  @@map("aura_compliance_posh_complaint")
+}
+
+model ComplianceAuditEntry {
+  id               String    @id @default(uuid())
+  tenantId         String
+  auditCode        String
+  auditName        String
+  auditType        String    @default("internal") // internal | external | regulatory | surprise | follow_up
+  scope            String?
+  scheduledDate    DateTime?
+  actualStartDate  DateTime?
+  completionDate   DateTime?
+  status           String    @default("scheduled") // scheduled | in_progress | completed | report_pending | closed
+  auditors         Json      @default("[]")
+  departments      Json      @default("[]")
+  overallRating    String?
+  complianceScore  Int?
+  findingsCount    Int       @default(0)
+  criticalCount    Int       @default(0)
+  recommendations  String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  createdBy        String?
+
+  @@index([tenantId], map: "ComplianceAuditEntry_tenantId_idx")
+  @@map("aura_compliance_audit_entry")
+}
+
+model UnionEntry {
+  id                 String    @id @default(uuid())
+  tenantId           String
+  unionCode          String
+  unionName          String
+  registrationNumber String?
+  status             String    @default("active") // active | inactive | dissolved | suspended
+  unionType          String    @default("local") // local | national | international
+  memberCount        Int       @default(0)
+  eligibleEmployees  Int       @default(0)
+  representativeName String?
+  representativeContact String?
+  officeAddress      String?
+  recognitionDate    DateTime?
+  isActive           Boolean   @default(true)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  createdBy          String?
+
+  @@index([tenantId], map: "UnionEntry_tenantId_idx")
+  @@map("aura_compliance_union")
+}
+
+model CbaEntry {
+  id                  String    @id @default(uuid())
+  tenantId            String
+  agreementCode       String
+  agreementName       String
+  unionId             String?
+  unionName           String?
+  negotiationStartDate DateTime?
+  agreementDate       DateTime?
+  effectiveDate       DateTime?
+  expiryDate          DateTime?
+  status              String    @default("draft") // draft | negotiation | active | expired | terminated
+  terms               Json      @default("[]")
+  estimatedCost       Decimal?  @db.Decimal(14, 2)
+  currency            String    @default("AED")
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  createdBy           String?
+
+  @@index([tenantId], map: "CbaEntry_tenantId_idx")
+  @@map("aura_compliance_cba")
+}
+
+model WhistleblowerReport {
+  id                 String    @id @default(uuid())
+  tenantId           String
+  reportCode         String
+  submittedDate      DateTime  @default(now())
+  reporterIdentity   String    @default("anonymous") // anonymous | confidential | disclosed
+  reporterName       String?
+  reporterContact    String?
+  allegationType     String    @default("misconduct")
+  severity           String    @default("medium")
+  subject            String
+  detailedDescription String?
+  locationOfIncident String?
+  dateOfIncident     DateTime?
+  status             String    @default("received") // received | under_review | investigating | substantiated | unsubstantiated | closed
+  assignedInvestigator String?
+  findings           String?
+  retaliationReported Boolean  @default(false)
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  createdBy          String?
+
+  @@index([tenantId], map: "WhistleblowerReport_tenantId_idx")
+  @@index([tenantId, reportCode], map: "WhistleblowerReport_code_idx")
+  @@map("aura_compliance_whistleblower")
+}
+
+model ArbitrationCase {
+  id               String    @id @default(uuid())
+  tenantId         String
+  arbitrationCode  String
+  caseTitle        String
+  disputeType      String    @default("labor")
+  filingDate       DateTime  @default(now())
+  claimantName     String
+  claimantType     String    @default("employee")
+  respondentName   String
+  respondentType   String    @default("company")
+  disputeDescription String?
+  claimAmount      Decimal?  @db.Decimal(14, 2)
+  currency         String    @default("AED")
+  arbitratorName   String?
+  status           String    @default("filed") // filed | hearing_scheduled | in_progress | award_pending | completed | appealed
+  venue            String?
+  awardSummary     String?
+  awardInFavorOf   String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  createdBy        String?
+
+  @@index([tenantId], map: "ArbitrationCase_tenantId_idx")
+  @@map("aura_compliance_arbitration")
+}
+
+model StrikeEntry {
+  id                 String    @id @default(uuid())
+  tenantId           String
+  strikeCode         String
+  strikeName         String
+  unionId            String?
+  unionName          String?
+  noticeDate         DateTime?
+  proposedStartDate  DateTime?
+  actualStartDate    DateTime?
+  endDate            DateTime?
+  status             String    @default("notice_received") // notice_received | in_negotiation | active | resolved | cancelled
+  strikeType         String    @default("full")
+  affectedDepartments Json     @default("[]")
+  affectedEmployeeCount Int    @default(0)
+  responseMode       String    @default("standby") // standby | deployed
+  resolutionDate     DateTime?
+  resolutionTerms    String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  createdBy          String?
+
+  @@index([tenantId], map: "StrikeEntry_tenantId_idx")
+  @@map("aura_compliance_strike")
+}
+
+model ComplianceCommunicationLog {
+  id                String    @id @default(uuid())
+  tenantId          String
+  communicationDate DateTime  @default(now())
+  communicationType String    @default("meeting") // meeting | negotiation | grievance_discussion | notice | other
+  category          String    @default("union") // union | grievance | disciplinary | audit | general
+  subject           String
+  summary           String?
+  fromParty         String?
+  toParty           String?
+  relatedEntityId   String?
+  attachments       Json      @default("[]")
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  createdBy         String?
+
+  @@index([tenantId], map: "ComplianceCommunicationLog_tenantId_idx")
+  @@index([tenantId, category], map: "ComplianceCommunicationLog_category_idx")
+  @@map("aura_compliance_communication_log")
+}
+
+model ComplianceSettingEntry {
+  id        String   @id @default(uuid())
+  tenantId  String   @unique(map: "ComplianceSettingEntry_tenant_unique")
+  settings  Json     @default("{}")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  updatedBy String?
+
+  @@map("aura_compliance_setting")
+}

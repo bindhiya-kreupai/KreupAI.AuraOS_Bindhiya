@@ -1,0 +1,167 @@
+[
+  {
+    "id": "AURA-195",
+    "title": "Platform: Implement /api/dei/* API surface",
+    "module": "DEI Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "Module-wide",
+    "api": "dashboard/dei/services.ts (30+ endpoints missing)",
+    "desc": "All 8 sub-pages call /api/dei/* \u2192 501 via catch-all. Pages render hardcoded data; fetched state unused. useDEI hook never imported."
+  },
+  {
+    "id": "AURA-196",
+    "title": "Diversity Metrics: Fix API and render live data",
+    "module": "DEI Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/dei/diversity-metrics",
+    "api": "DiversityMetricsService; alt: GET /api/v1/analytics/diversity",
+    "desc": "Fetches /api/dei/metrics (501); renders hardcoded charts; metrics state unused. Filter and Export Report unwired."
+  },
+  {
+    "id": "AURA-197",
+    "title": "Inclusion Survey: Fix API and wire Launch New Survey",
+    "module": "DEI Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/dei/inclusion-survey",
+    "api": "InclusionSurveyService \u2192 /api/dei/surveys (missing)",
+    "desc": "Fetches surveys (501); displays hardcoded list. Launch New Survey unwired."
+  },
+  {
+    "id": "AURA-198",
+    "title": "Pay Equity: Fix API schema and wire live compensation data",
+    "module": "DEI Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/dei/pay-equity-analysis",
+    "api": "PayEquityService; alt: GET /api/v1/analytics/compensation",
+    "desc": "API type \u2260 chart fields; summary cards hardcoded."
+  },
+  {
+    "id": "AURA-199",
+    "title": "Bias Training: Fix API schema mapping",
+    "module": "DEI Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/dei/bias-training",
+    "api": "BiasTrainingService \u2192 /api/dei/training (missing)",
+    "desc": "UI expects title/thumb/status; API returns trainingName/modules."
+  },
+  {
+    "id": "AURA-200",
+    "title": "ERG Management: Fix API and wire ERG actions",
+    "module": "DEI Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/dei/erg-management",
+    "api": "ERGService \u2192 /api/dei/ergs (missing)",
+    "desc": "Fetches ERGs (501); renders hardcoded ergs array. Propose New ERG, Join Group, message unwired."
+  },
+  {
+    "id": "AURA-201",
+    "title": "Mentorship: Wire to v1 mentorship API",
+    "module": "DEI Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/dei/mentorship-program",
+    "api": "MentorshipService; alt: GET /api/v1/learning/mentorship (real)",
+    "desc": "Fetches programs (501); shows hardcoded mentors. Request, Message, Reschedule unwired."
+  },
+  {
+    "id": "AURA-202",
+    "title": "Accessibility: Fix API and wire review actions",
+    "module": "DEI Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/dei/accessibility",
+    "api": "AccessibilityService \u2192 /api/dei/accessibility (missing)",
+    "desc": "Fetches requests (501); hardcoded pending list. Review and View Audit Report unwired."
+  },
+  {
+    "id": "AURA-203",
+    "title": "DEI Goals: Fix schema and wire goal CRUD",
+    "module": "DEI Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/dei/dei-goals",
+    "api": "DEIGoalsService \u2192 /api/dei/goals (missing)",
+    "desc": "Field mismatch (goalName vs title). Add New Goal, Create Annual Goal, View Key Results unwired."
+  },
+  {
+    "id": "AURA-204",
+    "title": "Analytics (parallel): Consolidate with DEI module",
+    "module": "DEI Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/analytics/dei-dashboard",
+    "api": "GET /api/v1/analytics/diversity",
+    "desc": "Only DEI page with live Prisma API; disconnected from /dashboard/dei/* module."
+  },
+  {
+    "id": "AURA-205",
+    "title": "Recruitment (parallel): Mount or remove orphan DEI dashboard",
+    "module": "DEI Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "components/recruitment/DEIDashboard.tsx",
+    "api": "deiHiringService.ts (mock)",
+    "desc": "DEIDashboard + deiHiringService fully built but never imported anywhere."
+  },
+  {
+    "id": "AURA-206",
+    "title": "Hub: Mark as preview until APIs ship",
+    "module": "DEI Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/dei",
+    "api": "dashboard/layout.tsx PREVIEW_MODULES",
+    "desc": "Module not in PREVIEW_MODULES despite demo UI with 501 API calls."
+  },
+  {
+    "id": "AURA-327",
+    "title": "DEI: Replace hub with functional page or add child route",
+    "module": "DEI Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/dei",
+    "api": "Not specified",
+    "desc": "Page is a ModuleGrid navigation shell with no data/API integration."
+  },
+  {
+    "id": "AURA-328",
+    "title": "Diversity Metrics: Complete API integration and remove mock/local fallbacks",
+    "module": "DEI Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/dei/diversity-metrics",
+    "api": "Not specified",
+    "desc": "Page calls APIs (service layer) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-329",
+    "title": "Mentorship Program: Complete API integration and remove mock/local fallbacks",
+    "module": "DEI Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/dei/mentorship-program",
+    "api": "Not specified",
+    "desc": "Page calls APIs (service layer) but mock/hardcoded UI remains."
+  }
+]

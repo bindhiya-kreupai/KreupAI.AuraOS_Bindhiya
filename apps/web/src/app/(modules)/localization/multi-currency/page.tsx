@@ -1,1 +1,1 @@
-export { default } from '../../../dashboard/localization/page';
+export { default } from '../../../dashboard/localization/multi-currency/page';

@@ -1,0 +1,134 @@
+[
+  {
+    "id": "AURA-213",
+    "title": "Visa: Wire visa table and expiry alerts",
+    "module": "Global Mobility Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/mobility/visa-immigration",
+    "api": "VisaImmigrationService \u2192 /api/mobility/visa-applications (missing); alt: GET /api/v1/visa-permits?expiringWithinDays=30",
+    "desc": "Employee visa rows are inline mock array; search unwired. 3 Work Permits expiring banner is static text. Details button has no handler."
+  },
+  {
+    "id": "AURA-214",
+    "title": "Relocation: Wire tier policies and active relocations",
+    "module": "Global Mobility Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/mobility/relocation-packages",
+    "api": "RelocationPackageService \u2192 /api/mobility/relocation-packages (missing)",
+    "desc": "Tier 1/2/3 cards are static marketing copy. Active move cards (Sarah Connor, etc.) are inline mock. View Policy Details unwired."
+  },
+  {
+    "id": "AURA-215",
+    "title": "Tax: Wire tax calculator and compliance deadlines",
+    "module": "Global Mobility Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/mobility/expat-tax-manager",
+    "api": "ExpatTaxService.calculateTaxLiability; /api/mobility/expat-tax-profiles (missing)",
+    "desc": "Home/host selects and salary input don't trigger calculation; results static. Filing status list is hardcoded mock."
+  },
+  {
+    "id": "AURA-216",
+    "title": "Orphan Routes: Consolidate or wire duplicate pages",
+    "module": "Global Mobility Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/mobility/immigration, /relocation, /tax",
+    "api": "/api/v1/immigration-compliance/*; RelocationPackageService; ExpatTaxService",
+    "desc": "Three alternate pages not linked from ModuleGrid; all mock including Initiate Transfer. Duplicate visa/relocation/tax UX."
+  },
+  {
+    "id": "AURA-217",
+    "title": "Platform: Create /api/mobility/* routes and wire useMobility hook",
+    "module": "Global Mobility Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "Module-wide",
+    "api": "mobility/services.ts; mobility/hooks/useMobility.ts; mobility/data.ts (~1500 lines seed)",
+    "desc": "All service endpoints under /api/mobility/* have zero matching route handlers. useMobility() auto-fetches on mount but never imported by any page."
+  },
+  {
+    "id": "AURA-546",
+    "title": "Global Mobility: Replace hub with functional page or add child route",
+    "module": "Global Mobility Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/mobility",
+    "api": "Not specified",
+    "desc": "Page is a ModuleGrid navigation shell with no data/API integration."
+  },
+  {
+    "id": "AURA-547",
+    "title": "Expat Tax Manager: Replace mock/hardcoded data with live API",
+    "module": "Global Mobility Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/mobility/expat-tax-manager",
+    "api": "Not specified",
+    "desc": "Page uses hardcoded or mock data; no fetch/service calls detected."
+  },
+  {
+    "id": "AURA-548",
+    "title": "Immigration: Manual review required",
+    "module": "Global Mobility Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/mobility/immigration",
+    "api": "Not specified",
+    "desc": "Page exists; automated heuristics could not classify wiring."
+  },
+  {
+    "id": "AURA-549",
+    "title": "Relocation: Manual review required",
+    "module": "Global Mobility Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/mobility/relocation",
+    "api": "Not specified",
+    "desc": "Page exists; automated heuristics could not classify wiring."
+  },
+  {
+    "id": "AURA-550",
+    "title": "Relocation Packages: Manual review required",
+    "module": "Global Mobility Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/mobility/relocation-packages",
+    "api": "Not specified",
+    "desc": "Page exists; automated heuristics could not classify wiring."
+  },
+  {
+    "id": "AURA-551",
+    "title": "Tax: Manual review required",
+    "module": "Global Mobility Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/mobility/tax",
+    "api": "Not specified",
+    "desc": "Page exists; automated heuristics could not classify wiring."
+  },
+  {
+    "id": "AURA-552",
+    "title": "Visa & Immigration: Replace mock/hardcoded data with live API",
+    "module": "Global Mobility Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/mobility/visa-immigration",
+    "api": "Not specified",
+    "desc": "Page uses hardcoded or mock data; no fetch/service calls detected."
+  }
+]

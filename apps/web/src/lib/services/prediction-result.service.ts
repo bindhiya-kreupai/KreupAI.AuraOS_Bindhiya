@@ -2,20 +2,12 @@ import { prisma } from '@aura/database';
 import { BaseService } from './base.service';
 
 export type ModelCode =
-  | 'ATTRITION_RISK'
-  | 'PERF_FORECAST'
-  | 'PROMOTION_READINESS'
-  | 'TIME_TO_HIRE'
-  | 'SOURCING_FUNNEL';
+  'ATTRITION_RISK' | 'PERF_FORECAST' | 'PROMOTION_READINESS' | 'TIME_TO_HIRE' | 'SOURCING_FUNNEL';
 
 export type ScoreBand = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
 export type PredictionSubjectType =
-  | 'EMPLOYEE'
-  | 'CANDIDATE'
-  | 'REQUISITION'
-  | 'TEAM'
-  | 'DEPARTMENT';
+  'EMPLOYEE' | 'CANDIDATE' | 'REQUISITION' | 'TEAM' | 'DEPARTMENT';
 
 export class ScoreOutOfRangeError extends Error {
   constructor(score: number) {
@@ -72,7 +64,7 @@ export class PredictionResultService extends BaseService {
     }
     // Supersede prior active predictions for the same subject + model so the
     // workforce dashboard never shows two scores at once.
-    await prisma.predictionResult.updateMany({
+    await (prisma as any).predictionResult.updateMany({
       where: {
         tenantId: input.tenantId,
         modelCode: input.modelCode,
@@ -82,7 +74,7 @@ export class PredictionResultService extends BaseService {
       },
       data: { active: false },
     });
-    return prisma.predictionResult.create({
+    return (prisma as any).predictionResult.create({
       data: {
         tenantId: input.tenantId,
         modelCardId: input.modelCardId ?? null,
@@ -108,7 +100,7 @@ export class PredictionResultService extends BaseService {
     subjectType: PredictionSubjectType,
     subjectId: string
   ) {
-    return prisma.predictionResult.findFirst({
+    return (prisma as any).predictionResult.findFirst({
       where: { tenantId, modelCode, subjectType, subjectId, active: true },
       orderBy: { scoredAt: 'desc' },
     });
@@ -134,13 +126,13 @@ export class PredictionResultService extends BaseService {
     if (params.scoreBand) where.scoreBand = params.scoreBand;
     if (params.activeOnly) where.active = true;
     const [items, total] = await Promise.all([
-      prisma.predictionResult.findMany({
+      (prisma as any).predictionResult.findMany({
         where,
         orderBy: { scoredAt: 'desc' },
         skip,
         take: limit,
       }),
-      prisma.predictionResult.count({ where }),
+      (prisma as any).predictionResult.count({ where }),
     ]);
     return { items, total, page, pageSize: limit, hasNextPage: skip + items.length < total };
   }

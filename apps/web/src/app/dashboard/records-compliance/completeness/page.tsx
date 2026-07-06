@@ -46,7 +46,7 @@ export default function CompletenessPage() {
     const url = `/api/v1/records-compliance/completeness?period=${period}${band ? `&band=${band}` : ''}`;
     const r = await fetch(url);
     const p = await r.json();
-    if (p.success) setRows(p.data ?? []);
+    if (p.success) setRows(Array.isArray(p.data?.items) ? p.data.items : []);
   }
   useEffect(() => {
     load();

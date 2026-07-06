@@ -1,21 +1,14 @@
 /**
  * @module AuditSecurityPage
- * @description Audit & Security module main page
+ * @description Audit & Security module route. The full dashboard hub lives at
+ *              /dashboard/security, so this module entry redirects there instead
+ *              of rendering an unimplemented placeholder (backlog AURA-280).
  * @project AURA HCM Platform
  * @reference docs/aura-master-instructions.md
  */
 
-import { ModulePage } from '@/components/ui';
+import { redirect } from 'next/navigation';
 
 export default function AuditSecurityPage() {
-  return (
-    <ModulePage
-      moduleCode="AUDIT_SECURITY"
-      moduleName="Audit & Security"
-      moduleIcon="security"
-      featureCount={12}
-      isImplemented={false}
-    />
-  );
+  redirect('/dashboard/security');
 }
-

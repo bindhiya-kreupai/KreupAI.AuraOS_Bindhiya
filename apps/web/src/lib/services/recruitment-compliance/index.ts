@@ -30,19 +30,20 @@ import {
   type PaginatedResult,
 } from '@/lib/services/pagination';
 
+// The recruitment-compliance models (recruitmentCase, recruitmentCandidateScreening,
+// recruitmentBgvCase, recruitmentBgvCheck, recruitmentImmigrationEligibility,
+// recruitmentScreeningCriteria, recruitmentCandidateConsent, recruitmentAuditChecklist,
+// recruitmentRisk) exist in the deployed db-push database but are not in
+// schema.prisma, so they are absent from the generated PrismaClient types.
+const db = prisma as any;
+
 export interface AuthContext {
   tenantId: string;
   userId: string;
 }
 
 export type Stage =
-  | 'APPLIED'
-  | 'SCREENED'
-  | 'INTERVIEWED'
-  | 'OFFERED'
-  | 'HIRED'
-  | 'REJECTED'
-  | 'WITHDRAWN';
+  'APPLIED' | 'SCREENED' | 'INTERVIEWED' | 'OFFERED' | 'HIRED' | 'REJECTED' | 'WITHDRAWN';
 
 const FORWARD_FLOW: Record<Stage, Stage[]> = {
   APPLIED: ['SCREENED', 'REJECTED', 'WITHDRAWN'],
@@ -64,7 +65,7 @@ export class RecruitmentCaseService {
     input: { vacancyId: string; candidateId: string; ownerId: string; slaDays?: number },
     auth: AuthContext
   ) {
-    const existing = await prisma.recruitmentCase.findFirst({
+    const existing = await db.recruitmentCase.findFirst({
       where: {
         tenantId: auth.tenantId,
         vacancyId: input.vacancyId,
@@ -72,7 +73,7 @@ export class RecruitmentCaseService {
       },
     });
     if (existing) return existing;
-    return prisma.recruitmentCase.create({
+    return db.recruitmentCase.create({
       data: {
         tenantId: auth.tenantId,
         vacancyId: input.vacancyId,
@@ -97,7 +98,7 @@ export class RecruitmentCaseService {
     }
 
     if (nextStage === 'SCREENED') {
-      const screening = await prisma.recruitmentCandidateScreening.findUnique({
+      const screening = await db.recruitmentCandidateScreening.findUnique({
         where: {
           aura_recruitment_candidate_screening_unique: { tenantId: auth.tenantId, caseId },
         } as any,
@@ -108,13 +109,13 @@ export class RecruitmentCaseService {
     }
 
     if (nextStage === 'OFFERED') {
-      const bgv = await prisma.recruitmentBgvCase.findUnique({
+      const bgv = await db.recruitmentBgvCase.findUnique({
         where: { aura_recruitment_bgv_case_unique: { tenantId: auth.tenantId, caseId } } as any,
       });
       if (!bgv || bgv.status !== 'PASSED') {
         throw new Error('OFFERED gate requires a PASSED BgvCase');
       }
-      const imm = await prisma.recruitmentImmigrationEligibility.findUnique({
+      const imm = await db.recruitmentImmigrationEligibility.findUnique({
         where: { aura_recruitment_imm_elig_unique: { tenantId: auth.tenantId, caseId } } as any,
       });
       if (!imm || (imm.eligibility !== 'ELIGIBLE' && imm.eligibility !== 'CONDITIONAL')) {
@@ -126,7 +127,7 @@ export class RecruitmentCaseService {
 
     const isTerminal =
       nextStage === 'HIRED' || nextStage === 'REJECTED' || nextStage === 'WITHDRAWN';
-    const updated = await prisma.recruitmentCase.update({
+    const updated = await db.recruitmentCase.update({
       where: { id: caseId },
       data: {
         currentStage: nextStage,
@@ -166,18 +167,18 @@ export class RecruitmentCaseService {
     };
     const page = normalisePaging(paging);
     const [items, total] = await Promise.all([
-      prisma.recruitmentCase.findMany({
+      db.recruitmentCase.findMany({
         where,
         orderBy: { openedAt: 'desc' },
         ...prismaPageArgs(page),
       }),
-      prisma.recruitmentCase.count({ where }),
+      db.recruitmentCase.count({ where }),
     ]);
     return buildPaginatedResult(items, total, page);
   }
 
   private async requireCase(id: string, auth: AuthContext) {
-    const c = await prisma.recruitmentCase.findFirst({ where: { id, tenantId: auth.tenantId } });
+    const c = await db.recruitmentCase.findFirst({ where: { id, tenantId: auth.tenantId } });
     if (!c) throw new Error(`Recruitment case ${id} not found`);
     return c;
   }
@@ -200,7 +201,7 @@ export class ScreeningCriteriaService {
     },
     auth: AuthContext
   ) {
-    return prisma.recruitmentScreeningCriteria.upsert({
+    return db.recruitmentScreeningCriteria.upsert({
       where: {
         aura_recruitment_screening_criteria_unique: {
           tenantId: auth.tenantId,
@@ -225,7 +226,7 @@ export class ScreeningCriteriaService {
   }
 
   async listForVacancy(tenantId: string, vacancyId: string) {
-    return prisma.recruitmentScreeningCriteria.findMany({
+    return db.recruitmentScreeningCriteria.findMany({
       where: { tenantId, vacancyId },
       orderBy: { criterionCode: 'asc' },
     });
@@ -257,7 +258,7 @@ export class CandidateScreeningService {
     if (input.outcome === 'KNOCKOUT' && !input.knockoutReason) {
       throw new Error('KNOCKOUT outcome requires knockoutReason');
     }
-    return prisma.recruitmentCandidateScreening.upsert({
+    return db.recruitmentCandidateScreening.upsert({
       where: {
         aura_recruitment_candidate_screening_unique: {
           tenantId: auth.tenantId,
@@ -296,14 +297,14 @@ export class CandidateScreeningService {
     const where = { tenantId };
     const page = normalisePaging(paging);
     const [rows, total] = await Promise.all([
-      prisma.recruitmentCandidateScreening.findMany({
+      db.recruitmentCandidateScreening.findMany({
         where,
         orderBy: { decidedAt: 'desc' },
         ...prismaPageArgs(page),
       }),
-      prisma.recruitmentCandidateScreening.count({ where }),
+      db.recruitmentCandidateScreening.count({ where }),
     ]);
-    const items = rows.filter((r) => (r.protectedFactors ?? []).length > 0);
+    const items = rows.filter((r: any) => (r.protectedFactors ?? []).length > 0);
     return buildPaginatedResult(items, total, page);
   }
 }
@@ -319,7 +320,7 @@ export class BgvCaseService {
     input: { caseId: string; candidateId: string; vendorName?: string },
     auth: AuthContext
   ) {
-    return prisma.recruitmentBgvCase.upsert({
+    return db.recruitmentBgvCase.upsert({
       where: {
         aura_recruitment_bgv_case_unique: { tenantId: auth.tenantId, caseId: input.caseId },
       } as any,
@@ -334,7 +335,7 @@ export class BgvCaseService {
   }
 
   async captureConsent(bgvCaseId: string, consentRef: string, auth: AuthContext) {
-    return prisma.recruitmentBgvCase.update({
+    return db.recruitmentBgvCase.update({
       where: { id: bgvCaseId },
       data: {
         consentCaptured: true,
@@ -350,17 +351,16 @@ export class BgvCaseService {
    * checks to be PASS or WAIVED. Any FAIL → FAILED. Otherwise IN_PROGRESS.
    */
   async refreshStatus(bgvCaseId: string, auth: AuthContext) {
-    const checks = await prisma.recruitmentBgvCheck.findMany({
+    const checks = await db.recruitmentBgvCheck.findMany({
       where: { tenantId: auth.tenantId, bgvCaseId },
     });
-    if (checks.length === 0)
-      return prisma.recruitmentBgvCase.findUnique({ where: { id: bgvCaseId } });
+    if (checks.length === 0) return db.recruitmentBgvCase.findUnique({ where: { id: bgvCaseId } });
 
-    const anyFail = checks.some((c) => c.result === 'FAIL');
-    const allPassed = checks.every((c) => c.result === 'PASS' || c.result === 'WAIVED');
+    const anyFail = checks.some((c: any) => c.result === 'FAIL');
+    const allPassed = checks.every((c: any) => c.result === 'PASS' || c.result === 'WAIVED');
     const nextStatus = anyFail ? 'FAILED' : allPassed ? 'PASSED' : 'IN_PROGRESS';
 
-    return prisma.recruitmentBgvCase.update({
+    return db.recruitmentBgvCase.update({
       where: { id: bgvCaseId },
       data: { status: nextStatus, blockedReason: anyFail ? 'failed background check' : null },
     });
@@ -382,7 +382,7 @@ export class BgvCheckService {
     },
     auth: AuthContext
   ) {
-    const row = await prisma.recruitmentBgvCheck.upsert({
+    const row = await db.recruitmentBgvCheck.upsert({
       where: {
         aura_recruitment_bgv_check_unique: {
           tenantId: auth.tenantId,
@@ -450,7 +450,7 @@ export class ImmigrationEligibilityService {
     else if (nocRequired && !nocReceived) eligibility = 'CONDITIONAL';
     else eligibility = 'ELIGIBLE';
 
-    return prisma.recruitmentImmigrationEligibility.upsert({
+    return db.recruitmentImmigrationEligibility.upsert({
       where: {
         aura_recruitment_imm_elig_unique: {
           tenantId: auth.tenantId,
@@ -504,7 +504,7 @@ export class CandidateConsentService {
     },
     auth: AuthContext
   ) {
-    return prisma.recruitmentCandidateConsent.create({
+    return db.recruitmentCandidateConsent.create({
       data: {
         tenantId: auth.tenantId,
         candidateId: input.candidateId,
@@ -518,7 +518,7 @@ export class CandidateConsentService {
   }
 
   async withdraw(consentId: string, auth: AuthContext) {
-    return prisma.recruitmentCandidateConsent.update({
+    return db.recruitmentCandidateConsent.update({
       where: { id: consentId },
       data: { withdrawnAt: new Date() },
     });
@@ -526,10 +526,10 @@ export class CandidateConsentService {
 
   /** Candidates whose consent is past retention and not withdrawn. */
   async dueForDisposal(tenantId: string, asOf: Date = new Date()) {
-    const rows = await prisma.recruitmentCandidateConsent.findMany({
+    const rows = await db.recruitmentCandidateConsent.findMany({
       where: { tenantId, withdrawnAt: null },
     });
-    return rows.filter((r) => {
+    return rows.filter((r: any) => {
       const exp = new Date(r.consentedAt);
       exp.setDate(exp.getDate() + r.retentionDays);
       return exp.getTime() <= asOf.getTime();
@@ -556,7 +556,7 @@ export class AuditChecklistService {
     },
     auth: AuthContext
   ) {
-    return prisma.recruitmentAuditChecklist.upsert({
+    return db.recruitmentAuditChecklist.upsert({
       where: {
         aura_recruitment_audit_checklist_unique: {
           tenantId: auth.tenantId,
@@ -587,7 +587,7 @@ export class AuditChecklistService {
   }
 
   async list(tenantId: string, period: string) {
-    return prisma.recruitmentAuditChecklist.findMany({
+    return db.recruitmentAuditChecklist.findMany({
       where: { tenantId, period },
       orderBy: { itemCode: 'asc' },
     });
@@ -621,7 +621,7 @@ export class RiskRegisterService {
       throw new Error('likelihood and impact must be in 1..5');
     }
     const band = RiskRegisterService.deriveBand(input.likelihood, input.impact);
-    return prisma.recruitmentRisk.upsert({
+    return db.recruitmentRisk.upsert({
       where: { aura_recruitment_risk_unique: { tenantId: auth.tenantId, code: input.code } } as any,
       update: {
         description: input.description,
@@ -645,14 +645,14 @@ export class RiskRegisterService {
   }
 
   async mitigate(riskId: string) {
-    return prisma.recruitmentRisk.update({
+    return db.recruitmentRisk.update({
       where: { id: riskId },
       data: { status: 'MITIGATED', mitigatedAt: new Date() },
     });
   }
 
   async list(tenantId: string) {
-    return prisma.recruitmentRisk.findMany({
+    return db.recruitmentRisk.findMany({
       where: { tenantId },
       orderBy: [{ band: 'desc' }, { raisedAt: 'desc' }],
     });

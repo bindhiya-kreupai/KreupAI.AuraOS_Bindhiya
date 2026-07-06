@@ -33,7 +33,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
     }
 
     // Soft-delete by marking inactive
-    await prisma.deviceToken.updateMany({
+    await (prisma as any).deviceToken.updateMany({
       where: {
         userId: user.id,
         token: pushToken,

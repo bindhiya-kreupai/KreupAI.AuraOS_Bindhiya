@@ -2,20 +2,10 @@ import { prisma } from '@aura/database';
 import { BaseService } from './base.service';
 
 export type DSARStatus =
-  | 'RECEIVED'
-  | 'VERIFYING'
-  | 'IN_PROGRESS'
-  | 'FULFILLED'
-  | 'REJECTED'
-  | 'EXTENDED';
+  'RECEIVED' | 'VERIFYING' | 'IN_PROGRESS' | 'FULFILLED' | 'REJECTED' | 'EXTENDED';
 
 export type DSARRequestType =
-  | 'ACCESS'
-  | 'DELETION'
-  | 'RECTIFICATION'
-  | 'PORTABILITY'
-  | 'OBJECTION'
-  | 'RESTRICTION';
+  'ACCESS' | 'DELETION' | 'RECTIFICATION' | 'PORTABILITY' | 'OBJECTION' | 'RESTRICTION';
 
 export type DSARSubjectType = 'EMPLOYEE' | 'CANDIDATE' | 'DEPENDENT' | 'EX_EMPLOYEE' | 'OTHER';
 
@@ -115,7 +105,7 @@ export class DSARService extends BaseService {
     const receivedAt = new Date();
     const legalBasis = input.legalBasis ?? REQUEST_TO_BASIS[input.requestType];
     const dueBy = this.computeDueBy(input.requestType, receivedAt, legalBasis);
-    return prisma.dSARRequest.create({
+    return (prisma as any).dsarRequest.create({
       data: {
         tenantId: input.tenantId,
         subjectType: input.subjectType ?? 'EMPLOYEE',
@@ -136,7 +126,7 @@ export class DSARService extends BaseService {
     const r = await this.assertExists(id, tenantId);
     if (!r) return null;
     this.assertTransition(r.status as DSARStatus, 'VERIFYING');
-    return prisma.dSARRequest.update({
+    return (prisma as any).dsarRequest.update({
       where: { id },
       data: { status: 'VERIFYING', reviewedById: actorId, updatedBy: actorId },
     });
@@ -146,7 +136,7 @@ export class DSARService extends BaseService {
     const r = await this.assertExists(id, tenantId);
     if (!r) return null;
     this.assertTransition(r.status as DSARStatus, 'IN_PROGRESS');
-    return prisma.dSARRequest.update({
+    return (prisma as any).dsarRequest.update({
       where: { id },
       data: { status: 'IN_PROGRESS', reviewedById: actorId, updatedBy: actorId },
     });
@@ -159,7 +149,7 @@ export class DSARService extends BaseService {
     const r = await this.assertExists(id, tenantId);
     if (!r) return null;
     this.assertTransition(r.status as DSARStatus, 'EXTENDED');
-    return prisma.dSARRequest.update({
+    return (prisma as any).dsarRequest.update({
       where: { id },
       data: {
         status: 'EXTENDED',
@@ -175,7 +165,7 @@ export class DSARService extends BaseService {
     const r = await this.assertExists(id, tenantId);
     if (!r) return null;
     this.assertTransition(r.status as DSARStatus, 'FULFILLED');
-    return prisma.dSARRequest.update({
+    return (prisma as any).dsarRequest.update({
       where: { id },
       data: {
         status: 'FULFILLED',
@@ -193,7 +183,7 @@ export class DSARService extends BaseService {
     const r = await this.assertExists(id, tenantId);
     if (!r) return null;
     this.assertTransition(r.status as DSARStatus, 'REJECTED');
-    return prisma.dSARRequest.update({
+    return (prisma as any).dsarRequest.update({
       where: { id },
       data: {
         status: 'REJECTED',
@@ -225,13 +215,13 @@ export class DSARService extends BaseService {
       where.status = { notIn: ['FULFILLED', 'REJECTED'] };
     }
     const [items, total] = await Promise.all([
-      prisma.dSARRequest.findMany({
+      (prisma as any).dsarRequest.findMany({
         where,
         orderBy: { dueBy: 'asc' },
         skip,
         take: limit,
       }),
-      prisma.dSARRequest.count({ where }),
+      (prisma as any).dsarRequest.count({ where }),
     ]);
     return { items, total, page, pageSize: limit, hasNextPage: skip + items.length < total };
   }
@@ -243,7 +233,7 @@ export class DSARService extends BaseService {
   async slaWarningWindow(tenantId: string, withinDays = 5) {
     const horizon = new Date();
     horizon.setDate(horizon.getDate() + withinDays);
-    return prisma.dSARRequest.findMany({
+    return (prisma as any).dsarRequest.findMany({
       where: {
         tenantId,
         isDeleted: false,
@@ -255,7 +245,7 @@ export class DSARService extends BaseService {
   }
 
   private async assertExists(id: string, tenantId: string) {
-    return prisma.dSARRequest.findFirst({ where: { id, tenantId, isDeleted: false } });
+    return (prisma as any).dsarRequest.findFirst({ where: { id, tenantId, isDeleted: false } });
   }
 }
 

@@ -1,21 +1,59 @@
-"use client";
+'use client';
 
 import React from 'react';
 import { Clock } from 'lucide-react';
-import { VendorUnsupportedState } from '../_components/vendor-unsupported-state';
+import {
+  VendorSubdomainView,
+  formatDate,
+  statusBadge,
+  type VendorSubRecord,
+} from '../_components/vendor-subdomain-view';
 
 export default function AgencyTimesheetPage() {
-    return (
-        <VendorUnsupportedState
-            title="Contractor Timesheets"
-            description="Review and approve weekly hours from vendors after timesheet submission data is integrated into recruitment."
-            unavailableTitle="Vendor timesheets not yet connected"
-            buttonLabel="Approve Timesheets"
-            requirement="Add vendor worker assignments, timesheet submissions, and approval state to a dedicated vendor operations contract before enabling timesheet review."
-            scope="Timesheet rows, weekly totals, and approval actions have been removed because they were synthetic and are not backed by a validated recruitment vendor workflow."
-            statusLabel="Awaiting vendor timesheet contract"
-            Icon={Clock}
-        />
-    );
+  return (
+    <VendorSubdomainView
+      title="Contractor Timesheets"
+      description="Submit and approve weekly contractor hours per vendor."
+      Icon={Clock}
+      endpoint="/v1/recruitment/vendors/timesheets"
+      requiresVendor
+      createLabel="Submit Timesheet"
+      emptyMessage="No timesheets submitted. Add contractor hours to run the submission and approval workflow."
+      createFields={[
+        { name: 'workerName', label: 'Worker Name', type: 'text', required: true },
+        { name: 'periodStart', label: 'Period Start', type: 'date' },
+        { name: 'periodEnd', label: 'Period End', type: 'date' },
+        { name: 'hours', label: 'Hours', type: 'number', required: true },
+        { name: 'notes', label: 'Notes', type: 'textarea' },
+      ]}
+      columns={[
+        {
+          header: 'Vendor',
+          render: (r: VendorSubRecord) => String(r.vendorName ?? r.vendorId ?? '—'),
+        },
+        { header: 'Worker', render: (r: VendorSubRecord) => String(r.workerName ?? '—') },
+        {
+          header: 'Period',
+          render: (r: VendorSubRecord) =>
+            `${formatDate(r.periodStart)} – ${formatDate(r.periodEnd)}`,
+        },
+        { header: 'Hours', render: (r: VendorSubRecord) => Number(r.hours ?? 0).toFixed(1) },
+        { header: 'Status', render: (r: VendorSubRecord) => statusBadge(r.status) },
+      ]}
+      rowActions={[
+        {
+          label: 'Approve',
+          patch: { status: 'approved' },
+          variant: 'primary',
+          show: (r) => r.status === 'submitted',
+        },
+        {
+          label: 'Reject',
+          patch: { status: 'rejected' },
+          variant: 'danger',
+          show: (r) => r.status === 'submitted',
+        },
+      ]}
+    />
+  );
 }
-

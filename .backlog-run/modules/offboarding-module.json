@@ -1,0 +1,35 @@
+[
+  {
+    "id": "AURA-636",
+    "title": "Offboarding: Replace hub with functional page or add child route",
+    "module": "Offboarding Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/offboarding",
+    "api": "Not specified",
+    "desc": "Page is a ModuleGrid navigation shell with no data/API integration."
+  },
+  {
+    "id": "AURA-637",
+    "title": "Clearance Checklist: Complete API integration and remove mock/local fallbacks",
+    "module": "Offboarding Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/offboarding/clearance-checklist",
+    "api": "Not specified",
+    "desc": "Page calls APIs (service layer) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-638",
+    "title": "Exit Interview: Complete API integration and remove mock/local fallbacks",
+    "module": "Offboarding Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/offboarding/exit-interview",
+    "api": "Not specified",
+    "desc": "Page calls APIs (service layer) but mock/hardcoded UI remains."
+  }
+]

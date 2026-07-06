@@ -159,3 +159,26 @@ describe('TA_COMPLIANCE_CONSTANTS', () => {
     expect(TA_COMPLIANCE_CONSTANTS.CATEGORIES).toContain('MEDICAL_VISA');
   });
 });
+
+// AURA-531: risk-register / evidence / pro-actions pages consume the paginated
+// `{ items, total, page, pageSize, hasNextPage }` envelope (resp.data.items),
+// not a bare array. This guards that contract at the service boundary.
+describe('taRiskService.list paginated envelope', () => {
+  it('returns an items[] envelope scoped by tenant', async () => {
+    m.taRiskEntry.findMany = vi
+      .fn()
+      .mockResolvedValue([{ id: 'rr-1', riskCode: 'R-1', band: 'HIGH', score: 12 }]);
+    m.taRiskEntry.count = vi.fn().mockResolvedValue(1);
+
+    const res = await taRiskService.list('tenant-1', {}, { page: 1, pageSize: 50 });
+
+    expect(Array.isArray((res as any).items)).toBe(true);
+    expect((res as any).items).toHaveLength(1);
+    expect((res as any).total).toBe(1);
+    expect((res as any).pageSize).toBe(50);
+    expect((res as any).hasNextPage).toBe(false);
+    // tenant scoping is enforced in the where clause
+    const whereArg = m.taRiskEntry.findMany.mock.calls[0][0].where;
+    expect(whereArg.tenantId).toBe('tenant-1');
+  });
+});

@@ -35,10 +35,7 @@ export class UserService extends BaseService {
   /**
    * List users with filters and pagination
    */
-  async listUsers(
-    options: UserQueryOptions,
-    requestingUserId: string
-  ): Promise<ServiceResponse> {
+  async listUsers(options: UserQueryOptions, requestingUserId: string): Promise<ServiceResponse> {
     try {
       const { search, status, tenantId, page, limit } = options;
 
@@ -191,7 +188,7 @@ export class UserService extends BaseService {
         });
 
         // Create audit log
-        await tx.auditLog.create({
+        await (tx.auditLog.create as any)({
           data: {
             tenantId: input.tenantId,
             userId: createdBy,
@@ -281,7 +278,7 @@ export class UserService extends BaseService {
         });
 
         // Create audit log
-        await tx.auditLog.create({
+        await (tx.auditLog.create as any)({
           data: {
             tenantId: existingUser.tenantId,
             userId: updatedBy,
@@ -313,11 +310,7 @@ export class UserService extends BaseService {
   /**
    * Delete user (soft delete)
    */
-  async deleteUser(
-    userId: string,
-    deletedBy: string,
-    ipAddress: string
-  ): Promise<ServiceResponse> {
+  async deleteUser(userId: string, deletedBy: string, ipAddress: string): Promise<ServiceResponse> {
     try {
       const existingUser = await this.prisma.user.findUnique({
         where: { id: userId },
@@ -338,7 +331,7 @@ export class UserService extends BaseService {
         });
 
         // Create audit log
-        await tx.auditLog.create({
+        await (tx.auditLog.create as any)({
           data: {
             tenantId: existingUser.tenantId,
             userId: deletedBy,

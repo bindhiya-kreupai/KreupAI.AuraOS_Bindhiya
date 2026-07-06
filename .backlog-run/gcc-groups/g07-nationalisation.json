@@ -1,0 +1,178 @@
+[
+  {
+    "id": "AURA-346",
+    "title": "Bahraini Hires & Artificial-Risk: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/bahrainization-compliance/bahraini-hires-artificial-risk",
+    "api": "Not specified",
+    "desc": "Menu feature 'Bahraini Hires & Artificial-Risk' resolves to /dashboard/bahrainization-compliance/bahraini-hires-artificial-risk but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-347",
+    "title": "Establishment Scope: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/bahrainization-compliance/establishment-scope",
+    "api": "Not specified",
+    "desc": "Menu feature 'Establishment Scope' resolves to /dashboard/bahrainization-compliance/establishment-scope but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-348",
+    "title": "Monthly Certificate: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/bahrainization-compliance/monthly-certificate",
+    "api": "Not specified",
+    "desc": "Menu feature 'Monthly Certificate' resolves to /dashboard/bahrainization-compliance/monthly-certificate but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-349",
+    "title": "Ratio Snapshots & LMRA Gating: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/bahrainization-compliance/ratio-snapshots-lmra-gating",
+    "api": "Not specified",
+    "desc": "Menu feature 'Ratio Snapshots & LMRA Gating' resolves to /dashboard/bahrainization-compliance/ratio-snapshots-lmra-gating but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-350",
+    "title": "Sector \u00d7 Size Targets: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/bahrainization-compliance/sector-size-targets",
+    "api": "Not specified",
+    "desc": "Menu feature 'Sector \u00d7 Size Targets' resolves to /dashboard/bahrainization-compliance/sector-size-targets but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-351",
+    "title": "Tender Eligibility: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/bahrainization-compliance/tender-eligibility",
+    "api": "Not specified",
+    "desc": "Menu feature 'Tender Eligibility' resolves to /dashboard/bahrainization-compliance/tender-eligibility but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-471",
+    "title": "Band Snapshots: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/nitaqat-compliance/band-snapshots",
+    "api": "Not specified",
+    "desc": "Menu feature 'Band Snapshots' resolves to /dashboard/nitaqat-compliance/band-snapshots but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-472",
+    "title": "Band Thresholds: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/nitaqat-compliance/band-thresholds",
+    "api": "Not specified",
+    "desc": "Menu feature 'Band Thresholds' resolves to /dashboard/nitaqat-compliance/band-thresholds but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-473",
+    "title": "Establishment Scope: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/nitaqat-compliance/establishment-scope",
+    "api": "Not specified",
+    "desc": "Menu feature 'Establishment Scope' resolves to /dashboard/nitaqat-compliance/establishment-scope but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-474",
+    "title": "Monthly Certificate: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/nitaqat-compliance/monthly-certificate",
+    "api": "Not specified",
+    "desc": "Menu feature 'Monthly Certificate' resolves to /dashboard/nitaqat-compliance/monthly-certificate but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-475",
+    "title": "Privilege Check: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/nitaqat-compliance/privilege-check",
+    "api": "Not specified",
+    "desc": "Menu feature 'Privilege Check' resolves to /dashboard/nitaqat-compliance/privilege-check but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-466",
+    "title": "Fake / Artificial Detection (GPSSA \u00d7 Payroll \u00d7 WPS): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/nationalisation-overlay/fake-artificial-detection-gpssa-payroll-wps",
+    "api": "Not specified",
+    "desc": "Menu feature 'Fake / Artificial Detection (GPSSA \u00d7 Payroll \u00d7 WPS)' resolves to /dashboard/nationalisation-overlay/fake-artificial-detection-gpssa-payroll-wps but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-467",
+    "title": "National L&D Plans: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/nationalisation-overlay/national-l-d-plans",
+    "api": "Not specified",
+    "desc": "Menu feature 'National L&D Plans' resolves to /dashboard/nationalisation-overlay/national-l-d-plans but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-468",
+    "title": "Saudi Profession-Localisation Codes (S09): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/nationalisation-overlay/saudi-profession-localisation-codes-s09",
+    "api": "Not specified",
+    "desc": "Menu feature 'Saudi Profession-Localisation Codes (S09)' resolves to /dashboard/nationalisation-overlay/saudi-profession-localisation-codes-s09 but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-469",
+    "title": "Saudi Professions: Complete API integration and remove mock/local fallbacks",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/nationalisation-overlay/saudi-professions",
+    "api": "/api/v1/nationalisation-overlay/saudi-professions, /api/v1/nationalisation-overlay/saudi-professions${qs}",
+    "desc": "Page calls APIs (/api/v1/nationalisation-overlay/saudi-professions, /api/v1/nationalisation-overlay/saudi-professions${qs}) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-470",
+    "title": "TA Pipeline Tags \u00b7 Requisition + Job/Position: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/nationalisation-overlay/ta-pipeline-tags-requisition-job-position",
+    "api": "Not specified",
+    "desc": "Menu feature 'TA Pipeline Tags \u00b7 Requisition + Job/Position' resolves to /dashboard/nationalisation-overlay/ta-pipeline-tags-requisition-job-position but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  }
+]

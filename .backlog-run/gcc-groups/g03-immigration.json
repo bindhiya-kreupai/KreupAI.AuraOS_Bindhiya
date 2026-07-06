@@ -1,0 +1,167 @@
+[
+  {
+    "id": "AURA-448",
+    "title": "Audit Checklist: Complete API integration and remove mock/local fallbacks",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/immigration-compliance/audit-checklist",
+    "api": "/api/v1/immigration-compliance/audit-checklist",
+    "desc": "Page calls APIs (/api/v1/immigration-compliance/audit-checklist) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-449",
+    "title": "Authorization Matrix: Complete API integration and remove mock/local fallbacks",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/immigration-compliance/authorization-matrix",
+    "api": "/api/v1/immigration-compliance/authorization-matrix",
+    "desc": "Page calls APIs (/api/v1/immigration-compliance/authorization-matrix) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-450",
+    "title": "Country Authorization Matrix (MOHRE/ICP/GDRFA/MHRSD/Qiwa/LMRA/PAM): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/immigration-compliance/country-authorization-matrix-mohre-icp-gdrfa-mhrsd-qiwa-lmra-pam",
+    "api": "Not specified",
+    "desc": "Menu feature 'Country Authorization Matrix (MOHRE/ICP/GDRFA/MHRSD/Qiwa/LMRA/PAM)' resolves to /dashboard/immigration-compliance/country-authorization-matrix-mohre-icp-gdrfa-mhrsd-qiwa-lmra-pam but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-451",
+    "title": "Immigration Audit Checklist & Risk Register: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/immigration-compliance/immigration-audit-checklist-risk-register",
+    "api": "Not specified",
+    "desc": "Menu feature 'Immigration Audit Checklist & Risk Register' resolves to /dashboard/immigration-compliance/immigration-audit-checklist-risk-register but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-452",
+    "title": "Monthly Compliance Certificate: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/immigration-compliance/monthly-compliance-certificate",
+    "api": "Not specified",
+    "desc": "Menu feature 'Monthly Compliance Certificate' resolves to /dashboard/immigration-compliance/monthly-compliance-certificate but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-453",
+    "title": "Renewal Alert Ladder (60/30/7-day + EXPIRED): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/immigration-compliance/renewal-alert-ladder-60-30-7-day-expired",
+    "api": "Not specified",
+    "desc": "Menu feature 'Renewal Alert Ladder (60/30/7-day + EXPIRED)' resolves to /dashboard/immigration-compliance/renewal-alert-ladder-60-30-7-day-expired but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-454",
+    "title": "Renewal Alerts: Complete API integration and remove mock/local fallbacks",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/immigration-compliance/renewal-alerts",
+    "api": "/api/v1/immigration-compliance/renewal-alerts",
+    "desc": "Page calls APIs (/api/v1/immigration-compliance/renewal-alerts) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-455",
+    "title": "Risk Register: Complete API integration and remove mock/local fallbacks",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/immigration-compliance/risk-register",
+    "api": "/api/v1/immigration-compliance/risk-register",
+    "desc": "Page calls APIs (/api/v1/immigration-compliance/risk-register) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-456",
+    "title": "Transfer Case: Complete API integration and remove mock/local fallbacks",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/immigration-compliance/transfer-case",
+    "api": "/api/v1/immigration-compliance/transfer-case",
+    "desc": "Page calls APIs (/api/v1/immigration-compliance/transfer-case) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-457",
+    "title": "Transfer & Mobility Cases (REQUESTED \u2192 APPROVED \u2192 COMPLETED): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/immigration-compliance/transfer-mobility-cases-requested-approved-completed",
+    "api": "Not specified",
+    "desc": "Menu feature 'Transfer & Mobility Cases (REQUESTED \u2192 APPROVED \u2192 COMPLETED)' resolves to /dashboard/immigration-compliance/transfer-mobility-cases-requested-approved-completed but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-544",
+    "title": "Monthly Certificate: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/wps-compliance/monthly-certificate",
+    "api": "Not specified",
+    "desc": "Menu feature 'Monthly Certificate' resolves to /dashboard/wps-compliance/monthly-certificate but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-545",
+    "title": "WPS Submissions: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/wps-compliance/wps-submissions",
+    "api": "Not specified",
+    "desc": "Menu feature 'WPS Submissions' resolves to /dashboard/wps-compliance/wps-submissions but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-405",
+    "title": "Employee Registrations: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/gosi-compliance/employee-registrations",
+    "api": "Not specified",
+    "desc": "Menu feature 'Employee Registrations' resolves to /dashboard/gosi-compliance/employee-registrations but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-406",
+    "title": "Monthly Certificate: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/gosi-compliance/monthly-certificate",
+    "api": "Not specified",
+    "desc": "Menu feature 'Monthly Certificate' resolves to /dashboard/gosi-compliance/monthly-certificate but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-407",
+    "title": "Wages & Contributions: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/gosi-compliance/wages-contributions",
+    "api": "Not specified",
+    "desc": "Menu feature 'Wages & Contributions' resolves to /dashboard/gosi-compliance/wages-contributions but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  }
+]

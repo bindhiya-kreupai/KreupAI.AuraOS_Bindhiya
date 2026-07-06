@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { DoorOpen, CheckCircle2, Calendar, ArrowRight, X } from 'lucide-react';
+import { DoorOpen, CheckCircle2, Calendar, ArrowRight, X, Check } from 'lucide-react';
 import { ExitService } from '../services';
 
 function formatDate(date: Date | string | undefined): string {
@@ -29,6 +29,11 @@ export default function ExitManagementPage() {
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState('');
+
+  // Clearance detail modal
+  const [clearanceExit, setClearanceExit] = useState<any | null>(null);
+  const [clearanceBusy, setClearanceBusy] = useState<string | null>(null);
+  const [clearanceError, setClearanceError] = useState('');
 
   // Form state for initiating separation
   const [formData, setFormData] = useState({
@@ -76,6 +81,32 @@ export default function ExitManagementPage() {
       setSubmitError('Failed to initiate separation. Please try again.');
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const openClearances = (exit: any) => {
+    setClearanceError('');
+    setClearanceExit(exit);
+  };
+
+  const handleCompleteClearance = async (clearanceId: string) => {
+    if (!clearanceExit) return;
+    try {
+      setClearanceBusy(clearanceId);
+      setClearanceError('');
+      const updated = await ExitService.updateClearanceItem(
+        clearanceExit.exitId,
+        clearanceId,
+        'COMPLETED'
+      );
+      // Refresh the list and the open modal from the returned exit.
+      setExitProcesses((prev) => prev.map((ep) => (ep.exitId === updated.exitId ? updated : ep)));
+      setClearanceExit(updated);
+    } catch (err: any) {
+      console.error('Clearance update failed:', err);
+      setClearanceError('Failed to update the clearance item.');
+    } finally {
+      setClearanceBusy(null);
     }
   };
 
@@ -185,7 +216,11 @@ export default function ExitManagementPage() {
                           )}
                         </div>
                       </div>
-                      <button className="p-2 bg-slate-100 dark:bg-slate-800 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 transition-colors">
+                      <button
+                        onClick={() => openClearances(ep)}
+                        title="Manage clearances"
+                        className="p-2 bg-slate-100 dark:bg-slate-800 rounded-full hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-500 transition-colors"
+                      >
                         <ArrowRight className="w-5 h-5" />
                       </button>
                     </div>
@@ -217,6 +252,67 @@ export default function ExitManagementPage() {
                   </div>
                 ))}
               </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Clearance Detail Modal */}
+      {clearanceExit && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-lg">
+            <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+              <div>
+                <h2 className="text-xl font-bold">Offboarding Clearances</h2>
+                <p className="text-xs text-slate-500 mt-1">{clearanceExit.employeeName}</p>
+              </div>
+              <button
+                onClick={() => setClearanceExit(null)}
+                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5 text-slate-500" />
+              </button>
+            </div>
+            {clearanceError && (
+              <div className="mx-6 mt-4 p-3 bg-rose-50 dark:bg-rose-900/20 border border-rose-200 dark:border-rose-800 rounded-lg text-sm text-rose-600 dark:text-rose-400">
+                {clearanceError}
+              </div>
+            )}
+            <div className="p-6 space-y-3 max-h-[60vh] overflow-y-auto">
+              {(clearanceExit.clearanceItems || []).length === 0 ? (
+                <p className="text-sm text-slate-400 text-center py-6">
+                  No clearance items recorded for this separation.
+                </p>
+              ) : (
+                clearanceExit.clearanceItems.map((item: any) => {
+                  const done = item.status === 'completed' || item.status === 'cleared';
+                  return (
+                    <div
+                      key={item.itemId}
+                      className="flex items-center justify-between p-3 border border-slate-100 dark:border-slate-800 rounded-xl"
+                    >
+                      <div>
+                        <div className="font-bold text-sm">{item.itemName}</div>
+                        <div className="text-xs text-slate-500">{item.department}</div>
+                      </div>
+                      {done ? (
+                        <span className="text-xs font-bold text-emerald-600 bg-emerald-100 px-2 py-1 rounded flex items-center gap-1">
+                          <Check className="w-3 h-3" /> Completed
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => handleCompleteClearance(item.itemId)}
+                          disabled={clearanceBusy === item.itemId}
+                          className="px-3 py-1.5 bg-emerald-600 text-white rounded-lg text-xs font-bold hover:bg-emerald-700 active:scale-95 transition-all flex items-center gap-1 disabled:opacity-50"
+                        >
+                          <Check className="w-3 h-3" />
+                          {clearanceBusy === item.itemId ? 'Saving…' : 'Mark Complete'}
+                        </button>
+                      )}
+                    </div>
+                  );
+                })
+              )}
             </div>
           </div>
         </div>

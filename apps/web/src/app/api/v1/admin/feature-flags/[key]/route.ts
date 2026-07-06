@@ -27,7 +27,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     }
     const { key } = context.params;
 
-    const flag = await prisma.featureFlag.findFirst({
+    const flag = await (prisma as any).featureFlag.findFirst({
       where: { key, tenantId: user.tenantId },
     });
 
@@ -78,13 +78,13 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) =
     const { key } = context.params;
     const body = await request.json();
 
-    const flag = await prisma.featureFlag.findFirst({
+    const flag = await (prisma as any).featureFlag.findFirst({
       where: { key, tenantId: user.tenantId },
     });
 
     if (!flag) {
       // Create if not exists
-      const newFlag = await prisma.featureFlag.create({
+      const newFlag = await (prisma as any).featureFlag.create({
         data: {
           tenantId: user.tenantId,
           key,
@@ -115,7 +115,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) =
     }
 
     // tenant-ok: id-based op preceded by tenant-scoped findFirst above
-    const updated = await prisma.featureFlag.update({
+    const updated = await (prisma as any).featureFlag.update({
       where: { id: flag.id },
       data: {
         isEnabled: body.isEnabled !== undefined ? body.isEnabled : flag.isEnabled,

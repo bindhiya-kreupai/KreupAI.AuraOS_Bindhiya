@@ -1,6 +1,11 @@
 import { prisma } from '@aura/database';
 import { BaseService } from './base.service';
 
+// Models below (cobraQualifyingEvent, cobraEnrollment) exist in the deployed
+// db-push database but are not present in schema.prisma, so they are absent from
+// the generated PrismaClient types. Access them through this untyped alias.
+const db = prisma as any;
+
 export type CobraEnrollmentStatus =
   | 'PENDING_ELECTION'
   | 'ELECTED'
@@ -11,12 +16,7 @@ export type CobraEnrollmentStatus =
   | 'CANCELED';
 
 export type QualifyingEventType =
-  | 'TERMINATION'
-  | 'REDUCED_HOURS'
-  | 'DIVORCE'
-  | 'DEPENDENT_LOSS'
-  | 'DEATH'
-  | 'MEDICARE_ELIGIBILITY';
+  'TERMINATION' | 'REDUCED_HOURS' | 'DIVORCE' | 'DEPENDENT_LOSS' | 'DEATH' | 'MEDICARE_ELIGIBILITY';
 
 const ENROLLMENT_TRANSITIONS: Record<CobraEnrollmentStatus, CobraEnrollmentStatus[]> = {
   PENDING_ELECTION: ['ELECTED', 'DECLINED', 'EXPIRED', 'CANCELED'],
@@ -98,7 +98,7 @@ export class CobraService extends BaseService {
       input.eventType,
       input.qualifyingDate
     );
-    return prisma.cobraQualifyingEvent.create({
+    return db.cobraQualifyingEvent.create({
       data: {
         tenantId: input.tenantId,
         employeeId: input.employeeId,
@@ -122,11 +122,11 @@ export class CobraService extends BaseService {
     if (!noticeReference || noticeReference.trim().length < 3) {
       throw new Error('A real notice reference is required (no placeholders).');
     }
-    const event = await prisma.cobraQualifyingEvent.findFirst({
+    const event = await db.cobraQualifyingEvent.findFirst({
       where: { id: eventId, tenantId, isDeleted: false },
     });
     if (!event) return null;
-    return prisma.cobraQualifyingEvent.update({
+    return db.cobraQualifyingEvent.update({
       where: { id: eventId },
       data: { noticeIssuedAt: new Date(), noticeReference, updatedBy: actorId },
     });
@@ -142,7 +142,7 @@ export class CobraService extends BaseService {
     benefitPlanId: string;
     actorId: string;
   }) {
-    const event = await prisma.cobraQualifyingEvent.findFirst({
+    const event = await db.cobraQualifyingEvent.findFirst({
       where: { id: input.qualifyingEventId, tenantId: input.tenantId, isDeleted: false },
     });
     if (!event) return null;
@@ -151,7 +151,7 @@ export class CobraService extends BaseService {
     });
     if (!plan) return null;
     const premium = this.computeCobraPremium(plan.employeePremium, plan.employerPremium);
-    return prisma.cobraEnrollment.create({
+    return db.cobraEnrollment.create({
       data: {
         tenantId: input.tenantId,
         qualifyingEventId: input.qualifyingEventId,
@@ -165,7 +165,7 @@ export class CobraService extends BaseService {
   }
 
   async elect(enrollmentId: string, tenantId: string, actorId: string, coverageStart: Date) {
-    const enrollment = await prisma.cobraEnrollment.findFirst({
+    const enrollment = await db.cobraEnrollment.findFirst({
       where: { id: enrollmentId, tenantId },
       include: { qualifyingEvent: true },
     });
@@ -174,7 +174,7 @@ export class CobraService extends BaseService {
     if (new Date() > enrollment.qualifyingEvent.electionDeadline) {
       throw new ElectionWindowExpiredError(enrollment.qualifyingEvent.electionDeadline);
     }
-    return prisma.cobraEnrollment.update({
+    return db.cobraEnrollment.update({
       where: { id: enrollmentId },
       data: {
         status: 'ELECTED',
@@ -187,24 +187,24 @@ export class CobraService extends BaseService {
   }
 
   async decline(enrollmentId: string, tenantId: string, actorId: string, reason?: string) {
-    const enrollment = await prisma.cobraEnrollment.findFirst({
+    const enrollment = await db.cobraEnrollment.findFirst({
       where: { id: enrollmentId, tenantId },
     });
     if (!enrollment) return null;
     this.assertTransition(enrollment.status as CobraEnrollmentStatus, 'DECLINED');
-    return prisma.cobraEnrollment.update({
+    return db.cobraEnrollment.update({
       where: { id: enrollmentId },
       data: { status: 'DECLINED', declineReason: reason ?? null, updatedBy: actorId },
     });
   }
 
   async activate(enrollmentId: string, tenantId: string, actorId: string) {
-    const enrollment = await prisma.cobraEnrollment.findFirst({
+    const enrollment = await db.cobraEnrollment.findFirst({
       where: { id: enrollmentId, tenantId },
     });
     if (!enrollment) return null;
     this.assertTransition(enrollment.status as CobraEnrollmentStatus, 'ACTIVE');
-    return prisma.cobraEnrollment.update({
+    return db.cobraEnrollment.update({
       where: { id: enrollmentId },
       data: { status: 'ACTIVE', updatedBy: actorId },
     });
@@ -221,7 +221,7 @@ export class CobraService extends BaseService {
     amount: number,
     paidThrough: Date
   ) {
-    const enrollment = await prisma.cobraEnrollment.findFirst({
+    const enrollment = await db.cobraEnrollment.findFirst({
       where: { id: enrollmentId, tenantId },
     });
     if (!enrollment) return null;
@@ -231,7 +231,7 @@ export class CobraService extends BaseService {
         enrollment.status as CobraEnrollmentStatus
       );
     }
-    return prisma.cobraEnrollment.update({
+    return db.cobraEnrollment.update({
       where: { id: enrollmentId },
       data: {
         totalPremiumsPaid: { increment: amount },
@@ -244,12 +244,12 @@ export class CobraService extends BaseService {
   }
 
   async terminateNonpayment(enrollmentId: string, tenantId: string, actorId: string) {
-    const enrollment = await prisma.cobraEnrollment.findFirst({
+    const enrollment = await db.cobraEnrollment.findFirst({
       where: { id: enrollmentId, tenantId },
     });
     if (!enrollment) return null;
     this.assertTransition(enrollment.status as CobraEnrollmentStatus, 'TERMINATED_NONPAYMENT');
-    return prisma.cobraEnrollment.update({
+    return db.cobraEnrollment.update({
       where: { id: enrollmentId },
       data: {
         status: 'TERMINATED_NONPAYMENT',
@@ -265,7 +265,7 @@ export class CobraService extends BaseService {
    */
   async expireLapsed(tenantId: string) {
     const now = new Date();
-    const lapsed = await prisma.cobraEnrollment.findMany({
+    const lapsed = await db.cobraEnrollment.findMany({
       where: {
         tenantId,
         status: { in: ['ELECTED', 'ACTIVE'] },
@@ -274,8 +274,8 @@ export class CobraService extends BaseService {
       select: { id: true },
     });
     if (lapsed.length === 0) return { expired: 0 };
-    const result = await prisma.cobraEnrollment.updateMany({
-      where: { id: { in: lapsed.map((x) => x.id) } },
+    const result = await db.cobraEnrollment.updateMany({
+      where: { id: { in: lapsed.map((x: any) => x.id) } },
       data: { status: 'EXPIRED' },
     });
     return { expired: result.count };

@@ -35,6 +35,7 @@ export const ContinuousFeedback: React.FC = () => {
     filters,
     isLoading,
     isSaving,
+    error,
     createFeedback,
     toggleReaction,
     addComment,
@@ -44,9 +45,13 @@ export const ContinuousFeedback: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
 
   const handleSubmit = useCallback(
-    (data: FeedbackFormData) => {
-      createFeedback(data);
-      setShowForm(false);
+    async (data: FeedbackFormData) => {
+      try {
+        await createFeedback(data);
+        setShowForm(false);
+      } catch {
+        // Error surfaced via the `error` banner below; keep the form open.
+      }
     },
     [createFeedback]
   );
@@ -61,6 +66,12 @@ export const ContinuousFeedback: React.FC = () => {
 
   return (
     <div className="space-y-4">
+      {error && (
+        <div className="rounded-lg border border-coral-alert/30 bg-coral-alert/10 px-3 py-2 text-[10px] font-semibold text-coral-alert">
+          {error}
+        </div>
+      )}
+
       {/* Stats Row */}
       <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2">
         {[

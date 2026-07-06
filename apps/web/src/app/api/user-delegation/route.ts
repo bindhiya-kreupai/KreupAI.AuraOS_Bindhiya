@@ -1,4 +1,4 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
@@ -204,17 +204,18 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
 
     // Create audit log
     const ipAddress =
-      request.headers.get('x-forwarded-for') ||
-      request.headers.get('x-real-ip') ||
-      'unknown';
+      request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
 
     await prisma.auditLog.create({
       data: {
         tenantId: user.tenantId,
         userId: user.userId,
         action: 'CREATE',
+        module: 'User Delegation',
         resourceType: 'User Delegation',
-        metadata: { description: `Created delegation from ${delegator.email} to ${delegatee.email} for role: ${validatedData.role}` } as any,
+        metadata: {
+          description: `Created delegation from ${delegator.email} to ${delegatee.email} for role: ${validatedData.role}`,
+        } as any,
         ipAddress,
       },
     });

@@ -14,61 +14,56 @@
 // ============================================================================
 
 export type BenefitCategory =
-    | 'health_insurance'
-    | 'dental'
-    | 'vision'
-    | 'life_insurance'
-    | 'disability'
-    | 'retirement'
-    | 'fsa_hsa'
-    | 'wellness'
-    | 'other';
+  | 'health_insurance'
+  | 'dental'
+  | 'vision'
+  | 'life_insurance'
+  | 'disability'
+  | 'retirement'
+  | 'fsa_hsa'
+  | 'wellness'
+  | 'other';
 
 export type PlanTier = 'basic' | 'bronze' | 'silver' | 'gold' | 'platinum';
 
 export type CoverageLevel = 'employee_only' | 'employee_spouse' | 'employee_children' | 'family';
 
 export type EnrollmentStatus =
-    | 'not_started'
-    | 'in_progress'
-    | 'submitted'
-    | 'confirmed'
-    | 'active'
-    | 'cancelled'
-    | 'expired';
+  'not_started' | 'in_progress' | 'submitted' | 'confirmed' | 'active' | 'cancelled' | 'expired';
 
 export type EnrollmentType = 'new_hire' | 'annual' | 'qualifying_event' | 'rehire';
 
 export type ClaimStatus =
-    | 'submitted'
-    | 'pending_review'
-    | 'approved'
-    | 'partially_approved'
-    | 'denied'
-    | 'paid'
-    | 'appealed';
+  | 'submitted'
+  | 'pending_review'
+  | 'approved'
+  | 'partially_approved'
+  | 'denied'
+  | 'paid'
+  | 'appealed';
 
 export type DependentRelationship =
-    | 'spouse'
-    | 'domestic_partner'
-    | 'child'
-    | 'stepchild'
-    | 'adopted_child'
-    | 'foster_child'
-    | 'legal_guardian';
+  | 'spouse'
+  | 'domestic_partner'
+  | 'child'
+  | 'stepchild'
+  | 'adopted_child'
+  | 'foster_child'
+  | 'legal_guardian';
 
-export type DependentStatus = 'active' | 'pending_verification' | 'verified' | 'inactive' | 'aged_out';
+export type DependentStatus =
+  'active' | 'pending_verification' | 'verified' | 'inactive' | 'aged_out';
 
 export type ProviderType = 'in_network' | 'out_of_network' | 'preferred';
 
 export type QualifyingEventType =
-    | 'marriage'
-    | 'divorce'
-    | 'birth'
-    | 'adoption'
-    | 'death'
-    | 'loss_of_coverage'
-    | 'employment_change';
+  | 'marriage'
+  | 'divorce'
+  | 'birth'
+  | 'adoption'
+  | 'death'
+  | 'loss_of_coverage'
+  | 'employment_change';
 
 export type PremiumPaymentFrequency = 'monthly' | 'semi_monthly' | 'biweekly' | 'weekly';
 
@@ -81,103 +76,108 @@ export type EligibilityStatus = 'eligible' | 'ineligible' | 'pending' | 'conditi
 // ============================================================================
 
 export interface BenefitPlan {
-    id: string;
-    planCode: string;
-    name: string;
-    description: string;
-    category: BenefitCategory;
-    tier: PlanTier;
+  id: string;
+  planCode: string;
+  name: string;
+  description: string;
+  category: BenefitCategory;
+  tier: PlanTier;
 
-    // Plan Details
-    carrierName: string;
-    carrierId: string;
-    policyNumber: string;
-    groupNumber: string;
+  // Plan Details
+  carrierName: string;
+  carrierId: string;
+  policyNumber: string;
+  groupNumber: string;
 
-    // Coverage
-    coverageLevels: CoverageLevel[];
-    annualCoverageLimit?: number;
-    lifetimeCoverageLimit?: number;
-    deductible: {
-        individual: number;
-        family: number;
-        inNetwork: number;
-        outOfNetwork: number;
-    };
-    outOfPocketMax: {
-        individual: number;
-        family: number;
-    };
-    coinsurance: {
-        inNetwork: number; // Percentage
-        outOfNetwork: number; // Percentage
-    };
-    copay: {
-        primaryCare?: number;
-        specialist?: number;
-        urgentCare?: number;
-        emergencyRoom?: number;
-        genericDrug?: number;
-        brandDrug?: number;
-    };
+  // Coverage
+  coverageLevels: CoverageLevel[];
+  annualCoverageLimit?: number;
+  lifetimeCoverageLimit?: number;
+  deductible: {
+    individual: number;
+    family: number;
+    inNetwork: number;
+    outOfNetwork: number;
+  };
+  outOfPocketMax: {
+    individual: number;
+    family: number;
+  };
+  coinsurance: {
+    inNetwork: number; // Percentage
+    outOfNetwork: number; // Percentage
+  };
+  copay: {
+    primaryCare?: number;
+    specialist?: number;
+    urgentCare?: number;
+    emergencyRoom?: number;
+    genericDrug?: number;
+    brandDrug?: number;
+  };
 
-    // Cost
-    premiumRates: PremiumRate[];
+  // Cost
+  premiumRates: PremiumRate[];
 
-    // Eligibility
-    eligibilityRules: EligibilityRule[];
-    waitingPeriod: number; // Days
+  // Eligibility
+  eligibilityRules: EligibilityRule[];
+  waitingPeriod: number; // Days
 
-    // Features
-    features: string[];
-    exclusions: string[];
-    networkProviders: string[];
+  // Features
+  features: string[];
+  exclusions: string[];
+  networkProviders: string[];
 
-    // Plan Documents
-    documents: BenefitDocument[];
+  // Plan Documents
+  documents: BenefitDocument[];
 
-    // Metadata
-    planYear: string; // e.g., "2025"
-    effectiveDate: string;
-    expiryDate: string;
-    status: BenefitPlanStatus;
-    isRecommended: boolean;
-    displayOrder: number;
+  // Metadata
+  planYear: string; // e.g., "2025"
+  effectiveDate: string;
+  expiryDate: string;
+  status: BenefitPlanStatus;
+  isRecommended: boolean;
+  displayOrder: number;
 
-    // Audit
-    createdAt: string;
-    updatedAt: string;
-    createdBy: string;
-    updatedBy?: string;
+  // Audit
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
+  updatedBy?: string;
 }
 
 export interface PremiumRate {
-    id: string;
-    benefitPlanId: string;
-    coverageLevel: CoverageLevel;
-    ageMin?: number;
-    ageMax?: number;
-    location?: string;
+  id: string;
+  benefitPlanId: string;
+  coverageLevel: CoverageLevel;
+  ageMin?: number;
+  ageMax?: number;
+  location?: string;
 
-    // Costs
-    employeeContribution: number; // Per pay period
-    employerContribution: number; // Per pay period
-    totalPremium: number; // Per pay period
+  // Costs
+  employeeContribution: number; // Per pay period
+  employerContribution: number; // Per pay period
+  totalPremium: number; // Per pay period
 
-    // Payment
-    paymentFrequency: PremiumPaymentFrequency;
+  // Payment
+  paymentFrequency: PremiumPaymentFrequency;
 
-    effectiveDate: string;
-    expiryDate: string;
+  effectiveDate: string;
+  expiryDate: string;
 }
 
 export interface BenefitDocument {
-    id: string;
-    name: string;
-    type: 'summary_plan_description' | 'certificate_of_coverage' | 'evidence_of_coverage' | 'rider' | 'other';
-    url: string;
-    uploadedDate: string;
-    fileSize: number;
+  id: string;
+  name: string;
+  type:
+    | 'summary_plan_description'
+    | 'certificate_of_coverage'
+    | 'evidence_of_coverage'
+    | 'rider'
+    | 'other';
+  url: string;
+  uploadedDate: string;
+  fileSize: number;
 }
 
 // ============================================================================
@@ -185,45 +185,45 @@ export interface BenefitDocument {
 // ============================================================================
 
 export interface EligibilityRule {
-    id: string;
-    name: string;
-    description: string;
+  id: string;
+  name: string;
+  description: string;
 
-    // Criteria
-    employmentType?: string[]; // ['full_time', 'part_time']
-    jobLevel?: string[]; // ['entry', 'mid', 'senior', 'executive']
-    department?: string[];
-    location?: string[];
+  // Criteria
+  employmentType?: string[]; // ['full_time', 'part_time']
+  jobLevel?: string[]; // ['entry', 'mid', 'senior', 'executive']
+  department?: string[];
+  location?: string[];
 
-    minTenure?: number; // Days
-    minHoursPerWeek?: number;
+  minTenure?: number; // Days
+  minHoursPerWeek?: number;
 
-    // Age requirements
-    minAge?: number;
-    maxAge?: number;
+  // Age requirements
+  minAge?: number;
+  maxAge?: number;
 
-    // Exclusions
-    excludedPositions?: string[];
-    excludedDepartments?: string[];
+  // Exclusions
+  excludedPositions?: string[];
+  excludedDepartments?: string[];
 
-    isActive: boolean;
-    priority: number;
+  isActive: boolean;
+  priority: number;
 }
 
 export interface EmployeeEligibility {
-    id: string;
-    employeeId: string;
-    employeeName: string;
-    benefitPlanId: string;
-    benefitPlanName: string;
+  id: string;
+  employeeId: string;
+  employeeName: string;
+  benefitPlanId: string;
+  benefitPlanName: string;
 
-    status: EligibilityStatus;
-    reason: string;
+  status: EligibilityStatus;
+  reason: string;
 
-    eligibleDate: string;
-    ineligibleReasons?: string[];
+  eligibleDate: string;
+  ineligibleReasons?: string[];
 
-    calculatedAt: string;
+  calculatedAt: string;
 }
 
 // ============================================================================
@@ -231,114 +231,119 @@ export interface EmployeeEligibility {
 // ============================================================================
 
 export interface EnrollmentWindow {
-    id: string;
-    name: string;
-    type: EnrollmentType;
-    planYear: string;
+  id: string;
+  name: string;
+  type: EnrollmentType;
+  planYear: string;
 
-    // Dates
-    startDate: string;
-    endDate: string;
-    effectiveDate: string; // When coverage starts
+  // Dates
+  startDate: string;
+  endDate: string;
+  effectiveDate: string; // When coverage starts
 
-    // Eligibility
-    eligibleEmployees: string[]; // Employee IDs
+  // Eligibility
+  eligibleEmployees: string[]; // Employee IDs
 
-    // Configuration
-    allowedBenefitCategories: BenefitCategory[];
-    requiresDependentVerification: boolean;
-    reminderSchedule: string[]; // ISO dates for reminders
+  // Configuration
+  allowedBenefitCategories: BenefitCategory[];
+  requiresDependentVerification: boolean;
+  reminderSchedule: string[]; // ISO dates for reminders
 
-    // Status
-    isActive: boolean;
-    completionRate: number; // Percentage
-    enrolledCount: number;
-    eligibleCount: number;
+  // Status
+  isActive: boolean;
+  completionRate: number; // Percentage
+  enrolledCount: number;
+  eligibleCount: number;
 
-    // Notifications
-    notificationsSent: number;
+  // Notifications
+  notificationsSent: number;
 
-    // Audit
-    createdAt: string;
-    updatedAt: string;
-    createdBy: string;
+  // Audit
+  createdAt: string;
+  updatedAt: string;
+  createdBy: string;
 }
 
 export interface BenefitEnrollment {
-    id: string;
-    enrollmentNumber: string;
+  id: string;
+  enrollmentNumber: string;
 
-    // Employee Info
-    employeeId: string;
-    employeeName: string;
-    employeeEmail: string;
+  // Employee Info
+  employeeId: string;
+  employeeName: string;
+  employeeEmail: string;
 
-    // Enrollment Context
-    enrollmentWindowId: string;
-    enrollmentType: EnrollmentType;
-    qualifyingEventId?: string;
+  // Enrollment Context
+  enrollmentWindowId: string;
+  enrollmentType: EnrollmentType;
+  qualifyingEventId?: string;
 
-    // Plan Selection
-    benefitPlanId: string;
-    benefitPlanName: string;
-    coverageLevel: CoverageLevel;
+  // Plan Selection
+  benefitPlanId: string;
+  benefitPlanName: string;
+  coverageLevel: CoverageLevel;
 
-    // Dependents
-    dependents: EnrolledDependent[];
+  // Dependents
+  dependents: EnrolledDependent[];
 
-    // Cost
-    employeeContribution: number; // Per pay period
-    employerContribution: number; // Per pay period
-    totalPremium: number; // Per pay period
-    annualCost: number;
+  // Cost
+  employeeContribution: number; // Per pay period
+  employerContribution: number; // Per pay period
+  totalPremium: number; // Per pay period
+  annualCost: number;
 
-    // Coverage Period
-    effectiveDate: string;
-    expiryDate: string;
+  // Coverage Period
+  effectiveDate: string;
+  expiryDate: string;
 
-    // Status & Workflow
-    status: EnrollmentStatus;
-    submittedDate?: string;
-    confirmedDate?: string;
-    approvedBy?: string;
-    approvedDate?: string;
+  // Status & Workflow
+  status: EnrollmentStatus;
+  submittedDate?: string;
+  confirmedDate?: string;
+  approvedBy?: string;
+  approvedDate?: string;
 
-    // Evidence of Insurability (for life/disability)
-    requiresEOI: boolean;
-    eoiStatus?: 'pending' | 'submitted' | 'approved' | 'denied';
-    eoiSubmittedDate?: string;
+  // Evidence of Insurability (for life/disability)
+  requiresEOI: boolean;
+  eoiStatus?: 'pending' | 'submitted' | 'approved' | 'denied';
+  eoiSubmittedDate?: string;
 
-    // Waived Coverage
-    isWaived: boolean;
-    waiverReason?: string;
-    waiverDate?: string;
+  // Waived Coverage
+  isWaived: boolean;
+  waiverReason?: string;
+  waiverDate?: string;
 
-    // Documents
-    documents: EnrollmentDocument[];
+  // Documents
+  documents: EnrollmentDocument[];
 
-    // Notes
-    notes?: string;
+  // Notes
+  notes?: string;
 
-    // Audit
-    createdAt: string;
-    updatedAt: string;
+  // Audit
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface EnrolledDependent {
-    dependentId: string;
-    name: string;
-    relationship: DependentRelationship;
-    dateOfBirth: string;
-    ssn?: string;
-    isVerified: boolean;
+  dependentId: string;
+  name: string;
+  relationship: DependentRelationship;
+  dateOfBirth: string;
+  ssn?: string;
+  isVerified: boolean;
 }
 
 export interface EnrollmentDocument {
-    id: string;
-    name: string;
-    type: 'dependent_verification' | 'marriage_certificate' | 'birth_certificate' | 'adoption_papers' | 'other';
-    url: string;
-    uploadedDate: string;
+  id: string;
+  name: string;
+  type:
+    | 'dependent_verification'
+    | 'marriage_certificate'
+    | 'birth_certificate'
+    | 'adoption_papers'
+    | 'other';
+  url: string;
+  uploadedDate: string;
 }
 
 // ============================================================================
@@ -346,67 +351,74 @@ export interface EnrollmentDocument {
 // ============================================================================
 
 export interface Dependent {
-    id: string;
-    employeeId: string;
+  id: string;
+  employeeId: string;
 
-    // Personal Info
-    firstName: string;
-    middleName?: string;
-    lastName: string;
-    dateOfBirth: string;
-    gender: 'male' | 'female' | 'other';
-    ssn?: string;
+  // Personal Info
+  firstName: string;
+  middleName?: string;
+  lastName: string;
+  dateOfBirth: string;
+  gender: 'male' | 'female' | 'other';
+  ssn?: string;
 
-    // Relationship
-    relationship: DependentRelationship;
+  // Relationship
+  relationship: DependentRelationship;
 
-    // Address (if different from employee)
-    address?: {
-        street: string;
-        city: string;
-        state: string;
-        zipCode: string;
-        country: string;
-    };
+  // Address (if different from employee)
+  address?: {
+    street: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
+  };
 
-    // Contact
-    phone?: string;
-    email?: string;
+  // Contact
+  phone?: string;
+  email?: string;
 
-    // Student Status (for dependent eligibility)
-    isStudent: boolean;
-    studentInfo?: {
-        schoolName: string;
-        expectedGraduation: string;
-        isFullTime: boolean;
-    };
+  // Student Status (for dependent eligibility)
+  isStudent: boolean;
+  studentInfo?: {
+    schoolName: string;
+    expectedGraduation: string;
+    isFullTime: boolean;
+  };
 
-    // Disability Status
-    isDisabled: boolean;
-    disabilityDescription?: string;
+  // Disability Status
+  isDisabled: boolean;
+  disabilityDescription?: string;
 
-    // Verification
-    status: DependentStatus;
-    verificationDocuments: DependentDocument[];
-    verifiedDate?: string;
-    verifiedBy?: string;
+  // Verification
+  status: DependentStatus;
+  verificationDocuments: DependentDocument[];
+  verifiedDate?: string;
+  verifiedBy?: string;
 
-    // Coverage
-    enrolledPlans: string[]; // Benefit Plan IDs
+  // Coverage
+  enrolledPlans: string[]; // Benefit Plan IDs
 
-    // Audit
-    createdAt: string;
-    updatedAt: string;
+  // Audit
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface DependentDocument {
-    id: string;
-    type: 'birth_certificate' | 'marriage_certificate' | 'adoption_papers' | 'custody_agreement' | 'disability_certification' | 'student_id' | 'other';
-    name: string;
-    url: string;
-    uploadedDate: string;
-    isVerified: boolean;
-    verifiedDate?: string;
+  id: string;
+  type:
+    | 'birth_certificate'
+    | 'marriage_certificate'
+    | 'adoption_papers'
+    | 'custody_agreement'
+    | 'disability_certification'
+    | 'student_id'
+    | 'other';
+  name: string;
+  url: string;
+  uploadedDate: string;
+  isVerified: boolean;
+  verifiedDate?: string;
 }
 
 // ============================================================================
@@ -414,72 +426,72 @@ export interface DependentDocument {
 // ============================================================================
 
 export interface BenefitClaim {
-    id: string;
-    claimNumber: string;
+  id: string;
+  claimNumber: string;
 
-    // Employee Info
-    employeeId: string;
-    employeeName: string;
-    enrollmentId: string;
-    benefitPlanId: string;
-    benefitPlanName: string;
+  // Employee Info
+  employeeId: string;
+  employeeName: string;
+  enrollmentId: string;
+  benefitPlanId: string;
+  benefitPlanName: string;
 
-    // Claim Details
-    serviceDate: string;
-    submittedDate: string;
-    providerName: string;
-    providerId: string;
-    providerType: ProviderType;
+  // Claim Details
+  serviceDate: string;
+  submittedDate: string;
+  providerName: string;
+  providerId: string;
+  providerType: ProviderType;
 
-    // Patient
-    patientName: string; // Employee or dependent
-    patientRelationship: 'self' | DependentRelationship;
+  // Patient
+  patientName: string; // Employee or dependent
+  patientRelationship: 'self' | DependentRelationship;
 
-    // Amounts
-    claimedAmount: number;
-    approvedAmount: number;
-    deductibleApplied: number;
-    coinsuranceApplied: number;
-    copayApplied: number;
-    paidAmount: number;
-    patientResponsibility: number;
+  // Amounts
+  claimedAmount: number;
+  approvedAmount: number;
+  deductibleApplied: number;
+  coinsuranceApplied: number;
+  copayApplied: number;
+  paidAmount: number;
+  patientResponsibility: number;
 
-    // Diagnosis & Treatment
-    diagnosisCodes: string[];
-    procedureCodes: string[];
-    treatmentDescription: string;
+  // Diagnosis & Treatment
+  diagnosisCodes: string[];
+  procedureCodes: string[];
+  treatmentDescription: string;
 
-    // Status & Processing
-    status: ClaimStatus;
-    statusReason?: string;
-    processedDate?: string;
-    processedBy?: string;
-    paymentDate?: string;
+  // Status & Processing
+  status: ClaimStatus;
+  statusReason?: string;
+  processedDate?: string;
+  processedBy?: string;
+  paymentDate?: string;
 
-    // Denial/Appeal
-    denialReason?: string;
-    appealDate?: string;
-    appealStatus?: 'pending' | 'approved' | 'denied';
-    appealResolution?: string;
+  // Denial/Appeal
+  denialReason?: string;
+  appealDate?: string;
+  appealStatus?: 'pending' | 'approved' | 'denied';
+  appealResolution?: string;
 
-    // Documents
-    receipts: ClaimDocument[];
-    explanationOfBenefits?: string; // URL to EOB
+  // Documents
+  receipts: ClaimDocument[];
+  explanationOfBenefits?: string; // URL to EOB
 
-    // Notes
-    notes?: string;
+  // Notes
+  notes?: string;
 
-    // Audit
-    createdAt: string;
-    updatedAt: string;
+  // Audit
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface ClaimDocument {
-    id: string;
-    type: 'receipt' | 'invoice' | 'prescription' | 'medical_report' | 'referral' | 'other';
-    name: string;
-    url: string;
-    uploadedDate: string;
+  id: string;
+  type: 'receipt' | 'invoice' | 'prescription' | 'medical_report' | 'referral' | 'other';
+  name: string;
+  url: string;
+  uploadedDate: string;
 }
 
 // ============================================================================
@@ -487,69 +499,70 @@ export interface ClaimDocument {
 // ============================================================================
 
 export interface HealthcareProvider {
-    id: string;
+  id: string;
 
-    // Provider Info
-    name: string;
-    type: 'hospital' | 'clinic' | 'physician' | 'specialist' | 'pharmacy' | 'dental' | 'vision' | 'other';
-    specialty?: string;
+  // Provider Info
+  name: string;
+  type:
+    'hospital' | 'clinic' | 'physician' | 'specialist' | 'pharmacy' | 'dental' | 'vision' | 'other';
+  specialty?: string;
 
-    // Network
-    providerType: ProviderType;
-    networkIds: string[];
-    acceptedBenefitPlanIds: string[];
+  // Network
+  providerType: ProviderType;
+  networkIds: string[];
+  acceptedBenefitPlanIds: string[];
 
-    // Contact
-    phone: string;
-    email?: string;
-    website?: string;
+  // Contact
+  phone: string;
+  email?: string;
+  website?: string;
 
-    // Address
-    address: {
-        street: string;
-        suite?: string;
-        city: string;
-        state: string;
-        zipCode: string;
-        country: string;
-    };
+  // Address
+  address: {
+    street: string;
+    suite?: string;
+    city: string;
+    state: string;
+    zipCode: string;
+    country: string;
+  };
 
-    // Location
-    coordinates?: {
-        latitude: number;
-        longitude: number;
-    };
+  // Location
+  coordinates?: {
+    latitude: number;
+    longitude: number;
+  };
 
-    // Hours
-    hours?: {
-        monday?: string;
-        tuesday?: string;
-        wednesday?: string;
-        thursday?: string;
-        friday?: string;
-        saturday?: string;
-        sunday?: string;
-    };
+  // Hours
+  hours?: {
+    monday?: string;
+    tuesday?: string;
+    wednesday?: string;
+    thursday?: string;
+    friday?: string;
+    saturday?: string;
+    sunday?: string;
+  };
 
-    // Ratings
-    rating?: number; // 1-5
-    reviewCount?: number;
+  // Ratings
+  rating?: number; // 1-5
+  reviewCount?: number;
 
-    // Accepting Patients
-    acceptingNewPatients: boolean;
+  // Accepting Patients
+  acceptingNewPatients: boolean;
 
-    // Languages
-    languagesSpoken?: string[];
+  // Languages
+  languagesSpoken?: string[];
 
-    // Accessibility
-    wheelchairAccessible: boolean;
+  // Accessibility
+  wheelchairAccessible: boolean;
 
-    // Status
-    isActive: boolean;
+  // Status
+  isActive: boolean;
 
-    // Audit
-    createdAt: string;
-    updatedAt: string;
+  // Audit
+  createdAt: string;
+  updatedAt: string;
 }
 
 // ============================================================================
@@ -557,47 +570,53 @@ export interface HealthcareProvider {
 // ============================================================================
 
 export interface QualifyingEvent {
-    id: string;
+  id: string;
 
-    // Employee
-    employeeId: string;
-    employeeName: string;
+  // Employee
+  employeeId: string;
+  employeeName: string;
 
-    // Event Details
-    eventType: QualifyingEventType;
-    eventDate: string;
-    description: string;
+  // Event Details
+  eventType: QualifyingEventType;
+  eventDate: string;
+  description: string;
 
-    // Enrollment Window
-    specialEnrollmentWindowStart: string;
-    specialEnrollmentWindowEnd: string; // Typically 30 or 60 days after event
+  // Enrollment Window
+  specialEnrollmentWindowStart: string;
+  specialEnrollmentWindowEnd: string; // Typically 30 or 60 days after event
 
-    // Verification
-    requiresDocumentation: boolean;
-    documents: QualifyingEventDocument[];
-    isVerified: boolean;
-    verifiedDate?: string;
-    verifiedBy?: string;
+  // Verification
+  requiresDocumentation: boolean;
+  documents: QualifyingEventDocument[];
+  isVerified: boolean;
+  verifiedDate?: string;
+  verifiedBy?: string;
 
-    // Enrollment Changes
-    allowedChanges: string[]; // e.g., ['add_dependent', 'change_coverage_level', 'enroll_in_plan']
-    enrollmentChanges: string[]; // Enrollment IDs affected
+  // Enrollment Changes
+  allowedChanges: string[]; // e.g., ['add_dependent', 'change_coverage_level', 'enroll_in_plan']
+  enrollmentChanges: string[]; // Enrollment IDs affected
 
-    // Status
-    status: 'pending' | 'verified' | 'expired' | 'denied';
+  // Status
+  status: 'pending' | 'verified' | 'expired' | 'denied';
 
-    // Audit
-    reportedDate: string;
-    createdAt: string;
-    updatedAt: string;
+  // Audit
+  reportedDate: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface QualifyingEventDocument {
-    id: string;
-    type: 'marriage_certificate' | 'divorce_decree' | 'birth_certificate' | 'death_certificate' | 'loss_of_coverage_letter' | 'other';
-    name: string;
-    url: string;
-    uploadedDate: string;
+  id: string;
+  type:
+    | 'marriage_certificate'
+    | 'divorce_decree'
+    | 'birth_certificate'
+    | 'death_certificate'
+    | 'loss_of_coverage_letter'
+    | 'other';
+  name: string;
+  url: string;
+  uploadedDate: string;
 }
 
 // ============================================================================
@@ -605,39 +624,39 @@ export interface QualifyingEventDocument {
 // ============================================================================
 
 export interface PremiumDeduction {
-    id: string;
+  id: string;
 
-    // Employee & Enrollment
-    employeeId: string;
-    enrollmentId: string;
-    benefitPlanId: string;
+  // Employee & Enrollment
+  employeeId: string;
+  enrollmentId: string;
+  benefitPlanId: string;
 
-    // Payroll Period
-    payrollPeriodStart: string;
-    payrollPeriodEnd: string;
-    payDate: string;
+  // Payroll Period
+  payrollPeriodStart: string;
+  payrollPeriodEnd: string;
+  payDate: string;
 
-    // Amounts
-    employeeContribution: number;
-    employerContribution: number;
-    totalPremium: number;
+  // Amounts
+  employeeContribution: number;
+  employerContribution: number;
+  totalPremium: number;
 
-    // Pre-Tax/Post-Tax
-    isPreTax: boolean;
-    taxSavings?: number;
+  // Pre-Tax/Post-Tax
+  isPreTax: boolean;
+  taxSavings?: number;
 
-    // Adjustment
-    isAdjustment: boolean;
-    adjustmentReason?: string;
-    originalDeductionId?: string;
+  // Adjustment
+  isAdjustment: boolean;
+  adjustmentReason?: string;
+  originalDeductionId?: string;
 
-    // Status
-    status: 'pending' | 'processed' | 'cancelled' | 'reversed';
-    processedDate?: string;
+  // Status
+  status: 'pending' | 'processed' | 'cancelled' | 'reversed';
+  processedDate?: string;
 
-    // Audit
-    createdAt: string;
-    updatedAt: string;
+  // Audit
+  createdAt: string;
+  updatedAt: string;
 }
 
 // ============================================================================
@@ -645,45 +664,62 @@ export interface PremiumDeduction {
 // ============================================================================
 
 export interface BenefitSettings {
-    id: string;
-    organizationId: string;
+  id: string;
+  organizationId: string;
 
-    // Enrollment
-    defaultEnrollmentWindowDays: number; // e.g., 30 days
-    requireDependentVerification: boolean;
-    allowMidYearChanges: boolean;
-    qualifyingEventWindowDays: number; // e.g., 60 days
+  // Enrollment
+  defaultEnrollmentWindowDays: number; // e.g., 30 days
+  requireDependentVerification: boolean;
+  allowMidYearChanges: boolean;
+  qualifyingEventWindowDays: number; // e.g., 60 days
 
-    // New Hire
-    newHireEnrollmentPeriodDays: number; // e.g., 30 days from hire
-    newHireWaitingPeriodDays: number; // Days before eligible
+  // New Hire
+  newHireEnrollmentPeriodDays: number; // e.g., 30 days from hire
+  newHireWaitingPeriodDays: number; // Days before eligible
 
-    // Costs
-    defaultPaymentFrequency: PremiumPaymentFrequency;
-    allowEmployerContributionVariance: boolean;
+  // Costs
+  defaultPaymentFrequency: PremiumPaymentFrequency;
+  allowEmployerContributionVariance: boolean;
 
-    // Compliance
-    requireACACompliance: boolean;
-    requireCOBRANotifications: boolean;
-    requireHIPAACompliance: boolean;
+  // Compliance
+  requireACACompliance: boolean;
+  requireCOBRANotifications: boolean;
+  requireHIPAACompliance: boolean;
 
-    // Notifications
-    sendEnrollmentReminders: boolean;
-    reminderDaysBefore: number[];
-    sendCoverageChangeNotifications: boolean;
+  // Notifications
+  sendEnrollmentReminders: boolean;
+  reminderDaysBefore: number[];
+  sendCoverageChangeNotifications: boolean;
 
-    // Providers
-    enableProviderDirectory: boolean;
-    requireInNetworkPreAuthorization: boolean;
+  // Providers
+  enableProviderDirectory: boolean;
+  requireInNetworkPreAuthorization: boolean;
 
-    // Claims
-    enableOnlineClaims: boolean;
-    requireClaimReceipts: boolean;
-    claimSubmissionDeadlineDays: number;
+  // Claims
+  enableOnlineClaims: boolean;
+  requireClaimReceipts: boolean;
+  claimSubmissionDeadlineDays: number;
 
-    // Audit
-    updatedAt: string;
-    updatedBy: string;
+  // Audit
+  updatedAt: string;
+  updatedBy: string;
+}
+
+// ============================================================================
+// NOTIFICATION CAMPAIGNS
+// ============================================================================
+
+export interface BenefitCampaign {
+  id: string;
+  tenantId: string;
+  title: string;
+  type: 'Urgent' | 'Info';
+  channel: string;
+  message: string;
+  status: 'DRAFT' | 'QUEUED' | 'SENT' | 'CANCELLED';
+  createdBy?: string | null;
+  createdAt: string;
+  updatedAt: string;
 }
 
 // ============================================================================
@@ -691,44 +727,44 @@ export interface BenefitSettings {
 // ============================================================================
 
 export interface BenefitStats {
-    // Enrollment
-    totalEnrollments: number;
-    activeEnrollments: number;
-    enrollmentRate: number; // Percentage
+  // Enrollment
+  totalEnrollments: number;
+  activeEnrollments: number;
+  enrollmentRate: number; // Percentage
 
-    // By Category
-    enrollmentsByCategory: Record<BenefitCategory, number>;
+  // By Category
+  enrollmentsByCategory: Record<BenefitCategory, number>;
 
-    // By Plan
-    enrollmentsByPlan: {
-        planId: string;
-        planName: string;
-        count: number;
-        percentage: number;
-    }[];
+  // By Plan
+  enrollmentsByPlan: {
+    planId: string;
+    planName: string;
+    count: number;
+    percentage: number;
+  }[];
 
-    // Costs
-    totalPremiums: number;
-    employeeContributions: number;
-    employerContributions: number;
-    averagePremiumPerEmployee: number;
+  // Costs
+  totalPremiums: number;
+  employeeContributions: number;
+  employerContributions: number;
+  averagePremiumPerEmployee: number;
 
-    // Claims
-    totalClaims: number;
-    approvedClaims: number;
-    deniedClaims: number;
-    totalClaimAmount: number;
-    totalPaidAmount: number;
-    averageClaimAmount: number;
-    claimApprovalRate: number; // Percentage
+  // Claims
+  totalClaims: number;
+  approvedClaims: number;
+  deniedClaims: number;
+  totalClaimAmount: number;
+  totalPaidAmount: number;
+  averageClaimAmount: number;
+  claimApprovalRate: number; // Percentage
 
-    // Dependents
-    totalDependents: number;
-    averageDependentsPerEmployee: number;
+  // Dependents
+  totalDependents: number;
+  averageDependentsPerEmployee: number;
 
-    // Trending
-    enrollmentTrend: 'increasing' | 'decreasing' | 'stable';
-    costTrend: 'increasing' | 'decreasing' | 'stable';
+  // Trending
+  enrollmentTrend: 'increasing' | 'decreasing' | 'stable';
+  costTrend: 'increasing' | 'decreasing' | 'stable';
 }
 
 // ============================================================================
@@ -736,8 +772,8 @@ export interface BenefitStats {
 // ============================================================================
 
 export interface Toast {
-    id: string;
-    type: 'success' | 'error' | 'warning' | 'info';
-    message: string;
-    duration?: number;
+  id: string;
+  type: 'success' | 'error' | 'warning' | 'info';
+  message: string;
+  duration?: number;
 }

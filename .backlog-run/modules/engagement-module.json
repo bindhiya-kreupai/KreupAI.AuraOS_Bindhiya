@@ -1,0 +1,178 @@
+[
+  {
+    "id": "AURA-094",
+    "title": "Surveys: Fix API response unwrapping",
+    "module": "Engagement Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/engagement/surveys, /pulse-surveys, /polls-quizzes",
+    "api": "SurveyService \u2192 /api/engagement/surveys; APIClient.unwrapList",
+    "desc": "SurveyService.getSurveys() returns raw { success, data, meta }; pages check Array.isArray \u2192 always empty even when DB has data."
+  },
+  {
+    "id": "AURA-095",
+    "title": "Surveys: Wire Start Survey and survey responses API",
+    "module": "Engagement Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/engagement/surveys",
+    "api": "SurveyService.submitResponse; /api/engagement/survey-responses (missing)",
+    "desc": "Start Survey button has no handler. Missing /api/engagement/survey-responses endpoint."
+  },
+  {
+    "id": "AURA-096",
+    "title": "Events: Fix response unwrapping and wire RSVP",
+    "module": "Engagement Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/engagement/events, /event-calendar, /birthday-anniversary",
+    "api": "EventService \u2192 /api/engagement/events; /api/engagement/rsvps (missing)",
+    "desc": "Same wrapped-list bug as surveys. handleRsvp updates local state only; no POST persisted."
+  },
+  {
+    "id": "AURA-097",
+    "title": "Innovation: Create ideas API and wire submit/vote",
+    "module": "Engagement Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/engagement/innovation, /suggestion-box",
+    "api": "/api/engagement/ideas (missing); InnovationService.createIdea, voteIdea",
+    "desc": "InnovationService.getIdeas() \u2192 404. Submit Idea modal opens but submit not connected; votes are local state only."
+  },
+  {
+    "id": "AURA-098",
+    "title": "CSR: Create CSR activities API",
+    "module": "Engagement Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/engagement/csr-activities",
+    "api": "/api/engagement/csr-activities (missing)",
+    "desc": "CSRService.getActivities() \u2192 404."
+  },
+  {
+    "id": "AURA-099",
+    "title": "Newsletter: Create newsletters API",
+    "module": "Engagement Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/engagement/newsletter",
+    "api": "/api/engagement/newsletters (missing)",
+    "desc": "NewsletterService.getNewsletters() \u2192 404."
+  },
+  {
+    "id": "AURA-100",
+    "title": "Social Feed: Wire compose post and like/comment/share",
+    "module": "Engagement Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/engagement/social-feed",
+    "api": "SocialFeedService \u2192 /api/engagement/posts; /posts/{id}/like (missing)",
+    "desc": "Post/Send, image, emoji buttons unwired. Interaction buttons decorative."
+  },
+  {
+    "id": "AURA-101",
+    "title": "Recognition Wall: Wire Give Kudos and like/comment",
+    "module": "Engagement Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/engagement/recognition-wall",
+    "api": "SocialFeedService.createPost (type=recognition)",
+    "desc": "Give Kudos button unwired. Like/comment buttons have no handlers."
+  },
+  {
+    "id": "AURA-102",
+    "title": "Classifieds: Create dedicated classifieds API",
+    "module": "Engagement Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/engagement/classifieds",
+    "api": "Missing classifieds API; misuses SocialFeedService",
+    "desc": "Filters SocialFeedService.getPosts() for type===classified \u2014 wrong domain model. Post Ad modal submit not connected."
+  },
+  {
+    "id": "AURA-103",
+    "title": "Rewards Catalog: Create rewards catalog API and wire Redeem",
+    "module": "Engagement Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/engagement/rewards-catalog",
+    "api": "Missing rewards API; link to gamification points",
+    "desc": "Misuses social posts filtered by type===reward; balance hardcoded 0 pts. Redeem button unwired."
+  },
+  {
+    "id": "AURA-104",
+    "title": "Referral Program: Create referral program API and wire share buttons",
+    "module": "Engagement Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/engagement/referral-program",
+    "api": "Missing referral API",
+    "desc": "Misuses social posts type===referral; link/bonus hardcoded. Copy/LinkedIn/Twitter share unwired."
+  },
+  {
+    "id": "AURA-105",
+    "title": "Pulse Checks: Wire Launch Pulse Check and trend data",
+    "module": "Engagement Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/engagement/pulse-checks",
+    "api": "SurveyService.submitResponse; /api/engagement/analytics",
+    "desc": "handleSendPulse toggles UI only; charts (sentimentData, deptData) never populated."
+  },
+  {
+    "id": "AURA-106",
+    "title": "Analytics: Wire gamification/wellness metrics and Export",
+    "module": "Engagement Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/engagement/engagement-analytics",
+    "api": "EngagementAnalyticsService; missing gamification metrics",
+    "desc": "Badges/challenges/wellness hardcoded to 0; time-range select doesn't refetch. Export button unwired."
+  },
+  {
+    "id": "AURA-107",
+    "title": "Settings: Expose engagement settings admin UI",
+    "module": "Engagement Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "Module-wide",
+    "api": "GET/PUT /api/engagement/settings",
+    "desc": "EngagementSettingsService exists; no settings page."
+  },
+  {
+    "id": "AURA-108",
+    "title": "Navigation: Complete hub feature list",
+    "module": "Engagement Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/engagement",
+    "api": "ModuleGrid",
+    "desc": "Hub lists 10 features; 10+ pages exist but aren't in grid (surveys, newsletter, innovation, events, rewards-catalog, wall, etc.)."
+  },
+  {
+    "id": "AURA-109",
+    "title": "Architecture: Wire or remove useEngagement hook",
+    "module": "Engagement Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "hooks/useEngagement.ts",
+    "api": "hooks/useEngagement.ts",
+    "desc": "Central hook loads all domains; no page uses it."
+  }
+]

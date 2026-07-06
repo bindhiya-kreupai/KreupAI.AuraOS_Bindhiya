@@ -1,0 +1,37 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// Benefits Module backlog — schema fragment (AURA-295)
+//
+// SCHEMA RULE: This fragment is NOT applied to schema.prisma directly. The model
+// below is created by the defensive migration at
+//   packages/@aura/database/prisma/migrations/20260702190001_cleanup_benefits/migration.sql
+// and accessed at runtime via `(prisma as any).benefitCampaign`.
+//
+// Delegate: (prisma as any).benefitCampaign
+// Table:    aura_benefit_campaign
+// ─────────────────────────────────────────────────────────────────────────────
+
+/// Benefit notification campaign — an HR-authored message (reminder / info) that
+/// is queued for delivery to employees over one or more channels. Persists the
+/// "Create New Campaign" action from /dashboard/benefits/notification.
+model BenefitCampaign {
+  id        String   @id @default(uuid())
+  tenantId  String
+  title     String
+  /// 'Urgent' | 'Info'
+  type      String   @default("Info")
+  /// Free-text delivery channel, e.g. "Email & Push", "Email".
+  channel   String   @default("Email")
+  message   String
+  /// 'DRAFT' | 'QUEUED' | 'SENT' | 'CANCELLED'
+  status    String   @default("QUEUED")
+  createdBy String?
+  updatedBy String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  isDeleted Boolean  @default(false)
+  deletedAt DateTime?
+
+  @@index([tenantId])
+  @@index([status])
+  @@map("aura_benefit_campaign")
+}

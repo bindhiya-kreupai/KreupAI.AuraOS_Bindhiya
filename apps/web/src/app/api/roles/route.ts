@@ -1,4 +1,4 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
@@ -12,7 +12,11 @@ import { logger } from '@/lib/logger';
 
 // Validation Schemas
 const CreateRoleSchema = z.object({
-  code: z.string().min(2).max(50).regex(/^[A-Z_]+$/),
+  code: z
+    .string()
+    .min(2)
+    .max(50)
+    .regex(/^[A-Z_]+$/),
   name: z.string().min(2).max(100),
   description: z.string().optional(),
   isSystem: z.boolean().default(false),
@@ -94,12 +98,15 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
       prisma.role.count({ where }),
     ]);
 
-    logger.info({
-      userId: user.userId,
-      tenantId: user.tenantId,
-      count: roles.length,
-      total,
-    }, 'Roles fetched successfully');
+    logger.info(
+      {
+        userId: user.userId,
+        tenantId: user.tenantId,
+        count: roles.length,
+        total,
+      },
+      'Roles fetched successfully'
+    );
 
     return NextResponse.json({
       success: true,
@@ -120,10 +127,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
     }
 
     logger.error({ error, userId: user.userId }, 'Error fetching roles');
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch roles' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: 'Failed to fetch roles' }, { status: 500 });
   }
 });
 
@@ -206,18 +210,22 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
         tenantId: user.tenantId,
         userId: user.userId,
         action: 'CREATE',
+        module: 'Role Management',
         resourceType: 'Role Management',
         metadata: { description: `Created role: ${newRole.code} (${newRole.name})` } as any,
         ipAddress,
       },
     });
 
-    logger.info({
-      userId: user.userId,
-      tenantId: user.tenantId,
-      roleId: newRole.id,
-      roleCode: newRole.code,
-    }, 'Role created successfully');
+    logger.info(
+      {
+        userId: user.userId,
+        tenantId: user.tenantId,
+        roleId: newRole.id,
+        roleCode: newRole.code,
+      },
+      'Role created successfully'
+    );
 
     return NextResponse.json(
       {
@@ -236,9 +244,6 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
     }
 
     logger.error({ error, userId: user.userId }, 'Error creating role');
-    return NextResponse.json(
-      { success: false, error: 'Failed to create role' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: 'Failed to create role' }, { status: 500 });
   }
 });

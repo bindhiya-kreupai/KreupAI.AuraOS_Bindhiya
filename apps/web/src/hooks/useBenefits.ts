@@ -7,6 +7,7 @@
 'use client';
 
 import { useState, useCallback, useEffect, useMemo } from 'react';
+import { useCurrentUser } from '@/lib/auth/AuthProvider';
 import {
   BenefitsEnrollmentService,
   type BenefitPlan,
@@ -36,6 +37,9 @@ export interface WizardState {
 // ── Hook: useBenefitsEnrollment ────────────────────────────────────────────────
 
 export function useBenefitsEnrollment() {
+  const { user, loading: authLoading } = useCurrentUser();
+  const employeeId = user?.employeeId ?? null;
+
   // Data
   const [plans, setPlans] = useState<BenefitPlan[]>([]);
   const [dependents, setDependents] = useState<BenefitDependent[]>([]);
@@ -61,12 +65,13 @@ export function useBenefitsEnrollment() {
   // ── Load data ──────────────────────────────────────────────────────────────
 
   useEffect(() => {
+    if (authLoading) return;
     let cancelled = false;
     async function load() {
       setLoading(true);
       const [plansData, depsData, windowData] = await Promise.all([
         BenefitsEnrollmentService.getPlans(),
-        BenefitsEnrollmentService.getDependents(),
+        BenefitsEnrollmentService.getDependents(employeeId ?? undefined),
         BenefitsEnrollmentService.getEnrollmentWindow(),
       ]);
       if (!cancelled) {
@@ -80,7 +85,7 @@ export function useBenefitsEnrollment() {
     return () => {
       cancelled = true;
     };
-  }, []);
+  }, [authLoading, employeeId]);
 
   // ── Wizard navigation ─────────────────────────────────────────────────────
 
@@ -148,11 +153,15 @@ export function useBenefitsEnrollment() {
 
   // ── Dependents management ──────────────────────────────────────────────────
 
-  const addDependent = useCallback(async (dep: Omit<BenefitDependent, 'id'>) => {
-    const newDep = await BenefitsEnrollmentService.addDependent(dep);
-    setDependents((prev) => [...prev, newDep]);
-    return newDep;
-  }, []);
+  const addDependent = useCallback(
+    async (dep: Omit<BenefitDependent, 'id'>) => {
+      if (!employeeId) throw new Error('No authenticated employee');
+      const newDep = await BenefitsEnrollmentService.addDependent({ ...dep, employeeId });
+      setDependents((prev) => [...prev, newDep]);
+      return newDep;
+    },
+    [employeeId]
+  );
 
   const removeDependent = useCallback(async (id: string) => {
     await BenefitsEnrollmentService.removeDependent(id);
@@ -217,10 +226,11 @@ export function useBenefitsEnrollment() {
   // ── Submit enrollment ──────────────────────────────────────────────────────
 
   const submitEnrollment = useCallback(async () => {
-    if (!enrollmentWindow) return;
+    if (!enrollmentWindow || !employeeId) return;
     setSubmitting(true);
     try {
       const result = await BenefitsEnrollmentService.submitEnrollment({
+        employeeId,
         selections: selections as Record<BenefitCategory, EnrollmentSelection | null>,
         effectiveDate: enrollmentWindow.effectiveDate,
         enrollmentType: 'annual',
@@ -232,7 +242,7 @@ export function useBenefitsEnrollment() {
     } finally {
       setSubmitting(false);
     }
-  }, [selections, enrollmentWindow, goToStep]);
+  }, [selections, enrollmentWindow, employeeId, goToStep]);
 
   // ── Selected count ─────────────────────────────────────────────────────────
 

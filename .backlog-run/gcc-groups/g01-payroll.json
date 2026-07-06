@@ -1,0 +1,189 @@
+[
+  {
+    "id": "AURA-487",
+    "title": "Payroll Governance & Compliance: Wire page to backend API",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/payroll-compliance",
+    "api": "Not specified",
+    "desc": "Page renders inline static arrays with no fetch/service detected."
+  },
+  {
+    "id": "AURA-488",
+    "title": "Alerts: Replace mock/hardcoded data with live API",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/payroll-compliance/alerts",
+    "api": "Not specified",
+    "desc": "Page uses hardcoded or mock data; no fetch/service calls detected."
+  },
+  {
+    "id": "AURA-489",
+    "title": "Audit Finding: Complete API integration and remove mock/local fallbacks",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/payroll-compliance/audit-finding",
+    "api": "/api/v1/payroll-compliance/audit-finding",
+    "desc": "Page calls APIs (/api/v1/payroll-compliance/audit-finding) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-490",
+    "title": "Audit Findings Register: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/payroll-compliance/audit-findings-register",
+    "api": "Not specified",
+    "desc": "Menu feature 'Audit Findings Register' resolves to /dashboard/payroll-compliance/audit-findings-register but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-491",
+    "title": "Bahrain Sio: Complete API integration and remove mock/local fallbacks",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/payroll-compliance/bahrain-sio",
+    "api": "/api/compliance/bahrain-sio",
+    "desc": "Page calls APIs (/api/compliance/bahrain-sio) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-492",
+    "title": "Eosb: Manual review required",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/payroll-compliance/eosb",
+    "api": "Not specified",
+    "desc": "Page exists; automated heuristics could not classify wiring."
+  },
+  {
+    "id": "AURA-493",
+    "title": "End Of Service Benefits Calculator: Complete API integration and remove mock/local fallbacks",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/payroll-compliance/eosb/end-of-service-benefits-calculator",
+    "api": "/api/compliance/eosb",
+    "desc": "Page calls APIs (/api/compliance/eosb) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-494",
+    "title": "Gosi: Complete API integration and remove mock/local fallbacks",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/payroll-compliance/gosi",
+    "api": "/api/compliance/gosi",
+    "desc": "Page calls APIs (/api/compliance/gosi) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-495",
+    "title": "Governance: Complete API integration and remove mock/local fallbacks",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/payroll-compliance/governance",
+    "api": "/api/v1/payroll-compliance/governance",
+    "desc": "Page calls APIs (/api/v1/payroll-compliance/governance) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-496",
+    "title": "Governance Controls (8 categories): Complete API integration and remove mock/local fallbacks",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/payroll-compliance/governance-controls-8-categories",
+    "api": "/api/v1/payroll-compliance/governance",
+    "desc": "Page calls APIs (/api/v1/payroll-compliance/governance) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-497",
+    "title": "India Statutory: Complete API integration and remove mock/local fallbacks",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/payroll-compliance/india-statutory",
+    "api": "/api/india-statutory",
+    "desc": "Page calls APIs (/api/india-statutory) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-498",
+    "title": "Monthly Compliance Certificate (Recon/Bank-File/GL): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/payroll-compliance/monthly-compliance-certificate-recon-bank-file-gl",
+    "api": "Not specified",
+    "desc": "Menu feature 'Monthly Compliance Certificate (Recon/Bank-File/GL)' resolves to /dashboard/payroll-compliance/monthly-compliance-certificate-recon-bank-file-gl but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-499",
+    "title": "Oman Spf: Complete API integration and remove mock/local fallbacks",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/payroll-compliance/oman-spf",
+    "api": "/api/compliance/oman-spf",
+    "desc": "Page calls APIs (/api/compliance/oman-spf) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-500",
+    "title": "Overview: Complete API integration and remove mock/local fallbacks",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/payroll-compliance/overview",
+    "api": "/api/compliance/bahrain-sio, /api/compliance/eosb, /api/compliance/gosi, /api/compliance/kuwait-pifss, /api/compliance/labour-law",
+    "desc": "Page calls APIs (/api/compliance/bahrain-sio, /api/compliance/eosb, /api/compliance/gosi) but @ts-nocheck contract drift."
+  },
+  {
+    "id": "AURA-501",
+    "title": "Payroll Risk Register (L\u00d7I bands): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/payroll-compliance/payroll-risk-register-l-i-bands",
+    "api": "Not specified",
+    "desc": "Menu feature 'Payroll Risk Register (L\u00d7I bands)' resolves to /dashboard/payroll-compliance/payroll-risk-register-l-i-bands but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-502",
+    "title": "Qatar Wps: Complete API integration and remove mock/local fallbacks",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/payroll-compliance/qatar-wps",
+    "api": "/api/compliance/qatar-wps",
+    "desc": "Page calls APIs (/api/compliance/qatar-wps) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-503",
+    "title": "Risk Register: Complete API integration and remove mock/local fallbacks",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/payroll-compliance/risk-register",
+    "api": "/api/v1/payroll-compliance/risk-register",
+    "desc": "Page calls APIs (/api/v1/payroll-compliance/risk-register) but mock/hardcoded UI remains."
+  }
+]

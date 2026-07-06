@@ -45,12 +45,23 @@ export default function RuleChangeRequestsPage() {
   const [rollbackCountry, setRollbackCountry] = useState('AE');
   const [rollbackRationale, setRollbackRationale] = useState('');
   const [rollbackSource, setRollbackSource] = useState('');
+  const [rejectingId, setRejectingId] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
+  const [busyId, setBusyId] = useState<string | null>(null);
 
   async function load() {
     const qs = statusFilter ? `?status=${statusFilter}` : '';
-    const r = await fetch(`/api/v1/gcc-rule-library/rule-change-requests${qs}`);
-    const p = await r.json();
-    if (p.success) setRequests(p.data ?? []);
+    try {
+      const r = await fetch(`/api/v1/gcc-rule-library/rule-change-requests${qs}`);
+      const p = await r.json();
+      if (p.success) {
+        setRequests(p.data ?? []);
+      } else {
+        setMessage(p.message || 'Failed to load change requests');
+      }
+    } catch {
+      setMessage('Failed to load change requests');
+    }
   }
   useEffect(() => {
     load();
@@ -82,28 +93,57 @@ export default function RuleChangeRequestsPage() {
 
   async function approve(id: string) {
     setMessage('');
-    const r = await fetch('/api/v1/gcc-rule-library/rule-change-requests', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'approve', requestId: id }),
-    });
-    const p = await r.json();
-    setMessage(p.success ? 'Approved' : p.message || 'Failed');
-    load();
+    setBusyId(id);
+    try {
+      const r = await fetch('/api/v1/gcc-rule-library/rule-change-requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'approve', requestId: id }),
+      });
+      const p = await r.json();
+      setMessage(p.success ? 'Approved' : p.message || 'Failed');
+      if (p.success) await load();
+    } finally {
+      setBusyId(null);
+    }
   }
 
-  async function reject(id: string) {
-    const reason = window.prompt('Rejection reason?')?.trim();
-    if (!reason) return;
+  function beginReject(id: string) {
+    setRejectingId(id);
+    setRejectReason('');
     setMessage('');
-    const r = await fetch('/api/v1/gcc-rule-library/rule-change-requests', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'reject', requestId: id, reason }),
-    });
-    const p = await r.json();
-    setMessage(p.success ? 'Rejected' : p.message || 'Failed');
-    load();
+  }
+
+  function cancelReject() {
+    setRejectingId(null);
+    setRejectReason('');
+  }
+
+  async function confirmReject() {
+    const id = rejectingId;
+    const reason = rejectReason.trim();
+    if (!id || !reason) {
+      setMessage('A rejection reason is required.');
+      return;
+    }
+    setMessage('');
+    setBusyId(id);
+    try {
+      const r = await fetch('/api/v1/gcc-rule-library/rule-change-requests', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'reject', requestId: id, reason }),
+      });
+      const p = await r.json();
+      setMessage(p.success ? 'Rejected' : p.message || 'Failed');
+      if (p.success) {
+        setRejectingId(null);
+        setRejectReason('');
+        await load();
+      }
+    } finally {
+      setBusyId(null);
+    }
   }
 
   async function submitRollback() {
@@ -250,22 +290,54 @@ export default function RuleChangeRequestsPage() {
                   <td className="text-xs">{req.sourceReference}</td>
                   <td className="text-xs">
                     {req.status === 'PENDING_APPROVAL' ? (
-                      <div className="flex gap-2">
-                        <button
-                          type="button"
-                          onClick={() => approve(req.id)}
-                          className="rounded-md bg-emerald-600 px-2 py-1 text-xs text-white"
-                        >
-                          Approve
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => reject(req.id)}
-                          className="rounded-md bg-rose-600 px-2 py-1 text-xs text-white"
-                        >
-                          Reject
-                        </button>
-                      </div>
+                      rejectingId === req.id ? (
+                        <div className="flex flex-col gap-2">
+                          <textarea
+                            value={rejectReason}
+                            onChange={(e) => setRejectReason(e.target.value)}
+                            rows={2}
+                            placeholder="Rejection reason (required)"
+                            className="w-full rounded-md border border-slate-300 px-2 py-1 text-xs"
+                          />
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={confirmReject}
+                              disabled={busyId === req.id || !rejectReason.trim()}
+                              className="rounded-md bg-rose-600 px-2 py-1 text-xs text-white disabled:opacity-50"
+                            >
+                              Confirm reject
+                            </button>
+                            <button
+                              type="button"
+                              onClick={cancelReject}
+                              disabled={busyId === req.id}
+                              className="rounded-md border border-slate-300 px-2 py-1 text-xs"
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => approve(req.id)}
+                            disabled={busyId === req.id}
+                            className="rounded-md bg-emerald-600 px-2 py-1 text-xs text-white disabled:opacity-50"
+                          >
+                            Approve
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => beginReject(req.id)}
+                            disabled={busyId === req.id}
+                            className="rounded-md bg-rose-600 px-2 py-1 text-xs text-white disabled:opacity-50"
+                          >
+                            Reject
+                          </button>
+                        </div>
+                      )
                     ) : req.status === 'APPROVED' ? (
                       <span>by {req.approvedBy ?? '—'}</span>
                     ) : req.status === 'REJECTED' ? (

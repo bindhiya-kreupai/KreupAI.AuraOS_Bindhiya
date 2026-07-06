@@ -59,7 +59,7 @@ export const GET = withEnhancedAuth(
       const id = params?.id;
       if (!id) return notFound();
 
-      const structure = await prisma.salaryStructure.findFirst({
+      const structure = await (prisma as any).salaryStructure.findFirst({
         where: { id, tenantId: user.tenantId, isDeleted: false },
         include: {
           grade: { select: { id: true, name: true, code: true } },
@@ -93,7 +93,7 @@ export const PUT = withAudit(
         const id = params?.id;
         if (!id) return notFound();
 
-        const existing = await prisma.salaryStructure.findFirst({
+        const existing = await (prisma as any).salaryStructure.findFirst({
           where: { id, tenantId: user.tenantId, isDeleted: false },
           select: { id: true },
         });
@@ -101,7 +101,7 @@ export const PUT = withAudit(
 
         const body = await request.json();
         // tenant-ok: id-based op preceded by tenant-scoped findFirst above
-        const updated = await prisma.salaryStructure.update({
+        const updated = await (prisma as any).salaryStructure.update({
           where: { id },
           data: {
             name: body.name ?? undefined,
@@ -154,14 +154,14 @@ export const DELETE = withAudit(
         const id = params?.id;
         if (!id) return notFound();
 
-        const existing = await prisma.salaryStructure.findFirst({
+        const existing = await (prisma as any).salaryStructure.findFirst({
           where: { id, tenantId: user.tenantId, isDeleted: false },
           select: { id: true },
         });
         if (!existing) return notFound();
 
         // tenant-ok: id-based op preceded by tenant-scoped findFirst above
-        await prisma.salaryStructure.update({
+        await (prisma as any).salaryStructure.update({
           where: { id },
           data: { isDeleted: true, deletedAt: new Date(), status: 'Archived', updatedBy: user.id },
         });

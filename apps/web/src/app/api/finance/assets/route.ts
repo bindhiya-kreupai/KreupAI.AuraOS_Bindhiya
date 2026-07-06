@@ -1,115 +1,41 @@
 /**
- * Financial Assets API Routes
- * Finance Module - Asset Management
+ * Financial Asset API — Finance Module (AURA-154, AURA-158)
+ * DB-backed, tenant-scoped finance asset register (capital / operational).
  */
 
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { createProtectedRoute } from '@/lib/api/route-wrapper';
+import { AssetRepo } from '@/lib/services/finance/finance.service';
 
-/**
- * GET /api/finance/assets
- * Get all financial assets
- */
-export async function GET(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const assetType = searchParams.get('assetType');
-    const status = searchParams.get('status');
+export const GET = createProtectedRoute(async (request: NextRequest, { auth }) => {
+  const { searchParams } = new URL(request.url);
+  const assetType = searchParams.get('assetType') || undefined;
+  const result = await AssetRepo.list((auth as any).tenantId, { assetType });
+  return NextResponse.json({
+    success: true,
+    assets: result.items,
+    ...result,
+    summary: {
+      totalAssets: result.total,
+      totalValue: result.items.reduce((s: number, a: any) => s + Number(a.currentValue || 0), 0),
+      totalDepreciation: result.items.reduce(
+        (s: number, a: any) => s + Number(a.accumulatedDepreciation || 0),
+        0
+      ),
+      assetsUnderMaintenance: result.items.filter((a: any) => a.status === 'under_repair').length,
+    },
+  });
+});
 
-    return NextResponse.json({
-      success: true,
-      assets: [],
-      summary: {
-        totalAssets: 0,
-        totalValue: 0,
-        totalDepreciation: 0,
-        assetsUnderMaintenance: 0,
-      },
-    });
-  } catch (error: any) {
-    return NextResponse.json({ error: 'Failed to fetch assets' }, { status: 500 });
+export const POST = createProtectedRoute(async (request: NextRequest, { auth }) => {
+  const body = await request.json().catch(() => ({}));
+  if (!body.assetName) {
+    return NextResponse.json(
+      { success: false, message: 'assetName is required.', messageAr: 'اسم الأصل مطلوب.' },
+      { status: 400 }
+    );
   }
-}
-
-/**
- * POST /api/finance/assets
- * Create new asset or calculate depreciation
- */
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const { assetId } = body;
-
-    // If assetId is provided, calculate depreciation
-    if (assetId) {
-      return NextResponse.json({
-        success: true,
-        depreciation: 0,
-        calculatedAt: new Date().toISOString(),
-      });
-    }
-
-    // Otherwise, create new asset
-    return NextResponse.json({
-      success: true,
-      asset: {
-        id: `asset-${Date.now()}`,
-        assetCode: `AST-${Date.now()}`,
-        ...body,
-        createdDate: new Date().toISOString(),
-        lastModified: new Date().toISOString(),
-      },
-    });
-  } catch (error: any) {
-    return NextResponse.json({ error: 'Failed to process asset' }, { status: 500 });
-  }
-}
-
-/**
- * PUT /api/finance/assets
- * Update asset
- */
-export async function PUT(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-    const body = await request.json();
-
-    if (!id) {
-      return NextResponse.json({ error: 'Asset ID is required' }, { status: 400 });
-    }
-
-    return NextResponse.json({
-      success: true,
-      asset: {
-        id,
-        ...body,
-        lastModified: new Date().toISOString(),
-      },
-    });
-  } catch (error: any) {
-    return NextResponse.json({ error: 'Failed to update asset' }, { status: 500 });
-  }
-}
-
-/**
- * DELETE /api/finance/assets
- * Delete asset
- */
-export async function DELETE(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-
-    if (!id) {
-      return NextResponse.json({ error: 'Asset ID is required' }, { status: 400 });
-    }
-
-    return NextResponse.json({
-      success: true,
-      message: 'Asset deleted successfully',
-    });
-  } catch (error: any) {
-    return NextResponse.json({ error: 'Failed to delete asset' }, { status: 500 });
-  }
-}
+  const asset = await AssetRepo.create((auth as any).tenantId, (auth as any).userId, body);
+  return NextResponse.json({ success: true, asset }, { status: 201 });
+});

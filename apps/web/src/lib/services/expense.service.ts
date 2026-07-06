@@ -136,7 +136,7 @@ export class ExpenseService extends BaseService {
       ];
     }
     const [items, total] = await Promise.all([
-      prisma.expenseClaim.findMany({
+      (prisma as any).expenseClaim.findMany({
         where,
         orderBy: { createdAt: 'desc' },
         skip,
@@ -145,13 +145,13 @@ export class ExpenseService extends BaseService {
           _count: { select: { items: true } },
         },
       }),
-      prisma.expenseClaim.count({ where }),
+      (prisma as any).expenseClaim.count({ where }),
     ]);
     return { items, total, page, pageSize: limit, hasNextPage: skip + items.length < total };
   }
 
   async getById(id: string, tenantId: string) {
-    return prisma.expenseClaim.findFirst({
+    return (prisma as any).expenseClaim.findFirst({
       where: { id, tenantId },
       include: { items: true, policy: true },
     });
@@ -168,7 +168,7 @@ export class ExpenseService extends BaseService {
     actorId: string;
   }) {
     const total = round2((input.items ?? []).reduce((s, i) => s + Number(i.amount || 0), 0));
-    return prisma.expenseClaim.create({
+    return (prisma as any).expenseClaim.create({
       data: {
         tenantId: input.tenantId,
         employeeId: input.employeeId,
@@ -199,7 +199,7 @@ export class ExpenseService extends BaseService {
   }
 
   async submit(id: string, tenantId: string, actorId: string) {
-    const claim = await prisma.expenseClaim.findFirst({
+    const claim = await (prisma as any).expenseClaim.findFirst({
       where: { id, tenantId },
       include: { items: true, policy: true },
     });
@@ -207,7 +207,7 @@ export class ExpenseService extends BaseService {
     this.assertTransition(claim.status as ExpenseStatus, 'SUBMITTED');
 
     const decision = this.evaluatePolicy(
-      claim.items.map((i) => ({
+      (claim.items as any[]).map((i: any) => ({
         category: i.category,
         description: i.description ?? undefined,
         amount: Number(i.amount),
@@ -230,17 +230,17 @@ export class ExpenseService extends BaseService {
       throw new PolicyViolationError(decision.failures);
     }
 
-    return prisma.expenseClaim.update({
+    return (prisma as any).expenseClaim.update({
       where: { id },
       data: { status: 'SUBMITTED', submittedAt: new Date(), updatedBy: actorId },
     });
   }
 
   async approve(id: string, tenantId: string, actorId: string) {
-    const claim = await prisma.expenseClaim.findFirst({ where: { id, tenantId } });
+    const claim = await (prisma as any).expenseClaim.findFirst({ where: { id, tenantId } });
     if (!claim) return null;
     this.assertTransition(claim.status as ExpenseStatus, 'APPROVED');
-    return prisma.expenseClaim.update({
+    return (prisma as any).expenseClaim.update({
       where: { id },
       data: {
         status: 'APPROVED',
@@ -252,10 +252,10 @@ export class ExpenseService extends BaseService {
   }
 
   async reject(id: string, tenantId: string, actorId: string, reason: string) {
-    const claim = await prisma.expenseClaim.findFirst({ where: { id, tenantId } });
+    const claim = await (prisma as any).expenseClaim.findFirst({ where: { id, tenantId } });
     if (!claim) return null;
     this.assertTransition(claim.status as ExpenseStatus, 'REJECTED');
-    return prisma.expenseClaim.update({
+    return (prisma as any).expenseClaim.update({
       where: { id },
       data: {
         status: 'REJECTED',
@@ -268,10 +268,10 @@ export class ExpenseService extends BaseService {
   }
 
   async cancel(id: string, tenantId: string, actorId: string) {
-    const claim = await prisma.expenseClaim.findFirst({ where: { id, tenantId } });
+    const claim = await (prisma as any).expenseClaim.findFirst({ where: { id, tenantId } });
     if (!claim) return null;
     this.assertTransition(claim.status as ExpenseStatus, 'CANCELED');
-    return prisma.expenseClaim.update({
+    return (prisma as any).expenseClaim.update({
       where: { id },
       data: { status: 'CANCELED', updatedBy: actorId },
     });
@@ -286,10 +286,10 @@ export class ExpenseService extends BaseService {
     if (!paidReference || paidReference.trim().length < 3) {
       throw new Error('A real payment reference is required (no placeholders).');
     }
-    const claim = await prisma.expenseClaim.findFirst({ where: { id, tenantId } });
+    const claim = await (prisma as any).expenseClaim.findFirst({ where: { id, tenantId } });
     if (!claim) return null;
     this.assertTransition(claim.status as ExpenseStatus, 'PAID');
-    return prisma.expenseClaim.update({
+    return (prisma as any).expenseClaim.update({
       where: { id },
       data: {
         status: 'PAID',
@@ -303,7 +303,7 @@ export class ExpenseService extends BaseService {
   // ------- Policy CRUD -------
 
   async listPolicies(tenantId: string) {
-    return prisma.expensePolicy.findMany({
+    return (prisma as any).expensePolicy.findMany({
       where: { tenantId, isDeleted: false, isActive: true },
       orderBy: { name: 'asc' },
     });
@@ -321,7 +321,7 @@ export class ExpenseService extends BaseService {
     perDiemRates?: Record<string, number>;
     actorId: string;
   }) {
-    return prisma.expensePolicy.create({
+    return (prisma as any).expensePolicy.create({
       data: {
         tenantId: input.tenantId,
         name: input.name,

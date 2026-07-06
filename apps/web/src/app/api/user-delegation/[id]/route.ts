@@ -1,4 +1,4 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
@@ -149,17 +149,18 @@ export const PUT = withEnhancedAuth(
 
       // Create audit log
       const ipAddress =
-        request.headers.get('x-forwarded-for') ||
-        request.headers.get('x-real-ip') ||
-        'unknown';
+        request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
 
       await prisma.auditLog.create({
         data: {
           tenantId: user.tenantId,
           userId: user.userId,
           action: 'UPDATE',
+          module: 'User Delegation',
           resourceType: 'User Delegation',
-          metadata: { description: `Updated delegation from ${updatedDelegation.delegator.email} to ${updatedDelegation.delegatee.email}` } as any,
+          metadata: {
+            description: `Updated delegation from ${updatedDelegation.delegator.email} to ${updatedDelegation.delegatee.email}`,
+          } as any,
           ipAddress,
         },
       });
@@ -224,17 +225,18 @@ export const DELETE = withEnhancedAuth(
 
       // Create audit log
       const ipAddress =
-        request.headers.get('x-forwarded-for') ||
-        request.headers.get('x-real-ip') ||
-        'unknown';
+        request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
 
       await prisma.auditLog.create({
         data: {
           tenantId: user.tenantId,
           userId: user.userId,
           action: 'DELETE',
+          module: 'User Delegation',
           resourceType: 'User Delegation',
-          metadata: { description: `Deleted delegation from ${existingDelegation.delegator.email} to ${existingDelegation.delegatee.email}` } as any,
+          metadata: {
+            description: `Deleted delegation from ${existingDelegation.delegator.email} to ${existingDelegation.delegatee.email}`,
+          } as any,
           ipAddress,
         },
       });

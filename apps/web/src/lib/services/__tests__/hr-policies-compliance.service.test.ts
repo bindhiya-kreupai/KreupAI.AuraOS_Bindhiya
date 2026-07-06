@@ -5,6 +5,7 @@ import {
   hrPolicyExceptionService,
   hrPolicyReviewService,
   hrPolicyCertificateService,
+  hrPolicyAcknowledgementService,
   HR_POLICY_CONSTANTS,
 } from '../hr-policies-compliance';
 
@@ -16,10 +17,14 @@ beforeEach(() => {
     findUnique: vi.fn().mockResolvedValue({ id: 'p-1', tenantId: 'tenant-1', status: 'DRAFT' }),
     findMany: vi.fn().mockResolvedValue([]),
     count: vi.fn().mockResolvedValue(0),
+    create: vi.fn().mockImplementation(async ({ data }: any) => ({ id: 'p-new', ...data })),
     update: vi.fn().mockImplementation(async ({ data }: any) => ({ id: 'p-1', ...data })),
   };
   m.policyAcknowledgement = {
     count: vi.fn().mockResolvedValue(0),
+    findMany: vi.fn().mockResolvedValue([]),
+    findUnique: vi.fn().mockResolvedValue(null),
+    create: vi.fn().mockImplementation(async ({ data }: any) => ({ id: 'ack-1', ...data })),
   };
   m.hrPolicyException = {
     findMany: vi.fn().mockResolvedValue([]),
@@ -110,6 +115,93 @@ describe('hrPolicyCertificateService', () => {
     await expect(hrPolicyCertificateService.sign('2026-06', [], auth)).rejects.toThrow(
       /cannot sign while gated/
     );
+  });
+});
+
+describe('hrPolicyService.create / update / getById', () => {
+  it('creates a DRAFT policy with the authenticated user as owner/creator', async () => {
+    const p = await hrPolicyService.create({ title: 'Leave Policy', category: 'HR' }, auth);
+    const call = m.policyDocument.create.mock.calls[0][0];
+    expect(call.data.status).toBe('DRAFT');
+    expect(call.data.tenantId).toBe('tenant-1');
+    expect(call.data.ownerId).toBe('user-1');
+    expect(call.data.createdBy).toBe('user-1');
+    expect(p.title).toBe('Leave Policy');
+  });
+  it('rejects create without title or category', async () => {
+    await expect(hrPolicyService.create({ title: '', category: 'HR' }, auth)).rejects.toThrow(
+      /required/
+    );
+  });
+  it('getById scopes by tenant', async () => {
+    m.policyDocument.findUnique = vi
+      .fn()
+      .mockResolvedValue({ id: 'p-1', tenantId: 'other', status: 'DRAFT' });
+    const r = await hrPolicyService.getById('p-1', 'tenant-1');
+    expect(r).toBeNull();
+  });
+  it('update only writes provided fields', async () => {
+    await hrPolicyService.update('p-1', { title: 'New Title' }, auth);
+    const call = m.policyDocument.update.mock.calls[0][0];
+    expect(call.data.title).toBe('New Title');
+    expect(call.data.updatedBy).toBe('user-1');
+    expect(call.data.category).toBeUndefined();
+  });
+});
+
+describe('hrPolicyAcknowledgementService.acknowledge', () => {
+  it('rejects acknowledging an unpublished policy', async () => {
+    m.policyDocument.findUnique = vi
+      .fn()
+      .mockResolvedValue({ id: 'p-1', tenantId: 'tenant-1', status: 'DRAFT' });
+    await expect(
+      hrPolicyAcknowledgementService.acknowledge({ policyId: 'p-1', employeeId: 'emp-1' }, auth)
+    ).rejects.toThrow(/not published/);
+  });
+  it('is idempotent — returns existing row without re-creating', async () => {
+    m.policyDocument.findUnique = vi
+      .fn()
+      .mockResolvedValue({ id: 'p-1', tenantId: 'tenant-1', status: 'PUBLISHED' });
+    m.policyAcknowledgement.findUnique = vi.fn().mockResolvedValue({ id: 'existing' });
+    const r = await hrPolicyAcknowledgementService.acknowledge(
+      { policyId: 'p-1', employeeId: 'emp-1' },
+      auth
+    );
+    expect(r).toEqual({ id: 'existing' });
+    expect(m.policyAcknowledgement.create).not.toHaveBeenCalled();
+  });
+  it('creates a new acknowledgement scoped to tenant + employee', async () => {
+    m.policyDocument.findUnique = vi
+      .fn()
+      .mockResolvedValue({ id: 'p-1', tenantId: 'tenant-1', status: 'PUBLISHED' });
+    await hrPolicyAcknowledgementService.acknowledge(
+      { policyId: 'p-1', employeeId: 'emp-1' },
+      auth
+    );
+    const call = m.policyAcknowledgement.create.mock.calls[0][0];
+    expect(call.data.tenantId).toBe('tenant-1');
+    expect(call.data.employeeId).toBe('emp-1');
+    expect(call.data.policyId).toBe('p-1');
+  });
+});
+
+describe('HrPolicyCertificateService.sign attestations', () => {
+  it('rejects signing with empty attestations', async () => {
+    m.hrPolicyCertificate.findUnique = vi.fn().mockResolvedValue({ id: 'c-1', gatingReason: null });
+    await expect(hrPolicyCertificateService.sign('2026-06', [], auth)).rejects.toThrow(
+      /at least one attestation/
+    );
+  });
+  it('signs when attestations are complete', async () => {
+    m.hrPolicyCertificate.findUnique = vi.fn().mockResolvedValue({ id: 'c-1', gatingReason: null });
+    await hrPolicyCertificateService.sign(
+      '2026-06',
+      [{ field: 'reviewed', value: 'CONFIRMED' }],
+      auth
+    );
+    const call = m.hrPolicyCertificate.update.mock.calls[0][0];
+    expect(call.data.status).toBe('SIGNED');
+    expect(call.data.signedBy).toBe('user-1');
   });
 });
 

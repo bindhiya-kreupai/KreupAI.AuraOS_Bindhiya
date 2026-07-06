@@ -74,9 +74,80 @@ export interface CostBreakdown {
 
 // ── Service ────────────────────────────────────────────────────────────────────
 
+interface V1PlanRecord {
+  id: string;
+  name: string;
+  category: string;
+  type?: string;
+  provider?: string;
+  description?: string;
+  isRecommended?: boolean;
+  coverage?: unknown;
+  premiums?: {
+    employeeOnly?: number;
+    employeeSpouse?: number;
+    employeeChildren?: number;
+    family?: number;
+  };
+  employerContribution?: number;
+  deductible?: { individual: number; family: number } | null;
+  outOfPocketMax?: { individual: number; family: number } | null;
+  copay?: number | null;
+  coinsurance?: number | null;
+}
+
+// Map the v1 dash-case category back to the wizard's BenefitCategory tokens.
+const CATEGORY_MAP: Record<string, BenefitCategory> = {
+  'health-insurance': 'health',
+  health: 'health',
+  dental: 'dental',
+  vision: 'vision',
+  'life-insurance': 'life',
+  life: 'life',
+  disability: 'disability',
+  'fsa-hsa': 'fsa_hsa',
+  fsa_hsa: 'fsa_hsa',
+};
+
+function adaptPlan(record: V1PlanRecord): BenefitPlan {
+  const employer = record.employerContribution ?? 0;
+  const p = record.premiums ?? {};
+  const premiums: BenefitPlan['premiums'] = {
+    employee_only: { employee: p.employeeOnly ?? 0, employer },
+    employee_spouse: { employee: p.employeeSpouse ?? p.employeeOnly ?? 0, employer },
+    employee_children: { employee: p.employeeChildren ?? p.employeeOnly ?? 0, employer },
+    family: { employee: p.family ?? p.employeeOnly ?? 0, employer },
+  };
+  return {
+    id: record.id,
+    category: CATEGORY_MAP[record.category] ?? 'health',
+    tier: (record.type as PlanTier) ?? 'basic',
+    name: record.name,
+    description: record.description ?? '',
+    carrier: record.provider ?? '',
+    features: Array.isArray(record.coverage) ? (record.coverage as string[]) : [],
+    isRecommended: Boolean(record.isRecommended),
+    premiums,
+    deductible: record.deductible ?? { individual: 0, family: 0 },
+    outOfPocketMax: record.outOfPocketMax ?? { individual: 0, family: 0 },
+    copay: {
+      primaryCare: record.copay ?? 0,
+      specialist: record.copay ?? 0,
+      urgentCare: record.copay ?? 0,
+      emergency: record.copay ?? 0,
+    },
+    coinsurance: record.coinsurance ?? 0,
+  };
+}
+
 export class BenefitsEnrollmentService {
   static async getPlans(category?: BenefitCategory): Promise<BenefitPlan[]> {
-    return APIClient.get<BenefitPlan[]>('/v1/benefits', { category });
+    const response = await APIClient.get<{ success: boolean; data: V1PlanRecord[] }>(
+      '/v1/benefits/plans',
+      { category, status: 'ACTIVE' }
+    );
+    const records = response?.data ?? [];
+    return Array.isArray(records) ? records.map(adaptPlan) : [];
   }
 
   static async getPlansByCategory(): Promise<Record<BenefitCategory, BenefitPlan[]>> {
@@ -89,26 +160,121 @@ export class BenefitsEnrollmentService {
     return grouped as Record<BenefitCategory, BenefitPlan[]>;
   }
 
-  static async getDependents(): Promise<BenefitDependent[]> {
-    return APIClient.get<BenefitDependent[]>('/v1/benefits/dependents');
+  static async getDependents(employeeId?: string): Promise<BenefitDependent[]> {
+    // Canonical dependents API lives at /benefits/dependents (no /v1 variant exists).
+    const response = await APIClient.get<{ success: boolean; data: any[] }>(
+      '/benefits/dependents',
+      employeeId ? { employeeId } : undefined
+    );
+    const records = response?.data ?? [];
+    return (Array.isArray(records) ? records : []).map((d) => ({
+      id: d.id,
+      firstName: d.firstName,
+      lastName: d.lastName,
+      relationship: String(d.relationship || '').toLowerCase() as BenefitDependent['relationship'],
+      dateOfBirth: d.dateOfBirth,
+      ssn: d.ssn ?? undefined,
+      gender: (String(d.gender || 'other').toLowerCase() as BenefitDependent['gender']) || 'other',
+      isStudent: d.isStudent ?? false,
+      isDisabled: d.isDisabled ?? false,
+    }));
   }
 
-  static async addDependent(dependent: Omit<BenefitDependent, 'id'>): Promise<BenefitDependent> {
-    return APIClient.post<BenefitDependent>('/v1/benefits/dependents', dependent);
+  static async addDependent(
+    dependent: Omit<BenefitDependent, 'id'> & { employeeId: string }
+  ): Promise<BenefitDependent> {
+    const response = await APIClient.post<{ success: boolean; data: any }>('/benefits/dependents', {
+      employeeId: dependent.employeeId,
+      firstName: dependent.firstName,
+      lastName: dependent.lastName,
+      dateOfBirth: new Date(dependent.dateOfBirth).toISOString(),
+      relationship: String(dependent.relationship).toUpperCase(),
+      gender: dependent.gender,
+      ssn: dependent.ssn,
+      isStudent: dependent.isStudent,
+      isDisabled: dependent.isDisabled,
+    });
+    const d = response?.data ?? {};
+    return {
+      id: d.id,
+      firstName: d.firstName,
+      lastName: d.lastName,
+      relationship: String(d.relationship || '').toLowerCase() as BenefitDependent['relationship'],
+      dateOfBirth: d.dateOfBirth,
+      gender: (String(d.gender || 'other').toLowerCase() as BenefitDependent['gender']) || 'other',
+      isStudent: d.isStudent ?? false,
+      isDisabled: d.isDisabled ?? false,
+    };
   }
 
   static async removeDependent(id: string): Promise<void> {
-    await APIClient.delete<void>(`/v1/benefits/dependents/${id}`);
+    await APIClient.delete<{ success: boolean }>(
+      `/benefits/dependents?id=${encodeURIComponent(id)}`
+    );
   }
 
-  static async getEnrollmentWindow(): Promise<EnrollmentWindow> {
-    return APIClient.get<EnrollmentWindow>('/v1/benefits/enrollment-window');
+  static async getEnrollmentWindow(): Promise<EnrollmentWindow | null> {
+    const response = await APIClient.get<{ success: boolean; data: any[] }>(
+      '/v1/benefits/open-enrollment'
+    );
+    const windows = response?.data ?? [];
+    if (!Array.isArray(windows) || windows.length === 0) return null;
+    const now = Date.now();
+    const active =
+      windows.find((w) => {
+        const start = new Date(w.startDate).getTime();
+        const end = new Date(w.endDate).getTime();
+        return start <= now && end >= now;
+      }) ?? windows[0];
+    const endMs = new Date(active.endDate).getTime();
+    const daysRemaining = Math.max(0, Math.ceil((endMs - now) / (1000 * 60 * 60 * 24)));
+    return {
+      id: active.id,
+      name: active.windowName ?? active.name ?? 'Open Enrollment',
+      type: (active.windowType || 'annual').toLowerCase().includes('annual') ? 'annual' : 'special',
+      startDate: active.startDate,
+      endDate: active.endDate,
+      effectiveDate: active.effectiveDate ?? active.startDate,
+      isActive: Boolean(active.isActive),
+      daysRemaining,
+    };
   }
 
   static async submitEnrollment(
-    submission: EnrollmentSubmission
+    submission: EnrollmentSubmission & { employeeId: string }
   ): Promise<{ success: boolean; enrollmentId: string }> {
-    return APIClient.post('/v1/benefits/enrollments', submission);
+    // The v1 enrollments endpoint accepts one enrollment per plan. POST each
+    // selected plan and return the first created enrollment id as the reference.
+    const entries = Object.values(submission.selections).filter((s): s is EnrollmentSelection =>
+      Boolean(s)
+    );
+    // Map the wizard enrollment-type token onto the v1 contract's enrollmentType.
+    const ENROLLMENT_TYPE: Record<EnrollmentSubmission['enrollmentType'], string> = {
+      annual: 'OPEN_ENROLLMENT',
+      new_hire: 'NEW_HIRE',
+      qualifying_event: 'QUALIFYING_EVENT',
+    };
+    let firstId = '';
+    for (const selection of entries) {
+      const response = await APIClient.post<{ success: boolean; data?: { id?: string } }>(
+        '/v1/benefits/enrollments',
+        {
+          employeeId: submission.employeeId,
+          planId: selection.planId,
+          coverageTier: selection.coverageLevel.toUpperCase(),
+          enrollmentType: ENROLLMENT_TYPE[submission.enrollmentType],
+          effectiveDate: submission.effectiveDate,
+          dependents: selection.dependentIds,
+        }
+      );
+      if (!response?.success) {
+        return { success: false, enrollmentId: '' };
+      }
+      if (!firstId && response.data?.id) {
+        firstId = response.data.id;
+      }
+    }
+    return { success: true, enrollmentId: firstId };
   }
 
   static calculateCosts(

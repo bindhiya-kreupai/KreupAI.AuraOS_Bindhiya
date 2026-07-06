@@ -54,10 +54,18 @@ export default function AnniversaryAlertsPage() {
 
   const [actionStatus, setActionStatus] = useState<Record<string, string>>({});
 
-  const handleAction = async (type: string, name: string, anniversaryId: string) => {
+  const handleAction = async (
+    type: 'Gift' | 'Wish',
+    anniversary: Anniversary,
+    anniversaryId: string
+  ) => {
     try {
       setActionStatus((prev) => ({ ...prev, [anniversaryId]: 'sending' }));
-      await AnniversaryService.sendNotifications(anniversaryId);
+      await AnniversaryService.sendNotifications(
+        anniversary.employeeId,
+        type === 'Gift' ? 'gift' : 'wish',
+        anniversary.yearsOfService
+      );
       setActionStatus((prev) => ({ ...prev, [anniversaryId]: `${type} sent!` }));
       setTimeout(
         () =>
@@ -162,14 +170,14 @@ export default function AnniversaryAlertsPage() {
                   )}
                   <div className="flex gap-2 w-full">
                     <button
-                      onClick={() => handleAction('Gift', emp.employeeName, emp.anniversaryId)}
+                      onClick={() => handleAction('Gift', emp, emp.anniversaryId)}
                       disabled={actionStatus[emp.anniversaryId] === 'sending'}
                       className="flex-1 py-2 bg-indigo-600 text-white rounded-xl text-sm font-bold shadow hover:bg-indigo-700 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                     >
                       <Gift className="w-4 h-4" /> Send Gift
                     </button>
                     <button
-                      onClick={() => handleAction('Wish', emp.employeeName, emp.anniversaryId)}
+                      onClick={() => handleAction('Wish', emp, emp.anniversaryId)}
                       disabled={actionStatus[emp.anniversaryId] === 'sending'}
                       className="flex-1 py-2 border border-slate-200 dark:border-slate-800 rounded-xl text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-800 active:scale-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
                     >

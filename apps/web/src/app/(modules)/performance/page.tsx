@@ -17,6 +17,7 @@ import {
   Eye,
 } from 'lucide-react';
 import { cn } from '@aura/ui/utils';
+import { APIClient } from '@/lib/api-client';
 import {
   ReviewCycleService,
   GoalService,
@@ -26,7 +27,7 @@ import {
   CalibrationService,
 } from '@/app/dashboard/performance/core/services';
 
-// ── Fallback Mock Data (used when API returns empty) ──────────────────
+// ── Empty-state defaults (real counts are always derived from the API) ──
 const DEFAULT_STATS = [
   { title: 'Active Reviews', value: '0', icon: Star, color: 'amber' },
   { title: 'Goals in Progress', value: '0', icon: Target, color: 'indigo' },
@@ -35,20 +36,13 @@ const DEFAULT_STATS = [
   { title: 'Avg Rating', value: 'N/A', icon: Award, color: 'rose' },
 ];
 
-const FALLBACK_NINE_BOX_DATA = [
-  // [performance, potential, count, label]
-  {
-    perf: 'Low',
-    pot: 'High',
-    count: 8,
-    label: 'Enigma',
-    color: 'bg-amber-100 text-amber-700',
-    emoji: '🌟',
-  },
+// Standard 9-box grid structure (labels/colors are fixed UI metadata).
+// Counts start at 0 and are populated from real review data.
+const NINE_BOX_STRUCTURE = [
+  { perf: 'Low', pot: 'High', label: 'Enigma', color: 'bg-amber-100 text-amber-700', emoji: '🌟' },
   {
     perf: 'Med',
     pot: 'High',
-    count: 22,
     label: 'Growth Star',
     color: 'bg-emerald-100 text-emerald-700',
     emoji: '🚀',
@@ -56,7 +50,6 @@ const FALLBACK_NINE_BOX_DATA = [
   {
     perf: 'High',
     pot: 'High',
-    count: 35,
     label: 'Superstar',
     color: 'bg-indigo-100 text-indigo-700',
     emoji: '⭐',
@@ -64,7 +57,6 @@ const FALLBACK_NINE_BOX_DATA = [
   {
     perf: 'Low',
     pot: 'Med',
-    count: 15,
     label: 'Inconsistent',
     color: 'bg-rose-50 text-rose-600',
     emoji: '🔄',
@@ -72,7 +64,6 @@ const FALLBACK_NINE_BOX_DATA = [
   {
     perf: 'Med',
     pot: 'Med',
-    count: 180,
     label: 'Core Player',
     color: 'bg-slate-100 text-slate-600',
     emoji: '💎',
@@ -80,23 +71,14 @@ const FALLBACK_NINE_BOX_DATA = [
   {
     perf: 'High',
     pot: 'Med',
-    count: 95,
     label: 'High Performer',
     color: 'bg-blue-100 text-blue-700',
     emoji: '📈',
   },
-  {
-    perf: 'Low',
-    pot: 'Low',
-    count: 12,
-    label: 'At Risk',
-    color: 'bg-rose-100 text-rose-700',
-    emoji: '⚠️',
-  },
+  { perf: 'Low', pot: 'Low', label: 'At Risk', color: 'bg-rose-100 text-rose-700', emoji: '⚠️' },
   {
     perf: 'Med',
     pot: 'Low',
-    count: 45,
     label: 'Specialist',
     color: 'bg-slate-50 text-slate-500',
     emoji: '🔧',
@@ -104,21 +86,13 @@ const FALLBACK_NINE_BOX_DATA = [
   {
     perf: 'High',
     pot: 'Low',
-    count: 38,
     label: 'Workhorse',
     color: 'bg-emerald-50 text-emerald-600',
     emoji: '🏆',
   },
 ];
 
-const FALLBACK_COMPETENCIES = [
-  { name: 'Leadership & Strategy', level: 4.2, benchmark: 4.0, trend: 'up' },
-  { name: 'Technical Excellence', level: 4.5, benchmark: 4.0, trend: 'up' },
-  { name: 'Communication', level: 3.8, benchmark: 4.0, trend: 'down' },
-  { name: 'Innovation & Agility', level: 4.1, benchmark: 3.5, trend: 'up' },
-  { name: 'Customer Focus', level: 3.9, benchmark: 4.0, trend: 'stable' },
-  { name: 'Collaboration', level: 4.3, benchmark: 3.5, trend: 'up' },
-];
+const EMPTY_NINE_BOX_DATA = NINE_BOX_STRUCTURE.map((b) => ({ ...b, count: 0 }));
 
 export default function PerformanceCommandCenter() {
   const [activeTab, setActiveTab] = useState<'reviews' | 'goals' | 'ninebox' | 'calibration'>(
@@ -303,6 +277,33 @@ function ReviewsTab({ reviewCycles }: { reviewCycles: any[] }) {
     { source: 'Direct Reports', completed: 0, total: 100 },
     { source: 'Cross-Functional', completed: 0, total: 100 },
   ]);
+  const [recentFeedback, setRecentFeedback] = useState<
+    { from: string; to: string; type: string; msg: string; time: string }[]
+  >([]);
+
+  useEffect(() => {
+    async function fetchRecentFeedback() {
+      try {
+        const response = await APIClient.get<{ items?: any[]; feedback?: any[] }>(
+          '/performance/feedback',
+          { limit: 5 }
+        );
+        const rows = response.items || response.feedback || [];
+        setRecentFeedback(
+          rows.slice(0, 5).map((f: any) => ({
+            from: f.fromName || f.fromId || 'Colleague',
+            to: f.toName || f.toId || 'Team',
+            type: f.category === 'praise' ? 'Kudos' : 'Growth',
+            msg: f.message || '',
+            time: f.createdAt ? new Date(f.createdAt).toLocaleDateString() : '',
+          }))
+        );
+      } catch (error: any) {
+        setRecentFeedback([]);
+      }
+    }
+    fetchRecentFeedback();
+  }, []);
 
   useEffect(() => {
     async function fetchFeedback() {
@@ -483,29 +484,12 @@ function ReviewsTab({ reviewCycles }: { reviewCycles: any[] }) {
             <div className="h-2 w-2 rounded-full bg-emerald-500 animate-pulse" />
           </div>
           <div className="space-y-3">
-            {[
-              {
-                from: 'Sara Al Blooshi',
-                to: 'Ahmed M.',
-                type: 'Kudos',
-                msg: 'Excellent client presentation — exceeded expectations!',
-                time: '2h ago',
-              },
-              {
-                from: 'Ravi Patel',
-                to: 'Priya S.',
-                type: 'Growth',
-                msg: 'Consider deeper data analysis in quarterly reports.',
-                time: '5h ago',
-              },
-              {
-                from: 'Khalid R.',
-                to: 'Team Ops',
-                type: 'Kudos',
-                msg: 'Flawless project delivery ahead of schedule 🎯',
-                time: '1d ago',
-              },
-            ].map((fb, i) => (
+            {recentFeedback.length === 0 && (
+              <p className="text-xs text-silver-mist leading-relaxed">
+                No feedback yet. Recognition and constructive feedback will appear here.
+              </p>
+            )}
+            {recentFeedback.map((fb, i) => (
               <div key={i} className="p-4 bg-slate-50/50 dark:bg-slate-900/20 rounded-2xl">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-xs font-bold text-ink-black dark:text-pearl">
@@ -713,8 +697,10 @@ function GoalsTab() {
 // TAB: 9-Box Grid
 // ═══════════════════════════════════════════════════════════════
 function NineBoxTab() {
-  const [nineBoxData, setNineBoxData] = useState(FALLBACK_NINE_BOX_DATA);
-  const [competencies, setCompetencies] = useState(FALLBACK_COMPETENCIES);
+  const [nineBoxData, setNineBoxData] = useState(EMPTY_NINE_BOX_DATA);
+  const [competencies, setCompetencies] = useState<
+    { name: string; level: number; benchmark: number; trend: string }[]
+  >([]);
 
   useEffect(() => {
     async function fetchTalentData() {
@@ -725,7 +711,7 @@ function NineBoxTab() {
         ]);
         // Derive 9-box from reviews if available
         if (reviews && reviews.length > 0) {
-          const buckets = FALLBACK_NINE_BOX_DATA.map((b) => ({ ...b, count: 0 }));
+          const buckets = NINE_BOX_STRUCTURE.map((b) => ({ ...b, count: 0 }));
           reviews.forEach((r: any) => {
             const rating = r.overallRating || 3;
             const potential = r.calibrationScore || rating; // use calibration as potential proxy
@@ -825,7 +811,7 @@ function NineBoxTab() {
                   </span>
                 </div>
                 {[1, 2, 3].map((j) => {
-                  const cell = row[j] as (typeof FALLBACK_NINE_BOX_DATA)[0];
+                  const cell = row[j] as (typeof EMPTY_NINE_BOX_DATA)[0];
                   return (
                     <div
                       key={j}
@@ -853,6 +839,12 @@ function NineBoxTab() {
           <h3 className="text-lg font-black text-ink-black dark:text-pearl uppercase tracking-tight mb-6">
             Competency Framework
           </h3>
+          {competencies.length === 0 && (
+            <p className="text-sm text-silver-mist">
+              No competency framework data yet. Define competencies to see the organizational
+              framework here.
+            </p>
+          )}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {competencies.map((comp, i) => (
               <div

@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { PerformanceReviewService } from '../core/services';
+import { PerformanceReviewService, NominationService, type Nomination } from '../core/services';
 import {
   Users,
   MessageSquare,
@@ -42,39 +42,45 @@ export default function ThreeSixtyFeedbackPage() {
   const [loading, setLoading] = useState(true);
   const [reviews, setReviews] = useState<any[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
-  const [nominations, setNominations] = useState<{ id: string; name: string }[]>([]);
+  const [nominations, setNominations] = useState<Nomination[]>([]);
+  const [nominationError, setNominationError] = useState<string | null>(null);
+  const [savingNomination, setSavingNomination] = useState(false);
 
   useEffect(() => {
-    try {
-      const raw = localStorage.getItem('auraos.performance.360Nominations.v1');
-      if (raw) setNominations(JSON.parse(raw));
-    } catch {
-      /* ignore */
-    }
+    NominationService.list()
+      .then(setNominations)
+      .catch(() => setNominations([]));
   }, []);
 
-  const addNomination = (name: string) => {
+  const addNomination = async (name: string) => {
+    setNominationError(null);
     if (nominations.length >= 5) {
-      alert('You can nominate up to 5 peers.');
+      setNominationError('You can nominate up to 5 peers.');
       return;
     }
-    const next = [...nominations, { id: `n-${Date.now()}`, name }];
-    setNominations(next);
+    setSavingNomination(true);
     try {
-      localStorage.setItem('auraos.performance.360Nominations.v1', JSON.stringify(next));
-    } catch {
-      /* ignore */
+      const created = await NominationService.create(name);
+      setNominations((prev) => [...prev, created]);
+      setSearchQuery('');
+    } catch (error: any) {
+      setNominationError(
+        error?.message || error?.error?.message || 'Could not save nomination. Please try again.'
+      );
+    } finally {
+      setSavingNomination(false);
     }
-    setSearchQuery('');
   };
 
-  const removeNomination = (id: string) => {
-    const next = nominations.filter((n) => n.id !== id);
-    setNominations(next);
+  const removeNomination = async (id: string) => {
+    setNominationError(null);
+    const prev = nominations;
+    setNominations((list) => list.filter((n) => n.id !== id));
     try {
-      localStorage.setItem('auraos.performance.360Nominations.v1', JSON.stringify(next));
-    } catch {
-      /* ignore */
+      await NominationService.remove(id);
+    } catch (error: any) {
+      setNominations(prev);
+      setNominationError(error?.message || 'Could not remove nomination.');
     }
   };
 
@@ -302,8 +308,8 @@ export default function ThreeSixtyFeedbackPage() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter' && searchQuery.trim()) {
-                    addNomination(searchQuery.trim());
+                  if (e.key === 'Enter' && searchQuery.trim() && !savingNomination) {
+                    void addNomination(searchQuery.trim());
                   }
                 }}
                 placeholder="Type colleague name then press Enter…"
@@ -313,11 +319,18 @@ export default function ThreeSixtyFeedbackPage() {
             </div>
             {searchQuery.trim() && (
               <button
-                onClick={() => addNomination(searchQuery.trim())}
-                className="w-full mb-3 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold hover:bg-indigo-700"
+                onClick={() => void addNomination(searchQuery.trim())}
+                disabled={savingNomination}
+                className="w-full mb-3 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold hover:bg-indigo-700 disabled:opacity-50"
               >
-                Nominate &quot;{searchQuery.trim()}&quot;
+                {savingNomination ? 'Saving…' : `Nominate "${searchQuery.trim()}"`}
               </button>
+            )}
+            {nominationError && (
+              <div className="mb-3 flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-bold bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-900/20 dark:text-rose-400 dark:border-rose-800">
+                <AlertCircle className="w-4 h-4 shrink-0" />
+                {nominationError}
+              </div>
             )}
 
             {nominations.length === 0 ? (
@@ -332,9 +345,9 @@ export default function ThreeSixtyFeedbackPage() {
                     key={n.id}
                     className="flex items-center justify-between p-2 bg-slate-50 dark:bg-slate-800 rounded-lg"
                   >
-                    <span className="text-sm font-bold">{n.name}</span>
+                    <span className="text-sm font-bold">{n.nomineeName}</span>
                     <button
-                      onClick={() => removeNomination(n.id)}
+                      onClick={() => void removeNomination(n.id)}
                       className="text-xs text-rose-500 hover:underline"
                     >
                       Remove
@@ -344,7 +357,7 @@ export default function ThreeSixtyFeedbackPage() {
               </div>
             )}
             <p className="text-[10px] text-slate-400 mt-3">
-              Nominations persist per-browser until a backend endpoint is added.
+              Nominations are saved to your review cycle and visible to your HR administrator.
             </p>
           </div>
 
@@ -369,7 +382,7 @@ export default function ThreeSixtyFeedbackPage() {
                       className="flex items-center gap-2 p-2 bg-amber-50 dark:bg-amber-900/20 rounded-lg"
                     >
                       <Clock className="w-4 h-4 text-amber-500" />
-                      <span className="text-sm font-bold flex-1">{n.name}</span>
+                      <span className="text-sm font-bold flex-1">{n.nomineeName}</span>
                       <span className="text-[10px] text-amber-700 dark:text-amber-300 font-bold uppercase">
                         Pending
                       </span>

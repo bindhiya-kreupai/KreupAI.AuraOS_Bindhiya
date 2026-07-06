@@ -196,6 +196,7 @@ export const POST = withEnhancedAuth(
           tenantId: user.tenantId,
           userId: user.userId,
           action: 'CREATE',
+          module: 'User Role Assignment',
           resourceType: 'User Role Assignment',
           metadata: {
             description: `Assigned role ${role.code} (${role.name}) to user ${targetUser.email}${validatedData.expiresAt ? ` (expires: ${validatedData.expiresAt})` : ''}`,
@@ -326,6 +327,7 @@ export const DELETE = withEnhancedAuth(
           tenantId: user.tenantId,
           userId: user.userId,
           action: 'DELETE',
+          module: 'User Role Assignment',
           resourceType: 'User Role Assignment',
           metadata: {
             description: `Removed role ${userRole.role.code} (${userRole.role.name}) from user ${targetUser.email}`,

@@ -1,0 +1,68 @@
+[
+  {
+    "id": "AURA-161",
+    "title": "Catalog: Wire Add Role, search/filter, and row actions",
+    "module": "Job Library Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/job-library/job-catalog",
+    "api": "GET/POST /api/job-library/catalog",
+    "desc": "POST exists at /api/job-library/catalog but Add Role button has no handler. Search, Filter, row actions unwired."
+  },
+  {
+    "id": "AURA-162",
+    "title": "Families: Create API and wire UI",
+    "module": "Job Library Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/job-library/job-families",
+    "api": "/api/job-library/families (missing)",
+    "desc": "Entire page is inline mock cards. New Family button unwired."
+  },
+  {
+    "id": "AURA-163",
+    "title": "Evaluation: Create API and wire Start Grading",
+    "module": "Job Library Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/job-library/job-evaluation",
+    "api": "/api/job-library/evaluations (missing)",
+    "desc": "Pending/completed evaluations hardcoded; chart placeholder. Start Grading unwired."
+  },
+  {
+    "id": "AURA-164",
+    "title": "Templates: Create API and wire Preview/Edit/Use Template",
+    "module": "Job Library Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/job-library/job-posting-templates",
+    "api": "/api/job-library/posting-templates (missing)",
+    "desc": "Templates hardcoded. All action buttons unwired."
+  },
+  {
+    "id": "AURA-165",
+    "title": "Compensation: Create API and wire Adjust Strategy",
+    "module": "Job Library Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/job-library/market-pricing",
+    "api": "/api/job-library/market-pricing (missing) or compensation integration",
+    "desc": "Salary benchmarks hardcoded. Adjust Strategy and filter buttons unwired."
+  },
+  {
+    "id": "AURA-166",
+    "title": "Architecture: Add service layer",
+    "module": "Job Library Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "Module-wide",
+    "api": "New dashboard/job-library/services.ts",
+    "desc": "No services.ts or hooks; only raw fetch on catalog page."
+  }
+]

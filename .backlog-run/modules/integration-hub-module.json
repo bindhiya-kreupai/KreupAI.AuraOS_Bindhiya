@@ -1,0 +1,112 @@
+[
+  {
+    "id": "AURA-207",
+    "title": "Dashboard: Wire stats cards and integrations grid",
+    "module": "Integration Hub Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/integration-hub",
+    "api": "GET /api/integrations?type=connections; POST /api/integrations (connect/disconnect/sync)",
+    "desc": "KPI cards (Connected: 12, Available: 45, etc.) and integration cards (Slack, Teams, DocuSign) are hardcoded mock constants. Sync/Connect/Disconnect buttons have no handlers."
+  },
+  {
+    "id": "AURA-208",
+    "title": "Dashboard: Wire quick actions and OAuth callback handling",
+    "module": "Integration Hub Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/integration-hub",
+    "api": "/api/v1/webhooks; /api/v1/integrations/slack/oauth/callback; /api/v1/integrations/teams/oauth/callback",
+    "desc": "Browse Marketplace, Create Webhook, View Logs buttons use href: #. Slack/Teams OAuth redirects land with ?connected=/ ?error= query params but page never reads them."
+  },
+  {
+    "id": "AURA-209",
+    "title": "Webhooks: Wire webhook list, Add Webhook, and row actions",
+    "module": "Integration Hub Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/integration-hub/webhook-manager",
+    "api": "GET/POST /api/v1/webhooks; PUT/DELETE /api/v1/webhooks/[id]; POST /api/v1/webhooks/[id]/test",
+    "desc": "Table shows 3 hardcoded webhooks; no fetch. Add Webhook button has no onClick. Edit/Delete buttons inert."
+  },
+  {
+    "id": "AURA-210",
+    "title": "App Directory: Wire app catalog and Install/Configure actions",
+    "module": "Integration Hub Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/integration-hub/app-directory",
+    "api": "GET /api/integrations?type=catalog; POST /api/integrations/connectors",
+    "desc": "Apps rendered from inline array; category filters and search non-functional. Per-app Install/Configure buttons have no API calls."
+  },
+  {
+    "id": "AURA-211",
+    "title": "API Marketplace: Wire API catalog and key management",
+    "module": "Integration Hub Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/integration-hub/api-marketplace",
+    "api": "GET /api/integrations?type=marketplace; GET/POST /api/v1/admin/api-keys",
+    "desc": "Core HR/Payroll/Recruitment API cards are mock. Connect/Manage/Docs unwired. Generate New Key is static mock."
+  },
+  {
+    "id": "AURA-212",
+    "title": "Architecture: Consolidate with admin integrations or wire hub to existing APIs",
+    "module": "Integration Hub Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "N/A (parallel wired path)",
+    "api": "integrationService.ts vs /api/integrations; components/integrations/* (orphan mock components)",
+    "desc": "Wired reference exists at /dashboard/admin/integrations/* using /api/integrations and /api/v1/webhooks. integrationService.ts targets non-existent /api/v1/integrations/* CRUD and is never imported."
+  },
+  {
+    "id": "AURA-568",
+    "title": "Integration Hub: Complete API integration and remove mock/local fallbacks",
+    "module": "Integration Hub Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/integration-hub",
+    "api": "Not specified",
+    "desc": "Page calls APIs (service layer) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-569",
+    "title": "API Marketplace: Replace mock/hardcoded data with live API",
+    "module": "Integration Hub Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/integration-hub/api-marketplace",
+    "api": "Not specified",
+    "desc": "Page uses hardcoded or mock data; no fetch/service calls detected."
+  },
+  {
+    "id": "AURA-570",
+    "title": "App Directory: Replace mock/hardcoded data with live API",
+    "module": "Integration Hub Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/integration-hub/app-directory",
+    "api": "Not specified",
+    "desc": "Page uses hardcoded or mock data; no fetch/service calls detected."
+  },
+  {
+    "id": "AURA-571",
+    "title": "Webhook Manager: Manual review required",
+    "module": "Integration Hub Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/integration-hub/webhook-manager",
+    "api": "Not specified",
+    "desc": "Page exists; automated heuristics could not classify wiring."
+  }
+]

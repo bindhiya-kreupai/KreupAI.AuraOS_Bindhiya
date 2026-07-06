@@ -89,7 +89,7 @@ export default function HseGovernanceMatrixPage() {
               key: 'evidencedAt',
               label: 'Evidenced at',
               labelAr: 'التاريخ',
-              type: 'date',
+              type: 'text',
               required: true,
               widthClass: 'w-36',
             },

@@ -436,114 +436,273 @@ const REPORT_TEMPLATES: ReportTemplate[] = [
 // ============================================================================
 
 // ============================================================================
+// API ENVELOPE + MAPPING HELPERS
+// ============================================================================
+
+/**
+ * All AuraOS API routes return a `{ success, data, ... }` envelope. APIClient does NOT
+ * unwrap it, so we read `.data` here.
+ */
+interface ApiEnvelope<T> {
+  success: boolean;
+  data: T;
+  meta?: unknown;
+  error?: unknown;
+}
+
+/** Map a report category to a real report-metadata data source id. */
+const CATEGORY_TO_DATASOURCE: Record<ReportCategory, string> = {
+  hr: 'employees',
+  payroll: 'payroll',
+  attendance: 'attendance',
+  compliance: 'employees',
+  analytics: 'employees',
+};
+
+/** Client-side favorites persistence key prefix is intentionally omitted — favorites are
+ *  derived from the static template catalog. Toggling updates in-memory catalog only.
+ */
+
+// ============================================================================
 // SERVICE CLASS
 // ============================================================================
 
 export class ReportGenerationService {
   /**
-   * Get all available report templates
+   * Get all available report templates (static, curated report-type catalog).
    */
   static async getAvailableReports(category?: ReportCategory): Promise<ReportTemplate[]> {
-    try {
-      return await APIClient.get<ReportTemplate[]>('/v1/reports/templates', { category });
-    } catch {
-      if (category) return REPORT_TEMPLATES.filter((t) => t.category === category);
-      return REPORT_TEMPLATES;
-    }
+    if (category) return REPORT_TEMPLATES.filter((t) => t.category === category);
+    return REPORT_TEMPLATES;
   }
 
   /**
-   * Get a single report template
+   * Get a single report template.
    */
   static async getReportTemplate(templateId: string): Promise<ReportTemplate | null> {
-    try {
-      return await APIClient.get<ReportTemplate>(`/v1/reports/templates/${templateId}`);
-    } catch {
-      return REPORT_TEMPLATES.find((t) => t.id === templateId) ?? null;
-    }
+    return REPORT_TEMPLATES.find((t) => t.id === templateId) ?? null;
   }
 
   /**
-   * Generate a report (async — returns immediately with queued status)
+   * Generate a report. Persists a ReportDefinition + execution via the custom-report route
+   * and returns a normalized GeneratedReport.
    */
   static async generateReport(params: ReportParameters): Promise<GeneratedReport> {
-    return await APIClient.post<GeneratedReport>('/v1/reports/generate', params);
+    const template = REPORT_TEMPLATES.find((t) => t.id === params.templateId);
+    const category = template?.category ?? 'analytics';
+    const dataSource = CATEGORY_TO_DATASOURCE[category];
+
+    const res = await APIClient.post<ApiEnvelope<Record<string, any>>>(
+      '/v1/analytics/reports/custom',
+      {
+        name: params.title || template?.name || 'Report',
+        type: category,
+        dataSource,
+        columns: template?.sampleColumns ?? [],
+        filters: params.filters ?? {},
+        format: params.format,
+      }
+    );
+    const data = res.data ?? {};
+
+    return {
+      id: data.executionId || data.reportId || '',
+      templateId: params.templateId,
+      templateName: template?.name ?? data.reportName ?? 'Report',
+      category,
+      title: params.title || data.reportName || template?.name || 'Report',
+      parameters: params,
+      status: 'ready',
+      format: params.format,
+      rowCount: data.rowCount ?? 0,
+      generatedAt: data.completedAt || new Date().toISOString(),
+      expiresAt: '',
+      generatedBy: '',
+      downloadUrl: data.exportUrl,
+    };
   }
 
   /**
-   * Get report history (previously generated reports)
+   * Get report history (previously generated reports) from real report executions.
    */
   static async getReportHistory(filters: ReportHistoryFilters = {}): Promise<GeneratedReport[]> {
     try {
-      return await APIClient.get<GeneratedReport[]>('/v1/reports/history', filters);
+      const res = await APIClient.get<ApiEnvelope<any[]>>('/v1/report-executions', {
+        limit: filters.pageSize ?? 20,
+        page: filters.page ?? 1,
+      });
+      const rows = res.data ?? [];
+      return rows.map((ex) => this.mapExecution(ex));
     } catch {
       return [];
     }
   }
 
   /**
-   * Get a single generated report
+   * Get a single generated report by execution id.
    */
   static async getGeneratedReport(id: string): Promise<GeneratedReport | null> {
     try {
-      return await APIClient.get<GeneratedReport>(`/v1/reports/history/${id}`);
+      const res = await APIClient.get<ApiEnvelope<any[]>>('/v1/report-executions', { limit: 100 });
+      const rows = res.data ?? [];
+      const match = rows.find((r) => r.id === id);
+      return match ? this.mapExecution(match) : null;
     } catch {
       return null;
     }
   }
 
+  private static mapExecution(ex: Record<string, any>): GeneratedReport {
+    const report = ex.report ?? {};
+    const rawCategory = String(report.category ?? 'analytics').toLowerCase();
+    const category: ReportCategory = (
+      ['hr', 'payroll', 'attendance', 'compliance', 'analytics'].includes(rawCategory)
+        ? rawCategory
+        : 'analytics'
+    ) as ReportCategory;
+    const status: ReportStatus =
+      ex.status === 'COMPLETED' ? 'ready' : ex.status === 'FAILED' ? 'failed' : 'generating';
+    return {
+      id: ex.id,
+      templateId: report.code ?? '',
+      templateName: report.name ?? 'Report',
+      category,
+      title: report.name ?? 'Report',
+      parameters: { templateId: report.code ?? '', format: 'excel' },
+      status,
+      format: 'excel',
+      rowCount: ex.rowCount ?? ex.recordCount ?? 0,
+      generatedAt: ex.executedAt ?? new Date().toISOString(),
+      expiresAt: '',
+      generatedBy: ex.executedBy ?? '',
+    };
+  }
+
   /**
-   * Get preview data for a template (sample rows for in-app preview)
+   * Get preview data for a template (real, tenant-scoped rows via the preview route).
    */
   static async getReportPreview(templateId: string): Promise<ReportPreviewData | null> {
+    const template = REPORT_TEMPLATES.find((t) => t.id === templateId);
+    const category = template?.category ?? 'analytics';
+    const dataSource = CATEGORY_TO_DATASOURCE[category];
     try {
-      return await APIClient.get<ReportPreviewData>(`/v1/reports/templates/${templateId}/preview`);
+      const res = await APIClient.post<
+        ApiEnvelope<{
+          columns: { id: string; name: string; type: ReportColumn['type'] }[];
+          rows: Record<string, unknown>[];
+          totalRows: number;
+        }>
+      >('/v1/reports/preview', { dataSource, limit: 10 });
+      const data = res.data;
+      if (!data) return null;
+      return {
+        columns: data.columns.map((c) => ({
+          field: c.id,
+          label: c.name,
+          type: c.type,
+          sortable: true,
+          filterable: true,
+        })),
+        rows: data.rows,
+        totalRows: data.totalRows,
+        sampleNote: `Live preview · ${data.rows.length} of ${data.totalRows} rows`,
+      };
     } catch {
       return null;
     }
   }
 
   /**
-   * Schedule a recurring report
+   * Schedule a recurring report.
    */
   static async scheduleReport(input: ScheduleReportInput): Promise<ScheduledReport> {
-    return await APIClient.post<ScheduledReport>('/v1/reports/schedules', input);
+    const template = REPORT_TEMPLATES.find((t) => t.id === input.templateId);
+    const res = await APIClient.post<ApiEnvelope<Record<string, any>>>(
+      '/v1/analytics/reports/schedule',
+      {
+        reportName: input.title || template?.name || 'Scheduled Report',
+        category: template?.category ?? 'analytics',
+        frequency: input.schedule.frequency,
+        timezone: input.schedule.timezone,
+        recipients: input.recipients,
+        format: input.parameters.format,
+      }
+    );
+    const data = res.data ?? {};
+    return {
+      id: data.id,
+      templateId: input.templateId,
+      templateName: data.reportName ?? template?.name ?? 'Report',
+      category: template?.category ?? 'analytics',
+      parameters: { templateId: input.templateId, ...input.parameters },
+      schedule: input.schedule,
+      recipients: input.recipients,
+      isActive: (data.status ?? 'active') === 'active',
+      nextRunAt: data.nextRun ?? new Date().toISOString(),
+      createdBy: data.createdBy ?? '',
+      createdAt: data.createdAt ?? new Date().toISOString(),
+    };
   }
 
   /**
-   * Get all scheduled reports
+   * Get all scheduled reports.
    */
   static async getScheduledReports(): Promise<ScheduledReport[]> {
     try {
-      return await APIClient.get<ScheduledReport[]>('/v1/reports/schedules');
+      const res = await APIClient.get<ApiEnvelope<any[]>>('/v1/analytics/reports/schedule');
+      const rows = res.data ?? [];
+      return rows.map((s) => {
+        const rawCategory = String(s.category ?? 'analytics').toLowerCase();
+        const category: ReportCategory = (
+          ['hr', 'payroll', 'attendance', 'compliance', 'analytics'].includes(rawCategory)
+            ? rawCategory
+            : 'analytics'
+        ) as ReportCategory;
+        return {
+          id: s.id,
+          templateId: s.reportId ?? '',
+          templateName: s.reportName ?? 'Report',
+          category,
+          parameters: { templateId: s.reportId ?? '', format: s.format ?? 'pdf' },
+          schedule: {
+            frequency: s.frequency,
+            time: '06:00',
+            timezone: s.timezone ?? 'UTC',
+          },
+          recipients: Array.isArray(s.recipients) ? s.recipients : [],
+          isActive: s.isActive ?? true,
+          lastRunAt: s.lastRun ?? undefined,
+          nextRunAt: s.nextRun ?? new Date().toISOString(),
+          createdBy: s.createdBy ?? '',
+          createdAt: s.createdAt ?? new Date().toISOString(),
+        };
+      });
     } catch {
       return [];
     }
   }
 
   /**
-   * Delete or deactivate a scheduled report
+   * Delete or deactivate a scheduled report.
    */
   static async deleteScheduledReport(scheduleId: string): Promise<void> {
-    await APIClient.delete(`/v1/reports/schedules/${scheduleId}`);
+    await APIClient.delete(`/v1/analytics/reports/schedule/${scheduleId}`);
   }
 
   /**
-   * Toggle a template's favorite status
+   * Toggle a template's favorite status (client-side catalog only — no server persistence
+   * for the curated static catalog).
    */
   static async toggleFavorite(templateId: string): Promise<void> {
-    await APIClient.post(`/v1/reports/templates/${templateId}/favorite`, {});
+    const tpl = REPORT_TEMPLATES.find((t) => t.id === templateId);
+    if (tpl) tpl.isFavorite = !tpl.isFavorite;
   }
 
   /**
-   * Get favorite report templates
+   * Get favorite report templates.
    */
   static async getFavoriteReports(): Promise<ReportTemplate[]> {
-    try {
-      return await APIClient.get<ReportTemplate[]>('/v1/reports/templates/favorites');
-    } catch {
-      return REPORT_TEMPLATES.filter((t) => t.isFavorite);
-    }
+    return REPORT_TEMPLATES.filter((t) => t.isFavorite);
   }
 }
 

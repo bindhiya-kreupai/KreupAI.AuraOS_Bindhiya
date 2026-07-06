@@ -1,0 +1,112 @@
+[
+  {
+    "id": "AURA-317",
+    "title": "Contract Workforce: Manual review required",
+    "module": "Contract Workforce Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/recruitment/vendors",
+    "api": "Not specified",
+    "desc": "Page exists; automated heuristics could not classify wiring."
+  },
+  {
+    "id": "AURA-318",
+    "title": "Compliance Docs: Implement feature domain and API",
+    "module": "Contract Workforce Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/recruitment/vendors/compliance-docs",
+    "api": "Not specified",
+    "desc": "Page renders VendorUnsupportedState \u2014 backend domain not built."
+  },
+  {
+    "id": "AURA-319",
+    "title": "Contract Renewal: Implement feature domain and API",
+    "module": "Contract Workforce Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/recruitment/vendors/contract-renewal",
+    "api": "Not specified",
+    "desc": "Page renders VendorUnsupportedState \u2014 backend domain not built."
+  },
+  {
+    "id": "AURA-320",
+    "title": "Contract Types: Implement feature domain and API",
+    "module": "Contract Workforce Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/recruitment/vendors/contract-types",
+    "api": "Not specified",
+    "desc": "Page renders VendorUnsupportedState \u2014 backend domain not built."
+  },
+  {
+    "id": "AURA-321",
+    "title": "Invoice Processing: Implement feature domain and API",
+    "module": "Contract Workforce Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/recruitment/vendors/invoice-processing",
+    "api": "Not specified",
+    "desc": "Page renders VendorUnsupportedState \u2014 backend domain not built."
+  },
+  {
+    "id": "AURA-322",
+    "title": "Management: Manual review required",
+    "module": "Contract Workforce Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/recruitment/vendors/management",
+    "api": "Not specified",
+    "desc": "Page exists; automated heuristics could not classify wiring."
+  },
+  {
+    "id": "AURA-323",
+    "title": "Performance Rating: Implement feature domain and API",
+    "module": "Contract Workforce Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/recruitment/vendors/performance-rating",
+    "api": "Not specified",
+    "desc": "Page renders VendorUnsupportedState \u2014 backend domain not built."
+  },
+  {
+    "id": "AURA-324",
+    "title": "Rate Cards: Implement feature domain and API",
+    "module": "Contract Workforce Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/recruitment/vendors/rate-cards",
+    "api": "Not specified",
+    "desc": "Page renders VendorUnsupportedState \u2014 backend domain not built."
+  },
+  {
+    "id": "AURA-325",
+    "title": "Timesheet: Implement feature domain and API",
+    "module": "Contract Workforce Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/recruitment/vendors/timesheet",
+    "api": "Not specified",
+    "desc": "Page renders VendorUnsupportedState \u2014 backend domain not built."
+  },
+  {
+    "id": "AURA-326",
+    "title": "Vendor Management: Manual review required",
+    "module": "Contract Workforce Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/recruitment/vendors/vendor-management",
+    "api": "Not specified",
+    "desc": "Page exists; automated heuristics could not classify wiring."
+  }
+]

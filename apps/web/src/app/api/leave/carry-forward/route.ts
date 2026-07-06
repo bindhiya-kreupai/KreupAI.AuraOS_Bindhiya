@@ -169,6 +169,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
         tenantId: user.tenantId,
         userId: user.userId,
         action: 'CREATE',
+        module: 'LEAVE',
         resourceType: 'Leave - Carry Forward',
         metadata: {
           description: `Processed carry forward for year ${fromYear} -> ${toYear}: ${processedCount} balances, ${totalDaysCarried} days carried`,

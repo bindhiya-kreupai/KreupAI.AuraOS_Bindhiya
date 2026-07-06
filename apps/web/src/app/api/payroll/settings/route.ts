@@ -105,6 +105,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, { user, permiss
             tenantId: user.tenantId,
             userId: user.userId,
             action: 'CREATE',
+            module: 'Payroll - Settings',
             resourceType: 'Payroll - Settings',
             metadata: {
               description: `Created payroll configuration for ${updateFields.countryCode || 'IN'}`,
@@ -158,6 +159,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, { user, permiss
           tenantId: user.tenantId,
           userId: user.userId,
           action: 'UPDATE',
+          module: 'Payroll - Settings',
           resourceType: 'Payroll - Settings',
           metadata: {
             description: `Updated payroll configuration: ${existing.countryCode}`,
@@ -220,6 +222,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, { user, permiss
         tenantId: user.tenantId,
         userId: user.userId,
         action: 'UPDATE',
+        module: 'Payroll - Settings',
         resourceType: 'Payroll - Settings',
         metadata: { description: `Updated payroll configuration: ${existing.countryCode}` } as any,
         ipAddress: request.headers.get('x-forwarded-for') || 'unknown',

@@ -53,7 +53,7 @@ export class SavedViewService extends BaseService {
 
   /** Typed Prisma delegate for the tenant_saved_view table. */
   private get delegate() {
-    return this.prisma.tenantSavedView;
+    return (this.prisma as any).tenantSavedView;
   }
 
   /**
@@ -96,7 +96,7 @@ export class SavedViewService extends BaseService {
     const { tenantId, userId, scope, name, filters, isDefault = false, isShared = false } = input;
 
     const created = await this.executeTransaction(async (tx) => {
-      const delegate = tx.tenantSavedView;
+      const delegate = (tx as any).tenantSavedView;
       if (isDefault) {
         await delegate.updateMany({
           where: { tenantId, userId, scope, isDefault: true },
@@ -148,7 +148,7 @@ export class SavedViewService extends BaseService {
     }
 
     const updated = await this.executeTransaction(async (tx) => {
-      const delegate = tx.tenantSavedView;
+      const delegate = (tx as any).tenantSavedView;
       if (input.isDefault === true) {
         await delegate.updateMany({
           where: { tenantId, userId, scope: existing.scope, isDefault: true, id: { not: id } },

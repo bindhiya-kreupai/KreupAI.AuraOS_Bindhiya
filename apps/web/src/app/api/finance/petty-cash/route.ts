@@ -1,80 +1,63 @@
 /**
- * Petty Cash API Routes
- * Finance Module - Petty Cash Management
+ * Petty Cash Funds API — Finance Module (AURA-157, AURA-158)
+ * DB-backed, tenant-scoped.
  */
 
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { createProtectedRoute } from '@/lib/api/route-wrapper';
+import { PettyCashRepo } from '@/lib/services/finance/finance.service';
 
-/**
- * GET /api/finance/petty-cash
- * Get all petty cash funds
- */
-export async function GET(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const status = searchParams.get('status');
+export const GET = createProtectedRoute(async (_request: NextRequest, { auth }) => {
+  const result = await PettyCashRepo.listFunds((auth as any).tenantId, {});
+  return NextResponse.json({
+    success: true,
+    funds: result.items,
+    ...result,
+    summary: {
+      activeFunds: result.items.filter((f: any) => f.status === 'active').length,
+      totalBalance: result.items.reduce(
+        (s: number, f: any) => s + Number(f.currentBalance || 0),
+        0
+      ),
+      pendingReconciliations: 0,
+    },
+  });
+});
 
-    return NextResponse.json({
-      success: true,
-      funds: [],
-      summary: {
-        activeFunds: 0,
-        totalBalance: 0,
-        pendingReconciliations: 0,
-      },
-    });
-  } catch (error: any) {
-    return NextResponse.json({ error: 'Failed to fetch petty cash funds' }, { status: 500 });
+export const POST = createProtectedRoute(async (request: NextRequest, { auth }) => {
+  const body = await request.json().catch(() => ({}));
+  if (!body.fundName) {
+    return NextResponse.json(
+      { success: false, message: 'fundName is required.', messageAr: 'اسم الصندوق مطلوب.' },
+      { status: 400 }
+    );
   }
-}
+  const fund = await PettyCashRepo.createFund((auth as any).tenantId, (auth as any).userId, body);
+  return NextResponse.json({ success: true, fund }, { status: 201 });
+});
 
-/**
- * POST /api/finance/petty-cash
- * Create new petty cash fund
- */
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-
-    return NextResponse.json({
-      success: true,
-      fund: {
-        id: `fund-${Date.now()}`,
-        fundCode: `PCF-${Date.now()}`,
-        ...body,
-        createdDate: new Date().toISOString(),
-        lastModified: new Date().toISOString(),
-      },
-    });
-  } catch (error: any) {
-    return NextResponse.json({ error: 'Failed to create petty cash fund' }, { status: 500 });
+export const PUT = createProtectedRoute(async (request: NextRequest, { auth }) => {
+  const { searchParams } = new URL(request.url);
+  const id = searchParams.get('id');
+  if (!id) {
+    return NextResponse.json(
+      { success: false, message: 'Fund ID is required.', messageAr: 'معرّف الصندوق مطلوب.' },
+      { status: 400 }
+    );
   }
-}
-
-/**
- * PUT /api/finance/petty-cash
- * Update petty cash fund
- */
-export async function PUT(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-    const body = await request.json();
-
-    if (!id) {
-      return NextResponse.json({ error: 'Fund ID is required' }, { status: 400 });
-    }
-
-    return NextResponse.json({
-      success: true,
-      fund: {
-        id,
-        ...body,
-        lastModified: new Date().toISOString(),
-      },
-    });
-  } catch (error: any) {
-    return NextResponse.json({ error: 'Failed to update petty cash fund' }, { status: 500 });
+  const body = await request.json().catch(() => ({}));
+  const fund = await PettyCashRepo.updateFund(
+    (auth as any).tenantId,
+    (auth as any).userId,
+    id,
+    body
+  );
+  if (!fund) {
+    return NextResponse.json(
+      { success: false, message: 'Fund not found.', messageAr: 'الصندوق غير موجود.' },
+      { status: 404 }
+    );
   }
-}
+  return NextResponse.json({ success: true, fund });
+});
