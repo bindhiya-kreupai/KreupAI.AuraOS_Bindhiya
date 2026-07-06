@@ -27,11 +27,17 @@ export default function PolicyVersionDiffPage() {
           name: 'previous',
           label: 'Previous body',
           labelAr: 'النص السابق',
-          type: 'text',
+          type: 'textarea',
           required: true,
           helpText: 'Paste full markdown body',
         },
-        { name: 'next', label: 'Next body', labelAr: 'النص التالي', type: 'text', required: true },
+        {
+          name: 'next',
+          label: 'Next body',
+          labelAr: 'النص التالي',
+          type: 'textarea',
+          required: true,
+        },
       ]}
       endpoint={{ method: 'POST', url: '/api/v1/policy-lifecycle-compliance/lifecycle' }}
       buildPayload={(v) => ({
