@@ -371,17 +371,17 @@ export default function AttendanceDashboard() {
             />
 
             <WorkspaceCard
-              href="/dashboard/attendance-compliance/fraud-flags"
-              title="Fraud Register"
-              subtitle="S02 · Investigation Desk"
-              desc="Review and resolve buddy punch warnings, time drifts, and anomalies."
-            />
-
-            <WorkspaceCard
               href="/dashboard/attendance-compliance/consents"
               title="Consent Register"
               subtitle="S03 · Attestations"
               desc="Manage worker biometric and geolocation consent document agreements."
+            />
+
+            <WorkspaceCard
+              href="/dashboard/attendance-compliance/fraud-flags"
+              title="Fraud Register"
+              subtitle="S02 · Investigation Desk"
+              desc="Review and resolve buddy punch warnings, time drifts, and anomalies."
             />
 
             <WorkspaceCard

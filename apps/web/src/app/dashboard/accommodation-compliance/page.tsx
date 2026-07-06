@@ -328,10 +328,10 @@ export default function AccHome() {
           </div>
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
             <WorkspaceCard
-              href="/dashboard/accommodation-compliance/sites"
-              title="Site Master"
-              subtitle="S02 / S14 · Registry"
-              desc="Manage labor camps, apartments, villas, capacities, managers, and contractors."
+              href="/dashboard/accommodation-compliance/complaints"
+              title="Complaints"
+              subtitle="S15 · Resolution Desk"
+              desc="Manage tenant-raised issues, SLAs, and assignee details."
             />
 
             <WorkspaceCard
@@ -342,17 +342,10 @@ export default function AccHome() {
             />
 
             <WorkspaceCard
-              href="/dashboard/accommodation-compliance/inspections"
-              title="Inspections"
-              subtitle="S05–S09 / S12 · Audits"
-              desc="Track hygiene, fire, electrical, kitchen and water safety findings."
-            />
-
-            <WorkspaceCard
-              href="/dashboard/accommodation-compliance/complaints"
-              title="Complaints"
-              subtitle="S15 · Resolution Desk"
-              desc="Manage tenant-raised issues, SLAs, and assignee details."
+              href="/dashboard/accommodation-compliance/assignments"
+              title="Employee Register"
+              subtitle="S03 / S04 / S10 · Allocations"
+              desc="Assign rooms/beds, control segregation rules, and allocate housing costs."
             />
 
             <WorkspaceCard
@@ -360,6 +353,13 @@ export default function AccHome() {
               title="Monthly Certificates"
               subtitle="S17 / S18 · Attestations"
               desc="Generate monthly reports and sign gated compliance certificates."
+            />
+
+            <WorkspaceCard
+              href="/dashboard/accommodation-compliance/sites"
+              title="Site Master"
+              subtitle="S02 / S14 · Registry"
+              desc="Manage labor camps, apartments, villas, capacities, managers, and contractors."
             />
           </div>
         </section>
