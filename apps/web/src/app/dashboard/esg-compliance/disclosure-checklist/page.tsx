@@ -54,7 +54,7 @@ const INITIAL_DISCLOSURES: DisclosureInput[] = [
     labelAr: 'مراجعة سياسة الإبلاغ عن المخالفات وسجلات المظالم',
     mandatory: true,
     filed: false,
-  }
+  },
 ];
 
 export default function DisclosureChecklistPage() {
@@ -127,10 +127,15 @@ export default function DisclosureChecklistPage() {
     <main className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 text-slate-950 dark:text-slate-50">
       <div className="mx-auto flex max-w-7xl flex-col gap-6">
         <header className="border-b border-slate-200 dark:border-slate-800 pb-4">
-          <p className="text-sm uppercase text-slate-500 dark:text-slate-400 font-semibold tracking-wider">EPIC-30 · ESG Sustainability</p>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white mt-1">Governance Disclosure Checklist</h1>
+          <p className="text-sm uppercase text-slate-500 dark:text-slate-400 font-semibold tracking-wider">
+            EPIC-30 · ESG Sustainability
+          </p>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
+            Governance Disclosure Checklist
+          </h1>
           <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-            Track mandatory governance, diversity, and environmental reporting submissions against corporate cadences.
+            Track mandatory governance, diversity, and environmental reporting submissions against
+            corporate cadences.
           </p>
         </header>
 
@@ -147,7 +152,9 @@ export default function DisclosureChecklistPage() {
               <div className="p-4 border-b border-slate-100 dark:border-slate-850 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <BookOpen className="w-5 h-5 text-indigo-500" />
-                  <h2 className="font-bold text-slate-900 dark:text-white">Required Disclosures Tracker</h2>
+                  <h2 className="font-bold text-slate-900 dark:text-white">
+                    Required Disclosures Tracker
+                  </h2>
                 </div>
                 <button
                   onClick={evaluate}
@@ -186,9 +193,16 @@ export default function DisclosureChecklistPage() {
                         </td>
                         <td className="px-4 py-3 max-w-sm">
                           <p className="font-semibold text-slate-900 dark:text-white">{d.label}</p>
-                          <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">{d.code}</p>
+                          <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">
+                            {d.code}
+                          </p>
                           {d.labelAr && (
-                            <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5" dir="rtl">{d.labelAr}</p>
+                            <p
+                              className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5"
+                              dir="rtl"
+                            >
+                              {d.labelAr}
+                            </p>
                           )}
                         </td>
                         <td className="px-4 py-3">
@@ -232,7 +246,9 @@ export default function DisclosureChecklistPage() {
           <div className="md:col-span-1">
             <section className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm h-full flex flex-col justify-between">
               <div>
-                <h2 className="text-sm font-bold text-slate-950 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-2 mb-4">Checklist Evaluation</h2>
+                <h2 className="text-sm font-bold text-slate-950 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-2 mb-4">
+                  Checklist Evaluation
+                </h2>
 
                 {verdict ? (
                   <div className="space-y-6">
@@ -245,7 +261,9 @@ export default function DisclosureChecklistPage() {
                       }`}
                     >
                       <div className="flex items-center justify-between">
-                        <span className="text-xs uppercase font-bold tracking-wider">Submission Rate</span>
+                        <span className="text-xs uppercase font-bold tracking-wider">
+                          Submission Rate
+                        </span>
                         <span
                           className={`px-2 py-0.5 rounded-full text-xs font-bold ${
                             verdict.totals.missing + verdict.totals.stale > 0
@@ -256,30 +274,52 @@ export default function DisclosureChecklistPage() {
                           {verdict.totals.coveragePct}% COV
                         </span>
                       </div>
-                      <p className="text-sm font-bold mt-1">{verdict.reason.en}</p>
-                      <p className="text-[10px] opacity-75" dir="rtl">{verdict.reasonAr}</p>
+                      <p className="text-sm font-bold mt-1">
+                        {verdict.totals.missing + verdict.totals.stale > 0
+                          ? 'Checklist incomplete or containing stale disclosures'
+                          : 'All mandatory disclosures are current and filed'}
+                      </p>
+                      <p className="text-[10px] opacity-75" dir="rtl">
+                        {verdict.totals.missing + verdict.totals.stale > 0
+                          ? 'القائمة غير مكتملة أو تحتوي على إفصاحات متأخرة'
+                          : 'جميع الإفصاحات الإلزامية حالية ومقدمة'}
+                      </p>
                     </div>
 
                     {/* Breakdown Stats */}
                     <div className="grid grid-cols-2 gap-3 text-xs font-medium pt-2">
                       <div className="bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-lg p-3 text-center">
-                        <span className="text-[10px] font-bold text-slate-400 dark:text-slate-550 uppercase">Filed</span>
-                        <p className="text-base font-bold text-slate-800 dark:text-slate-200 mt-0.5">{verdict.totals.filed} / {verdict.totals.mandatory}</p>
+                        <span className="text-[10px] font-bold text-slate-400 dark:text-slate-550 uppercase">
+                          Filed
+                        </span>
+                        <p className="text-base font-bold text-slate-800 dark:text-slate-200 mt-0.5">
+                          {verdict.totals.filed} / {verdict.totals.mandatory}
+                        </p>
                       </div>
                       <div className="bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-lg p-3 text-center">
-                        <span className="text-[10px] font-bold text-slate-400 dark:text-slate-550 uppercase">Missing</span>
-                        <p className="text-base font-bold text-rose-600 dark:text-rose-455 mt-0.5">{verdict.totals.missing}</p>
+                        <span className="text-[10px] font-bold text-slate-400 dark:text-slate-550 uppercase">
+                          Missing
+                        </span>
+                        <p className="text-base font-bold text-rose-600 dark:text-rose-455 mt-0.5">
+                          {verdict.totals.missing}
+                        </p>
                       </div>
                       <div className="bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-lg p-3 col-span-2 text-center">
-                        <span className="text-[10px] font-bold text-slate-400 dark:text-slate-550 uppercase">Stale / Overdue Reports</span>
-                        <p className="text-sm font-bold text-slate-800 dark:text-slate-200 mt-0.5">{verdict.totals.stale}</p>
+                        <span className="text-[10px] font-bold text-slate-400 dark:text-slate-550 uppercase">
+                          Stale / Overdue Reports
+                        </span>
+                        <p className="text-sm font-bold text-slate-800 dark:text-slate-200 mt-0.5">
+                          {verdict.totals.stale}
+                        </p>
                       </div>
                     </div>
                   </div>
                 ) : (
                   <div className="flex flex-col items-center justify-center py-12 text-slate-400 dark:text-slate-550 text-sm gap-2">
                     <CheckSquare className="w-8 h-8 text-slate-300 dark:text-slate-750" />
-                    <p className="text-center">Run the checklist evaluation to check for mandatory disclosure gaps.</p>
+                    <p className="text-center">
+                      Run the checklist evaluation to check for mandatory disclosure gaps.
+                    </p>
                   </div>
                 )}
               </div>

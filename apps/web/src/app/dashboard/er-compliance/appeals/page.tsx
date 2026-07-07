@@ -68,17 +68,19 @@ export default function AppealsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 p-6 text-slate-950">
+    <main className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 text-slate-950 dark:text-slate-50">
       <div className="mx-auto flex max-w-7xl flex-col gap-6">
-        <header className="flex items-center justify-between border-b border-slate-200 pb-4">
+        <header className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
           <div>
-            <p className="text-sm uppercase text-slate-500">EPIC-25 · S10 / EPIC-26 · S08</p>
+            <p className="text-sm uppercase text-slate-500 dark:text-slate-400">
+              EPIC-25 · S10 / EPIC-26 · S08
+            </p>
             <h1 className="text-2xl font-semibold">Appeals Register</h1>
           </div>
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            className="rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+            className="rounded-md border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1.5 text-sm"
           >
             <option value="">All</option>
             <option value="OPEN">OPEN</option>
@@ -86,13 +88,13 @@ export default function AppealsPage() {
           </select>
         </header>
 
-        <section className="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 md:grid-cols-7">
+        <section className="grid gap-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 md:grid-cols-7">
           <label className="text-sm">
             Appeal #
             <input
               value={form.appealNumber}
               onChange={(e) => setForm((f) => ({ ...f, appealNumber: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5 font-mono text-xs"
+              className="mt-1 w-full rounded-md border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1.5 font-mono text-xs"
             />
           </label>
           <label className="text-sm">
@@ -100,7 +102,7 @@ export default function AppealsPage() {
             <select
               value={form.subjectType}
               onChange={(e) => setForm((f) => ({ ...f, subjectType: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5"
+              className="mt-1 w-full rounded-md border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1.5"
             >
               <option>GRIEVANCE</option>
               <option>DISCIPLINARY</option>
@@ -111,7 +113,7 @@ export default function AppealsPage() {
             <input
               value={form.subjectId}
               onChange={(e) => setForm((f) => ({ ...f, subjectId: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5 font-mono text-xs"
+              className="mt-1 w-full rounded-md border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1.5 font-mono text-xs"
             />
           </label>
           <label className="text-sm">
@@ -119,7 +121,7 @@ export default function AppealsPage() {
             <input
               value={form.appellantId}
               onChange={(e) => setForm((f) => ({ ...f, appellantId: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5"
+              className="mt-1 w-full rounded-md border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1.5"
             />
           </label>
           <label className="text-sm md:col-span-2">
@@ -127,22 +129,22 @@ export default function AppealsPage() {
             <input
               value={form.reason}
               onChange={(e) => setForm((f) => ({ ...f, reason: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5"
+              className="mt-1 w-full rounded-md border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1.5"
             />
           </label>
           <button
             type="button"
             onClick={file}
-            className="rounded-md bg-slate-900 px-3 py-2 text-sm text-white"
+            className="rounded-md bg-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 px-3 py-2 text-sm text-white"
           >
             File Appeal
           </button>
         </section>
         {message ? <p className="text-sm">{message}</p> : null}
 
-        <section className="rounded-lg border border-slate-200 bg-white p-4">
+        <section className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-slate-200 text-xs uppercase text-slate-500">
+            <thead className="border-b border-slate-200 dark:border-slate-800 text-xs uppercase text-slate-500 dark:text-slate-400">
               <tr>
                 <th className="px-3 py-2">Appeal #</th>
                 <th className="px-3 py-2">Filed</th>
@@ -156,7 +158,7 @@ export default function AppealsPage() {
             </thead>
             <tbody>
               {rows.map((a) => (
-                <tr key={a.id} className="border-b border-slate-100">
+                <tr key={a.id} className="border-b border-slate-100 dark:border-slate-800/50">
                   <td className="px-3 py-2 font-mono text-xs">{a.appealNumber}</td>
                   <td className="px-3 py-2 text-xs">{a.filedAt?.slice(0, 10)}</td>
                   <td className="px-3 py-2 text-xs">
@@ -181,7 +183,10 @@ export default function AppealsPage() {
               ))}
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-3 py-6 text-center text-slate-500">
+                  <td
+                    colSpan={8}
+                    className="px-3 py-6 text-center text-slate-500 dark:text-slate-400"
+                  >
                     No appeals.
                   </td>
                 </tr>
