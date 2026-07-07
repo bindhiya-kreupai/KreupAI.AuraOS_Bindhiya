@@ -876,8 +876,7 @@ export class IntegrationRegistryService {
     const connectionByIntegration = new Map(connected.map((c) => [c.integrationId, c.id]));
 
     return integrations.map((integration, idx) => {
-      // Deterministic values based on index to avoid Math.random()
-      const rating = (4.5 + (idx % 5) * 0.3) % 5.0;
+      const rating = Math.min(4.5 + (idx % 5) * 0.3, 5.0);
       const isInstalled = connectedIds.has(integration.id);
 
       return {
