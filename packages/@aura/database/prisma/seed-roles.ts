@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
  * Run with: npx ts-node prisma/seed-roles.ts
  */
 
-// System-wide roles (no tenantId)
+// System-wide roles (no tenantId — uses findFirst + create/update to bypass Prisma upsert null limitation)
 const SYSTEM_ROLES = [
   {
     code: 'SUPER_ADMIN',
@@ -181,23 +181,23 @@ async function main() {
   // 2. Create system-wide roles (no tenant)
   console.log('\n👑 Creating system-wide roles...');
   for (const roleData of SYSTEM_ROLES) {
-    const role = await prisma.role.upsert({
-      where: {
-        tenantId_code: {
-          tenantId: null,
-          code: roleData.code,
-        },
-      },
-      update: {
-        name: roleData.name,
-        description: roleData.description,
-        isSystem: roleData.isSystem,
-      },
-      create: {
-        ...roleData,
-        tenantId: null,
-      },
+    let role = await prisma.role.findFirst({
+      where: { tenantId: null, code: roleData.code },
     });
+    if (role) {
+      role = await prisma.role.update({
+        where: { id: role.id },
+        data: {
+          name: roleData.name,
+          description: roleData.description,
+          isSystem: roleData.isSystem,
+        },
+      });
+    } else {
+      role = await prisma.role.create({
+        data: { ...roleData, tenantId: null },
+      });
+    }
 
     // Assign permissions to role
     const permissionCodes = ROLE_PERMISSIONS[roleData.code] || [];
