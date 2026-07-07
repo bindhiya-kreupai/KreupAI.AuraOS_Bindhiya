@@ -43,13 +43,7 @@ export interface AuthContext {
 }
 
 export type Stage =
-  | 'APPLIED'
-  | 'SCREENED'
-  | 'INTERVIEWED'
-  | 'OFFERED'
-  | 'HIRED'
-  | 'REJECTED'
-  | 'WITHDRAWN';
+  'APPLIED' | 'SCREENED' | 'INTERVIEWED' | 'OFFERED' | 'HIRED' | 'REJECTED' | 'WITHDRAWN';
 
 const FORWARD_FLOW: Record<Stage, Stage[]> = {
   APPLIED: ['SCREENED', 'REJECTED', 'WITHDRAWN'],

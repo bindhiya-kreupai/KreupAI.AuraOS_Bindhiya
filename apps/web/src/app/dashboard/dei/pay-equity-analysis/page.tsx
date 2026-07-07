@@ -100,7 +100,7 @@ export default function PayEquityPage() {
                   tickFormatter={(val) => `${Math.round(val / 1000)}k`}
                 />
                 <Tooltip
-                  formatter={(val: number) => val.toLocaleString()}
+                  formatter={(val: any) => val.toLocaleString()}
                   cursor={{ fill: 'transparent' }}
                   contentStyle={{ borderRadius: 12 }}
                 />

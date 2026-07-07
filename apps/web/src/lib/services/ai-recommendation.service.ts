@@ -6,11 +6,7 @@ export type RecommendationStatus = 'OPEN' | 'ACCEPTED' | 'DISMISSED' | 'EXPIRED'
 export type RecommendationPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
 export type RecommendationCategory =
-  | 'ATTRITION_INTERVENTION'
-  | 'LEARNING_PATH'
-  | 'INTERNAL_MOBILITY'
-  | 'TASK_AUTOMATION'
-  | 'INSIGHT';
+  'ATTRITION_INTERVENTION' | 'LEARNING_PATH' | 'INTERNAL_MOBILITY' | 'TASK_AUTOMATION' | 'INSIGHT';
 
 const STATUS_TRANSITIONS: Record<RecommendationStatus, RecommendationStatus[]> = {
   OPEN: ['ACCEPTED', 'DISMISSED', 'EXPIRED'],

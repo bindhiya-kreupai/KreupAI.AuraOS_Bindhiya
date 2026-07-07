@@ -4,11 +4,7 @@ import { BaseService } from './base.service';
 export type IncidentSeverity = 'SEV1' | 'SEV2' | 'SEV3' | 'SEV4';
 
 export type IncidentStatus =
-  | 'OPEN'
-  | 'INVESTIGATING'
-  | 'MITIGATED'
-  | 'RESOLVED'
-  | 'POSTMORTEM_PUBLISHED';
+  'OPEN' | 'INVESTIGATING' | 'MITIGATED' | 'RESOLVED' | 'POSTMORTEM_PUBLISHED';
 
 const STATUS_TRANSITIONS: Record<IncidentStatus, IncidentStatus[]> = {
   OPEN: ['INVESTIGATING', 'MITIGATED', 'RESOLVED'],

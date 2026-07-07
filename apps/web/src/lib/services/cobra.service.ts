@@ -16,12 +16,7 @@ export type CobraEnrollmentStatus =
   | 'CANCELED';
 
 export type QualifyingEventType =
-  | 'TERMINATION'
-  | 'REDUCED_HOURS'
-  | 'DIVORCE'
-  | 'DEPENDENT_LOSS'
-  | 'DEATH'
-  | 'MEDICARE_ELIGIBILITY';
+  'TERMINATION' | 'REDUCED_HOURS' | 'DIVORCE' | 'DEPENDENT_LOSS' | 'DEATH' | 'MEDICARE_ELIGIBILITY';
 
 const ENROLLMENT_TRANSITIONS: Record<CobraEnrollmentStatus, CobraEnrollmentStatus[]> = {
   PENDING_ELECTION: ['ELECTED', 'DECLINED', 'EXPIRED', 'CANCELED'],

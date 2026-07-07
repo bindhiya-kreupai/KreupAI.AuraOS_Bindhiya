@@ -7,12 +7,7 @@ import { createHash } from 'crypto';
 const db = prisma as any;
 
 export type SubmissionStatus =
-  | 'DRAFT'
-  | 'READY'
-  | 'SUBMITTED'
-  | 'ACKNOWLEDGED'
-  | 'REJECTED'
-  | 'RESUBMITTED';
+  'DRAFT' | 'READY' | 'SUBMITTED' | 'ACKNOWLEDGED' | 'REJECTED' | 'RESUBMITTED';
 
 export type Authority =
   | 'MOHRE' // UAE Ministry of Human Resources & Emiratisation

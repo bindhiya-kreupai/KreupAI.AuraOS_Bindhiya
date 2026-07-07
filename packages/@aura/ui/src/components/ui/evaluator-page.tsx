@@ -48,6 +48,7 @@ function cn(...inputs: ClassValue[]) {
 
 export type EvaluatorFieldType =
     | 'text'
+    | 'textarea'
     | 'number'
     | 'date'
     | 'datetime-local'
@@ -305,6 +306,16 @@ export function EvaluatorPage({
                                     <option value="true">{locale === 'ar' ? 'نعم' : 'Yes'}</option>
                                     <option value="false">{locale === 'ar' ? 'لا' : 'No'}</option>
                                 </select>
+                            ) : f.type === 'textarea' ? (
+                                <textarea
+                                    id={id}
+                                    rows={8}
+                                    className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm font-mono"
+                                    value={stringValue}
+                                    onChange={(e) => onChange(f.name, e.target.value)}
+                                    placeholder={f.placeholder}
+                                    required={f.required}
+                                />
                             ) : (
                                 <input
                                     id={id}
@@ -315,8 +326,7 @@ export function EvaluatorPage({
                                     placeholder={f.placeholder}
                                     required={f.required}
                                 />
-                            )}
-                            {help && <p className="text-xs text-gray-500">{help}</p>}
+                            )}                            {help && <p className="text-xs text-gray-500">{help}</p>}
                         </div>
                     );
                 })}

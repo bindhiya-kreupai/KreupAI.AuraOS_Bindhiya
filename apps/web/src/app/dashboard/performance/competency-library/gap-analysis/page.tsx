@@ -738,9 +738,7 @@ export default function GapAnalysisPage() {
         startDate: p.startDate ? new Date(p.startDate).toISOString().slice(0, 10) : '',
         endDate: p.endDate ? new Date(p.endDate).toISOString().slice(0, 10) : '',
         status: (p.status === 'Active' || p.status === 'Completed' ? p.status : 'Draft') as
-          | 'Draft'
-          | 'Active'
-          | 'Completed',
+          'Draft' | 'Active' | 'Completed',
         gaps: [],
         activities: (p.activities || []).map((a: any) => ({
           id: a.id,
