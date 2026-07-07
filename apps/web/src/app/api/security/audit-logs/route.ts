@@ -11,9 +11,20 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     const sp = new URL(request.url).searchParams;
     const action = sp.get('action') || undefined;
     const userId = sp.get('userId') || undefined;
+    const module = sp.get('module') || undefined;
+    const from = sp.get('from') || undefined;
+    const to = sp.get('to') || undefined;
+    const q = sp.get('q') || undefined;
     const where: any = { tenantId: user.tenantId };
     if (action) where.action = action;
     if (userId) where.userId = userId;
+    if (module) where.module = module;
+    if (q) where.userEmail = { contains: q, mode: 'insensitive' };
+    if (from || to) {
+      where.timestamp = {};
+      if (from) where.timestamp.gte = new Date(from);
+      if (to) where.timestamp.lte = new Date(to);
+    }
     const [rows, total] = await Promise.all([
       (prisma as any).auditLog.findMany({
         where,

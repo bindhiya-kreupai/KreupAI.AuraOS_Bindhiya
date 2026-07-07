@@ -1,0 +1,189 @@
+[
+  {
+    "id": "AURA-438",
+    "title": "Certificate: Complete API integration and remove mock/local fallbacks",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hse-compliance/certificate",
+    "api": "/api/v1/hse-compliance/certificate",
+    "desc": "Page calls APIs (/api/v1/hse-compliance/certificate) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-439",
+    "title": "Incident Register (NEAR_MISS \u2192 FATALITY + GOSI notify): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hse-compliance/incident-register-near-miss-fatality-gosi-notify",
+    "api": "Not specified",
+    "desc": "Menu feature 'Incident Register (NEAR_MISS \u2192 FATALITY + GOSI notify)' resolves to /dashboard/hse-compliance/incident-register-near-miss-fatality-gosi-notify but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-440",
+    "title": "Monthly Compliance Certificate (LTIFR): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hse-compliance/monthly-compliance-certificate-ltifr",
+    "api": "Not specified",
+    "desc": "Menu feature 'Monthly Compliance Certificate (LTIFR)' resolves to /dashboard/hse-compliance/monthly-compliance-certificate-ltifr but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-441",
+    "title": "Permit-to-Work (HOT_WORK / CONFINED_SPACE / WAH): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hse-compliance/permit-to-work-hot-work-confined-space-wah",
+    "api": "Not specified",
+    "desc": "Menu feature 'Permit-to-Work (HOT_WORK / CONFINED_SPACE / WAH)' resolves to /dashboard/hse-compliance/permit-to-work-hot-work-confined-space-wah but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-442",
+    "title": "Risk Assessments (L \u00d7 S \u2192 residual band): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hse-compliance/risk-assessments-l-s-residual-band",
+    "api": "Not specified",
+    "desc": "Menu feature 'Risk Assessments (L \u00d7 S \u2192 residual band)' resolves to /dashboard/hse-compliance/risk-assessments-l-s-residual-band but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-342",
+    "title": "Biometric & Geolocation Consent Register: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/attendance-compliance/biometric-geolocation-consent-register",
+    "api": "Not specified",
+    "desc": "Menu feature 'Biometric & Geolocation Consent Register' resolves to /dashboard/attendance-compliance/biometric-geolocation-consent-register but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-343",
+    "title": "Country \u00d7 Grade Policy (tolerances, SLAs, Ramadan): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/attendance-compliance/country-grade-policy-tolerances-slas-ramadan",
+    "api": "Not specified",
+    "desc": "Menu feature 'Country \u00d7 Grade Policy (tolerances, SLAs, Ramadan)' resolves to /dashboard/attendance-compliance/country-grade-policy-tolerances-slas-ramadan but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-344",
+    "title": "Fraud Register (BUDDY_PUNCH / GEO_MISMATCH / TIME_DRIFT): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/attendance-compliance/fraud-register-buddy-punch-geo-mismatch-time-drift",
+    "api": "Not specified",
+    "desc": "Menu feature 'Fraud Register (BUDDY_PUNCH / GEO_MISMATCH / TIME_DRIFT)' resolves to /dashboard/attendance-compliance/fraud-register-buddy-punch-geo-mismatch-time-drift but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-345",
+    "title": "Monthly Compliance Certificate: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/attendance-compliance/monthly-compliance-certificate",
+    "api": "Not specified",
+    "desc": "Menu feature 'Monthly Compliance Certificate' resolves to /dashboard/attendance-compliance/monthly-compliance-certificate but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-483",
+    "title": "Budget Control: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/overtime-compliance/budget-control",
+    "api": "Not specified",
+    "desc": "Menu feature 'Budget Control' resolves to /dashboard/overtime-compliance/budget-control but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-484",
+    "title": "Monthly Certificate: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/overtime-compliance/monthly-certificate",
+    "api": "Not specified",
+    "desc": "Menu feature 'Monthly Certificate' resolves to /dashboard/overtime-compliance/monthly-certificate but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-485",
+    "title": "OT Policies (country \u00d7 grade): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/overtime-compliance/ot-policies-country-grade",
+    "api": "Not specified",
+    "desc": "Menu feature 'OT Policies (country \u00d7 grade)' resolves to /dashboard/overtime-compliance/ot-policies-country-grade but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-486",
+    "title": "Rate Cards (country \u00d7 OT type): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/overtime-compliance/rate-cards-country-ot-type",
+    "api": "Not specified",
+    "desc": "Menu feature 'Rate Cards (country \u00d7 OT type)' resolves to /dashboard/overtime-compliance/rate-cards-country-ot-type but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-462",
+    "title": "Country \u00d7 Leave Code Entitlement (annual/sick/maternity/Hajj): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/leave-compliance/country-leave-code-entitlement-annual-sick-maternity-hajj",
+    "api": "Not specified",
+    "desc": "Menu feature 'Country \u00d7 Leave Code Entitlement (annual/sick/maternity/Hajj)' resolves to /dashboard/leave-compliance/country-leave-code-entitlement-annual-sick-maternity-hajj but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-463",
+    "title": "Medical Evidence Vault (RESTRICTED + retention): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/leave-compliance/medical-evidence-vault-restricted-retention",
+    "api": "Not specified",
+    "desc": "Menu feature 'Medical Evidence Vault (RESTRICTED + retention)' resolves to /dashboard/leave-compliance/medical-evidence-vault-restricted-retention but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-464",
+    "title": "Misuse Register (Monday/Friday pattern, medical forgery): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/leave-compliance/misuse-register-monday-friday-pattern-medical-forgery",
+    "api": "Not specified",
+    "desc": "Menu feature 'Misuse Register (Monday/Friday pattern, medical forgery)' resolves to /dashboard/leave-compliance/misuse-register-monday-friday-pattern-medical-forgery but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-465",
+    "title": "Monthly Compliance Certificate: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/leave-compliance/monthly-compliance-certificate",
+    "api": "Not specified",
+    "desc": "Menu feature 'Monthly Compliance Certificate' resolves to /dashboard/leave-compliance/monthly-compliance-certificate but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  }
+]

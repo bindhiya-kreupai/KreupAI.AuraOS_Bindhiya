@@ -251,6 +251,7 @@ const REGULARIZATION_STATUS_MAP: Record<string, AttendanceRegularization['status
   PENDING: 'pending',
   APPROVED: 'approved',
   REJECTED: 'rejected',
+  CANCELLED: 'cancelled',
 };
 
 function normalizeRegularizationType(
@@ -1125,6 +1126,25 @@ export class RegularizationService {
     } catch (error: any) {
       return [];
     }
+  }
+
+  /**
+   * Cancel a pending regularization request. The server enforces that only the
+   * owning employee may cancel and only while the request is still PENDING.
+   */
+  static async cancelRegularization(
+    id: string,
+    comments?: string
+  ): Promise<AttendanceRegularization> {
+    const response = await APIClient.post<{ success: boolean; data?: RegularizationApiResponse }>(
+      this.endpoint,
+      {
+        action: 'cancel',
+        regularizationId: id,
+        comments,
+      }
+    );
+    return mapRegularization(response.data!);
   }
 }
 
@@ -2053,6 +2073,77 @@ export class FieldForceService {
   }): Promise<any> {
     const response = await APIClient.post<{ visit: any }>(`${this.endpoint}/visits`, visit);
     return response.visit;
+  }
+
+  /**
+   * Persist a beat plan for a field agent. The `/attendance/field-force` route
+   * is the config-CRUD endpoint backed by the FieldForceConfig model
+   * (tenant-scoped, name-unique). We store the plan payload in `config` and use
+   * `trackingMode: 'PERIODIC'` so the record validates against the route schema.
+   * Returns the created config record ({ id, ... }).
+   */
+  static async saveBeatPlan(plan: {
+    agentId: string;
+    agentName: string;
+    date: string;
+    stops: string[];
+    notes?: string;
+  }): Promise<{ id: string }> {
+    // Name must be unique per tenant → scope by agent + date.
+    const name = `Beat · ${plan.agentName} · ${plan.date}`;
+    const response = await APIClient.post<{ success?: boolean; data?: { id: string } }>(
+      this.endpoint,
+      {
+        name,
+        description: plan.notes || `Beat plan for ${plan.agentName} on ${plan.date}`,
+        isActive: true,
+        config: {
+          trackingMode: 'PERIODIC',
+          periodicIntervalMinutes: 60,
+          requirePhotoOnCheckIn: false,
+          allowOfflineMode: false,
+          // Beat-specific payload (accepted by the JSON config column):
+          beat: {
+            agentId: plan.agentId,
+            agentName: plan.agentName,
+            date: plan.date,
+            stops: plan.stops,
+            notes: plan.notes || '',
+          },
+        },
+      }
+    );
+    return response.data || { id: '' };
+  }
+
+  /**
+   * List persisted beat plans. Reads FieldForceConfig records from the
+   * config-CRUD endpoint and extracts those that carry a `config.beat` payload.
+   */
+  static async getBeatPlans(): Promise<
+    Array<{ id: string; agentName: string; date: string; stops: string[]; notes?: string }>
+  > {
+    try {
+      const response = await APIClient.get<{
+        success?: boolean;
+        data?: Array<{ id: string; config?: { beat?: Record<string, any> } }>;
+      }>(this.endpoint, { isActive: 'true' });
+
+      return (response.data || [])
+        .filter((record) => record?.config?.beat)
+        .map((record) => {
+          const beat = record.config!.beat as Record<string, any>;
+          return {
+            id: record.id,
+            agentName: String(beat.agentName || 'Unknown Agent'),
+            date: String(beat.date || ''),
+            stops: Array.isArray(beat.stops) ? beat.stops.map(String) : [],
+            notes: beat.notes ? String(beat.notes) : undefined,
+          };
+        });
+    } catch (error: any) {
+      return [];
+    }
   }
 }
 

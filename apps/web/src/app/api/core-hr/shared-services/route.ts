@@ -1,4 +1,4 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@/lib/database';
@@ -50,7 +50,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
     if (category) where.category = category.toUpperCase();
 
     const [requests, total] = await Promise.all([
-      prisma.sharedServiceRequest.findMany({
+      (prisma as any).sharedServiceRequest.findMany({
         where,
         skip,
         take: limit,
@@ -60,7 +60,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
           assignedTo: { select: { id: true, firstName: true, lastName: true } },
         },
       }),
-      prisma.sharedServiceRequest.count({ where }),
+      (prisma as any).sharedServiceRequest.count({ where }),
     ]);
 
     return NextResponse.json(
@@ -101,7 +101,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
 
     const data = validation.data;
 
-    const created = await prisma.sharedServiceRequest.create({
+    const created = await (prisma as any).sharedServiceRequest.create({
       data: {
         tenantId: user.tenantId,
         requestorId: employeeId,

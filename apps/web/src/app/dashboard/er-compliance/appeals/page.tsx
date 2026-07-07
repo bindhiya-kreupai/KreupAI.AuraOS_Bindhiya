@@ -34,7 +34,9 @@ export default function AppealsPage() {
     if (filter) url.searchParams.set('status', filter);
     const r = await fetch(url.toString());
     const p = await r.json();
-    if (p.success) setRows(p.data ?? []);
+    if (p.success) {
+      setRows(Array.isArray(p.data) ? p.data : (p.data?.items ?? []));
+    }
   }
   useEffect(() => {
     load();

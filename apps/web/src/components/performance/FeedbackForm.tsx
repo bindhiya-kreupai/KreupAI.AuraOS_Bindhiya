@@ -7,7 +7,7 @@
 
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import {
   Send,
@@ -102,16 +102,11 @@ const SUGGESTED_TAGS = [
   'Problem Solving',
 ];
 
-const MOCK_TEAM = [
-  { id: 'emp-201', name: 'Michael Torres', role: 'Engineering Manager' },
-  { id: 'emp-202', name: 'Lisa Park', role: 'Tech Lead' },
-  { id: 'emp-203', name: 'Anika Shah', role: 'Product Designer' },
-  { id: 'emp-204', name: 'Jordan Lee', role: 'QA Engineer' },
-  { id: 'emp-205', name: 'Rachel Green', role: 'DevOps Engineer' },
-  { id: 'emp-206', name: 'Carlos Rivera', role: 'Product Manager' },
-  { id: 'emp-207', name: 'Sarah Chen', role: 'Software Engineer' },
-  { id: 'emp-208', name: 'David Kim', role: 'Data Analyst' },
-];
+interface TeamMember {
+  id: string;
+  name: string;
+  role: string;
+}
 
 // ── Component ────────────────────────────────────────────────────────────────────
 
@@ -127,8 +122,56 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [showTagPicker, setShowTagPicker] = useState(false);
 
+  // Employee picker — real, tenant-scoped directory search.
+  const [recipientQuery, setRecipientQuery] = useState('');
+  const [team, setTeam] = useState<TeamMember[]>([]);
+  const [loadingTeam, setLoadingTeam] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    const controller = new AbortController();
+    setLoadingTeam(true);
+    const t = setTimeout(async () => {
+      try {
+        const params = new URLSearchParams({ limit: '25' });
+        if (recipientQuery.trim().length >= 2) params.set('search', recipientQuery.trim());
+        const res = await fetch(`/api/v1/employees?${params.toString()}`, {
+          credentials: 'same-origin',
+          signal: controller.signal,
+        });
+        if (!res.ok) throw new Error('Failed to load employees');
+        const json = await res.json();
+        if (!active) return;
+        const rows = (json?.data ?? []) as Array<{
+          id: string;
+          name?: string;
+          firstName?: string;
+          lastName?: string;
+          role?: string | null;
+          dept?: string | null;
+        }>;
+        setTeam(
+          rows.map((r) => ({
+            id: r.id,
+            name: r.name ?? (`${r.firstName ?? ''} ${r.lastName ?? ''}`.trim() || 'Unknown'),
+            role: r.role ?? r.dept ?? '',
+          }))
+        );
+      } catch (err) {
+        if ((err as Error)?.name !== 'AbortError' && active) setTeam([]);
+      } finally {
+        if (active) setLoadingTeam(false);
+      }
+    }, 300);
+    return () => {
+      active = false;
+      controller.abort();
+      clearTimeout(t);
+    };
+  }, [recipientQuery]);
+
   const selectedConfig = CATEGORY_CONFIG.find((c) => c.key === category)!;
-  const selectedRecipient = MOCK_TEAM.find((t) => t.id === toId);
+  const selectedRecipient = team.find((t) => t.id === toId);
 
   const isValid = toId && message.trim().length >= 10;
 
@@ -146,6 +189,7 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({
     setMessage('');
     setSelectedTags([]);
     setToId('');
+    setRecipientQuery('');
   }, [category, visibility, toId, message, selectedTags, isValid, selectedRecipient, onSubmit]);
 
   const toggleTag = useCallback((tag: string) => {
@@ -201,15 +245,25 @@ export const FeedbackForm: React.FC<FeedbackFormProps> = ({
         <label className="text-[9px] font-bold text-silver-mist uppercase mb-1 block flex items-center gap-1">
           <User className="w-3 h-3" /> To
         </label>
+        <input
+          type="text"
+          value={recipientQuery}
+          onChange={(e) => setRecipientQuery(e.target.value)}
+          placeholder="Search employees by name or email..."
+          className="w-full mb-1 px-3 py-2 text-[10px] rounded-lg border border-cloud dark:border-nebula-purple/20 bg-white dark:bg-deep-cosmos text-ink-black dark:text-pearl placeholder:text-silver-mist focus:outline-none focus:ring-1 focus:ring-celestial-indigo"
+        />
         <select
           value={toId}
           onChange={(e) => setToId(e.target.value)}
           className="w-full px-3 py-2 text-[10px] rounded-lg border border-cloud dark:border-nebula-purple/20 bg-white dark:bg-deep-cosmos text-ink-black dark:text-pearl focus:outline-none focus:ring-1 focus:ring-celestial-indigo"
         >
-          <option value="">Select a team member...</option>
-          {MOCK_TEAM.map((m) => (
+          <option value="">
+            {loadingTeam ? 'Loading team members...' : 'Select a team member...'}
+          </option>
+          {team.map((m) => (
             <option key={m.id} value={m.id}>
-              {m.name} — {m.role}
+              {m.name}
+              {m.role ? ` — ${m.role}` : ''}
             </option>
           ))}
         </select>

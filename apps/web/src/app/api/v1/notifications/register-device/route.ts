@@ -33,7 +33,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
       return NextResponse.json({ error: 'pushToken or deviceToken is required' }, { status: 400 });
     }
 
-    const record = await prisma.deviceToken.upsert({
+    const record = await (prisma as any).deviceToken.upsert({
       where: {
         userId_token: {
           userId: user.id,

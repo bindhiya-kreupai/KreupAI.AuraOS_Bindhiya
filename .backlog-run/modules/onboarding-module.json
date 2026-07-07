@@ -1,0 +1,90 @@
+[
+  {
+    "id": "AURA-639",
+    "title": "Onboarding: Replace hub with functional page or add child route",
+    "module": "Onboarding Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/onboarding",
+    "api": "Not specified",
+    "desc": "Page is a ModuleGrid navigation shell with no data/API integration."
+  },
+  {
+    "id": "AURA-640",
+    "title": "30-60-90 Day Plan: Complete API integration and remove mock/local fallbacks",
+    "module": "Onboarding Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/onboarding/30-60-90-day-plan",
+    "api": "Not specified",
+    "desc": "Page calls APIs (service layer) but @ts-nocheck contract drift."
+  },
+  {
+    "id": "AURA-641",
+    "title": "Benefits: Complete API integration and remove mock/local fallbacks",
+    "module": "Onboarding Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/onboarding/benefits",
+    "api": "/api/v1/onboarding/benefits, /api/v1/onboarding/benefits/${selectedEnrollment.id}/issue-card",
+    "desc": "Page calls APIs (/api/v1/onboarding/benefits, /api/v1/onboarding/benefits/${selectedEnrollment.id}/issue-card) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-642",
+    "title": "Country Rules: Complete API integration and remove mock/local fallbacks",
+    "module": "Onboarding Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/onboarding/country-rules",
+    "api": "/api/v1/onboarding/country-rules",
+    "desc": "Page calls APIs (/api/v1/onboarding/country-rules) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-643",
+    "title": "First Day Experience: Complete API integration and remove mock/local fallbacks",
+    "module": "Onboarding Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/onboarding/first-day-experience",
+    "api": "Not specified",
+    "desc": "Page calls APIs (service layer) but @ts-nocheck contract drift."
+  },
+  {
+    "id": "AURA-644",
+    "title": "Induction Program: Complete API integration and remove mock/local fallbacks",
+    "module": "Onboarding Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/onboarding/induction-program",
+    "api": "Not specified",
+    "desc": "Page calls APIs (service layer) but @ts-nocheck contract drift."
+  },
+  {
+    "id": "AURA-645",
+    "title": "Payroll: Complete API integration and remove mock/local fallbacks",
+    "module": "Onboarding Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/onboarding/payroll",
+    "api": "/api/v1/onboarding/payroll, /api/v1/onboarding/payroll/${selectedProfile.id}/approve",
+    "desc": "Page calls APIs (/api/v1/onboarding/payroll, /api/v1/onboarding/payroll/${selectedProfile.id}/approve) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-646",
+    "title": "Social Insurance: Complete API integration and remove mock/local fallbacks",
+    "module": "Onboarding Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/onboarding/social-insurance",
+    "api": "/api/v1/onboarding/social-insurance, /api/v1/onboarding/social-insurance/${selectedRegistration.id}/register",
+    "desc": "Page calls APIs (/api/v1/onboarding/social-insurance, /api/v1/onboarding/social-insurance/${selectedRegistration.id}/register) but mock/hardcoded UI remains."
+  }
+]

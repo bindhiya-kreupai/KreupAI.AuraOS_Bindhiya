@@ -50,6 +50,17 @@ export class EosbCalculationService {
     },
     auth: AuthContext
   ) {
+    const employee = await prisma.employee.findFirst({
+      where: {
+        id: input.employeeId,
+        company: {
+          tenantId: auth.tenantId,
+        },
+      },
+    });
+    if (!employee) {
+      throw new Error(`Employee with ID ${input.employeeId} not found`);
+    }
     const calcInput: EOSBCalculationInput = {
       employeeId: input.employeeId,
       countryCode: input.countryCode,
@@ -64,7 +75,7 @@ export class EosbCalculationService {
 
     return (prisma as any).eosbCalculation.upsert({
       where: {
-        aura_eosb_calculation_unique: {
+        tenantId_employeeId_lastWorkingDate: {
           tenantId: auth.tenantId,
           employeeId: input.employeeId,
           lastWorkingDate: input.lastWorkingDate,
@@ -170,6 +181,17 @@ export class EosbAccrualService {
     },
     auth: AuthContext
   ) {
+    const employee = await prisma.employee.findFirst({
+      where: {
+        id: input.employeeId,
+        company: {
+          tenantId: auth.tenantId,
+        },
+      },
+    });
+    if (!employee) {
+      throw new Error(`Employee with ID ${input.employeeId} not found`);
+    }
     const [y, m] = input.period.split('-').map(Number);
     const periodEnd = new Date(y, m, 0, 23, 59, 59);
     const result = EOSBService.calculate({
@@ -185,7 +207,7 @@ export class EosbAccrualService {
     const priorPeriod = `${priorMonth.getFullYear()}-${String(priorMonth.getMonth() + 1).padStart(2, '0')}`;
     const prior = await (prisma as any).eosbAccrual.findUnique({
       where: {
-        aura_eosb_accrual_unique: {
+        tenantId_employeeId_period: {
           tenantId: auth.tenantId,
           employeeId: input.employeeId,
           period: priorPeriod,
@@ -196,7 +218,7 @@ export class EosbAccrualService {
 
     return (prisma as any).eosbAccrual.upsert({
       where: {
-        aura_eosb_accrual_unique: {
+        tenantId_employeeId_period: {
           tenantId: auth.tenantId,
           employeeId: input.employeeId,
           period: input.period,
@@ -265,10 +287,38 @@ export class EosbDisputeService {
     },
     auth: AuthContext
   ) {
+    const employee = await prisma.employee.findFirst({
+      where: {
+        id: input.employeeId,
+        company: {
+          tenantId: auth.tenantId,
+        },
+      },
+    });
+    if (!employee) {
+      throw new Error(`Employee with ID ${input.employeeId} not found`);
+    }
+
+    const {
+      employeeId,
+      calculationId,
+      subject,
+      claimedAmount,
+      calculatedAmount,
+      currency,
+      category,
+    } = input;
+
     return (prisma as any).eosbDispute.create({
       data: {
         tenantId: auth.tenantId,
-        ...input,
+        employeeId,
+        calculationId: calculationId || null,
+        subject,
+        claimedAmount,
+        calculatedAmount,
+        currency,
+        category,
         raisedBy: auth.userId,
         status: 'OPEN',
       },
@@ -358,7 +408,7 @@ export class EosbCertificateService {
     if (stats.unsettledCount > 0) reasons.push(`${stats.unsettledCount} unsettled calculation(s)`);
     const gatingReason = reasons.length ? `Blocked: ${reasons.join('; ')}` : null;
     return (prisma as any).eosbCertificate.upsert({
-      where: { aura_eosb_certificate_unique: { tenantId: auth.tenantId, period } },
+      where: { tenantId_period: { tenantId: auth.tenantId, period } },
       update: {
         calcsCount: stats.calcsCount,
         calcsTotalAmount: stats.calcsTotalAmount,
@@ -392,7 +442,7 @@ export class EosbCertificateService {
     auth: AuthContext
   ) {
     const cert = await (prisma as any).eosbCertificate.findUnique({
-      where: { aura_eosb_certificate_unique: { tenantId: auth.tenantId, period } },
+      where: { tenantId_period: { tenantId: auth.tenantId, period } },
     });
     if (!cert) throw new Error('certificate not generated');
     if (cert.gatingReason) throw new Error(`cannot sign while gated: ${cert.gatingReason}`);

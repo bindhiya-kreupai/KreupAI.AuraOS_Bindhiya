@@ -282,7 +282,7 @@ export class FullFinalService extends BaseService {
 
   async recordAndCalculate(input: CalculationInput, actorId: string) {
     const calc = this.calculate(input);
-    const record = await prisma.fullFinalSettlement.create({
+    const record = await (prisma as any).fullFinalSettlement.create({
       data: {
         tenantId: input.tenantId,
         employeeId: input.employeeId,
@@ -316,12 +316,12 @@ export class FullFinalService extends BaseService {
   }
 
   async approve(id: string, tenantId: string, actorId: string) {
-    const existing = await prisma.fullFinalSettlement.findFirst({
+    const existing = await (prisma as any).fullFinalSettlement.findFirst({
       where: { id, tenantId, isDeleted: false },
     });
     if (!existing) return null;
     this.assertTransition(existing.status as FullFinalStatus, 'APPROVED');
-    return prisma.fullFinalSettlement.update({
+    return (prisma as any).fullFinalSettlement.update({
       where: { id },
       data: {
         status: 'APPROVED',
@@ -333,12 +333,12 @@ export class FullFinalService extends BaseService {
   }
 
   async process(id: string, tenantId: string, actorId: string, payrollRunId?: string) {
-    const existing = await prisma.fullFinalSettlement.findFirst({
+    const existing = await (prisma as any).fullFinalSettlement.findFirst({
       where: { id, tenantId, isDeleted: false },
     });
     if (!existing) return null;
     this.assertTransition(existing.status as FullFinalStatus, 'PROCESSED');
-    return prisma.fullFinalSettlement.update({
+    return (prisma as any).fullFinalSettlement.update({
       where: { id },
       data: {
         status: 'PROCESSED',
@@ -350,7 +350,9 @@ export class FullFinalService extends BaseService {
   }
 
   async getById(id: string, tenantId: string) {
-    return prisma.fullFinalSettlement.findFirst({ where: { id, tenantId, isDeleted: false } });
+    return (prisma as any).fullFinalSettlement.findFirst({
+      where: { id, tenantId, isDeleted: false },
+    });
   }
 
   async list(params: {
@@ -369,13 +371,13 @@ export class FullFinalService extends BaseService {
     if (params.status) where.status = params.status;
     if (params.countryCode) where.countryCode = params.countryCode.toUpperCase();
     const [items, total] = await Promise.all([
-      prisma.fullFinalSettlement.findMany({
+      (prisma as any).fullFinalSettlement.findMany({
         where,
         orderBy: { createdAt: 'desc' },
         skip,
         take: limit,
       }),
-      prisma.fullFinalSettlement.count({ where }),
+      (prisma as any).fullFinalSettlement.count({ where }),
     ]);
     return { items, total, page, pageSize: limit, hasNextPage: skip + items.length < total };
   }

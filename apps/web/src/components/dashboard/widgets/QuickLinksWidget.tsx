@@ -75,7 +75,7 @@ export const QuickLinksWidget: React.FC = () => {
     },
     {
       label: 'Training',
-      href: '/dashboard/learning/training-calendar',
+      href: '/dashboard/learning/calendar',
       icon: BookOpen,
       color: 'text-quantum-rose',
       bg: 'bg-quantum-rose/10',

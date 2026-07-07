@@ -60,6 +60,13 @@ export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext)
         'Rejected'
       );
     }
+    if (body.action === 'writeback') {
+      if (!body.id) return badRequest('id required');
+      return ok(
+        await hrFormSubmissionService.attemptWriteback(body.id, auth),
+        'Writeback complete'
+      );
+    }
     if (body.action === 'mark-writeback') {
       if (!body.id || !body.status) return badRequest('id and status required');
       return ok(

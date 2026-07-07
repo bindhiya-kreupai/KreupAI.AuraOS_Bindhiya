@@ -17,7 +17,14 @@ export const GET = withEnhancedAuth(
   async (request: NextRequest, context: { user: { tenantId: string }; permissions: string[] }) => {
     if (!canRead(context.permissions)) {
       return NextResponse.json(
-        { success: false, error: { code: 'E4030', message: 'Forbidden' } },
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing onboarding:read permission',
+            messageAr: 'ممنوع: صلاحية قراءة تهيئة الموظفين غير متوفرة',
+          },
+        },
         { status: 403 }
       );
     }
@@ -30,7 +37,14 @@ export const GET = withEnhancedAuth(
       if (action === 'resolve') {
         if (!countryCode) {
           return NextResponse.json(
-            { success: false, error: { code: 'E2001', message: 'countryCode is required' } },
+            {
+              success: false,
+              error: {
+                code: 'E2001',
+                message: 'countryCode is required',
+                messageAr: 'رمز الدولة مطلوب',
+              },
+            },
             { status: 400 }
           );
         }
@@ -50,6 +64,7 @@ export const GET = withEnhancedAuth(
           error: {
             code: 'E5001',
             message: 'Failed to load country onboarding rules',
+            messageAr: 'فشل تحميل قواعد تهيئة الدولة',
             details: { error: error instanceof Error ? error.message : 'Unknown error' },
           },
         },
@@ -66,7 +81,14 @@ export const POST = withEnhancedAuth(
   ) => {
     if (!canWrite(context.permissions)) {
       return NextResponse.json(
-        { success: false, error: { code: 'E4030', message: 'Forbidden' } },
+        {
+          success: false,
+          error: {
+            code: 'E4030',
+            message: 'Forbidden: missing onboarding:write permission',
+            messageAr: 'ممنوع: صلاحية تعديل تهيئة الموظفين غير متوفرة',
+          },
+        },
         { status: 403 }
       );
     }
@@ -84,7 +106,14 @@ export const POST = withEnhancedAuth(
       if (body.action === 'instantiate') {
         if (!body.employeeId) {
           return NextResponse.json(
-            { success: false, error: { code: 'E2001', message: 'employeeId is required' } },
+            {
+              success: false,
+              error: {
+                code: 'E2001',
+                message: 'employeeId is required',
+                messageAr: 'معرف الموظف مطلوب',
+              },
+            },
             { status: 400 }
           );
         }
@@ -97,7 +126,14 @@ export const POST = withEnhancedAuth(
       }
 
       return NextResponse.json(
-        { success: false, error: { code: 'E2001', message: 'Unsupported action' } },
+        {
+          success: false,
+          error: {
+            code: 'E2001',
+            message: 'Unsupported action',
+            messageAr: 'إجراء غير مدعوم',
+          },
+        },
         { status: 400 }
       );
     } catch (error) {
@@ -107,6 +143,7 @@ export const POST = withEnhancedAuth(
           error: {
             code: 'E5001',
             message: 'Failed to update country onboarding rules',
+            messageAr: 'فشل تحديث قواعد تهيئة الدولة',
             details: { error: error instanceof Error ? error.message : 'Unknown error' },
           },
         },

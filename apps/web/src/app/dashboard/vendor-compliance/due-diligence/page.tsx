@@ -52,7 +52,7 @@ export default function VendorDueDiligencePage() {
               key: 'lastDdAt',
               label: 'Last DD at',
               labelAr: 'آخر مراجعة',
-              type: 'date',
+              type: 'text',
               widthClass: 'w-40',
             },
           ],

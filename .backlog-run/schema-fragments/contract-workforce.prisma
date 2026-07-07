@@ -1,0 +1,193 @@
+// Schema fragment for Contract Workforce Module (AURA-318..AURA-325).
+// DO NOT edit the main schema.prisma directly (SCHEMA RULE). This documents the
+// new vendor sub-domain models; the deployed DB is created via the defensive
+// migration 20260702160000_add_contractworkforce_vendor_ops/migration.sql.
+// Access at runtime via (prisma as any).<delegate>:
+//   vendorComplianceDoc, vendorContractType, vendorContractRenewal,
+//   vendorRateCard, vendorPerformanceReview, vendorInvoice, vendorTimesheet.
+// All models are tenant-scoped and reference RecruitmentVendor.id (vendorId).
+
+/// Compliance / legal / security documents attached to a recruitment vendor,
+/// with expiry tracking and review metadata. Backs /vendors/compliance-docs.
+model VendorComplianceDoc {
+  id            String    @id @default(uuid())
+  tenantId      String
+  vendorId      String
+  documentType  String // trade_license | insurance | iso_cert | vat_cert | wps | other
+  title         String
+  documentNumber String?
+  status        String    @default("pending") // pending | valid | expiring | expired | rejected
+  issueDate     DateTime?
+  expiryDate    DateTime?
+  documentUrl   String?
+  reviewedBy    String?
+  reviewedAt    DateTime?
+  notes         String?
+  createdBy     String?
+  updatedBy     String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+  isDeleted     Boolean   @default(false)
+
+  @@index([tenantId])
+  @@index([tenantId, vendorId])
+  @@index([tenantId, status])
+  @@map("aura_vendor_compliance_doc")
+}
+
+/// Vendor engagement models / standard terms (contract type templates).
+/// Backs /vendors/contract-types.
+model VendorContractType {
+  id             String    @id @default(uuid())
+  tenantId       String
+  code           String
+  name           String
+  engagementModel String   @default("staff_augmentation") // staff_augmentation | fixed_price | managed_service | rpo
+  noticePeriodDays Int      @default(30)
+  paymentTermsDays Int      @default(30)
+  description    String?
+  isActive       Boolean   @default(true)
+  createdBy      String?
+  updatedBy      String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime?
+  isDeleted      Boolean   @default(false)
+
+  @@unique([tenantId, code])
+  @@index([tenantId])
+  @@map("aura_vendor_contract_type")
+}
+
+/// Vendor contract renewal / extension decisions and lifecycle history.
+/// Backs /vendors/contract-renewal.
+model VendorContractRenewal {
+  id              String    @id @default(uuid())
+  tenantId        String
+  vendorId        String
+  currentEndDate  DateTime?
+  proposedEndDate DateTime?
+  status          String    @default("pending") // pending | approved | rejected | renewed | expired
+  decision        String? // renew | extend | terminate
+  decisionNotes   String?
+  reviewedBy      String?
+  reviewedAt      DateTime?
+  createdBy       String?
+  updatedBy       String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime?
+  isDeleted       Boolean   @default(false)
+
+  @@index([tenantId])
+  @@index([tenantId, vendorId])
+  @@index([tenantId, status])
+  @@map("aura_vendor_contract_renewal")
+}
+
+/// Vendor commercial rate cards by role / location / experience.
+/// Backs /vendors/rate-cards.
+model VendorRateCard {
+  id           String    @id @default(uuid())
+  tenantId     String
+  vendorId     String
+  roleTitle    String
+  experienceLevel String  @default("mid") // junior | mid | senior | lead
+  location     String?
+  ratePeriod   String    @default("hourly") // hourly | daily | monthly
+  rate         Float     @default(0)
+  currency     String    @default("USD")
+  effectiveFrom DateTime?
+  effectiveTo  DateTime?
+  isActive     Boolean   @default(true)
+  createdBy    String?
+  updatedBy    String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  deletedAt    DateTime?
+  isDeleted    Boolean   @default(false)
+
+  @@index([tenantId])
+  @@index([tenantId, vendorId])
+  @@map("aura_vendor_rate_card")
+}
+
+/// Vendor performance scorecards / review notes. Backs /vendors/performance-rating.
+model VendorPerformanceReview {
+  id            String    @id @default(uuid())
+  tenantId      String
+  vendorId      String
+  periodLabel   String // e.g. "Q1 2026"
+  qualityScore  Float     @default(0)
+  timelinessScore Float   @default(0)
+  communicationScore Float @default(0)
+  overallScore  Float     @default(0)
+  reviewNotes   String?
+  reviewedBy    String?
+  reviewedAt    DateTime?
+  createdBy     String?
+  updatedBy     String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+  isDeleted     Boolean   @default(false)
+
+  @@index([tenantId])
+  @@index([tenantId, vendorId])
+  @@map("aura_vendor_performance_review")
+}
+
+/// Vendor invoices with approval / payment reconciliation. Backs /vendors/invoice-processing.
+model VendorInvoice {
+  id            String    @id @default(uuid())
+  tenantId      String
+  vendorId      String
+  invoiceNumber String
+  invoiceDate   DateTime?
+  dueDate       DateTime?
+  amount        Float     @default(0)
+  currency      String    @default("USD")
+  status        String    @default("pending") // pending | approved | rejected | paid
+  description   String?
+  approvedBy    String?
+  approvedAt    DateTime?
+  paidAt        DateTime?
+  createdBy     String?
+  updatedBy     String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+  isDeleted     Boolean   @default(false)
+
+  @@index([tenantId])
+  @@index([tenantId, vendorId])
+  @@index([tenantId, status])
+  @@map("aura_vendor_invoice")
+}
+
+/// Vendor contractor timesheets with approval workflow. Backs /vendors/timesheet.
+model VendorTimesheet {
+  id            String    @id @default(uuid())
+  tenantId      String
+  vendorId      String
+  workerName    String
+  periodStart   DateTime?
+  periodEnd     DateTime?
+  hours         Float     @default(0)
+  status        String    @default("submitted") // submitted | approved | rejected
+  notes         String?
+  approvedBy    String?
+  approvedAt    DateTime?
+  createdBy     String?
+  updatedBy     String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  deletedAt     DateTime?
+  isDeleted     Boolean   @default(false)
+
+  @@index([tenantId])
+  @@index([tenantId, vendorId])
+  @@index([tenantId, status])
+  @@map("aura_vendor_timesheet")
+}

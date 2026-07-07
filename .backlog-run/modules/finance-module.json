@@ -1,0 +1,134 @@
+[
+  {
+    "id": "AURA-149",
+    "title": "Vendors: Wire vendor list and actions",
+    "module": "Finance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/finance/vendors",
+    "api": "VendorService; GET/POST /api/finance/vendors",
+    "desc": "Page uses MOCK_VENDORS inline; ignores VendorService and /api/finance/vendors. Add Vendor and Filter buttons unwired."
+  },
+  {
+    "id": "AURA-150",
+    "title": "Vendors: Wire approve/reject/edit actions",
+    "module": "Finance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/finance/vendors/vendor-onboarding",
+    "api": "VendorService.approveVendor, rejectVendor",
+    "desc": "Icon buttons have no onClick; data from empty API stub."
+  },
+  {
+    "id": "AURA-151",
+    "title": "Budget: Wire Approve/Reject buttons",
+    "module": "Finance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/finance/budget/approvals, /approval-workflow",
+    "api": "BudgetService.approveBudget, rejectBudget",
+    "desc": "Approve/Reject buttons decorative only on both pages."
+  },
+  {
+    "id": "AURA-152",
+    "title": "Budget: Wire Preview/Use and remove mock fallback",
+    "module": "Finance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/finance/budget/budget-templates",
+    "api": "BudgetTemplateService; GET/POST /api/finance/templates",
+    "desc": "Buttons unwired; shows hardcoded templates when API empty."
+  },
+  {
+    "id": "AURA-153",
+    "title": "Budget: Wire Run/Save/New Scenario and remove mock fallback",
+    "module": "Finance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/finance/budget/scenario-planning",
+    "api": "BudgetScenarioService; GET/POST /api/finance/scenarios",
+    "desc": "Play/Save/Trash buttons unwired; mock scenarios when API empty."
+  },
+  {
+    "id": "AURA-154",
+    "title": "Assets: Persist asset create to API",
+    "module": "Finance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/finance/assets/capital-assets, /operational-assets",
+    "api": "FinancialAssetService.createAsset; POST /api/finance/assets",
+    "desc": "handleSubmit updates local state only, never calls API."
+  },
+  {
+    "id": "AURA-155",
+    "title": "Assets: Fix data model",
+    "module": "Finance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/finance/assets/cost-centers",
+    "api": "Needs dedicated cost-center API",
+    "desc": "Uses FinancialAssetService.getAssets() mapped to cost-center shape incorrectly."
+  },
+  {
+    "id": "AURA-156",
+    "title": "Assets: Fix route target",
+    "module": "Finance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/finance/assets",
+    "api": "N/A \u2014 routing fix",
+    "desc": "Re-exports admin assets page, not finance asset hub."
+  },
+  {
+    "id": "AURA-157",
+    "title": "Petty Cash: Wire policy CRUD",
+    "module": "Finance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/finance/petty-cash/policy-controls",
+    "api": "PettyCashService; new policy API",
+    "desc": "Approval/category rules hardcoded; only funds fetched from empty API."
+  },
+  {
+    "id": "AURA-158",
+    "title": "API: Implement DB-backed finance routes",
+    "module": "Finance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "Module-wide",
+    "api": "Prisma + tenant scoping for /api/finance/*",
+    "desc": "All /api/finance/* GET routes return empty arrays; sub-routes missing despite services calling /budgets/{id}, /transactions, etc."
+  },
+  {
+    "id": "AURA-159",
+    "title": "Architecture: Adopt useFinance or remove dead code",
+    "module": "Finance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "hooks/useFinance.ts",
+    "api": "hooks/useFinance.ts",
+    "desc": "Hook duplicates page-level fetch logic but is unused by any page."
+  },
+  {
+    "id": "AURA-160",
+    "title": "Cross-cutting: Wire Export/Download buttons",
+    "module": "Finance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "Multiple finance pages",
+    "api": "Export/reporting APIs (missing)",
+    "desc": "Present on disbursements, reconciliation, depreciation, cost-centers, contracts, compliance \u2014 no handlers."
+  }
+]

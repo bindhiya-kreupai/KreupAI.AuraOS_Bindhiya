@@ -46,11 +46,13 @@ export default function ConnectorsPage() {
   const [endpointUrl, setEndpointUrl] = useState('');
   const [authType, setAuthType] = useState<'OAUTH2' | 'API_KEY' | 'MTLS' | 'NONE'>('OAUTH2');
   const [secretRef, setSecretRef] = useState('');
+  const [failingCode, setFailingCode] = useState<string | null>(null);
+  const [failMessage, setFailMessage] = useState('');
 
   async function load() {
     const r = await fetch('/api/v1/hrms-config/connectors');
     const p = await r.json();
-    if (p.success) setItems(p.data ?? []);
+    if (p.success) setItems(p.data?.items ?? []);
   }
   useEffect(() => {
     load();
@@ -94,9 +96,9 @@ export default function ConnectorsPage() {
     load();
   }
 
-  async function recordHealth(code: string, status: 'PASS' | 'FAIL') {
+  async function recordHealth(code: string, status: 'PASS' | 'FAIL', failureMessage?: string) {
     setMessage('');
-    const message = status === 'FAIL' ? (window.prompt('Failure message?') ?? 'failure') : 'ok';
+    const message = status === 'FAIL' ? failureMessage?.trim() || 'failure' : 'ok';
     const r = await fetch('/api/v1/hrms-config/connectors', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -104,6 +106,10 @@ export default function ConnectorsPage() {
     });
     const p = await r.json();
     setMessage(p.success ? `${code} health=${status}` : p.message);
+    if (p.success) {
+      setFailingCode(null);
+      setFailMessage('');
+    }
     load();
   }
 
@@ -219,28 +225,52 @@ export default function ConnectorsPage() {
                   </td>
                   <td className="text-xs">{c.lastRotatedAt ?? '—'}</td>
                   <td className="text-xs">
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => markRotated(c.connectorCode)}
-                        className="rounded-md bg-blue-600 px-2 py-1 text-xs text-white"
-                      >
-                        Rotated
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => recordHealth(c.connectorCode, 'PASS')}
-                        className="rounded-md bg-emerald-600 px-2 py-1 text-xs text-white"
-                      >
-                        Health PASS
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => recordHealth(c.connectorCode, 'FAIL')}
-                        className="rounded-md bg-rose-600 px-2 py-1 text-xs text-white"
-                      >
-                        Health FAIL
-                      </button>
+                    <div className="flex flex-col gap-2">
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => markRotated(c.connectorCode)}
+                          className="rounded-md bg-blue-600 px-2 py-1 text-xs text-white"
+                        >
+                          Rotated
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => recordHealth(c.connectorCode, 'PASS')}
+                          className="rounded-md bg-emerald-600 px-2 py-1 text-xs text-white"
+                        >
+                          Health PASS
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setFailingCode(
+                              failingCode === c.connectorCode ? null : c.connectorCode
+                            );
+                            setFailMessage('');
+                          }}
+                          className="rounded-md bg-rose-600 px-2 py-1 text-xs text-white"
+                        >
+                          Health FAIL
+                        </button>
+                      </div>
+                      {failingCode === c.connectorCode ? (
+                        <div className="flex items-center gap-2">
+                          <input
+                            value={failMessage}
+                            onChange={(e) => setFailMessage(e.target.value)}
+                            placeholder="Failure message · رسالة الفشل"
+                            className="w-48 rounded-md border border-slate-300 px-2 py-1 text-xs"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => recordHealth(c.connectorCode, 'FAIL', failMessage)}
+                            className="rounded-md bg-rose-700 px-2 py-1 text-xs text-white"
+                          >
+                            Confirm FAIL
+                          </button>
+                        </div>
+                      ) : null}
                     </div>
                   </td>
                 </tr>

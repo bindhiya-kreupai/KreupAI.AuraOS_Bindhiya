@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import {
   Repeat,
   Calendar,
@@ -14,6 +15,7 @@ import {
   MapPin,
 } from 'lucide-react';
 import { ShiftSwapService } from '../services';
+import { useCurrentUser } from '@/lib/auth/AuthProvider';
 
 interface Shift {
   id: string;
@@ -38,6 +40,7 @@ interface MarketShift {
 }
 
 export default function ShiftSwappingPage() {
+  const { user, loading: authLoading } = useCurrentUser();
   const [activeTab, setActiveTab] = useState<'My Shifts' | 'Marketplace'>('My Shifts');
   const [myShifts, setMyShifts] = useState<Shift[]>([]);
   const [marketplace, setMarketplace] = useState<MarketShift[]>([]);
@@ -53,13 +56,19 @@ export default function ShiftSwappingPage() {
   }, [statusMsg]);
 
   useEffect(() => {
+    // Wait for the session to resolve so the real employee id is available
+    // before loading the "My Shifts" tab, which is scoped to the current user.
+    if (authLoading) return;
     fetchShiftData();
-  }, []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authLoading, user?.employeeId]);
 
   const fetchShiftData = async () => {
     try {
       setLoading(true);
-      const shiftsResult = await ShiftSwapService.getMyShifts('current-user-id');
+      const shiftsResult = user?.employeeId
+        ? await ShiftSwapService.getMyShifts(user.employeeId)
+        : [];
       setMyShifts((shiftsResult || []) as any);
       const marketplaceResult = await ShiftSwapService.getMarketplace();
       setMarketplace((marketplaceResult || []) as any);
@@ -71,11 +80,15 @@ export default function ShiftSwappingPage() {
   };
 
   const handleRequestSwap = async (shiftId: string) => {
+    if (!user?.employeeId) {
+      setStatusMsg({ kind: 'error', text: 'Your session is still loading. Please retry.' });
+      return;
+    }
     setLoading(true);
     setStatusMsg(null);
     try {
       await ShiftSwapService.requestSwap({
-        fromEmployeeId: 'current-user-id',
+        fromEmployeeId: user.employeeId,
         shiftId,
         date: new Date().toISOString(),
         reason: 'Shift swap request',
@@ -91,10 +104,14 @@ export default function ShiftSwappingPage() {
   };
 
   const handleAcceptSwap = async (marketplaceId: string) => {
+    if (!user?.employeeId) {
+      setStatusMsg({ kind: 'error', text: 'Your session is still loading. Please retry.' });
+      return;
+    }
     setLoading(true);
     setStatusMsg(null);
     try {
-      await ShiftSwapService.acceptSwap(marketplaceId, 'current-user-id');
+      await ShiftSwapService.acceptSwap(marketplaceId, user.employeeId);
       await fetchShiftData();
       setStatusMsg({ kind: 'success', text: 'Swap accepted.' });
     } catch (error: any) {
@@ -215,12 +232,15 @@ export default function ShiftSwappingPage() {
             ))
           )}
 
-          {/* Add Shift Placeholder */}
+          {/* View Full Roster — links to the weekly roster grid */}
           {!loading && (
-            <div className="border-2 border-dashed border-cloud dark:border-nebula-purple/30 rounded-2xl flex flex-col items-center justify-center p-6 text-center text-slate-400 hover:border-celestial-indigo/50 hover:bg-slate-50 dark:hover:bg-deep-cosmos/30 transition-all cursor-pointer">
+            <Link
+              href="/dashboard/attendance/roster-assignment"
+              className="border-2 border-dashed border-cloud dark:border-nebula-purple/30 rounded-2xl flex flex-col items-center justify-center p-6 text-center text-slate-400 hover:border-celestial-indigo/50 hover:bg-slate-50 dark:hover:bg-deep-cosmos/30 hover:text-celestial-indigo transition-all cursor-pointer"
+            >
               <Calendar className="w-8 h-8 mb-2 opacity-50" />
               <div className="font-bold text-sm">View Full Roster</div>
-            </div>
+            </Link>
           )}
         </div>
       )}

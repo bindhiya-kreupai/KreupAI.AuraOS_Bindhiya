@@ -1,0 +1,142 @@
+// Alumni Network Module — new Prisma models (merged into schema.prisma by orchestrator)
+// Access in route code via (prisma as any).<camelCaseModelName>.
+// Alumni PROFILES are derived from completed ExitRequest records (existing pattern);
+// these models cover the alumni-owned data: events, jobs, registrations, applications,
+// saved jobs, and peer connections.
+
+model AlumniEvent {
+  id                String   @id @default(uuid())
+  tenantId          String
+  eventName         String
+  eventType         String   @default("networking") // reunion | networking | webinar | workshop | social | fundraiser | award_ceremony | conference | sports | other
+  eventFormat       String   @default("in_person") // in_person | virtual | hybrid
+  description       String?
+  eventDate         DateTime
+  eventTime         String?
+  endDate           DateTime?
+  location          String?
+  virtualLink       String?
+  status            String   @default("published") // draft | published | cancelled | completed
+  maxAttendees      Int?
+  currentAttendees  Int      @default(0)
+  isFree            Boolean  @default(true)
+  ticketPrice       Decimal? @db.Decimal(12, 2)
+  currency          String?
+  organizerName     String?
+  isReunion         Boolean  @default(false)
+  batchYear         Int?
+  tags              String[] @default([])
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdBy         String?
+
+  registrations     AlumniEventRegistration[]
+
+  @@index([tenantId], map: "AlumniEvent_tenantId_idx")
+  @@map("aura_alumni_event")
+}
+
+model AlumniEventRegistration {
+  id                 String   @id @default(uuid())
+  tenantId           String
+  eventId            String
+  employeeId         String
+  attendeeName       String?
+  attendeeEmail      String?
+  registrationStatus String   @default("confirmed") // pending | confirmed | waitlist | cancelled
+  guestCount         Int      @default(0)
+  checkInStatus      String   @default("not_checked_in") // not_checked_in | checked_in | no_show
+  checkInTime        DateTime?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  event              AlumniEvent @relation(fields: [eventId], references: [id], map: "AlumniEventReg_eventId_fkey")
+
+  @@unique([tenantId, eventId, employeeId], map: "AlumniEventReg_uq")
+  @@index([tenantId, eventId], map: "AlumniEventReg_tenant_event_idx")
+  @@map("aura_alumni_event_registration")
+}
+
+model AlumniJob {
+  id                String   @id @default(uuid())
+  tenantId          String
+  jobTitle          String
+  companyName       String
+  jobType           String   @default("full_time") // full_time | part_time | contract | internship | freelance
+  workLocation      String   @default("on_site") // on_site | remote | hybrid
+  locationCity      String?
+  locationCountry   String?
+  jobDescription    String?
+  applicationUrl    String?
+  applicationEmail  String?
+  salaryMin         Decimal? @db.Decimal(15, 2)
+  salaryMax         Decimal? @db.Decimal(15, 2)
+  currency          String?
+  status            String   @default("active") // draft | active | paused | filled | expired | cancelled
+  isReferralAvailable Boolean @default(false)
+  postedByEmployeeId String
+  postedByName      String?
+  viewCount         Int      @default(0)
+  applicationCount  Int      @default(0)
+  savedCount        Int      @default(0)
+  tags              String[] @default([])
+  expiryDate        DateTime?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  applications      AlumniJobApplication[]
+  saves             AlumniSavedJob[]
+
+  @@index([tenantId], map: "AlumniJob_tenantId_idx")
+  @@map("aura_alumni_job")
+}
+
+model AlumniJobApplication {
+  id                String   @id @default(uuid())
+  tenantId          String
+  jobId             String
+  applicantId       String
+  applicantName     String?
+  applicantEmail    String?
+  applicationStatus String   @default("submitted") // submitted | under_review | shortlisted | interview_scheduled | interview_completed | offer_extended | offer_accepted | offer_declined | rejected | withdrawn
+  coverLetter       String?
+  resumeUrl         String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  job               AlumniJob @relation(fields: [jobId], references: [id], map: "AlumniJobApp_jobId_fkey")
+
+  @@unique([tenantId, jobId, applicantId], map: "AlumniJobApp_uq")
+  @@index([tenantId, jobId], map: "AlumniJobApp_tenant_job_idx")
+  @@map("aura_alumni_job_application")
+}
+
+model AlumniSavedJob {
+  id         String   @id @default(uuid())
+  tenantId   String
+  jobId      String
+  employeeId String
+  notes      String?
+  createdAt  DateTime @default(now())
+
+  job        AlumniJob @relation(fields: [jobId], references: [id], map: "AlumniSavedJob_jobId_fkey")
+
+  @@unique([tenantId, jobId, employeeId], map: "AlumniSavedJob_uq")
+  @@index([tenantId, employeeId], map: "AlumniSavedJob_tenant_emp_idx")
+  @@map("aura_alumni_saved_job")
+}
+
+model AlumniConnection {
+  id               String   @id @default(uuid())
+  tenantId         String
+  fromEmployeeId   String
+  toEmployeeId     String
+  connectionStatus String   @default("pending") // pending | connected | declined | blocked
+  message          String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@unique([tenantId, fromEmployeeId, toEmployeeId], map: "AlumniConnection_uq")
+  @@index([tenantId, fromEmployeeId], map: "AlumniConnection_tenant_from_idx")
+  @@map("aura_alumni_connection")
+}

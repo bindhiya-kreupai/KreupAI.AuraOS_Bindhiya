@@ -74,10 +74,10 @@ export class TaxService {
   }
   static async getDeclarations(params?: Record<string, string>) {
     const query = params ? '?' + new URLSearchParams(params).toString() : '';
-    return api.get(`/v1/documents${query}`);
+    return api.get(`/v1/tax-declarations${query}`);
   }
   static async submitDeclaration(data: any) {
-    return api.post('/v1/documents', data);
+    return api.post('/v1/tax-declarations', data);
   }
 }
 

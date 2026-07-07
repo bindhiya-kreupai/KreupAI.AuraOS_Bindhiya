@@ -1,4 +1,4 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
@@ -68,17 +68,17 @@ export const GET = withEnhancedAuth(
       });
 
       if (!role) {
-        return NextResponse.json(
-          { success: false, error: 'Role not found' },
-          { status: 404 }
-        );
+        return NextResponse.json({ success: false, error: 'Role not found' }, { status: 404 });
       }
 
-      logger.info({
-        userId: user.userId,
-        roleId: role.id,
-        roleCode: role.code,
-      }, 'Role fetched successfully');
+      logger.info(
+        {
+          userId: user.userId,
+          roleId: role.id,
+          roleCode: role.code,
+        },
+        'Role fetched successfully'
+      );
 
       return NextResponse.json({
         success: true,
@@ -86,10 +86,7 @@ export const GET = withEnhancedAuth(
       });
     } catch (error: any) {
       logger.error({ error, userId: user.userId, roleId: params.id }, 'Error fetching role');
-      return NextResponse.json(
-        { success: false, error: 'Failed to fetch role' },
-        { status: 500 }
-      );
+      return NextResponse.json({ success: false, error: 'Failed to fetch role' }, { status: 500 });
     }
   }
 );
@@ -121,10 +118,7 @@ export const PUT = withEnhancedAuth(
       });
 
       if (!existingRole) {
-        return NextResponse.json(
-          { success: false, error: 'Role not found' },
-          { status: 404 }
-        );
+        return NextResponse.json({ success: false, error: 'Role not found' }, { status: 404 });
       }
 
       // Prevent modification of system roles
@@ -184,17 +178,23 @@ export const PUT = withEnhancedAuth(
           tenantId: user.tenantId,
           userId: user.userId,
           action: 'UPDATE',
+          module: 'Role Management',
           resourceType: 'Role Management',
-          metadata: { description: `Updated role: ${updatedRole.code} (${updatedRole.name})` } as any,
+          metadata: {
+            description: `Updated role: ${updatedRole.code} (${updatedRole.name})`,
+          } as any,
           ipAddress,
         },
       });
 
-      logger.info({
-        userId: user.userId,
-        roleId: updatedRole.id,
-        roleCode: updatedRole.code,
-      }, 'Role updated successfully');
+      logger.info(
+        {
+          userId: user.userId,
+          roleId: updatedRole.id,
+          roleCode: updatedRole.code,
+        },
+        'Role updated successfully'
+      );
 
       return NextResponse.json({
         success: true,
@@ -210,10 +210,7 @@ export const PUT = withEnhancedAuth(
       }
 
       logger.error({ error, userId: user.userId, roleId: params.id }, 'Error updating role');
-      return NextResponse.json(
-        { success: false, error: 'Failed to update role' },
-        { status: 500 }
-      );
+      return NextResponse.json({ success: false, error: 'Failed to update role' }, { status: 500 });
     }
   }
 );
@@ -252,10 +249,7 @@ export const DELETE = withEnhancedAuth(
       });
 
       if (!existingRole) {
-        return NextResponse.json(
-          { success: false, error: 'Role not found' },
-          { status: 404 }
-        );
+        return NextResponse.json({ success: false, error: 'Role not found' }, { status: 404 });
       }
 
       // Prevent deletion of system roles
@@ -291,17 +285,23 @@ export const DELETE = withEnhancedAuth(
           tenantId: user.tenantId,
           userId: user.userId,
           action: 'DELETE',
+          module: 'Role Management',
           resourceType: 'Role Management',
-          metadata: { description: `Deactivated role: ${existingRole.code} (${existingRole.name})` } as any,
+          metadata: {
+            description: `Deactivated role: ${existingRole.code} (${existingRole.name})`,
+          } as any,
           ipAddress,
         },
       });
 
-      logger.info({
-        userId: user.userId,
-        roleId: existingRole.id,
-        roleCode: existingRole.code,
-      }, 'Role deactivated successfully');
+      logger.info(
+        {
+          userId: user.userId,
+          roleId: existingRole.id,
+          roleCode: existingRole.code,
+        },
+        'Role deactivated successfully'
+      );
 
       return NextResponse.json({
         success: true,
@@ -309,10 +309,7 @@ export const DELETE = withEnhancedAuth(
       });
     } catch (error: any) {
       logger.error({ error, userId: user.userId, roleId: params.id }, 'Error deleting role');
-      return NextResponse.json(
-        { success: false, error: 'Failed to delete role' },
-        { status: 500 }
-      );
+      return NextResponse.json({ success: false, error: 'Failed to delete role' }, { status: 500 });
     }
   }
 );

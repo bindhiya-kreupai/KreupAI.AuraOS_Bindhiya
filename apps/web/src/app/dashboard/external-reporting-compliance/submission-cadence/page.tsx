@@ -46,7 +46,7 @@ export default function SubmissionCadencePage() {
               key: 'lastSubmittedAt',
               label: 'Last submitted',
               labelAr: 'آخر تقديم',
-              type: 'date',
+              type: 'text',
               widthClass: 'w-40',
             },
             { key: 'active', label: 'Active', labelAr: 'نشط', type: 'boolean', widthClass: 'w-24' },

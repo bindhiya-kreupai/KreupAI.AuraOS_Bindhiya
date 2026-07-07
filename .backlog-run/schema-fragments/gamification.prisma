@@ -1,0 +1,149 @@
+// Gamification Module — new Prisma models (merged into schema.prisma by orchestrator)
+// Access in route code via (prisma as any).<camelCaseModelName>.
+
+model GamificationPointsAccount {
+  id            String   @id @default(uuid())
+  tenantId      String
+  employeeId    String
+  totalPoints   Int      @default(0)
+  lifetimePoints Int     @default(0)
+  currentBalance Int     @default(0)
+  currentLevel  Int      @default(1)
+  currentStreak Int      @default(0)
+  longestStreak Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([tenantId, employeeId], map: "GamPointsAccount_tenant_emp_uq")
+  @@index([tenantId], map: "GamPointsAccount_tenantId_idx")
+  @@map("aura_gamification_points_account")
+}
+
+model GamificationPointsTransaction {
+  id          String   @id @default(uuid())
+  tenantId    String
+  employeeId  String
+  amount      Int
+  type        String   @default("earn") // earn | redeem | expire | adjustment | bonus
+  category    String   @default("engagement")
+  source      String   @default("manual")
+  reason      String?
+  balanceAfter Int     @default(0)
+  createdAt   DateTime @default(now())
+
+  @@index([tenantId, employeeId], map: "GamPointsTxn_tenant_emp_idx")
+  @@map("aura_gamification_points_transaction")
+}
+
+model GamificationBadge {
+  id           String   @id @default(uuid())
+  tenantId     String
+  badgeCode    String
+  badgeName    String
+  description  String?
+  icon         String   @default("Medal")
+  tier         String   @default("bronze") // bronze | silver | gold | platinum | diamond
+  category     String   @default("achievement")
+  pointsAwarded Int     @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([tenantId], map: "GamBadge_tenantId_idx")
+  @@map("aura_gamification_badge")
+}
+
+model GamificationUserBadge {
+  id          String   @id @default(uuid())
+  tenantId    String
+  employeeId  String
+  badgeId     String
+  reason      String?
+  awardedAt   DateTime @default(now())
+
+  @@unique([tenantId, employeeId, badgeId], map: "GamUserBadge_uq")
+  @@index([tenantId, employeeId], map: "GamUserBadge_tenant_emp_idx")
+  @@map("aura_gamification_user_badge")
+}
+
+model GamificationChallenge {
+  id           String   @id @default(uuid())
+  tenantId     String
+  challengeName String
+  description  String?
+  category     String   @default("engagement")
+  difficulty   String   @default("medium") // easy | medium | hard | expert
+  pointsReward Int      @default(0)
+  targetValue  Int      @default(1)
+  targetUnit   String   @default("tasks")
+  startDate    DateTime @default(now())
+  endDate      DateTime
+  status       String   @default("active") // upcoming | active | completed | cancelled
+  isFeatured   Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([tenantId], map: "GamChallenge_tenantId_idx")
+  @@map("aura_gamification_challenge")
+}
+
+model GamificationChallengeParticipation {
+  id           String   @id @default(uuid())
+  tenantId     String
+  challengeId  String
+  employeeId   String
+  currentValue Int      @default(0)
+  progress     Int      @default(0)
+  isCompleted  Boolean  @default(false)
+  completedAt  DateTime?
+  joinedAt     DateTime @default(now())
+
+  @@unique([tenantId, challengeId, employeeId], map: "GamChallengePart_uq")
+  @@index([tenantId, employeeId], map: "GamChallengePart_tenant_emp_idx")
+  @@map("aura_gamification_challenge_participation")
+}
+
+model GamificationMission {
+  id           String   @id @default(uuid())
+  tenantId     String
+  missionName  String
+  description  String?
+  missionType  String   @default("daily") // daily | weekly | monthly | quest
+  category     String   @default("engagement")
+  pointsReward Int      @default(0)
+  isActive     Boolean  @default(true)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@index([tenantId], map: "GamMission_tenantId_idx")
+  @@map("aura_gamification_mission")
+}
+
+model GamificationUserMission {
+  id          String   @id @default(uuid())
+  tenantId    String
+  employeeId  String
+  missionId   String
+  status      String   @default("active") // active | completed | expired
+  progress    Int      @default(0)
+  completedAt DateTime?
+  startedAt   DateTime @default(now())
+
+  @@unique([tenantId, employeeId, missionId], map: "GamUserMission_uq")
+  @@index([tenantId, employeeId], map: "GamUserMission_tenant_emp_idx")
+  @@map("aura_gamification_user_mission")
+}
+
+model GamificationCurrencyTransaction {
+  id          String   @id @default(uuid())
+  tenantId    String
+  employeeId  String
+  type        String   @default("convert") // transfer | cashout | convert
+  amount      Int
+  counterparty String?
+  description String?
+  createdAt   DateTime @default(now())
+
+  @@index([tenantId, employeeId], map: "GamCurrencyTxn_tenant_emp_idx")
+  @@map("aura_gamification_currency_transaction")
+}

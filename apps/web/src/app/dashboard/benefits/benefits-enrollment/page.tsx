@@ -1,25 +1,15 @@
-"use client";
+import { redirect } from 'next/navigation';
 
-import React from 'react';
-import { ModuleGrid } from '@/components/dashboard/module-grid';
-
-export default function BenefitsEnrollmentPage() {
-  const features = [
-    'Plan Selection',
-    'Coverage Level',
-    'Dependent Selection',
-    'Cost Summary',
-    'Plan Comparison',
-    'Enrollment History',
-  ];
-
-  return (
-    <ModuleGrid
-      title="Benefits Enrollment"
-      description="Enroll in benefit plans, compare options, and manage your coverage."
-      features={features}
-      basePath="/dashboard/benefits/benefits-enrollment"
-    />
-  );
+/**
+ * Benefits Enrollment (consolidation shim).
+ *
+ * This route previously rendered a ModuleGrid whose sub-feature tiles
+ * (Plan Selection, Coverage Level, Dependent Selection, ...) linked to child
+ * routes that were never implemented and 404'd. The real, fully-built
+ * multi-step enrollment wizard lives at `/dashboard/benefits-enrollment`
+ * (app/dashboard/(modules)/benefits-enrollment). Consolidate by redirecting
+ * there instead of surfacing dead links.
+ */
+export default function BenefitsEnrollmentRedirectPage() {
+  redirect('/dashboard/benefits-enrollment');
 }
-

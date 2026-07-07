@@ -48,7 +48,6 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
       },
       orderBy: { name: 'asc' },
     });
-
     const data = shifts.map((shift) => ({
       id: shift.id,
       name: shift.name,
@@ -115,8 +114,8 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
         tenantId: user.tenantId,
         userId: user.userId,
         action: 'CREATE',
+        module: 'ATTENDANCE',
         entityType: 'Attendance - Shift Management',
-        module: 'attendance',
         metadata: { description: `Created shift: ${data.name} (${data.code})` } as any,
         ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
       },

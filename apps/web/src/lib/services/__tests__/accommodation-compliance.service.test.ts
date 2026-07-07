@@ -79,14 +79,12 @@ describe('isComplaintSlaBreached', () => {
 
 describe('accommodationAssignmentService.assign', () => {
   it('throws when site at capacity', async () => {
-    m.accommodationSite.findUnique = vi
-      .fn()
-      .mockResolvedValue({
-        id: 's-1',
-        tenantId: 'tenant-1',
-        currentOccupancy: 50,
-        totalCapacity: 50,
-      });
+    m.accommodationSite.findUnique = vi.fn().mockResolvedValue({
+      id: 's-1',
+      tenantId: 'tenant-1',
+      currentOccupancy: 50,
+      totalCapacity: 50,
+    });
     await expect(
       accommodationAssignmentService.assign(
         { siteId: 's-1', employeeId: 'e-1', checkInAt: new Date() },
@@ -95,14 +93,12 @@ describe('accommodationAssignmentService.assign', () => {
     ).rejects.toThrow(/at capacity/);
   });
   it('increments site occupancy on assign', async () => {
-    m.accommodationSite.findUnique = vi
-      .fn()
-      .mockResolvedValue({
-        id: 's-1',
-        tenantId: 'tenant-1',
-        currentOccupancy: 10,
-        totalCapacity: 50,
-      });
+    m.accommodationSite.findUnique = vi.fn().mockResolvedValue({
+      id: 's-1',
+      tenantId: 'tenant-1',
+      currentOccupancy: 10,
+      totalCapacity: 50,
+    });
     await accommodationAssignmentService.assign(
       { siteId: 's-1', employeeId: 'e-1', checkInAt: new Date() },
       auth

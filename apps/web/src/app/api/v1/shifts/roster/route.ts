@@ -120,7 +120,8 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
 
     // Fetch roster entries with shift details
     // tenant-ok: preceded by tenant-scoped findFirst or local tenantId binding
-    const rosterEntries = await prisma.shiftRoster.findMany({
+    // Cast: the `shift` relation is not declared on ShiftRoster in schema.prisma
+    const rosterEntries = await (prisma as any).shiftRoster.findMany({
       where: rosterWhere,
       include: {
         shift: {

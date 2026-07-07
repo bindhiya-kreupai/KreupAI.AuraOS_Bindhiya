@@ -1,30 +1,37 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Gift, Calendar, Users, TrendingUp, Download, Eye, Loader2 } from 'lucide-react';
+import { Gift, Calendar, Users, Eye, Loader2, X } from 'lucide-react';
 import { BonusService } from '../services';
+import { useToast } from '../hooks/useToast';
+import { ToastContainer } from '../components/Toast';
+
+interface PayoutForm {
+  employeeId: string;
+  amount: string;
+  reason: string;
+}
+
+interface SchemeForm {
+  schemeName: string;
+  bonusType: string;
+  budgetAmount: string;
+}
+
+const EMPTY_PAYOUT: PayoutForm = { employeeId: '', amount: '', reason: '' };
+const EMPTY_SCHEME: SchemeForm = { schemeName: '', bonusType: 'performance', budgetAmount: '' };
 
 export default function BonusManagementPage() {
   const [schemes, setSchemes] = useState<any[]>([]);
   const [payouts, setPayouts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
-
-  // Modal states
-  const [isReleaseOpen, setIsReleaseOpen] = useState(false);
-  const [isEditRulesOpen, setIsEditRulesOpen] = useState(false);
-  const [isViewSchemeOpen, setIsViewSchemeOpen] = useState(false);
-  const [selectedScheme, setSelectedScheme] = useState<any>(null);
-
-  // Release Form States
-  const [schemeName, setSchemeName] = useState('');
-  const [fiscalYear, setFiscalYear] = useState(new Date().getFullYear().toString());
-  const [budgetAmount, setBudgetAmount] = useState<number>(100000);
-  const [payoutDate, setPayoutDate] = useState(new Date().toISOString().split('T')[0]);
-
-  // Rules States
-  const [multiplierExcellent, setMultiplierExcellent] = useState(1.5);
-  const [multiplierGood, setMultiplierGood] = useState(1.2);
-  const [targetPct, setTargetPct] = useState(10);
+  const [payoutModalOpen, setPayoutModalOpen] = useState(false);
+  const [schemeModalOpen, setSchemeModalOpen] = useState(false);
+  const [payoutForm, setPayoutForm] = useState<PayoutForm>(EMPTY_PAYOUT);
+  const [schemeForm, setSchemeForm] = useState<SchemeForm>(EMPTY_SCHEME);
+  const [submitting, setSubmitting] = useState(false);
+  const [releasingId, setReleasingId] = useState<string | null>(null);
+  const { toasts, removeToast, success, error } = useToast();
 
   useEffect(() => {
     fetchData();
@@ -39,35 +46,77 @@ export default function BonusManagementPage() {
       ]);
       setSchemes(schemesData);
       setPayouts(payoutsData);
-    } catch (error: any) {
-      console.error('Error:', error);
+    } catch (err) {
+      console.error('Error:', err);
+      error('Failed to load bonus data');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleReleaseSubmit = async (e: React.FormEvent) => {
+  const handleCreatePayout = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!payoutForm.employeeId) {
+      error('Employee is required');
+      return;
+    }
+    setSubmitting(true);
     try {
-      await BonusService.createScheme({
-        name: schemeName,
-        schemeName,
-        fiscalYear,
-        budgetAmount,
-        payoutDate,
-        status: 'active',
-      });
-      setIsReleaseOpen(false);
-      fetchData();
+      await BonusService.createPayout({
+        employeeId: payoutForm.employeeId,
+        amount: Number(payoutForm.amount) || 0,
+        reason: payoutForm.reason,
+        name: 'Performance Bonus',
+      } as any);
+      success('Bonus payout created');
+      setPayoutModalOpen(false);
+      setPayoutForm(EMPTY_PAYOUT);
+      await fetchData();
     } catch (err) {
-      console.error('Error releasing bonus scheme:', err);
+      console.error(err);
+      error('Failed to create bonus payout');
+    } finally {
+      setSubmitting(false);
     }
   };
 
-  const handleEditRulesSubmit = (e: React.FormEvent) => {
+  const handleReleasePayout = async (id: string) => {
+    setReleasingId(id);
+    try {
+      await BonusService.releasePayout(id);
+      success('Bonus released');
+      await fetchData();
+    } catch (err) {
+      console.error(err);
+      error('Failed to release bonus');
+    } finally {
+      setReleasingId(null);
+    }
+  };
+
+  const handleCreateScheme = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert('Bonus rule settings updated successfully!');
-    setIsEditRulesOpen(false);
+    if (!schemeForm.schemeName) {
+      error('Scheme name is required');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      await BonusService.createScheme({
+        schemeName: schemeForm.schemeName,
+        bonusType: schemeForm.bonusType as any,
+        budgetAmount: Number(schemeForm.budgetAmount) || 0,
+      } as any);
+      success('Bonus scheme saved');
+      setSchemeModalOpen(false);
+      setSchemeForm(EMPTY_SCHEME);
+      await fetchData();
+    } catch (err) {
+      console.error(err);
+      error('Failed to save bonus scheme');
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (loading) {
@@ -87,6 +136,8 @@ export default function BonusManagementPage() {
 
   return (
     <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
+      <ToastContainer toasts={toasts} onClose={removeToast} />
+
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
         <div>
@@ -97,7 +148,10 @@ export default function BonusManagementPage() {
           <p className="text-slate-500 text-sm">Configure and distribute performance bonuses.</p>
         </div>
         <button
-          onClick={() => setIsReleaseOpen(true)}
+          onClick={() => {
+            setPayoutForm(EMPTY_PAYOUT);
+            setPayoutModalOpen(true);
+          }}
           className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all"
         >
           Release Bonus
@@ -171,15 +225,9 @@ export default function BonusManagementPage() {
                             {scheme.status}
                           </span>
                         </div>
-                        <button
-                          onClick={() => {
-                            setSelectedScheme(scheme);
-                            setIsViewSchemeOpen(true);
-                          }}
-                          className="text-slate-400 hover:text-indigo-600 p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800"
-                        >
+                        <div className="text-slate-400 hover:text-indigo-600">
                           <Eye className="w-5 h-5" />
-                        </button>
+                        </div>
                       </div>
                     </div>
                   );
@@ -197,6 +245,63 @@ export default function BonusManagementPage() {
               </div>
             )}
           </div>
+
+          {payouts.length > 0 && (
+            <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
+              <h3 className="font-bold text-lg mb-4">Individual Payouts</h3>
+              <div className="space-y-2">
+                {payouts.map((payout: any, i: number) => {
+                  const amount =
+                    Number(payout.amount) ||
+                    Number(payout.payoutAmount) ||
+                    Number(payout.finalBonusAmount) ||
+                    0;
+                  const isReleased =
+                    payout.isProcessed === true ||
+                    payout.approvalStatus === 'APPROVED' ||
+                    payout.status === 'processed' ||
+                    payout.status === 'paid' ||
+                    payout.status === 'approved';
+                  return (
+                    <div
+                      key={payout.id || i}
+                      className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800"
+                    >
+                      <div>
+                        <div className="font-bold text-sm text-slate-800 dark:text-slate-200">
+                          {payout.employeeName || payout.employeeId || '--'}
+                        </div>
+                        <div className="text-xs text-slate-500">
+                          {payout.reason || payout.name || '--'}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="font-bold text-indigo-600 text-sm">
+                          ${amount.toLocaleString()}
+                        </span>
+                        {isReleased ? (
+                          <span className="text-[10px] font-bold uppercase py-1 px-2 rounded bg-emerald-100 text-emerald-700">
+                            Released
+                          </span>
+                        ) : (
+                          <button
+                            onClick={() => handleReleasePayout(payout.id)}
+                            disabled={releasingId === payout.id}
+                            className="text-xs font-bold text-indigo-500 hover:underline disabled:opacity-50 inline-flex items-center gap-1"
+                          >
+                            {releasingId === payout.id && (
+                              <Loader2 className="w-3 h-3 animate-spin" />
+                            )}
+                            Release
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Right Panel: Rules */}
@@ -224,7 +329,10 @@ export default function BonusManagementPage() {
               </div>
             </div>
             <button
-              onClick={() => setIsEditRulesOpen(true)}
+              onClick={() => {
+                setSchemeForm(EMPTY_SCHEME);
+                setSchemeModalOpen(true);
+              }}
               className="w-full mt-4 py-2 border border-slate-200 dark:border-slate-700 rounded-xl text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
             >
               Edit Rules
@@ -233,200 +341,142 @@ export default function BonusManagementPage() {
         </div>
       </div>
 
-      {/* Release Bonus Modal */}
-      {isReleaseOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 w-full max-w-md space-y-4 text-slate-900 dark:text-white">
-            <h3 className="text-lg font-bold">Release Performance Bonus</h3>
-            <form onSubmit={handleReleaseSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-500 mb-1">Scheme Name</label>
-                <input
-                  type="text"
-                  value={schemeName}
-                  onChange={(e) => setSchemeName(e.target.value)}
-                  required
-                  placeholder="e.g. Q2 Performance Bonus"
-                  className="w-full px-3 py-2 border rounded-lg bg-transparent text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-500 mb-1">
-                  Fiscal Year / Period
-                </label>
-                <input
-                  type="text"
-                  value={fiscalYear}
-                  onChange={(e) => setFiscalYear(e.target.value)}
-                  required
-                  className="w-full px-3 py-2 border rounded-lg bg-transparent text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-500 mb-1">
-                  Budget Amount ($)
-                </label>
-                <input
-                  type="number"
-                  value={budgetAmount}
-                  onChange={(e) => setBudgetAmount(Number(e.target.value))}
-                  required
-                  className="w-full px-3 py-2 border rounded-lg bg-transparent text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-500 mb-1">Payout Date</label>
-                <input
-                  type="date"
-                  value={payoutDate}
-                  onChange={(e) => setPayoutDate(e.target.value)}
-                  required
-                  className="w-full px-3 py-2 border rounded-lg bg-transparent text-sm dark:bg-slate-900"
-                />
-              </div>
-              <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
-                <button
-                  type="button"
-                  onClick={() => setIsReleaseOpen(false)}
-                  className="px-4 py-2 rounded-lg text-sm font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 rounded-lg text-sm font-bold bg-indigo-600 hover:bg-indigo-700 text-white"
-                >
-                  Submit Release
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Edit Rules Modal */}
-      {isEditRulesOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 w-full max-w-md space-y-4 text-slate-900 dark:text-white">
-            <h3 className="text-lg font-bold">Configure Bonus Calculation Rules</h3>
-            <form onSubmit={handleEditRulesSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-500 mb-1">
-                  Target Percentage (% of CTC)
-                </label>
-                <input
-                  type="number"
-                  value={targetPct}
-                  onChange={(e) => setTargetPct(Number(e.target.value))}
-                  required
-                  className="w-full px-3 py-2 border rounded-lg bg-transparent text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-500 mb-1">
-                  Excellent Performance Multiplier
-                </label>
-                <input
-                  type="number"
-                  step="0.1"
-                  value={multiplierExcellent}
-                  onChange={(e) => setMultiplierExcellent(Number(e.target.value))}
-                  required
-                  className="w-full px-3 py-2 border rounded-lg bg-transparent text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-500 mb-1">
-                  Good Performance Multiplier
-                </label>
-                <input
-                  type="number"
-                  step="0.1"
-                  value={multiplierGood}
-                  onChange={(e) => setMultiplierGood(Number(e.target.value))}
-                  required
-                  className="w-full px-3 py-2 border rounded-lg bg-transparent text-sm"
-                />
-              </div>
-              <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
-                <button
-                  type="button"
-                  onClick={() => setIsEditRulesOpen(false)}
-                  className="px-4 py-2 rounded-lg text-sm font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 rounded-lg text-sm font-bold bg-indigo-600 hover:bg-indigo-700 text-white"
-                >
-                  Save Settings
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* View Scheme Details Modal */}
-      {isViewSchemeOpen && selectedScheme && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 w-full max-w-xl space-y-4 text-slate-900 dark:text-white max-h-[85vh] overflow-y-auto">
-            <div className="flex justify-between items-start">
-              <div>
-                <h3 className="text-lg font-bold">
-                  {selectedScheme.schemeName || selectedScheme.name}
-                </h3>
-                <p className="text-xs text-slate-500 mt-1">
-                  Fiscal Year: {selectedScheme.fiscalYear} | Payout Date:{' '}
-                  {selectedScheme.payoutDate || '--'}
-                </p>
-              </div>
+      {payoutModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <form
+            onSubmit={handleCreatePayout}
+            className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 w-full max-w-lg p-6 space-y-4"
+          >
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-bold">Release Bonus</h2>
               <button
-                onClick={() => setIsViewSchemeOpen(false)}
-                className="text-slate-400 hover:text-slate-600 font-bold"
+                type="button"
+                onClick={() => setPayoutModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600"
               >
-                Close
+                <X className="w-5 h-5" />
               </button>
             </div>
 
-            <div className="border-t border-slate-100 dark:border-slate-800 pt-4 space-y-4">
-              <h4 className="font-bold text-sm">Payout Distribution</h4>
-              {payouts.filter((p: any) => p.schemeId === selectedScheme.id).length === 0 ? (
-                <p className="text-sm text-slate-400">
-                  No individual payouts found for this scheme.
-                </p>
-              ) : (
-                <div className="space-y-2">
-                  {payouts
-                    .filter((p: any) => p.schemeId === selectedScheme.id)
-                    .map((payout: any) => (
-                      <div
-                        key={payout.id}
-                        className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-850 rounded-xl text-sm border border-slate-100 dark:border-slate-800/80"
-                      >
-                        <div>
-                          <span className="font-bold">
-                            {payout.employeeName || payout.employeeId}
-                          </span>
-                          <span className="text-[10px] text-slate-400 ml-2 font-mono">
-                            {payout.performanceRating ? `Rating: ${payout.performanceRating}` : ''}
-                          </span>
-                        </div>
-                        <span className="font-bold text-indigo-600">
-                          $
-                          {(
-                            Number(payout.amount) ||
-                            Number(payout.payoutAmount) ||
-                            0
-                          ).toLocaleString()}
-                        </span>
-                      </div>
-                    ))}
-                </div>
-              )}
+            <div className="grid grid-cols-2 gap-3">
+              <label className="text-sm col-span-2">
+                <span className="text-slate-500 font-medium">Employee ID</span>
+                <input
+                  value={payoutForm.employeeId}
+                  onChange={(e) => setPayoutForm({ ...payoutForm, employeeId: e.target.value })}
+                  className="mt-1 w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent"
+                  required
+                />
+              </label>
+              <label className="text-sm">
+                <span className="text-slate-500 font-medium">Amount</span>
+                <input
+                  type="number"
+                  value={payoutForm.amount}
+                  onChange={(e) => setPayoutForm({ ...payoutForm, amount: e.target.value })}
+                  className="mt-1 w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent"
+                />
+              </label>
+              <label className="text-sm">
+                <span className="text-slate-500 font-medium">Reason</span>
+                <input
+                  value={payoutForm.reason}
+                  onChange={(e) => setPayoutForm({ ...payoutForm, reason: e.target.value })}
+                  className="mt-1 w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent"
+                />
+              </label>
             </div>
-          </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setPayoutModalOpen(false)}
+                className="px-4 py-2 rounded-lg text-sm font-medium border border-slate-200 dark:border-slate-700"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={submitting}
+                className="px-4 py-2 rounded-lg text-sm font-bold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 inline-flex items-center gap-2"
+              >
+                {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
+                Create Payout
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {schemeModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <form
+            onSubmit={handleCreateScheme}
+            className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 w-full max-w-lg p-6 space-y-4"
+          >
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-bold">Bonus Scheme Rules</h2>
+              <button
+                type="button"
+                onClick={() => setSchemeModalOpen(false)}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              <label className="text-sm col-span-2">
+                <span className="text-slate-500 font-medium">Scheme Name</span>
+                <input
+                  value={schemeForm.schemeName}
+                  onChange={(e) => setSchemeForm({ ...schemeForm, schemeName: e.target.value })}
+                  className="mt-1 w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent"
+                  required
+                />
+              </label>
+              <label className="text-sm">
+                <span className="text-slate-500 font-medium">Bonus Type</span>
+                <select
+                  value={schemeForm.bonusType}
+                  onChange={(e) => setSchemeForm({ ...schemeForm, bonusType: e.target.value })}
+                  className="mt-1 w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent"
+                >
+                  <option value="performance">Performance</option>
+                  <option value="annual">Annual</option>
+                  <option value="festival">Festival</option>
+                  <option value="retention">Retention</option>
+                </select>
+              </label>
+              <label className="text-sm">
+                <span className="text-slate-500 font-medium">Budget Amount</span>
+                <input
+                  type="number"
+                  value={schemeForm.budgetAmount}
+                  onChange={(e) => setSchemeForm({ ...schemeForm, budgetAmount: e.target.value })}
+                  className="mt-1 w-full px-3 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-transparent"
+                />
+              </label>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setSchemeModalOpen(false)}
+                className="px-4 py-2 rounded-lg text-sm font-medium border border-slate-200 dark:border-slate-700"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={submitting}
+                className="px-4 py-2 rounded-lg text-sm font-bold bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-50 inline-flex items-center gap-2"
+              >
+                {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
+                Save Scheme
+              </button>
+            </div>
+          </form>
         </div>
       )}
     </div>

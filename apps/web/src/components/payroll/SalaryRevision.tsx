@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   Search,
   TrendingUp,
@@ -12,7 +12,10 @@ import {
   History,
   Send,
   Info,
+  Loader2,
+  AlertCircle,
 } from 'lucide-react';
+import { APIClient } from '@/lib/api-client';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -30,6 +33,63 @@ interface Employee {
   currency: string;
   lastRevisionDate: string | null;
   lastRevisionPct: number | null;
+}
+
+/** Raw shape returned by GET /api/v1/employees (fields are best-effort — API include varies) */
+interface ApiEmployee {
+  id: string;
+  employeeCode?: string | null;
+  firstName?: string | null;
+  lastName?: string | null;
+  name?: string | null;
+  role?: string | null;
+  dept?: string | null;
+  joiningDate?: string | null;
+  jobProfile?: { title?: string | null } | null;
+  department?: { name?: string | null } | null;
+  grade?: { name?: string | null; code?: string | null } | null;
+}
+
+interface EmployeeListResponse {
+  success: boolean;
+  data?: ApiEmployee[];
+}
+
+function mapApiEmployee(e: ApiEmployee): Employee {
+  const fullName =
+    e.name || `${e.firstName ?? ''} ${e.lastName ?? ''}`.trim() || e.employeeCode || 'Unknown';
+  return {
+    id: e.id,
+    code: e.employeeCode ?? '—',
+    name: fullName,
+    designation: e.role ?? e.jobProfile?.title ?? '—',
+    department: e.dept ?? e.department?.name ?? '—',
+    grade: e.grade?.code ?? e.grade?.name ?? '—',
+    joiningDate: e.joiningDate ? String(e.joiningDate).slice(0, 10) : '—',
+    // currentCTC is not returned by the employees API; the reviewer enters it in the edit step.
+    currentCTC: 0,
+    currency: 'INR',
+    lastRevisionDate: null,
+    lastRevisionPct: null,
+  };
+}
+
+/** Map the component's free-text revision reasons to the retroactive API enum. */
+function mapReasonToApiEnum(
+  reason: string
+): 'salary_increase' | 'promotion' | 'correction' | 'reclassification' {
+  switch (reason) {
+    case 'Promotion':
+      return 'promotion';
+    case 'Market Correction':
+    case 'Counter-offer Adjustment':
+      return 'correction';
+    case 'Role Change / Scope Expansion':
+      return 'reclassification';
+    // Annual/Mid-year appraisal, retention, probation completion, other → salary increase
+    default:
+      return 'salary_increase';
+  }
 }
 
 interface ComponentBreakdown {
@@ -53,76 +113,8 @@ interface RevisionRecord {
 }
 
 // ---------------------------------------------------------------------------
-// Mock Data
+// Illustrative revision-history reference (display-only; not persisted)
 // ---------------------------------------------------------------------------
-
-const MOCK_EMPLOYEES: Employee[] = [
-  {
-    id: 'emp-001',
-    code: 'EMP001',
-    name: 'Priya Sharma',
-    designation: 'Senior Software Engineer',
-    department: 'Engineering',
-    grade: 'L5',
-    joiningDate: '2021-03-15',
-    currentCTC: 1440000,
-    currency: 'INR',
-    lastRevisionDate: '2025-04-01',
-    lastRevisionPct: 20,
-  },
-  {
-    id: 'emp-002',
-    code: 'EMP002',
-    name: 'Rahul Mehta',
-    designation: 'Tech Lead',
-    department: 'Engineering',
-    grade: 'L6',
-    joiningDate: '2019-07-01',
-    currentCTC: 2160000,
-    currency: 'INR',
-    lastRevisionDate: '2025-04-01',
-    lastRevisionPct: 15,
-  },
-  {
-    id: 'emp-003',
-    code: 'EMP003',
-    name: 'Anita Nair',
-    designation: 'Product Manager',
-    department: 'Product',
-    grade: 'M4',
-    joiningDate: '2022-01-10',
-    currentCTC: 1800000,
-    currency: 'INR',
-    lastRevisionDate: '2025-04-01',
-    lastRevisionPct: 18,
-  },
-  {
-    id: 'emp-004',
-    code: 'EMP004',
-    name: 'Suresh Kumar',
-    designation: 'Junior Engineer',
-    department: 'Engineering',
-    grade: 'L3',
-    joiningDate: '2023-06-01',
-    currentCTC: 600000,
-    currency: 'INR',
-    lastRevisionDate: null,
-    lastRevisionPct: null,
-  },
-  {
-    id: 'emp-005',
-    code: 'EMP005',
-    name: 'Kavita Singh',
-    designation: 'HR Manager',
-    department: 'HR',
-    grade: 'M3',
-    joiningDate: '2020-09-15',
-    currentCTC: 1200000,
-    currency: 'INR',
-    lastRevisionDate: '2025-04-01',
-    lastRevisionPct: 12,
-  },
-];
 
 const MOCK_REVISION_HISTORY: RevisionRecord[] = [
   {
@@ -250,37 +242,66 @@ function fmt(n: number, currency = 'INR'): string {
 // Main Component
 // ---------------------------------------------------------------------------
 
+interface SubmissionResult {
+  calculationId: string;
+  retroactiveAmount: number;
+  netRetroactivePay: number;
+  periodsAffected: number;
+  approvalStatus: string;
+}
+
 export default function SalaryRevision() {
   const [searchQuery, setSearchQuery] = useState('');
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [employeesLoading, setEmployeesLoading] = useState(true);
+  const [employeesError, setEmployeesError] = useState<string | null>(null);
   const [selectedEmployee, setSelectedEmployee] = useState<Employee | null>(null);
+  const [currentCTC, setCurrentCTC] = useState('');
   const [newCTC, setNewCTC] = useState('');
   const [effectiveDate, setEffectiveDate] = useState('');
   const [reason, setReason] = useState('');
   const [customReason, setCustomReason] = useState('');
   const [notes, setNotes] = useState('');
   const [step, setStep] = useState<'select' | 'edit' | 'review' | 'submitted'>('select');
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [submissionResult, setSubmissionResult] = useState<SubmissionResult | null>(null);
+
+  const loadEmployees = useCallback(async () => {
+    setEmployeesLoading(true);
+    setEmployeesError(null);
+    try {
+      const res = await APIClient.get<EmployeeListResponse>('/v1/employees', { limit: 100 });
+      const list = Array.isArray(res.data) ? res.data.map(mapApiEmployee) : [];
+      setEmployees(list);
+    } catch (err) {
+      setEmployeesError(err instanceof Error ? err.message : 'Failed to load employees');
+    } finally {
+      setEmployeesLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadEmployees();
+  }, [loadEmployees]);
 
   const filteredEmployees = useMemo(
     () =>
-      MOCK_EMPLOYEES.filter(
+      employees.filter(
         (e) =>
           e.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
           e.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
           e.department.toLowerCase().includes(searchQuery.toLowerCase())
       ),
-    [searchQuery]
+    [employees, searchQuery]
   );
 
+  const currentCTCNum = Number(currentCTC) || 0;
   const proposedCTC = Number(newCTC) || 0;
-  const increaseAmount = proposedCTC - (selectedEmployee?.currentCTC ?? 0);
-  const increasePercent =
-    selectedEmployee && selectedEmployee.currentCTC > 0
-      ? (increaseAmount / selectedEmployee.currentCTC) * 100
-      : 0;
+  const increaseAmount = proposedCTC - currentCTCNum;
+  const increasePercent = currentCTCNum > 0 ? (increaseAmount / currentCTCNum) * 100 : 0;
 
-  const currentComponents = selectedEmployee
-    ? calculateComponents(selectedEmployee.currentCTC)
-    : [];
+  const currentComponents = currentCTCNum > 0 ? calculateComponents(currentCTCNum) : [];
   const proposedComponents = proposedCTC > 0 ? calculateComponents(proposedCTC) : [];
 
   const mergedComponents = currentComponents.map((c, i) => ({
@@ -291,12 +312,58 @@ export default function SalaryRevision() {
 
   const handleSelectEmployee = (emp: Employee) => {
     setSelectedEmployee(emp);
-    setNewCTC(emp.currentCTC.toString());
+    setCurrentCTC(emp.currentCTC > 0 ? emp.currentCTC.toString() : '');
+    setNewCTC('');
+    setSubmitError(null);
     setStep('edit');
   };
 
-  const handleSubmit = () => {
-    setStep('submitted');
+  const resetForm = () => {
+    setStep('select');
+    setSelectedEmployee(null);
+    setCurrentCTC('');
+    setNewCTC('');
+    setEffectiveDate('');
+    setReason('');
+    setCustomReason('');
+    setNotes('');
+    setSubmitError(null);
+    setSubmissionResult(null);
+  };
+
+  const handleSubmit = async () => {
+    if (!selectedEmployee) return;
+    if (currentCTCNum <= 0 || proposedCTC <= 0 || !effectiveDate || !reason) {
+      setSubmitError('Please provide current CTC, new CTC, effective date, and a reason.');
+      return;
+    }
+    setSubmitting(true);
+    setSubmitError(null);
+    try {
+      const body = {
+        employeeId: selectedEmployee.id,
+        effectiveDate,
+        reason: mapReasonToApiEnum(reason),
+        previousRate: currentCTCNum,
+        newRate: proposedCTC,
+        rateType: 'salary' as const,
+      };
+      const res = await APIClient.post<{ success: boolean; data: SubmissionResult }>(
+        '/v1/payroll/retroactive',
+        body
+      );
+      if (!res?.success || !res.data) {
+        throw new Error('Submission was rejected by the server.');
+      }
+      setSubmissionResult(res.data);
+      setStep('submitted');
+    } catch (err) {
+      setSubmitError(
+        err instanceof Error ? err.message : 'Failed to submit salary revision for approval.'
+      );
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   if (step === 'submitted') {
@@ -311,15 +378,41 @@ export default function SalaryRevision() {
             Salary revision for <strong>{selectedEmployee?.name}</strong> has been submitted for
             approval.
           </p>
-          <p className="text-sm text-gray-500 mb-6">
+          <p className="text-sm text-gray-500 mb-4">
             New CTC: <strong>{fmt(proposedCTC)}</strong> effective <strong>{effectiveDate}</strong>
           </p>
+          {submissionResult && (
+            <div className="text-left bg-gray-50 border border-gray-100 rounded-lg p-4 mb-6 space-y-1.5 text-xs">
+              <div className="flex justify-between">
+                <span className="text-gray-500">Adjustment ID</span>
+                <span className="font-mono text-gray-800">{submissionResult.calculationId}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">Retroactive amount</span>
+                <span className="font-semibold text-gray-800">
+                  {fmt(submissionResult.retroactiveAmount)}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">Net retro pay</span>
+                <span className="font-semibold text-gray-800">
+                  {fmt(submissionResult.netRetroactivePay)}
+                </span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">Pay periods affected</span>
+                <span className="text-gray-800">{submissionResult.periodsAffected}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-gray-500">Approval status</span>
+                <span className="font-semibold text-amber-600">
+                  {submissionResult.approvalStatus}
+                </span>
+              </div>
+            </div>
+          )}
           <button
-            onClick={() => {
-              setStep('select');
-              setSelectedEmployee(null);
-              setNewCTC('');
-            }}
+            onClick={resetForm}
             className="w-full px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
           >
             Revise Another Employee
@@ -385,36 +478,56 @@ export default function SalaryRevision() {
                 className="w-full pl-9 pr-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
               />
             </div>
-            <div className="space-y-2">
-              {filteredEmployees.map((emp) => (
+            {employeesError && (
+              <div className="flex items-center gap-2 p-3 mb-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                <AlertCircle className="w-4 h-4 flex-shrink-0" />
+                <span className="flex-1">{employeesError}</span>
                 <button
-                  key={emp.id}
-                  onClick={() => handleSelectEmployee(emp)}
-                  className="w-full flex items-center gap-4 p-4 border border-gray-100 rounded-xl hover:border-indigo-200 hover:bg-indigo-50 transition-colors text-left"
+                  onClick={() => void loadEmployees()}
+                  className="text-xs font-medium underline hover:no-underline"
                 >
-                  <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <span className="text-indigo-700 font-semibold text-sm">
-                      {emp.name.charAt(0)}
-                    </span>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="font-medium text-gray-800 text-sm">{emp.name}</p>
-                    <p className="text-xs text-gray-500 truncate">
-                      {emp.designation} · {emp.department} · {emp.grade}
-                    </p>
-                  </div>
-                  <div className="text-right flex-shrink-0">
-                    <p className="text-sm font-semibold text-gray-800">{fmt(emp.currentCTC)}</p>
-                    <p className="text-xs text-gray-500">
-                      {emp.lastRevisionDate
-                        ? `Last: ${emp.lastRevisionDate} (+${emp.lastRevisionPct}%)`
-                        : 'No prior revision'}
-                    </p>
-                  </div>
-                  <ChevronRight className="w-4 h-4 text-gray-400" />
+                  Retry
                 </button>
-              ))}
-            </div>
+              </div>
+            )}
+            {employeesLoading ? (
+              <div className="flex items-center justify-center gap-2 py-10 text-gray-500 text-sm">
+                <Loader2 className="w-5 h-5 animate-spin" /> Loading employees...
+              </div>
+            ) : !employeesError && filteredEmployees.length === 0 ? (
+              <div className="py-10 text-center text-sm text-gray-400">
+                {employees.length === 0
+                  ? 'No employees found for your tenant.'
+                  : 'No employees match your search.'}
+              </div>
+            ) : (
+              <div className="space-y-2">
+                {filteredEmployees.map((emp) => (
+                  <button
+                    key={emp.id}
+                    onClick={() => handleSelectEmployee(emp)}
+                    className="w-full flex items-center gap-4 p-4 border border-gray-100 rounded-xl hover:border-indigo-200 hover:bg-indigo-50 transition-colors text-left"
+                  >
+                    <div className="w-10 h-10 bg-indigo-100 rounded-full flex items-center justify-center flex-shrink-0">
+                      <span className="text-indigo-700 font-semibold text-sm">
+                        {emp.name.charAt(0)}
+                      </span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-800 text-sm">{emp.name}</p>
+                      <p className="text-xs text-gray-500 truncate">
+                        {emp.designation} · {emp.department} · {emp.grade}
+                      </p>
+                    </div>
+                    <div className="text-right flex-shrink-0">
+                      <p className="text-xs text-gray-400">Joined {emp.joiningDate}</p>
+                      <p className="text-xs text-indigo-500 font-medium">Select to revise →</p>
+                    </div>
+                    <ChevronRight className="w-4 h-4 text-gray-400" />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
         )}
 
@@ -458,7 +571,7 @@ export default function SalaryRevision() {
                   <div className="flex justify-between">
                     <span className="text-gray-500">Current CTC</span>
                     <span className="text-gray-800 font-bold">
-                      {fmt(selectedEmployee.currentCTC)}
+                      {currentCTCNum > 0 ? fmt(currentCTCNum) : '—'}
                     </span>
                   </div>
                 </div>
@@ -467,6 +580,21 @@ export default function SalaryRevision() {
               {/* Revision Inputs */}
               <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5 space-y-4">
                 <h3 className="text-sm font-semibold text-gray-800">Revision Details</h3>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">
+                    Current Annual CTC
+                  </label>
+                  <input
+                    type="number"
+                    value={currentCTC}
+                    onChange={(e) => setCurrentCTC(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                    placeholder="Enter current CTC amount"
+                  />
+                  <p className="mt-1 text-[11px] text-gray-400">
+                    Used as the previous rate for the retroactive calculation.
+                  </p>
+                </div>
                 <div>
                   <label className="block text-xs font-medium text-gray-600 mb-1">
                     New Annual CTC
@@ -561,7 +689,7 @@ export default function SalaryRevision() {
                   </button>
                   <button
                     onClick={() => setStep('review')}
-                    disabled={!proposedCTC || !effectiveDate || !reason}
+                    disabled={!currentCTCNum || !proposedCTC || !effectiveDate || !reason}
                     className="flex-1 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                   >
                     Review
@@ -577,10 +705,10 @@ export default function SalaryRevision() {
                 <div className="bg-white border border-gray-200 rounded-xl p-4 shadow-sm text-center">
                   <p className="text-xs text-gray-500 mb-1">Current CTC</p>
                   <p className="text-lg font-bold text-gray-800">
-                    {fmt(selectedEmployee.currentCTC)}
+                    {currentCTCNum > 0 ? fmt(currentCTCNum) : '—'}
                   </p>
                   <p className="text-xs text-gray-500">
-                    {fmt(Math.round(selectedEmployee.currentCTC / 12))}/month
+                    {currentCTCNum > 0 ? `${fmt(Math.round(currentCTCNum / 12))}/month` : ''}
                   </p>
                 </div>
                 <div className="bg-indigo-50 border border-indigo-200 rounded-xl p-4 shadow-sm text-center flex flex-col items-center justify-center">
@@ -676,7 +804,7 @@ export default function SalaryRevision() {
                         <tr className="bg-indigo-50 font-semibold">
                           <td className="px-4 py-3 text-indigo-800">Total CTC</td>
                           <td className="px-4 py-3 text-right text-gray-700">
-                            {fmt(selectedEmployee.currentCTC)}
+                            {fmt(currentCTCNum)}
                           </td>
                           <td className="px-4 py-3 text-right text-indigo-800">
                             {fmt(proposedCTC)}
@@ -768,18 +896,34 @@ export default function SalaryRevision() {
                       </span>
                     </div>
                   </div>
+                  {submitError && (
+                    <div className="flex items-start gap-2 p-3 mb-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700">
+                      <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                      <span>{submitError}</span>
+                    </div>
+                  )}
                   <div className="flex gap-3">
                     <button
                       onClick={() => setStep('edit')}
-                      className="flex-1 px-4 py-2 border border-gray-200 bg-white text-gray-700 rounded-lg text-sm hover:bg-gray-50 transition-colors"
+                      disabled={submitting}
+                      className="flex-1 px-4 py-2 border border-gray-200 bg-white text-gray-700 rounded-lg text-sm hover:bg-gray-50 disabled:opacity-50 transition-colors"
                     >
                       Edit
                     </button>
                     <button
-                      onClick={handleSubmit}
-                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 transition-colors"
+                      onClick={() => void handleSubmit()}
+                      disabled={submitting}
+                      className="flex-1 flex items-center justify-center gap-2 px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-medium hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
-                      <Send className="w-4 h-4" /> Submit for Approval
+                      {submitting ? (
+                        <>
+                          <Loader2 className="w-4 h-4 animate-spin" /> Submitting...
+                        </>
+                      ) : (
+                        <>
+                          <Send className="w-4 h-4" /> Submit for Approval
+                        </>
+                      )}
                     </button>
                   </div>
                 </div>

@@ -1,6 +1,10 @@
 import { prisma } from '@aura/database';
 import { BaseService } from './base.service';
 
+// visaPermit / visaRenewal exist in the deployed db-push database but are not in
+// schema.prisma, so they are absent from the generated PrismaClient types.
+const db = prisma as any;
+
 export type VisaPermitStatus = 'ACTIVE' | 'EXPIRED' | 'CANCELED' | 'RENEWED' | 'REVOKED';
 export type RenewalStatus = 'REQUESTED' | 'IN_PROGRESS' | 'COMPLETED' | 'REJECTED' | 'CANCELED';
 
@@ -70,20 +74,20 @@ export class VisaPermitService extends BaseService {
     }
 
     const [items, total] = await Promise.all([
-      prisma.visaPermit.findMany({
+      db.visaPermit.findMany({
         where,
         orderBy: { expiryDate: 'asc' },
         skip,
         take: limit,
       }),
-      prisma.visaPermit.count({ where }),
+      db.visaPermit.count({ where }),
     ]);
 
     return { items, total, page, pageSize: limit, hasNextPage: skip + items.length < total };
   }
 
   async getById(id: string, tenantId: string) {
-    return prisma.visaPermit.findFirst({
+    return db.visaPermit.findFirst({
       where: { id, tenantId, isDeleted: false },
       include: { renewals: { orderBy: { startedAt: 'desc' } } },
     });
@@ -104,7 +108,7 @@ export class VisaPermitService extends BaseService {
     metadata?: Record<string, unknown>;
     actorId: string;
   }) {
-    return prisma.visaPermit.create({
+    return db.visaPermit.create({
       data: {
         tenantId: input.tenantId,
         employeeId: input.employeeId,
@@ -142,7 +146,7 @@ export class VisaPermitService extends BaseService {
   ) {
     const existing = await this.getById(id, tenantId);
     if (!existing) return null;
-    return prisma.visaPermit.update({
+    return db.visaPermit.update({
       where: { id },
       data: {
         documentNumber: patch.documentNumber ?? undefined,
@@ -163,14 +167,14 @@ export class VisaPermitService extends BaseService {
   async softDelete(id: string, tenantId: string, actorId: string) {
     const existing = await this.getById(id, tenantId);
     if (!existing) return null;
-    return prisma.visaPermit.update({
+    return db.visaPermit.update({
       where: { id },
       data: { isDeleted: true, deletedAt: new Date(), updatedBy: actorId },
     });
   }
 
   async expiringSoon(params: { tenantId: string; days: number; employeeId?: string }) {
-    return prisma.visaPermit.findMany({
+    return db.visaPermit.findMany({
       where: {
         tenantId: params.tenantId,
         isDeleted: false,
@@ -190,11 +194,11 @@ export class VisaPermitService extends BaseService {
     actorId: string,
     input: { assignedTo?: string; vendorName?: string; estimatedCost?: number; notes?: string }
   ) {
-    const permit = await prisma.visaPermit.findFirst({
+    const permit = await db.visaPermit.findFirst({
       where: { id: visaPermitId, tenantId, isDeleted: false },
     });
     if (!permit) return null;
-    return prisma.visaRenewal.create({
+    return db.visaRenewal.create({
       data: {
         tenantId,
         visaPermitId,
@@ -223,7 +227,7 @@ export class VisaPermitService extends BaseService {
       notes?: string;
     }
   ) {
-    const existing = await prisma.visaRenewal.findFirst({
+    const existing = await db.visaRenewal.findFirst({
       where: { id: renewalId, tenantId, isDeleted: false },
     });
     if (!existing) return null;
@@ -232,7 +236,7 @@ export class VisaPermitService extends BaseService {
     }
 
     const isCompletion = to === 'COMPLETED';
-    return prisma.$transaction(async (tx) => {
+    return prisma.$transaction(async (tx: any) => {
       const updated = await tx.visaRenewal.update({
         where: { id: renewalId },
         data: {

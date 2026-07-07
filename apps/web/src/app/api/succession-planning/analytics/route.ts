@@ -8,8 +8,10 @@ export const GET = withEnhancedAuth(async (_request: NextRequest, context: any) 
     const { user, permissions } = context;
     if (!permissions.includes('succession-planning:read'))
       return forbidden('succession-planning:read');
+    // Employee has no tenantId scalar — filter via Company relation.
+    // Employee.status is a relation; use isDeleted:false as active proxy.
     const activeEmployees = await (prisma as any).employee.count({
-      where: { tenantId: user.tenantId, status: 'ACTIVE' as any },
+      where: { company: { tenantId: user.tenantId }, isDeleted: false },
     });
     const probations = await prisma.probationTracking.count({
       where: { tenantId: user.tenantId, status: 'ACTIVE' },

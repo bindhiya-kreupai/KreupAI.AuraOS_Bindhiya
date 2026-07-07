@@ -2,6 +2,10 @@ import { prisma } from '@aura/database';
 import { BaseService } from './base.service';
 import { createHash } from 'crypto';
 
+// labourMinistrySubmission exists in the deployed db-push database but is not in
+// schema.prisma, so it is absent from the generated PrismaClient types.
+const db = prisma as any;
+
 export type SubmissionStatus =
   | 'DRAFT'
   | 'READY'
@@ -72,7 +76,7 @@ export class LabourMinistrySubmissionService extends BaseService {
     notes?: string;
     actorId: string;
   }) {
-    return prisma.labourMinistrySubmission.create({
+    return db.labourMinistrySubmission.create({
       data: {
         tenantId: input.tenantId,
         countryCode: input.countryCode.toUpperCase(),
@@ -98,7 +102,7 @@ export class LabourMinistrySubmissionService extends BaseService {
     if (!r) return null;
     this.assertTransition(r.status as SubmissionStatus, 'READY');
     const hash = this.hashPayload(r.payload);
-    return prisma.labourMinistrySubmission.update({
+    return db.labourMinistrySubmission.update({
       where: { id },
       data: {
         status: 'READY',
@@ -125,7 +129,7 @@ export class LabourMinistrySubmissionService extends BaseService {
     const r = await this.assertExists(id, tenantId);
     if (!r) return null;
     this.assertTransition(r.status as SubmissionStatus, 'SUBMITTED');
-    return prisma.labourMinistrySubmission.update({
+    return db.labourMinistrySubmission.update({
       where: { id },
       data: {
         status: 'SUBMITTED',
@@ -141,7 +145,7 @@ export class LabourMinistrySubmissionService extends BaseService {
     const r = await this.assertExists(id, tenantId);
     if (!r) return null;
     this.assertTransition(r.status as SubmissionStatus, 'ACKNOWLEDGED');
-    return prisma.labourMinistrySubmission.update({
+    return db.labourMinistrySubmission.update({
       where: { id },
       data: {
         status: 'ACKNOWLEDGED',
@@ -158,7 +162,7 @@ export class LabourMinistrySubmissionService extends BaseService {
     const r = await this.assertExists(id, tenantId);
     if (!r) return null;
     this.assertTransition(r.status as SubmissionStatus, 'REJECTED');
-    return prisma.labourMinistrySubmission.update({
+    return db.labourMinistrySubmission.update({
       where: { id },
       data: {
         status: 'REJECTED',
@@ -176,7 +180,7 @@ export class LabourMinistrySubmissionService extends BaseService {
     const r = await this.assertExists(id, tenantId);
     if (!r) return null;
     this.assertTransition(r.status as SubmissionStatus, 'RESUBMITTED');
-    return prisma.labourMinistrySubmission.update({
+    return db.labourMinistrySubmission.update({
       where: { id },
       data: {
         status: 'RESUBMITTED',
@@ -206,19 +210,19 @@ export class LabourMinistrySubmissionService extends BaseService {
     if (params.countryCode) where.countryCode = params.countryCode.toUpperCase();
     if (params.status) where.status = params.status;
     const [items, total] = await Promise.all([
-      prisma.labourMinistrySubmission.findMany({
+      db.labourMinistrySubmission.findMany({
         where,
         orderBy: { createdAt: 'desc' },
         skip,
         take: limit,
       }),
-      prisma.labourMinistrySubmission.count({ where }),
+      db.labourMinistrySubmission.count({ where }),
     ]);
     return { items, total, page, pageSize: limit, hasNextPage: skip + items.length < total };
   }
 
   private async assertExists(id: string, tenantId: string) {
-    return prisma.labourMinistrySubmission.findFirst({
+    return db.labourMinistrySubmission.findFirst({
       where: { id, tenantId, isDeleted: false },
     });
   }

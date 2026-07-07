@@ -9,6 +9,8 @@ import {
   AlertTriangle,
   RefreshCw,
   Download,
+  Eye,
+  X,
 } from 'lucide-react';
 import { MassUpdateService } from '../services';
 import type { MassUpdate } from '../types';
@@ -28,15 +30,21 @@ const formatDate = (date: Date | string): string => {
   return d.toLocaleDateString('en-US', { month: 'short', day: '2-digit', year: 'numeric' });
 };
 
-const getStatusDisplay = (status: string) => {
+const getStatusDisplay = (rawStatus: string) => {
+  const status = (rawStatus || '').toLowerCase();
   switch (status) {
     case 'executed':
+    case 'completed':
+    case 'success':
       return { label: 'Success', style: 'success' };
     case 'failed':
+    case 'error':
       return { label: 'Partial Error', style: 'error' };
     case 'pending_approval':
     case 'approved':
     case 'draft':
+    case 'pending':
+    case 'running':
       return { label: 'Processing', style: 'processing' };
     default:
       return {
@@ -68,28 +76,48 @@ export default function MassUpdatesPage() {
 
   const [uploadingFile, setUploadingFile] = useState(false);
   const [retrying, setRetrying] = useState<string | null>(null);
+  const [error, setError] = useState('');
+
+  // Preview modal
+  const [preview, setPreview] = useState<any | null>(null);
+  const [previewing, setPreviewing] = useState<string | null>(null);
 
   const handleUpload = () => {
     document.getElementById('mass-upload-input')?.click();
   };
 
+  const processFile = async (file: File) => {
+    try {
+      setUploadingFile(true);
+      setError('');
+      await MassUpdateService.createFromFile(file, { entityType: 'employee' });
+      await fetchMassUpdates();
+    } catch (err: any) {
+      console.error('Upload failed:', err);
+      setError(err?.message || 'Failed to upload the file.');
+    } finally {
+      setUploadingFile(false);
+    }
+  };
+
   const handleFileSelected = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
+    await processFile(file);
+    e.target.value = '';
+  };
+
+  const handlePreview = async (updateId: string) => {
     try {
-      setUploadingFile(true);
-      await MassUpdateService.createMassUpdate({
-        updateName: file.name.replace(/\.[^/.]+$/, ''),
-        fileName: file.name,
-        updateType: 'employee_data',
-        status: 'pending_approval',
-      } as any);
-      await fetchMassUpdates();
-    } catch (error: any) {
-      console.error('Upload failed:', error);
+      setPreviewing(updateId);
+      setError('');
+      const result = await MassUpdateService.previewUpdate(updateId);
+      setPreview(result);
+    } catch (err: any) {
+      console.error('Preview failed:', err);
+      setError('Failed to load preview.');
     } finally {
-      setUploadingFile(false);
-      e.target.value = '';
+      setPreviewing(null);
     }
   };
 
@@ -128,6 +156,12 @@ export default function MassUpdatesPage() {
         </div>
       </div>
 
+      {error && (
+        <div className="rounded-lg border border-rose-200 bg-rose-50 dark:bg-rose-900/20 dark:border-rose-800 px-4 py-2 text-sm text-rose-700 dark:text-rose-300 shrink-0">
+          {error}
+        </div>
+      )}
+
       <input
         type="file"
         id="mass-upload-input"
@@ -149,7 +183,10 @@ export default function MassUpdatesPage() {
           onDrop={(e) => {
             e.preventDefault();
             setIsDragging(false);
-            handleUpload();
+            const file = e.dataTransfer.files?.[0];
+            if (file) {
+              void processFile(file);
+            }
           }}
         >
           <div
@@ -200,23 +237,42 @@ export default function MassUpdatesPage() {
 
           {!loading && massUpdates.length > 0 && (
             <div className="space-y-4">
-              {massUpdates.map((job) => {
+              {massUpdates.map((job: any) => {
                 const statusInfo = getStatusDisplay(job.status);
-                const recordCount = job.targetEmployees?.length ?? 0;
+                const jobId = job.id || job.updateId;
+                const recordCount =
+                  job.affectedCount ??
+                  job.updateValue?.rows?.length ??
+                  job.targetEmployees?.length ??
+                  0;
 
                 return (
                   <div
-                    key={job.updateId}
+                    key={jobId}
                     className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
                   >
                     <div>
-                      <div className="font-bold text-sm">{job.updateName}</div>
+                      <div className="font-bold text-sm">
+                        {job.updateValue?.updateName ||
+                          job.updateName ||
+                          job.updateValue?.fileName ||
+                          job.field ||
+                          'Import job'}
+                      </div>
                       <div className="text-xs text-slate-500 mt-1">
-                        {formatDate(job.createdDate)}{' '}
+                        {formatDate(job.createdDate || job.createdAt)}{' '}
                         {recordCount > 0 ? `\u2022 ${recordCount} Records` : ''}
                       </div>
                     </div>
                     <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => handlePreview(jobId)}
+                        disabled={previewing === jobId}
+                        className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-500 disabled:opacity-50"
+                        title="Preview parsed rows"
+                      >
+                        <Eye className="w-3 h-3" />
+                      </button>
                       {statusInfo.style === 'success' && (
                         <span className="text-xs font-bold text-emerald-600 bg-emerald-100 px-2 py-1 rounded flex items-center gap-1">
                           <CheckCircle className="w-3 h-3" /> Success
@@ -228,13 +284,13 @@ export default function MassUpdatesPage() {
                             <AlertTriangle className="w-3 h-3" /> Errors
                           </span>
                           <button
-                            onClick={() => handleRetry(job.updateName, job.updateId)}
-                            disabled={retrying === job.updateId}
+                            onClick={() => handleRetry(job.updateName || jobId, jobId)}
+                            disabled={retrying === jobId}
                             className="p-1 hover:bg-slate-200 dark:hover:bg-slate-700 rounded text-slate-500 disabled:opacity-50"
                             title="Retry Failed Records"
                           >
                             <RefreshCw
-                              className={`w-3 h-3 ${retrying === job.updateId ? 'animate-spin' : ''}`}
+                              className={`w-3 h-3 ${retrying === jobId ? 'animate-spin' : ''}`}
                             />
                           </button>
                           <button
@@ -258,6 +314,62 @@ export default function MassUpdatesPage() {
           )}
         </div>
       </div>
+
+      {/* Preview Modal */}
+      {preview && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-3xl">
+            <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+              <div>
+                <h2 className="text-xl font-bold">Import Preview</h2>
+                <p className="text-xs text-slate-500 mt-1">
+                  {preview.fileName ? `${preview.fileName} — ` : ''}
+                  {preview.affectedCount} row{preview.affectedCount === 1 ? '' : 's'} parsed
+                </p>
+              </div>
+              <button
+                onClick={() => setPreview(null)}
+                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5 text-slate-500" />
+              </button>
+            </div>
+            <div className="p-6 max-h-[60vh] overflow-auto">
+              {preview.changes.length === 0 ? (
+                <p className="text-sm text-slate-400">No rows found in this import.</p>
+              ) : (
+                <table className="w-full text-left text-xs">
+                  <thead className="bg-slate-50 dark:bg-slate-800/50 text-slate-500">
+                    <tr>
+                      {(preview.columns.length > 0
+                        ? preview.columns
+                        : Object.keys(preview.changes[0] || {})
+                      ).map((col: string) => (
+                        <th key={col} className="px-3 py-2 font-bold">
+                          {col}
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+                    {preview.changes.slice(0, 100).map((row: any, i: number) => (
+                      <tr key={i}>
+                        {(preview.columns.length > 0 ? preview.columns : Object.keys(row)).map(
+                          (col: string) => (
+                            <td key={col} className="px-3 py-2 font-mono">
+                              {String(row[col] ?? '')}
+                            </td>
+                          )
+                        )}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

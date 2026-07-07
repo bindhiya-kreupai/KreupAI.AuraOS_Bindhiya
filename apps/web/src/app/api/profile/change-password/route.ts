@@ -89,6 +89,7 @@ export const POST = withAuth(async (request: NextRequest, { user }) => {
         tenantId: user.tenantId,
         userId: user.userId,
         action: 'UPDATE',
+        module: 'Profile',
         resourceType: 'Profile',
         metadata: { description: 'Password changed successfully' } as any,
         ipAddress,

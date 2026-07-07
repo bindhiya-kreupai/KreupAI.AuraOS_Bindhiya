@@ -23,13 +23,11 @@ beforeEach(() => {
     create: vi
       .fn()
       .mockImplementation(async ({ data }: any) => ({ id: 'wa-1', tenantId: 'tenant-1', ...data })),
-    update: vi
-      .fn()
-      .mockImplementation(async ({ where, data }: any) => ({
-        id: where.id,
-        tenantId: 'tenant-1',
-        ...data,
-      })),
+    update: vi.fn().mockImplementation(async ({ where, data }: any) => ({
+      id: where.id,
+      tenantId: 'tenant-1',
+      ...data,
+    })),
   };
   m.holidayCompOff = {
     findUnique: vi.fn().mockResolvedValue(null),

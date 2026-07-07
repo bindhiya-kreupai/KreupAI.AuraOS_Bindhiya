@@ -46,7 +46,7 @@ export default function DocumentMatrixPage() {
   async function load() {
     const r = await fetch('/api/v1/records-compliance/document-matrix');
     const p = await r.json();
-    if (p.success) setRows(p.data ?? []);
+    if (p.success) setRows(Array.isArray(p.data?.items) ? p.data.items : []);
   }
   useEffect(() => {
     load();

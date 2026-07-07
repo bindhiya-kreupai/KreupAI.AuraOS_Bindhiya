@@ -41,7 +41,7 @@ export default function MigrationsPage() {
   async function load() {
     const r = await fetch('/api/v1/hrms-config/migrations');
     const p = await r.json();
-    if (p.success) setItems(p.data ?? []);
+    if (p.success) setItems(p.data?.items ?? []);
   }
   useEffect(() => {
     load();

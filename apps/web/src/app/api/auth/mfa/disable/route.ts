@@ -80,6 +80,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user }) => {
         tenantId: user.tenantId,
         userId: user.userId,
         action: 'MFA_DISABLED',
+        module: 'AUTH',
         resourceType: 'Authentication',
         errorMessage: 'MFA disabled by user',
         ipAddress,

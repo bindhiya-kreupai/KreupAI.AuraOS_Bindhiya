@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import {
   CheckSquare,
   Search,
@@ -12,11 +12,9 @@ import {
   CreditCard,
   Key,
   FileSignature,
-  MoreHorizontal,
-  ArrowRight,
   Loader2,
 } from 'lucide-react';
-import { OffboardingInstanceService } from '../services';
+import { OffboardingInstanceService, ClearanceService } from '../services';
 
 interface ClearanceTask {
   id: string;
@@ -31,46 +29,71 @@ interface ClearanceTask {
 export default function ClearanceChecklistPage() {
   const [clearanceItems, setClearanceItems] = useState<ClearanceTask[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('All');
+  const [deptFilter, setDeptFilter] = useState('All');
+  const [search, setSearch] = useState('');
+  const [savingId, setSavingId] = useState<string | null>(null);
+  const [toast, setToast] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
 
-  useEffect(() => {
-    const fetchData = async () => {
-      try {
-        setLoading(true);
-        const instances = await OffboardingInstanceService.getInstances();
+  const fetchData = useCallback(async () => {
+    try {
+      setLoading(true);
+      const instances = await OffboardingInstanceService.getInstances();
 
-        // Flatten clearances from all instances into a single list
-        const items: ClearanceTask[] = [];
-        (instances || []).forEach((inst: any) => {
-          const clearances = inst.clearances || [];
-          clearances.forEach((c: any) => {
-            items.push({
-              id: c.id,
-              employee: inst.employeeName || 'Unknown',
-              dept: c.department || 'General',
-              item: c.description || 'Clearance item',
-              status: c.status === 'approved' ? 'Completed' : 'Pending',
-              dueDate: inst.lastWorkingDate
-                ? new Date(inst.lastWorkingDate).toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric',
-                  })
-                : '',
-              exitRequestId: inst.id,
-            });
+      // Flatten clearances from all instances into a single list
+      const items: ClearanceTask[] = [];
+      (instances || []).forEach((inst: any) => {
+        const clearances = inst.clearances || [];
+        clearances.forEach((c: any) => {
+          items.push({
+            id: c.id,
+            employee: inst.employeeName || 'Unknown',
+            dept: c.department || 'General',
+            item: c.description || 'Clearance item',
+            status: c.status === 'approved' ? 'Completed' : 'Pending',
+            dueDate: inst.lastWorkingDate
+              ? new Date(inst.lastWorkingDate).toLocaleDateString('en-US', {
+                  month: 'short',
+                  day: 'numeric',
+                  year: 'numeric',
+                })
+              : '',
+            exitRequestId: inst.id,
           });
         });
+      });
 
-        setClearanceItems(items);
-      } catch (error: any) {
-        console.error('Error fetching clearance data:', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchData();
+      setClearanceItems(items);
+    } catch (error: any) {
+      console.error('Error fetching clearance data:', error);
+      setToast({ type: 'error', message: 'Failed to load clearance checklist.' });
+    } finally {
+      setLoading(false);
+    }
   }, []);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  useEffect(() => {
+    if (!toast) return;
+    const t = setTimeout(() => setToast(null), 3500);
+    return () => clearTimeout(t);
+  }, [toast]);
+
+  const handleMarkDone = async (task: ClearanceTask) => {
+    setSavingId(task.id);
+    try {
+      await ClearanceService.updateClearanceStatus(task.id, 'approved');
+      setToast({ type: 'success', message: `${task.item} marked as cleared.` });
+      await fetchData();
+    } catch (error: any) {
+      console.error('Error updating clearance:', error);
+      setToast({ type: 'error', message: 'Could not update clearance. Please try again.' });
+    } finally {
+      setSavingId(null);
+    }
+  };
 
   if (loading) {
     return (
@@ -82,6 +105,16 @@ export default function ClearanceChecklistPage() {
       </div>
     );
   }
+
+  const departments = ['All', ...Array.from(new Set(clearanceItems.map((c) => c.dept))).sort()];
+
+  const visibleItems = clearanceItems.filter((c) => {
+    if (deptFilter !== 'All' && c.dept !== deptFilter) return false;
+    if (search.trim() && !c.employee.toLowerCase().includes(search.trim().toLowerCase())) {
+      return false;
+    }
+    return true;
+  });
 
   const pendingCount = clearanceItems.filter((c) => c.status === 'Pending').length;
   const completedCount = clearanceItems.filter((c) => c.status === 'Completed').length;
@@ -112,6 +145,23 @@ export default function ClearanceChecklistPage() {
 
   return (
     <div className="space-y-4 pb-6 min-h-screen text-slate-900 dark:text-slate-100">
+      {/* Toast */}
+      {toast && (
+        <div
+          className={`fixed top-6 right-6 z-50 px-4 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2 ${
+            toast.type === 'success' ? 'bg-emerald-500 text-white' : 'bg-rose-500 text-white'
+          }`}
+          role="status"
+        >
+          {toast.type === 'success' ? (
+            <CheckCircle2 className="w-4 h-4" />
+          ) : (
+            <AlertCircle className="w-4 h-4" />
+          )}
+          {toast.message}
+        </div>
+      )}
+
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
@@ -123,10 +173,22 @@ export default function ClearanceChecklistPage() {
             Track asset returns and clearance tasks across departments.
           </p>
         </div>
-        <div className="flex gap-3">
-          <button className="px-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium hover:text-indigo-600 transition-colors flex items-center gap-2">
-            <Filter className="w-4 h-4" /> Filter by Dept
-          </button>
+        <div className="flex gap-3 items-center">
+          <div className="relative">
+            <Filter className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
+            <select
+              value={deptFilter}
+              onChange={(e) => setDeptFilter(e.target.value)}
+              className="pl-9 pr-8 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-indigo-500/20 appearance-none"
+              aria-label="Filter by department"
+            >
+              {departments.map((d) => (
+                <option key={d} value={d}>
+                  {d === 'All' ? 'All Departments' : d}
+                </option>
+              ))}
+            </select>
+          </div>
         </div>
       </div>
 
@@ -169,17 +231,23 @@ export default function ClearanceChecklistPage() {
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input
               type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
               placeholder="Search employee..."
               className="pl-9 pr-4 py-1.5 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20"
             />
           </div>
         </div>
 
-        {clearanceItems.length === 0 ? (
-          <div className="p-12 text-center text-sm text-slate-500">No clearance items found.</div>
+        {visibleItems.length === 0 ? (
+          <div className="p-12 text-center text-sm text-slate-500">
+            {clearanceItems.length === 0
+              ? 'No clearance items found.'
+              : 'No clearance items match your filters.'}
+          </div>
         ) : (
           <div className="divide-y divide-slate-100 dark:divide-slate-800">
-            {clearanceItems.map((task) => (
+            {visibleItems.map((task) => (
               <div
                 key={task.id}
                 className="p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors group"
@@ -213,25 +281,21 @@ export default function ClearanceChecklistPage() {
                       {task.status}
                     </span>
 
-                    <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                      {task.status === 'Pending' && (
-                        <button
-                          onClick={() => {
-                            setClearanceItems((items) =>
-                              items.map((t) =>
-                                t.id === task.id ? { ...t, status: 'Completed' } : t
-                              )
-                            );
-                          }}
-                          className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 text-white text-xs font-bold rounded-lg transition-colors"
-                        >
-                          Mark Done
-                        </button>
-                      )}
-                      <button className="p-1.5 text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg">
-                        <MoreHorizontal className="w-4 h-4" />
+                    {task.status === 'Pending' && (
+                      <button
+                        onClick={() => handleMarkDone(task)}
+                        disabled={savingId === task.id}
+                        className="px-3 py-1.5 bg-emerald-500 hover:bg-emerald-600 disabled:opacity-60 disabled:cursor-not-allowed text-white text-xs font-bold rounded-lg transition-colors flex items-center gap-1.5"
+                      >
+                        {savingId === task.id ? (
+                          <>
+                            <Loader2 className="w-3 h-3 animate-spin" /> Saving
+                          </>
+                        ) : (
+                          'Mark Done'
+                        )}
                       </button>
-                    </div>
+                    )}
                   </div>
                 </div>
               </div>

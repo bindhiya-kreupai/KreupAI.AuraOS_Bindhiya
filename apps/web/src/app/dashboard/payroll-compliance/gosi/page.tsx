@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import {
@@ -14,7 +14,7 @@ import {
   TrendingUp,
   Info,
   PieChart,
-  Loader2
+  Loader2,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -63,12 +63,12 @@ export default function GOSIPage() {
   const [minimumWage, setMinimumWage] = useState<number>(4000);
   const [records, setRecords] = useState<GOSIRecord[]>([]);
 
-  // GOSI configuration
-  const gosiConfig = {
-    establishmentNumber: '5000123456',
-    laborOfficeCode: '1',
-    unifiedNumber: '700012345678',
-  };
+  // GOSI configuration (operator-entered establishment identifiers)
+  const [gosiConfig, setGosiConfig] = useState({
+    establishmentNumber: '',
+    laborOfficeCode: '',
+    unifiedNumber: '',
+  });
 
   // Calculator state
   const [calcBasicSalary, setCalcBasicSalary] = useState<string>('10000');
@@ -159,7 +159,7 @@ export default function GOSIPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           config: gosiConfig,
-          records: records.map(r => ({
+          records: records.map((r) => ({
             employeeId: r.id,
             employeeName: r.name,
             nationalId: r.isSaudi ? r.nationalId : undefined,
@@ -168,7 +168,8 @@ export default function GOSIPage() {
             basicSalary: r.basicSalary,
             housingAllowance: r.housingAllowance,
           })),
-          contributionMonth: contributionMonth || new Date().toISOString().slice(0, 7).replace('-', ''),
+          contributionMonth:
+            contributionMonth || new Date().toISOString().slice(0, 7).replace('-', ''),
           format: 'json',
         }),
       });
@@ -179,7 +180,14 @@ export default function GOSIPage() {
       } else {
         setValidationResult({
           isValid: false,
-          errors: result.errors || [{ employeeId: '-', field: 'general', message: result.error || 'Calculation failed', messageAr: result.errorAr || 'فشل الحساب' }],
+          errors: result.errors || [
+            {
+              employeeId: '-',
+              field: 'general',
+              message: result.error || 'Calculation failed',
+              messageAr: result.errorAr || 'فشل الحساب',
+            },
+          ],
           warnings: result.warnings || [],
         });
       }
@@ -191,8 +199,118 @@ export default function GOSIPage() {
     }
   };
 
-  const saudiCount = records.filter(r => r.isSaudi).length;
-  const nonSaudiCount = records.filter(r => !r.isSaudi).length;
+  const addRecord = () => {
+    setRecords((prev) => [
+      ...prev,
+      {
+        id: `rec-${Date.now()}-${prev.length}`,
+        name: '',
+        nationalId: '',
+        iqamaNumber: '',
+        isSaudi: true,
+        basicSalary: 0,
+        housingAllowance: 0,
+        contributableSalary: 0,
+        employeeContribution: 0,
+        employerContribution: 0,
+        status: 'warning',
+      },
+    ]);
+  };
+
+  const updateRecord = (id: string, patch: Partial<GOSIRecord>) => {
+    setRecords((prev) => prev.map((r) => (r.id === id ? { ...r, ...patch } : r)));
+  };
+
+  const removeRecord = (id: string) => {
+    setRecords((prev) => prev.filter((r) => r.id !== id));
+  };
+
+  const exportCsv = () => {
+    const header = [
+      'Name',
+      'ID',
+      'IsSaudi',
+      'BasicSalary',
+      'HousingAllowance',
+      'ContributableSalary',
+      'EmployeeContribution',
+      'EmployerContribution',
+      'Status',
+    ];
+    const lines = records.map((r) =>
+      [
+        r.name,
+        r.isSaudi ? r.nationalId : (r.iqamaNumber ?? ''),
+        r.isSaudi ? 'Y' : 'N',
+        r.basicSalary,
+        r.housingAllowance,
+        r.contributableSalary,
+        r.employeeContribution,
+        r.employerContribution,
+        r.status,
+      ]
+        .map((v) => `"${String(v ?? '').replace(/"/g, '""')}"`)
+        .join(',')
+    );
+    const csv = [header.join(','), ...lines].join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `gosi-${contributionMonth || new Date().toISOString().slice(0, 7)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const generateGosiFile = async () => {
+    if (records.length === 0) return;
+    setCalculating(true);
+    setError(null);
+    try {
+      const response = await fetch('/api/compliance/gosi', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          config: gosiConfig,
+          records: records.map((r) => ({
+            employeeId: r.id,
+            employeeName: r.name,
+            nationalId: r.isSaudi ? r.nationalId : undefined,
+            iqamaNumber: r.isSaudi ? undefined : r.iqamaNumber,
+            isSaudi: r.isSaudi,
+            basicSalary: r.basicSalary,
+            housingAllowance: r.housingAllowance,
+          })),
+          contributionMonth:
+            contributionMonth || new Date().toISOString().slice(0, 7).replace('-', ''),
+          format: 'sif',
+        }),
+      });
+      const result = await response.json();
+      if (result.success && (result.data?.file || result.data?.content)) {
+        const content = result.data.file || result.data.content;
+        const blob = new Blob([content], { type: 'text/plain;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `gosi-${contributionMonth || new Date().toISOString().slice(0, 7)}.sif`;
+        a.click();
+        URL.revokeObjectURL(url);
+      } else if (result.success) {
+        setValidationResult(result.data?.validation ?? null);
+      } else {
+        setError(result.error || 'Failed to generate GOSI file');
+      }
+    } catch {
+      setError('Failed to generate GOSI file');
+    } finally {
+      setCalculating(false);
+    }
+  };
+
+  const saudiCount = records.filter((r) => r.isSaudi).length;
+  const nonSaudiCount = records.filter((r) => !r.isSaudi).length;
   const totalEmployeeContribution = records.reduce((sum, r) => sum + r.employeeContribution, 0);
   const totalEmployerContribution = records.reduce((sum, r) => sum + r.employerContribution, 0);
 
@@ -210,14 +328,19 @@ export default function GOSIPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
-          <Link href="/dashboard/payroll-compliance" className="text-indigo-600 hover:text-indigo-700 text-sm flex items-center gap-1 mb-2">
+          <Link
+            href="/dashboard/payroll-compliance"
+            className="text-indigo-600 hover:text-indigo-700 text-sm flex items-center gap-1 mb-2"
+          >
             <ArrowLeft className="w-4 h-4" /> Back to Compliance
           </Link>
           <h1 className="text-2xl font-bold flex items-center gap-3 text-slate-900 dark:text-slate-100">
             <Building2 className="w-7 h-7 text-blue-500" />
             GOSI - Social Insurance
             <span className="text-sm font-normal text-slate-500 mr-2">|</span>
-            <span className="text-lg font-semibold text-slate-600 dark:text-slate-400" dir="rtl">التأمينات الاجتماعية</span>
+            <span className="text-lg font-semibold text-slate-600 dark:text-slate-400" dir="rtl">
+              التأمينات الاجتماعية
+            </span>
           </h1>
           <p className="text-slate-500 text-sm mt-1">
             Calculate contributions and generate GOSI submission files
@@ -236,7 +359,12 @@ export default function GOSIPage() {
         <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800 flex items-center gap-3">
           <AlertCircle className="w-5 h-5 text-red-500" />
           <span className="text-red-700 dark:text-red-400">{error}</span>
-          <button onClick={() => setError(null)} className="ml-auto text-red-500 hover:text-red-700 text-sm">Dismiss</button>
+          <button
+            onClick={() => setError(null)}
+            className="ml-auto text-red-500 hover:text-red-700 text-sm"
+          >
+            Dismiss
+          </button>
         </div>
       )}
 
@@ -248,7 +376,9 @@ export default function GOSIPage() {
             <span>Saudi Employees</span>
           </div>
           <div className="text-2xl font-bold text-green-600">{saudiCount}</div>
-          <div className="text-xs text-slate-400" dir="rtl">موظفون سعوديون</div>
+          <div className="text-xs text-slate-400" dir="rtl">
+            موظفون سعوديون
+          </div>
         </div>
         <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4">
           <div className="flex items-center gap-2 text-sm text-slate-500 mb-1">
@@ -256,23 +386,33 @@ export default function GOSIPage() {
             <span>Non-Saudi</span>
           </div>
           <div className="text-2xl font-bold text-blue-600">{nonSaudiCount}</div>
-          <div className="text-xs text-slate-400" dir="rtl">غير سعوديين</div>
+          <div className="text-xs text-slate-400" dir="rtl">
+            غير سعوديين
+          </div>
         </div>
         <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4">
           <div className="flex items-center gap-2 text-sm text-slate-500 mb-1">
             <TrendingUp className="w-4 h-4" />
             <span>Employee Contribution</span>
           </div>
-          <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">SAR {totalEmployeeContribution.toLocaleString()}</div>
-          <div className="text-xs text-slate-400" dir="rtl">حصة الموظف</div>
+          <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+            SAR {totalEmployeeContribution.toLocaleString()}
+          </div>
+          <div className="text-xs text-slate-400" dir="rtl">
+            حصة الموظف
+          </div>
         </div>
         <div className="bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 p-4">
           <div className="flex items-center gap-2 text-sm text-slate-500 mb-1">
             <Building2 className="w-4 h-4" />
             <span>Employer Contribution</span>
           </div>
-          <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">SAR {totalEmployerContribution.toLocaleString()}</div>
-          <div className="text-xs text-slate-400" dir="rtl">حصة صاحب العمل</div>
+          <div className="text-2xl font-bold text-slate-900 dark:text-slate-100">
+            SAR {totalEmployerContribution.toLocaleString()}
+          </div>
+          <div className="text-xs text-slate-400" dir="rtl">
+            حصة صاحب العمل
+          </div>
         </div>
       </div>
 
@@ -296,7 +436,9 @@ export default function GOSIPage() {
             >
               <Icon className="w-4 h-4" />
               <span>{tab.label}</span>
-              <span className="text-xs text-slate-400" dir="rtl">{tab.labelAr}</span>
+              <span className="text-xs text-slate-400" dir="rtl">
+                {tab.labelAr}
+              </span>
             </button>
           );
         })}
@@ -309,7 +451,9 @@ export default function GOSIPage() {
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
             <h2 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">
               GOSI Contribution Calculator
-              <span className="block text-sm font-normal text-slate-500 mt-1" dir="rtl">حاسبة اشتراكات التأمينات</span>
+              <span className="block text-sm font-normal text-slate-500 mt-1" dir="rtl">
+                حاسبة اشتراكات التأمينات
+              </span>
             </h2>
 
             <div className="space-y-4">
@@ -325,7 +469,9 @@ export default function GOSIPage() {
                       onChange={() => setCalcIsSaudi(true)}
                       className="w-4 h-4 text-indigo-600"
                     />
-                    <span>Saudi <span dir="rtl">(سعودي)</span></span>
+                    <span>
+                      Saudi <span dir="rtl">(سعودي)</span>
+                    </span>
                   </label>
                   <label className="flex items-center gap-2">
                     <input
@@ -334,7 +480,9 @@ export default function GOSIPage() {
                       onChange={() => setCalcIsSaudi(false)}
                       className="w-4 h-4 text-indigo-600"
                     />
-                    <span>Non-Saudi <span dir="rtl">(غير سعودي)</span></span>
+                    <span>
+                      Non-Saudi <span dir="rtl">(غير سعودي)</span>
+                    </span>
                   </label>
                 </div>
               </div>
@@ -381,33 +529,47 @@ export default function GOSIPage() {
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
             <h2 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">
               Contribution Breakdown
-              <span className="block text-sm font-normal text-slate-500 mt-1" dir="rtl">تفصيل الاشتراكات</span>
+              <span className="block text-sm font-normal text-slate-500 mt-1" dir="rtl">
+                تفصيل الاشتراكات
+              </span>
             </h2>
 
             {calcResult ? (
               <div className="space-y-4">
                 <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-xl">
-                  <div className="text-sm text-blue-600 dark:text-blue-400 mb-1">Contributable Salary</div>
+                  <div className="text-sm text-blue-600 dark:text-blue-400 mb-1">
+                    Contributable Salary
+                  </div>
                   <div className="text-2xl font-bold text-blue-700 dark:text-blue-300">
                     SAR {calcResult.contributable.toLocaleString()}
                   </div>
-                  <div className="text-xs text-blue-500" dir="rtl">الراتب الخاضع للاشتراك</div>
+                  <div className="text-xs text-blue-500" dir="rtl">
+                    الراتب الخاضع للاشتراك
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-xl">
-                    <div className="text-sm text-green-600 dark:text-green-400 mb-1">Employee Share</div>
+                    <div className="text-sm text-green-600 dark:text-green-400 mb-1">
+                      Employee Share
+                    </div>
                     <div className="text-xl font-bold text-green-700 dark:text-green-300">
                       SAR {calcResult.employeeTotal.toFixed(2)}
                     </div>
-                    <div className="text-xs text-green-500" dir="rtl">حصة الموظف</div>
+                    <div className="text-xs text-green-500" dir="rtl">
+                      حصة الموظف
+                    </div>
                   </div>
                   <div className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl">
-                    <div className="text-sm text-amber-600 dark:text-amber-400 mb-1">Employer Share</div>
+                    <div className="text-sm text-amber-600 dark:text-amber-400 mb-1">
+                      Employer Share
+                    </div>
                     <div className="text-xl font-bold text-amber-700 dark:text-amber-300">
                       SAR {calcResult.employerTotal.toFixed(2)}
                     </div>
-                    <div className="text-xs text-amber-500" dir="rtl">حصة صاحب العمل</div>
+                    <div className="text-xs text-amber-500" dir="rtl">
+                      حصة صاحب العمل
+                    </div>
                   </div>
                 </div>
 
@@ -425,26 +587,55 @@ export default function GOSIPage() {
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                       <tr>
-                        <td className="py-2">Annuity <span className="text-xs text-slate-400" dir="rtl">(معاش)</span></td>
-                        <td className="py-2 text-right">SAR {calcResult.breakdown.annuity.employee.toFixed(2)}</td>
-                        <td className="py-2 text-right">SAR {calcResult.breakdown.annuity.employer.toFixed(2)}</td>
+                        <td className="py-2">
+                          Annuity{' '}
+                          <span className="text-xs text-slate-400" dir="rtl">
+                            (معاش)
+                          </span>
+                        </td>
+                        <td className="py-2 text-right">
+                          SAR {calcResult.breakdown.annuity.employee.toFixed(2)}
+                        </td>
+                        <td className="py-2 text-right">
+                          SAR {calcResult.breakdown.annuity.employer.toFixed(2)}
+                        </td>
                       </tr>
                       <tr>
-                        <td className="py-2">SANED <span className="text-xs text-slate-400" dir="rtl">(ساند)</span></td>
-                        <td className="py-2 text-right">SAR {calcResult.breakdown.saned.employee.toFixed(2)}</td>
-                        <td className="py-2 text-right">SAR {calcResult.breakdown.saned.employer.toFixed(2)}</td>
+                        <td className="py-2">
+                          SANED{' '}
+                          <span className="text-xs text-slate-400" dir="rtl">
+                            (ساند)
+                          </span>
+                        </td>
+                        <td className="py-2 text-right">
+                          SAR {calcResult.breakdown.saned.employee.toFixed(2)}
+                        </td>
+                        <td className="py-2 text-right">
+                          SAR {calcResult.breakdown.saned.employer.toFixed(2)}
+                        </td>
                       </tr>
                       <tr>
-                        <td className="py-2">Occupational Hazards <span className="text-xs text-slate-400" dir="rtl">(أخطار مهنية)</span></td>
+                        <td className="py-2">
+                          Occupational Hazards{' '}
+                          <span className="text-xs text-slate-400" dir="rtl">
+                            (أخطار مهنية)
+                          </span>
+                        </td>
                         <td className="py-2 text-right">-</td>
-                        <td className="py-2 text-right">SAR {calcResult.breakdown.hazards.employer.toFixed(2)}</td>
+                        <td className="py-2 text-right">
+                          SAR {calcResult.breakdown.hazards.employer.toFixed(2)}
+                        </td>
                       </tr>
                     </tbody>
                     <tfoot className="font-semibold border-t border-slate-200 dark:border-slate-700">
                       <tr>
                         <td className="pt-2">Total</td>
-                        <td className="pt-2 text-right">SAR {calcResult.employeeTotal.toFixed(2)}</td>
-                        <td className="pt-2 text-right">SAR {calcResult.employerTotal.toFixed(2)}</td>
+                        <td className="pt-2 text-right">
+                          SAR {calcResult.employeeTotal.toFixed(2)}
+                        </td>
+                        <td className="pt-2 text-right">
+                          SAR {calcResult.employerTotal.toFixed(2)}
+                        </td>
                       </tr>
                     </tfoot>
                   </table>
@@ -467,7 +658,9 @@ export default function GOSIPage() {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
                 GOSI Configuration
-                <span className="block text-sm font-normal text-slate-500 mt-1" dir="rtl">إعدادات التأمينات</span>
+                <span className="block text-sm font-normal text-slate-500 mt-1" dir="rtl">
+                  إعدادات التأمينات
+                </span>
               </h2>
               <div className="flex items-center gap-3">
                 <div>
@@ -483,19 +676,44 @@ export default function GOSIPage() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
               <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                <div className="text-xs text-slate-500 mb-1">Establishment Number</div>
-                <div className="font-mono text-sm">{gosiConfig.establishmentNumber}</div>
-                <div className="text-xs text-slate-400" dir="rtl">رقم المنشأة</div>
+                <label className="block text-xs text-slate-500 mb-1">Establishment Number</label>
+                <input
+                  value={gosiConfig.establishmentNumber}
+                  onChange={(e) =>
+                    setGosiConfig({ ...gosiConfig, establishmentNumber: e.target.value })
+                  }
+                  placeholder="5000123456"
+                  className="w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-2 py-1.5 font-mono text-sm"
+                />
+                <div className="text-xs text-slate-400 mt-1" dir="rtl">
+                  رقم المنشأة
+                </div>
               </div>
               <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                <div className="text-xs text-slate-500 mb-1">Labour Office Code</div>
-                <div className="font-mono text-sm">{gosiConfig.laborOfficeCode}</div>
-                <div className="text-xs text-slate-400" dir="rtl">رمز مكتب العمل</div>
+                <label className="block text-xs text-slate-500 mb-1">Labour Office Code</label>
+                <input
+                  value={gosiConfig.laborOfficeCode}
+                  onChange={(e) =>
+                    setGosiConfig({ ...gosiConfig, laborOfficeCode: e.target.value })
+                  }
+                  placeholder="1"
+                  className="w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-2 py-1.5 font-mono text-sm"
+                />
+                <div className="text-xs text-slate-400 mt-1" dir="rtl">
+                  رمز مكتب العمل
+                </div>
               </div>
               <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                <div className="text-xs text-slate-500 mb-1">Unified Number</div>
-                <div className="font-mono text-sm">{gosiConfig.unifiedNumber}</div>
-                <div className="text-xs text-slate-400" dir="rtl">الرقم الموحد</div>
+                <label className="block text-xs text-slate-500 mb-1">Unified Number</label>
+                <input
+                  value={gosiConfig.unifiedNumber}
+                  onChange={(e) => setGosiConfig({ ...gosiConfig, unifiedNumber: e.target.value })}
+                  placeholder="700012345678"
+                  className="w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-900 px-2 py-1.5 font-mono text-sm"
+                />
+                <div className="text-xs text-slate-400 mt-1" dir="rtl">
+                  الرقم الموحد
+                </div>
               </div>
             </div>
           </div>
@@ -505,15 +723,27 @@ export default function GOSIPage() {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
                 Employee Records
-                <span className="block text-sm font-normal text-slate-500 mt-1" dir="rtl">سجلات الموظفين</span>
+                <span className="block text-sm font-normal text-slate-500 mt-1" dir="rtl">
+                  سجلات الموظفين
+                </span>
               </h2>
               <div className="flex gap-2">
+                <button
+                  onClick={addRecord}
+                  className="flex items-center gap-2 px-4 py-2 bg-slate-700 text-white rounded-lg text-sm hover:bg-slate-800"
+                >
+                  <Users className="w-4 h-4" /> Add Employee
+                </button>
                 <button
                   onClick={handleCalculateAPI}
                   disabled={calculating || records.length === 0}
                   className="flex items-center gap-2 px-4 py-2 bg-indigo-500 text-white rounded-lg text-sm hover:bg-indigo-600 disabled:opacity-50"
                 >
-                  {calculating ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+                  {calculating ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <CheckCircle className="w-4 h-4" />
+                  )}
                   {calculating ? 'Calculating...' : 'Validate'}
                 </button>
               </div>
@@ -523,8 +753,16 @@ export default function GOSIPage() {
               <div className="flex flex-col items-center justify-center py-16 text-slate-400">
                 <Users className="w-12 h-12 mb-3 opacity-50" />
                 <p className="text-lg font-medium">No employee records loaded</p>
-                <p className="text-sm mt-1">Import employee data to calculate GOSI contributions</p>
-                <p className="text-sm mt-1" dir="rtl">استيراد بيانات الموظفين لحساب اشتراكات التأمينات</p>
+                <p className="text-sm mt-1">Add employee records to calculate GOSI contributions</p>
+                <p className="text-sm mt-1" dir="rtl">
+                  أضف سجلات الموظفين لحساب اشتراكات التأمينات
+                </p>
+                <button
+                  onClick={addRecord}
+                  className="mt-4 flex items-center gap-2 px-4 py-2 bg-indigo-500 text-white rounded-lg text-sm hover:bg-indigo-600"
+                >
+                  <Users className="w-4 h-4" /> Add Employee
+                </button>
               </div>
             ) : (
               <>
@@ -535,7 +773,7 @@ export default function GOSIPage() {
                         <th className="pb-3 font-medium">Employee</th>
                         <th className="pb-3 font-medium">ID Number</th>
                         <th className="pb-3 font-medium text-center">Saudi</th>
-                        <th className="pb-3 font-medium text-right">Contributable</th>
+                        <th className="pb-3 font-medium text-right">Basic Salary</th>
                         <th className="pb-3 font-medium text-right">Employee</th>
                         <th className="pb-3 font-medium text-right">Employer</th>
                         <th className="pb-3 font-medium text-center">Status</th>
@@ -543,22 +781,73 @@ export default function GOSIPage() {
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                       {records.map((record) => (
-                        <tr key={record.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
-                          <td className="py-3">{record.name}</td>
-                          <td className="py-3 font-mono text-xs">
-                            {record.isSaudi ? record.nationalId : record.iqamaNumber}
+                        <tr
+                          key={record.id}
+                          className="hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                        >
+                          <td className="py-2 pr-2">
+                            <input
+                              value={record.name}
+                              onChange={(e) => updateRecord(record.id, { name: e.target.value })}
+                              placeholder="Full name"
+                              className="w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-2 py-1.5 text-xs"
+                            />
+                          </td>
+                          <td className="py-2 pr-2">
+                            <input
+                              value={
+                                record.isSaudi ? record.nationalId : (record.iqamaNumber ?? '')
+                              }
+                              onChange={(e) =>
+                                updateRecord(
+                                  record.id,
+                                  record.isSaudi
+                                    ? { nationalId: e.target.value }
+                                    : { iqamaNumber: e.target.value }
+                                )
+                              }
+                              placeholder={record.isSaudi ? 'National ID' : 'Iqama'}
+                              className="w-full rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-2 py-1.5 font-mono text-xs"
+                            />
+                          </td>
+                          <td className="py-2 text-center">
+                            <input
+                              type="checkbox"
+                              checked={record.isSaudi}
+                              onChange={(e) =>
+                                updateRecord(record.id, { isSaudi: e.target.checked })
+                              }
+                              aria-label="Saudi national"
+                            />
+                          </td>
+                          <td className="py-2 text-right">
+                            <input
+                              type="number"
+                              value={record.basicSalary || ''}
+                              onChange={(e) =>
+                                updateRecord(record.id, {
+                                  basicSalary: Number(e.target.value) || 0,
+                                })
+                              }
+                              placeholder="Basic"
+                              className="w-28 rounded-md border border-slate-300 dark:border-slate-600 bg-white dark:bg-slate-800 px-2 py-1.5 text-right text-xs"
+                            />
+                          </td>
+                          <td className="py-3 text-right">
+                            SAR {record.employeeContribution.toLocaleString()}
+                          </td>
+                          <td className="py-3 text-right">
+                            SAR {record.employerContribution.toLocaleString()}
                           </td>
                           <td className="py-3 text-center">
-                            {record.isSaudi ? (
-                              <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded text-xs">Yes</span>
-                            ) : (
-                              <span className="px-2 py-0.5 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded text-xs">No</span>
-                            )}
-                          </td>
-                          <td className="py-3 text-right">SAR {record.contributableSalary.toLocaleString()}</td>
-                          <td className="py-3 text-right">SAR {record.employeeContribution.toLocaleString()}</td>
-                          <td className="py-3 text-right">SAR {record.employerContribution.toLocaleString()}</td>
-                          <td className="py-3 text-center">
+                            <button
+                              type="button"
+                              onClick={() => removeRecord(record.id)}
+                              aria-label="Remove record"
+                              className="mr-2 text-red-500 hover:text-red-700 text-xs"
+                            >
+                              Remove
+                            </button>
                             {record.status === 'valid' && (
                               <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-xs">
                                 <CheckCircle className="w-3 h-3" /> Valid
@@ -592,8 +881,11 @@ export default function GOSIPage() {
                         </h3>
                         {validationResult.errors.map((error, index) => (
                           <div key={index} className="text-sm">
-                            <span className="font-medium">Employee #{error.employeeId}:</span> {error.message}
-                            <span className="block text-xs text-red-500 mt-0.5" dir="rtl">{error.messageAr}</span>
+                            <span className="font-medium">Employee #{error.employeeId}:</span>{' '}
+                            {error.message}
+                            <span className="block text-xs text-red-500 mt-0.5" dir="rtl">
+                              {error.messageAr}
+                            </span>
                           </div>
                         ))}
                       </div>
@@ -606,8 +898,11 @@ export default function GOSIPage() {
                         </h3>
                         {validationResult.warnings.map((warning, index) => (
                           <div key={index} className="text-sm">
-                            <span className="font-medium">Employee #{warning.employeeId}:</span> {warning.message}
-                            <span className="block text-xs text-amber-500 mt-0.5" dir="rtl">{warning.messageAr}</span>
+                            <span className="font-medium">Employee #{warning.employeeId}:</span>{' '}
+                            {warning.message}
+                            <span className="block text-xs text-amber-500 mt-0.5" dir="rtl">
+                              {warning.messageAr}
+                            </span>
                           </div>
                         ))}
                       </div>
@@ -618,16 +913,30 @@ export default function GOSIPage() {
                 {/* Summary & Export */}
                 <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between">
                   <div className="text-sm text-slate-500">
-                    <span className="font-medium text-slate-900 dark:text-slate-100">{records.length}</span> employees
+                    <span className="font-medium text-slate-900 dark:text-slate-100">
+                      {records.length}
+                    </span>{' '}
+                    employees
                     <span className="mx-2">•</span>
-                    Total Contribution: <span className="font-medium text-slate-900 dark:text-slate-100">SAR {(totalEmployeeContribution + totalEmployerContribution).toLocaleString()}</span>
+                    Total Contribution:{' '}
+                    <span className="font-medium text-slate-900 dark:text-slate-100">
+                      SAR {(totalEmployeeContribution + totalEmployerContribution).toLocaleString()}
+                    </span>
                   </div>
                   <div className="flex gap-2">
-                    <button className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-sm hover:bg-slate-200 dark:hover:bg-slate-700">
+                    <button
+                      onClick={exportCsv}
+                      disabled={records.length === 0}
+                      className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-sm hover:bg-slate-200 dark:hover:bg-slate-700 disabled:opacity-50"
+                    >
                       <FileText className="w-4 h-4" />
                       Export CSV
                     </button>
-                    <button className="flex items-center gap-2 px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600">
+                    <button
+                      onClick={generateGosiFile}
+                      disabled={calculating || records.length === 0}
+                      className="flex items-center gap-2 px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50"
+                    >
                       <Download className="w-4 h-4" />
                       Generate GOSI File
                     </button>
@@ -648,8 +957,12 @@ export default function GOSIPage() {
                 <Users className="w-5 h-5 text-green-600 dark:text-green-400" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Saudi Employee Rates</h2>
-                <p className="text-sm text-slate-500" dir="rtl">نسب الموظف السعودي</p>
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                  Saudi Employee Rates
+                </h2>
+                <p className="text-sm text-slate-500" dir="rtl">
+                  نسب الموظف السعودي
+                </p>
               </div>
             </div>
 
@@ -657,38 +970,76 @@ export default function GOSIPage() {
               <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
                 <div>
                   <div className="font-medium">Annuity (Pension)</div>
-                  <div className="text-xs text-slate-500" dir="rtl">المعاش</div>
+                  <div className="text-xs text-slate-500" dir="rtl">
+                    المعاش
+                  </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-sm">Employee: <span className="font-semibold">{gosiRates.saudi.annuity.employee}%</span></div>
-                  <div className="text-sm">Employer: <span className="font-semibold">{gosiRates.saudi.annuity.employer}%</span></div>
+                  <div className="text-sm">
+                    Employee:{' '}
+                    <span className="font-semibold">{gosiRates.saudi.annuity.employee}%</span>
+                  </div>
+                  <div className="text-sm">
+                    Employer:{' '}
+                    <span className="font-semibold">{gosiRates.saudi.annuity.employer}%</span>
+                  </div>
                 </div>
               </div>
               <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
                 <div>
                   <div className="font-medium">SANED (Unemployment)</div>
-                  <div className="text-xs text-slate-500" dir="rtl">ساند</div>
+                  <div className="text-xs text-slate-500" dir="rtl">
+                    ساند
+                  </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-sm">Employee: <span className="font-semibold">{gosiRates.saudi.saned.employee}%</span></div>
-                  <div className="text-sm">Employer: <span className="font-semibold">{gosiRates.saudi.saned.employer}%</span></div>
+                  <div className="text-sm">
+                    Employee:{' '}
+                    <span className="font-semibold">{gosiRates.saudi.saned.employee}%</span>
+                  </div>
+                  <div className="text-sm">
+                    Employer:{' '}
+                    <span className="font-semibold">{gosiRates.saudi.saned.employer}%</span>
+                  </div>
                 </div>
               </div>
               <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
                 <div>
                   <div className="font-medium">Occupational Hazards</div>
-                  <div className="text-xs text-slate-500" dir="rtl">أخطار مهنية</div>
+                  <div className="text-xs text-slate-500" dir="rtl">
+                    أخطار مهنية
+                  </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-sm">Employee: <span className="font-semibold">-</span></div>
-                  <div className="text-sm">Employer: <span className="font-semibold">{gosiRates.saudi.occupationalHazards.employer}%</span></div>
+                  <div className="text-sm">
+                    Employee: <span className="font-semibold">-</span>
+                  </div>
+                  <div className="text-sm">
+                    Employer:{' '}
+                    <span className="font-semibold">
+                      {gosiRates.saudi.occupationalHazards.employer}%
+                    </span>
+                  </div>
                 </div>
               </div>
               <div className="flex justify-between items-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
                 <div className="font-semibold">Total</div>
                 <div className="text-right">
-                  <div className="text-sm">Employee: <span className="font-bold text-green-600">{gosiRates.saudi.annuity.employee + gosiRates.saudi.saned.employee}%</span></div>
-                  <div className="text-sm">Employer: <span className="font-bold text-green-600">{gosiRates.saudi.annuity.employer + gosiRates.saudi.saned.employer + gosiRates.saudi.occupationalHazards.employer}%</span></div>
+                  <div className="text-sm">
+                    Employee:{' '}
+                    <span className="font-bold text-green-600">
+                      {gosiRates.saudi.annuity.employee + gosiRates.saudi.saned.employee}%
+                    </span>
+                  </div>
+                  <div className="text-sm">
+                    Employer:{' '}
+                    <span className="font-bold text-green-600">
+                      {gosiRates.saudi.annuity.employer +
+                        gosiRates.saudi.saned.employer +
+                        gosiRates.saudi.occupationalHazards.employer}
+                      %
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -701,8 +1052,12 @@ export default function GOSIPage() {
                 <Users className="w-5 h-5 text-blue-600 dark:text-blue-400" />
               </div>
               <div>
-                <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">Non-Saudi Employee Rates</h2>
-                <p className="text-sm text-slate-500" dir="rtl">نسب الموظف غير السعودي</p>
+                <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
+                  Non-Saudi Employee Rates
+                </h2>
+                <p className="text-sm text-slate-500" dir="rtl">
+                  نسب الموظف غير السعودي
+                </p>
               </div>
             </div>
 
@@ -710,38 +1065,62 @@ export default function GOSIPage() {
               <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
                 <div>
                   <div className="font-medium">Annuity (Pension)</div>
-                  <div className="text-xs text-slate-500" dir="rtl">المعاش</div>
+                  <div className="text-xs text-slate-500" dir="rtl">
+                    المعاش
+                  </div>
                 </div>
                 <div className="text-right">
                   <div className="text-sm text-slate-400">Not applicable</div>
-                  <div className="text-xs text-slate-400" dir="rtl">غير مطبق</div>
+                  <div className="text-xs text-slate-400" dir="rtl">
+                    غير مطبق
+                  </div>
                 </div>
               </div>
               <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
                 <div>
                   <div className="font-medium">SANED (Unemployment)</div>
-                  <div className="text-xs text-slate-500" dir="rtl">ساند</div>
+                  <div className="text-xs text-slate-500" dir="rtl">
+                    ساند
+                  </div>
                 </div>
                 <div className="text-right">
                   <div className="text-sm text-slate-400">Not applicable</div>
-                  <div className="text-xs text-slate-400" dir="rtl">غير مطبق</div>
+                  <div className="text-xs text-slate-400" dir="rtl">
+                    غير مطبق
+                  </div>
                 </div>
               </div>
               <div className="flex justify-between items-center p-3 bg-slate-50 dark:bg-slate-800 rounded-lg">
                 <div>
                   <div className="font-medium">Occupational Hazards</div>
-                  <div className="text-xs text-slate-500" dir="rtl">أخطار مهنية</div>
+                  <div className="text-xs text-slate-500" dir="rtl">
+                    أخطار مهنية
+                  </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-sm">Employee: <span className="font-semibold">-</span></div>
-                  <div className="text-sm">Employer: <span className="font-semibold">{gosiRates.nonSaudi.occupationalHazards.employer}%</span></div>
+                  <div className="text-sm">
+                    Employee: <span className="font-semibold">-</span>
+                  </div>
+                  <div className="text-sm">
+                    Employer:{' '}
+                    <span className="font-semibold">
+                      {gosiRates.nonSaudi.occupationalHazards.employer}%
+                    </span>
+                  </div>
                 </div>
               </div>
               <div className="flex justify-between items-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                 <div className="font-semibold">Total</div>
                 <div className="text-right">
-                  <div className="text-sm">Employee: <span className="font-bold text-blue-600">0%</span></div>
-                  <div className="text-sm">Employer: <span className="font-bold text-blue-600">{gosiRates.nonSaudi.occupationalHazards.employer}%</span></div>
+                  <div className="text-sm">
+                    Employee: <span className="font-bold text-blue-600">0%</span>
+                  </div>
+                  <div className="text-sm">
+                    Employer:{' '}
+                    <span className="font-bold text-blue-600">
+                      {gosiRates.nonSaudi.occupationalHazards.employer}%
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -752,35 +1131,53 @@ export default function GOSIPage() {
             <h3 className="font-semibold text-amber-800 dark:text-amber-400 mb-3 flex items-center gap-2">
               <Info className="w-5 h-5" />
               Important GOSI Information
-              <span className="text-sm font-normal" dir="rtl">| معلومات هامة عن التأمينات</span>
+              <span className="text-sm font-normal" dir="rtl">
+                | معلومات هامة عن التأمينات
+              </span>
             </h3>
             <ul className="space-y-2 text-sm text-amber-700 dark:text-amber-300">
               <li className="flex items-start gap-2">
                 <span className="mt-1">•</span>
                 <div>
-                  <span>Maximum contributable wage ceiling: <strong>SAR {wageCeiling.toLocaleString()}</strong>/month</span>
-                  <span className="block text-xs text-amber-600" dir="rtl">الحد الأقصى للراتب الخاضع للاشتراك: {wageCeiling.toLocaleString()} ريال</span>
+                  <span>
+                    Maximum contributable wage ceiling:{' '}
+                    <strong>SAR {wageCeiling.toLocaleString()}</strong>/month
+                  </span>
+                  <span className="block text-xs text-amber-600" dir="rtl">
+                    الحد الأقصى للراتب الخاضع للاشتراك: {wageCeiling.toLocaleString()} ريال
+                  </span>
                 </div>
               </li>
               <li className="flex items-start gap-2">
                 <span className="mt-1">•</span>
                 <div>
-                  <span>Minimum wage for Saudi employees: <strong>SAR {minimumWage.toLocaleString()}</strong>/month</span>
-                  <span className="block text-xs text-amber-600" dir="rtl">الحد الأدنى لراتب الموظف السعودي: {minimumWage.toLocaleString()} ريال</span>
+                  <span>
+                    Minimum wage for Saudi employees:{' '}
+                    <strong>SAR {minimumWage.toLocaleString()}</strong>/month
+                  </span>
+                  <span className="block text-xs text-amber-600" dir="rtl">
+                    الحد الأدنى لراتب الموظف السعودي: {minimumWage.toLocaleString()} ريال
+                  </span>
                 </div>
               </li>
               <li className="flex items-start gap-2">
                 <span className="mt-1">•</span>
                 <div>
                   <span>Contributions are calculated on Basic Salary + Housing Allowance</span>
-                  <span className="block text-xs text-amber-600" dir="rtl">تحسب الاشتراكات على الراتب الأساسي + بدل السكن</span>
+                  <span className="block text-xs text-amber-600" dir="rtl">
+                    تحسب الاشتراكات على الراتب الأساسي + بدل السكن
+                  </span>
                 </div>
               </li>
               <li className="flex items-start gap-2">
                 <span className="mt-1">•</span>
                 <div>
-                  <span>SANED provides unemployment insurance for Saudi employees (max 12 months)</span>
-                  <span className="block text-xs text-amber-600" dir="rtl">يوفر ساند تأمين البطالة للسعوديين (بحد أقصى 12 شهر)</span>
+                  <span>
+                    SANED provides unemployment insurance for Saudi employees (max 12 months)
+                  </span>
+                  <span className="block text-xs text-amber-600" dir="rtl">
+                    يوفر ساند تأمين البطالة للسعوديين (بحد أقصى 12 شهر)
+                  </span>
                 </div>
               </li>
             </ul>
@@ -790,4 +1187,3 @@ export default function GOSIPage() {
     </div>
   );
 }
-

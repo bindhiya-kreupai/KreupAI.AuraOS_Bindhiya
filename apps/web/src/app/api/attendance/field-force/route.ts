@@ -1,6 +1,16 @@
 import { z } from 'zod';
 import { makeAttendanceConfigRoutes } from '@/lib/services/attendance/config-crud';
 
+// Optional beat-plan payload persisted alongside tracking config. A beat is an
+// ordered list of client/site stops assigned to a field agent for a given day.
+const BeatPlanSchema = z.object({
+  agentId: z.string().min(1),
+  agentName: z.string().min(1),
+  date: z.string().min(1),
+  stops: z.array(z.string().min(1)).min(1),
+  notes: z.string().optional(),
+});
+
 const FieldForceConfigSchema = z.object({
   trackingMode: z.enum(['CONTINUOUS', 'CHECK_IN_OUT', 'PERIODIC']),
   periodicIntervalMinutes: z.number().int().positive().optional(),
@@ -16,6 +26,7 @@ const FieldForceConfigSchema = z.object({
     .optional(),
   requirePhotoOnCheckIn: z.boolean().default(false),
   allowOfflineMode: z.boolean().default(false),
+  beat: BeatPlanSchema.optional(),
 });
 
 const FieldForceSchema = z.object({

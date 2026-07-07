@@ -1,0 +1,123 @@
+[
+  {
+    "id": "AURA-557",
+    "title": "HRSD: Replace hub with functional page or add child route",
+    "module": "HRSD Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-helpdesk",
+    "api": "Not specified",
+    "desc": "Page is a ModuleGrid navigation shell with no data/API integration."
+  },
+  {
+    "id": "AURA-558",
+    "title": "Case Management: Replace mock/hardcoded data with live API",
+    "module": "HRSD Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-helpdesk/case-management",
+    "api": "Not specified",
+    "desc": "Page uses hardcoded or mock data; no fetch/service calls detected."
+  },
+  {
+    "id": "AURA-559",
+    "title": "Chat Support: Replace mock/hardcoded data with live API",
+    "module": "HRSD Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-helpdesk/chat-support",
+    "api": "Not specified",
+    "desc": "Page uses hardcoded or mock data; no fetch/service calls detected."
+  },
+  {
+    "id": "AURA-560",
+    "title": "Continuous Improvement: Manual review required",
+    "module": "HRSD Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-helpdesk/continuous-improvement",
+    "api": "Not specified",
+    "desc": "Page exists; automated heuristics could not classify wiring."
+  },
+  {
+    "id": "AURA-561",
+    "title": "Knowledge Base: Complete API integration and remove mock/local fallbacks",
+    "module": "HRSD Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-helpdesk/knowledge-base",
+    "api": "Not specified",
+    "desc": "Page calls APIs (service layer) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-562",
+    "title": "Omnichannel: Manual review required",
+    "module": "HRSD Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-helpdesk/omnichannel",
+    "api": "Not specified",
+    "desc": "Page exists; automated heuristics could not classify wiring."
+  },
+  {
+    "id": "AURA-563",
+    "title": "Performance Metrics: Replace mock/hardcoded data with live API",
+    "module": "HRSD Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-helpdesk/performance-metrics",
+    "api": "Not specified",
+    "desc": "Page uses hardcoded or mock data; no fetch/service calls detected."
+  },
+  {
+    "id": "AURA-564",
+    "title": "Request Portal: Manual review required",
+    "module": "HRSD Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-helpdesk/request-portal",
+    "api": "Not specified",
+    "desc": "Page exists; automated heuristics could not classify wiring."
+  },
+  {
+    "id": "AURA-565",
+    "title": "Service Automation: Replace mock/hardcoded data with live API",
+    "module": "HRSD Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-helpdesk/service-automation",
+    "api": "Not specified",
+    "desc": "Page uses hardcoded or mock data; no fetch/service calls detected."
+  },
+  {
+    "id": "AURA-566",
+    "title": "Service Catalog: Replace mock/hardcoded data with live API",
+    "module": "HRSD Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-helpdesk/service-catalog",
+    "api": "Not specified",
+    "desc": "Page uses hardcoded or mock data; no fetch/service calls detected."
+  },
+  {
+    "id": "AURA-567",
+    "title": "Tickets: Complete API integration and remove mock/local fallbacks",
+    "module": "HRSD Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-helpdesk/tickets",
+    "api": "Not specified",
+    "desc": "Page calls APIs (service layer) but mock/hardcoded UI remains."
+  }
+]

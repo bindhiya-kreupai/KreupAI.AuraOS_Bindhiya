@@ -1,6 +1,10 @@
 /**
  * Gamification Module - Service Layer
- * API-integrated service layer using APIClient
+ * API-integrated service layer using APIClient.
+ *
+ * Routes return the platform envelope { success, data, meta }; read helpers here
+ * unwrap that via APIClient.unwrapList / unwrapItem so callers receive bare
+ * arrays / objects.
  */
 
 'use client';
@@ -24,11 +28,7 @@ import type {
   CurrencyTransaction,
   Achievement,
   GamificationAnalytics,
-  GamificationSettings} from './types';
-import {
-  PointsRedemption,
-  LeaderboardEntry,
-  AchievementWall
+  GamificationSettings,
 } from './types';
 
 // ============================================================================
@@ -40,20 +40,22 @@ export class PointsService {
 
   // Points Accounts
   static async getAccount(userId: string): Promise<PointsAccount> {
-    return APIClient.get<PointsAccount>(`${this.ENDPOINT}/accounts/${userId}`);
+    const res = await APIClient.get(`${this.ENDPOINT}/accounts/${userId}`);
+    return APIClient.unwrapItem<PointsAccount>(res) as PointsAccount;
   }
 
   static async getAllAccounts(): Promise<PointsAccount[]> {
-    return APIClient.get<PointsAccount[]>(`${this.ENDPOINT}/accounts`);
-  }
-
-  static async createAccount(account: PointsAccount): Promise<PointsAccount> {
-    return APIClient.post<PointsAccount>(`${this.ENDPOINT}/accounts`, account);
+    const res = await APIClient.get(`${this.ENDPOINT}/accounts`);
+    return APIClient.unwrapList<PointsAccount>(res);
   }
 
   // Points Transactions
   static async getTransactions(userId?: string): Promise<PointsTransaction[]> {
-    return APIClient.get<PointsTransaction[]>(`${this.ENDPOINT}/transactions`, userId ? { userId } : undefined);
+    const res = await APIClient.get(
+      `${this.ENDPOINT}/transactions`,
+      userId ? { userId } : undefined
+    );
+    return APIClient.unwrapList<PointsTransaction>(res);
   }
 
   static async awardPoints(
@@ -63,13 +65,14 @@ export class PointsService {
     source: string,
     reason: string
   ): Promise<PointsTransaction> {
-    return APIClient.post<PointsTransaction>(`${this.ENDPOINT}/transactions/award`, {
+    const res = await APIClient.post(`${this.ENDPOINT}/transactions/award`, {
       userId,
       points,
       category,
       source,
       reason,
     });
+    return APIClient.unwrapItem<PointsTransaction>(res) as PointsTransaction;
   }
 
   static async redeemPoints(
@@ -77,28 +80,18 @@ export class PointsService {
     points: number,
     reason: string
   ): Promise<PointsTransaction> {
-    return APIClient.post<PointsTransaction>(`${this.ENDPOINT}/transactions/redeem`, {
+    const res = await APIClient.post(`${this.ENDPOINT}/transactions/redeem`, {
       userId,
       points,
       reason,
     });
+    return APIClient.unwrapItem<PointsTransaction>(res) as PointsTransaction;
   }
 
   // Points Rules
   static async getRules(): Promise<PointsRule[]> {
-    return APIClient.get<PointsRule[]>(`${this.ENDPOINT}/rules`);
-  }
-
-  static async createRule(rule: PointsRule): Promise<PointsRule> {
-    return APIClient.post<PointsRule>(`${this.ENDPOINT}/rules`, rule);
-  }
-
-  static async updateRule(ruleId: string, updates: Partial<PointsRule>): Promise<PointsRule> {
-    return APIClient.put<PointsRule>(`${this.ENDPOINT}/rules/${ruleId}`, updates);
-  }
-
-  static async deleteRule(ruleId: string): Promise<void> {
-    return APIClient.delete(`${this.ENDPOINT}/rules/${ruleId}`);
+    const res = await APIClient.get(`${this.ENDPOINT}/rules`);
+    return APIClient.unwrapList<PointsRule>(res);
   }
 }
 
@@ -110,28 +103,24 @@ export class BadgesService {
   private static readonly ENDPOINT = '/gamification/badges';
 
   static async getBadges(): Promise<Badge[]> {
-    return APIClient.get<Badge[]>(`${this.ENDPOINT}`);
+    const res = await APIClient.get(`${this.ENDPOINT}`);
+    return APIClient.unwrapList<Badge>(res);
   }
 
   static async getBadgeById(badgeId: string): Promise<Badge> {
-    return APIClient.get<Badge>(`${this.ENDPOINT}/${badgeId}`);
+    const res = await APIClient.get(`${this.ENDPOINT}/${badgeId}`);
+    return APIClient.unwrapItem<Badge>(res) as Badge;
   }
 
-  static async createBadge(badge: Badge): Promise<Badge> {
-    return APIClient.post<Badge>(`${this.ENDPOINT}`, badge);
-  }
-
-  static async updateBadge(badgeId: string, updates: Partial<Badge>): Promise<Badge> {
-    return APIClient.put<Badge>(`${this.ENDPOINT}/${badgeId}`, updates);
-  }
-
-  static async deleteBadge(badgeId: string): Promise<void> {
-    return APIClient.delete(`${this.ENDPOINT}/${badgeId}`);
+  static async createBadge(badge: Partial<Badge>): Promise<Badge> {
+    const res = await APIClient.post(`${this.ENDPOINT}`, badge);
+    return APIClient.unwrapItem<Badge>(res) as Badge;
   }
 
   // User Badges
   static async getUserBadges(userId?: string): Promise<UserBadge[]> {
-    return APIClient.get<UserBadge[]>(`${this.ENDPOINT}/users`, userId ? { userId } : undefined);
+    const res = await APIClient.get(`${this.ENDPOINT}/users`, userId ? { userId } : undefined);
+    return APIClient.unwrapList<UserBadge>(res);
   }
 
   static async awardBadge(
@@ -140,19 +129,13 @@ export class BadgesService {
     badgeId: string,
     reason?: string
   ): Promise<UserBadge> {
-    return APIClient.post<UserBadge>(`${this.ENDPOINT}/award`, {
+    const res = await APIClient.post(`${this.ENDPOINT}/award`, {
       userId,
       userName,
       badgeId,
       reason,
     });
-  }
-
-  static async revokeBadge(userBadgeId: string, reason: string): Promise<UserBadge> {
-    return APIClient.post<UserBadge>(`${this.ENDPOINT}/revoke`, {
-      userBadgeId,
-      reason,
-    });
+    return APIClient.unwrapItem<UserBadge>(res) as UserBadge;
   }
 }
 
@@ -164,50 +147,46 @@ export class ChallengesService {
   private static readonly ENDPOINT = '/gamification/challenges';
 
   static async getChallenges(): Promise<Challenge[]> {
-    return APIClient.get<Challenge[]>(`${this.ENDPOINT}`);
+    const res = await APIClient.get(`${this.ENDPOINT}`);
+    return APIClient.unwrapList<Challenge>(res);
   }
 
   static async getChallengeById(challengeId: string): Promise<Challenge> {
-    return APIClient.get<Challenge>(`${this.ENDPOINT}/${challengeId}`);
+    const res = await APIClient.get(`${this.ENDPOINT}/${challengeId}`);
+    return APIClient.unwrapItem<Challenge>(res) as Challenge;
   }
 
-  static async createChallenge(challenge: Challenge): Promise<Challenge> {
-    return APIClient.post<Challenge>(`${this.ENDPOINT}`, challenge);
-  }
-
-  static async updateChallenge(challengeId: string, updates: Partial<Challenge>): Promise<Challenge> {
-    return APIClient.put<Challenge>(`${this.ENDPOINT}/${challengeId}`, updates);
-  }
-
-  static async deleteChallenge(challengeId: string): Promise<void> {
-    return APIClient.delete(`${this.ENDPOINT}/${challengeId}`);
+  static async createChallenge(challenge: Partial<Challenge>): Promise<Challenge> {
+    const res = await APIClient.post(`${this.ENDPOINT}`, challenge);
+    return APIClient.unwrapItem<Challenge>(res) as Challenge;
   }
 
   // Challenge Participation
-  static async getParticipation(challengeId?: string, userId?: string): Promise<ChallengeParticipation[]> {
-    const filters: any = {};
+  static async getParticipation(
+    challengeId?: string,
+    userId?: string
+  ): Promise<ChallengeParticipation[]> {
+    const filters: Record<string, string> = {};
     if (challengeId) filters.challengeId = challengeId;
     if (userId) filters.userId = userId;
-    return APIClient.get<ChallengeParticipation[]>(`${this.ENDPOINT}/participation`, Object.keys(filters).length > 0 ? filters : undefined);
+    const res = await APIClient.get(
+      `${this.ENDPOINT}/participation`,
+      Object.keys(filters).length > 0 ? filters : undefined
+    );
+    return APIClient.unwrapList<ChallengeParticipation>(res);
   }
 
-  static async joinChallenge(userId: string, userName: string, challengeId: string): Promise<ChallengeParticipation> {
-    return APIClient.post<ChallengeParticipation>(`${this.ENDPOINT}/join`, {
+  static async joinChallenge(
+    userId: string,
+    userName: string,
+    challengeId: string
+  ): Promise<ChallengeParticipation> {
+    const res = await APIClient.post(`${this.ENDPOINT}/join`, {
       userId,
       userName,
       challengeId,
     });
-  }
-
-  static async updateProgress(
-    participationId: string,
-    value: number,
-    activityType: string
-  ): Promise<ChallengeParticipation> {
-    return APIClient.post<ChallengeParticipation>(`${this.ENDPOINT}/participation/${participationId}/progress`, {
-      value,
-      activityType,
-    });
+    return APIClient.unwrapItem<ChallengeParticipation>(res) as ChallengeParticipation;
   }
 }
 
@@ -218,20 +197,9 @@ export class ChallengesService {
 export class LeaderboardsService {
   private static readonly ENDPOINT = '/gamification/leaderboards';
 
-  static async getLeaderboards(): Promise<Leaderboard[]> {
-    return APIClient.get<Leaderboard[]>(`${this.ENDPOINT}`);
-  }
-
-  static async getLeaderboardById(leaderboardId: string): Promise<Leaderboard> {
-    return APIClient.get<Leaderboard>(`${this.ENDPOINT}/${leaderboardId}`);
-  }
-
-  static async createLeaderboard(leaderboard: Leaderboard): Promise<Leaderboard> {
-    return APIClient.post<Leaderboard>(`${this.ENDPOINT}`, leaderboard);
-  }
-
-  static async updateRankings(leaderboardId: string): Promise<Leaderboard> {
-    return APIClient.post<Leaderboard>(`${this.ENDPOINT}/${leaderboardId}/update-rankings`, {});
+  static async getLeaderboards(scope?: string): Promise<Leaderboard[]> {
+    const res = await APIClient.get(`${this.ENDPOINT}`, scope ? { scope } : undefined);
+    return APIClient.unwrapList<Leaderboard>(res);
   }
 }
 
@@ -243,15 +211,13 @@ export class LevelsService {
   private static readonly ENDPOINT = '/gamification/levels';
 
   static async getLevelDefinitions(): Promise<LevelDefinition[]> {
-    return APIClient.get<LevelDefinition[]>(`${this.ENDPOINT}/definitions`);
+    const res = await APIClient.get(`${this.ENDPOINT}/definitions`);
+    return APIClient.unwrapList<LevelDefinition>(res);
   }
 
   static async getUserLevel(userId: string): Promise<UserLevel> {
-    return APIClient.get<UserLevel>(`${this.ENDPOINT}/users/${userId}`);
-  }
-
-  static async calculateLevel(userId: string): Promise<UserLevel> {
-    return APIClient.post<UserLevel>(`${this.ENDPOINT}/calculate`, { userId });
+    const res = await APIClient.get(`${this.ENDPOINT}/users/${userId}`);
+    return APIClient.unwrapItem<UserLevel>(res) as UserLevel;
   }
 }
 
@@ -263,33 +229,36 @@ export class MissionsService {
   private static readonly ENDPOINT = '/gamification/missions';
 
   static async getMissions(): Promise<Mission[]> {
-    return APIClient.get<Mission[]>(`${this.ENDPOINT}`);
+    const res = await APIClient.get(`${this.ENDPOINT}`);
+    return APIClient.unwrapList<Mission>(res);
   }
 
   static async getMissionById(missionId: string): Promise<Mission> {
-    return APIClient.get<Mission>(`${this.ENDPOINT}/${missionId}`);
+    const res = await APIClient.get(`${this.ENDPOINT}/${missionId}`);
+    return APIClient.unwrapItem<Mission>(res) as Mission;
   }
 
-  static async createMission(mission: Mission): Promise<Mission> {
-    return APIClient.post<Mission>(`${this.ENDPOINT}`, mission);
+  static async createMission(mission: Partial<Mission>): Promise<Mission> {
+    const res = await APIClient.post(`${this.ENDPOINT}`, mission);
+    return APIClient.unwrapItem<Mission>(res) as Mission;
   }
 
   static async getUserMissions(userId?: string): Promise<UserMission[]> {
-    return APIClient.get<UserMission[]>(`${this.ENDPOINT}/users`, userId ? { userId } : undefined);
+    const res = await APIClient.get(`${this.ENDPOINT}/users`, userId ? { userId } : undefined);
+    return APIClient.unwrapList<UserMission>(res);
   }
 
-  static async startMission(userId: string, userName: string, missionId: string): Promise<UserMission> {
-    return APIClient.post<UserMission>(`${this.ENDPOINT}/start`, {
+  static async startMission(
+    userId: string,
+    userName: string,
+    missionId: string
+  ): Promise<UserMission> {
+    const res = await APIClient.post(`${this.ENDPOINT}/start`, {
       userId,
       userName,
       missionId,
     });
-  }
-
-  static async completeMissionTask(userMissionId: string, taskId: string): Promise<UserMission> {
-    return APIClient.post<UserMission>(`${this.ENDPOINT}/${userMissionId}/complete-task`, {
-      taskId,
-    });
+    return APIClient.unwrapItem<UserMission>(res) as UserMission;
   }
 }
 
@@ -301,11 +270,13 @@ export class VirtualCurrencyService {
   private static readonly ENDPOINT = '/gamification/currency';
 
   static async getCurrencies(): Promise<VirtualCurrency[]> {
-    return APIClient.get<VirtualCurrency[]>(`${this.ENDPOINT}/currencies`);
+    const res = await APIClient.get(`${this.ENDPOINT}/currencies`);
+    return APIClient.unwrapList<VirtualCurrency>(res);
   }
 
   static async getCurrencyAccount(userId: string, currencyId: string): Promise<CurrencyAccount> {
-    return APIClient.get<CurrencyAccount>(`${this.ENDPOINT}/accounts/${userId}/${currencyId}`);
+    const res = await APIClient.get(`${this.ENDPOINT}/accounts/${userId}/${currencyId}`);
+    return APIClient.unwrapItem<CurrencyAccount>(res) as CurrencyAccount;
   }
 
   static async convertPointsToCurrency(
@@ -313,11 +284,26 @@ export class VirtualCurrencyService {
     currencyId: string,
     points: number
   ): Promise<CurrencyTransaction> {
-    return APIClient.post<CurrencyTransaction>(`${this.ENDPOINT}/convert`, {
+    const res = await APIClient.post(`${this.ENDPOINT}/convert`, {
       userId,
       currencyId,
       points,
     });
+    return APIClient.unwrapItem<CurrencyTransaction>(res) as CurrencyTransaction;
+  }
+
+  static async transfer(
+    toUserId: string,
+    amount: number,
+    note?: string
+  ): Promise<CurrencyTransaction> {
+    const res = await APIClient.post(`${this.ENDPOINT}/transfer`, { toUserId, amount, note });
+    return APIClient.unwrapItem<CurrencyTransaction>(res) as CurrencyTransaction;
+  }
+
+  static async cashOut(amount: number): Promise<CurrencyTransaction> {
+    const res = await APIClient.post(`${this.ENDPOINT}/cashout`, { amount });
+    return APIClient.unwrapItem<CurrencyTransaction>(res) as CurrencyTransaction;
   }
 }
 
@@ -329,15 +315,8 @@ export class AchievementWallService {
   private static readonly ENDPOINT = '/gamification/achievements';
 
   static async getAchievements(userId?: string): Promise<Achievement[]> {
-    return APIClient.get<Achievement[]>(`${this.ENDPOINT}`, userId ? { userId } : undefined);
-  }
-
-  static async createAchievement(achievement: Achievement): Promise<Achievement> {
-    return APIClient.post<Achievement>(`${this.ENDPOINT}`, achievement);
-  }
-
-  static async likeAchievement(achievementId: string, userId: string): Promise<Achievement> {
-    return APIClient.post<Achievement>(`${this.ENDPOINT}/${achievementId}/like`, { userId });
+    const res = await APIClient.get(`${this.ENDPOINT}`, userId ? { userId } : undefined);
+    return APIClient.unwrapList<Achievement>(res);
   }
 }
 
@@ -349,7 +328,8 @@ export class GamificationAnalyticsService {
   private static readonly ENDPOINT = '/gamification/analytics';
 
   static async getAnalytics(period: string): Promise<GamificationAnalytics> {
-    return APIClient.get<GamificationAnalytics>(`${this.ENDPOINT}`, { period });
+    const res = await APIClient.get(`${this.ENDPOINT}`, { period });
+    return APIClient.unwrapItem<GamificationAnalytics>(res) as GamificationAnalytics;
   }
 }
 
@@ -361,10 +341,14 @@ export class GamificationSettingsService {
   private static readonly ENDPOINT = '/gamification/settings';
 
   static async getSettings(): Promise<GamificationSettings> {
-    return APIClient.get<GamificationSettings>(`${this.ENDPOINT}`);
+    const res = await APIClient.get(`${this.ENDPOINT}`);
+    return APIClient.unwrapItem<GamificationSettings>(res) as GamificationSettings;
   }
 
-  static async updateSettings(updates: Partial<GamificationSettings>): Promise<GamificationSettings> {
-    return APIClient.put<GamificationSettings>(`${this.ENDPOINT}`, updates);
+  static async updateSettings(
+    updates: Partial<GamificationSettings>
+  ): Promise<GamificationSettings> {
+    const res = await APIClient.put(`${this.ENDPOINT}`, updates);
+    return APIClient.unwrapItem<GamificationSettings>(res) as GamificationSettings;
   }
 }

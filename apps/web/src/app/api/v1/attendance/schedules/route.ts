@@ -43,7 +43,8 @@ export const GET = withEnhancedAuth(async (_request: NextRequest, context) => {
     const tenantId = context.user.tenantId;
 
     // tenant-ok: where clause uses the locally-bound tenantId from context above
-    const assignments = await prisma.shiftAssignment.findMany({
+    // Cast: the `shift` relation is not declared on ShiftAssignment in schema.prisma
+    const assignments = await (prisma as any).shiftAssignment.findMany({
       where: { tenantId },
       include: {
         shift: true,
@@ -54,14 +55,14 @@ export const GET = withEnhancedAuth(async (_request: NextRequest, context) => {
     // Look up employee names for all employeeIds in a single query.
     // Scope by tenant via the company relation so a leaked employeeId
     // from another tenant doesn't surface here.
-    const employeeIds = [...new Set(assignments.map((a) => a.employeeId))];
+    const employeeIds = [...new Set((assignments as any[]).map((a) => a.employeeId as string))];
     const employees = await prisma.employee.findMany({
       where: { id: { in: employeeIds }, company: { tenantId } },
       select: { id: true, firstName: true, lastName: true },
     });
     const employeeMap = new Map(employees.map((e) => [e.id, `${e.firstName} ${e.lastName}`]));
 
-    const schedules = assignments.map((a) => ({
+    const schedules = assignments.map((a: any) => ({
       id: a.id,
       employeeId: a.employeeId,
       employeeName: employeeMap.get(a.employeeId) || 'Unknown',
@@ -176,7 +177,8 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
       return NextResponse.json(response, { status: 404 });
     }
 
-    const assignment = await prisma.shiftAssignment.create({
+    // Cast: the `shift` relation is not declared on ShiftAssignment in schema.prisma
+    const assignment = await (prisma as any).shiftAssignment.create({
       data: {
         tenantId,
         employeeId: body.employeeId,

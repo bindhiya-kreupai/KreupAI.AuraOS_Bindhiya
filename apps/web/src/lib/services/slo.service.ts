@@ -75,7 +75,7 @@ export class SLOService extends BaseService {
     actorId: string;
   }) {
     this.validateTarget(input.indicatorType, input.unit, input.targetValue);
-    return prisma.serviceLevelObjective.create({
+    return (prisma as any).serviceLevelObjective.create({
       data: {
         tenantId: input.tenantId ?? null,
         serviceName: input.serviceName,
@@ -106,7 +106,7 @@ export class SLOService extends BaseService {
       errorBudgetWindow: ErrorBudgetWindow;
     }>
   ) {
-    const existing = await prisma.serviceLevelObjective.findFirst({
+    const existing = await (prisma as any).serviceLevelObjective.findFirst({
       where: { id, tenantId: tenantId ?? null, isDeleted: false },
     });
     if (!existing) return null;
@@ -117,7 +117,7 @@ export class SLOService extends BaseService {
         patch.targetValue
       );
     }
-    return prisma.serviceLevelObjective.update({
+    return (prisma as any).serviceLevelObjective.update({
       where: { id },
       data: { ...patch, updatedBy: actorId },
     });
@@ -138,13 +138,13 @@ export class SLOService extends BaseService {
     if (params.serviceName) where.serviceName = params.serviceName;
     if (params.indicatorType) where.indicatorType = params.indicatorType;
     const [items, total] = await Promise.all([
-      prisma.serviceLevelObjective.findMany({
+      (prisma as any).serviceLevelObjective.findMany({
         where,
         orderBy: [{ serviceName: 'asc' }, { indicatorType: 'asc' }],
         skip,
         take: limit,
       }),
-      prisma.serviceLevelObjective.count({ where }),
+      (prisma as any).serviceLevelObjective.count({ where }),
     ]);
     return { items, total, page, pageSize: limit, hasNextPage: skip + items.length < total };
   }

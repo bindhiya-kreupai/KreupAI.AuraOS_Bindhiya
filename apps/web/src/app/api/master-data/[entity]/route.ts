@@ -30,7 +30,7 @@ const GenericCreateSchema = z
     code: z.string().optional(),
     name: z.string().min(1),
     description: z.string().optional(),
-    status: z.enum(['Active', 'Inactive']).optional().default('Active'),
+    status: z.enum(['Active', 'Inactive', 'Suspended']).optional().default('Active'),
   })
   .passthrough();
 
@@ -47,6 +47,8 @@ const ENTITIES: Record<
     searchFields?: string[];
     include?: any;
     unique?: string;
+    tenantScoped?: boolean;
+    exportFields?: string[];
   }
 > = {
   // Geographic entities
@@ -99,6 +101,23 @@ const ENTITIES: Record<
     updateSchema: GenericUpdateSchema,
     searchFields: ['name', 'code'],
     unique: 'code',
+    tenantScoped: true,
+    exportFields: [
+      'code',
+      'name',
+      'email',
+      'phoneNumber',
+      'address',
+      'city',
+      'state',
+      'postalCode',
+      'country',
+      'industry',
+      'website',
+      'taxId',
+      'registrationNumber',
+      'status',
+    ],
   },
   departments: {
     model: prisma.department,
@@ -344,6 +363,7 @@ export const GET = withEnhancedAuth(
       }
 
       const { searchParams } = new URL(request.url);
+      const exportFormat = searchParams.get('export');
       const querySchema = config.querySchema || MasterDataQuerySchema;
       const { search, status, page, limit, ...filters } = validateQueryParams(
         querySchema,
@@ -351,12 +371,42 @@ export const GET = withEnhancedAuth(
       );
 
       const where: any = { ...filters };
+      // Tenant-scope entities that carry a tenantId column (companies, etc.)
+      if (config.tenantScoped) {
+        where.tenantId = user.tenantId;
+        where.isDeleted = false;
+      }
       if (search && config.searchFields) {
         where.OR = config.searchFields.map((f) => ({
           [f]: { contains: search, mode: 'insensitive' },
         }));
       }
       if (status) where.status = status;
+
+      // CSV export: stream the full filtered set (no pagination)
+      if (exportFormat === 'csv') {
+        const rows = await config.model.findMany({
+          where,
+          orderBy: { name: 'asc' },
+        });
+        const fields =
+          config.exportFields || (config.searchFields ? [...config.searchFields] : ['name']);
+        const escape = (value: unknown): string => {
+          if (value === null || value === undefined) return '';
+          const str = String(value);
+          return /[",\n]/.test(str) ? `"${str.replace(/"/g, '""')}"` : str;
+        };
+        const header = fields.join(',');
+        const body = rows.map((row: any) => fields.map((f) => escape(row[f])).join(',')).join('\n');
+        const csv = `${header}\n${body}`;
+        return new NextResponse(csv, {
+          status: 200,
+          headers: {
+            'Content-Type': 'text/csv; charset=utf-8',
+            'Content-Disposition': `attachment; filename="${params.entity}-export.csv"`,
+          },
+        });
+      }
 
       const [items, total] = await Promise.all([
         config.model.findMany({
@@ -412,15 +462,26 @@ export const POST = withEnhancedAuth(
       }
 
       const body = await request.json();
-      const data = config.createSchema.parse(body);
+      const data: any = config.createSchema.parse(body);
+
+      if (config.tenantScoped) {
+        data.tenantId = user.tenantId;
+      }
 
       if (config.unique) {
-        const existing = await config.model.findUnique({
-          where: { [config.unique]: data[config.unique] },
-        });
+        // Uniqueness for tenant-scoped entities is compound (tenantId + unique key)
+        const uniqueWhere = config.tenantScoped
+          ? { tenantId: user.tenantId, [config.unique]: data[config.unique] }
+          : { [config.unique]: data[config.unique] };
+        const existing = await config.model.findFirst({ where: uniqueWhere });
         if (existing) {
           return NextResponse.json(
-            { success: false, error: `${config.unique} already exists` },
+            {
+              success: false,
+              error: `${config.unique} already exists`,
+              message: `${config.unique} already exists`,
+              messageAr: 'القيمة موجودة بالفعل',
+            },
             { status: 400 }
           );
         }

@@ -43,6 +43,8 @@ export default function ConfigObjectsPage() {
   const [domain, setDomain] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [message, setMessage] = useState('');
+  const [rejectingId, setRejectingId] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
 
   // Create-draft form
   const [objectKey, setObjectKey] = useState('');
@@ -64,7 +66,7 @@ export default function ConfigObjectsPage() {
     if (statusFilter) qs.set('status', statusFilter);
     const r = await fetch(`/api/v1/hrms-config/config-objects?${qs}`);
     const p = await r.json();
-    if (p.success) setItems(p.data ?? []);
+    if (p.success) setItems(p.data?.items ?? []);
   }
   useEffect(() => {
     loadWorkspaces();
@@ -114,20 +116,27 @@ export default function ConfigObjectsPage() {
     }
   }
 
-  async function act(id: string, action: 'submit' | 'approve' | 'reject' | 'retire') {
-    let reason: string | undefined;
-    if (action === 'reject') {
-      reason = window.prompt('Rejection reason?')?.trim();
-      if (!reason) return;
+  async function act(
+    id: string,
+    action: 'submit' | 'approve' | 'reject' | 'retire',
+    reason?: string
+  ) {
+    if (action === 'reject' && !reason?.trim()) {
+      setMessage('Rejection reason is required · سبب الرفض مطلوب');
+      return;
     }
     setMessage('');
     const r = await fetch('/api/v1/hrms-config/config-objects', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action, id, reason }),
+      body: JSON.stringify({ action, id, reason: reason?.trim() }),
     });
     const p = await r.json();
     setMessage(p.success ? `${action}: OK` : p.message || 'Failed');
+    if (p.success) {
+      setRejectingId(null);
+      setRejectReason('');
+    }
     loadItems();
   }
 
@@ -302,42 +311,65 @@ export default function ConfigObjectsPage() {
                         </span>
                       </td>
                       <td className="text-xs">
-                        <div className="flex gap-2">
-                          {it.status === 'DRAFT' ? (
-                            <button
-                              type="button"
-                              onClick={() => act(it.id, 'submit')}
-                              className="rounded-md bg-blue-600 px-2 py-1 text-xs text-white"
-                            >
-                              Submit
-                            </button>
-                          ) : null}
-                          {it.status === 'PENDING_APPROVAL' ? (
-                            <>
+                        <div className="flex flex-col gap-2">
+                          <div className="flex gap-2">
+                            {it.status === 'DRAFT' ? (
                               <button
                                 type="button"
-                                onClick={() => act(it.id, 'approve')}
-                                className="rounded-md bg-emerald-600 px-2 py-1 text-xs text-white"
+                                onClick={() => act(it.id, 'submit')}
+                                className="rounded-md bg-blue-600 px-2 py-1 text-xs text-white"
                               >
-                                Approve
+                                Submit
                               </button>
+                            ) : null}
+                            {it.status === 'PENDING_APPROVAL' ? (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() => act(it.id, 'approve')}
+                                  className="rounded-md bg-emerald-600 px-2 py-1 text-xs text-white"
+                                >
+                                  Approve
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => {
+                                    setRejectingId(rejectingId === it.id ? null : it.id);
+                                    setRejectReason('');
+                                  }}
+                                  className="rounded-md bg-rose-600 px-2 py-1 text-xs text-white"
+                                >
+                                  Reject
+                                </button>
+                              </>
+                            ) : null}
+                            {it.status === 'ACTIVE' ? (
                               <button
                                 type="button"
-                                onClick={() => act(it.id, 'reject')}
-                                className="rounded-md bg-rose-600 px-2 py-1 text-xs text-white"
+                                onClick={() => act(it.id, 'retire')}
+                                className="rounded-md bg-slate-700 px-2 py-1 text-xs text-white"
                               >
-                                Reject
+                                Retire
                               </button>
-                            </>
-                          ) : null}
-                          {it.status === 'ACTIVE' ? (
-                            <button
-                              type="button"
-                              onClick={() => act(it.id, 'retire')}
-                              className="rounded-md bg-slate-700 px-2 py-1 text-xs text-white"
-                            >
-                              Retire
-                            </button>
+                            ) : null}
+                          </div>
+                          {rejectingId === it.id ? (
+                            <div className="flex items-center gap-2">
+                              <input
+                                value={rejectReason}
+                                onChange={(e) => setRejectReason(e.target.value)}
+                                placeholder="Rejection reason · سبب الرفض"
+                                className="w-48 rounded-md border border-slate-300 px-2 py-1 text-xs"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => act(it.id, 'reject', rejectReason)}
+                                disabled={!rejectReason.trim()}
+                                className="rounded-md bg-rose-700 px-2 py-1 text-xs text-white disabled:opacity-40"
+                              >
+                                Confirm
+                              </button>
+                            </div>
                           ) : null}
                         </div>
                       </td>

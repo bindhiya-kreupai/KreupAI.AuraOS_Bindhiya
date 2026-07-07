@@ -1,3 +1,79 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuites name="vitest tests" tests="0" failures="0" errors="0" time="0">
+<testsuites name="vitest tests" tests="35" failures="0" errors="0" time="0.0439105">
+    <testsuite name="src/lib/services/__tests__/accommodation-compliance.service.test.ts" timestamp="2026-07-06T15:28:12.804Z" hostname="Anuvab" tests="12" failures="0" errors="0" skipped="0" time="0.0152059">
+        <testcase classname="src/lib/services/__tests__/accommodation-compliance.service.test.ts" name="isComplaintSlaBreached &gt; returns false for RESOLVED status" time="0.001473">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/accommodation-compliance.service.test.ts" name="isComplaintSlaBreached &gt; returns false when within SLA" time="0.0004853">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/accommodation-compliance.service.test.ts" name="isComplaintSlaBreached &gt; returns true when past SLA and not resolved" time="0.0003794">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/accommodation-compliance.service.test.ts" name="accommodationAssignmentService.assign &gt; throws when site at capacity" time="0.0015631">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/accommodation-compliance.service.test.ts" name="accommodationAssignmentService.assign &gt; increments site occupancy on assign" time="0.0010221">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/accommodation-compliance.service.test.ts" name="accommodationAssignmentService.checkOut &gt; decrements site occupancy on check-out" time="0.0005565">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/accommodation-compliance.service.test.ts" name="accommodationInspectionService.record &gt; auto-closes inspection when no critical findings" time="0.0005992">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/accommodation-compliance.service.test.ts" name="accommodationInspectionService.record &gt; leaves inspection OPEN when critical findings present" time="0.0008576">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/accommodation-compliance.service.test.ts" name="accommodationInspectionService.record &gt; schedules next inspection 3 months out" time="0.0024442">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/accommodation-compliance.service.test.ts" name="accommodationCertificateService &gt; gates when sites over capacity" time="0.0007628">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/accommodation-compliance.service.test.ts" name="accommodationCertificateService &gt; gates when CRITICAL findings open" time="0.0004646">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/accommodation-compliance.service.test.ts" name="accommodationCertificateService &gt; refuses to sign while gated" time="0.0011662">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/lib/services/__tests__/holidays-compliance.service.test.ts" timestamp="2026-07-06T15:28:12.807Z" hostname="Anuvab" tests="8" failures="0" errors="0" skipped="0" time="0.0117356">
+        <testcase classname="src/lib/services/__tests__/holidays-compliance.service.test.ts" name="holidayPayRuleService.seedDefaults &gt; seeds GCC default pay rules" time="0.001813">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/holidays-compliance.service.test.ts" name="holidayWorkApprovalService.approve &gt; auto-accrues comp-off on approve when rule exists" time="0.0010097">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/holidays-compliance.service.test.ts" name="holidayWorkApprovalService.approve &gt; skips comp-off creation when rule has zero accrual" time="0.0005977">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/holidays-compliance.service.test.ts" name="holidayCompOffService.consume &gt; refuses to consume more than available" time="0.0013283">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/holidays-compliance.service.test.ts" name="holidayCompOffService.consume &gt; flips to CONSUMED when fully drawn" time="0.0003952">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/holidays-compliance.service.test.ts" name="holidayCertificateService &gt; gates when work approvals pending" time="0.0006385">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/holidays-compliance.service.test.ts" name="holidayCertificateService &gt; gates when comp-off expiring soon" time="0.0004372">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/holidays-compliance.service.test.ts" name="holidayCertificateService &gt; refuses to sign while gated" time="0.0006041">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/lib/services/__tests__/separation-compliance.service.test.ts" timestamp="2026-07-06T15:28:12.808Z" hostname="Anuvab" tests="15" failures="0" errors="0" skipped="0" time="0.016969">
+        <testcase classname="src/lib/services/__tests__/separation-compliance.service.test.ts" name="isNoticeCompliant &gt; returns true when buyout" time="0.0015544">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/separation-compliance.service.test.ts" name="isNoticeCompliant &gt; returns true when served &gt;= required" time="0.0005172">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/separation-compliance.service.test.ts" name="isNoticeCompliant &gt; returns false when short of required" time="0.000437">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/separation-compliance.service.test.ts" name="separationCaseService.open &gt; uses country default notice period" time="0.0007301">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/separation-compliance.service.test.ts" name="separationCaseService.open &gt; seeds clearance checklists for HR/IT/FINANCE/SECURITY/LINE_MANAGER/ADMIN" time="0.0010746">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/separation-compliance.service.test.ts" name="separationCaseService.open &gt; marks death in service when type DEATH" time="0.0004727">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/separation-compliance.service.test.ts" name="separationCaseService.close &gt; refuses to close while clearances pending" time="0.0015502">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/separation-compliance.service.test.ts" name="separationCaseService.close &gt; closes when all clearances done" time="0.0014754">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/separation-compliance.service.test.ts" name="separationClearanceService.updateChecklist &gt; flips status to CLEARED when all items completed" time="0.001339">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/separation-compliance.service.test.ts" name="separationClearanceService.updateChecklist &gt; stays IN_PROGRESS when not yet complete" time="0.0010168">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/separation-compliance.service.test.ts" name="separationCertificateService &gt; gates when IT access remains open after close" time="0.0008497">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/separation-compliance.service.test.ts" name="separationCertificateService &gt; gates when clearance pending" time="0.0005686">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/separation-compliance.service.test.ts" name="separationCertificateService &gt; refuses to sign while gated" time="0.0007716">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/separation-compliance.service.test.ts" name="SEPARATION_CONSTANTS &gt; exposes GCC notice defaults" time="0.0004374">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/separation-compliance.service.test.ts" name="SEPARATION_CONSTANTS &gt; exposes default clearance checklist" time="0.0004451">
+        </testcase>
+    </testsuite>
 </testsuites>

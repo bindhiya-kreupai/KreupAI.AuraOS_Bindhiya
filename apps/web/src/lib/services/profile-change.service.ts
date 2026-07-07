@@ -69,13 +69,13 @@ export class ProfileChangeService extends BaseService {
     if (params.category) where.category = params.category;
 
     const [items, total] = await Promise.all([
-      prisma.profileChangeRequest.findMany({
+      (prisma as any).profileChangeRequest.findMany({
         where,
         orderBy: { createdAt: 'desc' },
         skip,
         take: limit,
       }),
-      prisma.profileChangeRequest.count({ where }),
+      (prisma as any).profileChangeRequest.count({ where }),
     ]);
 
     return {
@@ -88,7 +88,7 @@ export class ProfileChangeService extends BaseService {
   }
 
   async getById(id: string, tenantId: string) {
-    return prisma.profileChangeRequest.findFirst({
+    return (prisma as any).profileChangeRequest.findFirst({
       where: { id, tenantId, isDeleted: false },
     });
   }
@@ -105,7 +105,7 @@ export class ProfileChangeService extends BaseService {
     attachmentIds?: string[];
     effectiveDate?: Date;
   }) {
-    return prisma.profileChangeRequest.create({
+    return (prisma as any).profileChangeRequest.create({
       data: {
         tenantId: input.tenantId,
         employeeId: input.employeeId,
@@ -140,7 +140,7 @@ export class ProfileChangeService extends BaseService {
     if (existing.status !== 'DRAFT') {
       throw new InvalidTransitionError(existing.status as ProfileChangeStatus, 'DRAFT');
     }
-    return prisma.profileChangeRequest.update({
+    return (prisma as any).profileChangeRequest.update({
       where: { id },
       data: {
         afterValues: patch.afterValues !== undefined ? (patch.afterValues as object) : undefined,
@@ -158,7 +158,7 @@ export class ProfileChangeService extends BaseService {
     const existing = await this.getById(id, tenantId);
     if (!existing) return null;
     this.assertTransition(existing.status as ProfileChangeStatus, 'SUBMITTED');
-    return prisma.profileChangeRequest.update({
+    return (prisma as any).profileChangeRequest.update({
       where: { id },
       data: { status: 'SUBMITTED', submittedAt: new Date(), updatedBy: actorId },
     });
@@ -168,7 +168,7 @@ export class ProfileChangeService extends BaseService {
     const existing = await this.getById(id, tenantId);
     if (!existing) return null;
     this.assertTransition(existing.status as ProfileChangeStatus, 'APPROVED');
-    return prisma.profileChangeRequest.update({
+    return (prisma as any).profileChangeRequest.update({
       where: { id },
       data: {
         status: 'APPROVED',
@@ -184,7 +184,7 @@ export class ProfileChangeService extends BaseService {
     const existing = await this.getById(id, tenantId);
     if (!existing) return null;
     this.assertTransition(existing.status as ProfileChangeStatus, 'REJECTED');
-    return prisma.profileChangeRequest.update({
+    return (prisma as any).profileChangeRequest.update({
       where: { id },
       data: {
         status: 'REJECTED',
@@ -200,7 +200,7 @@ export class ProfileChangeService extends BaseService {
     const existing = await this.getById(id, tenantId);
     if (!existing) return null;
     this.assertTransition(existing.status as ProfileChangeStatus, 'CANCELED');
-    return prisma.profileChangeRequest.update({
+    return (prisma as any).profileChangeRequest.update({
       where: { id },
       data: { status: 'CANCELED', updatedBy: actorId },
     });
@@ -215,7 +215,7 @@ export class ProfileChangeService extends BaseService {
     const existing = await this.getById(id, tenantId);
     if (!existing) return null;
     this.assertTransition(existing.status as ProfileChangeStatus, 'APPLIED');
-    return prisma.profileChangeRequest.update({
+    return (prisma as any).profileChangeRequest.update({
       where: { id },
       data: { status: 'APPLIED', appliedAt: new Date(), updatedBy: actorId },
     });

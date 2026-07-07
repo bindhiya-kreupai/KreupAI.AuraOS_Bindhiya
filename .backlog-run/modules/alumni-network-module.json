@@ -1,0 +1,101 @@
+[
+  {
+    "id": "AURA-218",
+    "title": "Directory: Wire alumni cards, search, and social actions",
+    "module": "Alumni Network Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/alumni-network/alumni-directory",
+    "api": "AlumniDirectoryService \u2192 /api/alumni-network/profiles (missing); alt: GET /api/offboarding/alumni",
+    "desc": "Profile cards from inline mock array. Search box has no handler. LinkedIn/Mail icon buttons unwired."
+  },
+  {
+    "id": "AURA-219",
+    "title": "Events: Wire event list and RSVP",
+    "module": "Alumni Network Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/alumni-network/events-reunions",
+    "api": "EventsService \u2192 /api/alumni-network/events, /reunions (missing)",
+    "desc": "Event cards are inline mock; no fetch. RSVP buttons have no registration flow. Reunions sub-domain not shown."
+  },
+  {
+    "id": "AURA-220",
+    "title": "Jobs: Wire job listings and Post a Job",
+    "module": "Alumni Network Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/alumni-network/alumni-jobs",
+    "api": "JobsService \u2192 /api/alumni-network/jobs (missing)",
+    "desc": "Job cards are inline mock. Post a Job button has no form/modal. Job row click has cursor-pointer but no apply/save flow."
+  },
+  {
+    "id": "AURA-221",
+    "title": "Platform: Wire hook and bridge offboarding alumni API",
+    "module": "Alumni Network Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "Module-wide",
+    "api": "alumni-network/hooks/useAlumniNetwork.ts; alumni-network/services.ts; GET /api/offboarding/alumni",
+    "desc": "useAlumniNetwork() + full service layer exist but zero page imports. All /api/alumni-network/* routes missing. Completed exits available via /api/offboarding/alumni (offboarding only)."
+  },
+  {
+    "id": "AURA-222",
+    "title": "Duplication: Consolidate duplicate mock alumni page",
+    "module": "Alumni Network Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/community/alumni",
+    "api": "N/A \u2014 routing consolidation",
+    "desc": "Separate mock directory at /dashboard/community/alumni also unwired."
+  },
+  {
+    "id": "AURA-313",
+    "title": "Alumni Network: Replace hub with functional page or add child route",
+    "module": "Alumni Network Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/alumni-network",
+    "api": "Not specified",
+    "desc": "Page is a ModuleGrid navigation shell with no data/API integration."
+  },
+  {
+    "id": "AURA-314",
+    "title": "Alumni Directory: Replace mock/hardcoded data with live API",
+    "module": "Alumni Network Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/alumni-network/alumni-directory",
+    "api": "Not specified",
+    "desc": "Page uses hardcoded or mock data; no fetch/service calls detected."
+  },
+  {
+    "id": "AURA-315",
+    "title": "Alumni Jobs: Manual review required",
+    "module": "Alumni Network Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/alumni-network/alumni-jobs",
+    "api": "Not specified",
+    "desc": "Page exists; automated heuristics could not classify wiring."
+  },
+  {
+    "id": "AURA-316",
+    "title": "Events & Reunions: Manual review required",
+    "module": "Alumni Network Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/alumni-network/events-reunions",
+    "api": "Not specified",
+    "desc": "Page exists; automated heuristics could not classify wiring."
+  }
+]

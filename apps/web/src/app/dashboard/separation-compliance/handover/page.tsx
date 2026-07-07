@@ -23,10 +23,16 @@ interface E {
   status: string;
 }
 
+interface ListResponse<T> {
+  items?: T[];
+}
+
 export default function HandoverPage() {
   const [tab, setTab] = useState<'handover' | 'exit-interview'>('handover');
   const [items, setItems] = useState<H[]>([]);
   const [interviews, setInterviews] = useState<E[]>([]);
+  const [completeFor, setCompleteFor] = useState<string | null>(null);
+  const [evidenceUrl, setEvidenceUrl] = useState('');
   const [caseFilter, setCaseFilter] = useState('');
   const [handoverForm, setHandoverForm] = useState({
     caseId: '',
@@ -51,12 +57,20 @@ export default function HandoverPage() {
     const r = await fetch(url.toString());
     const p = await r.json();
     if (p.success) {
-      if (tab === 'handover') setItems(p.data ?? []);
-      else setInterviews(p.data ?? []);
+      if (tab === 'handover') {
+        const data = p.data as ListResponse<H> | H[] | undefined;
+        setItems(Array.isArray(data) ? data : (data?.items ?? []));
+      } else {
+        const data = p.data as ListResponse<E> | E[] | undefined;
+        setInterviews(Array.isArray(data) ? data : (data?.items ?? []));
+      }
+    } else {
+      setMessage(p.error?.message ?? 'Failed to load');
     }
   }
   useEffect(() => {
     load();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tab, caseFilter]);
 
   async function addItem() {
@@ -72,23 +86,31 @@ export default function HandoverPage() {
     });
     const p = await r.json();
     setMessage(p.success ? 'Added' : (p.error?.details?.error ?? p.error?.message ?? 'failed'));
-    load();
+    if (p.success) {
+      setHandoverForm({ caseId: '', itemDescription: '', itemType: 'ASSET', successorId: '' });
+      await load();
+    }
   }
 
-  async function complete(id: string) {
-    const url = window.prompt('Evidence URL?') ?? '';
+  async function submitComplete() {
+    if (!completeFor) return;
+    setMessage('');
     const r = await fetch('/api/v1/separation-compliance/handover', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         action: 'complete-item',
-        id,
-        evidenceUrl: url || undefined,
+        id: completeFor,
+        evidenceUrl: evidenceUrl || undefined,
       }),
     });
     const p = await r.json();
-    setMessage(p.success ? 'Completed' : p.error?.message);
-    load();
+    setMessage(p.success ? 'Completed' : (p.error?.message ?? 'failed'));
+    if (p.success) {
+      setCompleteFor(null);
+      setEvidenceUrl('');
+      await load();
+    }
   }
 
   async function saveInterview() {
@@ -104,7 +126,7 @@ export default function HandoverPage() {
     });
     const p = await r.json();
     setMessage(p.success ? 'Saved' : (p.error?.details?.error ?? p.error?.message ?? 'failed'));
-    load();
+    if (p.success) await load();
   }
 
   return (
@@ -218,7 +240,10 @@ export default function HandoverPage() {
                         {i.status === 'PENDING' && (
                           <button
                             type="button"
-                            onClick={() => complete(i.id)}
+                            onClick={() => {
+                              setCompleteFor(i.id);
+                              setEvidenceUrl('');
+                            }}
                             className="rounded-md bg-emerald-700 px-2 py-1 text-xs text-white"
                           >
                             Complete
@@ -355,6 +380,40 @@ export default function HandoverPage() {
           </>
         )}
       </div>
+
+      {completeFor ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
+          <div className="w-full max-w-md rounded-lg border border-slate-200 bg-white p-5 shadow-lg">
+            <h3 className="text-base font-semibold">Complete Handover Item</h3>
+            <p className="mt-1 text-sm text-slate-600">Attach optional evidence URL.</p>
+            <input
+              value={evidenceUrl}
+              onChange={(e) => setEvidenceUrl(e.target.value)}
+              placeholder="https://…"
+              className="mt-3 w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+            />
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setCompleteFor(null);
+                  setEvidenceUrl('');
+                }}
+                className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={submitComplete}
+                className="rounded-md bg-emerald-700 px-3 py-2 text-sm text-white"
+              >
+                Complete
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }

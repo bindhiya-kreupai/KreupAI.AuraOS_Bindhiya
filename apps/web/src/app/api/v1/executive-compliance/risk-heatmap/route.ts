@@ -37,9 +37,10 @@ export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext)
       for (const f of ['title', 'domain', 'likelihood', 'impact']) {
         if (body[f] == null) return badRequest(`${f} required`);
       }
+      const { action, ...data } = body;
       return ok(
         await complianceRiskService.upsert(
-          { ...body, nextReviewAt: body.nextReviewAt ? new Date(body.nextReviewAt) : undefined },
+          { ...data, nextReviewAt: data.nextReviewAt ? new Date(data.nextReviewAt) : undefined },
           auth
         ),
         'Saved'

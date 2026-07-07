@@ -1,7 +1,10 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { ReviewCycleService } from '../core/services';
+import React, { useState, useEffect, useCallback } from 'react';
+import {
+  CheckInTemplateService,
+  type CheckInTemplateRecord,
+} from '@/services/checkInTemplateService';
 import {
   FileText,
   Plus,
@@ -10,78 +13,62 @@ import {
   Trash2,
   Clock,
   Users,
-  Star,
   ChevronRight,
   Loader2,
+  X,
+  Save,
 } from 'lucide-react';
 
-interface Template {
-  id: string;
+const CATEGORIES = [
+  { key: 'All', label: 'All' },
+  { key: 'one_on_one', label: '1:1 Meetings' },
+  { key: 'weekly_checkin', label: 'Weekly Check-in' },
+  { key: 'monthly_review', label: 'Monthly Review' },
+  { key: 'quarterly', label: 'Quarterly' },
+];
+
+interface FormState {
+  id?: string;
   name: string;
   description: string;
-  questions: string[];
   category: string;
-  usageCount: number;
-  lastUsed: string;
-  isDefault: boolean;
+  cadence: string;
+  questionsText: string;
 }
 
-const categories = ['All', '1:1 Meetings', 'Development', 'Performance', 'Onboarding', 'Projects'];
-
-const STORAGE_KEY = 'auraos.performance.checkInTemplates.v1';
+const EMPTY_FORM: FormState = {
+  name: '',
+  description: '',
+  category: 'one_on_one',
+  cadence: 'weekly',
+  questionsText: 'What went well this period?\nWhat are your priorities next?',
+};
 
 export default function CheckInTemplatesPage() {
   const [selectedCategory, setSelectedCategory] = useState('All');
   const [expandedTemplate, setExpandedTemplate] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [templates, setTemplates] = useState<Template[]>([]);
-  const [creating, setCreating] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [templates, setTemplates] = useState<CheckInTemplateRecord[]>([]);
   const [status, setStatus] = useState<{ kind: 'success' | 'error'; text: string } | null>(null);
+  const [showForm, setShowForm] = useState(false);
+  const [form, setForm] = useState<FormState>(EMPTY_FORM);
 
-  const persistLocal = (next: Template[]) => {
+  const load = useCallback(async () => {
+    setLoading(true);
     try {
-      const localOnly = next.filter((t) => t.id.startsWith('local-'));
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(localOnly));
-    } catch {
-      /* ignore */
+      const rows = await CheckInTemplateService.list();
+      setTemplates(rows);
+    } catch (e: any) {
+      setStatus({ kind: 'error', text: e?.message || 'Failed to load templates.' });
+    } finally {
+      setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
-    async function loadData() {
-      try {
-        const cycles = await ReviewCycleService.getCycles();
-        const derived: Template[] = cycles.map((c: any) => ({
-          id: c.id,
-          name: c.name || 'Review Template',
-          description: c.description || `Template for ${c.type || 'review'} cycle`,
-          questions: c.questions || [],
-          category:
-            c.type === 'quarterly'
-              ? 'Performance'
-              : c.type === 'annual'
-                ? 'Performance'
-                : 'Development',
-          usageCount: c.participantCount || 0,
-          lastUsed: c.updatedAt ? new Date(c.updatedAt).toLocaleDateString() : 'N/A',
-          isDefault: c.isActive || false,
-        }));
-        let local: Template[] = [];
-        try {
-          const raw = localStorage.getItem(STORAGE_KEY);
-          if (raw) local = JSON.parse(raw);
-        } catch {
-          /* ignore */
-        }
-        setTemplates([...derived, ...local]);
-      } catch (error: any) {
-        console.error('Failed to load templates:', error);
-      } finally {
-        setLoading(false);
-      }
-    }
-    loadData();
-  }, []);
+    load();
+  }, [load]);
 
   useEffect(() => {
     if (!status) return;
@@ -89,39 +76,111 @@ export default function CheckInTemplatesPage() {
     return () => clearTimeout(t);
   }, [status]);
 
-  const handleCreate = () => {
-    const name = prompt('Template name:');
-    if (!name?.trim()) return;
-    const description = prompt('Short description:', '') || '';
-    const category =
-      prompt(`Category (${categories.slice(1).join(', ')}):`, '1:1 Meetings') || '1:1 Meetings';
-    const questionsRaw = prompt(
-      'Questions (one per line):',
-      'What went well this week?\nWhat are your priorities for next week?'
-    );
-    if (!questionsRaw?.trim()) return;
-    setCreating(true);
-    const newTemplate: Template = {
-      id: `local-${Date.now()}`,
-      name,
-      description,
-      questions: questionsRaw.split('\n').filter((q) => q.trim()),
-      category,
-      usageCount: 0,
-      lastUsed: 'Never',
-      isDefault: false,
-    };
-    const next = [...templates, newTemplate];
-    setTemplates(next);
-    persistLocal(next);
-    setCreating(false);
-    setStatus({ kind: 'success', text: `Created template "${name}" (browser-local).` });
+  const openCreate = () => {
+    setForm(EMPTY_FORM);
+    setShowForm(true);
   };
 
-  const filteredTemplates =
+  const openEdit = (t: CheckInTemplateRecord) => {
+    setForm({
+      id: t.id,
+      name: t.name,
+      description: t.description ?? '',
+      category: t.category,
+      cadence: t.cadence,
+      questionsText: (t.questions || []).map((q) => q.text).join('\n'),
+    });
+    setShowForm(true);
+  };
+
+  const submitForm = useCallback(async () => {
+    if (!form.name.trim()) return;
+    const questions = form.questionsText
+      .split('\n')
+      .map((q) => q.trim())
+      .filter(Boolean)
+      .map((text, i) => ({ id: `q${i + 1}`, text, isRequired: false }));
+    setSaving(true);
+    try {
+      if (form.id) {
+        await CheckInTemplateService.update(form.id, {
+          name: form.name,
+          description: form.description,
+          category: form.category,
+          cadence: form.cadence,
+          questions,
+        });
+        setStatus({ kind: 'success', text: 'Template updated.' });
+      } else {
+        await CheckInTemplateService.create({
+          name: form.name,
+          description: form.description,
+          category: form.category,
+          cadence: form.cadence,
+          questions,
+        });
+        setStatus({ kind: 'success', text: 'Template created.' });
+      }
+      setShowForm(false);
+      await load();
+    } catch (e: any) {
+      setStatus({ kind: 'error', text: e?.message || 'Failed to save template.' });
+    } finally {
+      setSaving(false);
+    }
+  }, [form, load]);
+
+  const duplicate = useCallback(
+    async (t: CheckInTemplateRecord) => {
+      setSaving(true);
+      try {
+        await CheckInTemplateService.duplicate(t);
+        setStatus({ kind: 'success', text: `Duplicated "${t.name}".` });
+        await load();
+      } catch (e: any) {
+        setStatus({ kind: 'error', text: e?.message || 'Failed to duplicate.' });
+      } finally {
+        setSaving(false);
+      }
+    },
+    [load]
+  );
+
+  const remove = useCallback(
+    async (t: CheckInTemplateRecord) => {
+      setSaving(true);
+      try {
+        await CheckInTemplateService.remove(t.id);
+        setStatus({ kind: 'success', text: `Deleted "${t.name}".` });
+        await load();
+      } catch (e: any) {
+        setStatus({ kind: 'error', text: e?.message || 'Failed to delete.' });
+      } finally {
+        setSaving(false);
+      }
+    },
+    [load]
+  );
+
+  const applyTemplate = useCallback(
+    async (t: CheckInTemplateRecord) => {
+      try {
+        await CheckInTemplateService.use(t.id);
+        setStatus({ kind: 'success', text: `Started a check-in from "${t.name}".` });
+        await load();
+      } catch (e: any) {
+        setStatus({ kind: 'error', text: e?.message || 'Failed to use template.' });
+      }
+    },
+    [load]
+  );
+
+  const filtered =
     selectedCategory === 'All'
       ? templates
       : templates.filter((t) => t.category === selectedCategory);
+
+  const categoryLabel = (key: string) => CATEGORIES.find((c) => c.key === key)?.label ?? key;
 
   if (loading) {
     return (
@@ -142,9 +201,8 @@ export default function CheckInTemplatesPage() {
           </p>
         </div>
         <button
-          onClick={handleCreate}
-          disabled={creating}
-          className="flex items-center gap-2 px-4 py-2.5 bg-celestial-indigo text-white rounded-lg text-sm font-medium hover:bg-celestial-indigo/90 transition-colors disabled:opacity-50"
+          onClick={openCreate}
+          className="flex items-center gap-2 px-4 py-2.5 bg-celestial-indigo text-white rounded-lg text-sm font-medium hover:bg-celestial-indigo/90 transition-colors"
         >
           <Plus className="w-4 h-4" /> Create Template
         </button>
@@ -162,33 +220,100 @@ export default function CheckInTemplatesPage() {
         </div>
       )}
 
+      {/* Create / Edit Form */}
+      {showForm && (
+        <div className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 p-5 space-y-3">
+          <div className="flex items-center justify-between">
+            <p className="text-sm font-bold text-ink-black dark:text-pearl">
+              {form.id ? 'Edit Template' : 'New Template'}
+            </p>
+            <button onClick={() => setShowForm(false)} className="text-silver-mist">
+              <X className="w-4 h-4" />
+            </button>
+          </div>
+          <input
+            value={form.name}
+            onChange={(e) => setForm((f) => ({ ...f, name: e.target.value }))}
+            placeholder="Template name"
+            className="w-full px-3 py-2 text-sm rounded-lg border border-cloud dark:border-nebula-purple/20 bg-white dark:bg-deep-cosmos text-ink-black dark:text-pearl focus:outline-none focus:ring-1 focus:ring-celestial-indigo"
+          />
+          <input
+            value={form.description}
+            onChange={(e) => setForm((f) => ({ ...f, description: e.target.value }))}
+            placeholder="Short description"
+            className="w-full px-3 py-2 text-sm rounded-lg border border-cloud dark:border-nebula-purple/20 bg-white dark:bg-deep-cosmos text-ink-black dark:text-pearl focus:outline-none focus:ring-1 focus:ring-celestial-indigo"
+          />
+          <div className="grid grid-cols-2 gap-3">
+            <select
+              value={form.category}
+              onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
+              className="px-3 py-2 text-sm rounded-lg border border-cloud dark:border-nebula-purple/20 bg-white dark:bg-deep-cosmos text-ink-black dark:text-pearl focus:outline-none focus:ring-1 focus:ring-celestial-indigo"
+            >
+              {CATEGORIES.filter((c) => c.key !== 'All').map((c) => (
+                <option key={c.key} value={c.key}>
+                  {c.label}
+                </option>
+              ))}
+            </select>
+            <select
+              value={form.cadence}
+              onChange={(e) => setForm((f) => ({ ...f, cadence: e.target.value }))}
+              className="px-3 py-2 text-sm rounded-lg border border-cloud dark:border-nebula-purple/20 bg-white dark:bg-deep-cosmos text-ink-black dark:text-pearl focus:outline-none focus:ring-1 focus:ring-celestial-indigo"
+            >
+              {['weekly', 'biweekly', 'monthly', 'quarterly'].map((c) => (
+                <option key={c} value={c}>
+                  {c}
+                </option>
+              ))}
+            </select>
+          </div>
+          <textarea
+            value={form.questionsText}
+            onChange={(e) => setForm((f) => ({ ...f, questionsText: e.target.value }))}
+            rows={5}
+            placeholder="One question per line"
+            className="w-full px-3 py-2 text-sm rounded-lg border border-cloud dark:border-nebula-purple/20 bg-white dark:bg-deep-cosmos text-ink-black dark:text-pearl focus:outline-none focus:ring-1 focus:ring-celestial-indigo resize-none"
+          />
+          <div className="flex justify-end">
+            <button
+              onClick={submitForm}
+              disabled={!form.name.trim() || saving}
+              className="flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-bold bg-celestial-indigo text-white hover:opacity-90 disabled:opacity-40 transition-opacity"
+            >
+              <Save className="w-3.5 h-3.5" />
+              {saving ? 'Saving…' : form.id ? 'Update' : 'Create'}
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Category Filter */}
       <div className="flex items-center gap-2 overflow-x-auto pb-1">
-        {categories.map((cat) => (
+        {CATEGORIES.map((cat) => (
           <button
-            key={cat}
-            onClick={() => setSelectedCategory(cat)}
+            key={cat.key}
+            onClick={() => setSelectedCategory(cat.key)}
             className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-all ${
-              selectedCategory === cat
+              selectedCategory === cat.key
                 ? 'bg-celestial-indigo text-white'
                 : 'bg-slate-100 dark:bg-deep-cosmos text-silver-mist hover:bg-slate-200 dark:hover:bg-slate-700'
             }`}
           >
-            {cat}
+            {cat.label}
           </button>
         ))}
       </div>
 
       {/* Templates Grid */}
       <div className="space-y-3">
-        {filteredTemplates.length === 0 ? (
+        {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-slate-400">
             <FileText className="w-12 h-12 mb-3 opacity-30" />
             <p className="font-bold text-lg">No templates found</p>
             <p className="text-sm mt-1">Create check-in templates to streamline your meetings</p>
           </div>
         ) : (
-          filteredTemplates.map((template) => (
+          filtered.map((template) => (
             <div
               key={template.id}
               className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 overflow-hidden"
@@ -213,6 +338,9 @@ export default function CheckInTemplatesPage() {
                           Default
                         </span>
                       )}
+                      <span className="text-[10px] px-1.5 py-0.5 bg-celestial-indigo/10 text-celestial-indigo rounded font-medium">
+                        {categoryLabel(template.category)}
+                      </span>
                     </div>
                     <p className="text-xs text-silver-mist mt-0.5">{template.description}</p>
                     <div className="flex items-center gap-3 mt-2 text-[10px] text-silver-mist">
@@ -223,22 +351,42 @@ export default function CheckInTemplatesPage() {
                         <Users className="w-3 h-3" /> Used {template.usageCount} times
                       </span>
                       <span className="flex items-center gap-1">
-                        <Clock className="w-3 h-3" /> {template.lastUsed}
+                        <Clock className="w-3 h-3" /> {template.cadence}
                       </span>
                     </div>
                   </div>
                   <div className="flex items-center gap-1">
                     <button
-                      className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-silver-mist hover:text-celestial-indigo transition-colors"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        duplicate(template);
+                      }}
+                      disabled={saving}
+                      className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-silver-mist hover:text-celestial-indigo transition-colors disabled:opacity-50"
                       title="Duplicate"
                     >
                       <Copy className="w-4 h-4" />
                     </button>
                     <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        openEdit(template);
+                      }}
                       className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-silver-mist hover:text-celestial-indigo transition-colors"
                       title="Edit"
                     >
                       <Edit2 className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        remove(template);
+                      }}
+                      disabled={saving}
+                      className="p-2 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-silver-mist hover:text-rose-500 transition-colors disabled:opacity-50"
+                      title="Delete"
+                    >
+                      <Trash2 className="w-4 h-4" />
                     </button>
                     <ChevronRight
                       className={`w-4 h-4 text-silver-mist transition-transform ${expandedTemplate === template.id ? 'rotate-90' : ''}`}
@@ -253,12 +401,18 @@ export default function CheckInTemplatesPage() {
                   </p>
                   <ol className="space-y-1.5">
                     {template.questions.map((q, i) => (
-                      <li key={i} className="text-xs text-silver-mist flex items-start gap-2">
-                        <span className="text-celestial-indigo font-medium">{i + 1}.</span> {q}
+                      <li
+                        key={q.id ?? i}
+                        className="text-xs text-silver-mist flex items-start gap-2"
+                      >
+                        <span className="text-celestial-indigo font-medium">{i + 1}.</span> {q.text}
                       </li>
                     ))}
                   </ol>
-                  <button className="mt-3 text-xs text-celestial-indigo font-medium hover:underline">
+                  <button
+                    onClick={() => applyTemplate(template)}
+                    className="mt-3 text-xs text-celestial-indigo font-medium hover:underline"
+                  >
                     Use this template →
                   </button>
                 </div>

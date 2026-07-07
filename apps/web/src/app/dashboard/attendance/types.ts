@@ -30,7 +30,7 @@ export type OvertimeType = 'regular' | 'weekend' | 'holiday' | 'compensatory';
 
 export type OvertimeStatus = 'pending' | 'approved' | 'rejected' | 'paid' | 'comp_off_granted';
 
-export type RegularizationStatus = 'pending' | 'approved' | 'rejected';
+export type RegularizationStatus = 'pending' | 'approved' | 'rejected' | 'cancelled';
 
 export type RegularizationType =
   | 'missed_punch'

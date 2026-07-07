@@ -13,7 +13,6 @@ const PREVIEW_MODULES = new Set<string>([
   'agriculture',
   'ai',
   'ai-automation',
-  'alumni-network',
   'automotive',
   'aviation',
   'career',

@@ -1,26 +1,37 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import {
-  DollarSign,
-  TrendingUp,
-  Users,
-  Target,
-  BarChart3,
-  ChevronDown,
-  ArrowUpRight,
-  ArrowDownRight,
-  Minus,
-  Loader2,
-  Plus,
-  RefreshCw,
-} from 'lucide-react';
+import { Loader2, Plus, TrendingUp, X } from 'lucide-react';
 import { EmployeeCompensationService, CompensationAnalyticsService } from '../services';
+import { useToast } from '../hooks/useToast';
+import { ToastContainer } from '../components/Toast';
+
+interface CompForm {
+  employeeId: string;
+  annualCTC: string;
+  annualGross: string;
+  annualBasic: string;
+  effectiveFrom: string;
+  reason: string;
+}
+
+const EMPTY_FORM: CompForm = {
+  employeeId: '',
+  annualCTC: '',
+  annualGross: '',
+  annualBasic: '',
+  effectiveFrom: '',
+  reason: '',
+};
 
 export default function CompensationPlanningPage() {
   const [compensations, setCompensations] = useState<any[]>([]);
   const [metrics, setMetrics] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [modalMode, setModalMode] = useState<'create' | 'revise' | null>(null);
+  const [form, setForm] = useState<CompForm>(EMPTY_FORM);
+  const [submitting, setSubmitting] = useState(false);
+  const { toasts, removeToast, success, error } = useToast();
 
   // Modal states
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -59,82 +70,67 @@ export default function CompensationPlanningPage() {
       ]);
       setCompensations(compData);
       setMetrics(metricsData);
-    } catch (error: any) {
-      console.error('Error:', error);
+    } catch (err) {
+      console.error('Error:', err);
+      error('Failed to load compensation data');
     } finally {
       setLoading(false);
     }
   };
 
-  const openCreateModal = () => {
-    setEmpId('');
-    setAnnualCTC(0);
-    setAnnualBasic(0);
-    setAnnualGross(0);
-    setEffectiveDate(new Date().toISOString().split('T')[0]);
-    setIsCreateOpen(true);
+  const openCreate = () => {
+    setForm(EMPTY_FORM);
+    setModalMode('create');
   };
 
-  const openReviseModal = (comp: any) => {
-    setSelectedComp(comp);
-    setReviseEmployeeId(comp.employeeId || '');
-    setNewSalary(comp.annualCTC || 0);
-    setReviseBasicSalary(comp.annualBasic || 0);
-    setReviseIsActive(comp.isActive ?? true);
-    setReviseReason(comp.remarks || '');
-    setReviseEffectiveFrom(
-      comp.effectiveFrom ? comp.effectiveFrom.split('T')[0] : new Date().toISOString().split('T')[0]
-    );
-    setIsReviseOpen(true);
+  const openRevise = (comp: any) => {
+    setForm({
+      employeeId: comp.employeeId || '',
+      annualCTC: String(comp.annualCTC ?? ''),
+      annualGross: String(comp.annualGross ?? ''),
+      annualBasic: String(comp.annualBasic ?? ''),
+      effectiveFrom: new Date().toISOString().slice(0, 10),
+      reason: '',
+    });
+    setModalMode('revise');
   };
 
-  const handleCreateSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const payload: any = {
-      employeeId: empId,
-      annualCTC,
-      annualBasic,
-      annualGross,
-      effectiveFrom: new Date(effectiveDate).toISOString(),
-      isActive: true,
-    };
-
-    try {
-      await EmployeeCompensationService.createCompensation(payload);
-      setIsCreateOpen(false);
-      fetchData();
-    } catch (err) {
-      console.error('Error creating compensation:', err);
+    if (!form.employeeId || !form.effectiveFrom) {
+      error('Employee and effective date are required');
+      return;
     }
-  };
-
-  const handleReviseSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    setSubmitting(true);
     try {
-      await EmployeeCompensationService.updateCompensation(selectedComp.id, {
-        employeeId: reviseEmployeeId,
-        ctc: newSalary,
-        basicSalary: reviseBasicSalary,
-        isActive: reviseIsActive,
-        effectiveFrom: new Date(reviseEffectiveFrom).toISOString(),
-        remarks: reviseReason,
-      });
-      setIsReviseOpen(false);
-      fetchData();
-    } catch (err) {
-      console.error('Error revising compensation:', err);
-    }
-  };
-
-  const handleDeleteComp = async (id: string) => {
-    if (confirm('Are you sure you want to delete this compensation record?')) {
-      try {
-        await EmployeeCompensationService.deleteCompensation(id);
-        setIsReviseOpen(false);
-        fetchData();
-      } catch (err) {
-        console.error('Error deleting compensation:', err);
+      if (modalMode === 'revise') {
+        await EmployeeCompensationService.reviseCompensation(
+          form.employeeId,
+          Number(form.annualCTC) || 0,
+          form.effectiveFrom,
+          form.reason
+        );
+        success('Compensation revised');
+      } else {
+        await EmployeeCompensationService.createCompensation({
+          employeeId: form.employeeId,
+          annualCTC: Number(form.annualCTC) || 0,
+          annualGross: Number(form.annualGross) || 0,
+          annualBasic: Number(form.annualBasic) || 0,
+          effectiveFrom: form.effectiveFrom,
+          remarks: form.reason,
+          isActive: true,
+        } as any);
+        success('Compensation record created');
       }
+      setModalMode(null);
+      setForm(EMPTY_FORM);
+      await fetchData();
+    } catch (err) {
+      console.error(err);
+      error('Failed to save compensation');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -151,8 +147,9 @@ export default function CompensationPlanningPage() {
 
   return (
     <div className="space-y-4 pb-6">
+      <ToastContainer toasts={toasts} onClose={removeToast} />
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-ink-black dark:text-pearl">
             Compensation Planning
@@ -162,10 +159,10 @@ export default function CompensationPlanningPage() {
           </p>
         </div>
         <button
-          onClick={openCreateModal}
-          className="flex items-center gap-2 bg-indigo-600 hover:bg-indigo-700 text-white px-4 py-2 rounded-xl text-sm font-bold shadow-lg transition-all"
+          onClick={openCreate}
+          className="flex items-center gap-2 px-4 py-2.5 bg-celestial-indigo text-white rounded-lg text-sm font-medium hover:bg-celestial-indigo/90 transition-colors"
         >
-          <Plus className="w-4 h-4" /> Create Record
+          <Plus className="w-4 h-4" /> New Compensation
         </button>
       </div>
 
@@ -230,7 +227,7 @@ export default function CompensationPlanningPage() {
                   <th className="text-right px-4 py-3 font-medium">Monthly CTC</th>
                   <th className="text-right px-4 py-3 font-medium">Basic Salary</th>
                   <th className="text-center px-4 py-3 font-medium">Status</th>
-                  <th className="text-center px-4 py-3 font-medium">Actions</th>
+                  <th className="text-right px-4 py-3 font-medium">Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -269,12 +266,12 @@ export default function CompensationPlanningPage() {
                         {comp.isActive ? 'Active' : 'Inactive'}
                       </span>
                     </td>
-                    <td className="px-4 py-3 text-center">
+                    <td className="px-4 py-3 text-right">
                       <button
-                        onClick={() => openReviseModal(comp)}
-                        className="text-xs font-bold text-indigo-500 hover:underline flex items-center gap-1 mx-auto bg-slate-100 dark:bg-slate-800 px-2.5 py-1.5 rounded-lg border border-slate-200 dark:border-slate-700"
+                        onClick={() => openRevise(comp)}
+                        className="text-xs font-bold text-celestial-indigo hover:underline inline-flex items-center gap-1"
                       >
-                        <RefreshCw className="w-3 h-3" /> Revise
+                        <TrendingUp className="w-3 h-3" /> Revise
                       </button>
                     </td>
                   </tr>
@@ -318,192 +315,105 @@ export default function CompensationPlanningPage() {
         </div>
       </div>
 
-      {/* Create Modal */}
-      {isCreateOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 w-full max-w-md space-y-4 text-slate-900 dark:text-white">
-            <h3 className="text-lg font-bold">Create Compensation Record</h3>
-            <form onSubmit={handleCreateSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-500 mb-1">Employee ID</label>
-                <input
-                  type="text"
-                  value={empId}
-                  onChange={(e) => setEmpId(e.target.value)}
-                  required
-                  placeholder="e.g. EMP001"
-                  className="w-full px-3 py-2 border rounded-lg bg-transparent text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-500 mb-1">
-                  Annual CTC ($)
-                </label>
-                <input
-                  type="number"
-                  value={annualCTC}
-                  onChange={(e) => setAnnualCTC(Number(e.target.value))}
-                  required
-                  className="w-full px-3 py-2 border rounded-lg bg-transparent text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-500 mb-1">
-                  Annual Basic Salary ($)
-                </label>
-                <input
-                  type="number"
-                  value={annualBasic}
-                  onChange={(e) => setAnnualBasic(Number(e.target.value))}
-                  required
-                  className="w-full px-3 py-2 border rounded-lg bg-transparent text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-500 mb-1">
-                  Annual Gross Salary ($)
-                </label>
-                <input
-                  type="number"
-                  value={annualGross}
-                  onChange={(e) => setAnnualGross(Number(e.target.value))}
-                  required
-                  className="w-full px-3 py-2 border rounded-lg bg-transparent text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-500 mb-1">
-                  Effective Date
-                </label>
-                <input
-                  type="date"
-                  value={effectiveDate}
-                  onChange={(e) => setEffectiveDate(e.target.value)}
-                  required
-                  className="w-full px-3 py-2 border rounded-lg bg-transparent text-sm dark:bg-slate-900"
-                />
-              </div>
-              <div className="flex justify-end gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
-                <button
-                  type="button"
-                  onClick={() => setIsCreateOpen(false)}
-                  className="px-4 py-2 rounded-lg text-sm font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  className="px-4 py-2 rounded-lg text-sm font-bold bg-indigo-600 hover:bg-indigo-700 text-white"
-                >
-                  Create
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+      {modalMode && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <form
+            onSubmit={handleSubmit}
+            className="bg-white dark:bg-stellar-blue rounded-2xl border border-cloud dark:border-nebula-purple/50 w-full max-w-lg p-6 space-y-4"
+          >
+            <div className="flex items-center justify-between">
+              <h2 className="text-lg font-bold text-ink-black dark:text-pearl">
+                {modalMode === 'revise' ? 'Revise Compensation' : 'New Compensation'}
+              </h2>
+              <button
+                type="button"
+                onClick={() => setModalMode(null)}
+                className="text-slate-400 hover:text-slate-600"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
-      {/* Revise Modal */}
-      {isReviseOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 w-full max-w-md space-y-4 text-slate-900 dark:text-white max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-bold">Edit / Revise Employee Compensation</h3>
-            <form onSubmit={handleReviseSubmit} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-500 mb-1">Employee ID</label>
+            <div className="grid grid-cols-2 gap-3">
+              <label className="text-sm col-span-2">
+                <span className="text-silver-mist font-medium">Employee ID</span>
                 <input
-                  type="text"
-                  value={reviseEmployeeId}
-                  onChange={(e) => setReviseEmployeeId(e.target.value)}
+                  value={form.employeeId}
+                  onChange={(e) => setForm({ ...form, employeeId: e.target.value })}
+                  disabled={modalMode === 'revise'}
+                  className="mt-1 w-full px-3 py-2 rounded-lg border border-cloud dark:border-nebula-purple/50 bg-transparent disabled:opacity-60"
                   required
-                  className="w-full px-3 py-2 border rounded-lg bg-transparent text-sm"
                 />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-500 mb-1">Status</label>
-                <select
-                  value={reviseIsActive ? 'active' : 'inactive'}
-                  onChange={(e) => setReviseIsActive(e.target.value === 'active')}
-                  className="w-full px-3 py-2 border rounded-lg bg-transparent text-sm dark:bg-slate-900"
-                >
-                  <option value="active">Active</option>
-                  <option value="inactive">Inactive</option>
-                </select>
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-500 mb-1">
-                  Annual CTC ($)
-                </label>
+              </label>
+              <label className="text-sm">
+                <span className="text-silver-mist font-medium">Annual CTC</span>
                 <input
                   type="number"
-                  value={newSalary}
-                  onChange={(e) => setNewSalary(Number(e.target.value))}
-                  required
-                  className="w-full px-3 py-2 border rounded-lg bg-transparent text-sm"
+                  value={form.annualCTC}
+                  onChange={(e) => setForm({ ...form, annualCTC: e.target.value })}
+                  className="mt-1 w-full px-3 py-2 rounded-lg border border-cloud dark:border-nebula-purple/50 bg-transparent"
                 />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-500 mb-1">
-                  Annual Basic Salary ($)
-                </label>
-                <input
-                  type="number"
-                  value={reviseBasicSalary}
-                  onChange={(e) => setReviseBasicSalary(Number(e.target.value))}
-                  required
-                  className="w-full px-3 py-2 border rounded-lg bg-transparent text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-500 mb-1">
-                  Effective From
-                </label>
+              </label>
+              {modalMode === 'create' && (
+                <>
+                  <label className="text-sm">
+                    <span className="text-silver-mist font-medium">Annual Gross</span>
+                    <input
+                      type="number"
+                      value={form.annualGross}
+                      onChange={(e) => setForm({ ...form, annualGross: e.target.value })}
+                      className="mt-1 w-full px-3 py-2 rounded-lg border border-cloud dark:border-nebula-purple/50 bg-transparent"
+                    />
+                  </label>
+                  <label className="text-sm">
+                    <span className="text-silver-mist font-medium">Annual Basic</span>
+                    <input
+                      type="number"
+                      value={form.annualBasic}
+                      onChange={(e) => setForm({ ...form, annualBasic: e.target.value })}
+                      className="mt-1 w-full px-3 py-2 rounded-lg border border-cloud dark:border-nebula-purple/50 bg-transparent"
+                    />
+                  </label>
+                </>
+              )}
+              <label className="text-sm">
+                <span className="text-silver-mist font-medium">Effective From</span>
                 <input
                   type="date"
-                  value={reviseEffectiveFrom}
-                  onChange={(e) => setReviseEffectiveFrom(e.target.value)}
+                  value={form.effectiveFrom}
+                  onChange={(e) => setForm({ ...form, effectiveFrom: e.target.value })}
+                  className="mt-1 w-full px-3 py-2 rounded-lg border border-cloud dark:border-nebula-purple/50 bg-transparent"
                   required
-                  className="w-full px-3 py-2 border rounded-lg bg-transparent text-sm dark:bg-slate-900"
                 />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-500 mb-1">
-                  Reason for Revision / Remarks
-                </label>
-                <textarea
-                  value={reviseReason}
-                  onChange={(e) => setReviseReason(e.target.value)}
-                  required
-                  placeholder="e.g. Merit increase, Promotion"
-                  className="w-full px-3 py-2 border rounded-lg bg-transparent text-sm h-20 resize-none"
+              </label>
+              <label className="text-sm col-span-2">
+                <span className="text-silver-mist font-medium">Reason / Remarks</span>
+                <input
+                  value={form.reason}
+                  onChange={(e) => setForm({ ...form, reason: e.target.value })}
+                  className="mt-1 w-full px-3 py-2 rounded-lg border border-cloud dark:border-nebula-purple/50 bg-transparent"
                 />
-              </div>
-              <div className="flex justify-between items-center pt-4 border-t border-slate-100 dark:border-slate-800">
-                <button
-                  type="button"
-                  onClick={() => handleDeleteComp(selectedComp.id)}
-                  className="px-4 py-2 rounded-lg text-sm font-bold bg-rose-600 hover:bg-rose-700 text-white"
-                >
-                  Delete Record
-                </button>
-                <div className="flex gap-3">
-                  <button
-                    type="button"
-                    onClick={() => setIsReviseOpen(false)}
-                    className="px-4 py-2 rounded-lg text-sm font-bold text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 rounded-lg text-sm font-bold bg-indigo-600 hover:bg-indigo-700 text-white"
-                  >
-                    Save Changes
-                  </button>
-                </div>
-              </div>
-            </form>
-          </div>
+              </label>
+            </div>
+
+            <div className="flex justify-end gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setModalMode(null)}
+                className="px-4 py-2 rounded-lg text-sm font-medium border border-cloud dark:border-nebula-purple/50"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={submitting}
+                className="px-4 py-2 rounded-lg text-sm font-bold bg-celestial-indigo text-white hover:bg-celestial-indigo/90 disabled:opacity-50 inline-flex items-center gap-2"
+              >
+                {submitting && <Loader2 className="w-4 h-4 animate-spin" />}
+                {modalMode === 'revise' ? 'Revise' : 'Create'}
+              </button>
+            </div>
+          </form>
         </div>
       )}
     </div>

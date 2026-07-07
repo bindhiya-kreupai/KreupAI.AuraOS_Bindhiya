@@ -933,6 +933,18 @@ export const superAdminMenu: MenuDefinition = {
                         'Monthly Compliance Certificate',
                     ],
                 },
+                {
+                    code: 'ESG_COMPLIANCE',
+                    label: 'ESG Compliance',
+                    icon: 'policy',
+                    path: '/dashboard/esg-compliance',
+                    features: [
+                        'Carbon Footprint Evaluator',
+                        'Diversity & Inclusion Metrics',
+                        'Governance Disclosures Checklist',
+                        'Monthly Compliance Certificate',
+                    ],
+                },
             ],
         },
         {

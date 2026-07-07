@@ -1,4 +1,4 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
@@ -77,17 +77,18 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
 
     // Create audit log
     const ipAddress =
-      request.headers.get('x-forwarded-for') ||
-      request.headers.get('x-real-ip') ||
-      'unknown';
+      request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
 
     await prisma.auditLog.create({
       data: {
         tenantId: user.tenantId,
         userId: user.userId,
         action: 'CREATE',
+        module: 'System Configuration',
         resourceType: 'System Configuration',
-        metadata: { description: `Created SSO configuration (Provider: ${validatedData.provider})` } as any,
+        metadata: {
+          description: `Created SSO configuration (Provider: ${validatedData.provider})`,
+        } as any,
         ipAddress,
       },
     });
@@ -145,17 +146,18 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, { user, permiss
 
     // Create audit log
     const ipAddress =
-      request.headers.get('x-forwarded-for') ||
-      request.headers.get('x-real-ip') ||
-      'unknown';
+      request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
 
     await prisma.auditLog.create({
       data: {
         tenantId: user.tenantId,
         userId: user.userId,
         action: 'UPDATE',
+        module: 'System Configuration',
         resourceType: 'System Configuration',
-        metadata: { description: `Updated SSO configuration (Provider: ${validatedData.provider}, Enabled: ${validatedData.enabled})` } as any,
+        metadata: {
+          description: `Updated SSO configuration (Provider: ${validatedData.provider}, Enabled: ${validatedData.enabled})`,
+        } as any,
         ipAddress,
       },
     });
@@ -205,15 +207,14 @@ export const DELETE = withEnhancedAuth(async (request: NextRequest, { user, perm
 
     // Create audit log
     const ipAddress =
-      request.headers.get('x-forwarded-for') ||
-      request.headers.get('x-real-ip') ||
-      'unknown';
+      request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
 
     await prisma.auditLog.create({
       data: {
         tenantId: user.tenantId,
         userId: user.userId,
         action: 'DELETE',
+        module: 'System Configuration',
         resourceType: 'System Configuration',
         metadata: { description: 'Deleted SSO configuration' } as any,
         ipAddress,

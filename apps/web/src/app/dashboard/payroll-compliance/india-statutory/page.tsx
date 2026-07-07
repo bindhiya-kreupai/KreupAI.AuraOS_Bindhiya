@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   FileText,
   Calculator,
@@ -13,7 +13,7 @@ import {
   AlertCircle,
   Info,
   ChevronRight,
-  IndianRupee
+  IndianRupee,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -85,11 +85,20 @@ interface PTResult {
   stateCode: string;
   stateName: string;
   monthlyTax: number;
-  annualTax: number;
+  annualCap?: number;
+  isFebruaryAdjustment?: boolean;
+  isHalfYearlyBasis?: boolean;
+  message?: string;
 }
 
-// Supported states for Professional Tax
-const supportedStates = [
+interface PTStateOption {
+  code: string;
+  name: string;
+}
+
+// Fallback state list used before the canonical 17-state catalogue loads from
+// GET /api/compliance/india-professional-tax?action=supportedStates.
+const fallbackStates: PTStateOption[] = [
   { code: 'MH', name: 'Maharashtra' },
   { code: 'KA', name: 'Karnataka' },
   { code: 'TN', name: 'Tamil Nadu' },
@@ -138,6 +147,36 @@ export default function IndiaStatutoryPage() {
     stateCode: 'MH',
   });
   const [ptResult, setPTResult] = useState<PTResult | null>(null);
+  const [supportedStates, setSupportedStates] = useState<PTStateOption[]>(fallbackStates);
+
+  // Load the canonical 17-state PT catalogue from the richer compliance
+  // endpoint (tenant-scoped, auth-protected). Falls back to the built-in list.
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const res = await fetch('/api/compliance/india-professional-tax?action=supportedStates', {
+          credentials: 'same-origin',
+        });
+        if (!res.ok) return;
+        const json = await res.json();
+        const states = json?.data?.states;
+        if (active && Array.isArray(states) && states.length > 0) {
+          setSupportedStates(
+            states.map((s: { code: string; name: string }) => ({
+              code: s.code,
+              name: s.name,
+            }))
+          );
+        }
+      } catch {
+        // Keep fallback list — non-critical enrichment.
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   // Calculate PF
   const calculatePF = async () => {
@@ -160,8 +199,8 @@ export default function IndiaStatutoryPage() {
         setPFResult(data.data);
       }
     } catch (error: any) {
-            console.error('Error:', error);
-          }
+      console.error('Error:', error);
+    }
     setLoading(false);
   };
 
@@ -184,8 +223,8 @@ export default function IndiaStatutoryPage() {
         setESIResult(data.data);
       }
     } catch (error: any) {
-            console.error('Error:', error);
-          }
+      console.error('Error:', error);
+    }
     setLoading(false);
   };
 
@@ -213,24 +252,26 @@ export default function IndiaStatutoryPage() {
         setTDSResult(data.data);
       }
     } catch (error: any) {
-            console.error('Error:', error);
-          }
+      console.error('Error:', error);
+    }
     setLoading(false);
   };
 
-  // Calculate Professional Tax
+  // Calculate Professional Tax — wired to the canonical 17-state compliance
+  // engine (POST /api/compliance/india-professional-tax, action calculateMonthly).
   const calculatePT = async () => {
     if (!ptState.grossSalary) return;
     setLoading(true);
     try {
-      const response = await fetch('/api/india-statutory', {
+      const response = await fetch('/api/compliance/india-professional-tax', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'same-origin',
         body: JSON.stringify({
-          tenantId: 'default',
-          action: 'calculate-professional-tax',
-          grossSalary: parseFloat(ptState.grossSalary),
+          action: 'calculateMonthly',
           stateCode: ptState.stateCode,
+          monthlyGrossSalary: parseFloat(ptState.grossSalary),
+          month: new Date().getMonth() + 1,
         }),
       });
       const data = await response.json();
@@ -238,8 +279,8 @@ export default function IndiaStatutoryPage() {
         setPTResult(data.data);
       }
     } catch (error: any) {
-            console.error('Error:', error);
-          }
+      console.error('Error:', error);
+    }
     setLoading(false);
   };
 
@@ -254,10 +295,34 @@ export default function IndiaStatutoryPage() {
 
   // Tabs
   const tabs = [
-    { id: 'pf' as TabType, label: 'Provident Fund', labelHi: 'भविष्य निधि', icon: Building2, color: 'text-blue-500' },
-    { id: 'esi' as TabType, label: 'ESI', labelHi: 'कर्मचारी राज्य बीमा', icon: Shield, color: 'text-green-500' },
-    { id: 'tds' as TabType, label: 'TDS', labelHi: 'स्रोत पर कर कटौती', icon: Landmark, color: 'text-purple-500' },
-    { id: 'pt' as TabType, label: 'Professional Tax', labelHi: 'व्यावसायिक कर', icon: FileText, color: 'text-orange-500' },
+    {
+      id: 'pf' as TabType,
+      label: 'Provident Fund',
+      labelHi: 'भविष्य निधि',
+      icon: Building2,
+      color: 'text-blue-500',
+    },
+    {
+      id: 'esi' as TabType,
+      label: 'ESI',
+      labelHi: 'कर्मचारी राज्य बीमा',
+      icon: Shield,
+      color: 'text-green-500',
+    },
+    {
+      id: 'tds' as TabType,
+      label: 'TDS',
+      labelHi: 'स्रोत पर कर कटौती',
+      icon: Landmark,
+      color: 'text-purple-500',
+    },
+    {
+      id: 'pt' as TabType,
+      label: 'Professional Tax',
+      labelHi: 'व्यावसायिक कर',
+      icon: FileText,
+      color: 'text-orange-500',
+    },
   ];
 
   return (
@@ -294,7 +359,9 @@ export default function IndiaStatutoryPage() {
         <div className="flex items-start gap-3">
           <Info className="w-5 h-5 text-orange-500 mt-0.5" />
           <div>
-            <h3 className="font-semibold text-orange-800 dark:text-orange-200">FY 2024-25 Rates Applied</h3>
+            <h3 className="font-semibold text-orange-800 dark:text-orange-200">
+              FY 2024-25 Rates Applied
+            </h3>
             <p className="text-sm text-orange-700 dark:text-orange-300">
               PF: 12% | ESI: 0.75% (Employee) + 3.25% (Employer) | New Tax Regime Default
             </p>
@@ -312,9 +379,10 @@ export default function IndiaStatutoryPage() {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 px-6 py-4 text-sm font-medium whitespace-nowrap transition-colors
-                  ${activeTab === tab.id
-                    ? 'border-b-2 border-orange-500 text-orange-600 dark:text-orange-400 bg-orange-50/50 dark:bg-orange-900/20'
-                    : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
+                  ${
+                    activeTab === tab.id
+                      ? 'border-b-2 border-orange-500 text-orange-600 dark:text-orange-400 bg-orange-50/50 dark:bg-orange-900/20'
+                      : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'
                   }`}
               >
                 <Icon className={`w-4 h-4 ${activeTab === tab.id ? 'text-orange-500' : ''}`} />
@@ -364,10 +432,15 @@ export default function IndiaStatutoryPage() {
                     type="checkbox"
                     id="voluntaryPF"
                     checked={pfState.isVoluntaryHigher}
-                    onChange={(e) => setPFState({ ...pfState, isVoluntaryHigher: e.target.checked })}
+                    onChange={(e) =>
+                      setPFState({ ...pfState, isVoluntaryHigher: e.target.checked })
+                    }
                     className="rounded border-slate-300"
                   />
-                  <label htmlFor="voluntaryPF" className="text-sm text-slate-600 dark:text-slate-400">
+                  <label
+                    htmlFor="voluntaryPF"
+                    className="text-sm text-slate-600 dark:text-slate-400"
+                  >
                     Voluntary Higher Contribution (स्वैच्छिक उच्च योगदान)
                   </label>
                 </div>
@@ -376,7 +449,11 @@ export default function IndiaStatutoryPage() {
                   disabled={loading || !pfState.basicSalary}
                   className="w-full py-2.5 bg-blue-500 hover:bg-blue-600 text-white rounded-lg font-medium flex items-center justify-center gap-2 disabled:opacity-50"
                 >
-                  {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Calculator className="w-4 h-4" />}
+                  {loading ? (
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Calculator className="w-4 h-4" />
+                  )}
                   Calculate PF
                 </button>
               </div>
@@ -387,33 +464,53 @@ export default function IndiaStatutoryPage() {
                   <div className="space-y-3">
                     <div className="flex justify-between text-sm">
                       <span className="text-slate-600 dark:text-slate-400">Contributable Wage</span>
-                      <span className="font-medium text-slate-900 dark:text-slate-100">{formatCurrency(pfResult.contributableWage)}</span>
+                      <span className="font-medium text-slate-900 dark:text-slate-100">
+                        {formatCurrency(pfResult.contributableWage)}
+                      </span>
                     </div>
                     <hr className="border-slate-200 dark:border-slate-700" />
                     <div className="flex justify-between text-sm">
                       <span className="text-slate-600 dark:text-slate-400">Employee PF (12%)</span>
-                      <span className="font-medium text-slate-900 dark:text-slate-100">{formatCurrency(pfResult.employeeContribution)}</span>
+                      <span className="font-medium text-slate-900 dark:text-slate-100">
+                        {formatCurrency(pfResult.employeeContribution)}
+                      </span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-slate-600 dark:text-slate-400">Employer EPF (3.67%)</span>
-                      <span className="font-medium text-slate-900 dark:text-slate-100">{formatCurrency(pfResult.employerPFContribution)}</span>
+                      <span className="text-slate-600 dark:text-slate-400">
+                        Employer EPF (3.67%)
+                      </span>
+                      <span className="font-medium text-slate-900 dark:text-slate-100">
+                        {formatCurrency(pfResult.employerPFContribution)}
+                      </span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-slate-600 dark:text-slate-400">Employer EPS (8.33%)</span>
-                      <span className="font-medium text-slate-900 dark:text-slate-100">{formatCurrency(pfResult.employerEPSContribution)}</span>
+                      <span className="text-slate-600 dark:text-slate-400">
+                        Employer EPS (8.33%)
+                      </span>
+                      <span className="font-medium text-slate-900 dark:text-slate-100">
+                        {formatCurrency(pfResult.employerEPSContribution)}
+                      </span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-slate-600 dark:text-slate-400">Admin Charges (0.5%)</span>
-                      <span className="font-medium text-slate-900 dark:text-slate-100">{formatCurrency(pfResult.adminCharges)}</span>
+                      <span className="text-slate-600 dark:text-slate-400">
+                        Admin Charges (0.5%)
+                      </span>
+                      <span className="font-medium text-slate-900 dark:text-slate-100">
+                        {formatCurrency(pfResult.adminCharges)}
+                      </span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-slate-600 dark:text-slate-400">EDLI (0.5%)</span>
-                      <span className="font-medium text-slate-900 dark:text-slate-100">{formatCurrency(pfResult.edliCharges)}</span>
+                      <span className="font-medium text-slate-900 dark:text-slate-100">
+                        {formatCurrency(pfResult.edliCharges)}
+                      </span>
                     </div>
                     <hr className="border-slate-200 dark:border-slate-700" />
                     <div className="flex justify-between text-sm font-semibold">
                       <span className="text-blue-600">Total Employer Cost</span>
-                      <span className="text-blue-600">{formatCurrency(pfResult.totalEmployerCost)}</span>
+                      <span className="text-blue-600">
+                        {formatCurrency(pfResult.totalEmployerCost)}
+                      </span>
                     </div>
                   </div>
                 </div>
@@ -449,7 +546,11 @@ export default function IndiaStatutoryPage() {
                   disabled={loading || !esiState.grossSalary}
                   className="w-full py-2.5 bg-green-500 hover:bg-green-600 text-white rounded-lg font-medium flex items-center justify-center gap-2 disabled:opacity-50"
                 >
-                  {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Calculator className="w-4 h-4" />}
+                  {loading ? (
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Calculator className="w-4 h-4" />
+                  )}
                   Calculate ESI
                 </button>
               </div>
@@ -467,22 +568,32 @@ export default function IndiaStatutoryPage() {
                   {esiResult.isApplicable ? (
                     <div className="space-y-3">
                       <div className="flex justify-between text-sm">
-                        <span className="text-slate-600 dark:text-slate-400">Contributable Wage</span>
-                        <span className="font-medium text-slate-900 dark:text-slate-100">{formatCurrency(esiResult.contributableWage)}</span>
+                        <span className="text-slate-600 dark:text-slate-400">
+                          Contributable Wage
+                        </span>
+                        <span className="font-medium text-slate-900 dark:text-slate-100">
+                          {formatCurrency(esiResult.contributableWage)}
+                        </span>
                       </div>
                       <hr className="border-slate-200 dark:border-slate-700" />
                       <div className="flex justify-between text-sm">
                         <span className="text-slate-600 dark:text-slate-400">Employee (0.75%)</span>
-                        <span className="font-medium text-slate-900 dark:text-slate-100">{formatCurrency(esiResult.employeeContribution)}</span>
+                        <span className="font-medium text-slate-900 dark:text-slate-100">
+                          {formatCurrency(esiResult.employeeContribution)}
+                        </span>
                       </div>
                       <div className="flex justify-between text-sm">
                         <span className="text-slate-600 dark:text-slate-400">Employer (3.25%)</span>
-                        <span className="font-medium text-slate-900 dark:text-slate-100">{formatCurrency(esiResult.employerContribution)}</span>
+                        <span className="font-medium text-slate-900 dark:text-slate-100">
+                          {formatCurrency(esiResult.employerContribution)}
+                        </span>
                       </div>
                       <hr className="border-slate-200 dark:border-slate-700" />
                       <div className="flex justify-between text-sm font-semibold">
                         <span className="text-green-600">Total Contribution</span>
-                        <span className="text-green-600">{formatCurrency(esiResult.totalContribution)}</span>
+                        <span className="text-green-600">
+                          {formatCurrency(esiResult.totalContribution)}
+                        </span>
                       </div>
                     </div>
                   ) : (
@@ -532,7 +643,9 @@ export default function IndiaStatutoryPage() {
                   <input
                     type="number"
                     value={tdsState.annualGrossSalary}
-                    onChange={(e) => setTDSState({ ...tdsState, annualGrossSalary: e.target.value })}
+                    onChange={(e) =>
+                      setTDSState({ ...tdsState, annualGrossSalary: e.target.value })
+                    }
                     className="w-full px-4 py-2 border border-slate-300 dark:border-slate-600 rounded-lg bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
                     placeholder="Enter annual salary"
                   />
@@ -541,7 +654,9 @@ export default function IndiaStatutoryPage() {
                   <>
                     <div className="grid grid-cols-2 gap-3">
                       <div>
-                        <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">80C (Max 1.5L)</label>
+                        <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                          80C (Max 1.5L)
+                        </label>
                         <input
                           type="number"
                           value={tdsState.section80C}
@@ -550,7 +665,9 @@ export default function IndiaStatutoryPage() {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">80D (Health)</label>
+                        <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                          80D (Health)
+                        </label>
                         <input
                           type="number"
                           value={tdsState.section80D}
@@ -559,7 +676,9 @@ export default function IndiaStatutoryPage() {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">24B (Home Loan)</label>
+                        <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                          24B (Home Loan)
+                        </label>
                         <input
                           type="number"
                           value={tdsState.section24B}
@@ -568,7 +687,9 @@ export default function IndiaStatutoryPage() {
                         />
                       </div>
                       <div>
-                        <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">HRA Exemption</label>
+                        <label className="block text-xs font-medium text-slate-600 dark:text-slate-400 mb-1">
+                          HRA Exemption
+                        </label>
                         <input
                           type="number"
                           value={tdsState.hra}
@@ -584,7 +705,11 @@ export default function IndiaStatutoryPage() {
                   disabled={loading || !tdsState.annualGrossSalary}
                   className="w-full py-2.5 bg-purple-500 hover:bg-purple-600 text-white rounded-lg font-medium flex items-center justify-center gap-2 disabled:opacity-50"
                 >
-                  {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Calculator className="w-4 h-4" />}
+                  {loading ? (
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Calculator className="w-4 h-4" />
+                  )}
                   Calculate TDS
                 </button>
               </div>
@@ -593,23 +718,33 @@ export default function IndiaStatutoryPage() {
                 <div className="bg-slate-50 dark:bg-slate-800 rounded-xl p-5 space-y-4">
                   <h4 className="font-semibold text-slate-900 dark:text-slate-100 flex items-center gap-2">
                     Tax Breakdown
-                    <span className={`text-xs px-2 py-0.5 rounded ${tdsResult.regime === 'NEW' ? 'bg-purple-100 text-purple-700' : 'bg-slate-200 text-slate-700'}`}>
+                    <span
+                      className={`text-xs px-2 py-0.5 rounded ${tdsResult.regime === 'NEW' ? 'bg-purple-100 text-purple-700' : 'bg-slate-200 text-slate-700'}`}
+                    >
                       {tdsResult.regime} Regime
                     </span>
                   </h4>
                   <div className="space-y-3">
                     <div className="flex justify-between text-sm">
                       <span className="text-slate-600 dark:text-slate-400">Gross Salary</span>
-                      <span className="font-medium text-slate-900 dark:text-slate-100">{formatCurrency(tdsResult.annualGrossSalary)}</span>
+                      <span className="font-medium text-slate-900 dark:text-slate-100">
+                        {formatCurrency(tdsResult.annualGrossSalary)}
+                      </span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-slate-600 dark:text-slate-400">Taxable Income</span>
-                      <span className="font-medium text-slate-900 dark:text-slate-100">{formatCurrency(tdsResult.taxableIncome)}</span>
+                      <span className="font-medium text-slate-900 dark:text-slate-100">
+                        {formatCurrency(tdsResult.taxableIncome)}
+                      </span>
                     </div>
                     <hr className="border-slate-200 dark:border-slate-700" />
                     <div className="flex justify-between text-sm">
-                      <span className="text-slate-600 dark:text-slate-400">Tax (Before Rebate)</span>
-                      <span className="font-medium text-slate-900 dark:text-slate-100">{formatCurrency(tdsResult.taxBeforeRebate)}</span>
+                      <span className="text-slate-600 dark:text-slate-400">
+                        Tax (Before Rebate)
+                      </span>
+                      <span className="font-medium text-slate-900 dark:text-slate-100">
+                        {formatCurrency(tdsResult.taxBeforeRebate)}
+                      </span>
                     </div>
                     {tdsResult.rebateUnder87A > 0 && (
                       <div className="flex justify-between text-sm text-green-600">
@@ -619,7 +754,9 @@ export default function IndiaStatutoryPage() {
                     )}
                     <div className="flex justify-between text-sm">
                       <span className="text-slate-600 dark:text-slate-400">Cess (4%)</span>
-                      <span className="font-medium text-slate-900 dark:text-slate-100">{formatCurrency(tdsResult.cess)}</span>
+                      <span className="font-medium text-slate-900 dark:text-slate-100">
+                        {formatCurrency(tdsResult.cess)}
+                      </span>
                     </div>
                     <hr className="border-slate-200 dark:border-slate-700" />
                     <div className="flex justify-between text-sm font-semibold">
@@ -628,7 +765,9 @@ export default function IndiaStatutoryPage() {
                     </div>
                     <div className="flex justify-between text-sm font-semibold bg-purple-100 dark:bg-purple-900/30 p-2 rounded-lg">
                       <span className="text-purple-700 dark:text-purple-300">Monthly TDS</span>
-                      <span className="text-purple-700 dark:text-purple-300">{formatCurrency(tdsResult.monthlyTDS)}</span>
+                      <span className="text-purple-700 dark:text-purple-300">
+                        {formatCurrency(tdsResult.monthlyTDS)}
+                      </span>
                     </div>
                     <div className="text-center text-xs text-slate-500">
                       Effective Rate: {tdsResult.effectiveRate}%
@@ -680,7 +819,11 @@ export default function IndiaStatutoryPage() {
                   disabled={loading || !ptState.grossSalary}
                   className="w-full py-2.5 bg-orange-500 hover:bg-orange-600 text-white rounded-lg font-medium flex items-center justify-center gap-2 disabled:opacity-50"
                 >
-                  {loading ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Calculator className="w-4 h-4" />}
+                  {loading ? (
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <Calculator className="w-4 h-4" />
+                  )}
                   Calculate PT
                 </button>
               </div>
@@ -693,14 +836,40 @@ export default function IndiaStatutoryPage() {
                   <div className="space-y-3">
                     <div className="flex justify-between text-sm">
                       <span className="text-slate-600 dark:text-slate-400">Monthly Tax</span>
-                      <span className="font-medium text-slate-900 dark:text-slate-100">{formatCurrency(ptResult.monthlyTax)}</span>
+                      <span className="font-medium text-slate-900 dark:text-slate-100">
+                        {formatCurrency(ptResult.monthlyTax)}
+                      </span>
                     </div>
                     <div className="flex justify-between text-sm font-semibold">
-                      <span className="text-orange-600">Annual Tax</span>
-                      <span className="text-orange-600">{formatCurrency(ptResult.annualTax)}</span>
+                      <span className="text-orange-600">Annual Tax (est.)</span>
+                      <span className="text-orange-600">
+                        {formatCurrency(
+                          Math.min(
+                            ptResult.monthlyTax * 12,
+                            ptResult.annualCap ?? ptResult.monthlyTax * 12
+                          )
+                        )}
+                      </span>
                     </div>
+                    {ptResult.isHalfYearlyBasis && (
+                      <div className="flex justify-between text-xs">
+                        <span className="text-slate-500">Basis</span>
+                        <span className="text-slate-700 dark:text-slate-300">Half-yearly</span>
+                      </div>
+                    )}
+                    {ptResult.isFebruaryAdjustment && (
+                      <div className="flex justify-between text-xs">
+                        <span className="text-slate-500">February</span>
+                        <span className="text-slate-700 dark:text-slate-300">
+                          Adjustment applied
+                        </span>
+                      </div>
+                    )}
                     <div className="bg-orange-50 dark:bg-orange-900/20 p-3 rounded-lg text-xs text-orange-700 dark:text-orange-300">
-                      Note: Maximum PT is capped at ₹2,500/year in most states
+                      {ptResult.message ??
+                        `Note: Annual PT is capped at ${formatCurrency(
+                          ptResult.annualCap ?? 2500
+                        )} in ${ptResult.stateName}.`}
                     </div>
                   </div>
                 </div>
@@ -719,12 +888,16 @@ export default function IndiaStatutoryPage() {
         <div className="grid md:grid-cols-3 gap-3">
           <div className="p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg">
             <div className="text-blue-600 dark:text-blue-400 font-semibold">EPF Payment</div>
-            <div className="text-sm text-slate-600 dark:text-slate-400">15th of following month</div>
+            <div className="text-sm text-slate-600 dark:text-slate-400">
+              15th of following month
+            </div>
             <div className="text-xs text-slate-500 mt-1">Penalty: 1% per month</div>
           </div>
           <div className="p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
             <div className="text-green-600 dark:text-green-400 font-semibold">ESI Payment</div>
-            <div className="text-sm text-slate-600 dark:text-slate-400">15th of following month</div>
+            <div className="text-sm text-slate-600 dark:text-slate-400">
+              15th of following month
+            </div>
             <div className="text-xs text-slate-500 mt-1">Penalty: 12% per annum</div>
           </div>
           <div className="p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg">
@@ -737,4 +910,3 @@ export default function IndiaStatutoryPage() {
     </div>
   );
 }
-

@@ -81,10 +81,10 @@ export interface AuditLogEntry {
   id: string;
   action: AuditAction;
   severity: AuditSeverity;
-  userId: string;
-  userEmail: string;
+  userId?: string;
+  userEmail?: string;
   tenantId: string;
-  companyId: string;
+  companyId?: string;
   resourceType: string; // e.g., 'employee', 'payroll', 'leave'
   resourceId?: string;
   changes?: {
@@ -132,7 +132,7 @@ export class AuditService {
 
     try {
       // Primary: persist to PostgreSQL
-      await prisma.auditLog.create({
+      await (prisma.auditLog.create as any)({
         data: {
           id,
           tenantId: entry.tenantId,

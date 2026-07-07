@@ -246,7 +246,7 @@ function generateMockInsights(types?: InsightType[]): AIInsight[] {
       confidence: 0.85,
       generatedAt: new Date(),
       dismissed: false,
-      actionUrl: '/dashboard/learning/training-calendar',
+      actionUrl: '/dashboard/learning/calendar',
     },
   ];
 

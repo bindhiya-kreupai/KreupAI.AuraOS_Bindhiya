@@ -51,7 +51,7 @@ export class ConsentRecordService extends BaseService {
     userAgent?: string;
     notes?: string;
   }) {
-    return prisma.consentRecord.create({
+    return (prisma as any).consentRecord.create({
       data: {
         tenantId: input.tenantId,
         subjectId: input.subjectId,
@@ -69,11 +69,11 @@ export class ConsentRecordService extends BaseService {
   }
 
   async revoke(id: string, tenantId: string, reason?: string) {
-    const existing = await prisma.consentRecord.findFirst({ where: { id, tenantId } });
+    const existing = await (prisma as any).consentRecord.findFirst({ where: { id, tenantId } });
     if (!existing) return null;
     if (!existing.granted) throw new ConsentNotGrantedError(id);
     if (existing.revokedAt) throw new ConsentAlreadyRevokedError(id);
-    return prisma.consentRecord.update({
+    return (prisma as any).consentRecord.update({
       where: { id },
       data: {
         revokedAt: new Date(),
@@ -87,14 +87,14 @@ export class ConsentRecordService extends BaseService {
    * at the current policy version. Drives gates on payroll/recruitment/etc.
    */
   async activeConsentFor(tenantId: string, subjectId: string, purpose: ConsentPurpose) {
-    return prisma.consentRecord.findFirst({
+    return (prisma as any).consentRecord.findFirst({
       where: { tenantId, subjectId, purpose, granted: true, revokedAt: null },
       orderBy: { grantedAt: 'desc' },
     });
   }
 
   async historyFor(tenantId: string, subjectId: string) {
-    return prisma.consentRecord.findMany({
+    return (prisma as any).consentRecord.findMany({
       where: { tenantId, subjectId },
       orderBy: { createdAt: 'desc' },
     });
@@ -121,13 +121,13 @@ export class ConsentRecordService extends BaseService {
       where.revokedAt = null;
     }
     const [items, total] = await Promise.all([
-      prisma.consentRecord.findMany({
+      (prisma as any).consentRecord.findMany({
         where,
         orderBy: { createdAt: 'desc' },
         skip,
         take: limit,
       }),
-      prisma.consentRecord.count({ where }),
+      (prisma as any).consentRecord.count({ where }),
     ]);
     return { items, total, page, pageSize: limit, hasNextPage: skip + items.length < total };
   }

@@ -170,6 +170,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
         tenantId: user.tenantId,
         userId: user.userId,
         action: 'DELETE',
+        module: 'User Management',
         resourceType: 'User Management',
         metadata: {
           description: `Deactivated user: ${targetUser.email}. Reason: ${validatedData.reason}`,

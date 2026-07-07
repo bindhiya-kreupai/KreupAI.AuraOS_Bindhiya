@@ -1,69 +1,51 @@
 /**
- * Employee Autocomplete API
- * Uses @aura/search for autocomplete suggestions
+ * Employee Autocomplete API — Prisma-backed implementation.
+ * Previously used @aura/search (Elasticsearch); rewired to Postgres.
  */
 
 import type { NextRequest } from 'next/server';
-import { NextResponse } from 'next/server';
-import { employeeSearchService } from '@/lib/search/employee-search.service';
-import { logger } from '@/lib/logger';
+import { createProtectedRoute } from '@/lib/api/route-wrapper';
+import { prisma } from '@aura/database';
+import { ValidationError } from '@/lib/errors';
 
-/**
- * GET /api/employees/autocomplete
- * Get autocomplete suggestions for employee names
- */
-export async function GET(request: NextRequest) {
-  try {
-    const searchParams = request.nextUrl.searchParams;
+export const dynamic = 'force-dynamic';
 
-    // Extract query parameters
-    const prefix = searchParams.get('q') || searchParams.get('prefix') || '';
-    const size = parseInt(searchParams.get('size') || '10');
+export const GET = createProtectedRoute(
+  async (request: NextRequest, { auth }) => {
+    const sp = request.nextUrl.searchParams;
+    const prefix = (sp.get('q') || sp.get('prefix') || '').trim();
+    const size = Math.min(50, Math.max(1, parseInt(sp.get('size') || '10', 10)));
 
-    // TODO: Extract tenantId from authenticated session
-    const tenantId = 'default';
-
-    // Validate parameters
-    if (!prefix || prefix.length < 2) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Prefix must be at least 2 characters',
-        },
-        { status: 400 }
-      );
+    if (prefix.length < 2) {
+      throw new ValidationError('Prefix must be at least 2 characters');
     }
 
-    if (size < 1 || size > 50) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Size must be between 1 and 50',
-        },
-        { status: 400 }
-      );
-    }
-
-    // Get autocomplete suggestions
-    const suggestions = await employeeSearchService.autocompleteEmployees(tenantId, prefix, size);
-
-    return NextResponse.json({
-      success: true,
-      data: {
-        suggestions,
-        count: suggestions.length,
+    const rows = await prisma.employee.findMany({
+      where: {
+        company: { tenantId: auth!.tenantId },
+        isDeleted: false,
+        OR: [
+          { firstName: { startsWith: prefix, mode: 'insensitive' } },
+          { lastName: { startsWith: prefix, mode: 'insensitive' } },
+          { employeeCode: { startsWith: prefix, mode: 'insensitive' } },
+        ],
       },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        employeeCode: true,
+      },
+      orderBy: { firstName: 'asc' },
+      take: size,
     });
-  } catch (error: any) {
-    logger.error({ error }, 'Error in employee autocomplete API');
 
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Internal server error',
-        message: error instanceof Error ? error.message : 'Unknown error',
-      },
-      { status: 500 }
-    );
+    const suggestions = rows.map((r) => `${r.firstName} ${r.lastName}`);
+
+    return { suggestions, count: suggestions.length };
+  },
+  {
+    requiredPermissions: ['employees:read'],
+    rateLimit: 'API_USER',
   }
-}
+);

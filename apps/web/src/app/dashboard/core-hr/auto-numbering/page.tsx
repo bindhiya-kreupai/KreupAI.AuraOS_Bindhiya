@@ -6,6 +6,7 @@ import { AutoNumberService } from '../services';
 import type { AutoNumberSequence } from '../types';
 
 interface SettingsRow {
+  entityType: string;
   entity: string;
   prefix: string;
   digits: number;
@@ -14,12 +15,31 @@ interface SettingsRow {
 }
 
 const defaultSettings: SettingsRow[] = [
-  { entity: 'Employee ID', prefix: 'EMP-', digits: 4, next: '0042', example: 'EMP-0042' },
-  { entity: 'Department ID', prefix: 'DEPT-', digits: 3, next: '012', example: 'DEPT-012' },
-  { entity: 'Position ID', prefix: 'POS-', digits: 5, next: '00104', example: 'POS-00104' },
+  {
+    entityType: 'employee',
+    entity: 'Employee ID',
+    prefix: 'EMP-',
+    digits: 4,
+    next: '0042',
+    example: 'EMP-0042',
+  },
+  {
+    entityType: 'document',
+    entity: 'Document ID',
+    prefix: 'DOC-',
+    digits: 3,
+    next: '012',
+    example: 'DOC-012',
+  },
+  {
+    entityType: 'position',
+    entity: 'Position ID',
+    prefix: 'POS-',
+    digits: 5,
+    next: '00104',
+    example: 'POS-00104',
+  },
 ];
-
-const STORAGE_KEY = 'auraos.coreHr.autoNumbers.v1';
 
 const formatEntityType = (entityType: string): string => {
   return (
@@ -33,6 +53,7 @@ const formatEntityType = (entityType: string): string => {
 const sequenceToSettingsRow = (seq: AutoNumberSequence): SettingsRow => {
   const nextStr = String(seq.currentNumber).padStart(seq.numberLength, '0');
   return {
+    entityType: seq.entityType,
     entity: formatEntityType(seq.entityType),
     prefix: seq.prefix,
     digits: seq.numberLength,
@@ -46,6 +67,7 @@ export default function AutoNumberingPage() {
   const [settings, setSettings] = useState<SettingsRow[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [resetting, setResetting] = useState(false);
   const [status, setStatus] = useState<{ kind: 'success' | 'error'; text: string } | null>(null);
 
   useEffect(() => {
@@ -64,29 +86,7 @@ export default function AutoNumberingPage() {
       const data = await AutoNumberService.getAllSequences();
       const baseRows = data.length > 0 ? data.map(sequenceToSettingsRow) : defaultSettings;
       setServerSettings(baseRows);
-
-      let stored: Partial<Record<string, SettingsRow>> = {};
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (raw) stored = JSON.parse(raw);
-      } catch {
-        /* ignore */
-      }
-
-      const merged = baseRows.map((row) => {
-        const override = stored[row.entity];
-        if (!override) return row;
-        const digits = Number(override.digits) || row.digits;
-        const nextPadded = String(override.next ?? row.next).padStart(digits, '0');
-        return {
-          ...row,
-          prefix: override.prefix ?? row.prefix,
-          digits,
-          next: nextPadded,
-          example: `${override.prefix ?? row.prefix}${nextPadded}`,
-        };
-      });
-      setSettings(merged);
+      setSettings(baseRows);
     } catch (error: any) {
       console.error('Error:', error);
       setServerSettings(defaultSettings);
@@ -115,15 +115,23 @@ export default function AutoNumberingPage() {
     setStatus(null);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     setSaving(true);
+    setStatus(null);
     try {
-      const overrides: Record<string, SettingsRow> = {};
-      settings.forEach((row) => {
-        overrides[row.entity] = row;
-      });
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(overrides));
-      setStatus({ kind: 'success', text: 'Sequences saved (browser-local).' });
+      const saved = await Promise.all(
+        settings.map((row) =>
+          AutoNumberService.updateSequence(row.entityType, {
+            prefix: row.prefix,
+            numberLength: row.digits,
+            nextNumber: Number(row.next) || 1,
+          })
+        )
+      );
+      const savedRows = saved.map(sequenceToSettingsRow);
+      setServerSettings(savedRows);
+      setSettings(savedRows);
+      setStatus({ kind: 'success', text: 'Sequences saved for all users.' });
     } catch (e: any) {
       setStatus({ kind: 'error', text: e?.message || 'Failed to save sequences.' });
     } finally {
@@ -131,14 +139,31 @@ export default function AutoNumberingPage() {
     }
   };
 
-  const handleReset = () => {
-    try {
-      localStorage.removeItem(STORAGE_KEY);
-    } catch {
-      /* ignore */
-    }
+  const handleRevert = () => {
     setSettings(serverSettings);
-    setStatus({ kind: 'success', text: 'Reset to server values.' });
+    setStatus({ kind: 'success', text: 'Reverted to last saved values.' });
+  };
+
+  const handleResetCounters = async () => {
+    const ok = window.confirm(
+      'Reset every sequence counter back to 1 for all users? This affects the next generated IDs tenant-wide.'
+    );
+    if (!ok) return;
+    setResetting(true);
+    setStatus(null);
+    try {
+      const reset = await Promise.all(
+        settings.map((row) => AutoNumberService.resetSequence(row.entityType))
+      );
+      const resetRows = reset.map(sequenceToSettingsRow);
+      setServerSettings(resetRows);
+      setSettings(resetRows);
+      setStatus({ kind: 'success', text: 'All sequence counters reset to 1.' });
+    } catch (e: any) {
+      setStatus({ kind: 'error', text: e?.message || 'Failed to reset sequences.' });
+    } finally {
+      setResetting(false);
+    }
   };
 
   return (
@@ -155,15 +180,22 @@ export default function AutoNumberingPage() {
         </div>
         <div className="flex gap-2">
           <button
-            onClick={handleReset}
-            disabled={loading || saving}
+            onClick={handleRevert}
+            disabled={loading || saving || resetting}
             className="px-4 py-2 border border-slate-200 dark:border-slate-800 rounded-xl font-bold hover:bg-slate-50 dark:hover:bg-slate-800 flex items-center gap-2 transition-colors disabled:opacity-50"
           >
-            <RotateCcw className="w-4 h-4" /> Reset
+            <RotateCcw className="w-4 h-4" /> Revert
+          </button>
+          <button
+            onClick={handleResetCounters}
+            disabled={loading || saving || resetting}
+            className="px-4 py-2 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 rounded-xl font-bold hover:bg-rose-50 dark:hover:bg-rose-900/20 flex items-center gap-2 transition-colors disabled:opacity-50"
+          >
+            <RotateCcw className="w-4 h-4" /> {resetting ? 'Resetting…' : 'Reset Counters'}
           </button>
           <button
             onClick={handleSave}
-            disabled={loading || saving}
+            disabled={loading || saving || resetting}
             className="px-6 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 active:scale-95 transition-all flex items-center gap-2 disabled:opacity-60"
           >
             <Save className="w-4 h-4" /> {saving ? 'Saving…' : 'Save Changes'}
@@ -208,7 +240,7 @@ export default function AutoNumberingPage() {
               <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                 {settings.map((row, i) => (
                   <tr
-                    key={i}
+                    key={row.entityType || i}
                     className="hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
                   >
                     <td className="px-6 py-4 font-bold">{row.entity}</td>
@@ -252,12 +284,9 @@ export default function AutoNumberingPage() {
       <div className="rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-800 px-4 py-3 text-xs text-amber-800 dark:text-amber-200 flex gap-2">
         <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
         <p>
-          Sequence overrides persist per-browser. The /api/core-hr/auto-numbers endpoint currently
-          exposes <code className="px-1 mx-1 bg-amber-100 dark:bg-amber-900/40 rounded">GET</code>+
-          <code className="px-1 mx-1 bg-amber-100 dark:bg-amber-900/40 rounded">POST</code>
-          only; adding <code className="px-1 bg-amber-100 dark:bg-amber-900/40 rounded">PUT</code>
-          would let edits apply tenant-wide. Changing &quot;Start/Next&quot; below the existing max
-          will cause duplicate-ID errors — proceed with caution.
+          Changes are saved server-side and apply tenant-wide for every user. Setting
+          &quot;Start/Next&quot; below the existing highest issued number may cause duplicate-ID
+          errors — proceed with caution.
         </p>
       </div>
     </div>
