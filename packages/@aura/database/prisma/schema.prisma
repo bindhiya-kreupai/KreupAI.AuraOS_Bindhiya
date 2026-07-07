@@ -4856,6 +4856,139 @@ model WebhookLog {
   @@map("aura_webhook_log")
 }
 
+model OAuthState {
+  id         String    @id @default(uuid())
+  state      String    @unique(map: "OAuthState_state_key")
+  tenantId   String
+  userId     String?
+  provider   String
+  redirectTo String?
+  data       Json?
+  expiresAt  DateTime
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  isDeleted  Boolean   @default(false)
+  deletedAt  DateTime?
+
+  @@index([expiresAt], map: "OAuthState_expiresAt_idx")
+  @@index([provider], map: "OAuthState_provider_idx")
+  @@index([tenantId], map: "OAuthState_tenantId_idx")
+  @@map("aura_oauth_state")
+}
+
+model IntegrationConnection {
+  id                   String                @id @default(uuid())
+  tenantId             String
+  integrationId        String
+  integrationName      String
+  provider             String?
+  category             String?
+  status               String                @default("PENDING")
+  configuration        Json?
+  credentials          Json?
+  fieldMappings        Json?
+  syncEnabled          Boolean               @default(false)
+  syncFrequency        String?
+  lastSyncAt           DateTime?
+  nextSyncAt           DateTime?
+  connectedAt          DateTime?
+  connectedBy          String?
+  disconnectedAt       DateTime?
+  disconnectedBy       String?
+  healthStatus         String                @default("UNKNOWN")
+  lastHealthCheck      DateTime?
+  errorMessage         String?
+  isActive             Boolean               @default(true)
+  metadata             Json?
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  createdBy            String?
+  updatedBy            String?
+  deletedAt            DateTime?
+  isDeleted            Boolean               @default(false)
+  syncJobs             IntegrationSyncJob[]
+  logs                 IntegrationLog[]
+
+  @@unique([tenantId, integrationId], map: "IntegrationConnection_tenantId_integrationId_key")
+  @@index([status], map: "IntegrationConnection_status_idx")
+  @@index([tenantId], map: "IntegrationConnection_tenantId_idx")
+  @@index([provider], map: "IntegrationConnection_provider_idx")
+  @@index([isActive], map: "IntegrationConnection_isActive_idx")
+  @@map("aura_integration_connection")
+}
+
+model IntegrationSyncJob {
+  id                String                @id @default(uuid())
+  tenantId          String
+  integrationId     String
+  connectionId      String
+  type              String                @default("INCREMENTAL")
+  direction         String                @default("BIDIRECTIONAL")
+  entity            String
+  action            String?
+  status            String                @default("QUEUED")
+  progress          Int                   @default(0)
+  recordsProcessed  Int                   @default(0)
+  recordsCreated    Int                   @default(0)
+  recordsUpdated    Int                   @default(0)
+  recordsFailed     Int                   @default(0)
+  errors            Json?
+  scheduledAt       DateTime?
+  startedAt         DateTime?
+  completedAt       DateTime?
+  duration          Int?
+  triggeredBy       String                @default("MANUAL")
+  triggeredByUser   String?
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+  createdBy         String?
+  updatedBy         String?
+  deletedAt         DateTime?
+  isDeleted         Boolean               @default(false)
+  connection        IntegrationConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade, map: "IntegrationSyncJob_connectionId_fkey")
+
+  @@index([status], map: "IntegrationSyncJob_status_idx")
+  @@index([connectionId], map: "IntegrationSyncJob_connectionId_idx")
+  @@index([tenantId], map: "IntegrationSyncJob_tenantId_idx")
+  @@map("aura_integration_sync_job")
+}
+
+model IntegrationLog {
+  id              String                @id @default(uuid())
+  tenantId        String
+  integrationId   String
+  connectionId    String
+  direction       String
+  method          String
+  endpoint        String
+  requestHeaders  Json?
+  requestBody     String?
+  statusCode      Int
+  responseHeaders Json?
+  responseBody    String?
+  responseTime    Int
+  action          String?
+  entity          String?
+  recordId        String?
+  syncJobId       String?
+  success         Boolean               @default(false)
+  errorMessage    String?
+  timestamp       DateTime              @default(now())
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @default(now())
+  createdBy       String?
+  updatedBy       String?
+  deletedAt       DateTime?
+  isDeleted       Boolean               @default(false)
+  connection      IntegrationConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade, map: "IntegrationLog_connectionId_fkey")
+
+  @@index([timestamp], map: "IntegrationLog_timestamp_idx")
+  @@index([connectionId], map: "IntegrationLog_connectionId_idx")
+  @@index([success], map: "IntegrationLog_success_idx")
+  @@index([tenantId], map: "IntegrationLog_tenantId_idx")
+  @@map("aura_integration_log")
+}
+
 model CustomReport {
   id          String    @id(map: "CustomReport_pkey") @default(uuid())
   tenantId    String
