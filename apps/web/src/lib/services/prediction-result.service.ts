@@ -2,20 +2,12 @@ import { prisma } from '@aura/database';
 import { BaseService } from './base.service';
 
 export type ModelCode =
-  | 'ATTRITION_RISK'
-  | 'PERF_FORECAST'
-  | 'PROMOTION_READINESS'
-  | 'TIME_TO_HIRE'
-  | 'SOURCING_FUNNEL';
+  'ATTRITION_RISK' | 'PERF_FORECAST' | 'PROMOTION_READINESS' | 'TIME_TO_HIRE' | 'SOURCING_FUNNEL';
 
 export type ScoreBand = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
 export type PredictionSubjectType =
-  | 'EMPLOYEE'
-  | 'CANDIDATE'
-  | 'REQUISITION'
-  | 'TEAM'
-  | 'DEPARTMENT';
+  'EMPLOYEE' | 'CANDIDATE' | 'REQUISITION' | 'TEAM' | 'DEPARTMENT';
 
 export class ScoreOutOfRangeError extends Error {
   constructor(score: number) {

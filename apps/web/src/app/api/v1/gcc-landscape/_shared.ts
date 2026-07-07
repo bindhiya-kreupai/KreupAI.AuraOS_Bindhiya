@@ -5,6 +5,7 @@ export type Permissions = string[];
 export interface RouteContext {
   user: { id: string; tenantId: string };
   permissions: Permissions;
+  roles: string[];
 }
 
 export const ok = (data: unknown, message?: string, status = 200) =>

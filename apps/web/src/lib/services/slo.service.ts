@@ -2,11 +2,7 @@ import { prisma } from '@aura/database';
 import { BaseService } from './base.service';
 
 export type SLOIndicatorType =
-  | 'LATENCY_P95'
-  | 'LATENCY_P99'
-  | 'ERROR_RATE'
-  | 'AVAILABILITY'
-  | 'THROUGHPUT';
+  'LATENCY_P95' | 'LATENCY_P99' | 'ERROR_RATE' | 'AVAILABILITY' | 'THROUGHPUT';
 
 export type SLOUnit = 'PCT' | 'MS' | 'RPS' | 'COUNT';
 

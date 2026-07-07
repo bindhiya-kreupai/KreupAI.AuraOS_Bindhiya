@@ -2,20 +2,10 @@ import { prisma } from '@aura/database';
 import { BaseService } from './base.service';
 
 export type DSARStatus =
-  | 'RECEIVED'
-  | 'VERIFYING'
-  | 'IN_PROGRESS'
-  | 'FULFILLED'
-  | 'REJECTED'
-  | 'EXTENDED';
+  'RECEIVED' | 'VERIFYING' | 'IN_PROGRESS' | 'FULFILLED' | 'REJECTED' | 'EXTENDED';
 
 export type DSARRequestType =
-  | 'ACCESS'
-  | 'DELETION'
-  | 'RECTIFICATION'
-  | 'PORTABILITY'
-  | 'OBJECTION'
-  | 'RESTRICTION';
+  'ACCESS' | 'DELETION' | 'RECTIFICATION' | 'PORTABILITY' | 'OBJECTION' | 'RESTRICTION';
 
 export type DSARSubjectType = 'EMPLOYEE' | 'CANDIDATE' | 'DEPENDENT' | 'EX_EMPLOYEE' | 'OTHER';
 

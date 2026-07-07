@@ -75,7 +75,12 @@ const employeeInclude = {
 export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
     const { user, permissions } = context;
-    if (!permissions.includes('employees:read')) {
+    if (
+      !context.roles?.includes('SUPER_ADMIN') &&
+      !context.roles?.includes('ADMIN') &&
+      !permissions.includes('employees:read') &&
+      !permissions.includes('employees:manage')
+    ) {
       return NextResponse.json(
         {
           success: false,
@@ -161,6 +166,12 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
     return NextResponse.json(response, { status: 200 });
   } catch (error: any) {
     console.error('[Employees API] GET Error:', error);
+    try {
+      require('fs').writeFileSync(
+        'd:/KreupAI/KreupAI.AuraOS/error_log.txt',
+        error?.stack || String(error)
+      );
+    } catch (e) {}
 
     const response: ApiResponse = {
       success: false,
