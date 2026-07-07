@@ -102,6 +102,11 @@ const PERMISSIONS = [
   { resource: 'master_data', action: 'update', description: 'Update master data' },
   { resource: 'master_data', action: 'delete', description: 'Delete master data' },
   { resource: 'master_data', action: 'manage', description: 'Full master data management' },
+
+  // API Keys
+  { resource: 'admin/api-keys', action: 'read', description: 'View API keys' },
+  { resource: 'admin/api-keys', action: 'create', description: 'Create API keys' },
+  { resource: 'admin/api-keys', action: 'delete', description: 'Revoke API keys' },
 ];
 
 // Role-Permission mappings
@@ -117,6 +122,9 @@ const ROLE_PERMISSIONS: Record<string, string[]> = {
     'audit_logs:read',
     'audit_logs:export',
     'master_data:manage',
+    'admin/api-keys:read',
+    'admin/api-keys:create',
+    'admin/api-keys:delete',
   ],
   ADMIN: [
     'users:create', 'users:read', 'users:update', 'users:delete',
@@ -127,6 +135,9 @@ const ROLE_PERMISSIONS: Record<string, string[]> = {
     'competencies:manage',
     'audit_logs:read',
     'master_data:read', 'master_data:create', 'master_data:update',
+    'admin/api-keys:read',
+    'admin/api-keys:create',
+    'admin/api-keys:delete',
   ],
   HR_MANAGER: [
     'users:read',
