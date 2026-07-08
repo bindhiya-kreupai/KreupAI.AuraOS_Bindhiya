@@ -1,6 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { ModuleGrid } from '@/components/dashboard/module-grid';
+import { useTheme } from '@/stores/theme-store';
 
 interface Dashboard {
   period: string;
@@ -18,91 +20,108 @@ const periodNow = () => {
 };
 
 export default function EosbHome() {
+  const { isDark } = useTheme();
   const [data, setData] = useState<Dashboard | null>(null);
   const [period, setPeriod] = useState(periodNow());
+  const [inputPeriod, setInputPeriod] = useState(period);
+  const [isLoading, setIsLoading] = useState(true);
 
   async function load() {
-    const r = await fetch(`/api/v1/eosb-compliance/dashboard?period=${period}`);
-    const p = await r.json();
-    if (p.success) setData(p.data);
+    setIsLoading(true);
+    try {
+      const r = await fetch(`/api/v1/eosb-compliance/dashboard?period=${period}`);
+      const p = await r.json();
+      if (p.success) setData(p.data);
+    } finally {
+      setIsLoading(false);
+    }
   }
+
   useEffect(() => {
     load();
   }, [period]);
 
+  const features = [
+    { label: 'Finalized Calculations', slug: 'calculations' },
+    { label: 'Monthly Accruals & GL', slug: 'accruals' },
+    { label: 'Dispute Register', slug: 'disputes' },
+    { label: 'Monthly Certificate', slug: 'certificate' },
+  ];
+
   return (
-    <main className="min-h-screen bg-slate-50 p-6 text-slate-950">
-      <div className="mx-auto flex max-w-7xl flex-col gap-6">
-        <header className="flex items-center justify-between border-b border-slate-200 pb-4">
+    <main
+      className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 text-slate-950 dark:text-slate-50 transition-colors duration-200"
+      style={{ colorScheme: isDark ? 'dark' : 'light' }}
+    >
+      <div className="mx-auto flex max-w-7xl flex-col gap-8 pb-10">
+        {/* Banner Header */}
+        <div className="bg-gradient-to-r from-amber-500 via-orange-600 to-rose-700 rounded-2xl p-8 text-white flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-lg">
           <div>
-            <p className="text-sm uppercase text-slate-500">EPIC-28 · GCC EOSB Compliance</p>
-            <h1 className="text-2xl font-semibold">EOSB Compliance Dashboard</h1>
+            <p className="text-amber-100 font-semibold text-sm uppercase tracking-wider mb-2">
+              EPIC-28
+            </p>
+            <h1 className="text-3xl font-bold">GCC EOSB Compliance Dashboard</h1>
+            <p className="text-amber-50 mt-2 max-w-2xl leading-relaxed">
+              Country-specific EOSB math for UAE, KSA, Bahrain, Qatar, Oman, and Kuwait. Manage
+              settlements, monthly accruals, disputes, and compliance certificates.
+            </p>
           </div>
-          <input
-            value={period}
-            onChange={(e) => setPeriod(e.target.value)}
-            className="rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+          <div className="flex flex-col sm:flex-row items-center gap-3 bg-white/10 p-4 rounded-xl backdrop-blur-sm self-start md:self-auto border border-white/20">
+            <span className="text-sm font-medium text-amber-100">Period</span>
+            <input
+              value={inputPeriod}
+              onChange={(e) => setInputPeriod(e.target.value)}
+              placeholder="YYYY-MM"
+              className="rounded-lg border-0 bg-white/20 text-white placeholder-amber-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-white/50 w-32 text-center font-mono"
+            />
+            <button
+              type="button"
+              onClick={() => setPeriod(inputPeriod)}
+              disabled={isLoading || period === inputPeriod}
+              className="rounded-lg bg-white text-orange-700 hover:bg-amber-50 px-4 py-2 text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+            >
+              Apply
+            </button>
+          </div>
+        </div>
+
+        {/* KPI Tiles */}
+        <section className="grid grid-cols-2 gap-4 md:grid-cols-6">
+          {isLoading ? (
+            Array.from({ length: 6 }).map((_, i) => (
+              <div
+                key={i}
+                className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm animate-pulse flex flex-col gap-3"
+              >
+                <div className="h-3 w-20 bg-slate-200 dark:bg-slate-800 rounded"></div>
+                <div className="h-8 w-16 bg-slate-200 dark:bg-slate-800 rounded"></div>
+              </div>
+            ))
+          ) : data ? (
+            <>
+              <Tile label="Settlements" value={data.calcsCount} />
+              <Tile label="Settlement Total" value={data.calcsTotalAmount} />
+              <Tile label="Accruals" value={data.accrualsCount} />
+              <Tile label="Accrual Liability" value={data.accrualsTotalAmount} />
+              <Tile label="Open Disputes" value={data.openDisputesCount} colour="amber" />
+              <Tile label="Unsettled" value={data.unsettledCount} colour="rose" />
+            </>
+          ) : (
+            <div className="col-span-full py-10 text-center text-slate-500 dark:text-slate-400">
+              No data available for this period.
+            </div>
+          )}
+        </section>
+
+        {/* Workspaces ModuleGrid */}
+        <div className="-mt-4">
+          <ModuleGrid
+            title="EOSB Workspaces"
+            description="Manage End of Service Benefit (EOSB) math, liabilities, and multi-jurisdiction compliance."
+            features={features}
+            basePath="/dashboard/eosb-compliance"
           />
-        </header>
-
-        {data ? (
-          <section className="grid grid-cols-2 gap-4 md:grid-cols-6">
-            <Tile label="Settlements" value={data.calcsCount} />
-            <Tile label="Settlement Total" value={data.calcsTotalAmount} />
-            <Tile label="Accruals" value={data.accrualsCount} />
-            <Tile label="Accrual Liability" value={data.accrualsTotalAmount} />
-            <Tile label="Open Disputes" value={data.openDisputesCount} colour="amber" />
-            <Tile label="Unsettled" value={data.unsettledCount} colour="rose" />
-          </section>
-        ) : null}
-
-        <section className="rounded-lg border border-slate-200 bg-white p-4">
-          <p className="text-sm text-slate-700">
-            Country-specific EOSB math (UAE 21→30 days/yr, KSA award, BH/QA/OM/KW
-            gratuity/indemnity, IN) is wrapped by a persistence layer that finalizes at-separation
-            calculations (DRAFT → APPROVED → SETTLED), accrues monthly liability for GL, manages a
-            dispute register, and produces a monthly compliance certificate that refuses to sign
-            while disputes are open or settlements unpaid.
-          </p>
-        </section>
-
-        <section className="rounded-lg border border-slate-200 bg-white p-4">
-          <h2 className="text-base font-semibold">Workspaces</h2>
-          <ul className="mt-2 grid gap-2 text-sm md:grid-cols-2">
-            <li>
-              <a
-                href="/dashboard/eosb-compliance/calculations"
-                className="text-blue-700 hover:underline"
-              >
-                Finalized Calculations (S03 / S06 / S12)
-              </a>
-            </li>
-            <li>
-              <a
-                href="/dashboard/eosb-compliance/accruals"
-                className="text-blue-700 hover:underline"
-              >
-                Monthly Accruals &amp; GL (S11 / S17)
-              </a>
-            </li>
-            <li>
-              <a
-                href="/dashboard/eosb-compliance/disputes"
-                className="text-blue-700 hover:underline"
-              >
-                Dispute Register (S13 / S20 / S28)
-              </a>
-            </li>
-            <li>
-              <a
-                href="/dashboard/eosb-compliance/certificate"
-                className="text-blue-700 hover:underline"
-              >
-                Monthly Certificate (S17 / S19 / S29)
-              </a>
-            </li>
-          </ul>
-        </section>
+        </div>
       </div>
     </main>
   );
@@ -111,16 +130,19 @@ export default function EosbHome() {
 function Tile({ label, value, colour }: { label: string; value: number; colour?: string }) {
   const cls =
     colour === 'emerald'
-      ? 'text-emerald-700'
+      ? 'text-emerald-600 dark:text-emerald-400'
       : colour === 'rose'
-        ? 'text-rose-700'
+        ? 'text-rose-600 dark:text-rose-400'
         : colour === 'amber'
-          ? 'text-amber-700'
-          : 'text-slate-900';
+          ? 'text-amber-600 dark:text-amber-400'
+          : 'text-slate-900 dark:text-white';
+
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-4">
-      <p className="text-xs uppercase text-slate-500">{label}</p>
-      <p className={`text-3xl font-semibold ${cls}`}>{value}</p>
+    <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm hover:shadow-md transition-shadow">
+      <p className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+        {label}
+      </p>
+      <p className={`text-3xl font-black mt-2 ${cls}`}>{value}</p>
     </div>
   );
 }

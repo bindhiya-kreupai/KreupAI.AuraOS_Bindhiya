@@ -1,6 +1,8 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { ModuleGrid } from '@/components/dashboard/module-grid';
+import { useTheme } from '@/stores/theme-store';
 
 interface Dashboard {
   period: string;
@@ -21,106 +23,112 @@ const periodNow = () => {
 };
 
 export default function ErHome() {
+  const { isDark } = useTheme();
   const [data, setData] = useState<Dashboard | null>(null);
   const [period, setPeriod] = useState(periodNow());
+  const [inputPeriod, setInputPeriod] = useState(period);
+  const [isLoading, setIsLoading] = useState(true);
 
   async function load() {
-    const r = await fetch(`/api/v1/er-compliance/dashboard?period=${period}`);
-    const p = await r.json();
-    if (p.success) setData(p.data);
+    setIsLoading(true);
+    try {
+      const r = await fetch(`/api/v1/er-compliance/dashboard?period=${period}`);
+      const p = await r.json();
+      if (p.success) setData(p.data);
+    } finally {
+      setIsLoading(false);
+    }
   }
+
   useEffect(() => {
     load();
   }, [period]);
 
+  const features = [
+    { label: 'Grievance Register', slug: 'grievances' },
+    { label: 'Disciplinary Actions', slug: 'disciplinary' },
+    { label: 'Investigation Register', slug: 'investigations' },
+    { label: 'Appeals', slug: 'appeals' },
+    { label: 'Monthly Certificate', slug: 'certificate' },
+  ];
+
   return (
-    <main className="min-h-screen bg-slate-50 p-6 text-slate-950">
-      <div className="mx-auto flex max-w-7xl flex-col gap-6">
-        <header className="flex items-center justify-between border-b border-slate-200 pb-4">
+    <main
+      className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 text-slate-950 dark:text-slate-50 transition-colors duration-200"
+      style={{ colorScheme: isDark ? 'dark' : 'light' }}
+    >
+      <div className="mx-auto flex max-w-7xl flex-col gap-8 pb-10">
+        {/* Banner Header */}
+        <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-indigo-800 rounded-2xl p-8 text-white flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-lg">
           <div>
-            <p className="text-sm uppercase text-slate-500">
-              EPIC-25 + EPIC-26 · Employee Relations
+            <p className="text-blue-200 font-semibold text-sm uppercase tracking-wider mb-2">
+              EPIC-25 + EPIC-26
             </p>
-            <h1 className="text-2xl font-semibold">ER Compliance Dashboard</h1>
+            <h1 className="text-3xl font-bold">ER Compliance Dashboard</h1>
+            <p className="text-blue-100 mt-2 max-w-2xl leading-relaxed">
+              Combined Grievance + Disciplinary register. Manage multi-channel intake, SLAs,
+              investigations, appeals, and monthly compliance certificates.
+            </p>
           </div>
-          <input
-            value={period}
-            onChange={(e) => setPeriod(e.target.value)}
-            className="rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+          <div className="flex flex-col sm:flex-row items-center gap-3 bg-white/10 p-4 rounded-xl backdrop-blur-sm self-start md:self-auto border border-white/20">
+            <span className="text-sm font-medium text-blue-100">Period</span>
+            <input
+              value={inputPeriod}
+              onChange={(e) => setInputPeriod(e.target.value)}
+              placeholder="YYYY-MM"
+              className="rounded-lg border-0 bg-white/20 text-white placeholder-blue-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-white/50 w-32 text-center font-mono"
+            />
+            <button
+              type="button"
+              onClick={() => setPeriod(inputPeriod)}
+              disabled={isLoading || period === inputPeriod}
+              className="rounded-lg bg-white text-indigo-700 hover:bg-blue-50 px-4 py-2 text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
+            >
+              Apply
+            </button>
+          </div>
+        </div>
+
+        {/* KPI Tiles */}
+        <section className="grid grid-cols-2 gap-4 md:grid-cols-5">
+          {isLoading ? (
+            Array.from({ length: 9 }).map((_, i) => (
+              <div
+                key={i}
+                className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm animate-pulse flex flex-col gap-3"
+              >
+                <div className="h-3 w-20 bg-slate-200 dark:bg-slate-800 rounded"></div>
+                <div className="h-8 w-16 bg-slate-200 dark:bg-slate-800 rounded"></div>
+              </div>
+            ))
+          ) : data ? (
+            <>
+              <Tile label="Opened" value={data.grievancesOpened} />
+              <Tile label="Closed" value={data.grievancesClosed} colour="emerald" />
+              <Tile label="SLA Breached" value={data.grievancesSlaBreached} colour="rose" />
+              <Tile label="HIGH/CRIT Open" value={data.highSeverityOpen} colour="rose" />
+              <Tile label="Actions Issued" value={data.disciplinaryActionsIssued} />
+              <Tile label="No Hearing" value={data.actionsWithoutHearing} colour="rose" />
+              <Tile label="Appeals Open" value={data.appealsOpen} colour="amber" />
+              <Tile label="Authority Ref" value={data.labourAuthorityReferrals} colour="amber" />
+              <Tile label="Retaliation Open" value={data.retaliationFlags} colour="rose" />
+            </>
+          ) : (
+            <div className="col-span-full py-10 text-center text-slate-500 dark:text-slate-400">
+              No data available for this period.
+            </div>
+          )}
+        </section>
+
+        {/* Workspaces ModuleGrid */}
+        <div className="-mt-4">
+          <ModuleGrid
+            title="ER Workspaces"
+            description="Manage grievances, investigations, and disciplinary actions."
+            features={features}
+            basePath="/dashboard/er-compliance"
           />
-        </header>
-
-        {data ? (
-          <section className="grid grid-cols-2 gap-4 md:grid-cols-5">
-            <Tile label="Opened" value={data.grievancesOpened} />
-            <Tile label="Closed" value={data.grievancesClosed} colour="emerald" />
-            <Tile label="SLA Breached" value={data.grievancesSlaBreached} colour="rose" />
-            <Tile label="HIGH/CRIT Open" value={data.highSeverityOpen} colour="rose" />
-            <Tile label="Actions Issued" value={data.disciplinaryActionsIssued} />
-            <Tile label="No Hearing" value={data.actionsWithoutHearing} colour="rose" />
-            <Tile label="Appeals Open" value={data.appealsOpen} colour="amber" />
-            <Tile label="Authority Ref" value={data.labourAuthorityReferrals} colour="amber" />
-            <Tile label="Retaliation Open" value={data.retaliationFlags} colour="rose" />
-          </section>
-        ) : null}
-
-        <section className="rounded-lg border border-slate-200 bg-white p-4">
-          <p className="text-sm text-slate-700">
-            Combined Grievance + Disciplinary register. Grievance handles multi-channel intake
-            (EMAIL / PORTAL / HOTLINE / IN_PERSON / ANONYMOUS / WHISTLEBLOWER) with 30-day default
-            SLA and labour-authority referral tracking. Disciplinary chain runs VERBAL_WARNING →
-            WRITTEN_WARNING → FINAL_WARNING → SUSPENSION / DEMOTION / SALARY_DEDUCTION /
-            TERMINATION, gated by hearingHeld + responseRecorded before issuance. Salary deduction
-            enforces country caps (UAE/BH/OM 25%, KSA/QA/KW 50%). Investigation register formalises
-            interviews + evidence + findings. Appeals register supports OPEN → DECIDED with outcomes
-            UPHELD / OVERTURNED / PARTIAL. Monthly certificate refuses to sign while SLA-breached
-            grievances, HIGH/CRITICAL open grievances, disciplinary actions issued without hearings,
-            or open retaliation cases remain.
-          </p>
-        </section>
-
-        <section className="rounded-lg border border-slate-200 bg-white p-4">
-          <h2 className="text-base font-semibold">Workspaces</h2>
-          <ul className="mt-2 grid gap-2 text-sm md:grid-cols-2">
-            <li>
-              <a
-                href="/dashboard/er-compliance/grievances"
-                className="text-blue-700 hover:underline"
-              >
-                Grievance Register (EPIC-25 S02 / S10 / S11)
-              </a>
-            </li>
-            <li>
-              <a
-                href="/dashboard/er-compliance/disciplinary"
-                className="text-blue-700 hover:underline"
-              >
-                Disciplinary Action Register (EPIC-26 S02 / S05 / S06)
-              </a>
-            </li>
-            <li>
-              <a
-                href="/dashboard/er-compliance/investigations"
-                className="text-blue-700 hover:underline"
-              >
-                Investigation Register (EPIC-25 S05 / EPIC-26 S03)
-              </a>
-            </li>
-            <li>
-              <a href="/dashboard/er-compliance/appeals" className="text-blue-700 hover:underline">
-                Appeals (EPIC-25 S10 / EPIC-26 S08)
-              </a>
-            </li>
-            <li>
-              <a
-                href="/dashboard/er-compliance/certificate"
-                className="text-blue-700 hover:underline"
-              >
-                Monthly Certificate (EPIC-25 S14 / EPIC-26 S13)
-              </a>
-            </li>
-          </ul>
-        </section>
+        </div>
       </div>
     </main>
   );
@@ -129,16 +137,19 @@ export default function ErHome() {
 function Tile({ label, value, colour }: { label: string; value: number; colour?: string }) {
   const cls =
     colour === 'emerald'
-      ? 'text-emerald-700'
+      ? 'text-emerald-600 dark:text-emerald-400'
       : colour === 'rose'
-        ? 'text-rose-700'
+        ? 'text-rose-600 dark:text-rose-400'
         : colour === 'amber'
-          ? 'text-amber-700'
-          : 'text-slate-900';
+          ? 'text-amber-600 dark:text-amber-400'
+          : 'text-slate-900 dark:text-white';
+
   return (
-    <div className="rounded-lg border border-slate-200 bg-white p-4">
-      <p className="text-xs uppercase text-slate-500">{label}</p>
-      <p className={`text-3xl font-semibold ${cls}`}>{value}</p>
+    <div className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm hover:shadow-md transition-shadow">
+      <p className="text-xs font-bold uppercase tracking-wider text-slate-500 dark:text-slate-400">
+        {label}
+      </p>
+      <p className={`text-4xl font-black mt-2 ${cls}`}>{value}</p>
     </div>
   );
 }
