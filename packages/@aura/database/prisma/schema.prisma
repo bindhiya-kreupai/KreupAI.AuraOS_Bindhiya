@@ -70,6 +70,7 @@ model Department {
   name                      String
   parentId                  String?
   costCenterId              String?
+  businessUnitId            String?
   createdAt                 DateTime            @default(now())
   updatedAt                 DateTime            @default(now()) @updatedAt
   createdBy                 String?
@@ -78,6 +79,7 @@ model Department {
   isDeleted                 Boolean             @default(false)
   company                   Company             @relation(fields: [companyId], references: [id], map: "Department_companyId_fkey")
   costCenter                CostCenter?         @relation(fields: [costCenterId], references: [id], map: "Department_costCenterId_fkey")
+  businessUnit              BusinessUnit?       @relation(fields: [businessUnitId], references: [id], onDelete: SetNull, map: "Department_businessUnitId_fkey")
   parent                    Department?         @relation("DeptHierarchy", fields: [parentId], references: [id], map: "Department_parentId_fkey")
   children                  Department[]        @relation("DeptHierarchy")
   employees                 Employee[]
@@ -717,6 +719,7 @@ model BusinessUnit {
   updatedBy String?
   deletedAt DateTime?
   isDeleted Boolean   @default(false)
+  departments Department[]
 
   @@map("aura_business_unit")
 }

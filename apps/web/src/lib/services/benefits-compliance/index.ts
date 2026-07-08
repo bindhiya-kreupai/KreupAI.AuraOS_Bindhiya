@@ -253,31 +253,48 @@ export class BenefitCatalogueService {
       dependantsAllowed?: boolean;
       vendorRequired?: boolean;
       effectiveFrom: Date;
+      status?: string;
     },
     auth: AuthContext
   ) {
+    const { action, ...data } = input as any;
     return (prisma as any).benefitCatalogue.upsert({
       where: {
-        aura_benefit_catalogue_unique: {
+        tenantId_benefitCode_effectiveFrom: {
           tenantId: auth.tenantId,
-          benefitCode: input.benefitCode,
-          effectiveFrom: input.effectiveFrom,
+          benefitCode: data.benefitCode,
+          effectiveFrom: data.effectiveFrom,
         },
       },
-      update: { ...input, status: 'ACTIVE' },
+      update: { ...data, status: data.status ?? 'ACTIVE' },
       create: {
         tenantId: auth.tenantId,
-        ...input,
-        status: 'ACTIVE',
+        ...data,
+        status: data.status ?? 'ACTIVE',
       },
     });
   }
 
   async list(tenantId: string) {
-    return (prisma as any).benefitCatalogue.findMany({
-      where: { tenantId, status: 'ACTIVE' },
+    const items = await (prisma as any).benefitCatalogue.findMany({
+      where: { tenantId },
       orderBy: [{ benefitType: 'asc' }, { countryCode: 'asc' }],
     });
+
+    const enriched = await Promise.all(
+      items.map(async (item: any) => {
+        const count = await (prisma as any).benefitCoverage.count({
+          where: {
+            tenantId,
+            benefitCatalogueId: item.id,
+            status: 'ACTIVE',
+            isDeleted: false,
+          },
+        });
+        return { ...item, activeEnrollments: count };
+      })
+    );
+    return enriched;
   }
 
   async resolveByCode(tenantId: string, benefitCode: string, asOf: Date = new Date()) {
@@ -339,9 +356,87 @@ export class BenefitCoverageService {
     if (!cat) throw new Error(`benefit ${input.benefitCode} not found`);
     if (cat.vendorRequired && !input.vendorId)
       throw new Error(`benefit ${input.benefitCode} requires a vendor`);
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Compliance & Eligibility Validations
+    // ─────────────────────────────────────────────────────────────────────────
+    const exceptions: string[] = [];
+
+    // 1. DPA Signed Check
+    if (input.vendorId) {
+      const vendor = await (prisma as any).benefitVendor.findFirst({
+        where: { id: input.vendorId, tenantId: auth.tenantId },
+      });
+      if (vendor) {
+        if (!vendor.dpaSigned) {
+          exceptions.push('VENDOR_WITHOUT_DPA');
+        }
+        if (vendor.contractEnd && new Date(vendor.contractEnd) < new Date(input.startedAt)) {
+          exceptions.push('EXPIRED_CONTRACT');
+        }
+      }
+    }
+
+    // 2. Employee Details Check (Country, Grade, Department)
+    const [empDetails, emp] = await Promise.all([
+      prisma.employeeComplianceDetails.findUnique({
+        where: { employeeId: input.employeeId },
+      }),
+      prisma.employee.findUnique({
+        where: { id: input.employeeId },
+        include: { grade: true },
+      }),
+    ]);
+
+    if (empDetails) {
+      if (cat.countryCode && empDetails.countryCode !== cat.countryCode) {
+        exceptions.push('COUNTRY_MISMATCH');
+      }
+    }
+
+    if (cat.minGrade && emp?.grade) {
+      const minNum = Number(String(cat.minGrade).replace(/[^\d.-]/g, ''));
+      const empLevel = emp.grade.level;
+      if (Number.isFinite(minNum) && typeof empLevel === 'number' && empLevel < minNum) {
+        exceptions.push('GRADE_BELOW_MIN');
+      }
+    }
+
+    // 3. Overlap / Duplicate Enrollment Checks
+    const activeCoverage = await (prisma as any).benefitCoverage.findFirst({
+      where: {
+        tenantId: auth.tenantId,
+        employeeId: input.employeeId,
+        benefitCatalogueId: cat.id,
+        status: 'ACTIVE',
+      },
+    });
+    if (activeCoverage) {
+      exceptions.push('DUPLICATE_ENROLLMENT');
+    }
+
+    // If validations failed, auto-raise open exceptions in Exception Register
+    for (const exType of exceptions) {
+      try {
+        await (prisma as any).benefitException.create({
+          data: {
+            tenantId: auth.tenantId,
+            employeeId: input.employeeId,
+            benefitCode: cat.benefitCode,
+            exceptionType: exType,
+            reason: `Auto-raised: Validation failed during enrollment (${exType})`,
+            status: 'OPEN',
+            raisedBy: auth.userId,
+          },
+        });
+      } catch (err) {
+        console.error('Failed to auto-raise exception:', err);
+      }
+    }
+
     return (prisma as any).benefitCoverage.upsert({
       where: {
-        aura_benefit_coverage_unique: {
+        tenantId_employeeId_benefitCatalogueId_startedAt: {
           tenantId: auth.tenantId,
           employeeId: input.employeeId,
           benefitCatalogueId: cat.id,
@@ -387,6 +482,20 @@ export class BenefitCoverageService {
     });
   }
 
+  async suspend(id: string, _auth: AuthContext) {
+    return (prisma as any).benefitCoverage.update({
+      where: { id },
+      data: { status: 'SUSPENDED' },
+    });
+  }
+
+  async resume(id: string, _auth: AuthContext) {
+    return (prisma as any).benefitCoverage.update({
+      where: { id },
+      data: { status: 'ACTIVE' },
+    });
+  }
+
   async accrue(id: string, auth: AuthContext) {
     const cov = await (prisma as any).benefitCoverage.findUnique({ where: { id } });
     if (!cov) throw new Error('coverage not found');
@@ -413,17 +522,48 @@ export class BenefitCoverageService {
       employeeId?: string;
       expiringSoon?: boolean;
       status?: string;
+      search?: string;
+      benefitType?: string;
+      countryCode?: string;
+      vendorId?: string;
+      showDeleted?: boolean;
     } = {},
     paging?: PaginationInput
-  ): Promise<PaginatedResult<unknown>> {
+  ): Promise<PaginatedResult<any>> {
     const now = new Date();
     const soon = new Date(now.getTime() + 60 * 24 * 3600 * 1000);
-    const where = {
+
+    // Build relational lookup if filtering by search term (employee code/name)
+    let matchingEmployeeIds: string[] | undefined = undefined;
+    if (filter.search) {
+      const emps = await prisma.employee.findMany({
+        where: {
+          company: { tenantId },
+          isDeleted: false,
+          OR: [
+            { firstName: { contains: filter.search, mode: 'insensitive' } },
+            { lastName: { contains: filter.search, mode: 'insensitive' } },
+            { employeeCode: { contains: filter.search, mode: 'insensitive' } },
+          ],
+        },
+        select: { id: true },
+      });
+      matchingEmployeeIds = emps.map((e) => e.id);
+    }
+
+    const where: any = {
       tenantId,
+      isDeleted: filter.showDeleted ? undefined : false,
       ...(filter.employeeId ? { employeeId: filter.employeeId } : {}),
       ...(filter.status ? { status: filter.status } : { status: 'ACTIVE' }),
+      ...(filter.vendorId ? { vendorId: filter.vendorId } : {}),
       ...(filter.expiringSoon ? { expiresAt: { gte: now, lte: soon } } : {}),
     };
+
+    if (matchingEmployeeIds !== undefined) {
+      where.employeeId = { in: matchingEmployeeIds };
+    }
+
     const page = normalisePaging(paging);
     const [items, total] = await Promise.all([
       (prisma as any).benefitCoverage.findMany({
@@ -433,7 +573,46 @@ export class BenefitCoverageService {
       }),
       (prisma as any).benefitCoverage.count({ where }),
     ]);
-    return buildPaginatedResult(items, total, page);
+
+    // Enrich items with relations (Employee, Catalogue, Vendor) manually to avoid schema drift
+    const empIds = Array.from(new Set(items.map((x: any) => x.employeeId))) as string[];
+    const catIds = Array.from(new Set(items.map((x: any) => x.benefitCatalogueId))) as string[];
+    const vendorIds = Array.from(
+      new Set(items.map((x: any) => x.vendorId).filter(Boolean))
+    ) as string[];
+
+    const [employees, catalogues, vendors] = await Promise.all([
+      prisma.employee.findMany({
+        where: { id: { in: empIds } },
+        select: { id: true, firstName: true, lastName: true, employeeCode: true },
+      }),
+      (prisma as any).benefitCatalogue.findMany({
+        where: { id: { in: catIds } },
+      }),
+      (prisma as any).benefitVendor.findMany({
+        where: { id: { in: vendorIds } },
+      }),
+    ]);
+
+    const empMap = new Map<string, any>(employees.map((e) => [e.id, e]));
+    const catMap = new Map<string, any>(catalogues.map((c: any) => [c.id, c]));
+    const vendorMap = new Map<string, any>(vendors.map((v: any) => [v.id, v]));
+
+    const enrichedItems = items.map((x: any) => {
+      const emp = empMap.get(x.employeeId);
+      const cat = catMap.get(x.benefitCatalogueId);
+      const vendor = x.vendorId ? vendorMap.get(x.vendorId) : null;
+      return {
+        ...x,
+        employeeName: emp ? `${emp.firstName} ${emp.lastName}` : 'Unknown',
+        employeeCode: emp ? emp.employeeCode : '—',
+        benefitLabel: cat ? cat.label : 'Unknown',
+        benefitCode: cat ? cat.benefitCode : '—',
+        vendorName: vendor ? vendor.name : '—',
+      };
+    });
+
+    return buildPaginatedResult(enrichedItems, total, page);
   }
 }
 
@@ -452,16 +631,18 @@ export class BenefitVendorService {
       contractStart?: Date;
       contractEnd?: Date;
       dpaSigned?: boolean;
+      status?: string;
     },
     auth: AuthContext
   ) {
+    const { action, ...fields } = input as any;
     const data = {
       tenantId: auth.tenantId,
-      ...input,
-      dpaSignedAt: input.dpaSigned ? new Date() : undefined,
-      status: 'ACTIVE',
+      ...fields,
+      dpaSignedAt: fields.dpaSigned ? new Date() : undefined,
+      status: fields.status ?? 'ACTIVE',
     };
-    if (input.id) return (prisma as any).benefitVendor.update({ where: { id: input.id }, data });
+    if (fields.id) return (prisma as any).benefitVendor.update({ where: { id: fields.id }, data });
     return (prisma as any).benefitVendor.create({ data });
   }
 
@@ -473,10 +654,25 @@ export class BenefitVendorService {
   }
 
   async list(tenantId: string) {
-    return (prisma as any).benefitVendor.findMany({
-      where: { tenantId, status: 'ACTIVE' },
+    const vendors = await (prisma as any).benefitVendor.findMany({
+      where: { tenantId },
       orderBy: { name: 'asc' },
     });
+
+    const enriched = await Promise.all(
+      vendors.map(async (v: any) => {
+        const count = await (prisma as any).benefitCoverage.count({
+          where: {
+            tenantId,
+            vendorId: v.id,
+            status: 'ACTIVE',
+            isDeleted: false,
+          },
+        });
+        return { ...v, employeesCovered: count };
+      })
+    );
+    return enriched;
   }
 }
 
@@ -532,38 +728,117 @@ export class BenefitCertificateService {
     const now = new Date();
     const soon = new Date(now.getTime() + 60 * 24 * 3600 * 1000);
     const activeEnrollments = await (prisma as any).benefitCoverage.count({
-      where: { tenantId, status: 'ACTIVE' },
+      where: { tenantId, status: 'ACTIVE', isDeleted: false },
     });
     const expiringSoonCount = await (prisma as any).benefitCoverage.count({
-      where: { tenantId, status: 'ACTIVE', expiresAt: { gte: now, lte: soon } },
+      where: { tenantId, status: 'ACTIVE', expiresAt: { gte: now, lte: soon }, isDeleted: false },
     });
     const expiredCount = await (prisma as any).benefitCoverage.count({
-      where: { tenantId, status: 'ACTIVE', expiresAt: { lt: now } },
+      where: { tenantId, status: 'ACTIVE', expiresAt: { lt: now }, isDeleted: false },
     });
     const openExceptionsCount = await (prisma as any).benefitException.count({
-      where: { tenantId, status: { in: ['OPEN', 'APPROVED'] } },
+      where: { tenantId, status: { in: ['OPEN', 'APPROVED'] }, isDeleted: false },
     });
     const vendorsWithoutDpa = await (prisma as any).benefitVendor.count({
-      where: { tenantId, status: 'ACTIVE', dpaSigned: false },
+      where: { tenantId, status: 'ACTIVE', dpaSigned: false, isDeleted: false },
     });
     const accrualAgg = await (prisma as any).benefitCoverage.aggregate({
       _sum: { accruedBalance: true },
-      where: { tenantId, status: 'ACTIVE' },
+      where: { tenantId, status: 'ACTIVE', isDeleted: false },
     });
     const totalAccruedLiability = Number(accrualAgg?._sum?.accruedBalance ?? 0);
-    // Mandatory gap: count mandatory catalogue codes that have at least one
-    // ACTIVE catalogue entry but for which there are 0 ACTIVE coverages.
+
+    // Mandatory gap calculation
     const mandatoryCats = await (prisma as any).benefitCatalogue.findMany({
-      where: { tenantId, status: 'ACTIVE', isMandatory: true },
+      where: { tenantId, status: 'ACTIVE', isMandatory: true, isDeleted: false },
       select: { id: true, benefitCode: true },
     });
     let mandatoryCoverGapCount = 0;
     for (const c of mandatoryCats as Array<{ id: string }>) {
       const enrolled = await (prisma as any).benefitCoverage.count({
-        where: { tenantId, benefitCatalogueId: c.id, status: 'ACTIVE' },
+        where: { tenantId, benefitCatalogueId: c.id, status: 'ACTIVE', isDeleted: false },
       });
       if (enrolled === 0) mandatoryCoverGapCount += 1;
     }
+
+    // Advanced breakdowns using real database relationships
+    const coverages = await (prisma as any).benefitCoverage.findMany({
+      where: { tenantId, status: 'ACTIVE', isDeleted: false },
+    });
+
+    const empIds = Array.from(new Set(coverages.map((x: any) => x.employeeId))) as string[];
+    const catIds = Array.from(new Set(coverages.map((x: any) => x.benefitCatalogueId))) as string[];
+    const vendorIds = Array.from(
+      new Set(coverages.map((x: any) => x.vendorId).filter(Boolean))
+    ) as string[];
+
+    const [employees, catalogues, vendors, empDetails] = await Promise.all([
+      prisma.employee.findMany({
+        where: { id: { in: empIds } },
+        select: {
+          id: true,
+          department: { select: { name: true } },
+          company: { select: { name: true } },
+        },
+      }),
+      (prisma as any).benefitCatalogue.findMany({
+        where: { id: { in: catIds } },
+      }),
+      (prisma as any).benefitVendor.findMany({
+        where: { id: { in: vendorIds } },
+      }),
+      prisma.employeeComplianceDetails.findMany({
+        where: { employeeId: { in: empIds } },
+        select: { employeeId: true, countryCode: true },
+      }),
+    ]);
+
+    const empMap = new Map<string, any>(employees.map((e: any) => [e.id, e]));
+    const catMap = new Map<string, any>(catalogues.map((c: any) => [c.id, c]));
+    const vendorMap = new Map<string, any>(vendors.map((v: any) => [v.id, v]));
+    const detailsMap = new Map<string, any>(empDetails.map((d: any) => [d.employeeId, d]));
+
+    const countryMap: Record<string, number> = {};
+    const deptMap: Record<string, number> = {};
+    const typeMap: Record<string, number> = {};
+    const vendMap: Record<string, number> = {};
+    const costTrendMap: Record<string, number> = {};
+
+    let monthlyCost = 0;
+
+    for (const c of coverages) {
+      const emp = empMap.get(c.employeeId) as any;
+      const cat = catMap.get(c.benefitCatalogueId) as any;
+      const vendor = c.vendorId ? (vendorMap.get(c.vendorId) as any) : null;
+      const details = detailsMap.get(c.employeeId) as any;
+
+      const country = details?.countryCode ?? 'Other';
+      const dept = emp?.department?.name ?? 'Corporate';
+      const type = cat?.benefitType ?? 'Other';
+      const vend = vendor?.name ?? 'Direct/No Vendor';
+
+      countryMap[country] = (countryMap[country] ?? 0) + 1;
+      deptMap[dept] = (deptMap[dept] ?? 0) + 1;
+      typeMap[type] = (typeMap[type] ?? 0) + 1;
+      vendMap[vend] = (vendMap[vend] ?? 0) + 1;
+
+      const cost = Number(c.actualAnnualValue ?? cat?.annualValue ?? 0) / 12;
+      monthlyCost += cost;
+
+      const startMonth = new Date(c.startedAt).toISOString().slice(0, 7);
+      costTrendMap[startMonth] = (costTrendMap[startMonth] ?? 0) + cost;
+    }
+
+    const countryBreakdown = Object.entries(countryMap).map(([name, count]) => ({ name, count }));
+    const departmentBreakdown = Object.entries(deptMap).map(([name, count]) => ({ name, count }));
+    const benefitTypeBreakdown = Object.entries(typeMap).map(([name, count]) => ({ name, count }));
+    const vendorBreakdown = Object.entries(vendMap).map(([name, count]) => ({ name, count }));
+
+    const trend = Object.entries(costTrendMap)
+      .sort((a, b) => a[0].localeCompare(b[0]))
+      .slice(-6)
+      .map(([trendPeriod, cost]) => ({ period: trendPeriod, cost: Number(cost.toFixed(2)) }));
+
     return {
       period,
       activeEnrollments,
@@ -573,6 +848,12 @@ export class BenefitCertificateService {
       openExceptionsCount,
       vendorsWithoutDpa,
       totalAccruedLiability,
+      monthlyCost: Number(monthlyCost.toFixed(2)),
+      countryBreakdown,
+      departmentBreakdown,
+      benefitTypeBreakdown,
+      vendorBreakdown,
+      trend,
     };
   }
 
