@@ -16266,7 +16266,8 @@ model LogisticsWarehouseStaffing {
   updatedAt    DateTime @default(now()) @map("updated_at")
 
   @@map("aura_logistics_warehouse_staffing")
-  
+}
+
 model IndustrySolution {
   id          String   @id @default(uuid())
   code        String   @unique
