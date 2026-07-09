@@ -107,6 +107,13 @@ const PERMISSIONS = [
   { resource: 'admin/api-keys', action: 'read', description: 'View API keys' },
   { resource: 'admin/api-keys', action: 'create', description: 'Create API keys' },
   { resource: 'admin/api-keys', action: 'delete', description: 'Revoke API keys' },
+
+  // Webhooks
+  { resource: 'webhooks', action: 'read', description: 'View webhooks and delivery logs' },
+  { resource: 'webhooks', action: 'create', description: 'Create webhooks' },
+  { resource: 'webhooks', action: 'update', description: 'Update webhook configuration' },
+  { resource: 'webhooks', action: 'delete', description: 'Delete webhooks' },
+  { resource: 'webhooks', action: 'test', description: 'Test webhook delivery' },
 ];
 
 // Role-Permission mappings
@@ -125,6 +132,11 @@ const ROLE_PERMISSIONS: Record<string, string[]> = {
     'admin/api-keys:read',
     'admin/api-keys:create',
     'admin/api-keys:delete',
+    'webhooks:read',
+    'webhooks:create',
+    'webhooks:update',
+    'webhooks:delete',
+    'webhooks:test',
   ],
   ADMIN: [
     'users:create', 'users:read', 'users:update', 'users:delete',
@@ -138,6 +150,11 @@ const ROLE_PERMISSIONS: Record<string, string[]> = {
     'admin/api-keys:read',
     'admin/api-keys:create',
     'admin/api-keys:delete',
+    'webhooks:read',
+    'webhooks:create',
+    'webhooks:update',
+    'webhooks:delete',
+    'webhooks:test',
   ],
   HR_MANAGER: [
     'users:read',
