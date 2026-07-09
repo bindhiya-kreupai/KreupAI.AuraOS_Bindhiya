@@ -12,8 +12,9 @@ import {
 
 export const GET = withEnhancedAuth(async (_request: NextRequest, context: any) => {
   try {
-    const { user, params, permissions } = context;
-    if (!permissions.includes('webhooks:read')) return forbidden('webhooks:read');
+    const { user, params, permissions, roles } = context;
+    if (!roles?.includes('SUPER_ADMIN') && !permissions.includes('webhooks:read'))
+      return forbidden('webhooks:read');
     const row = await prisma.webhook.findFirst({
       where: { id: params.id, tenantId: user.tenantId },
     });
@@ -26,8 +27,9 @@ export const GET = withEnhancedAuth(async (_request: NextRequest, context: any) 
 
 export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user, params, permissions } = context;
-    if (!permissions.includes('webhooks:update')) return forbidden('webhooks:update');
+    const { user, params, permissions, roles } = context;
+    if (!roles?.includes('SUPER_ADMIN') && !permissions.includes('webhooks:update'))
+      return forbidden('webhooks:update');
     const body = await safeJson(request);
     if (!body) return validationError({ message: 'Invalid JSON body' });
     delete body.id;
@@ -49,8 +51,9 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) =
 
 export const DELETE = withEnhancedAuth(async (_request: NextRequest, context: any) => {
   try {
-    const { user, params, permissions } = context;
-    if (!permissions.includes('webhooks:delete')) return forbidden('webhooks:delete');
+    const { user, params, permissions, roles } = context;
+    if (!roles?.includes('SUPER_ADMIN') && !permissions.includes('webhooks:delete'))
+      return forbidden('webhooks:delete');
     const result = await prisma.webhook.deleteMany({
       where: { id: params.id, tenantId: user.tenantId },
     });
