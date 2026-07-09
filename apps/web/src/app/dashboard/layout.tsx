@@ -33,7 +33,6 @@ const PREVIEW_MODULES = new Set<string>([
   'hr-helpdesk',
   'industry',
   'industry-solutions',
-  'integration-hub',
   'legal',
   'localization',
   'logistics',
