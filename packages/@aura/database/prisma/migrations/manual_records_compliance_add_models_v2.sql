@@ -1,4 +1,4 @@
-
+BEGIN;
 -- CreateTable
 CREATE TABLE "records_document_matrix" (
     "id" TEXT NOT NULL,
@@ -141,4 +141,6 @@ CREATE INDEX "records_compliance_certificate_tenantId_idx" ON "records_complianc
 
 -- CreateIndex
 CREATE UNIQUE INDEX "records_compliance_certificate_tenantId_period_key" ON "records_compliance_certificate"("tenantId", "period");
+
+COMMIT;
 
