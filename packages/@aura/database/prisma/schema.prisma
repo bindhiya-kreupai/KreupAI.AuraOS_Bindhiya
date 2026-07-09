@@ -71,6 +71,7 @@ model Department {
   name                      String
   parentId                  String?
   costCenterId              String?
+  businessUnitId            String?
   createdAt                 DateTime            @default(now())
   updatedAt                 DateTime            @default(now()) @updatedAt
   createdBy                 String?
@@ -79,6 +80,7 @@ model Department {
   isDeleted                 Boolean             @default(false)
   company                   Company             @relation(fields: [companyId], references: [id], map: "Department_companyId_fkey")
   costCenter                CostCenter?         @relation(fields: [costCenterId], references: [id], map: "Department_costCenterId_fkey")
+  businessUnit              BusinessUnit?       @relation(fields: [businessUnitId], references: [id], onDelete: SetNull, map: "Department_businessUnitId_fkey")
   parent                    Department?         @relation("DeptHierarchy", fields: [parentId], references: [id], map: "Department_parentId_fkey")
   children                  Department[]        @relation("DeptHierarchy")
   employees                 Employee[]
@@ -718,6 +720,7 @@ model BusinessUnit {
   updatedBy String?
   deletedAt DateTime?
   isDeleted Boolean   @default(false)
+  departments Department[]
 
   @@map("aura_business_unit")
 }
@@ -16348,4 +16351,66 @@ model GovernmentReportArchive {
   @@index([tenantId], map: "GovernmentReportArchive_tenantId_idx")
   @@index([tenantId, country], map: "GovernmentReportArchive_tenantId_country_idx")
   @@map("aura_government_report_archive")
+}
+
+model LogisticsDriver {
+  id        String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  name      String
+  route     String
+  vehicle   String
+  status    String
+  eta       String?
+  license   String?
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  @@map("aura_logistics_driver")
+}
+
+model LogisticsFleetSafety {
+  id        String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  event     String
+  driver    String
+  time      String
+  location  String
+  severity  String
+  score     Int?
+  trend     String?
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  @@map("aura_logistics_fleet_safety")
+}
+
+model LogisticsWarehouseStaffing {
+  id           String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  shift        String
+  time         String
+  staff        Int
+  required     Int
+  status       String
+  productivity Int?
+  target       Int?
+  role         String?
+  schedule     String?
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @default(now()) @map("updated_at")
+
+  @@map("aura_logistics_warehouse_staffing")
+}
+
+model IndustrySolution {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  icon        String?
+  description String
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("aura_industry_solution")
 }

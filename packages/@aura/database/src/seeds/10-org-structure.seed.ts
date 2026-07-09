@@ -24,13 +24,13 @@ export const costCentersSeed = [
 
 // Department structure is hierarchical but likely seeded flat or with parent refs in main script logic
 export const departmentsSeed = [
-    { code: 'DEPT_ENG', name: 'Engineering', costCenter: 'CC_ENG' },
-    { code: 'DEPT_PROD', name: 'Product Management', costCenter: 'CC_ENG' },
-    { code: 'DEPT_SALES', name: 'Sales', costCenter: 'CC_SALES_MEA' },
-    { code: 'DEPT_MKT', name: 'Marketing', costCenter: 'CC_SALES_MEA' },
-    { code: 'DEPT_HR', name: 'Human Resources', costCenter: 'CC_CORP' },
-    { code: 'DEPT_FIN', name: 'Finance', costCenter: 'CC_CORP' },
-    { code: 'DEPT_IT', name: 'IT Infrastructure', costCenter: 'CC_OPS_IND' },
+    { code: 'DEPT_ENG', name: 'Engineering', costCenter: 'CC_ENG', businessUnit: 'BU_SAAS' },
+    { code: 'DEPT_PROD', name: 'Product Management', costCenter: 'CC_ENG', businessUnit: 'BU_SAAS' },
+    { code: 'DEPT_SALES', name: 'Sales', costCenter: 'CC_SALES_MEA', businessUnit: 'BU_ENT' },
+    { code: 'DEPT_MKT', name: 'Marketing', costCenter: 'CC_SALES_MEA', businessUnit: 'BU_ENT' },
+    { code: 'DEPT_HR', name: 'Human Resources', costCenter: 'CC_CORP', businessUnit: 'BU_SAAS' },
+    { code: 'DEPT_FIN', name: 'Finance', costCenter: 'CC_CORP', businessUnit: 'BU_SAAS' },
+    { code: 'DEPT_IT', name: 'IT Infrastructure', costCenter: 'CC_OPS_IND', businessUnit: 'BU_CONS' },
 ];
 
 // Locations need mapping to Addresses (City/Country) which is complex in seed.
