@@ -113,7 +113,12 @@ export class IntegrationConnectionService {
       throw new Error(`Integration ${integrationId} not found`);
     }
 
-    this.validateConfiguration(integration, configuration);
+    try {
+      this.validateConfiguration(integration, configuration);
+    } catch {
+      // Soft install — create the connection even if config is incomplete.
+      // The user can configure it later.
+    }
 
     const encryptedCredentials = await this.encryptCredentials(credentials);
 
@@ -123,14 +128,35 @@ export class IntegrationConnectionService {
       integration
     );
 
-    const row = await prisma.integrationConnection.create({
-      data: {
+    const hasConfig = Object.keys(configuration).length > 0;
+
+    const row = await prisma.integrationConnection.upsert({
+      where: {
+        tenantId_integrationId: {
+          tenantId,
+          integrationId,
+        },
+      },
+      update: {
+        status: hasConfig && testResult.success ? 'CONNECTED' : 'NEEDS_CONFIG',
+        configuration: configuration ?? Prisma.DbNull,
+        credentials: (encryptedCredentials as any) ?? Prisma.DbNull,
+        fieldMappings: (integration.supportedEntities as any) ?? Prisma.DbNull,
+        syncEnabled: false,
+        connectedAt: new Date(),
+        connectedBy,
+        healthStatus: testResult.success ? 'HEALTHY' : 'UNHEALTHY',
+        errorMessage: testResult.error ?? undefined,
+        metadata: { version: integration.version } as any,
+        updatedAt: new Date(),
+      },
+      create: {
         tenantId,
         integrationId,
         integrationName: integration.name,
         provider: integration.vendor,
         category: integration.category,
-        status: testResult.success ? 'CONNECTED' : 'ERROR',
+        status: hasConfig && testResult.success ? 'CONNECTED' : 'NEEDS_CONFIG',
         configuration: configuration ?? Prisma.DbNull,
         credentials: (encryptedCredentials as any) ?? Prisma.DbNull,
         fieldMappings: (integration.supportedEntities as any) ?? Prisma.DbNull,
