@@ -95,15 +95,30 @@ export default function AppDirectoryPage() {
 
   const fetchApps = useCallback(async () => {
     try {
-      const params = new URLSearchParams({ type: 'catalog' });
+      const params = new URLSearchParams({ type: 'marketplace' });
       if (activeCategory !== 'All Apps') params.set('category', activeCategory);
       if (searchQuery) params.set('search', searchQuery);
 
       const res = await fetch(`/api/integrations?${params.toString()}`);
       const result = await res.json();
       if (result.success && result.data) {
-        const integrations = result.data.integrations || result.data || [];
-        setApps(Array.isArray(integrations) ? integrations : []);
+        const listings = result.data.listings || result.data || [];
+        const raw = Array.isArray(listings) ? listings : [];
+        setApps(
+          raw.map((item: any) => ({
+            id: item.integration.id,
+            name: item.integration.name,
+            nameAr: item.integration.nameAr,
+            description: item.integration.description,
+            descriptionAr: item.integration.descriptionAr,
+            category: item.integration.category,
+            provider: item.integration.vendor || item.integration.provider,
+            rating: item.rating,
+            installCount: item.installCount,
+            installed: item.isInstalled,
+            connectionId: item.connectionId,
+          }))
+        );
         setError(null);
       } else {
         setApps([]);
