@@ -1,0 +1,16 @@
+BEGIN;
+
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+CREATE TABLE IF NOT EXISTS auraos.aura_industry_solution (
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  code TEXT NOT NULL UNIQUE,
+  name TEXT NOT NULL,
+  icon TEXT,
+  description TEXT NOT NULL,
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+COMMIT;

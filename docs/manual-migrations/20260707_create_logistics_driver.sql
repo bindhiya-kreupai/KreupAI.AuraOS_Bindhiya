@@ -1,0 +1,18 @@
+BEGIN;
+
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+CREATE TABLE IF NOT EXISTS auraos.aura_logistics_driver (
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  name TEXT NOT NULL,
+  route TEXT NOT NULL,
+  vehicle TEXT NOT NULL,
+  status TEXT NOT NULL,
+  eta TEXT,
+  license TEXT,
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+COMMIT;
