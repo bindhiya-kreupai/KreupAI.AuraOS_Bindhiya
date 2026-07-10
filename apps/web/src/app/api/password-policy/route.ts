@@ -4,14 +4,18 @@ import { prisma } from '@aura/database';
 import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
-import { CreatePasswordPolicySchema, validationErrorResponse } from '@/lib/validators';
+import {
+  CreatePasswordPolicySchema,
+  UpdatePasswordPolicySchema,
+  validationErrorResponse,
+} from '@/lib/validators';
 import { logger } from '@/lib/logger';
 
 // GET - Fetch current password policy (typically only one per system)
 export const GET = withEnhancedAuth(async (request: NextRequest, { user, permissions }) => {
   try {
     // Check permission
-    const permissionError = requirePermission(Resource.SSO_CONFIG, Action.READ, permissions);
+    const permissionError = requirePermission(Resource.SYSTEM_SETTINGS, Action.READ, permissions);
     if (permissionError) return permissionError;
 
     // Fetch the first (and typically only) password policy
@@ -53,7 +57,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
 export const POST = withEnhancedAuth(async (request: NextRequest, { user, permissions }) => {
   try {
     // Check permission
-    const permissionError = requirePermission(Resource.SSO_CONFIG, Action.CREATE, permissions);
+    const permissionError = requirePermission(Resource.SYSTEM_SETTINGS, Action.CREATE, permissions);
     if (permissionError) return permissionError;
 
     // Validate request body
@@ -119,12 +123,12 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
 export const PUT = withEnhancedAuth(async (request: NextRequest, { user, permissions }) => {
   try {
     // Check permission
-    const permissionError = requirePermission(Resource.SSO_CONFIG, Action.UPDATE, permissions);
+    const permissionError = requirePermission(Resource.SYSTEM_SETTINGS, Action.UPDATE, permissions);
     if (permissionError) return permissionError;
 
-    // Validate request body
+    // Validate request body (partial update)
     const body = await request.json();
-    const validatedData = CreatePasswordPolicySchema.parse(body);
+    const validatedData = UpdatePasswordPolicySchema.parse(body);
 
     // Fetch existing policy
     const existingPolicy = await prisma.passwordPolicy.findFirst();
@@ -185,7 +189,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, { user, permiss
 export const DELETE = withEnhancedAuth(async (request: NextRequest, { user, permissions }) => {
   try {
     // Check permission
-    const permissionError = requirePermission(Resource.SSO_CONFIG, Action.DELETE, permissions);
+    const permissionError = requirePermission(Resource.SYSTEM_SETTINGS, Action.DELETE, permissions);
     if (permissionError) return permissionError;
 
     // Fetch existing policy
