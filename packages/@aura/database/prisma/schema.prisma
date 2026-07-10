@@ -1306,22 +1306,23 @@ model SSOConfig {
 }
 
 model UserSession {
-  id         String    @id(map: "UserSession_pkey") @default(uuid())
-  userId     String
-  ipAddress  String
-  device     String?
-  browser    String?
-  location   String?
-  lastActive DateTime  @default(now())
-  status     String    @default("Active")
-  createdAt  DateTime  @default(now())
-  expiresAt  DateTime?
-  updatedAt  DateTime  @default(now())
-  createdBy  String?
-  updatedBy  String?
-  deletedAt  DateTime?
-  isDeleted  Boolean   @default(false)
-  user       User      @relation(fields: [userId], references: [id], map: "UserSession_userId_fkey")
+  id               String    @id(map: "UserSession_pkey") @default(uuid())
+  userId           String
+  ipAddress        String
+  device           String?
+  browser          String?
+  deviceFingerprint String?
+  location         String?
+  lastActive       DateTime  @default(now())
+  status           String    @default("Active")
+  createdAt        DateTime  @default(now())
+  expiresAt        DateTime?
+  updatedAt        DateTime  @default(now())
+  createdBy        String?
+  updatedBy        String?
+  deletedAt        DateTime?
+  isDeleted        Boolean   @default(false)
+  user             User      @relation(fields: [userId], references: [id], map: "UserSession_userId_fkey")
 
   @@map("aura_user_session")
 }
