@@ -8,6 +8,8 @@ export interface CreateUserInput {
   email: string;
   password: string;
   tenantId: string;
+  firstName?: string;
+  lastName?: string;
   status?: UserStatus;
   mfaEnabled?: boolean;
 }
@@ -15,6 +17,8 @@ export interface CreateUserInput {
 export interface UpdateUserInput {
   email?: string;
   password?: string;
+  firstName?: string;
+  lastName?: string;
   status?: UserStatus;
   mfaEnabled?: boolean;
 }
@@ -74,6 +78,13 @@ export class UserService extends BaseService {
                 employeeCode: true,
               },
             },
+            tenant: {
+              select: {
+                id: true,
+                name: true,
+                code: true,
+              },
+            },
           },
           skip: (page - 1) * limit,
           take: limit,
@@ -120,6 +131,13 @@ export class UserService extends BaseService {
               employeeCode: true,
             },
           },
+          tenant: {
+            select: {
+              id: true,
+              name: true,
+              code: true,
+            },
+          },
         },
       });
 
@@ -152,9 +170,14 @@ export class UserService extends BaseService {
     ipAddress: string
   ): Promise<ServiceResponse> {
     try {
-      // Check if user already exists
-      const existingUser = await this.prisma.user.findUnique({
-        where: { email: input.email },
+      // Check if user already exists (case-insensitive)
+      const existingUser = await this.prisma.user.findFirst({
+        where: {
+          email: {
+            equals: input.email,
+            mode: 'insensitive',
+          },
+        },
       });
 
       if (existingUser) {
@@ -174,6 +197,8 @@ export class UserService extends BaseService {
             email: input.email,
             password: hashedPassword,
             tenantId: input.tenantId,
+            firstName: input.firstName || null,
+            lastName: input.lastName || null,
             status: input.status || 'Active',
             mfaEnabled: input.mfaEnabled || false,
           },
@@ -193,6 +218,7 @@ export class UserService extends BaseService {
             tenantId: input.tenantId,
             userId: createdBy,
             action: 'CREATE',
+            module: 'users',
             resourceType: 'User',
             metadata: { description: `Created user: ${newUser.email}` },
             ipAddress,
@@ -239,10 +265,16 @@ export class UserService extends BaseService {
         };
       }
 
-      // If email is being updated, check for conflicts
+      // If email is being updated, check for conflicts (case-insensitive)
       if (input.email && input.email !== existingUser.email) {
-        const emailConflict = await this.prisma.user.findUnique({
-          where: { email: input.email },
+        const emailConflict = await this.prisma.user.findFirst({
+          where: {
+            email: {
+              equals: input.email,
+              mode: 'insensitive',
+            },
+            id: { not: userId },
+          },
         });
 
         if (emailConflict) {
@@ -256,6 +288,8 @@ export class UserService extends BaseService {
       // Prepare update data
       const updateData: any = {};
       if (input.email) updateData.email = input.email;
+      if (input.firstName !== undefined) updateData.firstName = input.firstName;
+      if (input.lastName !== undefined) updateData.lastName = input.lastName;
       if (input.status) updateData.status = input.status;
       if (input.mfaEnabled !== undefined) updateData.mfaEnabled = input.mfaEnabled;
       if (input.password) {
@@ -283,6 +317,7 @@ export class UserService extends BaseService {
             tenantId: existingUser.tenantId,
             userId: updatedBy,
             action: 'UPDATE',
+            module: 'users',
             resourceType: 'User',
             metadata: { description: `Updated user: ${updatedUser.email}` },
             ipAddress,
@@ -336,6 +371,7 @@ export class UserService extends BaseService {
             tenantId: existingUser.tenantId,
             userId: deletedBy,
             action: 'DELETE',
+            module: 'users',
             resourceType: 'User',
             metadata: { description: `Deleted user: ${existingUser.email}` },
             ipAddress,
