@@ -72,6 +72,7 @@ export default function UsersPage() {
   const [notification, setNotification] = useState<Notification | null>(null);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [pendingRoleIds, setPendingRoleIds] = useState<string[]>([]);
 
   const showNotification = useCallback((type: 'success' | 'error', message: string) => {
     setNotification({ type, message });
@@ -278,6 +279,31 @@ export default function UsersPage() {
           'success',
           isUpdate ? 'User updated successfully' : 'User created successfully'
         );
+
+        // Assign pending roles after user creation
+        if (!isUpdate && pendingRoleIds.length > 0) {
+          const json = await response.json();
+          const newUserId = json.data?.id;
+          if (newUserId) {
+            const failedRoles: string[] = [];
+            for (const roleId of pendingRoleIds) {
+              const role = roles.find((r) => r.id === roleId);
+              const assignRes = await fetch(`/api/users/${newUserId}/roles`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ roleId }),
+              });
+              if (!assignRes.ok) {
+                failedRoles.push(role?.name || roleId);
+              }
+            }
+            if (failedRoles.length > 0) {
+              showNotification('error', `Failed to assign role(s): ${failedRoles.join(', ')}`);
+            }
+          }
+          setPendingRoleIds([]);
+        }
+
         fetchData(page);
       } else {
         const error = await response.json();
@@ -443,73 +469,109 @@ export default function UsersPage() {
           </label>
         </div>
 
-        {isUpdate && (
-          <div className="border-t border-cloud dark:border-nebula-purple/50 pt-4 mt-4">
-            <label className="block text-xs font-medium text-silver-mist mb-2">
-              Role Assignments
-            </label>
+        <div className="border-t border-cloud dark:border-nebula-purple/50 pt-4 mt-4">
+          <label className="block text-xs font-medium text-silver-mist mb-2">
+            Role Assignments
+          </label>
 
-            {currentUserRoles.length > 0 ? (
-              <div className="space-y-1.5 mb-3">
-                {currentUserRoles.map((ur) => (
-                  <div
-                    key={ur.id}
-                    className="flex items-center justify-between px-3 py-1.5 bg-pearl dark:bg-stellar-blue rounded-lg text-sm"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Shield className="w-3.5 h-3.5 text-celestial-indigo" />
-                      <span className="font-medium">{ur.role.name}</span>
-                      <span className="text-[10px] text-silver-mist">({ur.role.code})</span>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => removeRole(record.id!, ur.roleId)}
-                      className="text-[10px] text-rose-500 hover:text-rose-700 font-medium px-1.5 py-0.5 rounded hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"
+          {isUpdate ? (
+            <>
+              {currentUserRoles.length > 0 ? (
+                <div className="space-y-1.5 mb-3">
+                  {currentUserRoles.map((ur) => (
+                    <div
+                      key={ur.id}
+                      className="flex items-center justify-between px-3 py-1.5 bg-pearl dark:bg-stellar-blue rounded-lg text-sm"
                     >
-                      Remove
-                    </button>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-xs text-silver-mist mb-3 italic">No roles assigned</p>
-            )}
-
-            <div className="flex gap-2">
-              <select
-                id="newRole"
-                className="flex-1 px-3 py-1.5 bg-pearl dark:bg-stellar-blue rounded-lg text-sm border border-cloud dark:border-nebula-purple/50 focus:ring-2 focus:ring-celestial-indigo/50 outline-none"
-                defaultValue=""
-              >
-                <option value="" disabled>
-                  Select a role...
-                </option>
-                {roles
-                  .filter((r) => !currentUserRoles.some((ur) => ur.roleId === r.id))
-                  .map((r) => (
-                    <option key={r.id} value={r.id}>
-                      {r.name} ({r.code})
-                    </option>
+                      <div className="flex items-center gap-2">
+                        <Shield className="w-3.5 h-3.5 text-celestial-indigo" />
+                        <span className="font-medium">{ur.role.name}</span>
+                        <span className="text-[10px] text-silver-mist">({ur.role.code})</span>
+                      </div>
+                      <button
+                        type="button"
+                        onClick={() => removeRole(record.id!, ur.roleId)}
+                        className="text-[10px] text-rose-500 hover:text-rose-700 font-medium px-1.5 py-0.5 rounded hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"
+                      >
+                        Remove
+                      </button>
+                    </div>
                   ))}
-              </select>
-              <button
-                type="button"
-                onClick={(e) => {
-                  const select = e.currentTarget.parentElement?.querySelector(
-                    '#newRole'
-                  ) as HTMLSelectElement;
-                  if (select?.value) {
-                    assignRole(record.id!, select.value);
-                    select.value = '';
-                  }
-                }}
-                className="px-3 py-1.5 text-xs font-medium bg-celestial-indigo/10 text-celestial-indigo hover:bg-celestial-indigo/20 rounded-lg transition-colors"
-              >
-                Assign
-              </button>
+                </div>
+              ) : (
+                <p className="text-xs text-silver-mist mb-3 italic">No roles assigned</p>
+              )}
+
+              <div className="flex gap-2">
+                <select
+                  id="newRole"
+                  className="flex-1 px-3 py-1.5 bg-pearl dark:bg-stellar-blue rounded-lg text-sm border border-cloud dark:border-nebula-purple/50 focus:ring-2 focus:ring-celestial-indigo/50 outline-none"
+                  defaultValue=""
+                >
+                  <option value="" disabled>
+                    Select a role...
+                  </option>
+                  {roles
+                    .filter((r) => !currentUserRoles.some((ur) => ur.roleId === r.id))
+                    .map((r) => (
+                      <option key={r.id} value={r.id}>
+                        {r.name} ({r.code})
+                      </option>
+                    ))}
+                </select>
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    const select = e.currentTarget.parentElement?.querySelector(
+                      '#newRole'
+                    ) as HTMLSelectElement;
+                    if (select?.value) {
+                      assignRole(record.id!, select.value);
+                      select.value = '';
+                    }
+                  }}
+                  className="px-3 py-1.5 text-xs font-medium bg-celestial-indigo/10 text-celestial-indigo hover:bg-celestial-indigo/20 rounded-lg transition-colors"
+                >
+                  Assign
+                </button>
+              </div>
+            </>
+          ) : (
+            <div className="space-y-1.5 mb-2">
+              {roles.length > 0 ? (
+                roles.map((r) => (
+                  <label
+                    key={r.id}
+                    className="flex items-center gap-2 px-3 py-1.5 bg-pearl dark:bg-stellar-blue rounded-lg text-sm cursor-pointer hover:bg-celestial-indigo/5 transition-colors"
+                  >
+                    <input
+                      type="checkbox"
+                      checked={pendingRoleIds.includes(r.id)}
+                      onChange={(e) => {
+                        if (e.target.checked) {
+                          setPendingRoleIds((prev) => [...prev, r.id]);
+                        } else {
+                          setPendingRoleIds((prev) => prev.filter((id) => id !== r.id));
+                        }
+                      }}
+                      className="w-4 h-4 rounded border-cloud text-celestial-indigo focus:ring-celestial-indigo/50"
+                    />
+                    <Shield className="w-3.5 h-3.5 text-celestial-indigo" />
+                    <span className="font-medium">{r.name}</span>
+                    <span className="text-[10px] text-silver-mist">({r.code})</span>
+                  </label>
+                ))
+              ) : (
+                <p className="text-xs text-silver-mist italic">No roles available</p>
+              )}
+              {pendingRoleIds.length > 0 && (
+                <p className="text-[10px] text-celestial-indigo mt-1">
+                  {pendingRoleIds.length} role(s) selected — will be assigned after creation
+                </p>
+              )}
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
     );
   };
