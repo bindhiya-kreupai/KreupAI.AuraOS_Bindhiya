@@ -6,24 +6,31 @@ export const CreateUserSchema = z.object({
   password: z.string().min(8, 'Password must be at least 8 characters'),
   tenantId: z.string().uuid('Invalid tenant ID'),
   employeeId: z.string().uuid('Invalid employee ID').optional(),
+  firstName: z.string().max(100).nullish().default(null),
+  lastName: z.string().max(100).nullish().default(null),
   status: z.enum(['Active', 'Inactive', 'Suspended']).optional().default('Active'),
   mfaEnabled: z.boolean().optional().default(false),
 });
 
 export const UpdateUserSchema = z.object({
   email: z.string().email('Invalid email address').optional(),
+  password: z.string().min(8, 'Password must be at least 8 characters').optional(),
+  firstName: z.string().max(100).nullish(),
+  lastName: z.string().max(100).nullish(),
   status: z.enum(['Active', 'Inactive', 'Suspended']).optional(),
   mfaEnabled: z.boolean().optional(),
 });
 
-export const ChangePasswordSchema = z.object({
-  currentPassword: z.string().min(1, 'Current password is required'),
-  newPassword: z.string().min(8, 'New password must be at least 8 characters'),
-  confirmPassword: z.string().min(1, 'Password confirmation is required'),
-}).refine((data) => data.newPassword === data.confirmPassword, {
-  message: 'Passwords do not match',
-  path: ['confirmPassword'],
-});
+export const ChangePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, 'Current password is required'),
+    newPassword: z.string().min(8, 'New password must be at least 8 characters'),
+    confirmPassword: z.string().min(1, 'Password confirmation is required'),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  });
 
 export const ResetPasswordSchema = z.object({
   userId: z.string().uuid('Invalid user ID'),
@@ -154,22 +161,27 @@ export const UserDeactivationQuerySchema = z.object({
 });
 
 // User Delegation Schemas
-export const CreateUserDelegationSchema = z.object({
-  delegatorId: z.string().uuid('Invalid delegator ID'),
-  delegateeId: z.string().uuid('Invalid delegatee ID'),
-  role: z.string().min(1, 'Role is required').max(100),
-  startDate: z.string().datetime('Invalid start date').or(z.date()),
-  endDate: z.string().datetime('Invalid end date').or(z.date()),
-  reason: z.string().max(500).optional(),
-  status: z.enum(['Active', 'Scheduled', 'Expired']).optional().default('Scheduled'),
-}).refine((data) => {
-  const start = new Date(data.startDate);
-  const end = new Date(data.endDate);
-  return end > start;
-}, {
-  message: 'End date must be after start date',
-  path: ['endDate'],
-});
+export const CreateUserDelegationSchema = z
+  .object({
+    delegatorId: z.string().uuid('Invalid delegator ID'),
+    delegateeId: z.string().uuid('Invalid delegatee ID'),
+    role: z.string().min(1, 'Role is required').max(100),
+    startDate: z.string().datetime('Invalid start date').or(z.date()),
+    endDate: z.string().datetime('Invalid end date').or(z.date()),
+    reason: z.string().max(500).optional(),
+    status: z.enum(['Active', 'Scheduled', 'Expired']).optional().default('Scheduled'),
+  })
+  .refine(
+    (data) => {
+      const start = new Date(data.startDate);
+      const end = new Date(data.endDate);
+      return end > start;
+    },
+    {
+      message: 'End date must be after start date',
+      path: ['endDate'],
+    }
+  );
 
 export const UpdateUserDelegationSchema = z.object({
   role: z.string().min(1).max(100).optional(),
