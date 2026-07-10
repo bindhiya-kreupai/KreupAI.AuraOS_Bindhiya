@@ -6,7 +6,28 @@ import bcrypt from 'bcryptjs';
 import crypto from 'crypto';
 import { z } from 'zod';
 import { generateTokens } from '@/lib/auth/jwt';
+import { generateDeviceFingerprint } from '@/lib/auth/device-fingerprint.service';
+import { resolveLocation, formatLocation } from '@/lib/auth/geolocation.service';
 import { logger } from '@/lib/logger';
+
+function parseDuration(duration: string): number {
+  const match = duration.match(/^(\d+)\s*(h|d|m|s)$/);
+  if (!match) return 24 * 60 * 60 * 1000;
+  const value = parseInt(match[1], 10);
+  const unit = match[2];
+  switch (unit) {
+    case 's':
+      return value * 1000;
+    case 'm':
+      return value * 60 * 1000;
+    case 'h':
+      return value * 60 * 60 * 1000;
+    case 'd':
+      return value * 24 * 60 * 60 * 1000;
+    default:
+      return 24 * 60 * 60 * 1000;
+  }
+}
 
 /**
  * MFA Validate API - Validate MFA code during login
@@ -161,13 +182,31 @@ export async function POST(request: NextRequest) {
       tenantId: user.tenantId,
     });
 
-    // Create session
+    // Calculate session expiry from JWT_EXPIRES_IN (default 24h)
+    const expiresInStr = process.env.JWT_EXPIRES_IN || '24h';
+    const expiresInMs = parseDuration(expiresInStr);
+    const expiresAt = new Date(Date.now() + expiresInMs);
+
+    // Create session with device fingerprint and location
+    const userAgent = request.headers.get('user-agent') || 'Unknown';
+    const acceptLanguage = request.headers.get('accept-language');
+    const fingerprint = generateDeviceFingerprint(userAgent, ipAddress, acceptLanguage);
+    let locationStr = '';
+    try {
+      const geoLocation = await resolveLocation(ipAddress);
+      locationStr = formatLocation(geoLocation);
+    } catch (_) {}
+
     const session = await prisma.userSession.create({
       data: {
         userId: user.id,
         ipAddress,
-        device: request.headers.get('user-agent') || 'Unknown',
+        device: userAgent.substring(0, 200),
+        browser: userAgent.split('/')[0]?.substring(0, 100),
+        deviceFingerprint: fingerprint.hash,
+        location: locationStr || null,
         status: 'Active',
+        expiresAt,
       },
     });
 
