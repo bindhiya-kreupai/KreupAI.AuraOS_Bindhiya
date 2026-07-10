@@ -114,6 +114,40 @@ const PERMISSIONS = [
   { resource: 'webhooks', action: 'update', description: 'Update webhook configuration' },
   { resource: 'webhooks', action: 'delete', description: 'Delete webhooks' },
   { resource: 'webhooks', action: 'test', description: 'Test webhook delivery' },
+
+  // SSO Configuration
+  { resource: 'sso_config', action: 'create', description: 'Create SSO configuration' },
+  { resource: 'sso_config', action: 'read', description: 'View SSO configuration' },
+  { resource: 'sso_config', action: 'update', description: 'Update SSO configuration' },
+  { resource: 'sso_config', action: 'delete', description: 'Delete SSO configuration' },
+  { resource: 'sso_config', action: 'manage', description: 'Full SSO configuration management' },
+
+  // MFA Configuration
+  { resource: 'mfa_config', action: 'create', description: 'Create MFA configuration' },
+  { resource: 'mfa_config', action: 'read', description: 'View MFA configuration' },
+  { resource: 'mfa_config', action: 'update', description: 'Update MFA configuration' },
+  { resource: 'mfa_config', action: 'delete', description: 'Delete MFA configuration' },
+  { resource: 'mfa_config', action: 'manage', description: 'Full MFA configuration management' },
+
+  // User Delegation
+  { resource: 'user_delegation', action: 'create', description: 'Delegate user access' },
+  { resource: 'user_delegation', action: 'read', description: 'View delegations' },
+  { resource: 'user_delegation', action: 'update', description: 'Update delegations' },
+  { resource: 'user_delegation', action: 'delete', description: 'Revoke delegations' },
+  { resource: 'user_delegation', action: 'manage', description: 'Full delegation management' },
+
+  // User Deactivation
+  { resource: 'user_deactivation', action: 'create', description: 'Deactivate users' },
+  { resource: 'user_deactivation', action: 'read', description: 'View deactivated users' },
+  { resource: 'user_deactivation', action: 'update', description: 'Restore users' },
+  { resource: 'user_deactivation', action: 'manage', description: 'Full deactivation management' },
+
+  // Licenses
+  { resource: 'licenses', action: 'read', description: 'View licenses' },
+  { resource: 'licenses', action: 'create', description: 'Assign licenses' },
+  { resource: 'licenses', action: 'update', description: 'Update licenses' },
+  { resource: 'licenses', action: 'delete', description: 'Revoke licenses' },
+  { resource: 'licenses', action: 'manage', description: 'Full license management' },
 ];
 
 // Role-Permission mappings
@@ -137,6 +171,11 @@ const ROLE_PERMISSIONS: Record<string, string[]> = {
     'webhooks:update',
     'webhooks:delete',
     'webhooks:test',
+    'sso_config:manage',
+    'mfa_config:manage',
+    'user_delegation:manage',
+    'user_deactivation:manage',
+    'licenses:manage',
   ],
   ADMIN: [
     'users:create', 'users:read', 'users:update', 'users:delete',
@@ -155,6 +194,7 @@ const ROLE_PERMISSIONS: Record<string, string[]> = {
     'webhooks:update',
     'webhooks:delete',
     'webhooks:test',
+    'sso_config:manage',
   ],
   HR_MANAGER: [
     'users:read',

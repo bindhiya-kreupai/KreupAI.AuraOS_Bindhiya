@@ -4,7 +4,11 @@ import { prisma } from '@aura/database';
 import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
-import { CreateSSOConfigSchema, validationErrorResponse } from '@/lib/validators';
+import {
+  CreateSSOConfigSchema,
+  UpdateSSOConfigSchema,
+  validationErrorResponse,
+} from '@/lib/validators';
 import { logger } from '@/lib/logger';
 
 // GET - Fetch current SSO configuration (typically only one per system)
@@ -123,7 +127,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, { user, permiss
 
     // Validate request body
     const body = await request.json();
-    const validatedData = CreateSSOConfigSchema.parse(body);
+    const validatedData = UpdateSSOConfigSchema.parse(body);
 
     // Fetch existing config
     const existingConfig = await prisma.sSOConfig.findFirst();

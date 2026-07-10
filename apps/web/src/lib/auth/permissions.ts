@@ -142,6 +142,7 @@ export const RolePermissions: Record<string, Permission[]> = {
     // System
     'audit_logs:read',
     'master_data:read',
+    'sso_config:manage',
   ],
 
   HR_MANAGER: [
