@@ -386,20 +386,7 @@ export const superAdminMenu: MenuDefinition = {
                 'Regulatory Reports',
             ],
         },
-        {
-            code: 'EXPENSE_COMPLIANCE',
-            label: 'Expense Compliance',
-            icon: 'compensation',
-            path: '/dashboard/expense-compliance',
-            features: ['Expense Checks'],
-        },
-        {
-            code: 'EXTERNAL_REPORTING_COMPLIANCE',
-            label: 'External Reporting Compliance',
-            icon: 'reports',
-            path: '/dashboard/external-reporting-compliance',
-            features: ['Reporting', 'Bilingual Disclosure'],
-        },
+
         {
             code: 'GCC_COMPLIANCE',
             label: 'GCC Compliance',
@@ -419,6 +406,20 @@ export const superAdminMenu: MenuDefinition = {
                 'Nitaqat (Saudization)',
             ],
             items: [
+                {
+                    code: 'EXPENSE_COMPLIANCE',
+                    label: 'Expense Compliance',
+                    icon: 'compensation',
+                    path: '/dashboard/expense-compliance',
+                    features: ['Checks'],
+                },
+                {
+                    code: 'EXTERNAL_REPORTING_COMPLIANCE',
+                    label: 'External Reporting Compliance',
+                    icon: 'reports',
+                    path: '/dashboard/external-reporting-compliance',
+                    features: ['Bilingual Disclosure', 'File Format', 'Submission Cadence'],
+                },
                 {
                     code: 'COMPLIANCE_EVALUATORS',
                     label: 'Compliance Evaluators',
@@ -736,6 +737,7 @@ export const superAdminMenu: MenuDefinition = {
                     icon: 'benefits',
                     path: '/dashboard/gosi-compliance',
                     features: [
+                        'GOSI Compliance',
                         'Registrations',
                         'Contributions',
                         'Reconciliation',
@@ -878,6 +880,7 @@ export const superAdminMenu: MenuDefinition = {
                     icon: 'payroll',
                     path: '/dashboard/eosb-compliance',
                     features: [
+                        'EOSB Compliance',
                         'Calculations',
                         'Accruals',
                         'Disputes',
@@ -980,6 +983,7 @@ export const superAdminMenu: MenuDefinition = {
                     icon: 'policy',
                     path: '/dashboard/er-compliance',
                     features: [
+                        'ER Compliance',
                         'Grievances',
                         'Disciplinary',
                         'Investigations',

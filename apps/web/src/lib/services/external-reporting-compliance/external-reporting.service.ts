@@ -201,7 +201,7 @@ export function evaluateDisclosurePack(
       };
     }
     const hasEn = !!s.en && s.en.trim().length > 0;
-    const hasAr = !!s.ar && s.ar.trim().length > 0;
+    const hasAr = !!s.ar && s.ar.trim().length > 0 && /[\u0600-\u06FF]/.test(s.ar);
     if (!req.requireBilingual) {
       if (!hasEn && !hasAr) {
         return {
@@ -234,7 +234,10 @@ export function evaluateDisclosurePack(
       return {
         sectionCode: req.sectionCode,
         status: 'MISSING_AR',
-        reason: { en: 'AR translation missing', ar: 'الترجمة العربية مفقودة' },
+        reason: {
+          en: 'AR translation missing or not in Arabic script',
+          ar: 'الترجمة العربية مفقودة أو ليست بالخط العربي',
+        },
       };
     }
     return {

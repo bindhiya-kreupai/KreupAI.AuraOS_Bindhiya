@@ -8,15 +8,15 @@ datasource db {
 }
 
 model Tenant {
-  id                String             @id(map: "Tenant_pkey") @default(uuid())
-  code              String             @unique(map: "Tenant_code_key")
+  id                String                   @id(map: "Tenant_pkey") @default(uuid())
+  code              String                   @unique(map: "Tenant_code_key")
   name              String
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
+  createdAt         DateTime                 @default(now())
+  updatedAt         DateTime                 @updatedAt
   createdBy         String?
   updatedBy         String?
   deletedAt         DateTime?
-  isDeleted         Boolean            @default(false)
+  isDeleted         Boolean                  @default(false)
   companies         Company[]
   roles             Role[]
   users             User[]
@@ -92,19 +92,19 @@ model Department {
 }
 
 model CostCenter {
-  id             String       @id(map: "CostCenter_pkey") @default(uuid())
-  code           String       @unique(map: "CostCenter_code_key")
-  name           String
-  fiscalYear     Int?
-  allocatedBudget Decimal     @default(0) @db.Decimal(15, 2)
-  spentBudget    Decimal      @default(0) @db.Decimal(15, 2)
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @default(now()) @updatedAt
-  createdBy      String?
-  updatedBy      String?
-  deletedAt      DateTime?
-  isDeleted      Boolean      @default(false)
-  departments    Department[]
+  id              String       @id(map: "CostCenter_pkey") @default(uuid())
+  code            String       @unique(map: "CostCenter_code_key")
+  name            String
+  fiscalYear      Int?
+  allocatedBudget Decimal      @default(0) @db.Decimal(15, 2)
+  spentBudget     Decimal      @default(0) @db.Decimal(15, 2)
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @default(now()) @updatedAt
+  createdBy       String?
+  updatedBy       String?
+  deletedAt       DateTime?
+  isDeleted       Boolean      @default(false)
+  departments     Department[]
 
   @@map("aura_cost_center")
 }
@@ -334,7 +334,7 @@ model Employee {
   wpsRecords           WPSRecord[]
 
   // ESS career interests (self-service marketplace profile) — re-added after concurrent-edit loss.
-  careerInterests      Json?
+  careerInterests Json?
 
   @@map("aura_employee")
 }
@@ -873,21 +873,21 @@ model BiometricDevice {
   lastHeartbeatAt   DateTime?
   pendingPunches    Int       @default(0)
   totalCapacity     Int       @default(5000)
-  
-  successRate       Float     @default(100.0)
-  avgScanTimeMs     Int       @default(0)
-  dailyScans        Int       @default(0)
-  failedScans       Int       @default(0)
-  peakHour          String?
-  uptime            Float     @default(100.0)
 
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  isDeleted         Boolean   @default(false)
-  deletedAt         DateTime?
-  createdBy         String?
-  updatedBy         String?
-  tenant            Tenant    @relation(fields: [tenantId], references: [id])
+  successRate   Float   @default(100.0)
+  avgScanTimeMs Int     @default(0)
+  dailyScans    Int     @default(0)
+  failedScans   Int     @default(0)
+  peakHour      String?
+  uptime        Float   @default(100.0)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  isDeleted Boolean   @default(false)
+  deletedAt DateTime?
+  createdBy String?
+  updatedBy String?
+  tenant    Tenant    @relation(fields: [tenantId], references: [id])
 
   @@index([tenantId])
   @@map("aura_biometric_device")
@@ -968,8 +968,6 @@ model Shift {
   updatedBy        String?
   deletedAt        DateTime?
   isDeleted        Boolean   @default(false)
-  assignments      ShiftAssignment[]
-  rosters          ShiftRoster[]
 
   @@unique([tenantId, code], map: "Shift_tenantId_code_key")
   @@index([isActive], map: "Shift_isActive_idx")
@@ -993,7 +991,6 @@ model ShiftAssignment {
   updatedBy     String?
   deletedAt     DateTime?
   isDeleted     Boolean   @default(false)
-  shift         Shift     @relation(fields: [shiftId], references: [id], onDelete: Cascade)
 
   @@index([employeeId], map: "ShiftAssignment_employeeId_idx")
   @@index([shiftId], map: "ShiftAssignment_shiftId_idx")
@@ -1018,7 +1015,6 @@ model ShiftRoster {
   updatedBy       String?
   deletedAt       DateTime?
   isDeleted       Boolean   @default(false)
-  shift           Shift     @relation(fields: [shiftId], references: [id], onDelete: Cascade)
 
   @@unique([tenantId, employeeId, rosterDate], map: "ShiftRoster_tenantId_employeeId_rosterDate_key")
   @@index([employeeId], map: "ShiftRoster_employeeId_idx")
@@ -1333,7 +1329,7 @@ model AuditLog {
   id           String        @id(map: "AuditLog_pkey") @default(uuid())
   userId       String?
   action       AuditAction
-  module       String        @default("system")
+  module       String
   details      String?
   ipAddress    String?
   timestamp    DateTime      @default(now())
@@ -4200,6 +4196,285 @@ model AIAgentMessage {
   @@map("aura_ai_agent_message")
 }
 
+// ============================================================================
+// CHATBOT BUILDER MODELS
+// ============================================================================
+
+model ChatbotDialogueFlow {
+  id              String    @id @default(uuid())
+  tenantId        String
+  flowName        String
+  description     String?
+  category        String?
+  nodes           Json
+  connections     Json
+  variables       Json?
+  isActive        Boolean   @default(false)
+  version         String    @default("1.0")
+  status          String    @default("draft")
+  triggerIntents  Json?
+  tags            Json?
+  publishedAt     DateTime?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  createdBy       String?
+  updatedBy       String?
+  deletedAt       DateTime?
+  isDeleted       Boolean   @default(false)
+
+  @@index([tenantId], map: "ChatbotDialogueFlow_tenantId_idx")
+  @@index([tenantId, status], map: "ChatbotDialogueFlow_tenantId_status_idx")
+  @@index([tenantId, isActive], map: "ChatbotDialogueFlow_tenantId_active_idx")
+  @@map("aura_chatbot_dialogue_flow")
+}
+
+model ChatbotIntent {
+  id                  String   @id @default(uuid())
+  tenantId            String
+  intentName          String
+  displayName         String?
+  description         String?
+  category            String?
+  trainingPhrases     Json?
+  responses           Json?
+  parameters          Json?
+  contexts            Json?
+  priority            Int      @default(0)
+  webhookEnabled      Boolean  @default(false)
+  webhookUrl          String?
+  isActive            Boolean  @default(true)
+  confidenceThreshold Float    @default(0.7)
+  usageCount          Int      @default(0)
+  averageConfidence   Float?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  createdBy           String?
+  updatedBy           String?
+  deletedAt           DateTime?
+  isDeleted           Boolean  @default(false)
+
+  @@index([tenantId], map: "ChatbotIntent_tenantId_idx")
+  @@index([tenantId, isActive], map: "ChatbotIntent_tenantId_active_idx")
+  @@map("aura_chatbot_intent")
+}
+
+model ChatbotEntity {
+  id              String   @id @default(uuid())
+  tenantId        String
+  entityName      String
+  entityType      String
+  description     String?
+  values          Json?
+  fuzzyMatching   Boolean  @default(false)
+  isCaseSensitive Boolean  @default(false)
+  status          String   @default("active")
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdBy       String?
+  updatedBy       String?
+  deletedAt       DateTime?
+  isDeleted       Boolean  @default(false)
+
+  @@index([tenantId], map: "ChatbotEntity_tenantId_idx")
+  @@index([tenantId, status], map: "ChatbotEntity_tenantId_status_idx")
+  @@map("aura_chatbot_entity")
+}
+
+model ChatbotTrainingDataset {
+  id            String   @id @default(uuid())
+  tenantId      String
+  datasetName   String
+  description   String?
+  language      String   @default("en")
+  totalExamples Int      @default(0)
+  intents       Json?
+  entities      Json?
+  status        String   @default("draft")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  createdBy     String?
+  updatedBy     String?
+  deletedAt     DateTime?
+  isDeleted     Boolean  @default(false)
+
+  @@index([tenantId], map: "ChatbotTrainingDataset_tenantId_idx")
+  @@index([tenantId, status], map: "ChatbotTrainingDataset_tenantId_status_idx")
+  @@map("aura_chatbot_training_dataset")
+}
+
+model ChatbotTrainingExample {
+  id          String   @id @default(uuid())
+  tenantId    String
+  datasetId   String?
+  text        String
+  intent      String
+  entities    Json?
+  language    String   @default("en")
+  source      String   @default("manual")
+  isValidated Boolean  @default(false)
+  validatedBy String?
+  addedBy     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  deletedAt   DateTime?
+  isDeleted   Boolean  @default(false)
+
+  @@index([tenantId], map: "ChatbotTrainingExample_tenantId_idx")
+  @@index([datasetId], map: "ChatbotTrainingExample_datasetId_idx")
+  @@index([intent], map: "ChatbotTrainingExample_intent_idx")
+  @@map("aura_chatbot_training_example")
+}
+
+model ChatbotChannel {
+  id            String    @id @default(uuid())
+  tenantId      String
+  channelType   String
+  channelName   String
+  isEnabled     Boolean   @default(false)
+  configuration Json?
+  features      Json?
+  status        String    @default("inactive")
+  lastSyncAt    DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  createdBy     String?
+  updatedBy     String?
+  deletedAt     DateTime?
+  isDeleted     Boolean   @default(false)
+
+  @@index([tenantId], map: "ChatbotChannel_tenantId_idx")
+  @@index([tenantId, channelType], map: "ChatbotChannel_tenantId_type_idx")
+  @@map("aura_chatbot_channel")
+}
+
+model ChatbotHandoffRule {
+  id          String   @id @default(uuid())
+  tenantId    String
+  ruleName    String
+  description String?
+  priority    Int      @default(0)
+  isActive    Boolean  @default(true)
+  triggers    Json?
+  conditions  Json?
+  action      Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
+  updatedBy   String?
+  deletedAt   DateTime?
+  isDeleted   Boolean  @default(false)
+
+  @@index([tenantId], map: "ChatbotHandoffRule_tenantId_idx")
+  @@index([tenantId, isActive], map: "ChatbotHandoffRule_tenantId_active_idx")
+  @@map("aura_chatbot_handoff_rule")
+}
+
+model ChatbotLanguage {
+  id                  String   @id @default(uuid())
+  tenantId            String
+  languageCode        String
+  languageName        String
+  isEnabled           Boolean  @default(false)
+  isDefault           Boolean  @default(false)
+  translationModel    String?
+  confidenceThreshold Float    @default(0.7)
+  supportedFeatures   Json?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+  createdBy           String?
+  updatedBy           String?
+  deletedAt           DateTime?
+  isDeleted           Boolean  @default(false)
+
+  @@unique([tenantId, languageCode], map: "ChatbotLanguage_tenantId_code_key")
+  @@index([tenantId], map: "ChatbotLanguage_tenantId_idx")
+  @@map("aura_chatbot_language")
+}
+
+model ChatbotTranslation {
+  id                String   @id @default(uuid())
+  tenantId          String
+  sourceLanguage    String
+  targetLanguage    String
+  sourceText        String
+  translatedText    String
+  translationMethod String   @default("automatic")
+  quality           Float?
+  translatedBy      String?
+  translatedDate    DateTime @default(now())
+  isApproved        Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdBy         String?
+  updatedBy         String?
+  deletedAt         DateTime?
+  isDeleted         Boolean  @default(false)
+
+  @@index([tenantId], map: "ChatbotTranslation_tenantId_idx")
+  @@map("aura_chatbot_translation")
+}
+
+model ChatbotLanguageContent {
+  id              String   @id @default(uuid())
+  tenantId        String
+  contentType     String
+  referenceId     String
+  translations    Json
+  defaultLanguage String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  createdBy       String?
+  updatedBy       String?
+  deletedAt       DateTime?
+  isDeleted       Boolean  @default(false)
+
+  @@unique([tenantId, contentType, referenceId], map: "ChatbotContent_tenantId_type_ref_key")
+  @@index([tenantId], map: "ChatbotLanguageContent_tenantId_idx")
+  @@map("aura_chatbot_language_content")
+}
+
+model ChatbotLanguageDetection {
+  id                   String   @id @default(uuid())
+  tenantId             String
+  text                 String
+  detectedLanguage     String
+  confidence           Float
+  alternativeLanguages Json?
+  timestamp            DateTime @default(now())
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+  createdBy            String?
+  updatedBy            String?
+  deletedAt            DateTime?
+  isDeleted            Boolean  @default(false)
+
+  @@index([tenantId], map: "ChatbotLangDetection_tenantId_idx")
+  @@map("aura_chatbot_language_detection")
+}
+
+model ChatbotLocalizationSettings {
+  id                              String   @id @default(uuid())
+  tenantId                        String   @unique(map: "ChatbotLocalization_tenantId_key")
+  autoDetectLanguage              Boolean  @default(false)
+  fallbackLanguage                String   @default("en")
+  supportedLanguages              Json?
+  translationProvider             String   @default("google")
+  translationApiKey               String?
+  enableAutoTranslation           Boolean  @default(false)
+  requireApprovalForAutoTranslation Boolean @default(true)
+  lastUpdatedAt                   DateTime @default(now())
+  lastUpdatedBy                   String?
+  createdAt                       DateTime @default(now())
+  updatedAt                       DateTime @updatedAt
+  createdBy                       String?
+  updatedBy                       String?
+  deletedAt                       DateTime?
+  isDeleted                       Boolean  @default(false)
+
+  @@index([tenantId], map: "ChatbotLocalization_tenantId_idx")
+  @@map("aura_chatbot_localization_settings")
+}
+
 model AnalyticsCache {
   id          String    @id @default(uuid())
   tenantId    String
@@ -4596,8 +4871,8 @@ model ContinuousFeedback {
   isDeleted     Boolean   @default(false)
 
   // Added by performance-components wave (matches ALTER in 20260702160000_add_perfcomponents_feedback).
-  tags          String[]
-  status        String    @default("active")
+  tags   String[]
+  status String   @default("active")
 
   @@index([fromUserId], map: "ContinuousFeedback_fromUserId_idx")
   @@index([tenantId], map: "ContinuousFeedback_tenantId_idx")
@@ -6194,29 +6469,29 @@ model WorkFromHomePolicy {
 }
 
 model WorkFromHomeRequest {
-  id              String    @id
-  requestCode     String
-  tenantId        String
-  employeeId      String
-  managerId       String?
-  startDate       DateTime
-  endDate         DateTime
-  numberOfDays    Decimal   @db.Decimal(5, 1)
-  reason          String
-  status          String    @default("PENDING")
-  submittedDate   DateTime  @default(now())
-  approvedBy      String?
-  approvedAt      DateTime?
-  rejectionReason String?
-  requiresCheckIn Boolean   @default(false)
-  checkInRequired DateTime?
+  id               String    @id
+  requestCode      String
+  tenantId         String
+  employeeId       String
+  managerId        String?
+  startDate        DateTime
+  endDate          DateTime
+  numberOfDays     Decimal   @db.Decimal(5, 1)
+  reason           String
+  status           String    @default("PENDING")
+  submittedDate    DateTime  @default(now())
+  approvedBy       String?
+  approvedAt       DateTime?
+  rejectionReason  String?
+  requiresCheckIn  Boolean   @default(false)
+  checkInRequired  DateTime?
   checkOutRequired DateTime?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  createdBy       String?
-  updatedBy       String?
-  deletedAt       DateTime?
-  isDeleted       Boolean   @default(false)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  createdBy        String?
+  updatedBy        String?
+  deletedAt        DateTime?
+  isDeleted        Boolean   @default(false)
 
   @@unique([tenantId, requestCode])
   @@index([employeeId], map: "WorkFromHomeRequest_employeeId_idx")
@@ -6423,6 +6698,7 @@ model TenantSetting {
   @@index([tenantId, module])
   @@map("aura_tenant_setting")
 }
+
 model TenantOvertimePolicy {
   id                     String    @id @default(uuid())
   tenantId               String
@@ -6499,19 +6775,19 @@ model PolicyAcknowledgement {
 }
 
 model MfaPolicy {
-  id                  String   @id @default(uuid())
-  tenantId            String   @unique
-  enforced            Boolean  @default(false)
-  allowedMethods      Json     @default("[\"totp\"]")
-  enforceForAdmins    Boolean  @default(true)
-  enforceForAllUsers  Boolean  @default(false)
-  enforceForRemote    Boolean  @default(false)
-  graceperiodDays     Int      @default(7)
-  rememberDeviceDays  Int      @default(30)
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @default(now()) @updatedAt
-  createdBy           String?
-  updatedBy           String?
+  id                 String   @id @default(uuid())
+  tenantId           String   @unique
+  enforced           Boolean  @default(false)
+  allowedMethods     Json     @default("[\"totp\"]")
+  enforceForAdmins   Boolean  @default(true)
+  enforceForAllUsers Boolean  @default(false)
+  enforceForRemote   Boolean  @default(false)
+  graceperiodDays    Int      @default(7)
+  rememberDeviceDays Int      @default(30)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @default(now()) @updatedAt
+  createdBy          String?
+  updatedBy          String?
 
   @@index([tenantId])
   @@map("aura_mfa_policy")
@@ -7653,14 +7929,11 @@ model GccLegalEntity {
   companyId        String?
   countryCode      String
   legalName        String
-  registrationRef      String
-  registrationType     String
-  gosiEstablishmentId  String?
-  mhrsdEstablishmentId String?
-  zatcaRegistration    String?
-  currency             String
-  timezone             String
-  isActive             Boolean          @default(true)
+  registrationRef  String
+  registrationType String
+  currency         String
+  timezone         String
+  isActive         Boolean          @default(true)
   activatedAt      DateTime?
   deactivatedAt    DateTime?
   createdAt        DateTime         @default(now())
@@ -9054,7 +9327,7 @@ model GosiEmployeeRegistration {
   deletedAt            DateTime?
   isDeleted            Boolean   @default(false)
 
-  @@index([tenantId, employeeId], map: "aura_gosi_employee_registration_emp_idx")
+  @@unique([tenantId, employeeId], map: "aura_gosi_employee_registration_unique")
   @@index([status])
   @@map("aura_gosi_employee_registration")
 }
@@ -12124,28 +12397,28 @@ model UserMFA {
 // ============================================================================
 
 model OrgScenario {
-  id                String    @id @default(uuid())
-  tenantId          String
-  name              String
-  description       String?
-  scenarioType      String    @default("what_if")
-  status            String    @default("draft")
-  baselineChartId   String?
-  effectiveDate     DateTime?
-  currentHeadcount  Int       @default(0)
-  projectedHeadcount Int      @default(0)
-  currentCost       Decimal   @default(0) @db.Decimal(18, 2)
-  projectedCost     Decimal   @default(0) @db.Decimal(18, 2)
-  changes           Json?
-  impactSummary     Json?
-  approvedBy        String?
-  approvedAt        DateTime?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  createdBy         String?
-  updatedBy         String?
-  deletedAt         DateTime?
-  isDeleted         Boolean   @default(false)
+  id                 String    @id @default(uuid())
+  tenantId           String
+  name               String
+  description        String?
+  scenarioType       String    @default("what_if")
+  status             String    @default("draft")
+  baselineChartId    String?
+  effectiveDate      DateTime?
+  currentHeadcount   Int       @default(0)
+  projectedHeadcount Int       @default(0)
+  currentCost        Decimal   @default(0) @db.Decimal(18, 2)
+  projectedCost      Decimal   @default(0) @db.Decimal(18, 2)
+  changes            Json?
+  impactSummary      Json?
+  approvedBy         String?
+  approvedAt         DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  createdBy          String?
+  updatedBy          String?
+  deletedAt          DateTime?
+  isDeleted          Boolean   @default(false)
 
   @@index([tenantId])
   @@index([status])
@@ -12153,23 +12426,23 @@ model OrgScenario {
 }
 
 model OrgSuccessionPool {
-  id                String                @id @default(uuid())
-  tenantId          String
-  name              String
-  poolType          String                @default("management")
-  description       String?
-  criticalRole      String
-  incumbentId       String?
-  incumbentName     String?
-  retentionRisk     String                @default("medium")
-  status            String                @default("active")
-  createdAt         DateTime              @default(now())
-  updatedAt         DateTime              @updatedAt
-  createdBy         String?
-  updatedBy         String?
-  deletedAt         DateTime?
-  isDeleted         Boolean               @default(false)
-  members           OrgSuccessionMember[]
+  id            String                @id @default(uuid())
+  tenantId      String
+  name          String
+  poolType      String                @default("management")
+  description   String?
+  criticalRole  String
+  incumbentId   String?
+  incumbentName String?
+  retentionRisk String                @default("medium")
+  status        String                @default("active")
+  createdAt     DateTime              @default(now())
+  updatedAt     DateTime              @updatedAt
+  createdBy     String?
+  updatedBy     String?
+  deletedAt     DateTime?
+  isDeleted     Boolean               @default(false)
+  members       OrgSuccessionMember[]
 
   @@index([tenantId])
   @@index([status])
@@ -12228,24 +12501,24 @@ model OrgChangeInitiative {
 }
 
 model DsarRequest {
-  id          String    @id @default(uuid())
-  tenantId    String
-  requestType String    @default("access")
-  subjectName String
+  id           String    @id @default(uuid())
+  tenantId     String
+  requestType  String    @default("access")
+  subjectName  String
   subjectEmail String
-  subjectId   String?
-  status      String    @default("new")
-  priority    String    @default("medium")
-  dueDate     DateTime?
-  details     String?
-  assignedTo  String?
-  completedAt DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  createdBy   String?
-  updatedBy   String?
-  deletedAt   DateTime?
-  isDeleted   Boolean   @default(false)
+  subjectId    String?
+  status       String    @default("new")
+  priority     String    @default("medium")
+  dueDate      DateTime?
+  details      String?
+  assignedTo   String?
+  completedAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  createdBy    String?
+  updatedBy    String?
+  deletedAt    DateTime?
+  isDeleted    Boolean   @default(false)
 
   @@index([tenantId])
   @@index([status])
@@ -12254,20 +12527,20 @@ model DsarRequest {
 }
 
 model ConsentRecord {
-  id         String    @id @default(uuid())
-  tenantId   String
-  subjectId  String
-  category   String
-  granted    Boolean   @default(false)
-  source     String?
-  grantedAt  DateTime?
-  revokedAt  DateTime?
-  createdAt  DateTime  @default(now())
-  updatedAt  DateTime  @updatedAt
-  createdBy  String?
-  updatedBy  String?
-  deletedAt  DateTime?
-  isDeleted  Boolean   @default(false)
+  id        String    @id @default(uuid())
+  tenantId  String
+  subjectId String
+  category  String
+  granted   Boolean   @default(false)
+  source    String?
+  grantedAt DateTime?
+  revokedAt DateTime?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  createdBy String?
+  updatedBy String?
+  deletedAt DateTime?
+  isDeleted Boolean   @default(false)
 
   @@unique([tenantId, subjectId, category])
   @@index([tenantId])
@@ -13200,47 +13473,47 @@ model ComplianceTimelineEvent {
 }
 
 model SodRule {
-  id                String         @id @default(uuid())
-  tenantId          String
-  name              String
-  description       String?
-  category          String         @default("general")
-  riskLevel         String         @default("medium")
-  conflictingRoles  Json
-  isActive          Boolean        @default(true)
-  createdAt         DateTime       @default(now())
-  updatedAt         DateTime       @default(now()) @updatedAt
-  createdBy         String?
-  updatedBy         String?
-  deletedAt         DateTime?
-  isDeleted         Boolean        @default(false)
-  violations        SodViolation[]
+  id               String         @id @default(uuid())
+  tenantId         String
+  name             String
+  description      String?
+  category         String         @default("general")
+  riskLevel        String         @default("medium")
+  conflictingRoles Json
+  isActive         Boolean        @default(true)
+  createdAt        DateTime       @default(now())
+  updatedAt        DateTime       @default(now()) @updatedAt
+  createdBy        String?
+  updatedBy        String?
+  deletedAt        DateTime?
+  isDeleted        Boolean        @default(false)
+  violations       SodViolation[]
 
   @@index([tenantId])
   @@map("aura_sod_rule")
 }
 
 model SodViolation {
-  id           String    @id @default(uuid())
-  tenantId     String
-  ruleId       String
-  userId       String
-  userName     String?
-  conflictA    String
-  conflictB    String
-  riskLevel    String    @default("medium")
-  status       String    @default("open")
-  detectedAt   DateTime  @default(now())
-  resolvedAt   DateTime?
-  resolvedBy   String?
-  resolution   String?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @default(now()) @updatedAt
-  createdBy    String?
-  updatedBy    String?
-  deletedAt    DateTime?
-  isDeleted    Boolean   @default(false)
-  rule         SodRule   @relation(fields: [ruleId], references: [id], onDelete: Cascade)
+  id         String    @id @default(uuid())
+  tenantId   String
+  ruleId     String
+  userId     String
+  userName   String?
+  conflictA  String
+  conflictB  String
+  riskLevel  String    @default("medium")
+  status     String    @default("open")
+  detectedAt DateTime  @default(now())
+  resolvedAt DateTime?
+  resolvedBy String?
+  resolution String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @default(now()) @updatedAt
+  createdBy  String?
+  updatedBy  String?
+  deletedAt  DateTime?
+  isDeleted  Boolean   @default(false)
+  rule       SodRule   @relation(fields: [ruleId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
   @@index([ruleId])
@@ -13248,50 +13521,50 @@ model SodViolation {
 }
 
 model AccessReviewCampaign {
-  id             String             @id @default(uuid())
-  tenantId       String
-  name           String
-  description    String?
-  scope          String             @default("all")
-  status         String             @default("draft")
-  dueDate        DateTime?
-  reviewerId     String?
-  reviewerName   String?
-  totalItems     Int                @default(0)
-  reviewedItems  Int                @default(0)
-  startedAt      DateTime?
-  completedAt    DateTime?
-  createdAt      DateTime           @default(now())
-  updatedAt      DateTime           @default(now()) @updatedAt
-  createdBy      String?
-  updatedBy      String?
-  deletedAt      DateTime?
-  isDeleted      Boolean            @default(false)
-  items          AccessReviewItem[]
+  id            String             @id @default(uuid())
+  tenantId      String
+  name          String
+  description   String?
+  scope         String             @default("all")
+  status        String             @default("draft")
+  dueDate       DateTime?
+  reviewerId    String?
+  reviewerName  String?
+  totalItems    Int                @default(0)
+  reviewedItems Int                @default(0)
+  startedAt     DateTime?
+  completedAt   DateTime?
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @default(now()) @updatedAt
+  createdBy     String?
+  updatedBy     String?
+  deletedAt     DateTime?
+  isDeleted     Boolean            @default(false)
+  items         AccessReviewItem[]
 
   @@index([tenantId])
   @@map("aura_access_review_campaign")
 }
 
 model AccessReviewItem {
-  id           String               @id @default(uuid())
-  tenantId     String
-  campaignId   String
-  userId       String
-  userName     String?
-  roleName     String
-  resource     String?
-  decision     String               @default("pending")
-  comment      String?
-  reviewedBy   String?
-  reviewedAt   DateTime?
-  createdAt    DateTime             @default(now())
-  updatedAt    DateTime             @default(now()) @updatedAt
-  createdBy    String?
-  updatedBy    String?
-  deletedAt    DateTime?
-  isDeleted    Boolean              @default(false)
-  campaign     AccessReviewCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  id         String               @id @default(uuid())
+  tenantId   String
+  campaignId String
+  userId     String
+  userName   String?
+  roleName   String
+  resource   String?
+  decision   String               @default("pending")
+  comment    String?
+  reviewedBy String?
+  reviewedAt DateTime?
+  createdAt  DateTime             @default(now())
+  updatedAt  DateTime             @default(now()) @updatedAt
+  createdBy  String?
+  updatedBy  String?
+  deletedAt  DateTime?
+  isDeleted  Boolean              @default(false)
+  campaign   AccessReviewCampaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
 
   @@index([tenantId])
   @@index([campaignId])
@@ -13299,24 +13572,24 @@ model AccessReviewItem {
 }
 
 model SecuritySetting {
-  id                        String    @id @default(uuid())
-  tenantId                  String    @unique
-  passwordMinLength         Int       @default(8)
-  passwordRequireUppercase  Boolean   @default(true)
-  passwordRequireNumber     Boolean   @default(true)
-  passwordRequireSymbol     Boolean   @default(false)
-  passwordExpiryDays        Int       @default(90)
-  sessionTimeoutMinutes     Int       @default(30)
-  maxLoginAttempts          Int       @default(5)
-  lockoutDurationMinutes    Int       @default(15)
-  ipAllowlist               Json?
-  enforceSSO                Boolean   @default(false)
-  createdAt                 DateTime  @default(now())
-  updatedAt                 DateTime  @default(now()) @updatedAt
-  createdBy                 String?
-  updatedBy                 String?
-  deletedAt                 DateTime?
-  isDeleted                 Boolean   @default(false)
+  id                       String    @id @default(uuid())
+  tenantId                 String    @unique
+  passwordMinLength        Int       @default(8)
+  passwordRequireUppercase Boolean   @default(true)
+  passwordRequireNumber    Boolean   @default(true)
+  passwordRequireSymbol    Boolean   @default(false)
+  passwordExpiryDays       Int       @default(90)
+  sessionTimeoutMinutes    Int       @default(30)
+  maxLoginAttempts         Int       @default(5)
+  lockoutDurationMinutes   Int       @default(15)
+  ipAllowlist              Json?
+  enforceSSO               Boolean   @default(false)
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @default(now()) @updatedAt
+  createdBy                String?
+  updatedBy                String?
+  deletedAt                DateTime?
+  isDeleted                Boolean   @default(false)
 
   @@map("aura_security_setting")
 }
@@ -13651,17 +13924,17 @@ model EngagementReferral {
 // Access in route code via (prisma as any).<camelCaseModelName>.
 
 model GamificationPointsAccount {
-  id            String   @id @default(uuid())
-  tenantId      String
-  employeeId    String
-  totalPoints   Int      @default(0)
-  lifetimePoints Int     @default(0)
-  currentBalance Int     @default(0)
-  currentLevel  Int      @default(1)
-  currentStreak Int      @default(0)
-  longestStreak Int      @default(0)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id             String   @id @default(uuid())
+  tenantId       String
+  employeeId     String
+  totalPoints    Int      @default(0)
+  lifetimePoints Int      @default(0)
+  currentBalance Int      @default(0)
+  currentLevel   Int      @default(1)
+  currentStreak  Int      @default(0)
+  longestStreak  Int      @default(0)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 
   @@unique([tenantId, employeeId], map: "GamPointsAccount_tenant_emp_uq")
   @@index([tenantId], map: "GamPointsAccount_tenantId_idx")
@@ -13669,46 +13942,46 @@ model GamificationPointsAccount {
 }
 
 model GamificationPointsTransaction {
-  id          String   @id @default(uuid())
-  tenantId    String
-  employeeId  String
-  amount      Int
-  type        String   @default("earn") // earn | redeem | expire | adjustment | bonus
-  category    String   @default("engagement")
-  source      String   @default("manual")
-  reason      String?
-  balanceAfter Int     @default(0)
-  createdAt   DateTime @default(now())
+  id           String   @id @default(uuid())
+  tenantId     String
+  employeeId   String
+  amount       Int
+  type         String   @default("earn") // earn | redeem | expire | adjustment | bonus
+  category     String   @default("engagement")
+  source       String   @default("manual")
+  reason       String?
+  balanceAfter Int      @default(0)
+  createdAt    DateTime @default(now())
 
   @@index([tenantId, employeeId], map: "GamPointsTxn_tenant_emp_idx")
   @@map("aura_gamification_points_transaction")
 }
 
 model GamificationBadge {
-  id           String   @id @default(uuid())
-  tenantId     String
-  badgeCode    String
-  badgeName    String
-  description  String?
-  icon         String   @default("Medal")
-  tier         String   @default("bronze") // bronze | silver | gold | platinum | diamond
-  category     String   @default("achievement")
-  pointsAwarded Int     @default(0)
-  isActive     Boolean  @default(true)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id            String   @id @default(uuid())
+  tenantId      String
+  badgeCode     String
+  badgeName     String
+  description   String?
+  icon          String   @default("Medal")
+  tier          String   @default("bronze") // bronze | silver | gold | platinum | diamond
+  category      String   @default("achievement")
+  pointsAwarded Int      @default(0)
+  isActive      Boolean  @default(true)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   @@index([tenantId], map: "GamBadge_tenantId_idx")
   @@map("aura_gamification_badge")
 }
 
 model GamificationUserBadge {
-  id          String   @id @default(uuid())
-  tenantId    String
-  employeeId  String
-  badgeId     String
-  reason      String?
-  awardedAt   DateTime @default(now())
+  id         String   @id @default(uuid())
+  tenantId   String
+  employeeId String
+  badgeId    String
+  reason     String?
+  awardedAt  DateTime @default(now())
 
   @@unique([tenantId, employeeId, badgeId], map: "GamUserBadge_uq")
   @@index([tenantId, employeeId], map: "GamUserBadge_tenant_emp_idx")
@@ -13716,36 +13989,36 @@ model GamificationUserBadge {
 }
 
 model GamificationChallenge {
-  id           String   @id @default(uuid())
-  tenantId     String
+  id            String   @id @default(uuid())
+  tenantId      String
   challengeName String
-  description  String?
-  category     String   @default("engagement")
-  difficulty   String   @default("medium") // easy | medium | hard | expert
-  pointsReward Int      @default(0)
-  targetValue  Int      @default(1)
-  targetUnit   String   @default("tasks")
-  startDate    DateTime @default(now())
-  endDate      DateTime
-  status       String   @default("active") // upcoming | active | completed | cancelled
-  isFeatured   Boolean  @default(false)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  description   String?
+  category      String   @default("engagement")
+  difficulty    String   @default("medium") // easy | medium | hard | expert
+  pointsReward  Int      @default(0)
+  targetValue   Int      @default(1)
+  targetUnit    String   @default("tasks")
+  startDate     DateTime @default(now())
+  endDate       DateTime
+  status        String   @default("active") // upcoming | active | completed | cancelled
+  isFeatured    Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 
   @@index([tenantId], map: "GamChallenge_tenantId_idx")
   @@map("aura_gamification_challenge")
 }
 
 model GamificationChallengeParticipation {
-  id           String   @id @default(uuid())
+  id           String    @id @default(uuid())
   tenantId     String
   challengeId  String
   employeeId   String
-  currentValue Int      @default(0)
-  progress     Int      @default(0)
-  isCompleted  Boolean  @default(false)
+  currentValue Int       @default(0)
+  progress     Int       @default(0)
+  isCompleted  Boolean   @default(false)
   completedAt  DateTime?
-  joinedAt     DateTime @default(now())
+  joinedAt     DateTime  @default(now())
 
   @@unique([tenantId, challengeId, employeeId], map: "GamChallengePart_uq")
   @@index([tenantId, employeeId], map: "GamChallengePart_tenant_emp_idx")
@@ -13769,14 +14042,14 @@ model GamificationMission {
 }
 
 model GamificationUserMission {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   tenantId    String
   employeeId  String
   missionId   String
-  status      String   @default("active") // active | completed | expired
-  progress    Int      @default(0)
+  status      String    @default("active") // active | completed | expired
+  progress    Int       @default(0)
   completedAt DateTime?
-  startedAt   DateTime @default(now())
+  startedAt   DateTime  @default(now())
 
   @@unique([tenantId, employeeId, missionId], map: "GamUserMission_uq")
   @@index([tenantId, employeeId], map: "GamUserMission_tenant_emp_idx")
@@ -13784,14 +14057,14 @@ model GamificationUserMission {
 }
 
 model GamificationCurrencyTransaction {
-  id          String   @id @default(uuid())
-  tenantId    String
-  employeeId  String
-  type        String   @default("convert") // transfer | cashout | convert
-  amount      Int
+  id           String   @id @default(uuid())
+  tenantId     String
+  employeeId   String
+  type         String   @default("convert") // transfer | cashout | convert
+  amount       Int
   counterparty String?
-  description String?
-  createdAt   DateTime @default(now())
+  description  String?
+  createdAt    DateTime @default(now())
 
   @@index([tenantId, employeeId], map: "GamCurrencyTxn_tenant_emp_idx")
   @@map("aura_gamification_currency_transaction")
@@ -14087,52 +14360,52 @@ model ConstructionStaffingAllocation {
 // saved jobs, and peer connections.
 
 model AlumniEvent {
-  id                String   @id @default(uuid())
-  tenantId          String
-  eventName         String
-  eventType         String   @default("networking") // reunion | networking | webinar | workshop | social | fundraiser | award_ceremony | conference | sports | other
-  eventFormat       String   @default("in_person") // in_person | virtual | hybrid
-  description       String?
-  eventDate         DateTime
-  eventTime         String?
-  endDate           DateTime?
-  location          String?
-  virtualLink       String?
-  status            String   @default("published") // draft | published | cancelled | completed
-  maxAttendees      Int?
-  currentAttendees  Int      @default(0)
-  isFree            Boolean  @default(true)
-  ticketPrice       Decimal? @db.Decimal(12, 2)
-  currency          String?
-  organizerName     String?
-  isReunion         Boolean  @default(false)
-  batchYear         Int?
-  tags              String[] @default([])
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
-  createdBy         String?
+  id               String    @id @default(uuid())
+  tenantId         String
+  eventName        String
+  eventType        String    @default("networking") // reunion | networking | webinar | workshop | social | fundraiser | award_ceremony | conference | sports | other
+  eventFormat      String    @default("in_person") // in_person | virtual | hybrid
+  description      String?
+  eventDate        DateTime
+  eventTime        String?
+  endDate          DateTime?
+  location         String?
+  virtualLink      String?
+  status           String    @default("published") // draft | published | cancelled | completed
+  maxAttendees     Int?
+  currentAttendees Int       @default(0)
+  isFree           Boolean   @default(true)
+  ticketPrice      Decimal?  @db.Decimal(12, 2)
+  currency         String?
+  organizerName    String?
+  isReunion        Boolean   @default(false)
+  batchYear        Int?
+  tags             String[]  @default([])
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  createdBy        String?
 
-  registrations     AlumniEventRegistration[]
+  registrations AlumniEventRegistration[]
 
   @@index([tenantId], map: "AlumniEvent_tenantId_idx")
   @@map("aura_alumni_event")
 }
 
 model AlumniEventRegistration {
-  id                 String   @id @default(uuid())
+  id                 String    @id @default(uuid())
   tenantId           String
   eventId            String
   employeeId         String
   attendeeName       String?
   attendeeEmail      String?
-  registrationStatus String   @default("confirmed") // pending | confirmed | waitlist | cancelled
-  guestCount         Int      @default(0)
-  checkInStatus      String   @default("not_checked_in") // not_checked_in | checked_in | no_show
+  registrationStatus String    @default("confirmed") // pending | confirmed | waitlist | cancelled
+  guestCount         Int       @default(0)
+  checkInStatus      String    @default("not_checked_in") // not_checked_in | checked_in | no_show
   checkInTime        DateTime?
-  createdAt          DateTime @default(now())
-  updatedAt          DateTime @updatedAt
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
 
-  event              AlumniEvent @relation(fields: [eventId], references: [id], map: "AlumniEventReg_eventId_fkey")
+  event AlumniEvent @relation(fields: [eventId], references: [id], map: "AlumniEventReg_eventId_fkey")
 
   @@unique([tenantId, eventId, employeeId], map: "AlumniEventReg_uq")
   @@index([tenantId, eventId], map: "AlumniEventReg_tenant_event_idx")
@@ -14140,34 +14413,34 @@ model AlumniEventRegistration {
 }
 
 model AlumniJob {
-  id                String   @id @default(uuid())
-  tenantId          String
-  jobTitle          String
-  companyName       String
-  jobType           String   @default("full_time") // full_time | part_time | contract | internship | freelance
-  workLocation      String   @default("on_site") // on_site | remote | hybrid
-  locationCity      String?
-  locationCountry   String?
-  jobDescription    String?
-  applicationUrl    String?
-  applicationEmail  String?
-  salaryMin         Decimal? @db.Decimal(15, 2)
-  salaryMax         Decimal? @db.Decimal(15, 2)
-  currency          String?
-  status            String   @default("active") // draft | active | paused | filled | expired | cancelled
-  isReferralAvailable Boolean @default(false)
-  postedByEmployeeId String
-  postedByName      String?
-  viewCount         Int      @default(0)
-  applicationCount  Int      @default(0)
-  savedCount        Int      @default(0)
-  tags              String[] @default([])
-  expiryDate        DateTime?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id                  String    @id @default(uuid())
+  tenantId            String
+  jobTitle            String
+  companyName         String
+  jobType             String    @default("full_time") // full_time | part_time | contract | internship | freelance
+  workLocation        String    @default("on_site") // on_site | remote | hybrid
+  locationCity        String?
+  locationCountry     String?
+  jobDescription      String?
+  applicationUrl      String?
+  applicationEmail    String?
+  salaryMin           Decimal?  @db.Decimal(15, 2)
+  salaryMax           Decimal?  @db.Decimal(15, 2)
+  currency            String?
+  status              String    @default("active") // draft | active | paused | filled | expired | cancelled
+  isReferralAvailable Boolean   @default(false)
+  postedByEmployeeId  String
+  postedByName        String?
+  viewCount           Int       @default(0)
+  applicationCount    Int       @default(0)
+  savedCount          Int       @default(0)
+  tags                String[]  @default([])
+  expiryDate          DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
 
-  applications      AlumniJobApplication[]
-  saves             AlumniSavedJob[]
+  applications AlumniJobApplication[]
+  saves        AlumniSavedJob[]
 
   @@index([tenantId], map: "AlumniJob_tenantId_idx")
   @@map("aura_alumni_job")
@@ -14186,7 +14459,7 @@ model AlumniJobApplication {
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
-  job               AlumniJob @relation(fields: [jobId], references: [id], map: "AlumniJobApp_jobId_fkey")
+  job AlumniJob @relation(fields: [jobId], references: [id], map: "AlumniJobApp_jobId_fkey")
 
   @@unique([tenantId, jobId, applicantId], map: "AlumniJobApp_uq")
   @@index([tenantId, jobId], map: "AlumniJobApp_tenant_job_idx")
@@ -14201,7 +14474,7 @@ model AlumniSavedJob {
   notes      String?
   createdAt  DateTime @default(now())
 
-  job        AlumniJob @relation(fields: [jobId], references: [id], map: "AlumniSavedJob_jobId_fkey")
+  job AlumniJob @relation(fields: [jobId], references: [id], map: "AlumniSavedJob_jobId_fkey")
 
   @@unique([tenantId, jobId, employeeId], map: "AlumniSavedJob_uq")
   @@index([tenantId, employeeId], map: "AlumniSavedJob_tenant_emp_idx")
@@ -14234,59 +14507,59 @@ model AlumniConnection {
 // DEI goals, bias-training modules + enrollments, and accessibility requests.
 
 model DeiSurvey {
-  id            String    @id @default(uuid())
-  tenantId      String
-  title         String
-  titleAr       String?
-  description   String?
-  surveyType    String    @default("pulse_check") // annual_inclusion | pulse_check | belonging_index | psychological_safety | exit_survey
-  status        String    @default("draft") // draft | active | closed
-  isAnonymous   Boolean   @default(true)
-  startDate     DateTime?
-  endDate       DateTime?
-  targetCount   Int       @default(0)
-  responseCount Int       @default(0)
-  sentimentScore Decimal? @db.Decimal(4, 2)
-  questions     Json?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  createdBy     String?
+  id             String    @id @default(uuid())
+  tenantId       String
+  title          String
+  titleAr        String?
+  description    String?
+  surveyType     String    @default("pulse_check") // annual_inclusion | pulse_check | belonging_index | psychological_safety | exit_survey
+  status         String    @default("draft") // draft | active | closed
+  isAnonymous    Boolean   @default(true)
+  startDate      DateTime?
+  endDate        DateTime?
+  targetCount    Int       @default(0)
+  responseCount  Int       @default(0)
+  sentimentScore Decimal?  @db.Decimal(4, 2)
+  questions      Json?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  createdBy      String?
 
   @@index([tenantId], map: "DeiSurvey_tenantId_idx")
   @@map("aura_dei_survey")
 }
 
 model DeiErg {
-  id           String    @id @default(uuid())
-  tenantId     String
-  name         String
-  nameAr       String?
-  category     String    @default("cultural") // gender | ethnicity | lgbtq | disability | veterans | parents | young_professionals | cultural | interfaith
-  description  String?
-  colorClass   String?
-  memberCount  Int       @default(0)
-  nextEvent    String?
-  nextEventAt  DateTime?
-  status       String    @default("active") // proposed | active | archived
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  createdBy    String?
+  id          String    @id @default(uuid())
+  tenantId    String
+  name        String
+  nameAr      String?
+  category    String    @default("cultural") // gender | ethnicity | lgbtq | disability | veterans | parents | young_professionals | cultural | interfaith
+  description String?
+  colorClass  String?
+  memberCount Int       @default(0)
+  nextEvent   String?
+  nextEventAt DateTime?
+  status      String    @default("active") // proposed | active | archived
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  createdBy   String?
 
-  memberships  DeiErgMembership[]
+  memberships DeiErgMembership[]
 
   @@index([tenantId], map: "DeiErg_tenantId_idx")
   @@map("aura_dei_erg")
 }
 
 model DeiErgMembership {
-  id          String   @id @default(uuid())
-  tenantId    String
-  ergId       String
-  employeeId  String
-  role        String   @default("member") // chair | co_chair | secretary | treasurer | member
-  joinedAt    DateTime @default(now())
+  id         String   @id @default(uuid())
+  tenantId   String
+  ergId      String
+  employeeId String
+  role       String   @default("member") // chair | co_chair | secretary | treasurer | member
+  joinedAt   DateTime @default(now())
 
-  erg         DeiErg   @relation(fields: [ergId], references: [id], onDelete: Cascade)
+  erg DeiErg @relation(fields: [ergId], references: [id], onDelete: Cascade)
 
   @@unique([tenantId, ergId, employeeId], map: "DeiErgMembership_uq")
   @@index([tenantId, ergId], map: "DeiErgMembership_tenant_erg_idx")
@@ -14317,38 +14590,38 @@ model DeiGoal {
 }
 
 model DeiBiasTraining {
-  id            String    @id @default(uuid())
-  tenantId      String
-  title         String
-  titleAr       String?
-  description   String?
-  category      String    @default("unconscious_bias") // unconscious_bias | inclusive_leadership | microaggressions | allyship | cultural_competence
-  durationMins  Int       @default(30)
-  isMandatory   Boolean   @default(false)
-  thumbClass    String?
-  status        String    @default("published") // draft | published | archived
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  createdBy     String?
+  id           String   @id @default(uuid())
+  tenantId     String
+  title        String
+  titleAr      String?
+  description  String?
+  category     String   @default("unconscious_bias") // unconscious_bias | inclusive_leadership | microaggressions | allyship | cultural_competence
+  durationMins Int      @default(30)
+  isMandatory  Boolean  @default(false)
+  thumbClass   String?
+  status       String   @default("published") // draft | published | archived
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  createdBy    String?
 
-  enrollments   DeiTrainingEnrollment[]
+  enrollments DeiTrainingEnrollment[]
 
   @@index([tenantId], map: "DeiBiasTraining_tenantId_idx")
   @@map("aura_dei_bias_training")
 }
 
 model DeiTrainingEnrollment {
-  id           String    @id @default(uuid())
-  tenantId     String
-  trainingId   String
-  employeeId   String
-  status       String    @default("not_started") // not_started | in_progress | completed
-  progress     Int       @default(0)
-  completedAt  DateTime?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
+  id          String    @id @default(uuid())
+  tenantId    String
+  trainingId  String
+  employeeId  String
+  status      String    @default("not_started") // not_started | in_progress | completed
+  progress    Int       @default(0)
+  completedAt DateTime?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
-  training     DeiBiasTraining @relation(fields: [trainingId], references: [id], onDelete: Cascade)
+  training DeiBiasTraining @relation(fields: [trainingId], references: [id], onDelete: Cascade)
 
   @@unique([tenantId, trainingId, employeeId], map: "DeiTrainingEnrollment_uq")
   @@index([tenantId, employeeId], map: "DeiTrainingEnrollment_tenant_emp_idx")
@@ -14356,18 +14629,18 @@ model DeiTrainingEnrollment {
 }
 
 model DeiAccessibilityRequest {
-  id            String    @id @default(uuid())
-  tenantId      String
-  employeeId    String
-  requestType   String    @default("physical") // visual | hearing | physical | cognitive | digital | other
-  title         String
-  description   String?
-  status        String    @default("pending") // pending | processing | approved | rejected | fulfilled
-  reviewedBy    String?
-  reviewedAt    DateTime?
-  reviewNote    String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
+  id          String    @id @default(uuid())
+  tenantId    String
+  employeeId  String
+  requestType String    @default("physical") // visual | hearing | physical | cognitive | digital | other
+  title       String
+  description String?
+  status      String    @default("pending") // pending | processing | approved | rejected | fulfilled
+  reviewedBy  String?
+  reviewedAt  DateTime?
+  reviewNote  String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
 
   @@index([tenantId], map: "DeiAccessibilityRequest_tenantId_idx")
   @@map("aura_dei_accessibility_request")
@@ -14392,25 +14665,25 @@ model DeiAccessibilityRequest {
 // whistleblower reports, arbitrations, strikes and a communication log.
 
 model LaborLawEntry {
-  id             String    @id @default(uuid())
-  tenantId       String
-  lawCode        String
-  lawName        String
-  lawNameAr      String?
-  description    String?
-  jurisdiction   String    @default("federal") // federal | state | local | international
-  category       String    @default("general")
-  effectiveDate  DateTime?
+  id              String    @id @default(uuid())
+  tenantId        String
+  lawCode         String
+  lawName         String
+  lawNameAr       String?
+  description     String?
+  jurisdiction    String    @default("federal") // federal | state | local | international
+  category        String    @default("general")
+  effectiveDate   DateTime?
   responsibleDept String?
-  status         String    @default("compliant") // compliant | non_compliant | pending_review | action_required
-  lastAuditDate  DateTime?
-  riskLevel      String    @default("low") // low | medium | high | critical
-  referenceUrl   String?
-  isActive       Boolean   @default(true)
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  createdBy      String?
-  updatedBy      String?
+  status          String    @default("compliant") // compliant | non_compliant | pending_review | action_required
+  lastAuditDate   DateTime?
+  riskLevel       String    @default("low") // low | medium | high | critical
+  referenceUrl    String?
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  createdBy       String?
+  updatedBy       String?
 
   @@index([tenantId], map: "LaborLawEntry_tenantId_idx")
   @@map("aura_compliance_labor_law")
@@ -14442,146 +14715,146 @@ model ComplianceRecordEntry {
 }
 
 model PoshCommittee {
-  id             String    @id @default(uuid())
-  tenantId       String
-  committeeCode  String
-  committeeName  String
-  location       String?
+  id              String    @id @default(uuid())
+  tenantId        String
+  committeeCode   String
+  committeeName   String
+  location        String?
   establishedDate DateTime?
-  members        Json      @default("[]")
-  casesHandled   Int       @default(0)
-  casesResolved  Int       @default(0)
+  members         Json      @default("[]")
+  casesHandled    Int       @default(0)
+  casesResolved   Int       @default(0)
   nextMeetingDate DateTime?
-  isActive       Boolean   @default(true)
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  createdBy      String?
+  isActive        Boolean   @default(true)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  createdBy       String?
 
   @@index([tenantId], map: "PoshCommittee_tenantId_idx")
   @@map("aura_compliance_posh_committee")
 }
 
 model PoshComplaint {
-  id                 String    @id @default(uuid())
-  tenantId           String
-  complaintCode      String
-  complaintDate      DateTime  @default(now())
-  isAnonymous        Boolean   @default(false)
-  complainantId      String?
-  complainantName    String?
-  respondentName     String
-  respondentDept     String?
-  incidentDate       DateTime?
-  incidentLocation   String?
+  id                  String    @id @default(uuid())
+  tenantId            String
+  complaintCode       String
+  complaintDate       DateTime  @default(now())
+  isAnonymous         Boolean   @default(false)
+  complainantId       String?
+  complainantName     String?
+  respondentName      String
+  respondentDept      String?
+  incidentDate        DateTime?
+  incidentLocation    String?
   incidentDescription String?
-  status             String    @default("received") // received | under_investigation | inquiry_committee_formed | hearing_scheduled | resolved | closed
-  severity           String    @default("medium")
-  committeeId        String?
-  committeeName      String?
-  findings           String?
-  resolutionDate     DateTime?
-  resolutionDetails  String?
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
-  createdBy          String?
+  status              String    @default("received") // received | under_investigation | inquiry_committee_formed | hearing_scheduled | resolved | closed
+  severity            String    @default("medium")
+  committeeId         String?
+  committeeName       String?
+  findings            String?
+  resolutionDate      DateTime?
+  resolutionDetails   String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  createdBy           String?
 
   @@index([tenantId], map: "PoshComplaint_tenantId_idx")
   @@map("aura_compliance_posh_complaint")
 }
 
 model ComplianceAuditEntry {
-  id               String    @id @default(uuid())
-  tenantId         String
-  auditCode        String
-  auditName        String
-  auditType        String    @default("internal") // internal | external | regulatory | surprise | follow_up
-  scope            String?
-  scheduledDate    DateTime?
-  actualStartDate  DateTime?
-  completionDate   DateTime?
-  status           String    @default("scheduled") // scheduled | in_progress | completed | report_pending | closed
-  auditors         Json      @default("[]")
-  departments      Json      @default("[]")
-  overallRating    String?
-  complianceScore  Int?
-  findingsCount    Int       @default(0)
-  criticalCount    Int       @default(0)
-  recommendations  String?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-  createdBy        String?
+  id              String    @id @default(uuid())
+  tenantId        String
+  auditCode       String
+  auditName       String
+  auditType       String    @default("internal") // internal | external | regulatory | surprise | follow_up
+  scope           String?
+  scheduledDate   DateTime?
+  actualStartDate DateTime?
+  completionDate  DateTime?
+  status          String    @default("scheduled") // scheduled | in_progress | completed | report_pending | closed
+  auditors        Json      @default("[]")
+  departments     Json      @default("[]")
+  overallRating   String?
+  complianceScore Int?
+  findingsCount   Int       @default(0)
+  criticalCount   Int       @default(0)
+  recommendations String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  createdBy       String?
 
   @@index([tenantId], map: "ComplianceAuditEntry_tenantId_idx")
   @@map("aura_compliance_audit_entry")
 }
 
 model UnionEntry {
-  id                 String    @id @default(uuid())
-  tenantId           String
-  unionCode          String
-  unionName          String
-  registrationNumber String?
-  status             String    @default("active") // active | inactive | dissolved | suspended
-  unionType          String    @default("local") // local | national | international
-  memberCount        Int       @default(0)
-  eligibleEmployees  Int       @default(0)
-  representativeName String?
+  id                    String    @id @default(uuid())
+  tenantId              String
+  unionCode             String
+  unionName             String
+  registrationNumber    String?
+  status                String    @default("active") // active | inactive | dissolved | suspended
+  unionType             String    @default("local") // local | national | international
+  memberCount           Int       @default(0)
+  eligibleEmployees     Int       @default(0)
+  representativeName    String?
   representativeContact String?
-  officeAddress      String?
-  recognitionDate    DateTime?
-  isActive           Boolean   @default(true)
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
-  createdBy          String?
+  officeAddress         String?
+  recognitionDate       DateTime?
+  isActive              Boolean   @default(true)
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  createdBy             String?
 
   @@index([tenantId], map: "UnionEntry_tenantId_idx")
   @@map("aura_compliance_union")
 }
 
 model CbaEntry {
-  id                  String    @id @default(uuid())
-  tenantId            String
-  agreementCode       String
-  agreementName       String
-  unionId             String?
-  unionName           String?
+  id                   String    @id @default(uuid())
+  tenantId             String
+  agreementCode        String
+  agreementName        String
+  unionId              String?
+  unionName            String?
   negotiationStartDate DateTime?
-  agreementDate       DateTime?
-  effectiveDate       DateTime?
-  expiryDate          DateTime?
-  status              String    @default("draft") // draft | negotiation | active | expired | terminated
-  terms               Json      @default("[]")
-  estimatedCost       Decimal?  @db.Decimal(14, 2)
-  currency            String    @default("AED")
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
-  createdBy           String?
+  agreementDate        DateTime?
+  effectiveDate        DateTime?
+  expiryDate           DateTime?
+  status               String    @default("draft") // draft | negotiation | active | expired | terminated
+  terms                Json      @default("[]")
+  estimatedCost        Decimal?  @db.Decimal(14, 2)
+  currency             String    @default("AED")
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  createdBy            String?
 
   @@index([tenantId], map: "CbaEntry_tenantId_idx")
   @@map("aura_compliance_cba")
 }
 
 model WhistleblowerReport {
-  id                 String    @id @default(uuid())
-  tenantId           String
-  reportCode         String
-  submittedDate      DateTime  @default(now())
-  reporterIdentity   String    @default("anonymous") // anonymous | confidential | disclosed
-  reporterName       String?
-  reporterContact    String?
-  allegationType     String    @default("misconduct")
-  severity           String    @default("medium")
-  subject            String
-  detailedDescription String?
-  locationOfIncident String?
-  dateOfIncident     DateTime?
-  status             String    @default("received") // received | under_review | investigating | substantiated | unsubstantiated | closed
+  id                   String    @id @default(uuid())
+  tenantId             String
+  reportCode           String
+  submittedDate        DateTime  @default(now())
+  reporterIdentity     String    @default("anonymous") // anonymous | confidential | disclosed
+  reporterName         String?
+  reporterContact      String?
+  allegationType       String    @default("misconduct")
+  severity             String    @default("medium")
+  subject              String
+  detailedDescription  String?
+  locationOfIncident   String?
+  dateOfIncident       DateTime?
+  status               String    @default("received") // received | under_review | investigating | substantiated | unsubstantiated | closed
   assignedInvestigator String?
-  findings           String?
-  retaliationReported Boolean  @default(false)
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
-  createdBy          String?
+  findings             String?
+  retaliationReported  Boolean   @default(false)
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+  createdBy            String?
 
   @@index([tenantId], map: "WhistleblowerReport_tenantId_idx")
   @@index([tenantId, reportCode], map: "WhistleblowerReport_code_idx")
@@ -14589,72 +14862,72 @@ model WhistleblowerReport {
 }
 
 model ArbitrationCase {
-  id               String    @id @default(uuid())
-  tenantId         String
-  arbitrationCode  String
-  caseTitle        String
-  disputeType      String    @default("labor")
-  filingDate       DateTime  @default(now())
-  claimantName     String
-  claimantType     String    @default("employee")
-  respondentName   String
-  respondentType   String    @default("company")
+  id                 String   @id @default(uuid())
+  tenantId           String
+  arbitrationCode    String
+  caseTitle          String
+  disputeType        String   @default("labor")
+  filingDate         DateTime @default(now())
+  claimantName       String
+  claimantType       String   @default("employee")
+  respondentName     String
+  respondentType     String   @default("company")
   disputeDescription String?
-  claimAmount      Decimal?  @db.Decimal(14, 2)
-  currency         String    @default("AED")
-  arbitratorName   String?
-  status           String    @default("filed") // filed | hearing_scheduled | in_progress | award_pending | completed | appealed
-  venue            String?
-  awardSummary     String?
-  awardInFavorOf   String?
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-  createdBy        String?
+  claimAmount        Decimal? @db.Decimal(14, 2)
+  currency           String   @default("AED")
+  arbitratorName     String?
+  status             String   @default("filed") // filed | hearing_scheduled | in_progress | award_pending | completed | appealed
+  venue              String?
+  awardSummary       String?
+  awardInFavorOf     String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  createdBy          String?
 
   @@index([tenantId], map: "ArbitrationCase_tenantId_idx")
   @@map("aura_compliance_arbitration")
 }
 
 model StrikeEntry {
-  id                 String    @id @default(uuid())
-  tenantId           String
-  strikeCode         String
-  strikeName         String
-  unionId            String?
-  unionName          String?
-  noticeDate         DateTime?
-  proposedStartDate  DateTime?
-  actualStartDate    DateTime?
-  endDate            DateTime?
-  status             String    @default("notice_received") // notice_received | in_negotiation | active | resolved | cancelled
-  strikeType         String    @default("full")
-  affectedDepartments Json     @default("[]")
-  affectedEmployeeCount Int    @default(0)
-  responseMode       String    @default("standby") // standby | deployed
-  resolutionDate     DateTime?
-  resolutionTerms    String?
-  createdAt          DateTime  @default(now())
-  updatedAt          DateTime  @updatedAt
-  createdBy          String?
+  id                    String    @id @default(uuid())
+  tenantId              String
+  strikeCode            String
+  strikeName            String
+  unionId               String?
+  unionName             String?
+  noticeDate            DateTime?
+  proposedStartDate     DateTime?
+  actualStartDate       DateTime?
+  endDate               DateTime?
+  status                String    @default("notice_received") // notice_received | in_negotiation | active | resolved | cancelled
+  strikeType            String    @default("full")
+  affectedDepartments   Json      @default("[]")
+  affectedEmployeeCount Int       @default(0)
+  responseMode          String    @default("standby") // standby | deployed
+  resolutionDate        DateTime?
+  resolutionTerms       String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  createdBy             String?
 
   @@index([tenantId], map: "StrikeEntry_tenantId_idx")
   @@map("aura_compliance_strike")
 }
 
 model ComplianceCommunicationLog {
-  id                String    @id @default(uuid())
+  id                String   @id @default(uuid())
   tenantId          String
-  communicationDate DateTime  @default(now())
-  communicationType String    @default("meeting") // meeting | negotiation | grievance_discussion | notice | other
-  category          String    @default("union") // union | grievance | disciplinary | audit | general
+  communicationDate DateTime @default(now())
+  communicationType String   @default("meeting") // meeting | negotiation | grievance_discussion | notice | other
+  category          String   @default("union") // union | grievance | disciplinary | audit | general
   subject           String
   summary           String?
   fromParty         String?
   toParty           String?
   relatedEntityId   String?
-  attachments       Json      @default("[]")
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
+  attachments       Json     @default("[]")
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
   createdBy         String?
 
   @@index([tenantId], map: "ComplianceCommunicationLog_tenantId_idx")
@@ -14730,7 +15003,7 @@ model HelpdeskKnowledgeArticle {
   category    String    @default("general")
   tags        Json?
   status      String    @default("published") // draft | published | archived
-  visibility  String    @default("internal")  // public | internal | restricted
+  visibility  String    @default("internal") // public | internal | restricted
   views       Int       @default(0)
   helpful     Int       @default(0)
   notHelpful  Int       @default(0)
@@ -14749,24 +15022,24 @@ model HelpdeskKnowledgeArticle {
 }
 
 model HelpdeskServiceRequest {
-  id             String    @id @default(uuid())
-  tenantId       String
-  requestNumber  String
-  service        String
-  catalogItemId  String?
-  description    String?
-  requesterId    String
-  currentStage   String?
-  status         String    @default("SUBMITTED") // SUBMITTED | IN_PROGRESS | COMPLETED | REJECTED | CANCELLED
-  estCompletion  DateTime?
-  submittedAt    DateTime  @default(now())
-  completedAt    DateTime?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  createdBy      String?
-  updatedBy      String?
-  deletedAt      DateTime?
-  isDeleted      Boolean   @default(false)
+  id            String    @id @default(uuid())
+  tenantId      String
+  requestNumber String
+  service       String
+  catalogItemId String?
+  description   String?
+  requesterId   String
+  currentStage  String?
+  status        String    @default("SUBMITTED") // SUBMITTED | IN_PROGRESS | COMPLETED | REJECTED | CANCELLED
+  estCompletion DateTime?
+  submittedAt   DateTime  @default(now())
+  completedAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  createdBy     String?
+  updatedBy     String?
+  deletedAt     DateTime?
+  isDeleted     Boolean   @default(false)
 
   @@unique([tenantId, requestNumber], map: "HelpdeskServiceRequest_number_uq")
   @@index([tenantId], map: "HelpdeskServiceRequest_tenantId_idx")
@@ -14797,27 +15070,27 @@ model HelpdeskCatalogItem {
 }
 
 model HelpdeskCase {
-  id           String    @id @default(uuid())
-  tenantId     String
-  caseNumber   String
-  title        String
-  description  String?
-  category     String    @default("general")
-  priority     String    @default("MEDIUM")
-  status       String    @default("OPEN") // OPEN | INVESTIGATION | PENDING | APPROVAL | CLOSED
-  stage        String?
-  assigneeId   String?
-  reporterId   String?
-  isConfidential Boolean @default(false)
-  closedAt     DateTime?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  createdBy    String?
-  updatedBy    String?
-  deletedAt    DateTime?
-  isDeleted    Boolean   @default(false)
+  id             String    @id @default(uuid())
+  tenantId       String
+  caseNumber     String
+  title          String
+  description    String?
+  category       String    @default("general")
+  priority       String    @default("MEDIUM")
+  status         String    @default("OPEN") // OPEN | INVESTIGATION | PENDING | APPROVAL | CLOSED
+  stage          String?
+  assigneeId     String?
+  reporterId     String?
+  isConfidential Boolean   @default(false)
+  closedAt       DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  createdBy      String?
+  updatedBy      String?
+  deletedAt      DateTime?
+  isDeleted      Boolean   @default(false)
 
-  notes        HelpdeskCaseNote[]
+  notes HelpdeskCaseNote[]
 
   @@unique([tenantId, caseNumber], map: "HelpdeskCase_number_uq")
   @@index([tenantId], map: "HelpdeskCase_tenantId_idx")
@@ -14835,26 +15108,26 @@ model HelpdeskCaseNote {
   content    String
   createdAt  DateTime @default(now())
 
-  case       HelpdeskCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
+  case HelpdeskCase @relation(fields: [caseId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, caseId], map: "HelpdeskCaseNote_tenant_case_idx")
   @@map("aura_helpdesk_case_note")
 }
 
 model HelpdeskChatSession {
-  id          String    @id @default(uuid())
-  tenantId    String
-  subject     String?
-  requesterId String
-  agentId     String?
-  status      String    @default("ACTIVE") // ACTIVE | WAITING | CLOSED
-  lastMessageAt DateTime @default(now())
-  closedAt    DateTime?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  createdBy   String?
+  id            String    @id @default(uuid())
+  tenantId      String
+  subject       String?
+  requesterId   String
+  agentId       String?
+  status        String    @default("ACTIVE") // ACTIVE | WAITING | CLOSED
+  lastMessageAt DateTime  @default(now())
+  closedAt      DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  createdBy     String?
 
-  messages    HelpdeskChatMessage[]
+  messages HelpdeskChatMessage[]
 
   @@index([tenantId], map: "HelpdeskChatSession_tenantId_idx")
   @@index([tenantId, requesterId], map: "HelpdeskChatSession_tenant_req_idx")
@@ -14870,7 +15143,7 @@ model HelpdeskChatMessage {
   content    String
   createdAt  DateTime @default(now())
 
-  session    HelpdeskChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  session HelpdeskChatSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, sessionId], map: "HelpdeskChatMessage_tenant_session_idx")
   @@map("aura_helpdesk_chat_message")
@@ -14879,9 +15152,9 @@ model HelpdeskChatMessage {
 model HelpdeskChannel {
   id          String    @id @default(uuid())
   tenantId    String
-  channelType String    // email | slack | teams | phone | whatsapp | web
+  channelType String // email | slack | teams | phone | whatsapp | web
   name        String
-  config      String?   // human-readable target e.g. mailbox address, channel name
+  config      String? // human-readable target e.g. mailbox address, channel name
   status      String    @default("DISCONNECTED") // CONNECTED | DISCONNECTED | ERROR
   isActive    Boolean   @default(true)
   connectedAt DateTime?
@@ -14912,7 +15185,7 @@ model HelpdeskAutomation {
   createdBy    String?
   updatedBy    String?
 
-  logs         HelpdeskAutomationLog[]
+  logs HelpdeskAutomationLog[]
 
   @@index([tenantId], map: "HelpdeskAutomation_tenantId_idx")
   @@map("aura_helpdesk_automation")
@@ -14926,26 +15199,26 @@ model HelpdeskAutomationLog {
   message      String?
   createdAt    DateTime @default(now())
 
-  automation   HelpdeskAutomation @relation(fields: [automationId], references: [id], onDelete: Cascade)
+  automation HelpdeskAutomation @relation(fields: [automationId], references: [id], onDelete: Cascade)
 
   @@index([tenantId, automationId], map: "HelpdeskAutomationLog_tenant_auto_idx")
   @@map("aura_helpdesk_automation_log")
 }
 
 model HelpdeskImprovement {
-  id          String    @id @default(uuid())
-  tenantId    String
-  title       String
-  description String?
-  source      String    @default("survey") // survey | ticket_trend | agent | employee
-  impact      String    @default("Medium") // Low | Medium | High
-  effort      String    @default("Medium") // Low | Medium | High
-  status      String    @default("PLANNED") // PLANNED | IN_PROGRESS | COMPLETED | DISMISSED
+  id            String   @id @default(uuid())
+  tenantId      String
+  title         String
+  description   String?
+  source        String   @default("survey") // survey | ticket_trend | agent | employee
+  impact        String   @default("Medium") // Low | Medium | High
+  effort        String   @default("Medium") // Low | Medium | High
+  status        String   @default("PLANNED") // PLANNED | IN_PROGRESS | COMPLETED | DISMISSED
   feedbackQuote String?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-  createdBy   String?
-  updatedBy   String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  createdBy     String?
+  updatedBy     String?
 
   @@index([tenantId], map: "HelpdeskImprovement_tenantId_idx")
   @@map("aura_helpdesk_improvement")
@@ -15039,43 +15312,43 @@ model HelpdeskAlert {
 // filter/sort on are promoted to real columns.
 
 model FinanceVendor {
-  id                String    @id @default(uuid())
-  tenantId          String
-  vendorCode        String
-  vendorName        String
-  vendorType        String    @default("company") // individual | company | contractor | consultant
-  status            String    @default("pending_approval") // active | inactive | pending_approval | blacklisted
-  email             String?
-  phone             String?
-  website           String?
-  taxId             String?
-  categories        Json?
-  servicesProvided  Json?
-  paymentTerms      String    @default("net_30")
-  preferredPaymentMethod String @default("bank_transfer")
-  primaryContact    Json?
-  billingAddress    Json?
-  bankDetails       Json?
-  documents         Json?
-  performanceRating Decimal   @default(0) @db.Decimal(4, 2)
-  totalTransactions Int       @default(0)
-  totalSpend        Decimal   @default(0) @db.Decimal(15, 2)
-  onTimePaymentRate Decimal   @default(0) @db.Decimal(5, 2)
-  qualityScore      Decimal   @default(0) @db.Decimal(5, 2)
-  w9OnFile          Boolean   @default(false)
-  backgroundCheckCompleted Boolean @default(false)
-  contractOnFile    Boolean   @default(false)
-  contractExpiryDate DateTime?
-  insuranceExpiryDate DateTime?
-  approvalStatus    String    @default("pending") // pending | approved | rejected
-  approvedBy        String?
-  approvedDate      DateTime?
-  rejectionReason   String?
-  notes             String?
-  createdAt         DateTime  @default(now())
-  updatedAt         DateTime  @updatedAt
-  createdBy         String?
-  updatedBy         String?
+  id                       String    @id @default(uuid())
+  tenantId                 String
+  vendorCode               String
+  vendorName               String
+  vendorType               String    @default("company") // individual | company | contractor | consultant
+  status                   String    @default("pending_approval") // active | inactive | pending_approval | blacklisted
+  email                    String?
+  phone                    String?
+  website                  String?
+  taxId                    String?
+  categories               Json?
+  servicesProvided         Json?
+  paymentTerms             String    @default("net_30")
+  preferredPaymentMethod   String    @default("bank_transfer")
+  primaryContact           Json?
+  billingAddress           Json?
+  bankDetails              Json?
+  documents                Json?
+  performanceRating        Decimal   @default(0) @db.Decimal(4, 2)
+  totalTransactions        Int       @default(0)
+  totalSpend               Decimal   @default(0) @db.Decimal(15, 2)
+  onTimePaymentRate        Decimal   @default(0) @db.Decimal(5, 2)
+  qualityScore             Decimal   @default(0) @db.Decimal(5, 2)
+  w9OnFile                 Boolean   @default(false)
+  backgroundCheckCompleted Boolean   @default(false)
+  contractOnFile           Boolean   @default(false)
+  contractExpiryDate       DateTime?
+  insuranceExpiryDate      DateTime?
+  approvalStatus           String    @default("pending") // pending | approved | rejected
+  approvedBy               String?
+  approvedDate             DateTime?
+  rejectionReason          String?
+  notes                    String?
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+  createdBy                String?
+  updatedBy                String?
 
   @@unique([tenantId, vendorCode], map: "FinanceVendor_tenantId_vendorCode_key")
   @@index([tenantId], map: "FinanceVendor_tenantId_idx")
@@ -15217,32 +15490,32 @@ model FinanceScenario {
 }
 
 model FinancePettyCashFund {
-  id                   String    @id @default(uuid())
-  tenantId             String
-  fundCode             String
-  fundName             String
-  status               String    @default("active")
-  department           String?
-  location             String?
-  custodian            String?
-  custodianName        String?
-  initialBalance       Decimal   @default(0) @db.Decimal(15, 2)
-  currentBalance       Decimal   @default(0) @db.Decimal(15, 2)
-  totalDisbursed       Decimal   @default(0) @db.Decimal(15, 2)
-  totalReplenished     Decimal   @default(0) @db.Decimal(15, 2)
-  fundLimit            Decimal   @default(0) @db.Decimal(15, 2)
-  transactionLimit     Decimal   @default(0) @db.Decimal(15, 2)
-  minimumBalance       Decimal   @default(0) @db.Decimal(15, 2)
-  requireReceipt       Boolean   @default(true)
-  requireApproval      Boolean   @default(true)
-  approvalThreshold    Decimal?  @db.Decimal(15, 2)
-  lastReconciledDate   DateTime?
-  lastReconciledBy     String?
+  id                    String    @id @default(uuid())
+  tenantId              String
+  fundCode              String
+  fundName              String
+  status                String    @default("active")
+  department            String?
+  location              String?
+  custodian             String?
+  custodianName         String?
+  initialBalance        Decimal   @default(0) @db.Decimal(15, 2)
+  currentBalance        Decimal   @default(0) @db.Decimal(15, 2)
+  totalDisbursed        Decimal   @default(0) @db.Decimal(15, 2)
+  totalReplenished      Decimal   @default(0) @db.Decimal(15, 2)
+  fundLimit             Decimal   @default(0) @db.Decimal(15, 2)
+  transactionLimit      Decimal   @default(0) @db.Decimal(15, 2)
+  minimumBalance        Decimal   @default(0) @db.Decimal(15, 2)
+  requireReceipt        Boolean   @default(true)
+  requireApproval       Boolean   @default(true)
+  approvalThreshold     Decimal?  @db.Decimal(15, 2)
+  lastReconciledDate    DateTime?
+  lastReconciledBy      String?
   nextReconciliationDue DateTime?
-  createdAt            DateTime  @default(now())
-  updatedAt            DateTime  @updatedAt
-  createdBy            String?
-  updatedBy            String?
+  createdAt             DateTime  @default(now())
+  updatedAt             DateTime  @updatedAt
+  createdBy             String?
+  updatedBy             String?
 
   @@unique([tenantId, fundCode], map: "FinancePettyCashFund_tenantId_fundCode_key")
   @@index([tenantId], map: "FinancePettyCashFund_tenantId_idx")
@@ -15250,31 +15523,31 @@ model FinancePettyCashFund {
 }
 
 model FinancePettyCashTransaction {
-  id              String    @id @default(uuid())
-  tenantId        String
-  transactionCode String
-  fundId          String
-  transactionType String    @default("disbursement")
-  transactionDate DateTime  @default(now())
-  amount          Decimal   @default(0) @db.Decimal(15, 2)
-  category        String?
-  description     String?
-  requestedBy     String?
-  requestedByName String?
-  receiptNumber   String?
+  id                String    @id @default(uuid())
+  tenantId          String
+  transactionCode   String
+  fundId            String
+  transactionType   String    @default("disbursement")
+  transactionDate   DateTime  @default(now())
+  amount            Decimal   @default(0) @db.Decimal(15, 2)
+  category          String?
+  description       String?
+  requestedBy       String?
+  requestedByName   String?
+  receiptNumber     String?
   receiptAttachment String?
-  vendor          String?
-  requiresApproval Boolean  @default(false)
-  approvalStatus  String?
-  approvedBy      String?
-  approvedDate    DateTime?
-  reconciled      Boolean   @default(false)
-  reconciledDate  DateTime?
-  balanceAfter    Decimal   @default(0) @db.Decimal(15, 2)
-  notes           String?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  createdBy       String?
+  vendor            String?
+  requiresApproval  Boolean   @default(false)
+  approvalStatus    String?
+  approvedBy        String?
+  approvedDate      DateTime?
+  reconciled        Boolean   @default(false)
+  reconciledDate    DateTime?
+  balanceAfter      Decimal   @default(0) @db.Decimal(15, 2)
+  notes             String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  createdBy         String?
 
   @@unique([tenantId, transactionCode], map: "FinancePettyCashTransaction_tenantId_transactionCode_key")
   @@index([tenantId], map: "FinancePettyCashTransaction_tenantId_idx")
@@ -15283,33 +15556,33 @@ model FinancePettyCashTransaction {
 }
 
 model FinancePettyCashReconciliation {
-  id                  String    @id @default(uuid())
-  tenantId            String
-  reconciliationCode  String
-  fundId              String
-  fundName            String?
-  reconciliationDate  DateTime  @default(now())
-  expectedBalance     Decimal   @default(0) @db.Decimal(15, 2)
-  actualBalance       Decimal   @default(0) @db.Decimal(15, 2)
-  variance            Decimal   @default(0) @db.Decimal(15, 2)
-  transactionCount    Int       @default(0)
-  totalDisbursements  Decimal   @default(0) @db.Decimal(15, 2)
-  totalReplenishments Decimal   @default(0) @db.Decimal(15, 2)
-  unreconciledTransactions Int  @default(0)
-  cashOnHand          Decimal   @default(0) @db.Decimal(15, 2)
-  receipts            Decimal   @default(0) @db.Decimal(15, 2)
-  ious                Decimal   @default(0) @db.Decimal(15, 2)
-  status              String    @default("in_progress")
-  varianceExplanation String?
-  varianceResolution  String?
-  reconciledBy        String?
-  reconciledByName    String?
-  reviewedBy          String?
-  reviewedDate        DateTime?
-  supportingDocuments Json?
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
-  createdBy           String?
+  id                       String    @id @default(uuid())
+  tenantId                 String
+  reconciliationCode       String
+  fundId                   String
+  fundName                 String?
+  reconciliationDate       DateTime  @default(now())
+  expectedBalance          Decimal   @default(0) @db.Decimal(15, 2)
+  actualBalance            Decimal   @default(0) @db.Decimal(15, 2)
+  variance                 Decimal   @default(0) @db.Decimal(15, 2)
+  transactionCount         Int       @default(0)
+  totalDisbursements       Decimal   @default(0) @db.Decimal(15, 2)
+  totalReplenishments      Decimal   @default(0) @db.Decimal(15, 2)
+  unreconciledTransactions Int       @default(0)
+  cashOnHand               Decimal   @default(0) @db.Decimal(15, 2)
+  receipts                 Decimal   @default(0) @db.Decimal(15, 2)
+  ious                     Decimal   @default(0) @db.Decimal(15, 2)
+  status                   String    @default("in_progress")
+  varianceExplanation      String?
+  varianceResolution       String?
+  reconciledBy             String?
+  reconciledByName         String?
+  reviewedBy               String?
+  reviewedDate             DateTime?
+  supportingDocuments      Json?
+  createdAt                DateTime  @default(now())
+  updatedAt                DateTime  @updatedAt
+  createdBy                String?
 
   @@unique([tenantId, reconciliationCode], map: "FinancePettyCashReconciliation_tenantId_code_key")
   @@index([tenantId], map: "FinancePettyCashReconciliation_tenantId_idx")
@@ -15318,21 +15591,21 @@ model FinancePettyCashReconciliation {
 }
 
 model FinancePettyCashPolicy {
-  id            String    @id @default(uuid())
-  tenantId      String
-  policyType    String    @default("approval") // approval | category | spending_limit
-  name          String
-  description   String?
-  threshold     Decimal?  @db.Decimal(15, 2)
-  approverRole  String?
-  monthlyLimit  Decimal?  @db.Decimal(15, 2)
+  id             String   @id @default(uuid())
+  tenantId       String
+  policyType     String   @default("approval") // approval | category | spending_limit
+  name           String
+  description    String?
+  threshold      Decimal? @db.Decimal(15, 2)
+  approverRole   String?
+  monthlyLimit   Decimal? @db.Decimal(15, 2)
   requireReceipt Boolean  @default(true)
-  active        Boolean   @default(true)
-  config        Json?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  createdBy     String?
-  updatedBy     String?
+  active         Boolean  @default(true)
+  config         Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  createdBy      String?
+  updatedBy      String?
 
   @@index([tenantId], map: "FinancePettyCashPolicy_tenantId_idx")
   @@index([policyType], map: "FinancePettyCashPolicy_policyType_idx")
@@ -15398,25 +15671,25 @@ model FinanceAsset {
 // posting templates, and market-pricing benchmarks + compensation strategy.
 
 model JobEvaluation {
-  id             String    @id @default(uuid())
-  tenantId       String
-  jobTitle       String
-  jobProfileId   String?
-  familyName     String?
-  method         String    @default("point_factor") // point_factor | hay_system | classification | ranking
-  status         String    @default("pending") // pending | information_requested | in_progress | completed
-  score          Int?
-  assignedGrade  String?
-  evaluatorId    String?
-  evaluatorName  String?
-  factors        Json?
-  notes          String?
-  submittedAt    DateTime  @default(now())
-  completedAt    DateTime?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  createdBy      String?
-  updatedBy      String?
+  id            String    @id @default(uuid())
+  tenantId      String
+  jobTitle      String
+  jobProfileId  String?
+  familyName    String?
+  method        String    @default("point_factor") // point_factor | hay_system | classification | ranking
+  status        String    @default("pending") // pending | information_requested | in_progress | completed
+  score         Int?
+  assignedGrade String?
+  evaluatorId   String?
+  evaluatorName String?
+  factors       Json?
+  notes         String?
+  submittedAt   DateTime  @default(now())
+  completedAt   DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  createdBy     String?
+  updatedBy     String?
 
   @@index([tenantId], map: "JobEvaluation_tenantId_idx")
   @@index([tenantId, status], map: "JobEvaluation_tenant_status_idx")
@@ -15424,19 +15697,19 @@ model JobEvaluation {
 }
 
 model JobPostingTemplate {
-  id           String    @id @default(uuid())
-  tenantId     String
-  name         String
-  category     String    @default("general") // engineering | sales | executive | early_talent | general
-  sections     Json      @default("[]") // string[] of section titles
-  body         String?
-  isActive     Boolean   @default(true)
-  usageCount   Int       @default(0)
-  lastUsedAt   DateTime?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  createdBy    String?
-  updatedBy    String?
+  id         String    @id @default(uuid())
+  tenantId   String
+  name       String
+  category   String    @default("general") // engineering | sales | executive | early_talent | general
+  sections   Json      @default("[]") // string[] of section titles
+  body       String?
+  isActive   Boolean   @default(true)
+  usageCount Int       @default(0)
+  lastUsedAt DateTime?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  createdBy  String?
+  updatedBy  String?
 
   @@index([tenantId], map: "JobPostingTemplate_tenantId_idx")
   @@map("aura_job_posting_template")
@@ -15469,14 +15742,14 @@ model JobMarketPricing {
 }
 
 model JobCompensationStrategy {
-  id                 String   @id @default(uuid())
-  tenantId           String   @unique
-  targetPercentile   Int      @default(50)
-  scope              String   @default("All roles")
-  description        String?
-  updatedAt          DateTime @updatedAt
-  createdAt          DateTime @default(now())
-  updatedBy          String?
+  id               String   @id @default(uuid())
+  tenantId         String   @unique
+  targetPercentile Int      @default(50)
+  scope            String   @default("All roles")
+  description      String?
+  updatedAt        DateTime @updatedAt
+  createdAt        DateTime @default(now())
+  updatedBy        String?
 
   @@map("aura_job_compensation_strategy")
 }
@@ -15496,25 +15769,25 @@ model JobCompensationStrategy {
 /// Compliance / legal / security documents attached to a recruitment vendor,
 /// with expiry tracking and review metadata. Backs /vendors/compliance-docs.
 model VendorComplianceDoc {
-  id            String    @id @default(uuid())
-  tenantId      String
-  vendorId      String
-  documentType  String // trade_license | insurance | iso_cert | vat_cert | wps | other
-  title         String
+  id             String    @id @default(uuid())
+  tenantId       String
+  vendorId       String
+  documentType   String // trade_license | insurance | iso_cert | vat_cert | wps | other
+  title          String
   documentNumber String?
-  status        String    @default("pending") // pending | valid | expiring | expired | rejected
-  issueDate     DateTime?
-  expiryDate    DateTime?
-  documentUrl   String?
-  reviewedBy    String?
-  reviewedAt    DateTime?
-  notes         String?
-  createdBy     String?
-  updatedBy     String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  deletedAt     DateTime?
-  isDeleted     Boolean   @default(false)
+  status         String    @default("pending") // pending | valid | expiring | expired | rejected
+  issueDate      DateTime?
+  expiryDate     DateTime?
+  documentUrl    String?
+  reviewedBy     String?
+  reviewedAt     DateTime?
+  notes          String?
+  createdBy      String?
+  updatedBy      String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  deletedAt      DateTime?
+  isDeleted      Boolean   @default(false)
 
   @@index([tenantId])
   @@index([tenantId, vendorId])
@@ -15525,21 +15798,21 @@ model VendorComplianceDoc {
 /// Vendor engagement models / standard terms (contract type templates).
 /// Backs /vendors/contract-types.
 model VendorContractType {
-  id             String    @id @default(uuid())
-  tenantId       String
-  code           String
-  name           String
-  engagementModel String   @default("staff_augmentation") // staff_augmentation | fixed_price | managed_service | rpo
-  noticePeriodDays Int      @default(30)
-  paymentTermsDays Int      @default(30)
-  description    String?
-  isActive       Boolean   @default(true)
-  createdBy      String?
-  updatedBy      String?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  deletedAt      DateTime?
-  isDeleted      Boolean   @default(false)
+  id               String    @id @default(uuid())
+  tenantId         String
+  code             String
+  name             String
+  engagementModel  String    @default("staff_augmentation") // staff_augmentation | fixed_price | managed_service | rpo
+  noticePeriodDays Int       @default(30)
+  paymentTermsDays Int       @default(30)
+  description      String?
+  isActive         Boolean   @default(true)
+  createdBy        String?
+  updatedBy        String?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  deletedAt        DateTime?
+  isDeleted        Boolean   @default(false)
 
   @@unique([tenantId, code])
   @@index([tenantId])
@@ -15575,24 +15848,24 @@ model VendorContractRenewal {
 /// Vendor commercial rate cards by role / location / experience.
 /// Backs /vendors/rate-cards.
 model VendorRateCard {
-  id           String    @id @default(uuid())
-  tenantId     String
-  vendorId     String
-  roleTitle    String
-  experienceLevel String  @default("mid") // junior | mid | senior | lead
-  location     String?
-  ratePeriod   String    @default("hourly") // hourly | daily | monthly
-  rate         Float     @default(0)
-  currency     String    @default("USD")
-  effectiveFrom DateTime?
-  effectiveTo  DateTime?
-  isActive     Boolean   @default(true)
-  createdBy    String?
-  updatedBy    String?
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-  deletedAt    DateTime?
-  isDeleted    Boolean   @default(false)
+  id              String    @id @default(uuid())
+  tenantId        String
+  vendorId        String
+  roleTitle       String
+  experienceLevel String    @default("mid") // junior | mid | senior | lead
+  location        String?
+  ratePeriod      String    @default("hourly") // hourly | daily | monthly
+  rate            Float     @default(0)
+  currency        String    @default("USD")
+  effectiveFrom   DateTime?
+  effectiveTo     DateTime?
+  isActive        Boolean   @default(true)
+  createdBy       String?
+  updatedBy       String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  deletedAt       DateTime?
+  isDeleted       Boolean   @default(false)
 
   @@index([tenantId])
   @@index([tenantId, vendorId])
@@ -15601,23 +15874,23 @@ model VendorRateCard {
 
 /// Vendor performance scorecards / review notes. Backs /vendors/performance-rating.
 model VendorPerformanceReview {
-  id            String    @id @default(uuid())
-  tenantId      String
-  vendorId      String
-  periodLabel   String // e.g. "Q1 2026"
-  qualityScore  Float     @default(0)
-  timelinessScore Float   @default(0)
-  communicationScore Float @default(0)
-  overallScore  Float     @default(0)
-  reviewNotes   String?
-  reviewedBy    String?
-  reviewedAt    DateTime?
-  createdBy     String?
-  updatedBy     String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  deletedAt     DateTime?
-  isDeleted     Boolean   @default(false)
+  id                 String    @id @default(uuid())
+  tenantId           String
+  vendorId           String
+  periodLabel        String // e.g. "Q1 2026"
+  qualityScore       Float     @default(0)
+  timelinessScore    Float     @default(0)
+  communicationScore Float     @default(0)
+  overallScore       Float     @default(0)
+  reviewNotes        String?
+  reviewedBy         String?
+  reviewedAt         DateTime?
+  createdBy          String?
+  updatedBy          String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  deletedAt          DateTime?
+  isDeleted          Boolean   @default(false)
 
   @@index([tenantId])
   @@index([tenantId, vendorId])
@@ -15654,23 +15927,23 @@ model VendorInvoice {
 
 /// Vendor contractor timesheets with approval workflow. Backs /vendors/timesheet.
 model VendorTimesheet {
-  id            String    @id @default(uuid())
-  tenantId      String
-  vendorId      String
-  workerName    String
-  periodStart   DateTime?
-  periodEnd     DateTime?
-  hours         Float     @default(0)
-  status        String    @default("submitted") // submitted | approved | rejected
-  notes         String?
-  approvedBy    String?
-  approvedAt    DateTime?
-  createdBy     String?
-  updatedBy     String?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  deletedAt     DateTime?
-  isDeleted     Boolean   @default(false)
+  id          String    @id @default(uuid())
+  tenantId    String
+  vendorId    String
+  workerName  String
+  periodStart DateTime?
+  periodEnd   DateTime?
+  hours       Float     @default(0)
+  status      String    @default("submitted") // submitted | approved | rejected
+  notes       String?
+  approvedBy  String?
+  approvedAt  DateTime?
+  createdBy   String?
+  updatedBy   String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  deletedAt   DateTime?
+  isDeleted   Boolean   @default(false)
 
   @@index([tenantId])
   @@index([tenantId, vendorId])
@@ -15867,21 +16140,21 @@ model GoalTemplate {
 /// is queued for delivery to employees over one or more channels. Persists the
 /// "Create New Campaign" action from /dashboard/benefits/notification.
 model BenefitCampaign {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   tenantId  String
   title     String
   /// 'Urgent' | 'Info'
-  type      String   @default("Info")
+  type      String    @default("Info")
   /// Free-text delivery channel, e.g. "Email & Push", "Email".
-  channel   String   @default("Email")
+  channel   String    @default("Email")
   message   String
   /// 'DRAFT' | 'QUEUED' | 'SENT' | 'CANCELLED'
-  status    String   @default("QUEUED")
+  status    String    @default("QUEUED")
   createdBy String?
   updatedBy String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  isDeleted Boolean  @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  isDeleted Boolean   @default(false)
   deletedAt DateTime?
 
   @@index([tenantId])
@@ -15900,24 +16173,24 @@ model BenefitCampaign {
 //   governmentReportArchive.
 
 model CorporateBankAccount {
-  id            String   @id @default(uuid())
-  tenantId      String
-  accountName   String
-  bankName      String
-  accountNumber String
-  ifscCode      String?
-  swiftCode     String?
-  iban          String?
-  branchName    String?
-  currency      String   @default("USD")
-  disbursementFormat String @default("NEFT") // NEFT | NACH | RTGS | WPS | Excel | CSV
-  isPrimary     Boolean  @default(false)
-  status        String   @default("active") // active | inactive
-  notes         String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-  createdBy     String?
-  updatedBy     String?
+  id                 String   @id @default(uuid())
+  tenantId           String
+  accountName        String
+  bankName           String
+  accountNumber      String
+  ifscCode           String?
+  swiftCode          String?
+  iban               String?
+  branchName         String?
+  currency           String   @default("USD")
+  disbursementFormat String   @default("NEFT") // NEFT | NACH | RTGS | WPS | Excel | CSV
+  isPrimary          Boolean  @default(false)
+  status             String   @default("active") // active | inactive
+  notes              String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+  createdBy          String?
+  updatedBy          String?
 
   @@index([tenantId], map: "CorporateBankAccount_tenantId_idx")
   @@index([tenantId, status], map: "CorporateBankAccount_tenantId_status_idx")
@@ -15925,21 +16198,21 @@ model CorporateBankAccount {
 }
 
 model GovernmentReportArchive {
-  id           String   @id @default(uuid())
-  tenantId     String
-  country      String // ISO code, e.g. IN / AE / SA
-  countryName  String?
-  reportType   String // e.g. "Form 16", "WPS SIF File", "GOSI Contribution File"
-  authority    String?
-  frequency    String? // Monthly | Quarterly | Annual
-  period       String // e.g. "2026-06" or "2026-Q1" or "2026"
-  status       String   @default("generated") // generated | submitted | accepted | rejected
-  fileRef      String? // reference / path to generated artifact
-  notes        String?
-  generatedAt  DateTime @default(now())
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
-  createdBy    String?
+  id          String   @id @default(uuid())
+  tenantId    String
+  country     String // ISO code, e.g. IN / AE / SA
+  countryName String?
+  reportType  String // e.g. "Form 16", "WPS SIF File", "GOSI Contribution File"
+  authority   String?
+  frequency   String? // Monthly | Quarterly | Annual
+  period      String // e.g. "2026-06" or "2026-Q1" or "2026"
+  status      String   @default("generated") // generated | submitted | accepted | rejected
+  fileRef     String? // reference / path to generated artifact
+  notes       String?
+  generatedAt DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  createdBy   String?
 
   @@index([tenantId], map: "GovernmentReportArchive_tenantId_idx")
   @@index([tenantId, country], map: "GovernmentReportArchive_tenantId_country_idx")

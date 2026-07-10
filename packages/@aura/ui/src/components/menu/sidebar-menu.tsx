@@ -60,6 +60,16 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
     return `/${module.code.toLowerCase().replace(/_/g, '-')}`;
   };
 
+  // Helper to recursively check if a module matches the search query
+  const matchModule = useCallback((module: typeof superAdminMenu.items[0], query: string): boolean => {
+    if (module.label.toLowerCase().includes(query)) return true;
+    if (module.code.toLowerCase().replace(/_/g, ' ').includes(query)) return true;
+    if (module.path?.toLowerCase().replace(/[-/]/g, ' ').includes(query)) return true;
+    if (module.features?.some(feature => feature.toLowerCase().includes(query))) return true;
+    if (module.items?.some(subModule => matchModule(subModule, query))) return true;
+    return false;
+  }, []);
+
   // Filter modules based on search
   const filteredModules = useMemo(() => {
     if (!searchQuery.trim()) {
@@ -67,12 +77,8 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
     }
 
     const query = searchQuery.toLowerCase();
-    return superAdminMenu.items.filter(
-      (module) =>
-        module.label.toLowerCase().includes(query) ||
-        module.features.some((feature) => feature.toLowerCase().includes(query))
-    );
-  }, [searchQuery]);
+    return superAdminMenu.items.filter((module) => matchModule(module, query));
+  }, [searchQuery, matchModule]);
 
   // Toggle parent module expansion (accordion - only one open at a time)
   const toggleModule = useCallback((code: string) => {
@@ -101,6 +107,10 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '');
+    const lastSegment = modulePath.split('/').pop();
+    if (featureSlug === lastSegment) {
+      return modulePath;
+    }
     return `${modulePath}/${featureSlug}`;
   };
 
@@ -194,7 +204,7 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
           };
 
           const isActive = isModuleActive(module);
-          const isExpanded = expandedModule === module.code;
+          const isExpanded = searchQuery.trim() ? true : expandedModule === module.code;
 
           return (
             <div key={`${module.code}-${module.path || getModulePath(module)}`}>
@@ -250,10 +260,12 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
 
                   {/* Scenario A: Module has sub-modules (e.g. Vertical Solutions) */}
                   {hasSubModules ? (
-                    module.items?.map((subModule) => {
-                      const SubIcon = getMenuIcon(subModule.icon as MenuIconName);
-                      const isSubActive = isModuleActive(subModule);
-                      const isSubExpanded = expandedSubModule === subModule.code;
+                    module.items
+                      ?.filter(sub => !searchQuery.trim() || matchModule(sub, searchQuery.toLowerCase()))
+                      ?.map((subModule) => {
+                        const SubIcon = getMenuIcon(subModule.icon as MenuIconName);
+                        const isSubActive = isModuleActive(subModule);
+                        const isSubExpanded = searchQuery.trim() ? true : expandedSubModule === subModule.code;
 
                       return (
                         <div key={`${subModule.code}-${subModule.path || getModulePath(subModule)}`} className="mb-2">
@@ -264,7 +276,14 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
                                 ? "bg-brand-red text-white font-bold shadow-md"
                                 : "text-white hover:bg-white/10"
                             )}
-                            onClick={() => toggleSubModule(subModule.code)}
+                            onClick={() => {
+                              const path = getModulePath(subModule);
+                              if (path) {
+                                router.push(path);
+                                onNavigate?.({ path, title: subModule.label, module: module.label });
+                              }
+                              toggleSubModule(subModule.code);
+                            }}
                           >
                             <SubIcon className="w-4 h-4 opacity-70" />
                             <span className="flex-1 truncate">{subModule.label}</span>
@@ -274,8 +293,10 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
                           {/* Sub-Module Features */}
                           {isSubExpanded && (
                             <div className="ml-3 mt-0.5 space-y-0.5 border-l border-slate-200 dark:border-slate-700 pl-3">
-                              {subModule.features.map(feature => {
-                                const featurePath = getFeaturePath(subModule, feature);
+                              {subModule.features
+                                .filter(feature => !searchQuery.trim() || feature.toLowerCase().includes(searchQuery.toLowerCase()))
+                                .map(feature => {
+                                  const featurePath = getFeaturePath(subModule, feature);
                                 const isFeatureActive = pathname === featurePath;
                                 const featureIsFavorite = isFavorite(featurePath);
                                 return (
@@ -323,8 +344,10 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
                     })
                   ) : (
                     /* Scenario B: Standard Module with just features */
-                    module.features.map((feature) => {
-                      const featurePath = getFeaturePath(module, feature);
+                    module.features
+                      .filter(feature => !searchQuery.trim() || feature.toLowerCase().includes(searchQuery.toLowerCase()))
+                      .map((feature) => {
+                        const featurePath = getFeaturePath(module, feature);
                       const isFeatureActive = pathname === featurePath;
                       const featureIsFavorite = isFavorite(featurePath);
 

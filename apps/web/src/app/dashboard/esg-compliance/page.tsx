@@ -3,6 +3,7 @@
 import React from 'react';
 import { ModuleGrid } from '@/components/dashboard/module-grid';
 import { useTheme } from '@/stores/theme-store';
+import { Sparkles } from 'lucide-react';
 
 export default function EsgComplianceHomePage() {
   const { isDark } = useTheme();
@@ -16,18 +17,21 @@ export default function EsgComplianceHomePage() {
 
   return (
     <main
-      className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 text-slate-950 dark:text-slate-50 transition-colors duration-200"
+      className="min-h-screen bg-[#f8fafc] dark:bg-slate-950 p-8 text-slate-950 dark:text-slate-50 transition-colors duration-200"
       style={{ colorScheme: isDark ? 'dark' : 'light' }}
     >
       <div className="mx-auto flex max-w-7xl flex-col gap-8 pb-10">
         {/* Banner Header */}
-        <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-700 rounded-2xl p-8 text-white flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-lg">
+        <div className="bg-gradient-to-r from-emerald-600 via-teal-600 to-cyan-700 rounded-2xl p-8 text-white flex flex-col md:flex-row md:items-center justify-between gap-6 shadow-md relative overflow-hidden border border-emerald-500/20">
+          <div className="absolute right-0 top-0 h-40 w-40 bg-white/10 rounded-full blur-3xl"></div>
           <div>
-            <p className="text-emerald-100 font-semibold text-sm uppercase tracking-wider mb-2">
-              EPIC-30
-            </p>
-            <h1 className="text-3xl font-bold">ESG Compliance Dashboard</h1>
-            <p className="text-emerald-50 mt-2 max-w-2xl leading-relaxed">
+            <div className="flex items-center gap-2 mb-2">
+              <span className="bg-white/20 text-white border border-white/30 rounded-full px-2.5 py-0.5 text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5" /> EPIC-30 · ESG Compliance
+              </span>
+            </div>
+            <h1 className="text-3xl font-extrabold tracking-tight">ESG Compliance Dashboard</h1>
+            <p className="text-emerald-50 mt-2 max-w-2xl text-sm leading-relaxed">
               Track and evaluate sustainability metrics, workforce diversity distributions, and
               governance disclosures.
             </p>

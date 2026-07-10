@@ -1,6 +1,22 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
+import { useTheme } from '@/stores/theme-store';
+import {
+  Search,
+  SlidersHorizontal,
+  Calendar,
+  DollarSign,
+  Plus,
+  Check,
+  X,
+  ShieldAlert,
+  Loader2,
+  Trash2,
+  Lock,
+  ArrowRight,
+  Calculator,
+} from 'lucide-react';
 
 interface Contribution {
   id: string;
@@ -21,10 +37,13 @@ const periodNow = () => {
 };
 
 export default function ContributionsPage() {
+  const { isDark } = useTheme();
   const [contribs, setContribs] = useState<Contribution[]>([]);
   const [period, setPeriod] = useState(periodNow());
   const [inputPeriod, setInputPeriod] = useState(period);
   const [isLoading, setIsLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [showForm, setShowForm] = useState(false);
   const [wageForm, setWageForm] = useState({
     employeeId: '',
     basicWage: '5000',
@@ -45,6 +64,7 @@ export default function ContributionsPage() {
       setIsLoading(false);
     }
   }
+
   useEffect(() => {
     load();
   }, [period]);
@@ -64,9 +84,12 @@ export default function ContributionsPage() {
     });
     const p = await r.json();
     setMessage(
-      p.success ? 'Wage recorded' : (p.error?.details?.error ?? p.error?.message ?? 'failed')
+      p.success
+        ? 'Wage recorded successfully'
+        : (p.error?.details?.error ?? p.error?.message ?? 'failed')
     );
   }
+
   async function computeOne() {
     setMessage('');
     const r = await fetch('/api/v1/gosi-compliance/contributions', {
@@ -75,9 +98,14 @@ export default function ContributionsPage() {
       body: JSON.stringify({ employeeId: wageForm.employeeId, period }),
     });
     const p = await r.json();
-    setMessage(p.success ? 'Computed' : (p.error?.details?.error ?? p.error?.message ?? 'failed'));
+    setMessage(
+      p.success
+        ? 'Contribution computed successfully'
+        : (p.error?.details?.error ?? p.error?.message ?? 'failed')
+    );
     load();
   }
+
   async function deleteContrib(c: Contribution) {
     setMessage('');
     const r = await fetch(
@@ -87,180 +115,244 @@ export default function ContributionsPage() {
       }
     );
     const p = await r.json();
-    setMessage(p.success ? 'Deleted' : (p.error?.details?.error ?? p.error?.message ?? 'failed'));
+    setMessage(
+      p.success ? 'Contribution deleted' : (p.error?.details?.error ?? p.error?.message ?? 'failed')
+    );
     load();
   }
 
+  const filteredContribs = contribs.filter((c) => {
+    return (
+      searchQuery.trim() === '' ||
+      c.employeeId.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      c.nationalityClass.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+  });
+
   return (
-    <main className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 text-slate-950 dark:text-slate-50">
+    <main
+      className="min-h-screen bg-[#f8fafc] dark:bg-slate-950 p-8 text-slate-900 dark:text-slate-50 transition-colors duration-200"
+      style={{ colorScheme: isDark ? 'dark' : 'light' }}
+    >
       <div className="mx-auto flex max-w-7xl flex-col gap-6">
-        <header className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
+        {/* Header Block */}
+        <header className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-2">
           <div>
-            <p className="text-sm uppercase text-slate-500 dark:text-slate-400 font-semibold">
-              EPIC-13 · S07–S12
+            <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500">
+              EPIC-13 · GOSI COMPLIANCE
             </p>
-            <h1 className="text-2xl font-semibold dark:text-white">
-              Contribution Wage + Calculation
+            <h1 className="text-3xl font-extrabold tracking-tight text-slate-900 dark:text-white mt-1">
+              Contribution Wages & Calculation
             </h1>
           </div>
-          <div className="flex items-center gap-2">
-            <input
-              value={inputPeriod}
-              onChange={(e) => setInputPeriod(e.target.value)}
-              placeholder="YYYY-MM"
-              className="w-24 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-1.5 text-sm text-center dark:text-white focus:outline-none focus:ring-2 focus:ring-slate-400"
-            />
+
+          <div className="flex items-center gap-3">
+            <div className="flex items-center bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-1 shadow-sm">
+              <input
+                value={inputPeriod}
+                onChange={(e) => setInputPeriod(e.target.value)}
+                placeholder="YYYY-MM"
+                className="w-24 bg-transparent border-0 px-3 py-1.5 text-sm text-center font-semibold focus:outline-none dark:text-white"
+              />
+              <button
+                type="button"
+                onClick={() => setPeriod(inputPeriod)}
+                disabled={isLoading || period === inputPeriod}
+                className="bg-slate-950 dark:bg-white text-white dark:text-slate-950 hover:bg-slate-800 dark:hover:bg-slate-100 px-3 py-1.5 rounded-lg text-xs font-bold transition-all disabled:opacity-50"
+              >
+                Apply
+              </button>
+            </div>
+
             <button
-              type="button"
-              onClick={() => setPeriod(inputPeriod)}
-              disabled={isLoading || period === inputPeriod}
-              className="rounded-md bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 dark:hover:bg-slate-200 px-3 py-1.5 text-sm text-white dark:text-slate-900 font-semibold transition-colors disabled:opacity-50"
+              onClick={() => setShowForm(!showForm)}
+              className="bg-slate-950 dark:bg-white text-white dark:text-slate-950 hover:bg-slate-800 dark:hover:bg-slate-100 px-4 py-2.5 rounded-xl text-sm font-semibold shadow-sm transition-all flex items-center gap-2 cursor-pointer"
             >
-              Apply
+              {showForm ? <X className="h-4 w-4" /> : <Calculator className="h-4 w-4" />}
+              {showForm ? 'Cancel Calculator' : 'Compute Wage'}
             </button>
           </div>
         </header>
-        {message ? <p className="text-sm text-slate-650 dark:text-slate-400">{message}</p> : null}
 
-        <section className="grid gap-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 md:grid-cols-5">
-          <label className="text-sm dark:text-slate-300">
-            Employee ID
+        {/* Collapsible Calculator Form */}
+        {showForm && (
+          <section className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-6 shadow-sm animate-in fade-in slide-in-from-top-4 duration-200">
+            <div className="flex items-center gap-2 mb-4">
+              <Calculator className="h-5 w-5 text-indigo-650 dark:text-indigo-455" />
+              <h2 className="text-lg font-bold text-slate-900 dark:text-white">
+                Record Wage & Compute Contribution
+              </h2>
+            </div>
+
+            <div className="grid gap-5 md:grid-cols-4 lg:grid-cols-5">
+              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex flex-col gap-1.5 md:col-span-2 lg:col-span-1">
+                Employee ID
+                <input
+                  value={wageForm.employeeId}
+                  onChange={(e) => setWageForm((f) => ({ ...f, employeeId: e.target.value }))}
+                  placeholder="e.g. EMP-002"
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-750 bg-slate-50/50 dark:bg-slate-850 px-3.5 py-2.5 text-slate-950 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-950 text-sm transition-all"
+                />
+              </label>
+
+              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex flex-col gap-1.5">
+                Basic Wage
+                <input
+                  value={wageForm.basicWage}
+                  onChange={(e) => setWageForm((f) => ({ ...f, basicWage: e.target.value }))}
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-750 bg-slate-50/50 dark:bg-slate-850 px-3.5 py-2.5 text-slate-950 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-950 text-sm transition-all"
+                />
+              </label>
+
+              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex flex-col gap-1.5">
+                Housing Allowance
+                <input
+                  value={wageForm.housingAllowance}
+                  onChange={(e) => setWageForm((f) => ({ ...f, housingAllowance: e.target.value }))}
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-750 bg-slate-50/50 dark:bg-slate-850 px-3.5 py-2.5 text-slate-950 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-950 text-sm transition-all"
+                />
+              </label>
+
+              <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex flex-col gap-1.5">
+                Other Allowance
+                <input
+                  value={wageForm.otherAllowances}
+                  onChange={(e) => setWageForm((f) => ({ ...f, otherAllowances: e.target.value }))}
+                  className="w-full rounded-xl border border-slate-200 dark:border-slate-750 bg-slate-50/50 dark:bg-slate-850 px-3.5 py-2.5 text-slate-950 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-950 text-sm transition-all"
+                />
+              </label>
+
+              <div className="flex gap-3 items-end md:col-span-4 lg:col-span-1">
+                <button
+                  type="button"
+                  onClick={recordWage}
+                  disabled={!wageForm.employeeId}
+                  className="flex-1 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 px-4 py-3 text-sm font-semibold transition-all shadow-sm cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Record
+                </button>
+                <button
+                  type="button"
+                  onClick={computeOne}
+                  disabled={!wageForm.employeeId}
+                  className="flex-1 rounded-xl bg-slate-950 dark:bg-white text-white dark:text-slate-950 hover:bg-slate-800 dark:hover:bg-slate-100 px-4 py-3 text-sm font-semibold transition-all shadow-sm cursor-pointer disabled:cursor-not-allowed disabled:opacity-50"
+                >
+                  Compute
+                </button>
+              </div>
+            </div>
+          </section>
+        )}
+
+        {message ? (
+          <div className="p-4 rounded-xl bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-200/50 dark:border-indigo-900/50 text-sm text-indigo-750 dark:text-indigo-300 flex items-center gap-2 shadow-sm animate-in fade-in duration-200">
+            <ShieldAlert className="h-4 w-4 text-indigo-600" />
+            {message}
+          </div>
+        ) : null}
+
+        {/* Search and Filters Row */}
+        <section className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-4 shadow-[0_1px_3px_rgba(0,0,0,0.05)] flex flex-col md:flex-row md:items-center gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
             <input
-              value={wageForm.employeeId}
-              onChange={(e) => setWageForm((f) => ({ ...f, employeeId: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-1.5 dark:text-white"
+              type="text"
+              placeholder="Search contributions by Employee ID or Class..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full pl-10 pr-4 py-2.5 bg-slate-50/50 hover:bg-slate-50 focus:bg-white dark:bg-slate-950 border border-slate-200 dark:border-slate-800 rounded-xl text-sm outline-none transition-all placeholder:text-slate-400"
             />
-          </label>
-          <label className="text-sm dark:text-slate-300">
-            Basic
-            <input
-              value={wageForm.basicWage}
-              onChange={(e) => setWageForm((f) => ({ ...f, basicWage: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-1.5 dark:text-white"
-            />
-          </label>
-          <label className="text-sm dark:text-slate-300">
-            Housing
-            <input
-              value={wageForm.housingAllowance}
-              onChange={(e) => setWageForm((f) => ({ ...f, housingAllowance: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-1.5 dark:text-white"
-            />
-          </label>
-          <label className="text-sm dark:text-slate-300">
-            Other
-            <input
-              value={wageForm.otherAllowances}
-              onChange={(e) => setWageForm((f) => ({ ...f, otherAllowances: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-1.5 dark:text-white"
-            />
-          </label>
-          <div className="flex gap-2 self-end">
-            <button
-              type="button"
-              onClick={recordWage}
-              className="rounded-md border border-slate-300 dark:border-slate-700 hover:bg-slate-100 dark:hover:bg-slate-800 px-3 py-2 text-sm text-slate-700 dark:text-slate-300 font-semibold transition-colors"
-            >
-              Record Wage
-            </button>
-            <button
-              type="button"
-              onClick={computeOne}
-              className="rounded-md bg-slate-900 dark:bg-slate-100 hover:bg-slate-800 dark:hover:bg-slate-200 px-3 py-2 text-sm text-white dark:text-slate-900 font-semibold transition-colors"
-            >
-              Compute
+          </div>
+          <div className="flex items-center gap-3 flex-wrap">
+            <button className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-350 px-4 py-2.5 rounded-xl text-sm font-semibold transition-all flex items-center gap-2 cursor-pointer shadow-sm">
+              <SlidersHorizontal className="h-4 w-4" />
+              Filters
             </button>
           </div>
         </section>
 
-        <section className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
-          <table className="w-full text-left text-sm">
-            <thead className="border-b border-slate-200 dark:border-slate-800 text-xs uppercase text-slate-500 dark:text-slate-400">
+        {/* Results Metadata */}
+        <div className="flex items-center justify-between mt-3 mb-1">
+          <h2 className="text-xs font-extrabold text-slate-400 dark:text-slate-555 uppercase tracking-widest">
+            Results ({filteredContribs.length} items)
+          </h2>
+          <button className="border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 hover:bg-slate-50 dark:hover:bg-slate-855 px-3.5 py-1.5 rounded-xl text-xs font-bold text-slate-500 dark:text-slate-400 flex items-center gap-1.5 transition-all shadow-sm">
+            Columns
+          </button>
+        </div>
+
+        {/* Table Panel */}
+        <section className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl shadow-[0_1px_3px_rgba(0,0,0,0.05)] overflow-hidden">
+          <table className="w-full text-left text-sm border-collapse">
+            <thead className="bg-slate-50/50 dark:bg-slate-900/50 border-b border-slate-100 dark:border-slate-800 text-[10px] font-extrabold uppercase text-slate-400 dark:text-slate-500 tracking-wider">
               <tr>
-                <th className="px-3 py-2">Employee</th>
-                <th className="px-3 py-2">Class</th>
-                <th className="px-3 py-2">Wage</th>
-                <th className="px-3 py-2">Ann. ER</th>
-                <th className="px-3 py-2">Ann. EE</th>
-                <th className="px-3 py-2">OH ER</th>
-                <th className="px-3 py-2">Total ER</th>
-                <th className="px-3 py-2">Total EE</th>
-                <th className="px-3 py-2 text-center">Action</th>
+                <th className="px-4 py-3.5">Employee ID</th>
+                <th className="px-4 py-3.5">Class</th>
+                <th className="px-4 py-3.5">Contribution Wage</th>
+                <th className="px-4 py-3.5">Annuities ER</th>
+                <th className="px-4 py-3.5">Annuities EE</th>
+                <th className="px-4 py-3.5">OH ER</th>
+                <th className="px-4 py-3.5 font-bold">Total ER</th>
+                <th className="px-4 py-3.5 font-bold">Total EE</th>
+                <th className="px-4 py-3.5 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-850">
               {isLoading
                 ? Array.from({ length: 3 }).map((_, i) => (
-                    <tr
-                      key={`skel-${i}`}
-                      className="border-b border-slate-100 dark:border-slate-800/60 animate-pulse"
-                    >
-                      <td className="px-3 py-3">
-                        <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-20"></div>
-                      </td>
-                      <td className="px-3 py-3">
-                        <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-16"></div>
-                      </td>
-                      <td className="px-3 py-3">
-                        <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-16"></div>
-                      </td>
-                      <td className="px-3 py-3">
-                        <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-16"></div>
-                      </td>
-                      <td className="px-3 py-3">
-                        <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-16"></div>
-                      </td>
-                      <td className="px-3 py-3">
-                        <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-16"></div>
-                      </td>
-                      <td className="px-3 py-3">
-                        <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-16"></div>
-                      </td>
-                      <td className="px-3 py-3">
-                        <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-16"></div>
-                      </td>
-                      <td className="px-3 py-3">
-                        <div className="h-6 bg-slate-200 dark:bg-slate-700 rounded w-12 mx-auto"></div>
+                    <tr key={`skel-${i}`} className="animate-pulse">
+                      <td colSpan={9} className="px-4 py-4">
+                        <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-full"></div>
                       </td>
                     </tr>
                   ))
-                : contribs.map((c) => (
+                : filteredContribs.map((c) => (
                     <tr
                       key={c.id}
-                      className="border-b border-slate-100 dark:border-slate-800/60 hover:bg-slate-50/50 dark:hover:bg-slate-850/30"
+                      className="hover:bg-slate-50/40 dark:hover:bg-slate-800/40 transition-colors"
                     >
-                      <td className="px-3 py-2 font-mono text-xs dark:text-slate-300">
+                      <td className="px-4 py-4 font-mono text-xs text-slate-500 dark:text-slate-400">
                         {c.employeeId}
                       </td>
-                      <td className="px-3 py-2 dark:text-slate-300">{c.nationalityClass}</td>
-                      <td className="px-3 py-2 dark:text-slate-300">{c.contributionWage}</td>
-                      <td className="px-3 py-2 dark:text-slate-300">{c.annuitiesEmployer}</td>
-                      <td className="px-3 py-2 dark:text-slate-300">{c.annuitiesEmployee}</td>
-                      <td className="px-3 py-2 dark:text-slate-300">{c.ohEmployer}</td>
-                      <td className="px-3 py-2 font-semibold text-slate-900 dark:text-white">
+                      <td className="px-4 py-4 text-slate-650 dark:text-slate-400">
+                        {c.nationalityClass}
+                      </td>
+                      <td className="px-4 py-4 text-slate-900 dark:text-white font-semibold">
+                        {c.contributionWage}
+                      </td>
+                      <td className="px-4 py-4 text-slate-650 dark:text-slate-400">
+                        {c.annuitiesEmployer}
+                      </td>
+                      <td className="px-4 py-4 text-slate-650 dark:text-slate-400">
+                        {c.annuitiesEmployee}
+                      </td>
+                      <td className="px-4 py-4 text-slate-650 dark:text-slate-400">
+                        {c.ohEmployer}
+                      </td>
+                      <td className="px-4 py-4 font-bold text-slate-900 dark:text-white">
                         {c.totalEmployer}
                       </td>
-                      <td className="px-3 py-2 font-semibold text-slate-900 dark:text-white">
+                      <td className="px-4 py-4 font-bold text-slate-900 dark:text-white">
                         {c.totalEmployee}
                       </td>
-                      <td className="px-3 py-2 text-center">
+                      <td className="px-4 py-4 text-right">
                         <button
                           type="button"
                           onClick={() => deleteContrib(c)}
-                          className="rounded bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 px-2 py-1 text-xs text-rose-600 dark:text-rose-455 font-semibold transition-colors"
+                          className="rounded-xl border border-rose-250 dark:border-rose-900/50 bg-rose-50/50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 px-3 py-1.5 text-xs text-rose-600 dark:text-rose-400 font-bold transition-all shadow-sm cursor-pointer"
                         >
                           Delete
                         </button>
                       </td>
                     </tr>
                   ))}
-              {contribs.length === 0 && (
+              {!isLoading && filteredContribs.length === 0 && (
                 <tr>
                   <td
                     colSpan={9}
-                    className="px-3 py-6 text-center text-slate-500 dark:text-slate-400"
+                    className="px-4 py-12 text-center text-slate-400 dark:text-slate-500 font-medium"
                   >
-                    No contributions for {period}.
+                    No contributions found.
                   </td>
                 </tr>
               )}

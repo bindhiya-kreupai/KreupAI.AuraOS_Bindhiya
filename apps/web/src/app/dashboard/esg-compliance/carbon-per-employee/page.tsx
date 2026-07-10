@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Leaf, BarChart3, AlertCircle } from 'lucide-react';
 
 export default function CarbonPerEmployeePage() {
@@ -15,6 +15,29 @@ export default function CarbonPerEmployeePage() {
   const [verdict, setVerdict] = useState<any>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const res = await fetch('/api/v1/esg-compliance/sustainability?action=carbon');
+        const data = await res.json();
+        if (data.success && data.data?.carbon) {
+          const c = data.data.carbon;
+          setForm({
+            periodLabel: c.periodLabel || 'FY26',
+            headcount: String(c.headcount ?? '100'),
+            scope1: String(c.scope1 ?? '250'),
+            scope2: String(c.scope2 ?? '150'),
+            scope3: String(c.scope3 ?? '500'),
+            benchmarkPerFte: String(c.benchmarkPerFte ?? '8.0'),
+          });
+        }
+      } catch (err) {
+        console.error('Failed to load carbon data', err);
+      }
+    }
+    loadData();
+  }, []);
 
   const calculate = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -55,10 +78,15 @@ export default function CarbonPerEmployeePage() {
     <main className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 text-slate-950 dark:text-slate-50">
       <div className="mx-auto flex max-w-7xl flex-col gap-6">
         <header className="border-b border-slate-200 dark:border-slate-800 pb-4">
-          <p className="text-sm uppercase text-slate-500 dark:text-slate-400 font-semibold tracking-wider">EPIC-30 · ESG Sustainability</p>
-          <h1 className="text-2xl font-bold text-slate-900 dark:text-white mt-1">Carbon per Employee Evaluator</h1>
+          <p className="text-sm uppercase text-slate-500 dark:text-slate-400 font-semibold tracking-wider">
+            EPIC-30 · ESG Sustainability
+          </p>
+          <h1 className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
+            Carbon per Employee Evaluator
+          </h1>
           <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
-            Compute corporate carbon intensity (tCO2e per FTE) and benchmark emissions profiles across scopes.
+            Compute corporate carbon intensity (tCO2e per FTE) and benchmark emissions profiles
+            across scopes. All calculations are persisted to the database.
           </p>
         </header>
 
@@ -71,10 +99,12 @@ export default function CarbonPerEmployeePage() {
 
         <div className="grid gap-6 md:grid-cols-2">
           {/* Calculator Form */}
-          <section className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
+          <section className="rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm">
             <div className="flex items-center gap-2 mb-4 border-b border-slate-100 dark:border-slate-800 pb-3">
               <Leaf className="w-5 h-5 text-emerald-600 dark:text-emerald-400" />
-              <h2 className="font-bold text-slate-900 dark:text-white">Emissions Intensity Inputs</h2>
+              <h2 className="font-bold text-slate-900 dark:text-white">
+                Emissions Intensity Inputs
+              </h2>
             </div>
             <form onSubmit={calculate} className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
@@ -146,7 +176,7 @@ export default function CarbonPerEmployeePage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full rounded-lg bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-600 text-white font-semibold py-2.5 text-sm shadow transition-colors"
+                className="w-full rounded-lg bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-700 dark:hover:bg-emerald-600 text-white font-semibold py-2.5 text-sm shadow transition-colors cursor-pointer"
               >
                 {loading ? 'Evaluating...' : 'Evaluate Carbon Intensity'}
               </button>
@@ -154,11 +184,13 @@ export default function CarbonPerEmployeePage() {
           </section>
 
           {/* Results Summary */}
-          <section className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm flex flex-col justify-between">
+          <section className="rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm flex flex-col justify-between">
             <div>
               <div className="flex items-center gap-2 mb-4 border-b border-slate-100 dark:border-slate-800 pb-3">
                 <BarChart3 className="w-5 h-5 text-indigo-500 dark:text-indigo-400" />
-                <h2 className="font-bold text-slate-900 dark:text-white">Intensity Metrics Verdict</h2>
+                <h2 className="font-bold text-slate-900 dark:text-white">
+                  Intensity Metrics Verdict
+                </h2>
               </div>
 
               {verdict ? (
@@ -169,12 +201,14 @@ export default function CarbonPerEmployeePage() {
                       verdict.intensityBand === 'HIGH'
                         ? 'bg-rose-50 dark:bg-rose-950/20 border-rose-200 dark:border-rose-900 text-rose-900 dark:text-rose-200'
                         : verdict.intensityBand === 'LOW'
-                          ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900 text-emerald-900 dark:text-emerald-205'
+                          ? 'bg-emerald-50 dark:bg-emerald-950/20 border-emerald-200 dark:border-emerald-900 text-emerald-900 dark:text-emerald-250'
                           : 'bg-slate-50 dark:bg-slate-800 border-slate-200 dark:border-slate-700 text-slate-800 dark:text-slate-200'
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-xs uppercase font-bold tracking-wider">Verdict Result</span>
+                      <span className="text-xs uppercase font-bold tracking-wider">
+                        Verdict Result
+                      </span>
                       <span
                         className={`px-2 py-0.5 rounded-full text-xs font-bold ${
                           verdict.intensityBand === 'HIGH'
@@ -184,14 +218,17 @@ export default function CarbonPerEmployeePage() {
                               : 'bg-slate-600 text-white'
                         }`}
                       >
-                        {verdict.intensityBand} INTENSITY
+                        {verdict.intensityBand}{' '}
+                        {verdict.intensityBand !== 'NO_BENCHMARK' && 'INTENSITY'}
                       </span>
                     </div>
                     <p className="text-lg font-bold mt-1">
                       {verdict.perEmployeeTco2e} tCO2e per Employee
                     </p>
                     <p className="text-xs opacity-90 mt-1 font-medium">{verdict.reason.en}</p>
-                    <p className="text-xs opacity-90 font-medium" dir="rtl">{verdict.reason.ar}</p>
+                    <p className="text-xs opacity-90 font-medium" dir="rtl">
+                      {verdict.reason.ar}
+                    </p>
                   </div>
 
                   {/* Benchmark Comparison */}
@@ -199,7 +236,13 @@ export default function CarbonPerEmployeePage() {
                     <div className="space-y-2">
                       <div className="flex items-center justify-between text-xs font-bold text-slate-600 dark:text-slate-400">
                         <span>Comparison vs. Benchmark Target</span>
-                        <span className={verdict.vsBenchmarkPct > 0 ? 'text-rose-600 dark:text-rose-455' : 'text-emerald-600 dark:text-emerald-400'}>
+                        <span
+                          className={
+                            verdict.vsBenchmarkPct > 0
+                              ? 'text-rose-600 dark:text-rose-455'
+                              : 'text-emerald-600 dark:text-emerald-400'
+                          }
+                        >
                           {verdict.vsBenchmarkPct > 0
                             ? `+${verdict.vsBenchmarkPct}% Above`
                             : `${verdict.vsBenchmarkPct}% Below`}
@@ -210,7 +253,9 @@ export default function CarbonPerEmployeePage() {
                           className={`h-full rounded-full transition-all duration-500 ${
                             verdict.vsBenchmarkPct > 0 ? 'bg-rose-500' : 'bg-emerald-500'
                           }`}
-                          style={{ width: `${Math.min(100, Math.max(10, 100 + verdict.vsBenchmarkPct))}%` }}
+                          style={{
+                            width: `${Math.min(100, Math.max(10, 100 + verdict.vsBenchmarkPct))}%`,
+                          }}
                         />
                       </div>
                     </div>
@@ -219,11 +264,17 @@ export default function CarbonPerEmployeePage() {
                   {/* Metrics Breakdown Grid */}
                   <div className="grid grid-cols-2 gap-4 pt-2">
                     <div className="bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-lg p-3 text-center">
-                      <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500">Total Emissions</span>
-                      <p className="text-base font-bold text-slate-800 dark:text-slate-200 mt-1">{verdict.totalEmissionsTco2e} tCO2e</p>
+                      <span className="text-[10px] uppercase font-bold text-slate-450 dark:text-slate-500">
+                        Total Emissions
+                      </span>
+                      <p className="text-base font-bold text-slate-800 dark:text-slate-200 mt-1">
+                        {verdict.totalEmissionsTco2e} tCO2e
+                      </p>
                     </div>
                     <div className="bg-slate-50 dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-lg p-3 text-center">
-                      <span className="text-[10px] uppercase font-bold text-slate-400 dark:text-slate-500">Scope 1 / 2 / 3 Breakdown</span>
+                      <span className="text-[10px] uppercase font-bold text-slate-450 dark:text-slate-500">
+                        Scope 1 / 2 / 3 Breakdown
+                      </span>
                       <p className="text-xs font-bold text-slate-800 dark:text-slate-200 mt-1.5">
                         {verdict.scope1Pct}% / {verdict.scope2Pct}% / {verdict.scope3Pct}%
                       </p>
@@ -231,14 +282,14 @@ export default function CarbonPerEmployeePage() {
                   </div>
                 </div>
               ) : (
-                <div className="flex flex-col items-center justify-center py-12 text-slate-400 dark:text-slate-500 text-sm gap-2">
+                <div className="flex flex-col items-center justify-center py-12 text-slate-450 dark:text-slate-500 text-sm gap-2">
                   <Leaf className="w-8 h-8 text-slate-300 dark:text-slate-700" />
                   <p>Enter data and run the calculator to view evaluation results.</p>
                 </div>
               )}
             </div>
             {verdict && (
-              <div className="border-t border-slate-100 dark:border-slate-800 pt-4 mt-6 text-[10px] text-slate-400 dark:text-slate-500 text-center">
+              <div className="border-t border-slate-100 dark:border-slate-800 pt-4 mt-6 text-[10px] text-slate-400 dark:text-slate-555 text-center">
                 Calculated on demand in accordance with the Greenhouse Gas (GHG) Protocol.
               </div>
             )}

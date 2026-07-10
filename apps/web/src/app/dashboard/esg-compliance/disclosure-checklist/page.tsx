@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BookOpen, CheckSquare, Square, CheckCircle2, ShieldX, Calendar } from 'lucide-react';
 
 interface DisclosureInput {
@@ -62,6 +62,21 @@ export default function DisclosureChecklistPage() {
   const [verdict, setVerdict] = useState<any>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const res = await fetch('/api/v1/esg-compliance/sustainability?action=disclosure');
+        const data = await res.json();
+        if (data.success && data.data?.disclosures) {
+          setDisclosures(data.data.disclosures);
+        }
+      } catch (err) {
+        console.error('Failed to load disclosures', err);
+      }
+    }
+    loadData();
+  }, []);
 
   const toggleFiled = (index: number) => {
     setDisclosures(
@@ -135,7 +150,7 @@ export default function DisclosureChecklistPage() {
           </h1>
           <p className="text-sm text-slate-600 dark:text-slate-400 mt-1">
             Track mandatory governance, diversity, and environmental reporting submissions against
-            corporate cadences.
+            corporate cadences. All changes are saved to the database.
           </p>
         </header>
 
@@ -148,7 +163,7 @@ export default function DisclosureChecklistPage() {
         <div className="grid gap-6 md:grid-cols-3">
           {/* Disclosure List Board */}
           <div className="md:col-span-2 flex flex-col gap-4">
-            <section className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden flex flex-col">
+            <section className="rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-sm overflow-hidden flex flex-col">
               <div className="p-4 border-b border-slate-100 dark:border-slate-850 flex items-center justify-between">
                 <div className="flex items-center gap-2">
                   <BookOpen className="w-5 h-5 text-indigo-500" />
@@ -159,7 +174,7 @@ export default function DisclosureChecklistPage() {
                 <button
                   onClick={evaluate}
                   disabled={loading}
-                  className="rounded-lg bg-slate-900 hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 text-white font-medium px-4 py-1.5 text-xs shadow transition-colors"
+                  className="rounded-lg bg-slate-900 hover:bg-slate-800 dark:bg-slate-800 dark:hover:bg-slate-700 text-white font-medium px-4 py-1.5 text-xs shadow transition-colors cursor-pointer"
                 >
                   {loading ? 'Evaluating...' : 'Evaluate Checklist'}
                 </button>
@@ -228,10 +243,10 @@ export default function DisclosureChecklistPage() {
                               />
                             </div>
                           ) : (
-                            <span className="text-slate-400 dark:text-slate-500 font-mono">—</span>
+                            <span className="text-slate-400 dark:text-slate-550 font-mono">—</span>
                           )}
                         </td>
-                        <td className="px-4 py-3 font-semibold text-slate-600 dark:text-slate-450">
+                        <td className="px-4 py-3 font-semibold text-slate-600 dark:text-slate-455">
                           {d.cadenceDays ? `${d.cadenceDays}d` : 'None'}
                         </td>
                       </tr>
@@ -244,7 +259,7 @@ export default function DisclosureChecklistPage() {
 
           {/* Checklist Verdict Column */}
           <div className="md:col-span-1">
-            <section className="rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm h-full flex flex-col justify-between">
+            <section className="rounded-xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-5 shadow-sm h-full flex flex-col justify-between">
               <div>
                 <h2 className="text-sm font-bold text-slate-950 dark:text-white border-b border-slate-100 dark:border-slate-800 pb-2 mb-4">
                   Checklist Evaluation
@@ -325,7 +340,7 @@ export default function DisclosureChecklistPage() {
               </div>
 
               {verdict && (
-                <div className="border-t border-slate-100 dark:border-slate-800 pt-4 mt-6 text-[10px] text-slate-400 dark:text-slate-500 text-center">
+                <div className="border-t border-slate-100 dark:border-slate-800 pt-4 mt-6 text-[10px] text-slate-400 dark:text-slate-555 text-center">
                   Evaluation logs checked against active ESG disclosure cycles.
                 </div>
               )}
