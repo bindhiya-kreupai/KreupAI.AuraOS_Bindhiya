@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { DataPage, ExportMenu, ErrorState, Skeleton } from '@aura/ui/components/ui';
 import type { Column, ExportFormat } from '@aura/ui/components/ui';
-import { Shield, ShieldOff, UserCog, RefreshCw, AlertCircle } from 'lucide-react';
+import { Shield, ShieldOff, UserCog, RefreshCw, AlertCircle, AlertTriangle } from 'lucide-react';
 
 interface Role {
   id: string;
@@ -62,10 +62,22 @@ interface Notification {
   message: string;
 }
 
+function RoleFetcher({ userId, onFetch }: { userId: string; onFetch: (id: string) => void }) {
+  const fetchedRef = useRef(new Set<string>());
+  useEffect(() => {
+    if (!fetchedRef.current.has(userId)) {
+      fetchedRef.current.add(userId);
+      onFetch(userId);
+    }
+  }, [userId, onFetch]);
+  return null;
+}
+
 export default function UsersPage() {
   const [data, setData] = useState<User[]>([]);
   const [tenants, setTenants] = useState<Tenant[]>([]);
   const [roles, setRoles] = useState<Role[]>([]);
+  const [rolesError, setRolesError] = useState<string | null>(null);
   const [userRoles, setUserRoles] = useState<Record<string, UserRole[]>>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -111,7 +123,13 @@ export default function UsersPage() {
 
       if (rolesRes.ok) {
         const json = await rolesRes.json();
-        if (json.success) setRoles(json.data);
+        if (json.success) {
+          setRoles(json.data);
+          setRolesError(null);
+        }
+      } else {
+        const json = await rolesRes.json().catch(() => ({}));
+        setRolesError(json.error || `Failed to load roles (${rolesRes.status})`);
       }
     } catch (error: any) {
       setError(error.message || 'Network error while fetching data');
@@ -369,6 +387,7 @@ export default function UsersPage() {
 
     return (
       <div className="space-y-5">
+        {isUpdate && record.id && <RoleFetcher userId={record.id} onFetch={fetchUserRoles} />}
         <div className="grid grid-cols-2 gap-4">
           <div>
             <label className="block text-xs font-medium text-silver-mist mb-1">First Name</label>
@@ -473,6 +492,13 @@ export default function UsersPage() {
           <label className="block text-xs font-medium text-silver-mist mb-2">
             Role Assignments
           </label>
+
+          {rolesError && (
+            <div className="flex items-center gap-2 px-3 py-2 bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-700/50 rounded-lg text-xs text-amber-700 dark:text-amber-400 mb-3">
+              <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
+              <span>Could not load available roles: {rolesError}</span>
+            </div>
+          )}
 
           {isUpdate ? (
             <>

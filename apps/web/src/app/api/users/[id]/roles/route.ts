@@ -121,11 +121,11 @@ export const POST = withEnhancedAuth(
         return NextResponse.json({ success: false, error: 'User not found' }, { status: 404 });
       }
 
-      // Verify role exists and belongs to tenant
+      // Verify role exists — allow system-wide roles (null tenantId) + tenant-owned roles
       const role = await prisma.role.findFirst({
         where: {
           id: validatedData.roleId,
-          tenantId: user.tenantId,
+          OR: [{ tenantId: null }, { tenantId: user.tenantId }],
           isActive: true,
         },
       });

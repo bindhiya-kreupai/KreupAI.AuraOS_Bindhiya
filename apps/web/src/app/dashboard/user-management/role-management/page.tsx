@@ -1,8 +1,9 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
+import { Shield, ChevronDown, ChevronRight } from 'lucide-react';
 
 interface Role {
   id: string;
@@ -36,9 +37,159 @@ interface RoleApiItem {
   }[];
 }
 
+interface PermissionItem {
+  id: string;
+  resource: string;
+  action: string;
+  description: string | null;
+}
+
 interface Notification {
   type: 'success' | 'error';
   message: string;
+}
+
+function PermissionPicker({
+  selectedIds,
+  onChange,
+  disabled,
+}: {
+  selectedIds: string[];
+  onChange: (ids: string[]) => void;
+  disabled?: boolean;
+}) {
+  const [permissions, setPermissions] = useState<Record<string, PermissionItem[]>>({});
+  const [isLoading, setIsLoading] = useState(true);
+  const [expandedResources, setExpandedResources] = useState<Set<string>>(new Set());
+
+  useEffect(() => {
+    fetch('/api/permissions?grouped=true')
+      .then((res) => res.json())
+      .then((json) => {
+        if (json.success && json.data) {
+          setPermissions(json.data);
+          setExpandedResources(new Set(Object.keys(json.data)));
+        }
+      })
+      .catch(() => {})
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  const toggleResource = (resource: string) => {
+    setExpandedResources((prev) => {
+      const next = new Set(prev);
+      if (next.has(resource)) next.delete(resource);
+      else next.add(resource);
+      return next;
+    });
+  };
+
+  const togglePermission = (id: string) => {
+    if (disabled) return;
+    if (selectedIds.includes(id)) {
+      onChange(selectedIds.filter((i) => i !== id));
+    } else {
+      onChange([...selectedIds, id]);
+    }
+  };
+
+  const toggleAllInResource = (resource: string) => {
+    if (disabled) return;
+    const resourcePermIds = (permissions[resource] || []).map((p) => p.id);
+    const allSelected = resourcePermIds.every((id) => selectedIds.includes(id));
+    if (allSelected) {
+      onChange(selectedIds.filter((id) => !resourcePermIds.includes(id)));
+    } else {
+      onChange([...new Set([...selectedIds, ...resourcePermIds])]);
+    }
+  };
+
+  if (isLoading) {
+    return <div className="text-xs text-silver-mist py-2">Loading permissions...</div>;
+  }
+
+  const resourceKeys = Object.keys(permissions).sort();
+
+  if (resourceKeys.length === 0) {
+    return (
+      <div className="text-xs text-silver-mist py-2">No permissions available in the system.</div>
+    );
+  }
+
+  return (
+    <div className="space-y-1 max-h-64 overflow-y-auto border border-cloud dark:border-nebula-purple/30 rounded-lg p-2">
+      {resourceKeys.map((resource) => {
+        const perms = permissions[resource];
+        const resourcePermIds = perms.map((p) => p.id);
+        const selectedCount = resourcePermIds.filter((id) => selectedIds.includes(id)).length;
+        const allSelected = selectedCount === resourcePermIds.length && resourcePermIds.length > 0;
+        const isExpanded = expandedResources.has(resource);
+
+        return (
+          <div key={resource}>
+            <div
+              className={`flex items-center gap-2 px-2 py-1.5 rounded text-xs cursor-pointer transition-colors ${
+                allSelected
+                  ? 'bg-celestial-indigo/10 text-celestial-indigo'
+                  : 'hover:bg-gray-50 dark:hover:bg-stellar-blue/50 text-ink-black dark:text-pearl'
+              } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+              onClick={() => toggleResource(resource)}
+            >
+              {isExpanded ? (
+                <ChevronDown className="w-3 h-3 flex-shrink-0" />
+              ) : (
+                <ChevronRight className="w-3 h-3 flex-shrink-0" />
+              )}
+              <input
+                type="checkbox"
+                checked={allSelected}
+                onChange={(e) => {
+                  e.stopPropagation();
+                  toggleAllInResource(resource);
+                }}
+                disabled={disabled}
+                className="w-3.5 h-3.5 rounded border-cloud text-celestial-indigo focus:ring-celestial-indigo/50"
+                onClick={(e) => e.stopPropagation()}
+              />
+              <Shield className="w-3 h-3 flex-shrink-0 text-celestial-indigo" />
+              <span className="font-medium flex-1">{resource}</span>
+              <span className="text-[10px] text-silver-mist">
+                {selectedCount}/{perms.length}
+              </span>
+            </div>
+            {isExpanded && (
+              <div className="ml-7 space-y-0.5">
+                {perms.map((perm) => (
+                  <label
+                    key={perm.id}
+                    className={`flex items-center gap-2 px-2 py-1 rounded text-xs cursor-pointer transition-colors ${
+                      selectedIds.includes(perm.id)
+                        ? 'bg-celestial-indigo/5 text-celestial-indigo'
+                        : 'hover:bg-gray-50 dark:hover:bg-stellar-blue/50 text-silver-mist'
+                    } ${disabled ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    <input
+                      type="checkbox"
+                      checked={selectedIds.includes(perm.id)}
+                      onChange={() => togglePermission(perm.id)}
+                      disabled={disabled}
+                      className="w-3.5 h-3.5 rounded border-cloud text-celestial-indigo focus:ring-celestial-indigo/50"
+                    />
+                    <span className="font-mono text-[11px]">{perm.action}</span>
+                    {perm.description && (
+                      <span className="text-[10px] text-silver-mist truncate">
+                        {perm.description}
+                      </span>
+                    )}
+                  </label>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
+    </div>
+  );
 }
 
 export default function RolesPage() {
@@ -246,7 +397,14 @@ export default function RolesPage() {
         onDelete={handleDelete}
         searchKeys={['name', 'code', 'description']}
         addButtonText="Add Role"
-        defaultValues={{ code: '', name: '', description: '', isActive: true, usersCount: 0 }}
+        defaultValues={{
+          code: '',
+          name: '',
+          description: '',
+          isActive: true,
+          usersCount: 0,
+          permissionIds: [],
+        }}
         renderForm={(record, onChange) => (
           <>
             <div>
@@ -306,6 +464,26 @@ export default function RolesPage() {
                 <option value="Active">Active</option>
                 <option value="Inactive">Inactive</option>
               </select>
+            </div>
+            <div>
+              <label className="block text-xs font-medium text-silver-mist mb-1">
+                Permissions
+                {(record.permissionIds?.length || 0) > 0 && (
+                  <span className="ml-1 text-celestial-indigo">
+                    ({record.permissionIds!.length} selected)
+                  </span>
+                )}
+              </label>
+              <PermissionPicker
+                selectedIds={(record.permissionIds as string[]) || []}
+                onChange={(ids) => onChange('permissionIds' as any, ids)}
+                disabled={!!record.isSystem}
+              />
+              {record.isSystem && (
+                <p className="text-[10px] text-silver-mist mt-1">
+                  System role permissions are managed by the system.
+                </p>
+              )}
             </div>
           </>
         )}
