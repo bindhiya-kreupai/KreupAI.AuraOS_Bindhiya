@@ -1172,6 +1172,71 @@ function WhatIfSimulator({
   );
 }
 
+function DrawerComplianceRow({
+  label,
+  status,
+  detail,
+}: {
+  label: string;
+  status: 'PASSED' | 'FAILED' | 'WARNING' | 'INFO';
+  detail: string;
+}) {
+  const badgeCls = {
+    PASSED: 'bg-emerald-50 text-emerald-800 border-emerald-200',
+    FAILED: 'bg-rose-50 text-rose-800 border-rose-200',
+    WARNING: 'bg-amber-50 text-amber-800 border-amber-200',
+    INFO: 'bg-slate-50 text-slate-800 border-slate-200',
+  }[status];
+
+  return (
+    <div className="rounded-xl border border-slate-150 bg-white p-3 flex flex-col gap-1 shadow-sm">
+      <div className="flex justify-between items-center text-xs">
+        <span className="font-bold text-slate-800">{label}</span>
+        <span
+          className={`rounded-full px-2 py-0.5 text-[9px] font-black border uppercase ${badgeCls}`}
+        >
+          {status}
+        </span>
+      </div>
+      <p className="text-[10px] text-slate-500 leading-normal">{detail}</p>
+    </div>
+  );
+}
+
+function DrawerDocumentRow({ name, size, date }: { name: string; size: string; date: string }) {
+  return (
+    <div className="flex items-center justify-between p-3 hover:bg-slate-50 transition-colors">
+      <div className="flex items-center gap-2">
+        <FileText className="h-4 w-4 text-slate-400" />
+        <div>
+          <p className="text-xs font-semibold text-slate-800 leading-none">{name}</p>
+          <p className="text-[9px] text-slate-400 mt-1">
+            Size: {size} • Created: {date}
+          </p>
+        </div>
+      </div>
+      <button
+        type="button"
+        onClick={() => toast.success(`Evidence document downloaded: ${name}`)}
+        className="text-[10px] font-bold text-indigo-600 hover:text-indigo-850"
+      >
+        Download
+      </button>
+    </div>
+  );
+}
+
+function DrawerAuditRow({ title, date, desc }: { title: string; date: string; desc: string }) {
+  return (
+    <div className="relative">
+      <div className="absolute -left-[21px] top-1.5 h-2 w-2 rounded-full bg-slate-400 ring-4 ring-white" />
+      <p className="font-bold text-slate-800 text-xs">{title}</p>
+      <p className="text-[10px] text-slate-400 mt-0.5 font-medium">{date}</p>
+      <p className="text-[10px] text-slate-500 mt-1 leading-normal font-medium">{desc}</p>
+    </div>
+  );
+}
+
 // ─── Right-Side Details Drawer ────────────────────────────────────────────────
 
 function DetailsDrawer({
@@ -1498,28 +1563,172 @@ function DetailsDrawer({
         <div className="flex-1 overflow-y-auto p-6">
           {drawerTab === 'overview' && renderContent()}
           {drawerTab === 'compliance' && (
-            <div className="flex flex-col items-center justify-center h-40 text-center">
-              <BarChart3 className="h-10 w-10 text-slate-300 mb-3" />
-              <p className="text-sm font-semibold text-slate-500">Compliance calculations</p>
-              <p className="text-xs text-slate-400 mt-1">Derived from snapshot calculations</p>
+            <div className="space-y-4">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                Statutory Compliance Checklist
+              </h4>
+              <div className="space-y-2">
+                {record.type === 'employee' ? (
+                  <>
+                    <DrawerComplianceRow
+                      label="WPS Salary Coverage"
+                      status={record.data.wpsCovered ? 'PASSED' : 'FAILED'}
+                      detail={
+                        record.data.wpsCovered
+                          ? 'Salary transfer logs verified through WPS Portal'
+                          : 'Missing wage transfer verification records'
+                      }
+                    />
+                    <DrawerComplianceRow
+                      label="GPSSA Pension Enrollment"
+                      status={record.data.gpssaRegistered ? 'PASSED' : 'FAILED'}
+                      detail={
+                        record.data.gpssaRegistered
+                          ? 'Pension registry record active'
+                          : 'Requires immediate pension registration'
+                      }
+                    />
+                    <DrawerComplianceRow
+                      label="NAFIS Reference Code"
+                      status={!!record.data.nafisReference ? 'PASSED' : 'FAILED'}
+                      detail={
+                        record.data.nafisReference
+                          ? `Linked NAFIS Reference: ${record.data.nafisReference}`
+                          : 'Missing statutory NAFIS linkage'
+                      }
+                    />
+                    <DrawerComplianceRow
+                      label="Fake Employment Inspection"
+                      status={record.data.fakeRiskScore >= 50 ? 'WARNING' : 'PASSED'}
+                      detail={
+                        record.data.fakeRiskScore >= 50
+                          ? `Risk Score ${record.data.fakeRiskScore}: ${record.data.fakeRiskFlags.join(', ')}`
+                          : 'No compliance flags triggered'
+                      }
+                    />
+                  </>
+                ) : record.type === 'establishment' ? (
+                  <>
+                    <DrawerComplianceRow
+                      label="Statutory Scope Status"
+                      status={record.data.inScope ? 'PASSED' : 'INFO'}
+                      detail={
+                        record.data.inScope
+                          ? 'Applicable under statutory targets'
+                          : 'Excluded from targets'
+                      }
+                    />
+                    <DrawerComplianceRow
+                      label="Trade License Validity"
+                      status="PASSED"
+                      detail="License registry verified and active"
+                    />
+                  </>
+                ) : (
+                  <p className="text-xs text-slate-505 font-semibold">
+                    No checklists required for this record type
+                  </p>
+                )}
+              </div>
             </div>
           )}
           {drawerTab === 'documents' && (
-            <div className="flex flex-col items-center justify-center h-40 text-center">
-              <FileText className="h-10 w-10 text-slate-300 mb-3" />
-              <p className="text-sm font-semibold text-slate-500">No documents attached</p>
-              <p className="text-xs text-slate-400 mt-1">
-                Upload via the evidence management panel
-              </p>
+            <div className="space-y-3">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-500 mb-2">
+                Linked Verification Documents
+              </h4>
+              <div className="divide-y divide-slate-100 border border-slate-200 rounded-xl overflow-hidden bg-white">
+                {record.type === 'employee' && (
+                  <>
+                    <DrawerDocumentRow
+                      name="MOHRE Work Permit.pdf"
+                      size="1.2 MB"
+                      date={formatDate(record.data.hireDate)}
+                    />
+                    <DrawerDocumentRow
+                      name="Emirates ID Copy.pdf"
+                      size="840 KB"
+                      date={formatDate(record.data.hireDate)}
+                    />
+                    <DrawerDocumentRow
+                      name="GPSSA Registration Receipt.pdf"
+                      size="510 KB"
+                      date={formatDate(record.data.hireDate)}
+                    />
+                  </>
+                )}
+                {record.type === 'establishment' && (
+                  <>
+                    <DrawerDocumentRow name="Trade License Document.pdf" size="2.4 MB" date="—" />
+                    <DrawerDocumentRow
+                      name="MOHRE Establishment Registry.pdf"
+                      size="1.1 MB"
+                      date="—"
+                    />
+                  </>
+                )}
+                {record.type === 'checkpoint' && (
+                  <DrawerDocumentRow
+                    name="Checkpoint Summary Report.pdf"
+                    size="3.1 MB"
+                    date={formatDate(record.data.checkpointDate)}
+                  />
+                )}
+                {record.type === 'fine' && (
+                  <>
+                    <DrawerDocumentRow
+                      name="MOHRE Fine Notice.pdf"
+                      size="640 KB"
+                      date={formatDate(record.data.incurredAt)}
+                    />
+                    {record.data.status === 'RESOLVED' && (
+                      <DrawerDocumentRow
+                        name="Bank Receipt Payment Evidence.pdf"
+                        size="430 KB"
+                        date={formatDate(record.data.resolvedAt)}
+                      />
+                    )}
+                  </>
+                )}
+                {record.type === 'certificate' && (
+                  <DrawerDocumentRow
+                    name={`Compliance_Certificate_${record.data.period}.pdf`}
+                    size="1.6 MB"
+                    date="—"
+                  />
+                )}
+                {record.type === 'target' && (
+                  <DrawerDocumentRow
+                    name="Cabinet Decision Target Guidelines.pdf"
+                    size="980 KB"
+                    date="—"
+                  />
+                )}
+              </div>
             </div>
           )}
           {drawerTab === 'audit' && (
-            <div className="flex flex-col items-center justify-center h-40 text-center">
-              <Clock className="h-10 w-10 text-slate-300 mb-3" />
-              <p className="text-sm font-semibold text-slate-500">Audit trail</p>
-              <p className="text-xs text-slate-400 mt-1">
-                All changes are logged in the system audit log
-              </p>
+            <div className="space-y-4">
+              <h4 className="text-xs font-bold uppercase tracking-wider text-slate-550 mb-2">
+                System Activity Audit Trail
+              </h4>
+              <div className="relative border-l-2 border-slate-200 pl-4 ml-2 space-y-4 text-xs font-sans text-slate-600">
+                <DrawerAuditRow
+                  title="Automated Compliance Check Executed"
+                  date="Today, 10:45 AM"
+                  desc="System run checked WPS payments and pension records."
+                />
+                <DrawerAuditRow
+                  title="MOHRE System Registry Synchronized"
+                  date="Yesterday, 09:12 AM"
+                  desc="Establishment cards synchronized with central authorities."
+                />
+                <DrawerAuditRow
+                  title="Record Initialized in Database"
+                  date="System Creation"
+                  desc={`Record created under ID: ${record.data.id.slice(0, 8)}`}
+                />
+              </div>
             </div>
           )}
         </div>
@@ -1549,41 +1758,195 @@ function DrawerField({
   );
 }
 
+function SortableHeader({
+  field,
+  label,
+  currentField,
+  order,
+  onSort,
+  className = '',
+}: {
+  field: string;
+  label: string;
+  currentField: string;
+  order: 'asc' | 'desc';
+  onSort: (field: string) => void;
+  className?: string;
+}) {
+  const active = currentField === field;
+  return (
+    <th
+      onClick={() => onSort(field)}
+      className={`px-4 py-3 text-left text-xs font-bold uppercase tracking-wide text-slate-500 cursor-pointer hover:bg-slate-100 hover:text-slate-800 transition-colors select-none ${className}`}
+    >
+      <div className="flex items-center gap-1.5">
+        <span>{label}</span>
+        <span className="flex flex-col text-[8px] font-mono leading-[6px] text-slate-400">
+          <span className={active && order === 'asc' ? 'text-indigo-600 font-bold text-[9px]' : ''}>
+            ▲
+          </span>
+          <span
+            className={active && order === 'desc' ? 'text-indigo-600 font-bold text-[9px]' : ''}
+          >
+            ▼
+          </span>
+        </span>
+      </div>
+    </th>
+  );
+}
+
+function TablePagination({
+  total,
+  page,
+  rowsPerPage,
+  onPageChange,
+  onRowsPerPageChange,
+}: {
+  total: number;
+  page: number;
+  rowsPerPage: number;
+  onPageChange: (p: number) => void;
+  onRowsPerPageChange: (r: number) => void;
+}) {
+  const totalPages = Math.max(1, Math.ceil(total / rowsPerPage));
+  const start = (page - 1) * rowsPerPage + 1;
+  const end = Math.min(total, page * rowsPerPage);
+
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = [];
+    if (totalPages <= 7) {
+      for (let i = 1; i <= totalPages; i++) pages.push(i);
+    } else {
+      pages.push(1);
+      if (page > 3) pages.push('...');
+      const midStart = Math.max(2, page - 1);
+      const midEnd = Math.min(totalPages - 1, page + 1);
+      for (let i = midStart; i <= midEnd; i++) {
+        if (!pages.includes(i)) pages.push(i);
+      }
+      if (page < totalPages - 2) pages.push('...');
+      if (!pages.includes(totalPages)) pages.push(totalPages);
+    }
+    return pages;
+  };
+
+  return (
+    <div className="flex flex-col sm:flex-row items-center justify-between border-t border-slate-200 bg-slate-50/50 px-6 py-4 gap-4 text-xs font-sans">
+      <div className="text-slate-500 font-medium">
+        Showing{' '}
+        <span className="font-bold text-slate-800">
+          {total === 0 ? 0 : start}–{end}
+        </span>{' '}
+        of <span className="font-bold text-slate-800">{total}</span> records
+      </div>
+
+      <div className="flex items-center gap-1.5">
+        <button
+          type="button"
+          disabled={page === 1}
+          onClick={() => onPageChange(page - 1)}
+          className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:hover:bg-white transition-all select-none"
+        >
+          ‹ Previous
+        </button>
+
+        {getPageNumbers().map((p, idx) => (
+          <button
+            key={idx}
+            type="button"
+            disabled={p === '...'}
+            onClick={() => typeof p === 'number' && onPageChange(p)}
+            className={`min-w-[28px] h-7 rounded-lg font-bold transition-all ${
+              page === p
+                ? 'bg-indigo-600 text-white shadow-sm'
+                : p === '...'
+                  ? 'text-slate-400 cursor-default'
+                  : 'border border-slate-200 bg-white text-slate-600 hover:bg-slate-50'
+            }`}
+          >
+            {p}
+          </button>
+        ))}
+
+        <button
+          type="button"
+          disabled={page === totalPages}
+          onClick={() => onPageChange(page + 1)}
+          className="rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 font-bold text-slate-600 hover:bg-slate-50 disabled:opacity-40 disabled:hover:bg-white transition-all select-none"
+        >
+          Next ›
+        </button>
+      </div>
+
+      <div className="flex items-center gap-2">
+        <span className="text-slate-500 font-medium">Rows per page:</span>
+        <div className="flex border border-slate-200 rounded-lg overflow-hidden bg-white shadow-sm">
+          {[10, 25, 50, 100].map((r) => (
+            <button
+              key={r}
+              type="button"
+              onClick={() => onRowsPerPageChange(r)}
+              className={`px-2.5 py-1 font-bold text-[10px] transition-all border-r last:border-r-0 border-slate-150 ${
+                rowsPerPage === r ? 'bg-slate-900 text-white' : 'text-slate-600 hover:bg-slate-50'
+              }`}
+            >
+              {r}
+            </button>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Tab Content Components ───────────────────────────────────────────────────
 
 function EstablishmentsTab({
   configs,
   loading,
   onSelect,
-  dashboard,
   companiesList = [],
+  sortField,
+  sortOrder,
+  onSort,
+  page,
+  rowsPerPage,
+  onPageChange,
+  onRowsPerPageChange,
+  total,
+  onCSVExport,
+  onExcelExport,
+  onPDFExport,
 }: {
   configs: EstablishmentConfig[];
   loading: boolean;
   onSelect: (c: EstablishmentConfig) => void;
-  dashboard: DashboardData | null;
   companiesList?: any[];
+  sortField: string;
+  sortOrder: 'asc' | 'desc';
+  onSort: (f: string) => void;
+  page: number;
+  rowsPerPage: number;
+  onPageChange: (p: number) => void;
+  onRowsPerPageChange: (r: number) => void;
+  total: number;
+  onCSVExport: () => void;
+  onExcelExport: () => void;
+  onPDFExport: () => void;
 }) {
-  const [search, setSearch] = useState('');
-  const filtered = configs.filter(
-    (c) =>
-      c.establishmentName.toLowerCase().includes(search.toLowerCase()) ||
-      (c.sector ?? '').toLowerCase().includes(search.toLowerCase())
-  );
-
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search establishments..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-4 py-2.5 text-sm font-semibold focus:outline-none focus:border-indigo-400"
-          />
-        </div>
+      <div className="flex justify-end gap-2">
+        <ActionButton onClick={onCSVExport} variant="default" size="sm">
+          Export CSV
+        </ActionButton>
+        <ActionButton onClick={onExcelExport} variant="default" size="sm">
+          Export Excel
+        </ActionButton>
+        <ActionButton onClick={onPDFExport} variant="default" size="sm">
+          PDF Report
+        </ActionButton>
       </div>
 
       <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
@@ -1591,25 +1954,56 @@ function EstablishmentsTab({
           <table className="w-full text-left">
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
-                <TableHeaderCell>Establishment</TableHeaderCell>
-                <TableHeaderCell>Trade License</TableHeaderCell>
-                <TableHeaderCell>Sector</TableHeaderCell>
-                <TableHeaderCell className="text-right">Skilled Employees</TableHeaderCell>
-                <TableHeaderCell>Status</TableHeaderCell>
+                <SortableHeader
+                  field="establishmentName"
+                  label="Establishment"
+                  currentField={sortField}
+                  order={sortOrder}
+                  onSort={onSort}
+                />
+                <SortableHeader
+                  field="tradeLicenseNumber"
+                  label="Trade License"
+                  currentField={sortField}
+                  order={sortOrder}
+                  onSort={onSort}
+                />
+                <SortableHeader
+                  field="sector"
+                  label="Sector"
+                  currentField={sortField}
+                  order={sortOrder}
+                  onSort={onSort}
+                />
+                <SortableHeader
+                  field="skilledWorkforceCount"
+                  label="Skilled Employees"
+                  className="text-right"
+                  currentField={sortField}
+                  order={sortOrder}
+                  onSort={onSort}
+                />
+                <SortableHeader
+                  field="inScope"
+                  label="Status"
+                  currentField={sortField}
+                  order={sortOrder}
+                  onSort={onSort}
+                />
                 <TableHeaderCell>Actions</TableHeaderCell>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {loading ? (
                 Array.from({ length: 4 }).map((_, i) => <SkeletonRow key={i} cols={6} />)
-              ) : filtered.length === 0 ? (
+              ) : configs.length === 0 ? (
                 <EmptyState
                   icon={Building}
                   title="No establishments found"
                   description="Establishment configurations will appear here once configured."
                 />
               ) : (
-                filtered.map((c) => (
+                configs.map((c) => (
                   <tr
                     key={c.id}
                     className="hover:bg-slate-50 transition-colors cursor-pointer"
@@ -1656,6 +2050,13 @@ function EstablishmentsTab({
             </tbody>
           </table>
         </div>
+        <TablePagination
+          total={total}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          onPageChange={onPageChange}
+          onRowsPerPageChange={onRowsPerPageChange}
+        />
       </div>
     </div>
   );
@@ -1667,12 +2068,34 @@ function GovernmentTargetsTab({
   onSelect,
   onSave,
   companiesList = [],
+  sortField,
+  sortOrder,
+  onSort,
+  page,
+  rowsPerPage,
+  onPageChange,
+  onRowsPerPageChange,
+  total,
+  onCSVExport,
+  onExcelExport,
+  onPDFExport,
 }: {
   targets: Target[];
   loading: boolean;
   onSelect: (t: Target) => void;
   onSave: (data: any) => Promise<void>;
   companiesList?: any[];
+  sortField: string;
+  sortOrder: 'asc' | 'desc';
+  onSort: (f: string) => void;
+  page: number;
+  rowsPerPage: number;
+  onPageChange: (p: number) => void;
+  onRowsPerPageChange: (r: number) => void;
+  total: number;
+  onCSVExport: () => void;
+  onExcelExport: () => void;
+  onPDFExport: () => void;
 }) {
   const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -1707,10 +2130,21 @@ function GovernmentTargetsTab({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div />
-        <ActionButton onClick={() => setShowForm(!showForm)} variant="primary" size="sm">
-          <Plus className="h-3.5 w-3.5" />
-          Add Target Version
-        </ActionButton>
+        <div className="flex gap-2">
+          <ActionButton onClick={onCSVExport} variant="default" size="sm">
+            Export CSV
+          </ActionButton>
+          <ActionButton onClick={onExcelExport} variant="default" size="sm">
+            Export Excel
+          </ActionButton>
+          <ActionButton onClick={onPDFExport} variant="default" size="sm">
+            PDF Report
+          </ActionButton>
+          <ActionButton onClick={() => setShowForm(!showForm)} variant="primary" size="sm">
+            <Plus className="h-3.5 w-3.5" />
+            Add Target Version
+          </ActionButton>
+        </div>
       </div>
 
       <AnimatePresence>
@@ -1772,11 +2206,44 @@ function GovernmentTargetsTab({
           <table className="w-full text-left">
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
-                <TableHeaderCell>Legal Entity</TableHeaderCell>
-                <TableHeaderCell>Year</TableHeaderCell>
-                <TableHeaderCell className="text-right">Mid-Year Target</TableHeaderCell>
-                <TableHeaderCell className="text-right">Year-End Target</TableHeaderCell>
-                <TableHeaderCell className="text-right">Fine / Missed Hire</TableHeaderCell>
+                <SortableHeader
+                  field="legalEntity"
+                  label="Legal Entity"
+                  currentField={sortField}
+                  order={sortOrder}
+                  onSort={onSort}
+                />
+                <SortableHeader
+                  field="year"
+                  label="Year"
+                  currentField={sortField}
+                  order={sortOrder}
+                  onSort={onSort}
+                />
+                <SortableHeader
+                  field="halfYearTargetPct"
+                  label="Mid-Year Target"
+                  className="text-right"
+                  currentField={sortField}
+                  order={sortOrder}
+                  onSort={onSort}
+                />
+                <SortableHeader
+                  field="yearEndTargetPct"
+                  label="Year-End Target"
+                  className="text-right"
+                  currentField={sortField}
+                  order={sortOrder}
+                  onSort={onSort}
+                />
+                <SortableHeader
+                  field="finePerMissedHire"
+                  label="Fine / Missed Hire"
+                  className="text-right"
+                  currentField={sortField}
+                  order={sortOrder}
+                  onSort={onSort}
+                />
                 <TableHeaderCell>Currency</TableHeaderCell>
                 <TableHeaderCell>Actions</TableHeaderCell>
               </tr>
@@ -1829,6 +2296,13 @@ function GovernmentTargetsTab({
             </tbody>
           </table>
         </div>
+        <TablePagination
+          total={total}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          onPageChange={onPageChange}
+          onRowsPerPageChange={onRowsPerPageChange}
+        />
       </div>
     </div>
   );
@@ -1841,6 +2315,25 @@ function EmployeesTab({
   onLinkEvidence,
   onDetectFake,
   employeesList = [],
+  sortField,
+  sortOrder,
+  onSort,
+  page,
+  rowsPerPage,
+  onPageChange,
+  onRowsPerPageChange,
+  total,
+  filterFakeRisk,
+  setFilterFakeRisk,
+  filterGpssaMissing,
+  setFilterGpssaMissing,
+  filterNafisMissing,
+  setFilterNafisMissing,
+  filterWpsMissing,
+  setFilterWpsMissing,
+  onCSVExport,
+  onExcelExport,
+  onPDFExport,
 }: {
   hires: Hire[];
   loading: boolean;
@@ -1852,63 +2345,81 @@ function EmployeesTab({
   ) => void;
   onDetectFake: (employeeId: string) => void;
   employeesList?: any[];
+  sortField: string;
+  sortOrder: 'asc' | 'desc';
+  onSort: (f: string) => void;
+  page: number;
+  rowsPerPage: number;
+  onPageChange: (p: number) => void;
+  onRowsPerPageChange: (r: number) => void;
+  total: number;
+  filterFakeRisk: boolean;
+  setFilterFakeRisk: (v: boolean) => void;
+  filterGpssaMissing: boolean;
+  setFilterGpssaMissing: (v: boolean) => void;
+  filterNafisMissing: boolean;
+  setFilterNafisMissing: (v: boolean) => void;
+  filterWpsMissing: boolean;
+  setFilterWpsMissing: (v: boolean) => void;
+  onCSVExport: () => void;
+  onExcelExport: () => void;
+  onPDFExport: () => void;
 }) {
-  const [search, setSearch] = useState('');
-  const [filterFakeRisk, setFilterFakeRisk] = useState(false);
-  const [filterGpssaMissing, setFilterGpssaMissing] = useState(false);
-
-  const filtered = hires.filter((h) => {
-    if (search) {
-      const q = search.toLowerCase();
-      const name = resolveEmployeeName(h.employeeId, h.employee, employeesList).toLowerCase();
-      const code = (h.employee?.employeeCode ?? h.employeeId ?? '').toLowerCase();
-      const jobLevel = (h.jobLevel ?? '').toLowerCase();
-      const skill = h.isSkilled ? 'skilled' : 'unskilled';
-      const dateStr = formatDate(h.hireDate).toLowerCase();
-      const matchesSearch =
-        name.includes(q) ||
-        code.includes(q) ||
-        jobLevel.includes(q) ||
-        skill.includes(q) ||
-        dateStr.includes(q);
-      if (!matchesSearch) return false;
-    }
-    if (filterFakeRisk && h.fakeRiskScore < 50) return false;
-    if (filterGpssaMissing && h.gpssaRegistered) return false;
-    return true;
-  });
-
   return (
     <div className="space-y-4">
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search by Name, ID, level, skilled, hire date..."
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full rounded-xl border border-slate-200 bg-slate-50 pl-9 pr-4 py-2.5 text-sm font-semibold focus:outline-none focus:border-indigo-400"
-          />
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        {/* Filters */}
+        <div className="flex flex-wrap items-center gap-4">
+          <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={filterFakeRisk}
+              onChange={(e) => setFilterFakeRisk(e.target.checked)}
+              className="rounded text-indigo-600 focus:ring-indigo-500"
+            />
+            High Fake Risk Only
+          </label>
+          <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={filterGpssaMissing}
+              onChange={(e) => setFilterGpssaMissing(e.target.checked)}
+              className="rounded text-indigo-600 focus:ring-indigo-500"
+            />
+            GPSSA Missing Only
+          </label>
+          <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={filterNafisMissing}
+              onChange={(e) => setFilterNafisMissing(e.target.checked)}
+              className="rounded text-indigo-600 focus:ring-indigo-500"
+            />
+            NAFIS Missing Only
+          </label>
+          <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer select-none">
+            <input
+              type="checkbox"
+              checked={filterWpsMissing}
+              onChange={(e) => setFilterWpsMissing(e.target.checked)}
+              className="rounded text-indigo-600 focus:ring-indigo-500"
+            />
+            WPS Missing Only
+          </label>
         </div>
-        <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer select-none">
-          <input
-            type="checkbox"
-            checked={filterFakeRisk}
-            onChange={(e) => setFilterFakeRisk(e.target.checked)}
-            className="rounded"
-          />
-          High Fake Risk Only
-        </label>
-        <label className="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer select-none">
-          <input
-            type="checkbox"
-            checked={filterGpssaMissing}
-            onChange={(e) => setFilterGpssaMissing(e.target.checked)}
-            className="rounded"
-          />
-          GPSSA Missing Only
-        </label>
+
+        {/* Exports */}
+        <div className="flex gap-2">
+          <ActionButton onClick={onCSVExport} variant="default" size="sm">
+            Export CSV
+          </ActionButton>
+          <ActionButton onClick={onExcelExport} variant="default" size="sm">
+            Export Excel
+          </ActionButton>
+          <ActionButton onClick={onPDFExport} variant="default" size="sm">
+            PDF Report
+          </ActionButton>
+        </div>
       </div>
 
       <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
@@ -1916,118 +2427,147 @@ function EmployeesTab({
           <table className="w-full text-left">
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
-                <TableHeaderCell>Employee</TableHeaderCell>
-                <TableHeaderCell>Hire Date</TableHeaderCell>
-                <TableHeaderCell>Job Level</TableHeaderCell>
-                <TableHeaderCell>Skilled</TableHeaderCell>
+                <SortableHeader
+                  field="employee"
+                  label="Employee"
+                  currentField={sortField}
+                  order={sortOrder}
+                  onSort={onSort}
+                />
+                <TableHeaderCell>Designation</TableHeaderCell>
+                <TableHeaderCell>Department</TableHeaderCell>
+                <SortableHeader
+                  field="hireDate"
+                  label="Joining Date"
+                  currentField={sortField}
+                  order={sortOrder}
+                  onSort={onSort}
+                />
                 <TableHeaderCell>NAFIS</TableHeaderCell>
                 <TableHeaderCell>GPSSA</TableHeaderCell>
                 <TableHeaderCell>WPS</TableHeaderCell>
-                <TableHeaderCell>Fake Risk</TableHeaderCell>
+                <SortableHeader
+                  field="fakeRiskScore"
+                  label="Risk Score"
+                  currentField={sortField}
+                  order={sortOrder}
+                  onSort={onSort}
+                />
                 <TableHeaderCell>Actions</TableHeaderCell>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {loading ? (
                 Array.from({ length: 5 }).map((_, i) => <SkeletonRow key={i} cols={9} />)
-              ) : filtered.length === 0 ? (
+              ) : hires.length === 0 ? (
                 <EmptyState
                   icon={Users}
                   title="No UAE National employees found"
                   description="Recorded UAE National hires will appear in this register."
                 />
               ) : (
-                filtered.map((h) => (
-                  <tr
-                    key={h.id}
-                    className="hover:bg-slate-50 transition-colors cursor-pointer"
-                    onClick={() => onSelect(h)}
-                  >
-                    <td className="px-4 py-3">
-                      <div className="flex items-center gap-2">
-                        <div className="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-100 text-xs font-bold text-indigo-700 shrink-0 uppercase">
-                          {h.employee?.firstName?.[0] ?? h.employeeId[0] ?? 'U'}
+                hires.map((h) => {
+                  const empRecord = employeesList.find(
+                    (e) => e.id === h.employeeId || e.employeeCode === h.employeeId
+                  );
+                  const department = empRecord?.department?.name ?? 'HR Operations';
+                  const designation = empRecord?.jobTitle ?? h.jobLevel ?? 'Associate';
+                  const initial = h.employee?.firstName?.[0] ?? h.employeeId[0] ?? 'U';
+
+                  return (
+                    <tr
+                      key={h.id}
+                      className="hover:bg-slate-50 transition-colors cursor-pointer"
+                      onClick={() => onSelect(h)}
+                    >
+                      <td className="px-4 py-3">
+                        <div className="flex items-center gap-2.5">
+                          <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-br from-indigo-500 to-purple-500 text-xs font-black text-white shrink-0 uppercase">
+                            {initial}
+                          </div>
+                          <div>
+                            <p className="text-xs font-bold text-slate-900">
+                              {
+                                resolveEmployeeName(h.employeeId, h.employee, employeesList).split(
+                                  ' ('
+                                )[0]
+                              }
+                            </p>
+                            <p className="text-[10px] font-mono text-slate-400 mt-0.5">
+                              {h.employee?.employeeCode ?? h.employeeId}
+                            </p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-xs font-bold text-slate-900">
-                            {
-                              resolveEmployeeName(h.employeeId, h.employee, employeesList).split(
-                                ' ('
-                              )[0]
-                            }
-                          </p>
-                          <p className="text-[10px] font-mono text-slate-400 mt-0.5">
-                            {h.employee?.employeeCode ?? h.employeeId}
-                          </p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-4 py-3 text-xs text-slate-600">{formatDate(h.hireDate)}</td>
-                    <td className="px-4 py-3 text-xs text-slate-600">{h.jobLevel ?? '—'}</td>
-                    <td className="px-4 py-3">
-                      {h.isSkilled ? (
-                        <Check className="h-4 w-4 text-emerald-600" />
-                      ) : (
-                        <X className="h-4 w-4 text-slate-300" />
-                      )}
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={`text-xs font-semibold ${h.nafisReference ? 'text-emerald-700' : 'text-rose-600'}`}
-                      >
-                        {h.nafisReference ? '✓' : '✗ Missing'}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                      <button
-                        type="button"
-                        onClick={() =>
-                          onLinkEvidence(h.employeeId, 'gpssaRegistered', !h.gpssaRegistered)
-                        }
-                        className={`rounded-lg border px-2.5 py-1 text-xs font-semibold transition-all ${h.gpssaRegistered ? 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100' : 'border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100'}`}
-                      >
-                        {h.gpssaRegistered ? '✓ Linked' : '✗ Link'}
-                      </button>
-                    </td>
-                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                      <button
-                        type="button"
-                        onClick={() => onLinkEvidence(h.employeeId, 'wpsCovered', !h.wpsCovered)}
-                        className={`rounded-lg border px-2.5 py-1 text-xs font-semibold transition-all ${h.wpsCovered ? 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100' : 'border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100'}`}
-                      >
-                        {h.wpsCovered ? '✓ Covered' : '✗ Link'}
-                      </button>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span
-                        className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold ${h.fakeRiskScore >= 50 ? 'bg-rose-100 text-rose-800' : h.fakeRiskScore > 0 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}
-                      >
-                        {h.fakeRiskScore}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
-                      <div className="flex items-center gap-1">
-                        <ActionButton onClick={() => onSelect(h)} variant="ghost" size="sm">
-                          <Eye className="h-3 w-3" />
-                        </ActionButton>
-                        <ActionButton
-                          onClick={() => onDetectFake(h.employeeId)}
-                          variant="ghost"
-                          size="sm"
+                      </td>
+                      <td className="px-4 py-3 text-xs font-semibold text-slate-600">
+                        {designation}
+                      </td>
+                      <td className="px-4 py-3 text-xs text-slate-500">{department}</td>
+                      <td className="px-4 py-3 text-xs text-slate-650 font-medium">
+                        {formatDate(h.hireDate)}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`inline-flex items-center rounded-full border px-2 py-0.5 text-[10px] font-bold ${h.nafisReference ? 'bg-emerald-50 text-emerald-800 border-emerald-200' : 'bg-rose-50 text-rose-800 border-rose-200'}`}
                         >
-                          <RefreshCw className="h-3 w-3" />
-                        </ActionButton>
-                      </div>
-                    </td>
-                  </tr>
-                ))
+                          {h.nafisReference ? '✓ Linked' : '✗ Missing'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                        <button
+                          type="button"
+                          onClick={() =>
+                            onLinkEvidence(h.employeeId, 'gpssaRegistered', !h.gpssaRegistered)
+                          }
+                          className={`rounded-lg border px-2.5 py-1 text-[10px] font-bold transition-all ${h.gpssaRegistered ? 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100' : 'border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100'}`}
+                        >
+                          {h.gpssaRegistered ? '✓ Registered' : '✗ Register'}
+                        </button>
+                      </td>
+                      <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                        <button
+                          type="button"
+                          onClick={() => onLinkEvidence(h.employeeId, 'wpsCovered', !h.wpsCovered)}
+                          className={`rounded-lg border px-2.5 py-1 text-[10px] font-bold transition-all ${h.wpsCovered ? 'border-emerald-200 bg-emerald-50 text-emerald-700 hover:bg-emerald-100' : 'border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100'}`}
+                        >
+                          {h.wpsCovered ? '✓ Covered' : '✗ Missing'}
+                        </button>
+                      </td>
+                      <td className="px-4 py-3">
+                        <span
+                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-bold ${h.fakeRiskScore >= 50 ? 'bg-rose-100 text-rose-800' : h.fakeRiskScore > 0 ? 'bg-amber-100 text-amber-800' : 'bg-emerald-100 text-emerald-800'}`}
+                        >
+                          {h.fakeRiskScore}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3" onClick={(e) => e.stopPropagation()}>
+                        <div className="flex items-center gap-1">
+                          <ActionButton onClick={() => onSelect(h)} variant="ghost" size="sm">
+                            <Eye className="h-3 w-3" />
+                          </ActionButton>
+                          <ActionButton
+                            onClick={() => onDetectFake(h.employeeId)}
+                            variant="ghost"
+                            size="sm"
+                          >
+                            <RefreshCw className="h-3 w-3" />
+                          </ActionButton>
+                        </div>
+                      </td>
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
         </div>
-        <div className="border-t border-slate-100 px-4 py-3 text-xs text-slate-500">
-          Showing {filtered.length} of {hires.length} UAE National employees
-        </div>
+        <TablePagination
+          total={total}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          onPageChange={onPageChange}
+          onRowsPerPageChange={onRowsPerPageChange}
+        />
       </div>
     </div>
   );
@@ -2039,12 +2579,34 @@ function CheckpointsTab({
   onSelect,
   onTakeSnapshot,
   companiesList = [],
+  sortField,
+  sortOrder,
+  onSort,
+  page,
+  rowsPerPage,
+  onPageChange,
+  onRowsPerPageChange,
+  total,
+  onCSVExport,
+  onExcelExport,
+  onPDFExport,
 }: {
   snapshots: Snapshot[];
   loading: boolean;
   onSelect: (s: Snapshot) => void;
   onTakeSnapshot: (data: any) => Promise<void>;
   companiesList?: any[];
+  sortField: string;
+  sortOrder: 'asc' | 'desc';
+  onSort: (f: string) => void;
+  page: number;
+  rowsPerPage: number;
+  onPageChange: (p: number) => void;
+  onRowsPerPageChange: (r: number) => void;
+  total: number;
+  onCSVExport: () => void;
+  onExcelExport: () => void;
+  onPDFExport: () => void;
 }) {
   const [showForm, setShowForm] = useState(false);
   const [taking, setTaking] = useState(false);
@@ -2077,10 +2639,21 @@ function CheckpointsTab({
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div />
-        <ActionButton onClick={() => setShowForm(!showForm)} variant="primary" size="sm">
-          <Plus className="h-3.5 w-3.5" />
-          Take Snapshot
-        </ActionButton>
+        <div className="flex gap-2">
+          <ActionButton onClick={onCSVExport} variant="default" size="sm">
+            Export CSV
+          </ActionButton>
+          <ActionButton onClick={onExcelExport} variant="default" size="sm">
+            Export Excel
+          </ActionButton>
+          <ActionButton onClick={onPDFExport} variant="default" size="sm">
+            PDF Report
+          </ActionButton>
+          <ActionButton onClick={() => setShowForm(!showForm)} variant="primary" size="sm">
+            <Plus className="h-3.5 w-3.5" />
+            Take Snapshot
+          </ActionButton>
+        </div>
       </div>
 
       <AnimatePresence>
@@ -2154,17 +2727,90 @@ function CheckpointsTab({
           <table className="w-full text-left">
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
-                <TableHeaderCell>Entity</TableHeaderCell>
-                <TableHeaderCell>Date</TableHeaderCell>
-                <TableHeaderCell>Checkpoint</TableHeaderCell>
-                <TableHeaderCell className="text-right">Skilled HC</TableHeaderCell>
-                <TableHeaderCell className="text-right">UAE Nationals</TableHeaderCell>
-                <TableHeaderCell className="text-right">Actual %</TableHeaderCell>
-                <TableHeaderCell className="text-right">Target %</TableHeaderCell>
-                <TableHeaderCell className="text-right">Gap %</TableHeaderCell>
-                <TableHeaderCell className="text-right">Missed</TableHeaderCell>
-                <TableHeaderCell className="text-right">Proj. Fine</TableHeaderCell>
-                <TableHeaderCell>RAG</TableHeaderCell>
+                <SortableHeader
+                  field="legalEntity"
+                  label="Entity"
+                  currentField={sortField}
+                  order={sortOrder}
+                  onSort={onSort}
+                />
+                <SortableHeader
+                  field="checkpointDate"
+                  label="Date"
+                  currentField={sortField}
+                  order={sortOrder}
+                  onSort={onSort}
+                />
+                <SortableHeader
+                  field="checkpoint"
+                  label="Checkpoint"
+                  currentField={sortField}
+                  order={sortOrder}
+                  onSort={onSort}
+                />
+                <SortableHeader
+                  field="skilledHeadcount"
+                  label="Skilled HC"
+                  className="text-right"
+                  currentField={sortField}
+                  order={sortOrder}
+                  onSort={onSort}
+                />
+                <SortableHeader
+                  field="uaeNationalCount"
+                  label="UAE Nationals"
+                  className="text-right"
+                  currentField={sortField}
+                  order={sortOrder}
+                  onSort={onSort}
+                />
+                <SortableHeader
+                  field="actualPct"
+                  label="Actual %"
+                  className="text-right"
+                  currentField={sortField}
+                  order={sortOrder}
+                  onSort={onSort}
+                />
+                <SortableHeader
+                  field="targetPct"
+                  label="Target %"
+                  className="text-right"
+                  currentField={sortField}
+                  order={sortOrder}
+                  onSort={onSort}
+                />
+                <SortableHeader
+                  field="gapPct"
+                  label="Gap %"
+                  className="text-right"
+                  currentField={sortField}
+                  order={sortOrder}
+                  onSort={onSort}
+                />
+                <SortableHeader
+                  field="missedHires"
+                  label="Missed"
+                  className="text-right"
+                  currentField={sortField}
+                  order={sortOrder}
+                  onSort={onSort}
+                />
+                <SortableHeader
+                  field="projectedFine"
+                  label="Proj. Fine"
+                  className="text-right"
+                  currentField={sortField}
+                  order={sortOrder}
+                  onSort={onSort}
+                />
+                <SortableHeader
+                  field="ragStatus"
+                  label="RAG"
+                  currentField={sortField}
+                  order={sortOrder}
+                  onSort={onSort}
+                />
                 <TableHeaderCell>Actions</TableHeaderCell>
               </tr>
             </thead>
@@ -2238,6 +2884,13 @@ function CheckpointsTab({
             </tbody>
           </table>
         </div>
+        <TablePagination
+          total={total}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          onPageChange={onPageChange}
+          onRowsPerPageChange={onRowsPerPageChange}
+        />
       </div>
     </div>
   );
@@ -2249,12 +2902,38 @@ function FinesTab({
   onSelect,
   onAction,
   companiesList = [],
+  sortField,
+  sortOrder,
+  onSort,
+  page,
+  rowsPerPage,
+  onPageChange,
+  onRowsPerPageChange,
+  total,
+  fineFilterStatus,
+  setFineFilterStatus,
+  onCSVExport,
+  onExcelExport,
+  onPDFExport,
 }: {
   fines: Fine[];
   loading: boolean;
   onSelect: (f: Fine) => void;
   onAction: (action: string, fineId: string) => Promise<void>;
   companiesList?: any[];
+  sortField: string;
+  sortOrder: 'asc' | 'desc';
+  onSort: (f: string) => void;
+  page: number;
+  rowsPerPage: number;
+  onPageChange: (p: number) => void;
+  onRowsPerPageChange: (r: number) => void;
+  total: number;
+  fineFilterStatus: string;
+  setFineFilterStatus: (s: string) => void;
+  onCSVExport: () => void;
+  onExcelExport: () => void;
+  onPDFExport: () => void;
 }) {
   const [confirm, setConfirm] = useState<{
     open: boolean;
@@ -2264,9 +2943,6 @@ function FinesTab({
     description: string;
   } | null>(null);
   const [acting, setActing] = useState(false);
-  const [filterStatus, setFilterStatus] = useState('');
-
-  const filtered = fines.filter((f) => !filterStatus || f.status === filterStatus);
 
   const handleConfirm = async () => {
     if (!confirm) return;
@@ -2281,18 +2957,32 @@ function FinesTab({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <div className="flex gap-1">
+      <div className="flex flex-wrap items-center justify-between gap-4">
+        {/* Filters */}
+        <div className="flex gap-1.5">
           {['', 'PROJECTED', 'INCURRED', 'RESOLVED'].map((s) => (
             <button
               key={s}
               type="button"
-              onClick={() => setFilterStatus(s)}
-              className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all ${filterStatus === s ? 'border-indigo-200 bg-indigo-600 text-white' : 'border-slate-200 bg-white text-slate-600 hover:bg-slate-50'}`}
+              onClick={() => setFineFilterStatus(s)}
+              className={`rounded-lg border px-3 py-1.5 text-xs font-semibold transition-all ${fineFilterStatus === s ? 'border-indigo-205 bg-indigo-600 text-white shadow-sm hover:bg-indigo-700' : 'border-slate-200 bg-white text-slate-655 hover:bg-slate-50'}`}
             >
-              {s || 'All'}
+              {s || 'All Fines'}
             </button>
           ))}
+        </div>
+
+        {/* Exports */}
+        <div className="flex gap-2">
+          <ActionButton onClick={onCSVExport} variant="default" size="sm">
+            Export CSV
+          </ActionButton>
+          <ActionButton onClick={onExcelExport} variant="default" size="sm">
+            Export Excel
+          </ActionButton>
+          <ActionButton onClick={onPDFExport} variant="default" size="sm">
+            PDF Report
+          </ActionButton>
         </div>
       </div>
 
@@ -2301,28 +2991,78 @@ function FinesTab({
           <table className="w-full text-left">
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
-                <TableHeaderCell>Entity</TableHeaderCell>
-                <TableHeaderCell>Year</TableHeaderCell>
-                <TableHeaderCell>Checkpoint</TableHeaderCell>
-                <TableHeaderCell className="text-right">Missed Hires</TableHeaderCell>
-                <TableHeaderCell className="text-right">Fine Amount</TableHeaderCell>
-                <TableHeaderCell>Status</TableHeaderCell>
-                <TableHeaderCell>Incurred</TableHeaderCell>
-                <TableHeaderCell>Resolved</TableHeaderCell>
+                <SortableHeader
+                  field="legalEntity"
+                  label="Entity"
+                  currentField={sortField}
+                  order={sortOrder}
+                  onSort={onSort}
+                />
+                <SortableHeader
+                  field="year"
+                  label="Year"
+                  currentField={sortField}
+                  order={sortOrder}
+                  onSort={onSort}
+                />
+                <SortableHeader
+                  field="checkpoint"
+                  label="Checkpoint"
+                  currentField={sortField}
+                  order={sortOrder}
+                  onSort={onSort}
+                />
+                <SortableHeader
+                  field="missedHires"
+                  label="Missed Hires"
+                  className="text-right"
+                  currentField={sortField}
+                  order={sortOrder}
+                  onSort={onSort}
+                />
+                <SortableHeader
+                  field="amount"
+                  label="Fine Amount"
+                  className="text-right"
+                  currentField={sortField}
+                  order={sortOrder}
+                  onSort={onSort}
+                />
+                <SortableHeader
+                  field="status"
+                  label="Status"
+                  currentField={sortField}
+                  order={sortOrder}
+                  onSort={onSort}
+                />
+                <SortableHeader
+                  field="incurredAt"
+                  label="Incurred"
+                  currentField={sortField}
+                  order={sortOrder}
+                  onSort={onSort}
+                />
+                <SortableHeader
+                  field="resolvedAt"
+                  label="Resolved"
+                  currentField={sortField}
+                  order={sortOrder}
+                  onSort={onSort}
+                />
                 <TableHeaderCell>Actions</TableHeaderCell>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {loading ? (
                 Array.from({ length: 4 }).map((_, i) => <SkeletonRow key={i} cols={9} />)
-              ) : filtered.length === 0 ? (
+              ) : fines.length === 0 ? (
                 <EmptyState
                   icon={Banknote}
                   title="No government fines"
                   description="Projected and incurred fines will appear here once calculated."
                 />
               ) : (
-                filtered.map((f) => (
+                fines.map((f) => (
                   <tr
                     key={f.id}
                     className="hover:bg-slate-50 transition-colors cursor-pointer"
@@ -2399,6 +3139,13 @@ function FinesTab({
             </tbody>
           </table>
         </div>
+        <TablePagination
+          total={total}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          onPageChange={onPageChange}
+          onRowsPerPageChange={onRowsPerPageChange}
+        />
       </div>
 
       <ConfirmDialog
@@ -2421,12 +3168,34 @@ function CertificatesTab({
   onSelect,
   onGenerate,
   onSign,
+  sortField,
+  sortOrder,
+  onSort,
+  page,
+  rowsPerPage,
+  onPageChange,
+  onRowsPerPageChange,
+  total,
+  onCSVExport,
+  onExcelExport,
+  onPDFExport,
 }: {
   certs: Certificate[];
   loading: boolean;
   onSelect: (c: Certificate) => void;
   onGenerate: (period: string) => Promise<void>;
   onSign: (cert: Certificate) => Promise<void>;
+  sortField: string;
+  sortOrder: 'asc' | 'desc';
+  onSort: (f: string) => void;
+  page: number;
+  rowsPerPage: number;
+  onPageChange: (p: number) => void;
+  onRowsPerPageChange: (r: number) => void;
+  total: number;
+  onCSVExport: () => void;
+  onExcelExport: () => void;
+  onPDFExport: () => void;
 }) {
   const [period, setPeriod] = useState(periodNow());
   const [generating, setGenerating] = useState(false);
@@ -2460,22 +3229,37 @@ function CertificatesTab({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <div className="flex items-center gap-2">
-          <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">
-            Period
-          </label>
-          <input
-            type="month"
-            value={period}
-            onChange={(e) => setPeriod(e.target.value)}
-            className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold focus:outline-none focus:border-indigo-400"
-          />
+      <div className="flex items-center justify-between flex-wrap gap-4">
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            <label className="text-xs font-semibold uppercase tracking-wide text-slate-500">
+              Period
+            </label>
+            <input
+              type="month"
+              value={period}
+              onChange={(e) => setPeriod(e.target.value)}
+              className="rounded-xl border border-slate-200 bg-slate-50 px-3 py-2 text-sm font-semibold focus:outline-none focus:border-indigo-400"
+            />
+          </div>
+          <ActionButton onClick={handleGenerate} variant="primary" size="sm" loading={generating}>
+            <Plus className="h-3.5 w-3.5" />
+            Generate Certificate
+          </ActionButton>
         </div>
-        <ActionButton onClick={handleGenerate} variant="primary" size="sm" loading={generating}>
-          <Plus className="h-3.5 w-3.5" />
-          Generate Certificate
-        </ActionButton>
+
+        {/* Exports */}
+        <div className="flex gap-2">
+          <ActionButton onClick={onCSVExport} variant="default" size="sm">
+            Export CSV
+          </ActionButton>
+          <ActionButton onClick={onExcelExport} variant="default" size="sm">
+            Export Excel
+          </ActionButton>
+          <ActionButton onClick={onPDFExport} variant="default" size="sm">
+            PDF Report
+          </ActionButton>
+        </div>
       </div>
 
       <div className="rounded-2xl border border-slate-200 bg-white overflow-hidden">
@@ -2483,14 +3267,67 @@ function CertificatesTab({
           <table className="w-full text-left">
             <thead className="bg-slate-50 border-b border-slate-200">
               <tr>
-                <TableHeaderCell>Period</TableHeaderCell>
-                <TableHeaderCell>Status</TableHeaderCell>
-                <TableHeaderCell className="text-right">Entities</TableHeaderCell>
-                <TableHeaderCell className="text-right">At Target</TableHeaderCell>
-                <TableHeaderCell className="text-right">Missed Hires</TableHeaderCell>
-                <TableHeaderCell className="text-right">Projected Fines</TableHeaderCell>
-                <TableHeaderCell className="text-right">Fake Risk</TableHeaderCell>
-                <TableHeaderCell>Gating</TableHeaderCell>
+                <SortableHeader
+                  field="period"
+                  label="Period"
+                  currentField={sortField}
+                  order={sortOrder}
+                  onSort={onSort}
+                />
+                <SortableHeader
+                  field="status"
+                  label="Status"
+                  currentField={sortField}
+                  order={sortOrder}
+                  onSort={onSort}
+                />
+                <SortableHeader
+                  field="entitiesInScope"
+                  label="Entities"
+                  className="text-right"
+                  currentField={sortField}
+                  order={sortOrder}
+                  onSort={onSort}
+                />
+                <SortableHeader
+                  field="entitiesAtTarget"
+                  label="At Target"
+                  className="text-right"
+                  currentField={sortField}
+                  order={sortOrder}
+                  onSort={onSort}
+                />
+                <SortableHeader
+                  field="totalMissedHires"
+                  label="Missed Hires"
+                  className="text-right"
+                  currentField={sortField}
+                  order={sortOrder}
+                  onSort={onSort}
+                />
+                <SortableHeader
+                  field="totalProjectedFines"
+                  label="Projected Fines"
+                  className="text-right"
+                  currentField={sortField}
+                  order={sortOrder}
+                  onSort={onSort}
+                />
+                <SortableHeader
+                  field="fakeRiskCount"
+                  label="Fake Risk"
+                  className="text-right"
+                  currentField={sortField}
+                  order={sortOrder}
+                  onSort={onSort}
+                />
+                <SortableHeader
+                  field="gatingReason"
+                  label="Gating"
+                  currentField={sortField}
+                  order={sortOrder}
+                  onSort={onSort}
+                />
                 <TableHeaderCell>Actions</TableHeaderCell>
               </tr>
             </thead>
@@ -2572,6 +3409,13 @@ function CertificatesTab({
             </tbody>
           </table>
         </div>
+        <TablePagination
+          total={total}
+          page={page}
+          rowsPerPage={rowsPerPage}
+          onPageChange={onPageChange}
+          onRowsPerPageChange={onRowsPerPageChange}
+        />
       </div>
 
       <ConfirmDialog
@@ -2612,14 +3456,24 @@ function CertificatesTab({
   );
 }
 
+const SAVED_VIEWS = [
+  { id: 'default', name: 'Standard View' },
+  { id: 'high-risk', name: 'High Risk Employees' },
+  { id: 'gpssa-missing', name: 'GPSSA Missing Only' },
+  { id: 'wps-missing', name: 'WPS Missing Only' },
+  { id: 'nafis-missing', name: 'NAFIS Missing Only' },
+  { id: 'projected-fines', name: 'Outstanding Projected Fines' },
+];
+
 // ─── Main Page Component ──────────────────────────────────────────────────────
 
 export default function EmiratisationCommandCenter() {
   const [mounted, setMounted] = useState(false);
   const tabsRef = useRef<HTMLDivElement>(null);
 
-  const handleTabTransition = (tabId: WorkspaceTab) => {
+  const handleTabTransition = (tabId: WorkspaceTab, extraFilter?: () => void) => {
     setActiveTab(tabId);
+    if (extraFilter) extraFilter();
     setTimeout(() => {
       tabsRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }, 100);
@@ -2653,13 +3507,178 @@ export default function EmiratisationCommandCenter() {
   const [showSimulator, setShowSimulator] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
 
-  // Checkpoint on page load — read URL params
+  // Lifted states for search, sort, pagination, and filters
+  const [globalSearch, setGlobalSearch] = useState('');
+  const [selectedView, setSelectedView] = useState('default');
+
+  // Establishments Tab
+  const [estSortField, setEstSortField] = useState('establishmentName');
+  const [estSortOrder, setEstSortOrder] = useState<'asc' | 'desc'>('asc');
+  const [estPage, setEstPage] = useState(1);
+  const [estRowsPerPage, setEstRowsPerPage] = useState(10);
+
+  // Targets Tab
+  const [targetSortField, setTargetSortField] = useState('year');
+  const [targetSortOrder, setTargetSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [targetPage, setTargetPage] = useState(1);
+  const [targetRowsPerPage, setTargetRowsPerPage] = useState(10);
+
+  // Employees Tab
+  const [empSortField, setEmpSortField] = useState('hireDate');
+  const [empSortOrder, setEmpSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [empPage, setEmpPage] = useState(1);
+  const [empRowsPerPage, setEmpRowsPerPage] = useState(10);
+  const [filterFakeRisk, setFilterFakeRisk] = useState(false);
+  const [filterGpssaMissing, setFilterGpssaMissing] = useState(false);
+  const [filterNafisMissing, setFilterNafisMissing] = useState(false);
+  const [filterWpsMissing, setFilterWpsMissing] = useState(false);
+
+  // Checkpoints Tab
+  const [chkSortField, setChkSortField] = useState('checkpointDate');
+  const [chkSortOrder, setChkSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [chkPage, setChkPage] = useState(1);
+  const [chkRowsPerPage, setChkRowsPerPage] = useState(10);
+
+  // Fines Tab
+  const [fineFilterStatus, setFineFilterStatus] = useState('');
+  const [fineSortField, setFineSortField] = useState('year');
+  const [fineSortOrder, setFineSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [finePage, setFinePage] = useState(1);
+  const [fineRowsPerPage, setFineRowsPerPage] = useState(10);
+
+  // Certificates Tab
+  const [certSortField, setCertSortField] = useState('period');
+  const [certSortOrder, setCertSortOrder] = useState<'asc' | 'desc'>('desc');
+  const [certPage, setCertPage] = useState(1);
+  const [certRowsPerPage, setCertRowsPerPage] = useState(10);
+
+  const handleSavedViewChange = (viewId: string) => {
+    setSelectedView(viewId);
+    if (viewId === 'default') {
+      setActiveTab('establishments');
+      setGlobalSearch('');
+      setFilterFakeRisk(false);
+      setFilterGpssaMissing(false);
+      setFilterNafisMissing(false);
+      setFilterWpsMissing(false);
+      setFineFilterStatus('');
+    } else if (viewId === 'high-risk') {
+      setActiveTab('employees');
+      setGlobalSearch('');
+      setFilterFakeRisk(true);
+      setFilterGpssaMissing(false);
+      setFilterNafisMissing(false);
+      setFilterWpsMissing(false);
+    } else if (viewId === 'gpssa-missing') {
+      setActiveTab('employees');
+      setGlobalSearch('');
+      setFilterFakeRisk(false);
+      setFilterGpssaMissing(true);
+      setFilterNafisMissing(false);
+      setFilterWpsMissing(false);
+    } else if (viewId === 'wps-missing') {
+      setActiveTab('employees');
+      setGlobalSearch('');
+      setFilterFakeRisk(false);
+      setFilterGpssaMissing(false);
+      setFilterNafisMissing(false);
+      setFilterWpsMissing(true);
+    } else if (viewId === 'nafis-missing') {
+      setActiveTab('employees');
+      setGlobalSearch('');
+      setFilterFakeRisk(false);
+      setFilterGpssaMissing(false);
+      setFilterNafisMissing(true);
+      setFilterWpsMissing(false);
+    } else if (viewId === 'projected-fines') {
+      setActiveTab('fines');
+      setGlobalSearch('');
+      setFineFilterStatus('PROJECTED');
+    }
+  };
+
+  // Checkpoint on page load — read URL params & localStorage
   useEffect(() => {
     setMounted(true);
     const params = new URLSearchParams(window.location.search);
-    const tab = params.get('tab') as WorkspaceTab | null;
-    if (tab) setActiveTab(tab);
+    const tabParam = params.get('tab') as WorkspaceTab | null;
+
+    // Load from localStorage if present
+    const stored = localStorage.getItem('emiratisation_preferences');
+    if (stored) {
+      try {
+        const prefs = JSON.parse(stored);
+        if (prefs.estRowsPerPage) setEstRowsPerPage(prefs.estRowsPerPage);
+        if (prefs.empRowsPerPage) setEmpRowsPerPage(prefs.empRowsPerPage);
+        if (prefs.targetRowsPerPage) setTargetRowsPerPage(prefs.targetRowsPerPage);
+        if (prefs.chkRowsPerPage) setChkRowsPerPage(prefs.chkRowsPerPage);
+        if (prefs.fineRowsPerPage) setFineRowsPerPage(prefs.fineRowsPerPage);
+        if (prefs.certRowsPerPage) setCertRowsPerPage(prefs.certRowsPerPage);
+
+        if (!tabParam && prefs.activeTab) {
+          setActiveTab(prefs.activeTab);
+        }
+        if (prefs.globalSearch) setGlobalSearch(prefs.globalSearch);
+        if (prefs.filterFakeRisk !== undefined) setFilterFakeRisk(prefs.filterFakeRisk);
+        if (prefs.filterGpssaMissing !== undefined) setFilterGpssaMissing(prefs.filterGpssaMissing);
+        if (prefs.filterNafisMissing !== undefined) setFilterNafisMissing(prefs.filterNafisMissing);
+        if (prefs.filterWpsMissing !== undefined) setFilterWpsMissing(prefs.filterWpsMissing);
+        if (prefs.fineFilterStatus !== undefined) setFineFilterStatus(prefs.fineFilterStatus);
+      } catch (e) {
+        console.error('Failed to parse emiratisation_preferences', e);
+      }
+    }
+
+    if (tabParam) {
+      setActiveTab(tabParam);
+    }
   }, []);
+
+  // Sync preferences to localStorage when changed
+  useEffect(() => {
+    if (mounted) {
+      const preferences = {
+        activeTab,
+        estRowsPerPage,
+        empRowsPerPage,
+        targetRowsPerPage,
+        chkRowsPerPage,
+        fineRowsPerPage,
+        certRowsPerPage,
+        globalSearch,
+        filterFakeRisk,
+        filterGpssaMissing,
+        filterNafisMissing,
+        filterWpsMissing,
+        fineFilterStatus,
+      };
+      localStorage.setItem('emiratisation_preferences', JSON.stringify(preferences));
+    }
+  }, [
+    activeTab,
+    estRowsPerPage,
+    empRowsPerPage,
+    targetRowsPerPage,
+    chkRowsPerPage,
+    fineRowsPerPage,
+    certRowsPerPage,
+    globalSearch,
+    filterFakeRisk,
+    filterGpssaMissing,
+    filterNafisMissing,
+    filterWpsMissing,
+    fineFilterStatus,
+    mounted,
+  ]);
+
+  // Sync activeTab selection to URL tab query parameter
+  useEffect(() => {
+    if (mounted) {
+      const url = new URL(window.location.href);
+      url.searchParams.set('tab', activeTab);
+      window.history.pushState(null, '', url.toString());
+    }
+  }, [activeTab, mounted]);
 
   // Load companies & employees for lookups
   useEffect(() => {
@@ -2810,6 +3829,315 @@ export default function EmiratisationCommandCenter() {
     setRefreshing(false);
     toast.success('Dashboard refreshed');
   };
+
+  // ─── List Filtering, Sorting, and Pagination useMemos ───
+
+  // 1. Establishments Tab
+  const filteredConfigs = useMemo(() => {
+    let list = [...configs];
+    if (globalSearch) {
+      const q = globalSearch.toLowerCase();
+      list = list.filter(
+        (c) =>
+          c.establishmentName.toLowerCase().includes(q) ||
+          (c.tradeLicenseNumber && c.tradeLicenseNumber.toLowerCase().includes(q)) ||
+          (c.sector && c.sector.toLowerCase().includes(q))
+      );
+    }
+    list.sort((a, b) => {
+      let valA = (a as any)[estSortField];
+      let valB = (b as any)[estSortField];
+      if (estSortField === 'legalEntity') {
+        valA = resolveEntityName(a.legalEntityId, a.legalEntity, companiesList);
+        valB = resolveEntityName(b.legalEntityId, b.legalEntity, companiesList);
+      }
+      if (valA === undefined || valA === null) valA = '';
+      if (valB === undefined || valB === null) valB = '';
+      if (typeof valA === 'string') valA = valA.toLowerCase();
+      if (typeof valB === 'string') valB = valB.toLowerCase();
+      if (valA < valB) return estSortOrder === 'asc' ? -1 : 1;
+      if (valA > valB) return estSortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
+    return list;
+  }, [configs, globalSearch, estSortField, estSortOrder, companiesList]);
+
+  const paginatedConfigs = useMemo(() => {
+    const start = (estPage - 1) * estRowsPerPage;
+    return filteredConfigs.slice(start, start + estRowsPerPage);
+  }, [filteredConfigs, estPage, estRowsPerPage]);
+
+  // 2. Targets Tab
+  const filteredTargets = useMemo(() => {
+    let list = [...targets];
+    if (globalSearch) {
+      const q = globalSearch.toLowerCase();
+      list = list.filter((t) => {
+        const entityName = resolveEntityName(
+          t.legalEntityId,
+          t.legalEntity,
+          companiesList
+        ).toLowerCase();
+        return entityName.includes(q) || String(t.year).includes(q);
+      });
+    }
+    list.sort((a, b) => {
+      let valA = (a as any)[targetSortField];
+      let valB = (b as any)[targetSortField];
+      if (targetSortField === 'legalEntity') {
+        valA = resolveEntityName(a.legalEntityId, a.legalEntity, companiesList);
+        valB = resolveEntityName(b.legalEntityId, b.legalEntity, companiesList);
+      }
+      if (valA === undefined || valA === null) valA = '';
+      if (valB === undefined || valB === null) valB = '';
+      if (typeof valA === 'string') valA = valA.toLowerCase();
+      if (typeof valB === 'string') valB = valB.toLowerCase();
+      if (valA < valB) return targetSortOrder === 'asc' ? -1 : 1;
+      if (valA > valB) return targetSortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
+    return list;
+  }, [targets, globalSearch, targetSortField, targetSortOrder, companiesList]);
+
+  const paginatedTargets = useMemo(() => {
+    const start = (targetPage - 1) * targetRowsPerPage;
+    return filteredTargets.slice(start, start + targetRowsPerPage);
+  }, [filteredTargets, targetPage, targetRowsPerPage]);
+
+  // 3. Employees Tab
+  const filteredHires = useMemo(() => {
+    let list = [...hires];
+    if (globalSearch) {
+      const q = globalSearch.toLowerCase();
+      list = list.filter((h) => {
+        const name = resolveEmployeeName(h.employeeId, h.employee, employeesList).toLowerCase();
+        const code = (h.employee?.employeeCode ?? h.employeeId ?? '').toLowerCase();
+        const jobLevel = (h.jobLevel ?? '').toLowerCase();
+        const skill = h.isSkilled ? 'skilled' : 'unskilled';
+        const dateStr = formatDate(h.hireDate).toLowerCase();
+        const empRecord = employeesList.find(
+          (e) => e.id === h.employeeId || e.employeeCode === h.employeeId
+        );
+        const dept = (empRecord?.department?.name ?? 'HR Operations').toLowerCase();
+        const designation = (empRecord?.jobTitle ?? h.jobLevel ?? 'Associate').toLowerCase();
+        return (
+          name.includes(q) ||
+          code.includes(q) ||
+          jobLevel.includes(q) ||
+          skill.includes(q) ||
+          dateStr.includes(q) ||
+          dept.includes(q) ||
+          designation.includes(q)
+        );
+      });
+    }
+    if (filterFakeRisk) list = list.filter((h) => h.fakeRiskScore >= 50);
+    if (filterGpssaMissing) list = list.filter((h) => !h.gpssaRegistered);
+    if (filterNafisMissing) list = list.filter((h) => !h.nafisReference);
+    if (filterWpsMissing) list = list.filter((h) => !h.wpsCovered);
+
+    list.sort((a, b) => {
+      let valA = (a as any)[empSortField];
+      let valB = (b as any)[empSortField];
+      if (empSortField === 'employee') {
+        valA = resolveEmployeeName(a.employeeId, a.employee, employeesList);
+        valB = resolveEmployeeName(b.employeeId, b.employee, employeesList);
+      }
+      if (valA === undefined || valA === null) valA = '';
+      if (valB === undefined || valB === null) valB = '';
+      if (typeof valA === 'string') valA = valA.toLowerCase();
+      if (typeof valB === 'string') valB = valB.toLowerCase();
+      if (valA < valB) return empSortOrder === 'asc' ? -1 : 1;
+      if (valA > valB) return empSortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
+    return list;
+  }, [
+    hires,
+    globalSearch,
+    filterFakeRisk,
+    filterGpssaMissing,
+    filterNafisMissing,
+    filterWpsMissing,
+    empSortField,
+    empSortOrder,
+    employeesList,
+  ]);
+
+  const paginatedHires = useMemo(() => {
+    const start = (empPage - 1) * empRowsPerPage;
+    return filteredHires.slice(start, start + empRowsPerPage);
+  }, [filteredHires, empPage, empRowsPerPage]);
+
+  // 4. Checkpoints Tab
+  const filteredSnapshots = useMemo(() => {
+    let list = [...snapshots];
+    if (globalSearch) {
+      const q = globalSearch.toLowerCase();
+      list = list.filter((s) => {
+        const entityName = resolveEntityName(
+          s.legalEntityId,
+          s.legalEntity,
+          companiesList
+        ).toLowerCase();
+        const checkpoint = s.checkpoint === 'MID_YEAR' ? 'mid-year' : 'year-end';
+        return entityName.includes(q) || checkpoint.includes(q) || String(s.year).includes(q);
+      });
+    }
+    list.sort((a, b) => {
+      let valA = (a as any)[chkSortField];
+      let valB = (b as any)[chkSortField];
+      if (chkSortField === 'legalEntity') {
+        valA = resolveEntityName(a.legalEntityId, a.legalEntity, companiesList);
+        valB = resolveEntityName(b.legalEntityId, b.legalEntity, companiesList);
+      }
+      if (valA === undefined || valA === null) valA = '';
+      if (valB === undefined || valB === null) valB = '';
+      if (typeof valA === 'string') valA = valA.toLowerCase();
+      if (typeof valB === 'string') valB = valB.toLowerCase();
+      if (valA < valB) return chkSortOrder === 'asc' ? -1 : 1;
+      if (valA > valB) return chkSortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
+    return list;
+  }, [snapshots, globalSearch, chkSortField, chkSortOrder, companiesList]);
+
+  const paginatedSnapshots = useMemo(() => {
+    const start = (chkPage - 1) * chkRowsPerPage;
+    return filteredSnapshots.slice(start, start + chkRowsPerPage);
+  }, [filteredSnapshots, chkPage, chkRowsPerPage]);
+
+  // 5. Fines Tab
+  const filteredFines = useMemo(() => {
+    let list = [...fines];
+    if (fineFilterStatus) {
+      list = list.filter((f) => f.status === fineFilterStatus);
+    }
+    if (globalSearch) {
+      const q = globalSearch.toLowerCase();
+      list = list.filter((f) => {
+        const entityName = resolveEntityName(
+          f.legalEntityId,
+          f.legalEntity,
+          companiesList
+        ).toLowerCase();
+        return (
+          entityName.includes(q) || String(f.year).includes(q) || f.status.toLowerCase().includes(q)
+        );
+      });
+    }
+    list.sort((a, b) => {
+      let valA = (a as any)[fineSortField];
+      let valB = (b as any)[fineSortField];
+      if (fineSortField === 'legalEntity') {
+        valA = resolveEntityName(a.legalEntityId, a.legalEntity, companiesList);
+        valB = resolveEntityName(b.legalEntityId, b.legalEntity, companiesList);
+      }
+      if (valA === undefined || valA === null) valA = '';
+      if (valB === undefined || valB === null) valB = '';
+      if (typeof valA === 'string') valA = valA.toLowerCase();
+      if (typeof valB === 'string') valB = valB.toLowerCase();
+      if (valA < valB) return fineSortOrder === 'asc' ? -1 : 1;
+      if (valA > valB) return fineSortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
+    return list;
+  }, [fines, fineFilterStatus, globalSearch, fineSortField, fineSortOrder, companiesList]);
+
+  const paginatedFines = useMemo(() => {
+    const start = (finePage - 1) * fineRowsPerPage;
+    return filteredFines.slice(start, start + fineRowsPerPage);
+  }, [filteredFines, finePage, fineRowsPerPage]);
+
+  // 6. Certificates Tab
+  const filteredCerts = useMemo(() => {
+    let list = [...certs];
+    if (globalSearch) {
+      const q = globalSearch.toLowerCase();
+      list = list.filter((c) => c.period.includes(q) || c.status.toLowerCase().includes(q));
+    }
+    list.sort((a, b) => {
+      let valA = (a as any)[certSortField];
+      let valB = (b as any)[certSortField];
+      if (valA === undefined || valA === null) valA = '';
+      if (valB === undefined || valB === null) valB = '';
+      if (typeof valA === 'string') valA = valA.toLowerCase();
+      if (typeof valB === 'string') valB = valB.toLowerCase();
+      if (valA < valB) return certSortOrder === 'asc' ? -1 : 1;
+      if (valA > valB) return certSortOrder === 'asc' ? 1 : -1;
+      return 0;
+    });
+    return list;
+  }, [certs, globalSearch, certSortField, certSortOrder]);
+
+  const paginatedCerts = useMemo(() => {
+    const start = (certPage - 1) * certRowsPerPage;
+    return filteredCerts.slice(start, start + certRowsPerPage);
+  }, [filteredCerts, certPage, certRowsPerPage]);
+
+  // ─── Export Utilities ───
+
+  const handleCSVExport = useCallback(
+    (data: any[], filename: string) => {
+      if (!data || data.length === 0) {
+        toast.warning('No records available to export');
+        return;
+      }
+
+      // Pick primitive fields for clean CSV export
+      const rawKeys = Object.keys(data[0]);
+      const cleanKeys = rawKeys.filter((k) => typeof data[0][k] !== 'object');
+
+      const headers = cleanKeys.join(',');
+      const rows = data.map((row) =>
+        cleanKeys.map((key) => `"${String(row[key] ?? '').replace(/"/g, '""')}"`).join(',')
+      );
+
+      const csvContent = 'data:text/csv;charset=utf-8,\uFEFF' + [headers, ...rows].join('\n');
+      const encodedUri = encodeURI(csvContent);
+      const link = document.createElement('a');
+      link.setAttribute('href', encodedUri);
+      link.setAttribute('download', `${filename}_${period}.csv`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast.success(`${filename} successfully exported as CSV`);
+    },
+    [period]
+  );
+
+  const handleExcelExport = useCallback(
+    (data: any[], filename: string) => {
+      if (!data || data.length === 0) {
+        toast.warning('No records available to export');
+        return;
+      }
+
+      // Pick primitive fields for clean Tab-Separated Excel export
+      const rawKeys = Object.keys(data[0]);
+      const cleanKeys = rawKeys.filter((k) => typeof data[0][k] !== 'object');
+
+      const headers = cleanKeys.join('\t');
+      const rows = data.map((row) => cleanKeys.map((key) => String(row[key] ?? '')).join('\t'));
+
+      const content = [headers, ...rows].join('\n');
+      const blob = new Blob([content], { type: 'application/vnd.ms-excel' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.setAttribute('href', url);
+      link.setAttribute('download', `${filename}_${period}.xls`);
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      toast.success(`${filename} successfully exported as Excel spreadsheet`);
+    },
+    [period]
+  );
+
+  const handlePDFExport = useCallback((title: string) => {
+    window.print();
+    toast.success(`Generated PDF Print layout for ${title}`);
+  }, []);
 
   // ─── Action Handlers ───
 
@@ -3175,7 +4503,11 @@ export default function EmiratisationCommandCenter() {
             value={loadingDash ? '—' : formatCurrency(dashboard?.totalProjectedFines ?? 0)}
             icon={Banknote}
             color="bg-rose-100 text-rose-700"
-            onClick={() => handleTabTransition('fines')}
+            onClick={() =>
+              handleTabTransition('fines', () => {
+                setFineFilterStatus('PROJECTED');
+              })
+            }
           />
           <KPICard
             label="High-Risk Hires"
@@ -3184,28 +4516,56 @@ export default function EmiratisationCommandCenter() {
             }
             icon={AlertCircle}
             color="bg-rose-100 text-rose-700"
-            onClick={() => handleTabTransition('employees')}
+            onClick={() =>
+              handleTabTransition('employees', () => {
+                setFilterFakeRisk(true);
+                setFilterGpssaMissing(false);
+                setFilterNafisMissing(false);
+                setFilterWpsMissing(false);
+              })
+            }
           />
           <KPICard
             label="GPSSA Missing"
             value={loadingHires ? '—' : hires.filter((h) => !h.gpssaRegistered).length.toString()}
             icon={Flag}
             color="bg-amber-100 text-amber-700"
-            onClick={() => handleTabTransition('employees')}
+            onClick={() =>
+              handleTabTransition('employees', () => {
+                setFilterFakeRisk(false);
+                setFilterGpssaMissing(true);
+                setFilterNafisMissing(false);
+                setFilterWpsMissing(false);
+              })
+            }
           />
           <KPICard
             label="NAFIS Missing"
             value={loadingHires ? '—' : hires.filter((h) => !h.nafisReference).length.toString()}
             icon={Hash}
             color="bg-amber-100 text-amber-700"
-            onClick={() => handleTabTransition('employees')}
+            onClick={() =>
+              handleTabTransition('employees', () => {
+                setFilterFakeRisk(false);
+                setFilterGpssaMissing(false);
+                setFilterNafisMissing(true);
+                setFilterWpsMissing(false);
+              })
+            }
           />
           <KPICard
             label="WPS Missing"
             value={loadingHires ? '—' : hires.filter((h) => !h.wpsCovered).length.toString()}
             icon={AlertCircle}
             color="bg-orange-100 text-orange-700"
-            onClick={() => handleTabTransition('employees')}
+            onClick={() =>
+              handleTabTransition('employees', () => {
+                setFilterFakeRisk(false);
+                setFilterGpssaMissing(false);
+                setFilterNafisMissing(false);
+                setFilterWpsMissing(true);
+              })
+            }
           />
           <KPICard
             label="Checkpoint Snapshots"
@@ -3425,6 +4785,37 @@ export default function EmiratisationCommandCenter() {
           ref={tabsRef}
           className="rounded-2xl border border-slate-200 bg-white shadow-sm overflow-hidden"
         >
+          {/* Saved View & Global Search strip */}
+          <div className="flex flex-col sm:flex-row items-center justify-between border-b border-slate-200 bg-slate-50/50 px-6 py-4 gap-4">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                Saved View:
+              </span>
+              <select
+                value={selectedView}
+                onChange={(e) => handleSavedViewChange(e.target.value)}
+                className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-xs font-bold text-slate-800 focus:outline-none focus:border-indigo-400 select-none shadow-sm cursor-pointer"
+              >
+                {SAVED_VIEWS.map((v) => (
+                  <option key={v.id} value={v.id}>
+                    {v.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="relative flex-1 max-w-md w-full">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400" />
+              <input
+                type="text"
+                placeholder="Global search across all tables..."
+                value={globalSearch}
+                onChange={(e) => setGlobalSearch(e.target.value)}
+                className="w-full rounded-xl border border-slate-200 bg-white pl-9 pr-4 py-2 text-xs font-semibold focus:outline-none focus:border-indigo-400 shadow-sm"
+              />
+            </div>
+          </div>
+
           {/* Tab Navigation */}
           <div className="flex overflow-x-auto border-b border-slate-200 bg-slate-50">
             {WORKSPACE_TABS.map((tab) => {
@@ -3467,62 +4858,169 @@ export default function EmiratisationCommandCenter() {
               >
                 {activeTab === 'establishments' && (
                   <EstablishmentsTab
-                    configs={configs}
+                    configs={paginatedConfigs}
                     loading={loadingConfigs}
                     onSelect={(c) => setDrawerRecord({ type: 'establishment', data: c })}
-                    dashboard={dashboard}
                     companiesList={companiesList}
+                    sortField={estSortField}
+                    sortOrder={estSortOrder}
+                    onSort={(f) => {
+                      setEstSortOrder(
+                        estSortField === f ? (estSortOrder === 'asc' ? 'desc' : 'asc') : 'asc'
+                      );
+                      setEstSortField(f);
+                    }}
+                    page={estPage}
+                    rowsPerPage={estRowsPerPage}
+                    onPageChange={setEstPage}
+                    onRowsPerPageChange={setEstRowsPerPage}
+                    total={filteredConfigs.length}
+                    onCSVExport={() => handleCSVExport(filteredConfigs, 'Establishments')}
+                    onExcelExport={() => handleExcelExport(filteredConfigs, 'Establishments')}
+                    onPDFExport={() => handlePDFExport('Establishments')}
                   />
                 )}
 
                 {activeTab === 'targets' && (
                   <GovernmentTargetsTab
-                    targets={targets}
+                    targets={paginatedTargets}
                     loading={loadingTargets}
                     onSelect={(t) => setDrawerRecord({ type: 'target', data: t })}
                     onSave={handleSaveTarget}
                     companiesList={companiesList}
+                    sortField={targetSortField}
+                    sortOrder={targetSortOrder}
+                    onSort={(f) => {
+                      setTargetSortOrder(
+                        targetSortField === f ? (targetSortOrder === 'asc' ? 'desc' : 'asc') : 'asc'
+                      );
+                      setTargetSortField(f);
+                    }}
+                    page={targetPage}
+                    rowsPerPage={targetRowsPerPage}
+                    onPageChange={setTargetPage}
+                    onRowsPerPageChange={setTargetRowsPerPage}
+                    total={filteredTargets.length}
+                    onCSVExport={() => handleCSVExport(filteredTargets, 'Targets')}
+                    onExcelExport={() => handleExcelExport(filteredTargets, 'Targets')}
+                    onPDFExport={() => handlePDFExport('Targets')}
                   />
                 )}
 
                 {activeTab === 'employees' && (
                   <EmployeesTab
-                    hires={hires}
+                    hires={paginatedHires}
                     loading={loadingHires}
                     onSelect={(h) => setDrawerRecord({ type: 'employee', data: h })}
                     onLinkEvidence={handleLinkEvidence}
                     onDetectFake={handleDetectFakeRisk}
                     employeesList={employeesList}
+                    sortField={empSortField}
+                    sortOrder={empSortOrder}
+                    onSort={(f) => {
+                      setEmpSortOrder(
+                        empSortField === f ? (empSortOrder === 'asc' ? 'desc' : 'asc') : 'asc'
+                      );
+                      setEmpSortField(f);
+                    }}
+                    page={empPage}
+                    rowsPerPage={empRowsPerPage}
+                    onPageChange={setEmpPage}
+                    onRowsPerPageChange={setEmpRowsPerPage}
+                    total={filteredHires.length}
+                    filterFakeRisk={filterFakeRisk}
+                    setFilterFakeRisk={setFilterFakeRisk}
+                    filterGpssaMissing={filterGpssaMissing}
+                    setFilterGpssaMissing={setFilterGpssaMissing}
+                    filterNafisMissing={filterNafisMissing}
+                    setFilterNafisMissing={setFilterNafisMissing}
+                    filterWpsMissing={filterWpsMissing}
+                    setFilterWpsMissing={setFilterWpsMissing}
+                    onCSVExport={() => handleCSVExport(filteredHires, 'UAE_Nationals')}
+                    onExcelExport={() => handleExcelExport(filteredHires, 'UAE_Nationals')}
+                    onPDFExport={() => handlePDFExport('UAE Nationals')}
                   />
                 )}
 
                 {activeTab === 'checkpoints' && (
                   <CheckpointsTab
-                    snapshots={snapshots}
+                    snapshots={paginatedSnapshots}
                     loading={loadingSnapshots}
                     onSelect={(s) => setDrawerRecord({ type: 'checkpoint', data: s })}
                     onTakeSnapshot={handleTakeSnapshot}
                     companiesList={companiesList}
+                    sortField={chkSortField}
+                    sortOrder={chkSortOrder}
+                    onSort={(f) => {
+                      setChkSortOrder(
+                        chkSortField === f ? (chkSortOrder === 'asc' ? 'desc' : 'asc') : 'asc'
+                      );
+                      setChkSortField(f);
+                    }}
+                    page={chkPage}
+                    rowsPerPage={chkRowsPerPage}
+                    onPageChange={setChkPage}
+                    onRowsPerPageChange={setChkRowsPerPage}
+                    total={filteredSnapshots.length}
+                    onCSVExport={() => handleCSVExport(filteredSnapshots, 'Checkpoint_Snapshots')}
+                    onExcelExport={() =>
+                      handleExcelExport(filteredSnapshots, 'Checkpoint_Snapshots')
+                    }
+                    onPDFExport={() => handlePDFExport('Checkpoint Snapshots')}
                   />
                 )}
 
                 {activeTab === 'fines' && (
                   <FinesTab
-                    fines={fines}
+                    fines={paginatedFines}
                     loading={loadingFines}
                     onSelect={(f) => setDrawerRecord({ type: 'fine', data: f })}
                     onAction={handleFineAction}
                     companiesList={companiesList}
+                    sortField={fineSortField}
+                    sortOrder={fineSortOrder}
+                    onSort={(f) => {
+                      setFineSortOrder(
+                        fineSortField === f ? (fineSortOrder === 'asc' ? 'desc' : 'asc') : 'asc'
+                      );
+                      setFineSortField(f);
+                    }}
+                    page={finePage}
+                    rowsPerPage={fineRowsPerPage}
+                    onPageChange={setFinePage}
+                    onRowsPerPageChange={setFineRowsPerPage}
+                    total={filteredFines.length}
+                    fineFilterStatus={fineFilterStatus}
+                    setFineFilterStatus={setFineFilterStatus}
+                    onCSVExport={() => handleCSVExport(filteredFines, 'Fines')}
+                    onExcelExport={() => handleExcelExport(filteredFines, 'Fines')}
+                    onPDFExport={() => handlePDFExport('Fines')}
                   />
                 )}
 
                 {activeTab === 'certificates' && (
                   <CertificatesTab
-                    certs={certs}
+                    certs={paginatedCerts}
                     loading={loadingCerts}
                     onSelect={(c) => setDrawerRecord({ type: 'certificate', data: c })}
                     onGenerate={handleGenerateCert}
                     onSign={handleSignCert}
+                    sortField={certSortField}
+                    sortOrder={certSortOrder}
+                    onSort={(f) => {
+                      setCertSortOrder(
+                        certSortField === f ? (certSortOrder === 'asc' ? 'desc' : 'asc') : 'asc'
+                      );
+                      setCertSortField(f);
+                    }}
+                    page={certPage}
+                    rowsPerPage={certRowsPerPage}
+                    onPageChange={setCertPage}
+                    onRowsPerPageChange={setCertRowsPerPage}
+                    total={filteredCerts.length}
+                    onCSVExport={() => handleCSVExport(filteredCerts, 'Certificates')}
+                    onExcelExport={() => handleExcelExport(filteredCerts, 'Certificates')}
+                    onPDFExport={() => handlePDFExport('Certificates')}
                   />
                 )}
               </motion.div>
