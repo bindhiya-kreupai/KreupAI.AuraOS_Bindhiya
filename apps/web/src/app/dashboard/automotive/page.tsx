@@ -1,14 +1,10 @@
-"use client";
+'use client';
 
 import React from 'react';
 import { ModuleGrid } from '@/components/dashboard/module-grid';
 
 export default function AutomotivePage() {
-  const features = [
-    'Technician Rostering',
-    'Sales Commissions',
-    'Parts Inventory'
-  ];
+  const features = ['Technician Rostering', 'Sales Commissions', 'Parts Inventory', 'Service'];
 
   return (
     <ModuleGrid
@@ -19,4 +15,3 @@ export default function AutomotivePage() {
     />
   );
 }
-
