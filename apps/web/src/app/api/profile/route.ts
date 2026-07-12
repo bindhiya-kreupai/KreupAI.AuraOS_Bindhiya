@@ -1,18 +1,12 @@
-// @ts-nocheck — Has Prisma schema drift (wrong field/relation names against current schema). Tracked under #29.
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
-import { z } from 'zod';
 import { withAuth } from '@/lib/auth';
-import { ChangePasswordSchema, validationErrorResponse } from '@/lib/validators';
-import { hashPassword, comparePassword } from '@/lib/auth/password';
 import { logger } from '@/lib/logger';
 
 // GET - Fetch current user profile
 export const GET = withAuth(async (request: NextRequest, { user }) => {
   try {
-    // Fetch user profile with employee data
-    // tenant-ok: id from authenticated JWT or tenant-scoped lookup above
     const userProfile = await prisma.user.findUnique({
       where: { id: user.userId },
       select: {
@@ -24,20 +18,17 @@ export const GET = withAuth(async (request: NextRequest, { user }) => {
         lastLogin: true,
         createdAt: true,
         updatedAt: true,
+        firstName: true,
+        lastName: true,
         employee: {
           select: {
             id: true,
-            employeeId: true,
+            employeeCode: true,
             firstName: true,
             lastName: true,
-            dateOfBirth: true,
-            gender: true,
-            maritalStatus: true,
-            nationality: true,
-            personalEmail: true,
-            mobileNumber: true,
-            emergencyContact: true,
-            emergencyContactNumber: true,
+            email: true,
+            joiningDate: true,
+            careerInterests: true,
             company: {
               select: {
                 id: true,
@@ -65,16 +56,34 @@ export const GET = withAuth(async (request: NextRequest, { user }) => {
                 level: true,
               },
             },
-            employmentType: {
+            type: {
+              select: {
+                id: true,
+                name: true,
+                code: true,
+              },
+            },
+            status: {
+              select: {
+                id: true,
+                name: true,
+                code: true,
+              },
+            },
+            location: {
               select: {
                 id: true,
                 name: true,
               },
             },
-            employeeStatus: {
+            address: {
               select: {
                 id: true,
-                name: true,
+                street: true,
+                city: true,
+                state: true,
+                country: true,
+                zipCode: true,
               },
             },
           },
@@ -89,9 +98,26 @@ export const GET = withAuth(async (request: NextRequest, { user }) => {
       );
     }
 
+    const emp = userProfile.employee;
+
+    const profile = {
+      ...userProfile,
+      employee: emp
+        ? {
+            ...emp,
+            jobTitle: emp.jobProfile?.title || '',
+            departmentName: emp.department?.name || '',
+            companyName: emp.company?.name || '',
+            typeName: emp.type?.name || '',
+            statusName: emp.status?.name || '',
+            locationName: emp.location?.name || '',
+          }
+        : null,
+    };
+
     return NextResponse.json({
       success: true,
-      data: userProfile,
+      data: profile,
     });
   } catch (error: any) {
     logger.error('Error fetching profile:', error);
@@ -104,30 +130,6 @@ export const PUT = withAuth(async (request: NextRequest, { user }) => {
   try {
     const body = await request.json();
 
-    // Users can only update limited fields in their profile
-    const allowedFields = [
-      'personalEmail',
-      'mobileNumber',
-      'emergencyContact',
-      'emergencyContactNumber',
-    ];
-    const updateData: any = {};
-
-    for (const field of allowedFields) {
-      if (body[field] !== undefined) {
-        updateData[field] = body[field];
-      }
-    }
-
-    if (Object.keys(updateData).length === 0) {
-      return NextResponse.json(
-        { success: false, error: 'No valid fields to update' },
-        { status: 400 }
-      );
-    }
-
-    // Check if user has employee record
-    // tenant-ok: id from authenticated JWT or tenant-scoped lookup above
     const userWithEmployee = await prisma.user.findUnique({
       where: { id: user.userId },
       select: {
@@ -144,21 +146,40 @@ export const PUT = withAuth(async (request: NextRequest, { user }) => {
       );
     }
 
-    // Update employee profile
-    const updatedEmployee = await prisma.employee.update({
-      where: { id: userWithEmployee.employee.id },
-      data: updateData,
-      select: {
-        id: true,
-        personalEmail: true,
-        mobileNumber: true,
-        emergencyContact: true,
-        emergencyContactNumber: true,
-        updatedAt: true,
-      },
-    });
+    const allowedFields = ['careerInterests'];
+    const updateData: Record<string, any> = {};
 
-    // Create audit log
+    for (const field of allowedFields) {
+      if (body[field] !== undefined) {
+        updateData[field] = body[field];
+      }
+    }
+
+    if (body.firstName !== undefined || body.lastName !== undefined) {
+      await prisma.user.update({
+        where: { id: user.userId },
+        data: {
+          ...(body.firstName !== undefined && { firstName: body.firstName }),
+          ...(body.lastName !== undefined && { lastName: body.lastName }),
+        },
+      });
+
+      await prisma.employee.update({
+        where: { id: userWithEmployee.employee.id },
+        data: {
+          ...(body.firstName !== undefined && { firstName: body.firstName }),
+          ...(body.lastName !== undefined && { lastName: body.lastName }),
+        },
+      });
+    }
+
+    if (Object.keys(updateData).length > 0) {
+      await prisma.employee.update({
+        where: { id: userWithEmployee.employee.id },
+        data: updateData,
+      });
+    }
+
     const ipAddress =
       request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
 
@@ -175,7 +196,7 @@ export const PUT = withAuth(async (request: NextRequest, { user }) => {
 
     return NextResponse.json({
       success: true,
-      data: updatedEmployee,
+      data: { id: userWithEmployee.employee.id },
       message: 'Profile updated successfully',
     });
   } catch (error: any) {
