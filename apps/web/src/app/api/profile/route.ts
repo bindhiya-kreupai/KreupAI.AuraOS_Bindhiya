@@ -29,63 +29,6 @@ export const GET = withAuth(async (request: NextRequest, { user }) => {
             email: true,
             joiningDate: true,
             careerInterests: true,
-            company: {
-              select: {
-                id: true,
-                name: true,
-                code: true,
-              },
-            },
-            department: {
-              select: {
-                id: true,
-                name: true,
-                code: true,
-              },
-            },
-            jobProfile: {
-              select: {
-                id: true,
-                title: true,
-              },
-            },
-            grade: {
-              select: {
-                id: true,
-                name: true,
-                level: true,
-              },
-            },
-            type: {
-              select: {
-                id: true,
-                name: true,
-                code: true,
-              },
-            },
-            status: {
-              select: {
-                id: true,
-                name: true,
-                code: true,
-              },
-            },
-            location: {
-              select: {
-                id: true,
-                name: true,
-              },
-            },
-            address: {
-              select: {
-                id: true,
-                street: true,
-                city: true,
-                state: true,
-                country: true,
-                zipCode: true,
-              },
-            },
           },
         },
       },
@@ -100,17 +43,43 @@ export const GET = withAuth(async (request: NextRequest, { user }) => {
 
     const emp = userProfile.employee;
 
+    let employeeExtra: Record<string, any> = {};
+    if (emp) {
+      try {
+        const fullEmployee = await prisma.employee.findUnique({
+          where: { id: emp.id },
+          select: {
+            company: { select: { id: true, name: true, code: true } },
+            department: { select: { id: true, name: true, code: true } },
+            jobProfile: { select: { id: true, title: true } },
+            grade: { select: { id: true, name: true, level: true } },
+            type: { select: { id: true, name: true, code: true } },
+            status: { select: { id: true, name: true, code: true } },
+            location: { select: { id: true, name: true } },
+          },
+        });
+
+        if (fullEmployee) {
+          employeeExtra = {
+            jobTitle: fullEmployee.jobProfile?.title || '',
+            departmentName: fullEmployee.department?.name || '',
+            companyName: fullEmployee.company?.name || '',
+            typeName: fullEmployee.type?.name || '',
+            statusName: fullEmployee.status?.name || '',
+            locationName: fullEmployee.location?.name || '',
+          };
+        }
+      } catch (innerError: any) {
+        logger.warn('Could not fetch full employee details:', innerError?.message);
+      }
+    }
+
     const profile = {
       ...userProfile,
       employee: emp
         ? {
             ...emp,
-            jobTitle: emp.jobProfile?.title || '',
-            departmentName: emp.department?.name || '',
-            companyName: emp.company?.name || '',
-            typeName: emp.type?.name || '',
-            statusName: emp.status?.name || '',
-            locationName: emp.location?.name || '',
+            ...employeeExtra,
           }
         : null,
     };
@@ -120,8 +89,15 @@ export const GET = withAuth(async (request: NextRequest, { user }) => {
       data: profile,
     });
   } catch (error: any) {
-    logger.error('Error fetching profile:', error);
-    return NextResponse.json({ success: false, error: 'Failed to fetch profile' }, { status: 500 });
+    logger.error('Error fetching profile:', error?.message || error);
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Failed to fetch profile',
+        details: error?.message || String(error),
+      },
+      { status: 500 }
+    );
   }
 });
 
@@ -200,7 +176,7 @@ export const PUT = withAuth(async (request: NextRequest, { user }) => {
       message: 'Profile updated successfully',
     });
   } catch (error: any) {
-    logger.error('Error updating profile:', error);
+    logger.error('Error updating profile:', error?.message || error);
     return NextResponse.json(
       { success: false, error: 'Failed to update profile' },
       { status: 500 }
