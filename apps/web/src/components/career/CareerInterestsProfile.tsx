@@ -7,7 +7,7 @@
 'use client';
 
 import React, { useState, useCallback, useEffect } from 'react';
-import { useCurrentUser } from '@/lib/auth';
+import { useCurrentUser } from '@/lib/auth/AuthProvider';
 import {
   Target,
   Briefcase,

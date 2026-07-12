@@ -17,7 +17,7 @@ import ProfilePhotoUpload from '@/components/profile/ProfilePhotoUpload';
 import ProfileCompletenessIndicator from '@/components/profile/ProfileCompletenessIndicator';
 import CertificationsSelfUpdate from '@/components/skills/CertificationsSelfUpdate';
 import { PersonalInfoService } from '../services';
-import { useCurrentUser } from '@/lib/auth';
+import { useCurrentUser } from '@/lib/auth/AuthProvider';
 
 export default function PersonalInfoPage() {
   const { refresh } = useCurrentUser();
