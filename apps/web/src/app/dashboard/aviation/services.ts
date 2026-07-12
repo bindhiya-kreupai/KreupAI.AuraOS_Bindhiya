@@ -28,10 +28,10 @@ import type {
  */
 export class CabinCrewService {
   private static endpoint = '/industry-aviation/cabin-crew';
-
   static async getAllCrewMembers(): Promise<CrewMemberProfile[]> {
     try {
-      const response = await APIClient.get<unknown>(`${this.endpoint}/members`);
+      const response = await APIClient.get<unknown>(this.endpoint);
+
       return APIClient.unwrapList<CrewMemberProfile>(response, 'crewMembers');
     } catch (_error: any) {
       return [];
@@ -50,29 +50,35 @@ export class CabinCrewService {
   static async createCrewMember(
     memberData: Partial<CrewMemberProfile>
   ): Promise<CrewMemberProfile> {
-    const response = await APIClient.post<{ crewMember: CrewMemberProfile }>(
-      `${this.endpoint}/members`,
-      memberData
-    );
-    return response.crewMember;
-  }
+    const response = await APIClient.post<unknown>(this.endpoint, memberData);
 
+    const crewMember = APIClient.unwrapItem<CrewMemberProfile>(response, 'crewMember');
+
+    if (!crewMember) {
+      throw new Error('Crew member was not returned by the API');
+    }
+
+    return crewMember;
+  }
   static async updateCrewMember(
     crewId: string,
     updates: Partial<CrewMemberProfile>
   ): Promise<CrewMemberProfile> {
-    const response = await APIClient.put<{ crewMember: CrewMemberProfile }>(
-      `${this.endpoint}/members/${crewId}`,
-      updates
-    );
-    return response.crewMember;
+    const response = await APIClient.put<unknown>(`${this.endpoint}/${crewId}`, updates);
+
+    const crewMember = APIClient.unwrapItem<CrewMemberProfile>(response, 'crewMember');
+
+    if (!crewMember) {
+      throw new Error('Updated crew member was not returned by the API');
+    }
+
+    return crewMember;
   }
 
   static async deleteCrewMember(crewId: string): Promise<boolean> {
-    await APIClient.delete(`${this.endpoint}/members/${crewId}`);
+    await APIClient.delete(`${this.endpoint}/${crewId}`);
     return true;
   }
-
   // Flight Assignments
   static async getAllFlightAssignments(): Promise<FlightAssignment[]> {
     try {
@@ -196,7 +202,8 @@ export class PilotTrainingService {
 
   static async getAllPilots(): Promise<PilotProfile[]> {
     try {
-      const response = await APIClient.get<unknown>(`${this.endpoint}/pilots`);
+      const response = await APIClient.get<unknown>(this.endpoint);
+
       return APIClient.unwrapList<PilotProfile>(response, 'pilots');
     } catch (_error: any) {
       return [];
@@ -211,15 +218,17 @@ export class PilotTrainingService {
       return null;
     }
   }
-
   static async createPilot(pilotData: Partial<PilotProfile>): Promise<PilotProfile> {
-    const response = await APIClient.post<{ pilot: PilotProfile }>(
-      `${this.endpoint}/pilots`,
-      pilotData
-    );
-    return response.pilot;
-  }
+    const response = await APIClient.post<unknown>(this.endpoint, pilotData);
 
+    const pilot = APIClient.unwrapItem<PilotProfile>(response, 'pilot');
+
+    if (!pilot) {
+      throw new Error('Pilot training record was not returned by the API');
+    }
+
+    return pilot;
+  }
   static async updatePilot(pilotId: string, updates: Partial<PilotProfile>): Promise<PilotProfile> {
     const response = await APIClient.put<{ pilot: PilotProfile }>(
       `${this.endpoint}/pilots/${pilotId}`,
@@ -386,13 +395,16 @@ export class GroundOperationsService {
   static async createGroundStaff(
     staffData: Partial<GroundStaffMember>
   ): Promise<GroundStaffMember> {
-    const response = await APIClient.post<{ groundStaff: GroundStaffMember }>(
-      `${this.endpoint}/staff`,
-      staffData
-    );
-    return response.groundStaff;
-  }
+    const response = await APIClient.post<unknown>(`${this.endpoint}/staff`, staffData);
 
+    const groundStaff = APIClient.unwrapItem<GroundStaffMember>(response, 'groundStaff');
+
+    if (!groundStaff) {
+      throw new Error('Ground staff record was not returned by the API');
+    }
+
+    return groundStaff;
+  }
   static async updateGroundStaff(
     staffId: string,
     updates: Partial<GroundStaffMember>
@@ -431,11 +443,15 @@ export class GroundOperationsService {
   static async createTurnaround(
     turnaroundData: Partial<TurnaroundAssignment>
   ): Promise<TurnaroundAssignment> {
-    const response = await APIClient.post<{ turnaround: TurnaroundAssignment }>(
-      `${this.endpoint}/turnarounds`,
-      turnaroundData
-    );
-    return response.turnaround;
+    const response = await APIClient.post<unknown>(`${this.endpoint}/turnarounds`, turnaroundData);
+
+    const turnaround = APIClient.unwrapItem<TurnaroundAssignment>(response, 'turnaround');
+
+    if (!turnaround) {
+      throw new Error('Turnaround record was not returned by the API');
+    }
+
+    return turnaround;
   }
 
   static async updateTurnaround(
