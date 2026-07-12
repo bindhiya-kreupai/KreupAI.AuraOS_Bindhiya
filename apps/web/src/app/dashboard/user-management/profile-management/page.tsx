@@ -43,23 +43,30 @@ export default function ProfilePage() {
     if (!profile) return;
     setIsSaving(true);
     try {
+      const firstName = profile.employee?.firstName ?? profile.firstName ?? '';
+      const lastName = profile.employee?.lastName ?? profile.lastName ?? '';
       const res = await fetch('/api/profile', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: profile.id,
-          email: profile.email,
-          firstName: profile.employee?.firstName,
-          lastName: profile.employee?.lastName,
-        }),
+        body: JSON.stringify({ firstName, lastName }),
       });
-      if (res.ok) {
+      const json = await res.json();
+      if (json.success) {
+        setProfile((prev) =>
+          prev
+            ? {
+                ...prev,
+                firstName,
+                lastName,
+                employee: prev.employee ? { ...prev.employee, firstName, lastName } : null,
+              }
+            : prev
+        );
         alert('Profile updated successfully');
       } else {
-        alert('Failed to update profile');
+        alert(json.error || 'Failed to update profile');
       }
     } catch (error: any) {
-      console.error('Error:', error);
       console.error('Error updating profile:', error);
       alert('Error updating profile');
     } finally {
@@ -71,14 +78,13 @@ export default function ProfilePage() {
     if (!profile) return;
     if (field === 'email') {
       setProfile({ ...profile, email: value });
-    } else {
+    } else if (profile.employee) {
       setProfile({
         ...profile,
-        employee: {
-          ...profile.employee!,
-          [field]: value,
-        },
+        employee: { ...profile.employee, [field]: value },
       });
+    } else {
+      setProfile({ ...profile, [field]: value });
     }
   };
 
