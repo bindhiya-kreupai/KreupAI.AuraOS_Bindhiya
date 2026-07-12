@@ -151,23 +151,26 @@ export const PUT = withAuth(async (request: NextRequest, { user }) => {
       }
     }
 
-    const ipAddress =
-      request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
-
-    await prisma.auditLog.create({
-      data: {
-        tenantId: user.tenantId,
-        userId: user.userId,
-        action: 'UPDATE',
-        resourceType: 'Profile',
-        metadata: { description: 'Updated profile information' } as any,
-        ipAddress,
-      },
-    });
+    try {
+      const ipAddress =
+        request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+      await prisma.auditLog.create({
+        data: {
+          tenantId: user.tenantId,
+          userId: user.userId,
+          action: 'UPDATE',
+          resourceType: 'Profile',
+          metadata: { description: 'Updated profile information' } as any,
+          ipAddress,
+        },
+      });
+    } catch {
+      // Audit log failure should not block the response
+    }
 
     return NextResponse.json({
       success: true,
-      data: { id: userWithEmployee.employee.id },
+      data: { id: userWithEmployee?.employee?.id || user.userId },
       message: 'Profile updated successfully',
     });
   } catch (error: any) {
