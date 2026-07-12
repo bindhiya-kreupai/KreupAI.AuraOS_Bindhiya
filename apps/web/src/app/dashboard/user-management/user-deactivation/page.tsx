@@ -41,7 +41,7 @@ export default function UserDeactivationPage() {
     try {
       const [deactivationsRes, usersRes] = await Promise.all([
         fetch('/api/user-deactivation'),
-        fetch('/api/users?limit=500'),
+        fetch('/api/users?limit=100'),
       ]);
 
       if (deactivationsRes.ok) {
