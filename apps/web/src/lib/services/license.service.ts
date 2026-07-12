@@ -1,48 +1,33 @@
-// @ts-nocheck — Stub service with schema drift; not wired to any API route. Tracked under #29 for rewrite.
 import type { ServiceResponse, ListOptions } from './base.service';
 import { BaseService } from './base.service';
-import type { LicenseType, LicenseStatus } from '@prisma/client';
 import { logger } from '@/lib/logger';
 
 export interface CreateLicenseInput {
   name: string;
-  type: LicenseType;
+  type: string;
   total: number;
   used?: number;
-  expiryDate?: Date;
-  vendor?: string;
-  cost?: number;
-  status?: LicenseStatus;
+  status?: string;
 }
 
 export interface UpdateLicenseInput {
   name?: string;
-  type?: LicenseType;
+  type?: string;
   total?: number;
   used?: number;
-  expiryDate?: Date;
-  vendor?: string;
-  cost?: number;
-  status?: LicenseStatus;
+  status?: string;
 }
 
 export interface LicenseQueryOptions extends ListOptions {
   type?: string;
   status?: string;
-  tenantId?: string;
 }
 
-/**
- * License Service
- * Handles all license-related business logic
- */
 export class LicenseService extends BaseService {
   constructor() {
     super('LicenseService');
   }
-  /**
-   * Calculate license utilization metrics
-   */
+
   private calculateUtilization(license: any) {
     const utilization = license.total > 0 ? Math.round((license.used / license.total) * 100) : 0;
     const available = license.total - license.used;
@@ -53,25 +38,14 @@ export class LicenseService extends BaseService {
     };
   }
 
-  /**
-   * List licenses with filters and pagination
-   */
   async listLicenses(options: LicenseQueryOptions): Promise<ServiceResponse> {
     try {
-      const { search, type, status, tenantId, page, limit } = options;
+      const { search, type, status, page, limit } = options;
 
-      const where: any = {};
-
-      // TENANT ISOLATION: Always filter by tenant
-      if (tenantId) {
-        where.tenantId = tenantId;
-      }
+      const where: any = { isDeleted: false };
 
       if (search) {
-        where.name = {
-          contains: search,
-          mode: 'insensitive',
-        };
+        where.name = { contains: search, mode: 'insensitive' };
       }
 
       if (type) {
@@ -92,7 +66,6 @@ export class LicenseService extends BaseService {
         this.prisma.license.count({ where }),
       ]);
 
-      // Add utilization metrics
       const licensesWithUtilization = licenses.map((license: any) =>
         this.calculateUtilization(license)
       );
@@ -104,27 +77,18 @@ export class LicenseService extends BaseService {
       };
     } catch (error: any) {
       logger.error('LicenseService.listLicenses error:', error);
-      return {
-        success: false,
-        error: 'Failed to fetch licenses',
-      };
+      return { success: false, error: 'Failed to fetch licenses' };
     }
   }
 
-  /**
-   * Get license by ID
-   */
   async getLicenseById(licenseId: string): Promise<ServiceResponse> {
     try {
-      const license = await this.prisma.license.findUnique({
-        where: { id: licenseId },
+      const license = await this.prisma.license.findFirst({
+        where: { id: licenseId, isDeleted: false },
       });
 
       if (!license) {
-        return {
-          success: false,
-          error: 'License not found',
-        };
+        return { success: false, error: 'License not found' };
       }
 
       return {
@@ -133,61 +97,52 @@ export class LicenseService extends BaseService {
       };
     } catch (error: any) {
       logger.error('LicenseService.getLicenseById error:', error);
-      return {
-        success: false,
-        error: 'Failed to fetch license',
-      };
+      return { success: false, error: 'Failed to fetch license' };
     }
   }
 
-  /**
-   * Create new license
-   */
   async createLicense(
     input: CreateLicenseInput,
     createdBy: string,
-    ipAddress: string
+    _ipAddress: string
   ): Promise<ServiceResponse> {
     try {
-      // Check if license with same name already exists
-      const existingLicense = await this.prisma.license.findUnique({
-        where: { name: input.name },
+      const existingLicense = await this.prisma.license.findFirst({
+        where: { name: input.name, isDeleted: false },
       });
 
       if (existingLicense) {
-        return {
-          success: false,
-          error: 'License with this name already exists',
-        };
+        return { success: false, error: 'License with this name already exists' };
       }
 
-      // Validate used count doesn't exceed total
       const usedCount = input.used || 0;
       if (usedCount > input.total) {
-        return {
-          success: false,
-          error: 'Used licenses cannot exceed total licenses',
-        };
+        return { success: false, error: 'Used licenses cannot exceed total licenses' };
       }
 
-      // Create license within transaction
       const result = await this.executeTransaction(async (tx) => {
         const newLicense = await tx.license.create({
           data: {
-            ...input,
+            name: input.name,
+            type: input.type,
+            total: input.total,
             used: usedCount,
             status: input.status || 'Active',
+            createdBy,
+            updatedBy: createdBy,
           },
         });
 
-        // Create audit log
         await tx.auditLog.create({
           data: {
-            userId: createdBy,
             action: 'CREATE',
             module: 'License Management',
-            details: `Created license: ${newLicense.name} (${newLicense.total} total)`,
-            ipAddress,
+            resourceType: 'License',
+            resourceId: newLicense.id,
+            metadata: {
+              details: `Created license: ${newLicense.name} (${newLicense.total} total)`,
+            } as any,
+            ipAddress: _ipAddress,
           },
         });
 
@@ -200,74 +155,62 @@ export class LicenseService extends BaseService {
       };
     } catch (error: any) {
       logger.error('LicenseService.createLicense error:', error);
-      return {
-        success: false,
-        error: 'Failed to create license',
-      };
+      return { success: false, error: 'Failed to create license' };
     }
   }
 
-  /**
-   * Update license
-   */
   async updateLicense(
     licenseId: string,
     input: UpdateLicenseInput,
     updatedBy: string,
-    ipAddress: string
+    _ipAddress: string
   ): Promise<ServiceResponse> {
     try {
-      // Check if license exists
-      const existingLicense = await this.prisma.license.findUnique({
-        where: { id: licenseId },
+      const existingLicense = await this.prisma.license.findFirst({
+        where: { id: licenseId, isDeleted: false },
       });
 
       if (!existingLicense) {
-        return {
-          success: false,
-          error: 'License not found',
-        };
+        return { success: false, error: 'License not found' };
       }
 
-      // If name is being updated, check for conflicts
       if (input.name && input.name !== existingLicense.name) {
-        const nameConflict = await this.prisma.license.findUnique({
-          where: { name: input.name },
+        const nameConflict = await this.prisma.license.findFirst({
+          where: { name: input.name, isDeleted: false },
         });
 
         if (nameConflict) {
-          return {
-            success: false,
-            error: 'License name already in use',
-          };
+          return { success: false, error: 'License name already in use' };
         }
       }
 
-      // Validate used count doesn't exceed total
       const newTotal = input.total ?? existingLicense.total;
       const newUsed = input.used ?? existingLicense.used;
       if (newUsed > newTotal) {
-        return {
-          success: false,
-          error: 'Used licenses cannot exceed total licenses',
-        };
+        return { success: false, error: 'Used licenses cannot exceed total licenses' };
       }
 
-      // Update license within transaction
       const result = await this.executeTransaction(async (tx) => {
+        const updateData: any = { updatedBy };
+        if (input.name !== undefined) updateData.name = input.name;
+        if (input.type !== undefined) updateData.type = input.type;
+        if (input.total !== undefined) updateData.total = input.total;
+        if (input.used !== undefined) updateData.used = input.used;
+        if (input.status !== undefined) updateData.status = input.status;
+
         const updatedLicense = await tx.license.update({
           where: { id: licenseId },
-          data: input,
+          data: updateData,
         });
 
-        // Create audit log
         await tx.auditLog.create({
           data: {
-            userId: updatedBy,
             action: 'UPDATE',
             module: 'License Management',
-            details: `Updated license: ${updatedLicense.name}`,
-            ipAddress,
+            resourceType: 'License',
+            resourceId: updatedLicense.id,
+            metadata: { details: `Updated license: ${updatedLicense.name}` } as any,
+            ipAddress: _ipAddress,
           },
         });
 
@@ -280,67 +223,54 @@ export class LicenseService extends BaseService {
       };
     } catch (error: any) {
       logger.error('LicenseService.updateLicense error:', error);
-      return {
-        success: false,
-        error: 'Failed to update license',
-      };
+      return { success: false, error: 'Failed to update license' };
     }
   }
 
-  /**
-   * Delete license (soft delete)
-   */
   async deleteLicense(
     licenseId: string,
     deletedBy: string,
-    ipAddress: string
+    _ipAddress: string
   ): Promise<ServiceResponse> {
     try {
-      const existingLicense = await this.prisma.license.findUnique({
-        where: { id: licenseId },
+      const existingLicense = await this.prisma.license.findFirst({
+        where: { id: licenseId, isDeleted: false },
       });
 
       if (!existingLicense) {
-        return {
-          success: false,
-          error: 'License not found',
-        };
+        return { success: false, error: 'License not found' };
       }
 
-      // Soft delete by updating status
       await this.executeTransaction(async (tx) => {
         await tx.license.update({
           where: { id: licenseId },
-          data: { status: 'Inactive' },
+          data: {
+            status: 'Inactive',
+            isDeleted: true,
+            deletedAt: new Date(),
+            updatedBy: deletedBy,
+          },
         });
 
-        // Create audit log
         await tx.auditLog.create({
           data: {
-            userId: deletedBy,
             action: 'DELETE',
             module: 'License Management',
-            details: `Deleted license: ${existingLicense.name}`,
-            ipAddress,
+            resourceType: 'License',
+            resourceId: licenseId,
+            metadata: { details: `Deleted license: ${existingLicense.name}` } as any,
+            ipAddress: _ipAddress,
           },
         });
       });
 
-      return {
-        success: true,
-      };
+      return { success: true };
     } catch (error: any) {
       logger.error('LicenseService.deleteLicense error:', error);
-      return {
-        success: false,
-        error: 'Failed to delete license',
-      };
+      return { success: false, error: 'Failed to delete license' };
     }
   }
 
-  /**
-   * Allocate license (increment used count)
-   */
   async allocateLicense(
     licenseId: string,
     allocatedBy: string,
@@ -348,37 +278,32 @@ export class LicenseService extends BaseService {
     count: number = 1
   ): Promise<ServiceResponse> {
     try {
-      const license = await this.prisma.license.findUnique({
-        where: { id: licenseId },
+      const license = await this.prisma.license.findFirst({
+        where: { id: licenseId, isDeleted: false },
       });
 
       if (!license) {
-        return {
-          success: false,
-          error: 'License not found',
-        };
+        return { success: false, error: 'License not found' };
       }
 
       const newUsed = license.used + count;
       if (newUsed > license.total) {
-        return {
-          success: false,
-          error: 'Not enough available licenses',
-        };
+        return { success: false, error: 'Not enough available licenses' };
       }
 
       const result = await this.executeTransaction(async (tx) => {
         const updated = await tx.license.update({
           where: { id: licenseId },
-          data: { used: newUsed },
+          data: { used: newUsed, updatedBy: allocatedBy },
         });
 
         await tx.auditLog.create({
           data: {
-            userId: allocatedBy,
             action: 'UPDATE',
             module: 'License Management',
-            details: `Allocated ${count} license(s): ${license.name}`,
+            resourceType: 'License',
+            resourceId: licenseId,
+            metadata: { details: `Allocated ${count} license(s): ${license.name}` } as any,
             ipAddress,
           },
         });
@@ -392,16 +317,10 @@ export class LicenseService extends BaseService {
       };
     } catch (error: any) {
       logger.error('LicenseService.allocateLicense error:', error);
-      return {
-        success: false,
-        error: 'Failed to allocate license',
-      };
+      return { success: false, error: 'Failed to allocate license' };
     }
   }
 
-  /**
-   * Release license (decrement used count)
-   */
   async releaseLicense(
     licenseId: string,
     releasedBy: string,
@@ -409,15 +328,12 @@ export class LicenseService extends BaseService {
     count: number = 1
   ): Promise<ServiceResponse> {
     try {
-      const license = await this.prisma.license.findUnique({
-        where: { id: licenseId },
+      const license = await this.prisma.license.findFirst({
+        where: { id: licenseId, isDeleted: false },
       });
 
       if (!license) {
-        return {
-          success: false,
-          error: 'License not found',
-        };
+        return { success: false, error: 'License not found' };
       }
 
       const newUsed = Math.max(0, license.used - count);
@@ -425,15 +341,16 @@ export class LicenseService extends BaseService {
       const result = await this.executeTransaction(async (tx) => {
         const updated = await tx.license.update({
           where: { id: licenseId },
-          data: { used: newUsed },
+          data: { used: newUsed, updatedBy: releasedBy },
         });
 
         await tx.auditLog.create({
           data: {
-            userId: releasedBy,
             action: 'UPDATE',
             module: 'License Management',
-            details: `Released ${count} license(s): ${license.name}`,
+            resourceType: 'License',
+            resourceId: licenseId,
+            metadata: { details: `Released ${count} license(s): ${license.name}` } as any,
             ipAddress,
           },
         });
@@ -447,13 +364,9 @@ export class LicenseService extends BaseService {
       };
     } catch (error: any) {
       logger.error('LicenseService.releaseLicense error:', error);
-      return {
-        success: false,
-        error: 'Failed to release license',
-      };
+      return { success: false, error: 'Failed to release license' };
     }
   }
 }
 
-// Export singleton instance
 export const licenseService = new LicenseService();

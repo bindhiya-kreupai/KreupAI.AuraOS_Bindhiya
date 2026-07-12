@@ -1,4 +1,4 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
@@ -26,21 +26,17 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
       searchParams
     );
 
-    // Use service layer - include tenantId for tenant isolation
+    // Use service layer
     const result = await licenseService.listLicenses({
       search,
       type,
       status,
-      tenantId: user.tenantId,
       page,
       limit,
     });
 
     if (!result.success) {
-      return NextResponse.json(
-        { success: false, error: result.error },
-        { status: 500 }
-      );
+      return NextResponse.json({ success: false, error: result.error }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -74,22 +70,13 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
 
     // Extract IP address
     const ipAddress =
-      request.headers.get('x-forwarded-for') ||
-      request.headers.get('x-real-ip') ||
-      'unknown';
+      request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
 
     // Use service layer
-    const result = await licenseService.createLicense(
-      validatedData,
-      user.userId,
-      ipAddress
-    );
+    const result = await licenseService.createLicense(validatedData, user.userId, ipAddress);
 
     if (!result.success) {
-      return NextResponse.json(
-        { success: false, error: result.error },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: result.error }, { status: 400 });
     }
 
     return NextResponse.json(
