@@ -4,7 +4,11 @@
  */
 
 export type ComplianceStatus =
-  'compliant' | 'non_compliant' | 'pending_review' | 'under_investigation' | 'resolved';
+  | 'compliant'
+  | 'non_compliant'
+  | 'pending_review'
+  | 'under_investigation'
+  | 'resolved';
 export type ComplianceType =
   | 'labor_law'
   | 'posh'
@@ -32,9 +36,19 @@ export type GrievanceCategory =
   | 'policy_violation'
   | 'other';
 export type DisciplinaryAction =
-  'verbal_warning' | 'written_warning' | 'suspension' | 'demotion' | 'termination' | 'fine';
+  | 'verbal_warning'
+  | 'written_warning'
+  | 'suspension'
+  | 'demotion'
+  | 'termination'
+  | 'fine';
 export type DisciplinaryStatus =
-  'pending' | 'under_review' | 'approved' | 'appealed' | 'completed' | 'overturned';
+  | 'pending'
+  | 'under_review'
+  | 'approved'
+  | 'appealed'
+  | 'completed'
+  | 'overturned';
 export type AuditType = 'internal' | 'external' | 'regulatory' | 'surprise' | 'follow_up';
 export type AuditStatus = 'scheduled' | 'in_progress' | 'completed' | 'report_pending' | 'closed';
 export type POSHComplaintStatus =
@@ -48,7 +62,12 @@ export type POSHComplaintStatus =
 export type Jurisdiction = 'federal' | 'state' | 'local' | 'international';
 export type UnionStatus = 'active' | 'inactive' | 'dissolved' | 'suspended';
 export type ArbitrationStatus =
-  'filed' | 'hearing_scheduled' | 'in_progress' | 'award_pending' | 'completed' | 'appealed';
+  | 'filed'
+  | 'hearing_scheduled'
+  | 'in_progress'
+  | 'award_pending'
+  | 'completed'
+  | 'appealed';
 
 // Labor Law Compliance
 export interface LaborLaw {
@@ -289,7 +308,13 @@ export interface DisciplinaryRecord {
   employeeDepartment: string;
   violationType: string;
   violationCategory:
-    'attendance' | 'conduct' | 'performance' | 'policy' | 'safety' | 'ethics' | 'other';
+    | 'attendance'
+    | 'conduct'
+    | 'performance'
+    | 'policy'
+    | 'safety'
+    | 'ethics'
+    | 'other';
   incidentDate: string;
   incidentDescription: string;
   severity: Severity;
@@ -497,7 +522,12 @@ export interface WhistleblowerReport {
   witnesses?: Witness[];
   evidenceProvided: ComplianceDocument[];
   status:
-    'received' | 'under_review' | 'investigating' | 'substantiated' | 'unsubstantiated' | 'closed';
+    | 'received'
+    | 'under_review'
+    | 'investigating'
+    | 'substantiated'
+    | 'unsubstantiated'
+    | 'closed';
   assignedInvestigator?: string;
   assignedInvestigatorName?: string;
   investigationStartDate?: string;

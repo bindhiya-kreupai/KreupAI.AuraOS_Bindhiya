@@ -27,7 +27,12 @@ import { VendorContractService, exportToCsv } from '../../services';
 import { ToastContainer, useToast } from '../../components/Toast';
 
 type ContractStatus =
-  'all' | 'active' | 'expiring-soon' | 'expired' | 'pending-renewal' | 'terminated';
+  | 'all'
+  | 'active'
+  | 'expiring-soon'
+  | 'expired'
+  | 'pending-renewal'
+  | 'terminated';
 
 interface VendorContract {
   id: string;
