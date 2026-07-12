@@ -1,4 +1,3 @@
-// @ts-nocheck — Has Prisma schema drift (wrong field/relation names against current schema). Tracked under #29.
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
@@ -8,11 +7,10 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
     const { user } = context;
 
-    // tenant-ok: employee where clause is preceded by tenant-scoped lookup; relation traversal
     const employee = await prisma.employee.findFirst({
       where: {
-        tenantId: user.tenantId,
         userId: user.userId,
+        isDeleted: false,
       },
       include: {
         department: true,
@@ -21,11 +19,20 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
         grade: true,
         status: true,
         type: true,
+        address: true,
         manager: {
           select: {
             id: true,
             firstName: true,
             lastName: true,
+          },
+        },
+        user: {
+          select: {
+            id: true,
+            firstName: true,
+            lastName: true,
+            email: true,
           },
         },
       },
@@ -38,7 +45,40 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
       );
     }
 
-    return NextResponse.json({ success: true, data: employee }, { status: 200 });
+    const profile = {
+      id: employee.id,
+      employeeId: employee.employeeCode,
+      firstName: employee.firstName,
+      lastName: employee.lastName,
+      middleName: '',
+      preferredName: '',
+      email: employee.email,
+      personalEmail: employee.user?.email || employee.email,
+      jobTitle: employee.jobProfile?.title || '',
+      department: employee.department?.name || '',
+      location: employee.location?.name || '',
+      employmentType: employee.type?.code?.toLowerCase() || 'full_time',
+      hireDate: employee.joiningDate?.toISOString() || '',
+      status: employee.status?.code?.toLowerCase() || 'active',
+      reportsTo: employee.managerId || '',
+      profilePhoto: '',
+      address: employee.address?.street || '',
+      city: employee.address?.city || '',
+      state: employee.address?.state || '',
+      country: employee.address?.country || '',
+      postalCode: employee.address?.zipCode || '',
+      dateOfBirth: '',
+      gender: '',
+      nationality: '',
+      maritalStatus: '',
+      mobilePhone: '',
+      workPhone: '',
+      careerInterests: employee.careerInterests,
+      skills: [],
+      certifications: [],
+    };
+
+    return NextResponse.json({ success: true, data: profile }, { status: 200 });
   } catch (error: any) {
     console.error('[My Services Profile] GET Error:', error);
     return NextResponse.json({ success: false, error: 'Failed to fetch profile' }, { status: 500 });
@@ -50,11 +90,10 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context) => {
     const { user } = context;
     const body = await request.json();
 
-    // tenant-ok: employee where clause is preceded by tenant-scoped lookup; relation traversal
     const employee = await prisma.employee.findFirst({
       where: {
-        tenantId: user.tenantId,
         userId: user.userId,
+        isDeleted: false,
       },
     });
 
@@ -65,44 +104,28 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context) => {
       );
     }
 
-    const allowedFields = [
-      'personalEmail',
-      'mobileNumber',
-      'phone',
-      'currentAddress',
-      'emergencyContactName',
-      'emergencyContactPhone',
-      'emergencyContactRelationship',
-      'bankName',
-      'bankAccountNumber',
-      'bankRoutingNumber',
-      'bankAccountType',
-      'careerInterests',
-      'metadata',
-    ];
+    const employeeUpdateData: Record<string, any> = {};
+    if (body.firstName !== undefined) employeeUpdateData.firstName = body.firstName;
+    if (body.lastName !== undefined) employeeUpdateData.lastName = body.lastName;
+    if (body.careerInterests !== undefined)
+      employeeUpdateData.careerInterests = body.careerInterests;
 
-    const updateData: Record<string, any> = {};
-    for (const field of allowedFields) {
-      if (body[field] !== undefined) {
-        updateData[field] = body[field];
-      }
-    }
-
-    // tenant-ok: employee where clause is preceded by tenant-scoped lookup; relation traversal
-    const updated = await prisma.employee.update({
+    const updatedEmployee = await prisma.employee.update({
       where: { id: employee.id },
-      data: updateData,
-      include: {
-        department: true,
-        location: true,
-        jobProfile: true,
-        grade: true,
-        status: true,
-        type: true,
-      },
+      data: employeeUpdateData,
     });
 
-    return NextResponse.json({ success: true, data: updated }, { status: 200 });
+    if (employee.userId && (body.firstName !== undefined || body.lastName !== undefined)) {
+      await prisma.user.update({
+        where: { id: employee.userId },
+        data: {
+          ...(body.firstName !== undefined && { firstName: body.firstName }),
+          ...(body.lastName !== undefined && { lastName: body.lastName }),
+        },
+      });
+    }
+
+    return NextResponse.json({ success: true, data: updatedEmployee }, { status: 200 });
   } catch (error: any) {
     console.error('[My Services Profile] PUT Error:', error);
     return NextResponse.json(
