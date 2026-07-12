@@ -1,29 +1,32 @@
-// @ts-nocheck — Has Prisma schema drift (wrong field/relation names against current schema). Tracked under #29.
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
 import { Resource, Action, requirePermission } from '@/lib/auth';
-import { AuditLogQuerySchema, validationErrorResponse, validateQueryParams } from '@/lib/validators';
+import {
+  AuditLogQuerySchema,
+  validationErrorResponse,
+  validateQueryParams,
+} from '@/lib/validators';
 import { logger } from '@/lib/logger';
 
 // GET - Fetch audit logs with filters
 export const GET = withEnhancedAuth(async (request: NextRequest, { user, permissions }) => {
   try {
-    // Check permission - audit logs are read-only
     const permissionError = requirePermission(Resource.AUDIT_LOGS, Action.READ, permissions);
     if (permissionError) return permissionError;
 
-    // Validate query parameters
     const { searchParams } = new URL(request.url);
     const { userId, action, module, fromDate, toDate, page, limit } = validateQueryParams(
       AuditLogQuerySchema,
       searchParams
     );
 
-    // Build where clause
-    const where: any = {};
+    const where: any = {
+      tenantId: user.tenantId,
+      isDeleted: false,
+    };
 
     if (userId) {
       where.userId = userId;
@@ -40,18 +43,18 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
       };
     }
 
-    // Date range filter
     if (fromDate || toDate) {
       where.createdAt = {};
       if (fromDate) {
-        where.createdAt.gte = new Date(fromDate);
+        where.createdAt.gte = new Date(
+          fromDate.includes('T') ? fromDate : `${fromDate}T00:00:00.000Z`
+        );
       }
       if (toDate) {
-        where.createdAt.lte = new Date(toDate);
+        where.createdAt.lte = new Date(toDate.includes('T') ? toDate : `${toDate}T23:59:59.999Z`);
       }
     }
 
-    // Execute query
     const [logs, total] = await Promise.all([
       prisma.auditLog.findMany({
         where,
@@ -62,10 +65,18 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
           module: true,
           details: true,
           ipAddress: true,
+          severity: true,
+          resourceType: true,
+          resourceId: true,
+          success: true,
+          metadata: true,
+          userEmail: true,
           createdAt: true,
           user: {
             select: {
               email: true,
+              firstName: true,
+              lastName: true,
             },
           },
         },
