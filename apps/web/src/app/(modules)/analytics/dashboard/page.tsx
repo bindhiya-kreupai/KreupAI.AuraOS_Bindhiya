@@ -9,9 +9,10 @@ import {
   Calendar,
   TrendingUp,
   Clock,
-  Award,
   Briefcase,
   Activity,
+  Search,
+  Download,
 } from 'lucide-react';
 import AnalyticsDashboard from '@/components/analytics/AnalyticsDashboard';
 
@@ -22,6 +23,22 @@ export default function HRAnalyticsDashboardPage() {
   const [stats, setStats] = useState<any>(null);
   const [_widgets, setWidgets] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const handleExport = () => {
+    const csvContent =
+      'data:text/csv;charset=utf-8,Department,Headcount,Budget,Utilization\n' +
+      departmentMetrics
+        .map((d) => `${d.name},${d.headcount},${d.budget},${d.utilization}`)
+        .join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', 'department_metrics.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   useEffect(() => {
     fetchDashboardData();
@@ -126,6 +143,10 @@ export default function HRAnalyticsDashboardPage() {
     { name: 'Support', headcount: 140, budget: '₹4.5M', utilization: '94%' },
     { name: 'Finance', headcount: 64, budget: '₹2.9M', utilization: '87%' },
   ];
+
+  const filteredMetrics = departmentMetrics.filter((d) =>
+    d.name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   const trendingInsights = [
     {
@@ -236,7 +257,6 @@ export default function HRAnalyticsDashboardPage() {
           <Button variant="outline" onClick={fetchDashboardData}>
             Refresh
           </Button>
-          <Button>Export Report</Button>
         </div>
       </div>
 
@@ -274,8 +294,23 @@ export default function HRAnalyticsDashboardPage() {
 
       {/* Department Metrics */}
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Department Metrics</CardTitle>
+          <div className="flex gap-3">
+            <div className="relative">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+              <input
+                type="text"
+                placeholder="Search..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 pr-4 py-1.5 bg-background border rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-primary"
+              />
+            </div>
+            <Button variant="outline" size="sm" onClick={handleExport}>
+              <Download className="w-4 h-4 mr-2" /> Export
+            </Button>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="overflow-x-auto">
@@ -289,7 +324,7 @@ export default function HRAnalyticsDashboardPage() {
                 </tr>
               </thead>
               <tbody>
-                {departmentMetrics.map((dept, index) => (
+                {filteredMetrics.map((dept, index) => (
                   <tr key={index} className="border-b hover:bg-muted/50">
                     <td className="py-3 px-4 font-medium">{dept.name}</td>
                     <td className="py-3 px-4 text-right">{dept.headcount}</td>

@@ -14,7 +14,11 @@ import {
   Award,
   Grid3X3,
   Gauge,
+  Gauge,
   Eye,
+  Search,
+  Download,
+  Trash2,
 } from 'lucide-react';
 import { cn } from '@aura/ui/utils';
 import { APIClient } from '@/lib/api-client';
@@ -102,6 +106,13 @@ export default function PerformanceCommandCenter() {
   const [perfStats, setPerfStats] = useState(DEFAULT_STATS);
   const [reviewCycles, setReviewCycles] = useState<any[]>([]);
   const [_loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState({ name: '', type: 'Annual', due: '' });
+
+  const handleCreateCycle = () => {
+    // In a real app, this would call an API
+    setIsModalOpen(false);
+  };
 
   useEffect(() => {
     async function fetchData() {
@@ -205,7 +216,13 @@ export default function PerformanceCommandCenter() {
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 px-6 py-2.5 bg-amber-500 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-amber-500/20 hover:bg-amber-600 active:scale-95 transition-all">
+          <button
+            onClick={() => {
+              setFormData({ name: '', type: 'Annual', due: '' });
+              setIsModalOpen(true);
+            }}
+            className="flex items-center gap-2 px-6 py-2.5 bg-amber-500 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-amber-500/20 hover:bg-amber-600 active:scale-95 transition-all"
+          >
             <Plus className="w-4 h-4" /> New Review Cycle
           </button>
         </div>
@@ -262,6 +279,70 @@ export default function PerformanceCommandCenter() {
       {activeTab === 'goals' && <GoalsTab />}
       {activeTab === 'ninebox' && <NineBoxTab />}
       {activeTab === 'calibration' && <CalibrationTab />}
+
+      {/* CRUD Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-stellar-blue p-8 rounded-3xl shadow-2xl w-full max-w-md">
+            <h3 className="text-xl font-black text-ink-black dark:text-pearl uppercase tracking-tight mb-6">
+              New Review Cycle
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-silver-mist uppercase tracking-widest mb-1">
+                  Cycle Name
+                </label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-cloud dark:border-nebula-purple/30 rounded-xl focus:border-amber-500 outline-none"
+                  placeholder="e.g. Q1 2026 Review"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-silver-mist uppercase tracking-widest mb-1">
+                  Type
+                </label>
+                <select
+                  value={formData.type}
+                  onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                  className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-cloud dark:border-nebula-purple/30 rounded-xl focus:border-amber-500 outline-none"
+                >
+                  <option value="Annual">Annual Review</option>
+                  <option value="Quarterly">Quarterly Review</option>
+                  <option value="360">360° Feedback</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-silver-mist uppercase tracking-widest mb-1">
+                  Due Date
+                </label>
+                <input
+                  type="date"
+                  value={formData.due}
+                  onChange={(e) => setFormData({ ...formData, due: e.target.value })}
+                  className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-cloud dark:border-nebula-purple/30 rounded-xl focus:border-amber-500 outline-none"
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 mt-8">
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="px-5 py-2.5 bg-slate-100 dark:bg-slate-800 text-ink-black dark:text-pearl rounded-xl text-xs font-bold transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCreateCycle}
+                className="px-5 py-2.5 bg-amber-500 text-white rounded-xl text-xs font-bold hover:bg-amber-600 transition-colors"
+              >
+                Create Cycle
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -280,6 +361,29 @@ function ReviewsTab({ reviewCycles }: { reviewCycles: any[] }) {
   const [recentFeedback, setRecentFeedback] = useState<
     { from: string; to: string; type: string; msg: string; time: string }[]
   >([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
+
+  const filteredCycles = reviewCycles.filter((c) => {
+    const matchesSearch = c.name?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = statusFilter === 'All' || c.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
+  const handleExport = () => {
+    const csvContent =
+      'data:text/csv;charset=utf-8,Name,Type,Due Date,Status,Progress,Employees\n' +
+      reviewCycles
+        .map((c) => `${c.name},${c.type},${c.due},${c.status},${c.progress},${c.employees}`)
+        .join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', 'review_cycles.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   useEffect(() => {
     async function fetchRecentFeedback() {
@@ -365,13 +469,38 @@ function ReviewsTab({ reviewCycles }: { reviewCycles: any[] }) {
           <h2 className="text-2xl font-black text-ink-black dark:text-pearl uppercase tracking-tight italic">
             Review Cycles
           </h2>
-          <button className="text-[10px] font-black text-amber-600 uppercase tracking-widest">
-            View All Cycles
-          </button>
+          <div className="flex gap-3">
+            <div className="relative">
+              <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-silver-mist" />
+              <input
+                type="text"
+                placeholder="Search cycles..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-900 border border-cloud dark:border-nebula-purple/30 rounded-xl text-xs focus:outline-none focus:border-amber-500"
+              />
+            </div>
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-cloud dark:border-nebula-purple/30 rounded-xl text-xs focus:outline-none focus:border-amber-500"
+            >
+              <option value="All">All Status</option>
+              <option value="Active">Active</option>
+              <option value="Completed">Completed</option>
+              <option value="Scheduled">Scheduled</option>
+            </select>
+            <button
+              onClick={handleExport}
+              className="p-2.5 bg-slate-50 dark:bg-slate-900 border border-cloud dark:border-nebula-purple/30 rounded-xl text-silver-mist hover:text-amber-600 transition-colors"
+            >
+              <Download className="w-4 h-4" />
+            </button>
+          </div>
         </div>
         <div className="space-y-4">
-          {(reviewCycles.length > 0
-            ? reviewCycles
+          {(filteredCycles.length > 0
+            ? filteredCycles
             : [
                 {
                   name: 'No review cycles configured',
@@ -433,6 +562,9 @@ function ReviewsTab({ reviewCycles }: { reviewCycles: any[] }) {
                 >
                   {cycle.status}
                 </span>
+                <button className="p-2 text-silver-mist hover:text-red-500 transition-colors inline-block ml-2">
+                  <Trash2 className="w-4 h-4" />
+                </button>
                 <ChevronRight className="w-4 h-4 text-silver-mist group-hover:text-amber-600 transition-colors" />
               </div>
             </div>

@@ -24,16 +24,7 @@ import {
   AgricultureAnalyticsService,
   AgricultureSettingsService,
 } from '../services';
-import {
-  sampleSeasonalWorkers,
-  sampleLaborPools,
-  sampleHousingFacilities,
-  sampleHousingInspections,
-  sampleCropCycles,
-  sampleHarvestSchedules,
-  sampleAgricultureAnalytics,
-  sampleAgricultureSettings,
-} from '../data';
+// Sample data is imported dynamically when seeding is enabled (dev-only).
 
 export const useAgriculture = () => {
   // ============================================================================
@@ -42,38 +33,23 @@ export const useAgriculture = () => {
 
   // Seasonal Labor
   const [workers, setWorkers] = useState<SeasonalWorker[]>([]);
-  const [selectedWorker, setSelectedWorker] = useState<SeasonalWorker | null>(
-    null
-  );
+  const [selectedWorker, setSelectedWorker] = useState<SeasonalWorker | null>(null);
   const [laborPools, setLaborPools] = useState<SeasonalLaborPool[]>([]);
-  const [selectedPool, setSelectedPool] = useState<SeasonalLaborPool | null>(
-    null
-  );
+  const [selectedPool, setSelectedPool] = useState<SeasonalLaborPool | null>(null);
 
   // Housing
-  const [housingFacilities, setHousingFacilities] = useState<
-    HousingFacility[]
-  >([]);
-  const [selectedFacility, setSelectedFacility] =
-    useState<HousingFacility | null>(null);
-  const [housingAssignments, setHousingAssignments] = useState<
-    HousingAssignment[]
-  >([]);
-  const [housingInspections, setHousingInspections] = useState<
-    HousingInspection[]
-  >([]);
+  const [housingFacilities, setHousingFacilities] = useState<HousingFacility[]>([]);
+  const [selectedFacility, setSelectedFacility] = useState<HousingFacility | null>(null);
+  const [housingAssignments, setHousingAssignments] = useState<HousingAssignment[]>([]);
+  const [housingInspections, setHousingInspections] = useState<HousingInspection[]>([]);
 
   // Crop Cycles
   const [cropCycles, setCropCycles] = useState<CropCycle[]>([]);
   const [selectedCycle, setSelectedCycle] = useState<CropCycle | null>(null);
-  const [harvestSchedules, setHarvestSchedules] = useState<HarvestSchedule[]>(
-    []
-  );
+  const [harvestSchedules, setHarvestSchedules] = useState<HarvestSchedule[]>([]);
 
   // Analytics & Settings
-  const [analytics, setAnalytics] = useState<AgricultureAnalytics | null>(
-    null
-  );
+  const [analytics, setAnalytics] = useState<AgricultureAnalytics | null>(null);
   const [settings, setSettings] = useState<AgricultureSettings | null>(null);
 
   // UI State
@@ -91,31 +67,6 @@ export const useAgriculture = () => {
   const loadInitialData = async () => {
     setLoading(true);
     try {
-      // Load sample data on first run
-      const existingWorkers = await SeasonalLaborService.getAllWorkers();
-      if (existingWorkers.length === 0) {
-        // Initialize with sample data
-        for (const worker of sampleSeasonalWorkers) {
-          await SeasonalLaborService.createWorker(worker);
-        }
-        for (const pool of sampleLaborPools) {
-          await SeasonalLaborService.createLaborPool(pool);
-        }
-        for (const facility of sampleHousingFacilities) {
-          await HousingManagementService.createFacility(facility);
-        }
-        for (const inspection of sampleHousingInspections) {
-          await HousingManagementService.createInspection(inspection);
-        }
-        for (const cycle of sampleCropCycles) {
-          await CropCycleService.createCropCycle(cycle);
-        }
-        for (const schedule of sampleHarvestSchedules) {
-          await CropCycleService.createHarvestSchedule(schedule);
-        }
-      }
-
-      // Load all data
       await Promise.all([
         loadWorkers(),
         loadLaborPools(),
@@ -171,16 +122,10 @@ export const useAgriculture = () => {
     }
   };
 
-  const updateWorker = async (
-    workerId: string,
-    updates: Partial<SeasonalWorker>
-  ) => {
+  const updateWorker = async (workerId: string, updates: Partial<SeasonalWorker>) => {
     setLoading(true);
     try {
-      const updated = await SeasonalLaborService.updateWorker(
-        workerId,
-        updates
-      );
+      const updated = await SeasonalLaborService.updateWorker(workerId, updates);
       await loadWorkers();
       addToast({
         type: 'success',
@@ -289,14 +234,10 @@ export const useAgriculture = () => {
     }
   };
 
-  const createHousingFacility = async (
-    facilityData: Partial<HousingFacility>
-  ) => {
+  const createHousingFacility = async (facilityData: Partial<HousingFacility>) => {
     setLoading(true);
     try {
-      const newFacility = await HousingManagementService.createFacility(
-        facilityData
-      );
+      const newFacility = await HousingManagementService.createFacility(facilityData);
       await loadHousingFacilities();
       addToast({
         type: 'success',
@@ -312,16 +253,10 @@ export const useAgriculture = () => {
     }
   };
 
-  const updateHousingFacility = async (
-    facilityId: string,
-    updates: Partial<HousingFacility>
-  ) => {
+  const updateHousingFacility = async (facilityId: string, updates: Partial<HousingFacility>) => {
     setLoading(true);
     try {
-      const updated = await HousingManagementService.updateFacility(
-        facilityId,
-        updates
-      );
+      const updated = await HousingManagementService.updateFacility(facilityId, updates);
       await loadHousingFacilities();
       addToast({
         type: 'success',
@@ -368,14 +303,10 @@ export const useAgriculture = () => {
     }
   };
 
-  const createHousingAssignment = async (
-    assignmentData: Partial<HousingAssignment>
-  ) => {
+  const createHousingAssignment = async (assignmentData: Partial<HousingAssignment>) => {
     setLoading(true);
     try {
-      const newAssignment = await HousingManagementService.createAssignment(
-        assignmentData
-      );
+      const newAssignment = await HousingManagementService.createAssignment(assignmentData);
       await loadHousingAssignments();
       await loadHousingFacilities();
       addToast({
@@ -395,10 +326,7 @@ export const useAgriculture = () => {
     }
   };
 
-  const checkOutFromHousing = async (
-    assignmentId: string,
-    checkOutCondition: any
-  ) => {
+  const checkOutFromHousing = async (assignmentId: string, checkOutCondition: any) => {
     setLoading(true);
     try {
       await HousingManagementService.checkOut(assignmentId, checkOutCondition);
@@ -430,14 +358,10 @@ export const useAgriculture = () => {
     }
   };
 
-  const createHousingInspection = async (
-    inspectionData: Partial<HousingInspection>
-  ) => {
+  const createHousingInspection = async (inspectionData: Partial<HousingInspection>) => {
     setLoading(true);
     try {
-      const newInspection = await HousingManagementService.createInspection(
-        inspectionData
-      );
+      const newInspection = await HousingManagementService.createInspection(inspectionData);
       await loadHousingInspections();
       addToast({
         type: 'success',
@@ -486,10 +410,7 @@ export const useAgriculture = () => {
     }
   };
 
-  const updateCropCycle = async (
-    cycleId: string,
-    updates: Partial<CropCycle>
-  ) => {
+  const updateCropCycle = async (cycleId: string, updates: Partial<CropCycle>) => {
     setLoading(true);
     try {
       const updated = await CropCycleService.updateCropCycle(cycleId, updates);
@@ -557,14 +478,10 @@ export const useAgriculture = () => {
     }
   };
 
-  const createHarvestSchedule = async (
-    scheduleData: Partial<HarvestSchedule>
-  ) => {
+  const createHarvestSchedule = async (scheduleData: Partial<HarvestSchedule>) => {
     setLoading(true);
     try {
-      const newSchedule = await CropCycleService.createHarvestSchedule(
-        scheduleData
-      );
+      const newSchedule = await CropCycleService.createHarvestSchedule(scheduleData);
       await loadHarvestSchedules();
       addToast({
         type: 'success',

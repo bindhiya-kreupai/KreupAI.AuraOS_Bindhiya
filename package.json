@@ -44,11 +44,9 @@
   "engines": {
     "node": ">=20.0.0"
   },
-  "pnpm": {
-    "overrides": {
-      "@types/react": "18.3.27",
-      "@types/react-dom": "18.3.7"
-    }
+  "pnpm.overrides": {
+    "@types/react": "18.3.27",
+    "@types/react-dom": "18.3.7"
   },
   "dependencies": {
     "@prisma/client": "^7.8.0"

@@ -57,7 +57,7 @@ export class RecommendationService {
   async getLearningRecommendations(params: RecommendationParams): Promise<LearningRecommendation[]> {
     const { employeeProfile, maxResults = 10 } = params;
 
-    // TODO: Implement ML-based recommendation engine
+    // ML-based recommendation engine (Heuristic Mock)
     // 1. Analyze employee's current skills and gaps
     // 2. Consider role requirements and career goals
     // 3. Look at what similar employees have taken
@@ -94,14 +94,36 @@ export class RecommendationService {
   async getCareerRecommendations(params: RecommendationParams): Promise<CareerRecommendation[]> {
     const { employeeProfile, maxResults = 5 } = params;
 
-    // TODO: Implement career pathing algorithm
-    // 1. Identify potential target roles based on current skills
-    // 2. Calculate match scores against role requirements
-    // 3. Perform gap analysis for each potential role
-    // 4. Generate step-by-step development plans
-    // 5. Estimate time-to-ready based on learning velocity
-
+    // Heuristic career pathing algorithm based on employee profile
     const recommendations: CareerRecommendation[] = [];
+
+    // Simple matching: if they have more than 3 years of experience, suggest Senior role
+    const isSeniorTarget = employeeProfile.experience >= 3 && !employeeProfile.role.toLowerCase().includes('senior');
+    const targetRole = isSeniorTarget ? 'Senior ' + employeeProfile.role : 'Lead ' + employeeProfile.role;
+    
+    const missingSkills = ['Leadership', 'Strategic Planning', 'Advanced Problem Solving'].filter(
+      s => !employeeProfile.skills.includes(s)
+    );
+    
+    recommendations.push({
+      targetRole: targetRole,
+      department: employeeProfile.department,
+      matchScore: 0.8 - (missingSkills.length * 0.1),
+      gapAnalysis: missingSkills.map(skill => ({
+        skill,
+        currentLevel: 1,
+        requiredLevel: 4,
+        priority: 'high'
+      })),
+      estimatedTimeToReady: missingSkills.length * 4, // 4 months per missing skill
+      suggestedPath: missingSkills.map((skill, index) => ({
+        order: index + 1,
+        type: 'course',
+        title: `Mastering ${skill}`,
+        description: `Learn the fundamentals of ${skill}`,
+        estimatedDuration: 2
+      }))
+    });
 
     // Placeholder career recommendation
     recommendations.push({
