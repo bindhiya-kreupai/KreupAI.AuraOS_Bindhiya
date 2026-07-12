@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useCurrentUser } from '@/lib/auth';
 
 interface UserProfile {
   id: string;
@@ -20,6 +21,7 @@ interface UserProfile {
 }
 
 export default function ProfilePage() {
+  const { refresh } = useCurrentUser();
   const [profile, setProfile] = useState<UserProfile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
@@ -63,6 +65,7 @@ export default function ProfilePage() {
             : prev
         );
         alert('Profile updated successfully');
+        refresh();
       } else {
         alert(json.error || 'Failed to update profile');
       }

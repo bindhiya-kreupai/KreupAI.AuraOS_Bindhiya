@@ -8,6 +8,7 @@
 
 import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useCurrentUser } from '@/lib/auth';
 import {
   User,
   Mail,
@@ -180,6 +181,7 @@ function calculateCompleteness(profile: ProfileData): { percentage: number; miss
 
 export const EmployeeProfileEditor: React.FC = () => {
   const queryClient = useQueryClient();
+  const { refresh } = useCurrentUser();
   const [profile, setProfile] = useState<ProfileData>(INITIAL_PROFILE);
   const [editingSection, setEditingSection] = useState<string | null>(null);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
@@ -254,6 +256,7 @@ export const EmployeeProfileEditor: React.FC = () => {
       setEditingSection(null);
       setSaved(true);
       queryClient.invalidateQueries({ queryKey: ['my-services', 'profile'] });
+      refresh();
       setTimeout(() => setSaved(false), 2000);
     },
   });
