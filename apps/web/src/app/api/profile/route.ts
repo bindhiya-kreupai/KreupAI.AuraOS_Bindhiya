@@ -115,22 +115,6 @@ export const PUT = withAuth(async (request: NextRequest, { user }) => {
       },
     });
 
-    if (!userWithEmployee?.employee) {
-      return NextResponse.json(
-        { success: false, error: 'Employee profile not found' },
-        { status: 404 }
-      );
-    }
-
-    const allowedFields = ['careerInterests'];
-    const updateData: Record<string, any> = {};
-
-    for (const field of allowedFields) {
-      if (body[field] !== undefined) {
-        updateData[field] = body[field];
-      }
-    }
-
     if (body.firstName !== undefined || body.lastName !== undefined) {
       await prisma.user.update({
         where: { id: user.userId },
@@ -140,20 +124,31 @@ export const PUT = withAuth(async (request: NextRequest, { user }) => {
         },
       });
 
-      await prisma.employee.update({
-        where: { id: userWithEmployee.employee.id },
-        data: {
-          ...(body.firstName !== undefined && { firstName: body.firstName }),
-          ...(body.lastName !== undefined && { lastName: body.lastName }),
-        },
-      });
+      if (userWithEmployee?.employee) {
+        await prisma.employee.update({
+          where: { id: userWithEmployee.employee.id },
+          data: {
+            ...(body.firstName !== undefined && { firstName: body.firstName }),
+            ...(body.lastName !== undefined && { lastName: body.lastName }),
+          },
+        });
+      }
     }
 
-    if (Object.keys(updateData).length > 0) {
-      await prisma.employee.update({
-        where: { id: userWithEmployee.employee.id },
-        data: updateData,
-      });
+    if (userWithEmployee?.employee) {
+      const allowedFields = ['careerInterests'];
+      const updateData: Record<string, any> = {};
+      for (const field of allowedFields) {
+        if (body[field] !== undefined) {
+          updateData[field] = body[field];
+        }
+      }
+      if (Object.keys(updateData).length > 0) {
+        await prisma.employee.update({
+          where: { id: userWithEmployee.employee.id },
+          data: updateData,
+        });
+      }
     }
 
     const ipAddress =
