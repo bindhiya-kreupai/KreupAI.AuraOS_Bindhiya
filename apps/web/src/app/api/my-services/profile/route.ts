@@ -27,22 +27,54 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
             lastName: true,
           },
         },
-        user: {
-          select: {
-            id: true,
-            firstName: true,
-            lastName: true,
-            email: true,
-          },
-        },
+      },
+    });
+
+    const dbUser = await prisma.user.findUnique({
+      where: { id: user.userId },
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
       },
     });
 
     if (!employee) {
-      return NextResponse.json(
-        { success: false, error: 'Employee profile not found' },
-        { status: 404 }
-      );
+      const profile = {
+        id: dbUser?.id || user.userId,
+        employeeId: '',
+        firstName: dbUser?.firstName || '',
+        lastName: dbUser?.lastName || '',
+        middleName: '',
+        preferredName: '',
+        email: dbUser?.email || user.email,
+        personalEmail: dbUser?.email || user.email,
+        jobTitle: '',
+        department: '',
+        location: '',
+        employmentType: 'full_time',
+        hireDate: '',
+        status: 'active',
+        reportsTo: '',
+        profilePhoto: '',
+        address: '',
+        city: '',
+        state: '',
+        country: '',
+        postalCode: '',
+        dateOfBirth: '',
+        gender: '',
+        nationality: '',
+        maritalStatus: '',
+        mobilePhone: '',
+        workPhone: '',
+        careerInterests: null,
+        skills: [],
+        certifications: [],
+      };
+
+      return NextResponse.json({ success: true, data: profile }, { status: 200 });
     }
 
     const profile = {
@@ -53,7 +85,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
       middleName: '',
       preferredName: '',
       email: employee.email,
-      personalEmail: employee.user?.email || employee.email,
+      personalEmail: dbUser?.email || employee.email,
       jobTitle: employee.jobProfile?.title || '',
       department: employee.department?.name || '',
       location: employee.location?.name || '',
@@ -97,27 +129,26 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context) => {
       },
     });
 
-    if (!employee) {
-      return NextResponse.json(
-        { success: false, error: 'Employee profile not found' },
-        { status: 404 }
-      );
-    }
-
-    const employeeUpdateData: Record<string, any> = {};
-    if (body.firstName !== undefined) employeeUpdateData.firstName = body.firstName;
-    if (body.lastName !== undefined) employeeUpdateData.lastName = body.lastName;
-    if (body.careerInterests !== undefined)
-      employeeUpdateData.careerInterests = body.careerInterests;
-
-    const updatedEmployee = await prisma.employee.update({
-      where: { id: employee.id },
-      data: employeeUpdateData,
+    const dbUser = await prisma.user.findUnique({
+      where: { id: user.userId },
     });
 
-    if (employee.userId && (body.firstName !== undefined || body.lastName !== undefined)) {
+    if (employee) {
+      const employeeUpdateData: Record<string, any> = {};
+      if (body.firstName !== undefined) employeeUpdateData.firstName = body.firstName;
+      if (body.lastName !== undefined) employeeUpdateData.lastName = body.lastName;
+      if (body.careerInterests !== undefined)
+        employeeUpdateData.careerInterests = body.careerInterests;
+
+      await prisma.employee.update({
+        where: { id: employee.id },
+        data: employeeUpdateData,
+      });
+    }
+
+    if (dbUser && (body.firstName !== undefined || body.lastName !== undefined)) {
       await prisma.user.update({
-        where: { id: employee.userId },
+        where: { id: user.userId },
         data: {
           ...(body.firstName !== undefined && { firstName: body.firstName }),
           ...(body.lastName !== undefined && { lastName: body.lastName }),
@@ -125,7 +156,10 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context) => {
       });
     }
 
-    return NextResponse.json({ success: true, data: updatedEmployee }, { status: 200 });
+    return NextResponse.json(
+      { success: true, data: { id: employee?.id || dbUser?.id } },
+      { status: 200 }
+    );
   } catch (error: any) {
     console.error('[My Services Profile] PUT Error:', error);
     return NextResponse.json(

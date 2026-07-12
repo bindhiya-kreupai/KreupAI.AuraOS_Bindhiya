@@ -32,6 +32,12 @@ export const GET = requireSession(async (_request, session) => {
           },
           take: 1,
         },
+        employee: {
+          select: {
+            firstName: true,
+            lastName: true,
+          },
+        },
       },
     });
 
@@ -49,6 +55,8 @@ export const GET = requireSession(async (_request, session) => {
     }
 
     const primaryRole = user.roles[0]?.role?.name || '';
+    const firstName = user.firstName || user.employee?.firstName || undefined;
+    const lastName = user.lastName || user.employee?.lastName || undefined;
 
     return NextResponse.json({
       success: true,
@@ -58,8 +66,8 @@ export const GET = requireSession(async (_request, session) => {
         tenantId: session.tenantId,
         sessionId: session.sessionId ?? null,
         employeeId: session.userId,
-        firstName: user.firstName || undefined,
-        lastName: user.lastName || undefined,
+        firstName,
+        lastName,
         role: primaryRole || undefined,
       },
     });
