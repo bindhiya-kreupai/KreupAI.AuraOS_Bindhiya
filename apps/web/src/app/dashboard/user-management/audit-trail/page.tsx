@@ -343,6 +343,7 @@ export default function AuditTrailPage() {
       columns={columns}
       onSave={undefined}
       onDelete={undefined}
+      enableCreate={false}
       renderForm={() => <></>}
       searchKeys={['userEmail', 'action', 'module', 'details', 'ipAddress']}
       searchPlaceholder="Search by user, action, module, or IP..."
