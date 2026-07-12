@@ -28,6 +28,7 @@ model Tenant {
   wpsSubmissions    WPSSubmission[]
   biometricDevices  BiometricDevice[]
   ramadanConfig     RamadanAutoSwitchConfig?
+  deactivations     UserDeactivation[]
 
   @@map("aura_tenant")
 }
@@ -501,6 +502,7 @@ model User {
   refreshTokens       RefreshToken[]
   tenant              Tenant               @relation(fields: [tenantId], references: [id], map: "User_tenantId_fkey")
   deactivations       UserDeactivation[]
+  deactivatedUsers    UserDeactivation[]   @relation("DeactivatedBy")
   delegatedFrom       UserDelegation[]     @relation("Delegatee")
   delegatedTo         UserDelegation[]     @relation("Delegator")
   roles               UserRole[]
@@ -1445,6 +1447,7 @@ model License {
 
 model UserDeactivation {
   id            String    @id(map: "UserDeactivation_pkey") @default(uuid())
+  tenantId      String
   userId        String
   reason        String?
   deactivatedBy String
@@ -1456,7 +1459,10 @@ model UserDeactivation {
   deletedAt     DateTime?
   isDeleted     Boolean   @default(false)
   user          User      @relation(fields: [userId], references: [id], map: "UserDeactivation_userId_fkey")
+  deactivator   User      @relation("DeactivatedBy", fields: [deactivatedBy], references: [id], map: "UserDeactivation_deactivatedBy_fkey")
+  tenant        Tenant    @relation(fields: [tenantId], references: [id], map: "UserDeactivation_tenantId_fkey")
 
+  @@index([tenantId], map: "UserDeactivation_tenantId_idx")
   @@map("aura_user_deactivation")
 }
 
