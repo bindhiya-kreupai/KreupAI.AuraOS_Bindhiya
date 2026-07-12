@@ -31,9 +31,10 @@ export class ProjectManagementService {
   private static tasksEndpoint = '/construction/tasks';
 
   static async getAllProjects(): Promise<ConstructionProject[]> {
-    return APIClient.get<ConstructionProject[]>(this.endpoint);
-  }
+    const response = await APIClient.get<unknown>(this.endpoint);
 
+    return APIClient.unwrapList<ConstructionProject>(response, 'projects');
+  }
   static async getProjectById(projectId: string): Promise<ConstructionProject | null> {
     return APIClient.get<ConstructionProject>(`${this.endpoint}/${projectId}`);
   }
@@ -41,7 +42,15 @@ export class ProjectManagementService {
   static async createProject(
     projectData: Partial<ConstructionProject>
   ): Promise<ConstructionProject> {
-    return APIClient.post<ConstructionProject>(this.endpoint, projectData);
+    const response = await APIClient.post<unknown>(this.endpoint, projectData);
+
+    const project = APIClient.unwrapItem<ConstructionProject>(response, 'project');
+
+    if (!project) {
+      throw new Error('Project was created, but the API returned an invalid response');
+    }
+
+    return project;
   }
 
   static async updateProject(
@@ -120,9 +129,10 @@ export class SiteSafetyService {
   private static hazardsEndpoint = '/construction/safety/hazards';
 
   static async getAllInspections(): Promise<SafetyInspection[]> {
-    return APIClient.get<SafetyInspection[]>(this.inspectionsEndpoint);
-  }
+    const response = await APIClient.get<unknown>(this.inspectionsEndpoint);
 
+    return APIClient.unwrapList<SafetyInspection>(response, 'safetyInspections');
+  }
   static async getProjectInspections(projectId: string): Promise<SafetyInspection[]> {
     return APIClient.get<SafetyInspection[]>(this.inspectionsEndpoint, { projectId });
   }
@@ -134,7 +144,15 @@ export class SiteSafetyService {
   static async createInspection(
     inspectionData: Partial<SafetyInspection>
   ): Promise<SafetyInspection> {
-    return APIClient.post<SafetyInspection>(this.inspectionsEndpoint, inspectionData);
+    const response = await APIClient.post<unknown>(this.inspectionsEndpoint, inspectionData);
+
+    const inspection = APIClient.unwrapItem<SafetyInspection>(response, 'safetyInspection');
+
+    if (!inspection) {
+      throw new Error('Safety inspection was created, but API returned an invalid response');
+    }
+
+    return inspection;
   }
 
   static async updateInspection(
@@ -151,7 +169,9 @@ export class SiteSafetyService {
 
   // Incident Management
   static async getAllIncidents(): Promise<SafetyIncident[]> {
-    return APIClient.get<SafetyIncident[]>(this.incidentsEndpoint);
+    const response = await APIClient.get<unknown>(this.incidentsEndpoint);
+
+    return APIClient.unwrapList<SafetyIncident>(response, 'safetyIncidents');
   }
 
   static async getProjectIncidents(projectId: string): Promise<SafetyIncident[]> {
@@ -163,7 +183,15 @@ export class SiteSafetyService {
   }
 
   static async createIncident(incidentData: Partial<SafetyIncident>): Promise<SafetyIncident> {
-    return APIClient.post<SafetyIncident>(this.incidentsEndpoint, incidentData);
+    const response = await APIClient.post<unknown>(this.incidentsEndpoint, incidentData);
+
+    const incident = APIClient.unwrapItem<SafetyIncident>(response, 'safetyIncident');
+
+    if (!incident) {
+      throw new Error('Safety incident was created, but API returned an invalid response');
+    }
+
+    return incident;
   }
 
   static async updateIncident(
@@ -247,9 +275,10 @@ export class SiteSafetyService {
  */
 export class EquipmentLeasingService {
   private static endpoint = '/construction/equipment/leases';
-
   static async getAllLeases(): Promise<EquipmentLease[]> {
-    return APIClient.get<EquipmentLease[]>(this.endpoint);
+    const response = await APIClient.get<unknown>(this.endpoint);
+
+    return APIClient.unwrapList<EquipmentLease>(response, 'equipmentLeases');
   }
 
   static async getProjectLeases(projectId: string): Promise<EquipmentLease[]> {
@@ -261,14 +290,30 @@ export class EquipmentLeasingService {
   }
 
   static async createLease(leaseData: Partial<EquipmentLease>): Promise<EquipmentLease> {
-    return APIClient.post<EquipmentLease>(this.endpoint, leaseData);
+    const response = await APIClient.post<unknown>(this.endpoint, leaseData);
+
+    const lease = APIClient.unwrapItem<EquipmentLease>(response, 'equipmentLease');
+
+    if (!lease) {
+      throw new Error('Equipment lease was created, but API returned an invalid response');
+    }
+
+    return lease;
   }
 
   static async updateLease(
     leaseId: string,
     updates: Partial<EquipmentLease>
   ): Promise<EquipmentLease> {
-    return APIClient.put<EquipmentLease>(`${this.endpoint}/${leaseId}`, updates);
+    const response = await APIClient.put<unknown>(`${this.endpoint}/${leaseId}`, updates);
+
+    const lease = APIClient.unwrapItem<EquipmentLease>(response, 'equipmentLease');
+
+    if (!lease) {
+      throw new Error('Equipment lease was updated, but API returned an invalid response');
+    }
+
+    return lease;
   }
 
   static async deleteLease(leaseId: string): Promise<boolean> {
@@ -435,19 +480,38 @@ export class StaffingService {
   private static endpoint = '/construction/staffing';
 
   static async getAllAllocations(): Promise<any[]> {
-    return APIClient.get<any[]>(this.endpoint);
+    const response = await APIClient.get<unknown>(this.endpoint);
+
+    return APIClient.unwrapList<any>(response, 'staffingAllocations');
   }
 
   static async createAllocation(data: any): Promise<any> {
-    return APIClient.post<any>(this.endpoint, data);
+    const response = await APIClient.post<unknown>(this.endpoint, data);
+
+    const allocation = APIClient.unwrapItem<any>(response, 'staffingAllocation');
+
+    if (!allocation) {
+      throw new Error('Staffing allocation was created, but API returned an invalid response');
+    }
+
+    return allocation;
   }
 
   static async updateAllocation(allocationId: string, updates: any): Promise<any> {
-    return APIClient.put<any>(`${this.endpoint}/${allocationId}`, updates);
+    const response = await APIClient.put<unknown>(`${this.endpoint}/${allocationId}`, updates);
+
+    const allocation = APIClient.unwrapItem<any>(response, 'staffingAllocation');
+
+    if (!allocation) {
+      throw new Error('Staffing allocation was updated, but API returned an invalid response');
+    }
+
+    return allocation;
   }
 
   static async deleteAllocation(allocationId: string): Promise<boolean> {
     await APIClient.delete<void>(`${this.endpoint}/${allocationId}`);
+
     return true;
   }
 }
