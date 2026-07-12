@@ -29,6 +29,9 @@ model Tenant {
   biometricDevices  BiometricDevice[]
   ramadanConfig     RamadanAutoSwitchConfig?
   deactivations     UserDeactivation[]
+  passwordPolicies  PasswordPolicy[]
+  ssoConfigs        SSOConfig[]
+  licenses          License[]
 
   @@map("aura_tenant")
 }
@@ -1272,6 +1275,7 @@ model AccessControl {
 
 model PasswordPolicy {
   id                  String    @id(map: "PasswordPolicy_pkey") @default(uuid())
+  tenantId            String
   minLength           Int       @default(8)
   requireUppercase    Boolean   @default(true)
   requireLowercase    Boolean   @default(true)
@@ -1286,12 +1290,15 @@ model PasswordPolicy {
   updatedBy           String?
   deletedAt           DateTime?
   isDeleted           Boolean   @default(false)
+  tenant              Tenant    @relation(fields: [tenantId], references: [id], map: "PasswordPolicy_tenantId_fkey")
 
+  @@index([tenantId], map: "PasswordPolicy_tenantId_idx")
   @@map("aura_password_policy")
 }
 
 model SSOConfig {
   id          String    @id(map: "SSOConfig_pkey") @default(uuid())
+  tenantId    String
   enabled     Boolean   @default(false)
   provider    String
   issuerUrl   String?
@@ -1303,7 +1310,9 @@ model SSOConfig {
   updatedBy   String?
   deletedAt   DateTime?
   isDeleted   Boolean   @default(false)
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], map: "SSOConfig_tenantId_fkey")
 
+  @@index([tenantId], map: "SSOConfig_tenantId_idx")
   @@map("aura_sso_config")
 }
 
@@ -1430,7 +1439,8 @@ model UserDelegation {
 
 model License {
   id        String    @id(map: "License_pkey") @default(uuid())
-  name      String    @unique(map: "License_name_key")
+  tenantId  String
+  name      String
   total     Int
   used      Int       @default(0)
   type      String
@@ -1441,7 +1451,10 @@ model License {
   updatedBy String?
   deletedAt DateTime?
   isDeleted Boolean   @default(false)
+  tenant    Tenant    @relation(fields: [tenantId], references: [id], map: "License_tenantId_fkey")
 
+  @@unique([tenantId, name], map: "License_tenantId_name_key")
+  @@index([tenantId], map: "License_tenantId_idx")
   @@map("aura_license")
 }
 

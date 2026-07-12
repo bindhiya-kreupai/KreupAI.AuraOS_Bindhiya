@@ -11,19 +11,17 @@ import {
 } from '@/lib/validators';
 import { logger } from '@/lib/logger';
 
-// GET - Fetch current password policy (typically only one per system)
+// GET - Fetch current password policy for this tenant
 export const GET = withEnhancedAuth(async (request: NextRequest, { user, permissions }) => {
   try {
-    // Check permission
     const permissionError = requirePermission(Resource.SYSTEM_SETTINGS, Action.READ, permissions);
     if (permissionError) return permissionError;
 
-    // Fetch the first (and typically only) password policy
     const policy = await prisma.passwordPolicy.findFirst({
+      where: { tenantId: user.tenantId, isDeleted: false },
       orderBy: { createdAt: 'desc' },
     });
 
-    // If no policy exists, return default values
     if (!policy) {
       return NextResponse.json({
         success: true,
@@ -40,10 +38,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
       });
     }
 
-    return NextResponse.json({
-      success: true,
-      data: policy,
-    });
+    return NextResponse.json({ success: true, data: policy });
   } catch (error: any) {
     logger.error('Error fetching password policy:', error);
     return NextResponse.json(
@@ -53,36 +48,30 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
   }
 });
 
-// POST - Create password policy (only if none exists)
+// POST - Create password policy for this tenant (only if none exists)
 export const POST = withEnhancedAuth(async (request: NextRequest, { user, permissions }) => {
   try {
-    // Check permission
     const permissionError = requirePermission(Resource.SYSTEM_SETTINGS, Action.CREATE, permissions);
     if (permissionError) return permissionError;
 
-    // Validate request body
     const body = await request.json();
     const validatedData = CreatePasswordPolicySchema.parse(body);
 
-    // Check if a policy already exists
-    const existingPolicy = await prisma.passwordPolicy.findFirst();
+    const existingPolicy = await prisma.passwordPolicy.findFirst({
+      where: { tenantId: user.tenantId, isDeleted: false },
+    });
 
     if (existingPolicy) {
       return NextResponse.json(
-        {
-          success: false,
-          error: 'Password policy already exists. Use PUT to update.',
-        },
+        { success: false, error: 'Password policy already exists. Use PUT to update.' },
         { status: 400 }
       );
     }
 
-    // Create new password policy
     const newPolicy = await prisma.passwordPolicy.create({
-      data: validatedData,
+      data: { ...validatedData, tenantId: user.tenantId },
     });
 
-    // Create audit log
     const ipAddress =
       request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
 
@@ -99,18 +88,13 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
     });
 
     return NextResponse.json(
-      {
-        success: true,
-        message: 'Password policy created successfully',
-        data: newPolicy,
-      },
+      { success: true, message: 'Password policy created successfully', data: newPolicy },
       { status: 201 }
     );
   } catch (error: any) {
     if (error instanceof z.ZodError) {
       return validationErrorResponse(error);
     }
-
     logger.error('Error creating password policy:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to create password policy' },
@@ -119,37 +103,31 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
   }
 });
 
-// PUT - Update password policy
+// PUT - Update password policy for this tenant
 export const PUT = withEnhancedAuth(async (request: NextRequest, { user, permissions }) => {
   try {
-    // Check permission
     const permissionError = requirePermission(Resource.SYSTEM_SETTINGS, Action.UPDATE, permissions);
     if (permissionError) return permissionError;
 
-    // Validate request body (partial update)
     const body = await request.json();
     const validatedData = UpdatePasswordPolicySchema.parse(body);
 
-    // Fetch existing policy
-    const existingPolicy = await prisma.passwordPolicy.findFirst();
+    const existingPolicy = await prisma.passwordPolicy.findFirst({
+      where: { tenantId: user.tenantId, isDeleted: false },
+    });
 
     if (!existingPolicy) {
       return NextResponse.json(
-        {
-          success: false,
-          error: 'No password policy found. Use POST to create one.',
-        },
+        { success: false, error: 'No password policy found. Use POST to create one.' },
         { status: 404 }
       );
     }
 
-    // Update password policy
     const updatedPolicy = await prisma.passwordPolicy.update({
       where: { id: existingPolicy.id },
       data: validatedData,
     });
 
-    // Create audit log
     const ipAddress =
       request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
 
@@ -176,7 +154,6 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, { user, permiss
     if (error instanceof z.ZodError) {
       return validationErrorResponse(error);
     }
-
     logger.error('Error updating password policy:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to update password policy' },
@@ -185,32 +162,25 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, { user, permiss
   }
 });
 
-// DELETE - Delete password policy (revert to defaults)
+// DELETE - Delete password policy for this tenant (revert to defaults)
 export const DELETE = withEnhancedAuth(async (request: NextRequest, { user, permissions }) => {
   try {
-    // Check permission
     const permissionError = requirePermission(Resource.SYSTEM_SETTINGS, Action.DELETE, permissions);
     if (permissionError) return permissionError;
 
-    // Fetch existing policy
-    const existingPolicy = await prisma.passwordPolicy.findFirst();
+    const existingPolicy = await prisma.passwordPolicy.findFirst({
+      where: { tenantId: user.tenantId, isDeleted: false },
+    });
 
     if (!existingPolicy) {
       return NextResponse.json(
-        {
-          success: false,
-          error: 'No password policy found',
-        },
+        { success: false, error: 'No password policy found' },
         { status: 404 }
       );
     }
 
-    // Delete password policy
-    await prisma.passwordPolicy.delete({
-      where: { id: existingPolicy.id },
-    });
+    await prisma.passwordPolicy.delete({ where: { id: existingPolicy.id } });
 
-    // Create audit log
     const ipAddress =
       request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
 

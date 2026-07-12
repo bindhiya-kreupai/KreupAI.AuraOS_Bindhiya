@@ -15,7 +15,7 @@ export const GET = withEnhancedAuth(
       if (permissionError) return permissionError;
 
       const licenseId = params.id;
-      const result = await licenseService.getLicenseById(licenseId);
+      const result = await licenseService.getLicenseById(licenseId, user.tenantId);
 
       if (!result.success) {
         return NextResponse.json({ success: false, error: result.error }, { status: 404 });
@@ -49,6 +49,7 @@ export const PUT = withEnhancedAuth(
       const result = await licenseService.updateLicense(
         licenseId,
         validatedData,
+        user.tenantId,
         user.userId,
         ipAddress
       );
@@ -88,7 +89,12 @@ export const DELETE = withEnhancedAuth(
       const ipAddress =
         request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
 
-      const result = await licenseService.deleteLicense(licenseId, user.userId, ipAddress);
+      const result = await licenseService.deleteLicense(
+        licenseId,
+        user.tenantId,
+        user.userId,
+        ipAddress
+      );
 
       if (!result.success) {
         return NextResponse.json({ success: false, error: result.error }, { status: 404 });

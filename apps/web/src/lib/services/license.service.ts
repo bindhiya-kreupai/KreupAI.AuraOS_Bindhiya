@@ -19,6 +19,7 @@ export interface UpdateLicenseInput {
 }
 
 export interface LicenseQueryOptions extends ListOptions {
+  tenantId: string;
   type?: string;
   status?: string;
 }
@@ -40,9 +41,9 @@ export class LicenseService extends BaseService {
 
   async listLicenses(options: LicenseQueryOptions): Promise<ServiceResponse> {
     try {
-      const { search, type, status, page, limit } = options;
+      const { tenantId, search, type, status, page, limit } = options;
 
-      const where: any = { isDeleted: false };
+      const where: any = { tenantId, isDeleted: false };
 
       if (search) {
         where.name = { contains: search, mode: 'insensitive' };
@@ -81,10 +82,10 @@ export class LicenseService extends BaseService {
     }
   }
 
-  async getLicenseById(licenseId: string): Promise<ServiceResponse> {
+  async getLicenseById(licenseId: string, tenantId: string): Promise<ServiceResponse> {
     try {
       const license = await this.prisma.license.findFirst({
-        where: { id: licenseId, isDeleted: false },
+        where: { id: licenseId, tenantId, isDeleted: false },
       });
 
       if (!license) {
@@ -103,12 +104,13 @@ export class LicenseService extends BaseService {
 
   async createLicense(
     input: CreateLicenseInput,
+    tenantId: string,
     createdBy: string,
     _ipAddress: string
   ): Promise<ServiceResponse> {
     try {
       const existingLicense = await this.prisma.license.findFirst({
-        where: { name: input.name, isDeleted: false },
+        where: { name: input.name, tenantId, isDeleted: false },
       });
 
       if (existingLicense) {
@@ -128,6 +130,7 @@ export class LicenseService extends BaseService {
             total: input.total,
             used: usedCount,
             status: input.status || 'Active',
+            tenantId,
             createdBy,
             updatedBy: createdBy,
           },
@@ -135,6 +138,7 @@ export class LicenseService extends BaseService {
 
         await tx.auditLog.create({
           data: {
+            tenantId,
             action: 'CREATE',
             module: 'License Management',
             resourceType: 'License',
@@ -162,12 +166,13 @@ export class LicenseService extends BaseService {
   async updateLicense(
     licenseId: string,
     input: UpdateLicenseInput,
+    tenantId: string,
     updatedBy: string,
     _ipAddress: string
   ): Promise<ServiceResponse> {
     try {
       const existingLicense = await this.prisma.license.findFirst({
-        where: { id: licenseId, isDeleted: false },
+        where: { id: licenseId, tenantId, isDeleted: false },
       });
 
       if (!existingLicense) {
@@ -176,7 +181,7 @@ export class LicenseService extends BaseService {
 
       if (input.name && input.name !== existingLicense.name) {
         const nameConflict = await this.prisma.license.findFirst({
-          where: { name: input.name, isDeleted: false },
+          where: { name: input.name, tenantId, isDeleted: false },
         });
 
         if (nameConflict) {
@@ -205,6 +210,7 @@ export class LicenseService extends BaseService {
 
         await tx.auditLog.create({
           data: {
+            tenantId,
             action: 'UPDATE',
             module: 'License Management',
             resourceType: 'License',
@@ -229,12 +235,13 @@ export class LicenseService extends BaseService {
 
   async deleteLicense(
     licenseId: string,
+    tenantId: string,
     deletedBy: string,
     _ipAddress: string
   ): Promise<ServiceResponse> {
     try {
       const existingLicense = await this.prisma.license.findFirst({
-        where: { id: licenseId, isDeleted: false },
+        where: { id: licenseId, tenantId, isDeleted: false },
       });
 
       if (!existingLicense) {
@@ -254,6 +261,7 @@ export class LicenseService extends BaseService {
 
         await tx.auditLog.create({
           data: {
+            tenantId,
             action: 'DELETE',
             module: 'License Management',
             resourceType: 'License',
@@ -273,13 +281,14 @@ export class LicenseService extends BaseService {
 
   async allocateLicense(
     licenseId: string,
+    tenantId: string,
     allocatedBy: string,
     ipAddress: string,
     count: number = 1
   ): Promise<ServiceResponse> {
     try {
       const license = await this.prisma.license.findFirst({
-        where: { id: licenseId, isDeleted: false },
+        where: { id: licenseId, tenantId, isDeleted: false },
       });
 
       if (!license) {
@@ -299,6 +308,7 @@ export class LicenseService extends BaseService {
 
         await tx.auditLog.create({
           data: {
+            tenantId,
             action: 'UPDATE',
             module: 'License Management',
             resourceType: 'License',
@@ -323,13 +333,14 @@ export class LicenseService extends BaseService {
 
   async releaseLicense(
     licenseId: string,
+    tenantId: string,
     releasedBy: string,
     ipAddress: string,
     count: number = 1
   ): Promise<ServiceResponse> {
     try {
       const license = await this.prisma.license.findFirst({
-        where: { id: licenseId, isDeleted: false },
+        where: { id: licenseId, tenantId, isDeleted: false },
       });
 
       if (!license) {
@@ -346,6 +357,7 @@ export class LicenseService extends BaseService {
 
         await tx.auditLog.create({
           data: {
+            tenantId,
             action: 'UPDATE',
             module: 'License Management',
             resourceType: 'License',
