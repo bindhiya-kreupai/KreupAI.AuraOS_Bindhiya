@@ -149,13 +149,13 @@ export const LicenseQuerySchema = z.object({
 
 // User Deactivation Schemas
 export const DeactivateUserSchema = z.object({
-  userId: z.string().uuid('Invalid user ID'),
+  userId: z.string().min(1, 'Invalid user ID'),
   reason: z.string().min(1, 'Reason is required').max(500),
 });
 
 export const UserDeactivationQuerySchema = z.object({
-  userId: z.string().uuid().optional(),
-  deactivatedBy: z.string().uuid().optional(),
+  userId: z.string().optional(),
+  deactivatedBy: z.string().optional(),
   page: z.coerce.number().int().min(1).optional().default(1),
   limit: z.coerce.number().int().min(1).max(100).optional().default(20),
 });
