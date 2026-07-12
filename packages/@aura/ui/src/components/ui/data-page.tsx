@@ -57,6 +57,7 @@ export interface DataPageProps<T> {
     searchKeys?: string[];
     searchPlaceholder?: string;
     pageSize?: number;
+    singularTitle?: string;
     enableCreate?: boolean;
     enableEdit?: boolean;
     enableDelete?: boolean;
@@ -110,6 +111,7 @@ export function DataPage<T extends { id: string | number }>({
     enableFilter,
     enableColumnVisibility,
     addButtonText,
+    singularTitle,
     filterParams,
     toolbarSlot,
 }: DataPageProps<T>) {
@@ -274,7 +276,7 @@ export function DataPage<T extends { id: string | number }>({
                 description={description}
                 breadcrumbs={breadcrumbs}
                 action={enableCreate !== false ? {
-                    label: addButtonText || `Add ${title.slice(0, -1)}`,
+                    label: addButtonText || `Add ${singularTitle || title.slice(0, -1)}`,
                     onClick: handleAdd
                 } : undefined}
             />
@@ -296,7 +298,7 @@ export function DataPage<T extends { id: string | number }>({
             <Sheet
                 isOpen={isSheetOpen}
                 onClose={() => setIsSheetOpen(false)}
-                title={currentRecord.id ? `Edit ${title.slice(0, -1)}` : `New ${title.slice(0, -1)}`}
+                title={currentRecord.id ? `Edit ${singularTitle || title.slice(0, -1)}` : `New ${singularTitle || title.slice(0, -1)}`}
                 footer={
                     <div className="flex justify-end gap-3">
                         <button

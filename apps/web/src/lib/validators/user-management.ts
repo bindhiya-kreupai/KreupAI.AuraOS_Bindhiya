@@ -68,10 +68,10 @@ export const AuditLogQuerySchema = z.object({
   userId: z.string().uuid().optional(),
   action: z.string().optional(),
   module: z.string().optional(),
-  fromDate: z.string().datetime().or(z.date()).optional(),
-  toDate: z.string().datetime().or(z.date()).optional(),
+  fromDate: z.string().optional(),
+  toDate: z.string().optional(),
   page: z.coerce.number().int().min(1).optional().default(1),
-  limit: z.coerce.number().int().min(1).max(100).optional().default(20),
+  limit: z.coerce.number().int().min(1).max(10000).optional().default(20),
 });
 
 // Password Policy Schemas
@@ -163,11 +163,11 @@ export const UserDeactivationQuerySchema = z.object({
 // User Delegation Schemas
 export const CreateUserDelegationSchema = z
   .object({
-    delegatorId: z.string().uuid('Invalid delegator ID'),
-    delegateeId: z.string().uuid('Invalid delegatee ID'),
+    delegatorId: z.string().min(1, 'Invalid delegator ID'),
+    delegateeId: z.string().min(1, 'Invalid delegatee ID'),
     role: z.string().min(1, 'Role is required').max(100),
-    startDate: z.string().datetime('Invalid start date').or(z.date()),
-    endDate: z.string().datetime('Invalid end date').or(z.date()),
+    startDate: z.string().min(1, 'Start date is required'),
+    endDate: z.string().min(1, 'End date is required'),
     reason: z.string().max(500).optional(),
     status: z.enum(['Active', 'Scheduled', 'Expired']).optional().default('Scheduled'),
   })
@@ -175,7 +175,7 @@ export const CreateUserDelegationSchema = z
     (data) => {
       const start = new Date(data.startDate);
       const end = new Date(data.endDate);
-      return end > start;
+      return !Number.isNaN(start.getTime()) && !Number.isNaN(end.getTime()) && end > start;
     },
     {
       message: 'End date must be after start date',
@@ -185,15 +185,15 @@ export const CreateUserDelegationSchema = z
 
 export const UpdateUserDelegationSchema = z.object({
   role: z.string().min(1).max(100).optional(),
-  startDate: z.string().datetime().or(z.date()).optional(),
-  endDate: z.string().datetime().or(z.date()).optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
   reason: z.string().max(500).optional(),
   status: z.enum(['Active', 'Scheduled', 'Expired']).optional(),
 });
 
 export const UserDelegationQuerySchema = z.object({
-  delegatorId: z.string().uuid().optional(),
-  delegateeId: z.string().uuid().optional(),
+  delegatorId: z.string().optional(),
+  delegateeId: z.string().optional(),
   status: z.enum(['Active', 'Scheduled', 'Expired']).optional(),
   page: z.coerce.number().int().min(1).optional().default(1),
   limit: z.coerce.number().int().min(1).max(100).optional().default(20),

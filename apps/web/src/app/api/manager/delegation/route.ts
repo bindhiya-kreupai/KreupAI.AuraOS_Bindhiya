@@ -77,7 +77,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
       delegationId: d.id,
       delegationName:
         `Delegation to ${d.delegatee.firstName || ''} ${d.delegatee.lastName || ''}`.trim(),
-      status: determineDelegationStatus(d.startDate, d.endDate),
+      status: determineDelegationStatus(d.status, d.startDate, d.endDate),
       startDate: d.startDate,
       endDate: d.endDate,
       delegatorId: d.delegatorId,
@@ -152,6 +152,28 @@ export const POST = withEnhancedAuth(async (request, context) => {
           messageAr: 'لم يتم العثور على المفوَّض المحدد.',
         },
         { status: 404 }
+      );
+    }
+
+    // Check for overlapping delegations
+    const overlapping = await prisma.userDelegation.findFirst({
+      where: {
+        delegatorId: user.userId,
+        delegateeId: validatedData.delegateId,
+        isDeleted: false,
+        status: { in: ['Active', 'Scheduled'] },
+        AND: [{ startDate: { lte: end } }, { endDate: { gte: start } }],
+      },
+    });
+    if (overlapping) {
+      return NextResponse.json(
+        {
+          error: 'Overlapping delegation',
+          message:
+            'An active or scheduled delegation already exists for this delegate in the given date range.',
+          messageAr: 'يوجد تفويض نشط أو مجدول بالفعل لهذا المفوَّض في الفترة الزمنية المحددة.',
+        },
+        { status: 400 }
       );
     }
 
@@ -331,7 +353,12 @@ export const DELETE = withEnhancedAuth(async (request, context) => {
   }
 });
 
-function determineDelegationStatus(startDate: Date | null, endDate: Date | null): string {
+function determineDelegationStatus(
+  dbStatus: string,
+  startDate: Date | null,
+  endDate: Date | null
+): string {
+  if (dbStatus === 'Revoked') return 'revoked';
   const now = new Date();
   if (!startDate || !endDate) return 'active';
   if (now < startDate) return 'scheduled';
