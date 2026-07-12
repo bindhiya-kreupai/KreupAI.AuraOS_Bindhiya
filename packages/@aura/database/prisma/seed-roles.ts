@@ -195,6 +195,13 @@ const ROLE_PERMISSIONS: Record<string, string[]> = {
     'webhooks:delete',
     'webhooks:test',
     'sso_config:manage',
+    'licenses:read', 'licenses:create', 'licenses:update', 'licenses:delete',
+    'user_delegation:read', 'user_delegation:create', 'user_delegation:update', 'user_delegation:delete',
+    'user_deactivation:read', 'user_deactivation:create', 'user_deactivation:update',
+    'password_policies:manage',
+    'mfa_config:manage',
+    'access_control:manage',
+    'system_settings:read', 'system_settings:update',
   ],
   HR_MANAGER: [
     'users:read',
