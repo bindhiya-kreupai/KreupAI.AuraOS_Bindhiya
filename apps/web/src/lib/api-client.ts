@@ -111,10 +111,10 @@ export class APIClient {
       }
 
       if (
-        contentType.includes('application/octet-stream') ||
-        contentType.includes('application/vnd') ||
-        contentType.includes('text/csv') ||
-        contentType.includes('application/pdf')
+        contentType?.includes('application/octet-stream') ||
+        contentType?.includes('application/vnd') ||
+        contentType?.includes('text/csv') ||
+        contentType?.includes('application/pdf')
       ) {
         return (await response.blob()) as unknown as T;
       }

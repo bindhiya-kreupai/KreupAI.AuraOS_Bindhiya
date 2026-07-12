@@ -13,8 +13,8 @@ export function CropCycleModal({ isOpen, onClose, onSave, cycle }: CropCycleModa
   const [formData, setFormData] = useState<Partial<CropCycle>>({
     cropName: '',
     cropType: '',
-    currentStage: 'planning',
-    status: 'planning',
+    currentStage: 'planting',
+    status: 'planting',
     totalAcreage: 10,
     expectedYield: 1000,
   });
@@ -28,8 +28,8 @@ export function CropCycleModal({ isOpen, onClose, onSave, cycle }: CropCycleModa
       setFormData({
         cropName: '',
         cropType: '',
-        currentStage: 'planning',
-        status: 'planning',
+        currentStage: 'planting',
+        status: 'planting',
         totalAcreage: 10,
         expectedYield: 1000,
       });

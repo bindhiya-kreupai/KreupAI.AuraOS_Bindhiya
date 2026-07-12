@@ -54,7 +54,7 @@ export default function EntityManagementPage() {
     setFormDescription(entity.description || '');
     setFormSystemType(entity.entityType === 'system' ? entity.entityName : 'date');
     if (entity.entityType === 'regex') {
-      const rawVals = entity.values as Array<Record<string, unknown>>;
+      const rawVals = entity.values as unknown as Array<Record<string, unknown>>;
       const pattern = (rawVals?.[0]?.pattern as string) ?? '';
       setFormRegex(pattern);
       setFormValues('[]');

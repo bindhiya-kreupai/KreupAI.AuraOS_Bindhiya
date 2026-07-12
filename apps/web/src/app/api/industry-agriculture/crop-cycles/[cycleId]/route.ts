@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { createProtectedRoute } from '@/lib/api/route-wrapper';
-import store from '../../../store';
+import store from '../../store';
 
 export const GET = createProtectedRoute(async (_request: NextRequest, { params }) => {
   const cycle = await store.getCropCycleById(params.cycleId);

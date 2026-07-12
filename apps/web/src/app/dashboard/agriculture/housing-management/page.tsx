@@ -38,7 +38,7 @@ export default function HousingManagementPage() {
 
             return (
               <div
-                key={facility.facilityId || facility.id}
+                key={facility.facilityId}
                 className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 hover:shadow-lg transition-shadow"
               >
                 <div className="flex justify-between items-start mb-4">

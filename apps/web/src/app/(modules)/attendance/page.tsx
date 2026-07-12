@@ -21,7 +21,6 @@ import {
   Navigation,
   Wifi,
   Settings2,
-  Settings2,
   Target,
   Download,
   Filter,

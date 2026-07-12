@@ -708,17 +708,17 @@ model DocumentType {
 }
 
 model BusinessUnit {
-  id        String    @id(map: "BusinessUnit_pkey") @default(uuid())
-  code      String    @unique(map: "BusinessUnit_code_key")
-  name      String
-  head      String?
-  status    String    @default("Active")
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @default(now())
-  createdBy String?
-  updatedBy String?
-  deletedAt DateTime?
-  isDeleted Boolean   @default(false)
+  id          String       @id(map: "BusinessUnit_pkey") @default(uuid())
+  code        String       @unique(map: "BusinessUnit_code_key")
+  name        String
+  head        String?
+  status      String       @default("Active")
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @default(now())
+  createdBy   String?
+  updatedBy   String?
+  deletedAt   DateTime?
+  isDeleted   Boolean      @default(false)
   departments Department[]
 
   @@map("aura_business_unit")
@@ -4201,26 +4201,26 @@ model AIAgentMessage {
 // ============================================================================
 
 model ChatbotDialogueFlow {
-  id              String    @id @default(uuid())
-  tenantId        String
-  flowName        String
-  description     String?
-  category        String?
-  nodes           Json
-  connections     Json
-  variables       Json?
-  isActive        Boolean   @default(false)
-  version         String    @default("1.0")
-  status          String    @default("draft")
-  triggerIntents  Json?
-  tags            Json?
-  publishedAt     DateTime?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  createdBy       String?
-  updatedBy       String?
-  deletedAt       DateTime?
-  isDeleted       Boolean   @default(false)
+  id             String    @id @default(uuid())
+  tenantId       String
+  flowName       String
+  description    String?
+  category       String?
+  nodes          Json
+  connections    Json
+  variables      Json?
+  isActive       Boolean   @default(false)
+  version        String    @default("1.0")
+  status         String    @default("draft")
+  triggerIntents Json?
+  tags           Json?
+  publishedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  createdBy      String?
+  updatedBy      String?
+  deletedAt      DateTime?
+  isDeleted      Boolean   @default(false)
 
   @@index([tenantId], map: "ChatbotDialogueFlow_tenantId_idx")
   @@index([tenantId, status], map: "ChatbotDialogueFlow_tenantId_status_idx")
@@ -4229,7 +4229,7 @@ model ChatbotDialogueFlow {
 }
 
 model ChatbotIntent {
-  id                  String   @id @default(uuid())
+  id                  String    @id @default(uuid())
   tenantId            String
   intentName          String
   displayName         String?
@@ -4239,19 +4239,19 @@ model ChatbotIntent {
   responses           Json?
   parameters          Json?
   contexts            Json?
-  priority            Int      @default(0)
-  webhookEnabled      Boolean  @default(false)
+  priority            Int       @default(0)
+  webhookEnabled      Boolean   @default(false)
   webhookUrl          String?
-  isActive            Boolean  @default(true)
-  confidenceThreshold Float    @default(0.7)
-  usageCount          Int      @default(0)
+  isActive            Boolean   @default(true)
+  confidenceThreshold Float     @default(0.7)
+  usageCount          Int       @default(0)
   averageConfidence   Float?
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
   createdBy           String?
   updatedBy           String?
   deletedAt           DateTime?
-  isDeleted           Boolean  @default(false)
+  isDeleted           Boolean   @default(false)
 
   @@index([tenantId], map: "ChatbotIntent_tenantId_idx")
   @@index([tenantId, isActive], map: "ChatbotIntent_tenantId_active_idx")
@@ -4259,21 +4259,21 @@ model ChatbotIntent {
 }
 
 model ChatbotEntity {
-  id              String   @id @default(uuid())
+  id              String    @id @default(uuid())
   tenantId        String
   entityName      String
   entityType      String
   description     String?
   values          Json?
-  fuzzyMatching   Boolean  @default(false)
-  isCaseSensitive Boolean  @default(false)
-  status          String   @default("active")
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  fuzzyMatching   Boolean   @default(false)
+  isCaseSensitive Boolean   @default(false)
+  status          String    @default("active")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
   createdBy       String?
   updatedBy       String?
   deletedAt       DateTime?
-  isDeleted       Boolean  @default(false)
+  isDeleted       Boolean   @default(false)
 
   @@index([tenantId], map: "ChatbotEntity_tenantId_idx")
   @@index([tenantId, status], map: "ChatbotEntity_tenantId_status_idx")
@@ -4281,21 +4281,21 @@ model ChatbotEntity {
 }
 
 model ChatbotTrainingDataset {
-  id            String   @id @default(uuid())
+  id            String    @id @default(uuid())
   tenantId      String
   datasetName   String
   description   String?
-  language      String   @default("en")
-  totalExamples Int      @default(0)
+  language      String    @default("en")
+  totalExamples Int       @default(0)
   intents       Json?
   entities      Json?
-  status        String   @default("draft")
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  status        String    @default("draft")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
   createdBy     String?
   updatedBy     String?
   deletedAt     DateTime?
-  isDeleted     Boolean  @default(false)
+  isDeleted     Boolean   @default(false)
 
   @@index([tenantId], map: "ChatbotTrainingDataset_tenantId_idx")
   @@index([tenantId, status], map: "ChatbotTrainingDataset_tenantId_status_idx")
@@ -4303,21 +4303,21 @@ model ChatbotTrainingDataset {
 }
 
 model ChatbotTrainingExample {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   tenantId    String
   datasetId   String?
   text        String
   intent      String
   entities    Json?
-  language    String   @default("en")
-  source      String   @default("manual")
-  isValidated Boolean  @default(false)
+  language    String    @default("en")
+  source      String    @default("manual")
+  isValidated Boolean   @default(false)
   validatedBy String?
   addedBy     String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
-  isDeleted   Boolean  @default(false)
+  isDeleted   Boolean   @default(false)
 
   @@index([tenantId], map: "ChatbotTrainingExample_tenantId_idx")
   @@index([datasetId], map: "ChatbotTrainingExample_datasetId_idx")
@@ -4348,21 +4348,21 @@ model ChatbotChannel {
 }
 
 model ChatbotHandoffRule {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   tenantId    String
   ruleName    String
   description String?
-  priority    Int      @default(0)
-  isActive    Boolean  @default(true)
+  priority    Int       @default(0)
+  isActive    Boolean   @default(true)
   triggers    Json?
   conditions  Json?
   action      Json?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   createdBy   String?
   updatedBy   String?
   deletedAt   DateTime?
-  isDeleted   Boolean  @default(false)
+  isDeleted   Boolean   @default(false)
 
   @@index([tenantId], map: "ChatbotHandoffRule_tenantId_idx")
   @@index([tenantId, isActive], map: "ChatbotHandoffRule_tenantId_active_idx")
@@ -4370,21 +4370,21 @@ model ChatbotHandoffRule {
 }
 
 model ChatbotLanguage {
-  id                  String   @id @default(uuid())
+  id                  String    @id @default(uuid())
   tenantId            String
   languageCode        String
   languageName        String
-  isEnabled           Boolean  @default(false)
-  isDefault           Boolean  @default(false)
+  isEnabled           Boolean   @default(false)
+  isDefault           Boolean   @default(false)
   translationModel    String?
-  confidenceThreshold Float    @default(0.7)
+  confidenceThreshold Float     @default(0.7)
   supportedFeatures   Json?
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
   createdBy           String?
   updatedBy           String?
   deletedAt           DateTime?
-  isDeleted           Boolean  @default(false)
+  isDeleted           Boolean   @default(false)
 
   @@unique([tenantId, languageCode], map: "ChatbotLanguage_tenantId_code_key")
   @@index([tenantId], map: "ChatbotLanguage_tenantId_idx")
@@ -4392,41 +4392,41 @@ model ChatbotLanguage {
 }
 
 model ChatbotTranslation {
-  id                String   @id @default(uuid())
+  id                String    @id @default(uuid())
   tenantId          String
   sourceLanguage    String
   targetLanguage    String
   sourceText        String
   translatedText    String
-  translationMethod String   @default("automatic")
+  translationMethod String    @default("automatic")
   quality           Float?
   translatedBy      String?
-  translatedDate    DateTime @default(now())
-  isApproved        Boolean  @default(false)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  translatedDate    DateTime  @default(now())
+  isApproved        Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
   createdBy         String?
   updatedBy         String?
   deletedAt         DateTime?
-  isDeleted         Boolean  @default(false)
+  isDeleted         Boolean   @default(false)
 
   @@index([tenantId], map: "ChatbotTranslation_tenantId_idx")
   @@map("aura_chatbot_translation")
 }
 
 model ChatbotLanguageContent {
-  id              String   @id @default(uuid())
+  id              String    @id @default(uuid())
   tenantId        String
   contentType     String
   referenceId     String
   translations    Json
   defaultLanguage String
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
   createdBy       String?
   updatedBy       String?
   deletedAt       DateTime?
-  isDeleted       Boolean  @default(false)
+  isDeleted       Boolean   @default(false)
 
   @@unique([tenantId, contentType, referenceId], map: "ChatbotContent_tenantId_type_ref_key")
   @@index([tenantId], map: "ChatbotLanguageContent_tenantId_idx")
@@ -4434,42 +4434,42 @@ model ChatbotLanguageContent {
 }
 
 model ChatbotLanguageDetection {
-  id                   String   @id @default(uuid())
+  id                   String    @id @default(uuid())
   tenantId             String
   text                 String
   detectedLanguage     String
   confidence           Float
   alternativeLanguages Json?
-  timestamp            DateTime @default(now())
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  timestamp            DateTime  @default(now())
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
   createdBy            String?
   updatedBy            String?
   deletedAt            DateTime?
-  isDeleted            Boolean  @default(false)
+  isDeleted            Boolean   @default(false)
 
   @@index([tenantId], map: "ChatbotLangDetection_tenantId_idx")
   @@map("aura_chatbot_language_detection")
 }
 
 model ChatbotLocalizationSettings {
-  id                              String   @id @default(uuid())
-  tenantId                        String   @unique(map: "ChatbotLocalization_tenantId_key")
-  autoDetectLanguage              Boolean  @default(false)
-  fallbackLanguage                String   @default("en")
-  supportedLanguages              Json?
-  translationProvider             String   @default("google")
-  translationApiKey               String?
-  enableAutoTranslation           Boolean  @default(false)
-  requireApprovalForAutoTranslation Boolean @default(true)
-  lastUpdatedAt                   DateTime @default(now())
-  lastUpdatedBy                   String?
-  createdAt                       DateTime @default(now())
-  updatedAt                       DateTime @updatedAt
-  createdBy                       String?
-  updatedBy                       String?
-  deletedAt                       DateTime?
-  isDeleted                       Boolean  @default(false)
+  id                                String    @id @default(uuid())
+  tenantId                          String    @unique(map: "ChatbotLocalization_tenantId_key")
+  autoDetectLanguage                Boolean   @default(false)
+  fallbackLanguage                  String    @default("en")
+  supportedLanguages                Json?
+  translationProvider               String    @default("google")
+  translationApiKey                 String?
+  enableAutoTranslation             Boolean   @default(false)
+  requireApprovalForAutoTranslation Boolean   @default(true)
+  lastUpdatedAt                     DateTime  @default(now())
+  lastUpdatedBy                     String?
+  createdAt                         DateTime  @default(now())
+  updatedAt                         DateTime  @updatedAt
+  createdBy                         String?
+  updatedBy                         String?
+  deletedAt                         DateTime?
+  isDeleted                         Boolean   @default(false)
 
   @@index([tenantId], map: "ChatbotLocalization_tenantId_idx")
   @@map("aura_chatbot_localization_settings")
@@ -16279,4 +16279,863 @@ model IndustrySolution {
   updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
 
   @@map("aura_industry_solution")
+}
+
+// ============================================================================
+// EDUCATION MODULE
+// ============================================================================
+
+model EducationFacultyMember {
+  id           String   @id @default(uuid())
+  userId       String?
+  name         String
+  department   String
+  title        String
+  tenureStatus String // e.g. "Tenured", "Tenure-Track", "Non-Tenure-Track"
+  joinDate     DateTime
+  publications Int      @default(0)
+  evaluations  Json? // Store array of evaluations
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("aura_education_faculty_member")
+}
+
+model EducationTenureApplication {
+  id             String    @id @default(uuid())
+  facultyId      String
+  status         String // e.g. "Draft", "Submitted", "Under Review", "Approved", "Rejected"
+  submissionDate DateTime?
+  portfolio      Json? // Store portfolio details
+  committeeVotes Json? // Store votes
+  decision       Json? // Store final decision
+  isActive       Boolean   @default(true) @map("is_active")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  @@map("aura_education_tenure_application")
+}
+
+model EducationResearchGrant {
+  id                      String    @id @default(uuid())
+  title                   String
+  principalInvestigatorId String
+  fundingAgency           String
+  amount                  Decimal   @db.Decimal(18, 2)
+  awardedAmount           Decimal?  @db.Decimal(18, 2)
+  status                  String // e.g. "Draft", "Submitted", "Awarded", "Closed"
+  startDate               DateTime?
+  endDate                 DateTime?
+  expenditures            Json?
+  milestones              Json?
+  isActive                Boolean   @default(true) @map("is_active")
+  createdAt               DateTime  @default(now()) @map("created_at")
+  updatedAt               DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  @@map("aura_education_research_grant")
+}
+
+model EducationGrantReport {
+  id             String    @id @default(uuid())
+  grantId        String
+  type           String // e.g. "Quarterly", "Annual", "Final"
+  submissionDate DateTime?
+  status         String // e.g. "Draft", "Submitted", "Approved"
+  findings       String?
+  expenditures   Decimal   @default(0) @db.Decimal(18, 2)
+  isActive       Boolean   @default(true) @map("is_active")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  @@map("aura_education_grant_report")
+}
+
+model EducationAdjunctFaculty {
+  id                    String   @id @default(uuid())
+  name                  String
+  department            String
+  coursesTaught         Int      @default(0)
+  credentials           Json? // Store credentials and verification status
+  backgroundCheckStatus String // e.g. "Pending", "Cleared", "Failed"
+  active                Boolean  @default(true)
+  isActive              Boolean  @default(true) @map("is_active")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("aura_education_adjunct_faculty")
+}
+
+model EducationAdjunctContract {
+  id           String    @id @default(uuid())
+  adjunctId    String
+  term         String // e.g. "Fall 2026"
+  courseLoad   Int       @default(1)
+  compensation Decimal   @db.Decimal(18, 2)
+  status       String // e.g. "Draft", "Pending Signature", "Active", "Completed"
+  signedDate   DateTime?
+  signedBy     String?
+  approvedBy   String?
+  payments     Json?
+  isActive     Boolean   @default(true) @map("is_active")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  @@map("aura_education_adjunct_contract")
+}
+
+model EducationAdjunctPool {
+  id              String   @id @default(uuid())
+  department      String   @unique
+  totalCandidates Int      @default(0)
+  activeNeeds     Int      @default(0)
+  averageRate     Decimal  @default(0) @db.Decimal(18, 2)
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("aura_education_adjunct_pool")
+}
+// ==========================================
+// FINANCIAL SERVICES MODULE
+// ==========================================
+
+model FinancialAccount {
+  id              String   @id @default(uuid())
+  accountId       String   @unique
+  accountNumber   String
+  accountType     String
+  customerId      String
+  customerName    String
+  balance         Json     // Stores AccountBalance
+  status          String
+  openDate        DateTime
+  closedDate      DateTime?
+  interestRate    Decimal? @db.Decimal(5, 2)
+  minimumBalance  Decimal? @db.Decimal(18, 2)
+  fees            Json?    // Array of AccountFee
+  features        Json?    // Array of strings
+  linkedAccounts  Json?    // Array of strings
+  alerts          Json?    // Array of AccountAlert
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
+
+  @@map("aura_financial_account")
+}
+
+model FinancialTransaction {
+  id              String   @id @default(uuid())
+  transactionId   String   @unique
+  accountId       String
+  accountName     String
+  type            String
+  amount          Decimal  @db.Decimal(18, 2)
+  currency        String
+  status          String
+  date            DateTime
+  description     String
+  category        String
+  merchant        String?
+  location        Json?    // Stores TransactionLocation
+  metadata        Json?    // Stores TransactionMetadata
+  reference       String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
+
+  @@map("aura_financial_transaction")
+}
+
+model FinancialLoan {
+  id              String   @id @default(uuid())
+  loanId          String   @unique
+  customerId      String
+  customerName    String
+  loanType        String
+  status          String
+  principalAmount Decimal  @db.Decimal(18, 2)
+  currentBalance  Decimal  @db.Decimal(18, 2)
+  interestRate    Decimal  @db.Decimal(5, 2)
+  startDate       DateTime
+  endDate         DateTime
+  term            Json     // Stores LoanTerm
+  nextPayment     Json     // Stores LoanPayment
+  paymentHistory  Json?    // Array of PaymentRecord
+  collateral      Json?    // Array of Collateral
+  delinquency     Json?    // Stores DelinquencyInfo
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
+
+  @@map("aura_financial_loan")
+}
+
+model InsurancePolicy {
+  id              String   @id @default(uuid())
+  policyId        String   @unique
+  policyType      String
+  policyNumber    String
+  status          String
+  holder          Json     // Stores PolicyHolder
+  riskProfile     Json?    // Stores RiskProfile
+  coverage        Json     // Stores Coverage
+  riders          Json?    // Array of PolicyRider
+  premium         Json     // Stores Premium
+  deductible      Decimal  @db.Decimal(18, 2)
+  beneficiaries   Json?    // Array of Beneficiary
+  effectiveDate   DateTime
+  expirationDate  DateTime
+  documents       Json?    // Array of strings
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
+
+  @@map("aura_insurance_policy")
+}
+
+model InsuranceClaim {
+  id              String   @id @default(uuid())
+  claimId         String   @unique
+  policyId        String
+  claimNumber     String
+  status          String
+  dateOfLoss      DateTime
+  dateReported    DateTime
+  claimant        Json     // Stores Claimant
+  incident        Json     // Stores Incident
+  adjuster        Json?    // Stores Adjuster
+  investigation   Json?    // Stores Investigation
+  reserveAmount   Decimal? @db.Decimal(18, 2)
+  paidAmount      Decimal? @db.Decimal(18, 2)
+  timeline        Json?    // Array of ClaimTimeline
+  documents       Json?    // Array of ClaimDocument
+  communications  Json?    // Array of Communication
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
+
+  @@map("aura_insurance_claim")
+}
+
+model WealthPortfolio {
+  id              String   @id @default(uuid())
+  portfolioId     String   @unique
+  clientId        String
+  clientName      String
+  portfolioType   String
+  status          String
+  totalValue      Decimal  @db.Decimal(18, 2)
+  cashBalance     Decimal  @db.Decimal(18, 2)
+  currency        String
+  advisor         Json?    // Stores Advisor
+  assetAllocation Json     // Array of AssetAllocation
+  holdings        Json     // Array of Holding
+  performance     Json?    // Stores Performance
+  riskProfile     Json?    // Stores InvestmentRiskProfile
+  taxInfo         Json?    // Stores TaxConsideration
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
+
+  @@map("aura_wealth_portfolio")
+}
+
+model WealthTradeOrder {
+  id              String   @id @default(uuid())
+  orderId         String   @unique
+  portfolioId     String
+  ticker          String
+  assetClass      String
+  orderType       String
+  action          String
+  quantity        Decimal  @db.Decimal(18, 4)
+  limitPrice      Decimal? @db.Decimal(18, 2)
+  status          String
+  submittedAt     DateTime
+  executedAt      DateTime?
+  executionPrice  Decimal? @db.Decimal(18, 2)
+  fees            Decimal? @db.Decimal(18, 2)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
+
+  @@map("aura_wealth_trade_order")
+}
+
+model ComplianceProgram {
+  id              String   @id @default(uuid())
+  programId       String   @unique
+  programName     String
+  complianceArea  String
+  status          String
+  lastReviewDate  DateTime
+  nextReviewDate  DateTime
+  responsibleOfficer String
+  policies        Json?    // Array of CompliancePolicy
+  procedures      Json?    // Array of ComplianceProcedure
+  controls        Json?    // Array of ComplianceControl
+  training        Json?    // Array of ComplianceTraining
+  audits          Json?    // Array of string (Audit IDs)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
+
+  @@map("aura_compliance_program")
+}
+
+model ComplianceAudit {
+  id              String   @id @default(uuid())
+  auditId         String   @unique
+  auditName       String
+  auditType       String
+  status          String
+  scheduledDate   DateTime
+  completionDate  DateTime?
+  overallRating   String
+  scope           Json?    // Array of strings
+  auditor         Json?    // Stores AuditorInfo
+  findings        Json?    // Array of AuditFinding
+  reportUrl       String?
+  followUpDate    DateTime?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
+
+  @@map("aura_compliance_audit")
+}
+
+// ==========================================
+// GOVERNMENT MODULE
+// ==========================================
+
+model CivilServiceGrade {
+  id                   String   @id @default(uuid())
+  gradeId              String   @unique
+  employeeId           String
+  employeeName         String
+  department           String
+  position             String
+  gradeLevel           String
+  step                 Int
+  series               String
+  effectiveDate        DateTime
+  salaryInformation    Json
+  promotionEligibility Json
+  performanceHistory   Json
+  qualifications       Json
+  status               String
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model SecurityClearance {
+  id                     String   @id @default(uuid())
+  clearanceId            String   @unique
+  employeeId             String
+  employeeName           String
+  department             String
+  position               String
+  clearanceLevel         String
+  status                 String
+  grantedDate            DateTime
+  expiryDate             DateTime
+  investigationType      String
+  investigationDetails   Json
+  polygraphRequired      Boolean
+  polygraphStatus        String?
+  continuousEvaluation   Json
+  accessAuthorizations   Json
+  suspensionHistory      Json
+  debriefRequired        Boolean
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+}
+
+model PensionScheme {
+  id                     String   @id @default(uuid())
+  pensionId              String   @unique
+  employeeId             String
+  employeeName           String
+  department             String
+  pensionType            String
+  enrollmentDate         DateTime
+  serviceComputationDate DateTime
+  yearsOfService         Int
+  vestingStatus          String
+  retirementEligibility  Json
+  contributions          Json
+  projections            Json
+  beneficiaries          Json
+  thriftSavingsPlan      Json
+  status                 String
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+}
+
+// ==========================================
+// AUTOMOTIVE MODULE
+// ==========================================
+
+model Technician {
+  id                   String   @id @default(uuid())
+  technicianId         String   @unique
+  name                 String
+  email                String
+  phone                String
+  role                 String
+  status               String
+  certifications       Json
+  skills               Json
+  hireDate             DateTime
+  hourlyRate           Float
+  availability         Json
+  performance          Json
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model TechnicianShift {
+  id                   String   @id @default(uuid())
+  shiftId              String   @unique
+  technicianId         String
+  technicianName       String
+  date                 DateTime
+  startTime            String
+  endTime              String
+  type                 String
+  status               String
+  notes                String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model RosterTemplate {
+  id                   String   @id @default(uuid())
+  templateId           String   @unique
+  name                 String
+  description          String
+  department           String
+  weeks                Json
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model AutoShiftSwapRequest {
+  id                   String   @id @default(uuid())
+  requestId            String   @unique
+  requestingTechId     String
+  requestingTechName   String
+  targetTechId         String
+  targetTechName       String
+  originalShiftId      String
+  targetShiftId        String
+  date                 DateTime
+  reason               String
+  status               String
+  approvedBy           String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model TimeOffRequest {
+  id                   String   @id @default(uuid())
+  requestId            String   @unique
+  technicianId         String
+  technicianName       String
+  type                 String
+  startDate            DateTime
+  endDate              DateTime
+  status               String
+  reason               String
+  approvedBy           String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model SalesPerson {
+  id                   String   @id @default(uuid())
+  salesPersonId        String   @unique
+  name                 String
+  email                String
+  department           String
+  baseSalary           Float
+  commissionRate       Float
+  status               String
+  performance          Json
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model SalesCommission {
+  id                   String   @id @default(uuid())
+  commissionId         String   @unique
+  salesPersonId        String
+  salesPersonName      String
+  period               String
+  totalSales           Float
+  commissionAmount     Float
+  bonusAmount          Float
+  deductions           Float
+  netCommission        Float
+  status               String
+  salesDetails         Json
+  bonuses              Json
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model VehicleSale {
+  id                   String   @id @default(uuid())
+  saleId               String   @unique
+  salesPersonId        String
+  vin                  String
+  make                 String
+  model                String
+  year                 Int
+  salePrice            Float
+  costPrice            Float
+  grossProfit          Float
+  saleDate             DateTime
+  customerName         String
+  status               String
+  commissionAmount     Float?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model ServiceSale {
+  id                   String   @id @default(uuid())
+  saleId               String   @unique
+  advisorId            String
+  technicianId         String
+  repairOrderId        String
+  serviceType          String
+  laborAmount          Float
+  partsAmount          Float
+  totalAmount          Float
+  saleDate             DateTime
+  status               String
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model CommissionStructure {
+  id                   String   @id @default(uuid())
+  structureId          String   @unique
+  name                 String
+  department           String
+  type                 String
+  tiers                Json
+  rules                Json
+  effectiveDate        DateTime
+  status               String
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model Part {
+  id                   String   @id @default(uuid())
+  partId               String   @unique
+  partNumber           String
+  name                 String
+  description          String
+  category             String
+  manufacturer         String
+  costPrice            Float
+  retailPrice          Float
+  quantityOnHand       Int
+  reorderPoint         Int
+  reorderQuantity      Int
+  location             Json
+  applicableVehicles   Json
+  suppliers            Json
+  status               String
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model InventoryMovement {
+  id                   String   @id @default(uuid())
+  movementId           String   @unique
+  partId               String
+  partNumber           String
+  type                 String
+  quantity             Int
+  date                 DateTime
+  reference            String
+  notes                String?
+  performedBy          String
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model PurchaseOrder {
+  id                   String   @id @default(uuid())
+  orderId              String   @unique
+  supplierId           String
+  supplierName         String
+  date                 DateTime
+  expectedDeliveryDate DateTime?
+  status               String
+  totalAmount          Float
+  items                Json
+  notes                String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model StockAdjustment {
+  id                   String   @id @default(uuid())
+  adjustmentId         String   @unique
+  date                 DateTime
+  type                 String
+  reason               String
+  items                Json
+  status               String
+  approvedBy           String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+// ==========================================
+// ENERGY MODULE
+// ==========================================
+
+model SmartMeter {
+  id                String   @id @default(uuid())
+  meterId           String   @unique
+  location          Json
+  type              String
+  status            String
+  installationDate  DateTime
+  lastCalibration   DateTime
+  firmwareVersion   String
+  readings          Json
+  alerts            Json
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model EnergyConsumption {
+  id                String   @id @default(uuid())
+  consumptionId     String   @unique
+  facilityId        String
+  period            Json
+  totalConsumption  Float
+  peakDemand        Float
+  breakdown         Json
+  departmentConsumption Json
+  equipmentConsumption Json
+  comparison        Json
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model LoadManagement {
+  id                String   @id @default(uuid())
+  programId         String   @unique
+  name              String
+  type              String
+  status            String
+  targetReduction   Float
+  actualReduction   Float
+  events            Json
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model GridEvent {
+  id                String   @id @default(uuid())
+  eventId           String   @unique
+  programId         String
+  type              String
+  status            String
+  startTime         DateTime
+  endTime           DateTime
+  requiredReduction Float
+  actualReduction   Float
+  impact            Json
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model WaterMeter {
+  id                String   @id @default(uuid())
+  meterId           String   @unique
+  location          Json
+  type              String
+  status            String
+  installationDate  DateTime
+  lastCalibration   DateTime
+  readings          Json
+  alerts            Json
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model WaterUsage {
+  id                String   @id @default(uuid())
+  usageId           String   @unique
+  facilityId        String
+  period            Json
+  totalUsage        Float
+  breakdown         Json
+  departmentUsage   Json
+  fixtureUsage      Json
+  comparison        Json
+  efficiency        Json
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model LeakDetection {
+  id                String   @id @default(uuid())
+  leakId            String   @unique
+  location          Json
+  severity          String
+  status            String
+  detectedAt        DateTime
+  estimatedLoss     Float
+  repairedAt        DateTime?
+  repairCost        Float?
+  notes             String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model ConservationInitiative {
+  id                String   @id @default(uuid())
+  initiativeId      String   @unique
+  name              String
+  description       String
+  targetSavings     Float
+  actualSavings     Float
+  startDate         DateTime
+  endDate           DateTime?
+  status            String
+  budget            Float
+  spent             Float
+  metrics           Json
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model RenewableAsset {
+  id                String   @id @default(uuid())
+  assetId           String   @unique
+  name              String
+  type              String
+  status            String
+  location          Json
+  capacity          Json
+  installation      Json
+  performance       Json
+  maintenance       Json
+  financials        Json
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model EnergyProduction {
+  id                String   @id @default(uuid())
+  productionId      String   @unique
+  assetId           String
+  period            Json
+  totalProduced     Float
+  expectedProduction Float
+  efficiency        Float
+  weather           Json
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model UtilityAccount {
+  id                String   @id @default(uuid())
+  accountId         String   @unique
+  provider          Json
+  accountNumber     String
+  serviceAddress    Json
+  rateSchedule      Json
+  status            String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model UtilityBill {
+  id                String   @id @default(uuid())
+  billId            String   @unique
+  accountId         String
+  billingCycle      Json
+  consumption       Json
+  charges           Json
+  total             Json
+  dueDate           DateTime
+  status            String
+  paymentInfo       Json
+  documents         Json
+  alerts            Json
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model EnergyPayment {
+  id                String   @id @default(uuid())
+  paymentId         String   @unique
+  billId            String
+  accountId         String
+  amount            Float
+  date              DateTime
+  method            Json
+  status            String
+  reference         String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+// ==========================================
+// HOSPITALITY MODULE
+// ==========================================
+
+model TipPool {
+  id                   String   @id @default(uuid())
+  poolId               String   @unique
+  poolName             String
+  date                 DateTime
+  totalAmount          Float
+  distributionMethod   String
+  participants         Json
+  distributions        Json
+  status               String
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model HospitalityEvent {
+  id                   String   @id @default(uuid())
+  eventId              String   @unique
+  eventName            String
+  eventType            String
+  eventDate            DateTime
+  startTime            String
+  endTime              String
+  venue                String
+  expectedGuests       Int
+  actualGuests         Int?
+  staffingPlan         Json
+  budget               Float
+  actualCost           Float?
+  status               String
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model HousekeepingTask {
+  id                   String   @id @default(uuid())
+  taskId               String   @unique
+  roomNumber           String
+  roomType             String
+  taskType             String
+  assignedTo           String?
+  priority             String
+  status               String
+  scheduledTime        DateTime
+  startTime            DateTime?
+  completionTime       DateTime?
+  duration             Int?
+  inspectionScore      Float?
+  notes                String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 }

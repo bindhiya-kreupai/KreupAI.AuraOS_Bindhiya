@@ -54,7 +54,7 @@ export default function CropsPage() {
             <div className="space-y-4 overflow-y-auto">
               {cropCycles.map((cycle) => (
                 <div
-                  key={cycle.cycleId || cycle.id}
+                  key={cycle.cycleId}
                   className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-900 p-5"
                 >
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
@@ -139,7 +139,7 @@ export default function CropsPage() {
               <div className="space-y-3">
                 {harvestSchedules.map((schedule) => (
                   <div
-                    key={schedule.scheduleId || schedule.id}
+                    key={schedule.scheduleId}
                     className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl"
                   >
                     <div className="flex justify-between items-center text-sm font-bold text-slate-700 dark:text-slate-200">

@@ -74,7 +74,7 @@ export default function AgricultureLaborPage() {
           ) : (
             workers.map((worker) => (
               <div
-                key={worker.workerId || worker.id}
+                key={worker.workerId}
                 className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col md:flex-row md:items-center justify-between hover:shadow-md transition-all"
               >
                 <div className="flex items-center gap-3 mb-4 md:mb-0">

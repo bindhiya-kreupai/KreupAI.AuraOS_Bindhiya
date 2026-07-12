@@ -208,7 +208,7 @@ export default function HousingPage() {
           ) : (
             visibleFacilities.map((facility) => (
               <div
-                key={facility.facilityId || facility.id}
+                key={facility.facilityId}
                 className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 flex flex-col md:flex-row md:items-center justify-between hover:shadow-md transition-all"
               >
                 <div className="flex items-center gap-3 mb-4 md:mb-0">
@@ -277,7 +277,7 @@ export default function HousingPage() {
             ) : (
               housingInspections.slice(0, 3).map((inspection) => (
                 <div
-                  key={inspection.inspectionId || inspection.id}
+                  key={inspection.inspectionId}
                   className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800"
                 >
                   <div className="flex justify-between items-start mb-1">

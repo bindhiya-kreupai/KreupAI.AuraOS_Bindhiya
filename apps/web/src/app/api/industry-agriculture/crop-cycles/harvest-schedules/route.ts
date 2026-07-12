@@ -1,7 +1,7 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { createProtectedRoute } from '@/lib/api/route-wrapper';
-import store from '../store';
+import store from '../../store';
 
 export const GET = createProtectedRoute(async () => {
   const schedules = await store.getHarvestSchedules();

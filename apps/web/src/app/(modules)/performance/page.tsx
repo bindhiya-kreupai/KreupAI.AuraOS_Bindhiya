@@ -14,7 +14,6 @@ import {
   Award,
   Grid3X3,
   Gauge,
-  Gauge,
   Eye,
   Search,
   Download,

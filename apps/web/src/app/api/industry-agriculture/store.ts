@@ -63,7 +63,7 @@ export async function seedIfEmpty() {
     store.workers = samples.sampleSeasonalWorkers || [];
     store.pools = samples.sampleLaborPools || [];
     store.facilities = samples.sampleHousingFacilities || [];
-    store.assignments = samples.sampleHousingAssignments || [];
+    store.assignments = (samples as any).sampleHousingAssignments || [];
     store.inspections = samples.sampleHousingInspections || [];
     store.cycles = samples.sampleCropCycles || [];
     store.schedules = samples.sampleHarvestSchedules || [];

@@ -13,6 +13,7 @@ import {
   Activity,
   Search,
   Download,
+  Award,
 } from 'lucide-react';
 import AnalyticsDashboard from '@/components/analytics/AnalyticsDashboard';
 
