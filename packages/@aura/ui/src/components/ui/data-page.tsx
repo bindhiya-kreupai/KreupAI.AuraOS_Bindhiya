@@ -286,7 +286,7 @@ export function DataPage<T extends { id: string | number }>({
                     data={filteredData}
                     columns={displayColumns}
                     onSearch={setSearchQuery}
-                    onRowClick={handleEdit}
+                    onRowClick={onSave ? handleEdit : undefined}
                     onExport={onExport}
                     onImport={onImport}
                     onFilter={onFilter}
