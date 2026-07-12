@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
+import { toast } from 'sonner';
 
 interface UserDeactivation {
   id: string;
@@ -94,7 +95,7 @@ export default function UserDeactivationPage() {
 
   const handleSave = async (record: Partial<UserDeactivation>) => {
     if (!record.userId) {
-      alert('Please select a user to deactivate');
+      toast.error('Please select a user to deactivate');
       return;
     }
 
@@ -122,12 +123,13 @@ export default function UserDeactivationPage() {
       if (response.ok) {
         await fetchData();
         router.refresh();
+        toast.success('User deactivated successfully');
       } else {
         const err = await response.json().catch(() => ({}));
-        alert(err.error || 'Failed to deactivate user');
+        toast.error(err.error || 'Failed to deactivate user');
       }
     } catch {
-      alert('Network error. Please try again.');
+      toast.error('Network error. Please try again.');
     }
   };
 

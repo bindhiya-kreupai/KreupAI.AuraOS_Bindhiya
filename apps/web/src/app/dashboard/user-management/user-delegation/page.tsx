@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
+import { toast } from 'sonner';
 
 interface UserDelegation {
   id: string;
@@ -131,13 +132,14 @@ export default function UserDelegationPage() {
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        alert(err.error || `Failed to ${isEdit ? 'update' : 'create'} delegation`);
+        toast.error(err.error || `Failed to ${isEdit ? 'update' : 'create'} delegation`);
         return;
       }
 
       await fetchData();
+      toast.success(`Delegation ${isEdit ? 'updated' : 'created'} successfully`);
     } catch {
-      alert('Network error. Please try again.');
+      toast.error('Network error. Please try again.');
     }
   };
 
@@ -147,12 +149,13 @@ export default function UserDelegationPage() {
       const res = await fetch(`/api/user-delegation/${record.id}`, { method: 'DELETE' });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        alert(err.error || 'Failed to delete delegation');
+        toast.error(err.error || 'Failed to delete delegation');
         return;
       }
       await fetchData();
+      toast.success('Delegation deleted successfully');
     } catch {
-      alert('Network error. Please try again.');
+      toast.error('Network error. Please try again.');
     }
   };
 

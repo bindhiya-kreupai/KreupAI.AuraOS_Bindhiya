@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { DataPage } from '@aura/ui/components/ui';
 import type { Column } from '@aura/ui/components/ui';
+import { toast } from 'sonner';
 
 interface License {
   id: string;
@@ -104,13 +105,14 @@ export default function LicensePage() {
 
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        alert(err.error || `Failed to ${isEdit ? 'update' : 'create'} license`);
+        toast.error(err.error || `Failed to ${isEdit ? 'update' : 'create'} license`);
         return;
       }
 
       await fetchData();
+      toast.success(`License ${isEdit ? 'updated' : 'created'} successfully`);
     } catch {
-      alert('Network error. Please try again.');
+      toast.error('Network error. Please try again.');
     }
   };
 
@@ -120,12 +122,13 @@ export default function LicensePage() {
       const res = await fetch(`/api/licenses/${record.id}`, { method: 'DELETE' });
       if (!res.ok) {
         const err = await res.json().catch(() => ({}));
-        alert(err.error || 'Failed to delete license');
+        toast.error(err.error || 'Failed to delete license');
         return;
       }
       await fetchData();
+      toast.success('License deleted successfully');
     } catch {
-      alert('Network error. Please try again.');
+      toast.error('Network error. Please try again.');
     }
   };
 
