@@ -708,17 +708,17 @@ model DocumentType {
 }
 
 model BusinessUnit {
-  id        String    @id(map: "BusinessUnit_pkey") @default(uuid())
-  code      String    @unique(map: "BusinessUnit_code_key")
-  name      String
-  head      String?
-  status    String    @default("Active")
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @default(now())
-  createdBy String?
-  updatedBy String?
-  deletedAt DateTime?
-  isDeleted Boolean   @default(false)
+  id          String       @id(map: "BusinessUnit_pkey") @default(uuid())
+  code        String       @unique(map: "BusinessUnit_code_key")
+  name        String
+  head        String?
+  status      String       @default("Active")
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @default(now())
+  createdBy   String?
+  updatedBy   String?
+  deletedAt   DateTime?
+  isDeleted   Boolean      @default(false)
   departments Department[]
 
   @@map("aura_business_unit")
@@ -4201,26 +4201,26 @@ model AIAgentMessage {
 // ============================================================================
 
 model ChatbotDialogueFlow {
-  id              String    @id @default(uuid())
-  tenantId        String
-  flowName        String
-  description     String?
-  category        String?
-  nodes           Json
-  connections     Json
-  variables       Json?
-  isActive        Boolean   @default(false)
-  version         String    @default("1.0")
-  status          String    @default("draft")
-  triggerIntents  Json?
-  tags            Json?
-  publishedAt     DateTime?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  createdBy       String?
-  updatedBy       String?
-  deletedAt       DateTime?
-  isDeleted       Boolean   @default(false)
+  id             String    @id @default(uuid())
+  tenantId       String
+  flowName       String
+  description    String?
+  category       String?
+  nodes          Json
+  connections    Json
+  variables      Json?
+  isActive       Boolean   @default(false)
+  version        String    @default("1.0")
+  status         String    @default("draft")
+  triggerIntents Json?
+  tags           Json?
+  publishedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  createdBy      String?
+  updatedBy      String?
+  deletedAt      DateTime?
+  isDeleted      Boolean   @default(false)
 
   @@index([tenantId], map: "ChatbotDialogueFlow_tenantId_idx")
   @@index([tenantId, status], map: "ChatbotDialogueFlow_tenantId_status_idx")
@@ -4229,7 +4229,7 @@ model ChatbotDialogueFlow {
 }
 
 model ChatbotIntent {
-  id                  String   @id @default(uuid())
+  id                  String    @id @default(uuid())
   tenantId            String
   intentName          String
   displayName         String?
@@ -4239,19 +4239,19 @@ model ChatbotIntent {
   responses           Json?
   parameters          Json?
   contexts            Json?
-  priority            Int      @default(0)
-  webhookEnabled      Boolean  @default(false)
+  priority            Int       @default(0)
+  webhookEnabled      Boolean   @default(false)
   webhookUrl          String?
-  isActive            Boolean  @default(true)
-  confidenceThreshold Float    @default(0.7)
-  usageCount          Int      @default(0)
+  isActive            Boolean   @default(true)
+  confidenceThreshold Float     @default(0.7)
+  usageCount          Int       @default(0)
   averageConfidence   Float?
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
   createdBy           String?
   updatedBy           String?
   deletedAt           DateTime?
-  isDeleted           Boolean  @default(false)
+  isDeleted           Boolean   @default(false)
 
   @@index([tenantId], map: "ChatbotIntent_tenantId_idx")
   @@index([tenantId, isActive], map: "ChatbotIntent_tenantId_active_idx")
@@ -4259,21 +4259,21 @@ model ChatbotIntent {
 }
 
 model ChatbotEntity {
-  id              String   @id @default(uuid())
+  id              String    @id @default(uuid())
   tenantId        String
   entityName      String
   entityType      String
   description     String?
   values          Json?
-  fuzzyMatching   Boolean  @default(false)
-  isCaseSensitive Boolean  @default(false)
-  status          String   @default("active")
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  fuzzyMatching   Boolean   @default(false)
+  isCaseSensitive Boolean   @default(false)
+  status          String    @default("active")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
   createdBy       String?
   updatedBy       String?
   deletedAt       DateTime?
-  isDeleted       Boolean  @default(false)
+  isDeleted       Boolean   @default(false)
 
   @@index([tenantId], map: "ChatbotEntity_tenantId_idx")
   @@index([tenantId, status], map: "ChatbotEntity_tenantId_status_idx")
@@ -4281,21 +4281,21 @@ model ChatbotEntity {
 }
 
 model ChatbotTrainingDataset {
-  id            String   @id @default(uuid())
+  id            String    @id @default(uuid())
   tenantId      String
   datasetName   String
   description   String?
-  language      String   @default("en")
-  totalExamples Int      @default(0)
+  language      String    @default("en")
+  totalExamples Int       @default(0)
   intents       Json?
   entities      Json?
-  status        String   @default("draft")
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  status        String    @default("draft")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
   createdBy     String?
   updatedBy     String?
   deletedAt     DateTime?
-  isDeleted     Boolean  @default(false)
+  isDeleted     Boolean   @default(false)
 
   @@index([tenantId], map: "ChatbotTrainingDataset_tenantId_idx")
   @@index([tenantId, status], map: "ChatbotTrainingDataset_tenantId_status_idx")
@@ -4303,21 +4303,21 @@ model ChatbotTrainingDataset {
 }
 
 model ChatbotTrainingExample {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   tenantId    String
   datasetId   String?
   text        String
   intent      String
   entities    Json?
-  language    String   @default("en")
-  source      String   @default("manual")
-  isValidated Boolean  @default(false)
+  language    String    @default("en")
+  source      String    @default("manual")
+  isValidated Boolean   @default(false)
   validatedBy String?
   addedBy     String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
-  isDeleted   Boolean  @default(false)
+  isDeleted   Boolean   @default(false)
 
   @@index([tenantId], map: "ChatbotTrainingExample_tenantId_idx")
   @@index([datasetId], map: "ChatbotTrainingExample_datasetId_idx")
@@ -4348,21 +4348,21 @@ model ChatbotChannel {
 }
 
 model ChatbotHandoffRule {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   tenantId    String
   ruleName    String
   description String?
-  priority    Int      @default(0)
-  isActive    Boolean  @default(true)
+  priority    Int       @default(0)
+  isActive    Boolean   @default(true)
   triggers    Json?
   conditions  Json?
   action      Json?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   createdBy   String?
   updatedBy   String?
   deletedAt   DateTime?
-  isDeleted   Boolean  @default(false)
+  isDeleted   Boolean   @default(false)
 
   @@index([tenantId], map: "ChatbotHandoffRule_tenantId_idx")
   @@index([tenantId, isActive], map: "ChatbotHandoffRule_tenantId_active_idx")
@@ -4370,21 +4370,21 @@ model ChatbotHandoffRule {
 }
 
 model ChatbotLanguage {
-  id                  String   @id @default(uuid())
+  id                  String    @id @default(uuid())
   tenantId            String
   languageCode        String
   languageName        String
-  isEnabled           Boolean  @default(false)
-  isDefault           Boolean  @default(false)
+  isEnabled           Boolean   @default(false)
+  isDefault           Boolean   @default(false)
   translationModel    String?
-  confidenceThreshold Float    @default(0.7)
+  confidenceThreshold Float     @default(0.7)
   supportedFeatures   Json?
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
   createdBy           String?
   updatedBy           String?
   deletedAt           DateTime?
-  isDeleted           Boolean  @default(false)
+  isDeleted           Boolean   @default(false)
 
   @@unique([tenantId, languageCode], map: "ChatbotLanguage_tenantId_code_key")
   @@index([tenantId], map: "ChatbotLanguage_tenantId_idx")
@@ -4392,41 +4392,41 @@ model ChatbotLanguage {
 }
 
 model ChatbotTranslation {
-  id                String   @id @default(uuid())
+  id                String    @id @default(uuid())
   tenantId          String
   sourceLanguage    String
   targetLanguage    String
   sourceText        String
   translatedText    String
-  translationMethod String   @default("automatic")
+  translationMethod String    @default("automatic")
   quality           Float?
   translatedBy      String?
-  translatedDate    DateTime @default(now())
-  isApproved        Boolean  @default(false)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  translatedDate    DateTime  @default(now())
+  isApproved        Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
   createdBy         String?
   updatedBy         String?
   deletedAt         DateTime?
-  isDeleted         Boolean  @default(false)
+  isDeleted         Boolean   @default(false)
 
   @@index([tenantId], map: "ChatbotTranslation_tenantId_idx")
   @@map("aura_chatbot_translation")
 }
 
 model ChatbotLanguageContent {
-  id              String   @id @default(uuid())
+  id              String    @id @default(uuid())
   tenantId        String
   contentType     String
   referenceId     String
   translations    Json
   defaultLanguage String
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
   createdBy       String?
   updatedBy       String?
   deletedAt       DateTime?
-  isDeleted       Boolean  @default(false)
+  isDeleted       Boolean   @default(false)
 
   @@unique([tenantId, contentType, referenceId], map: "ChatbotContent_tenantId_type_ref_key")
   @@index([tenantId], map: "ChatbotLanguageContent_tenantId_idx")
@@ -4434,42 +4434,42 @@ model ChatbotLanguageContent {
 }
 
 model ChatbotLanguageDetection {
-  id                   String   @id @default(uuid())
+  id                   String    @id @default(uuid())
   tenantId             String
   text                 String
   detectedLanguage     String
   confidence           Float
   alternativeLanguages Json?
-  timestamp            DateTime @default(now())
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  timestamp            DateTime  @default(now())
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
   createdBy            String?
   updatedBy            String?
   deletedAt            DateTime?
-  isDeleted            Boolean  @default(false)
+  isDeleted            Boolean   @default(false)
 
   @@index([tenantId], map: "ChatbotLangDetection_tenantId_idx")
   @@map("aura_chatbot_language_detection")
 }
 
 model ChatbotLocalizationSettings {
-  id                              String   @id @default(uuid())
-  tenantId                        String   @unique(map: "ChatbotLocalization_tenantId_key")
-  autoDetectLanguage              Boolean  @default(false)
-  fallbackLanguage                String   @default("en")
-  supportedLanguages              Json?
-  translationProvider             String   @default("google")
-  translationApiKey               String?
-  enableAutoTranslation           Boolean  @default(false)
-  requireApprovalForAutoTranslation Boolean @default(true)
-  lastUpdatedAt                   DateTime @default(now())
-  lastUpdatedBy                   String?
-  createdAt                       DateTime @default(now())
-  updatedAt                       DateTime @updatedAt
-  createdBy                       String?
-  updatedBy                       String?
-  deletedAt                       DateTime?
-  isDeleted                       Boolean  @default(false)
+  id                                String    @id @default(uuid())
+  tenantId                          String    @unique(map: "ChatbotLocalization_tenantId_key")
+  autoDetectLanguage                Boolean   @default(false)
+  fallbackLanguage                  String    @default("en")
+  supportedLanguages                Json?
+  translationProvider               String    @default("google")
+  translationApiKey                 String?
+  enableAutoTranslation             Boolean   @default(false)
+  requireApprovalForAutoTranslation Boolean   @default(true)
+  lastUpdatedAt                     DateTime  @default(now())
+  lastUpdatedBy                     String?
+  createdAt                         DateTime  @default(now())
+  updatedAt                         DateTime  @updatedAt
+  createdBy                         String?
+  updatedBy                         String?
+  deletedAt                         DateTime?
+  isDeleted                         Boolean   @default(false)
 
   @@index([tenantId], map: "ChatbotLocalization_tenantId_idx")
   @@map("aura_chatbot_localization_settings")
@@ -16348,8 +16348,8 @@ model ComplianceRiskRegisterEntry {
 model ComplianceRegisterEvidence {
   id             String    @id @default(uuid())
   tenantId       String
-  targetType     String    // CHECKLIST | RISK | CAPA
-  targetId       String    // itemCode / riskCode / capaId
+  targetType     String // CHECKLIST | RISK | CAPA
+  targetId       String // itemCode / riskCode / capaId
   fileName       String
   fileUrl        String
   mimeType       String
@@ -16372,19 +16372,153 @@ model ComplianceRegisterEvidence {
 }
 
 model ComplianceRegisterTimelineEvent {
-  id          String    @id @default(uuid())
+  id          String   @id @default(uuid())
   tenantId    String
-  targetType  String    // CHECKLIST | RISK | CAPA
-  targetId    String    // itemCode / riskCode / capaId
-  eventType   String    // CREATED | EVIDENCE_UPLOADED | CONTROL_REVIEWED | RISK_ACCEPTED | RISK_MITIGATED | CAPA_CREATED | CAPA_CLOSED | APPROVED | REJECTED
+  targetType  String // CHECKLIST | RISK | CAPA
+  targetId    String // itemCode / riskCode / capaId
+  eventType   String // CREATED | EVIDENCE_UPLOADED | CONTROL_REVIEWED | RISK_ACCEPTED | RISK_MITIGATED | CAPA_CREATED | CAPA_CLOSED | APPROVED | REJECTED
   title       String
   description String?
   userId      String?
   userName    String?
-  timestamp   DateTime  @default(now())
-  createdAt   DateTime  @default(now())
+  timestamp   DateTime @default(now())
+  createdAt   DateTime @default(now())
 
   @@index([tenantId])
   @@index([targetType, targetId])
   @@map("aura_compliance_register_timeline")
+}
+
+model RecordsDocumentMatrix {
+  id                   String  @id @default(cuid())
+  tenantId             String
+  country              String
+  documentCode         String
+  label                String
+  category             String
+  isMandatory          Boolean @default(true)
+  appliesWhen          String?
+  retentionYears       Int     @default(7)
+  renewalCadenceMonths Int?
+  sensitivity          String  @default("CONFIDENTIAL")
+  regulatorRef         String?
+  notes                String?
+  status               String  @default("ACTIVE")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, country, documentCode], name: "aura_records_document_matrix_unique")
+  @@index([tenantId])
+  @@map("records_document_matrix")
+}
+
+model RecordsCompletenessSnapshot {
+  id         String  @id @default(cuid())
+  tenantId   String
+  period     String
+  employeeId String
+  country    String?
+
+  mandatoryTotal   Int
+  mandatoryPresent Int
+  mandatoryMissing Int
+  expiringWithin30 Int @default(0)
+  expired          Int @default(0)
+
+  score        Float
+  band         String
+  missingCodes Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, period, employeeId], name: "aura_records_completeness_snapshot_unique")
+  @@index([tenantId, period])
+  @@map("records_completeness_snapshot")
+}
+
+model RecordsAuditChecklistItem {
+  id          String  @id @default(cuid())
+  tenantId    String
+  itemCode    String
+  label       String
+  category    String
+  country     String?
+  expectation String?
+  severity    String  @default("MEDIUM")
+
+  lastReviewedAt DateTime?
+  lastReviewedBy String?
+  lastResult     String?
+  notes          String?
+
+  status String @default("ACTIVE")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, itemCode], name: "aura_records_audit_checklist_item_unique")
+  @@index([tenantId])
+  @@map("records_audit_checklist_item")
+}
+
+model RecordsRiskEntry {
+  id         String  @id @default(cuid())
+  tenantId   String
+  riskCode   String
+  title      String
+  category   String
+  country    String?
+  likelihood Int
+  impact     Int
+  score      Int
+  band       String
+  ownerId    String?
+  mitigation String?
+  status     String  @default("OPEN")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, riskCode], name: "aura_records_risk_entry_unique")
+  @@index([tenantId])
+  @@map("records_risk_entry")
+}
+
+model RecordsComplianceCertificate {
+  id       String @id @default(cuid())
+  tenantId String
+  period   String
+
+  status String @default("DRAFT")
+
+  employeesEvaluated Int
+  averageScore       Float
+  greenEmployees     Int
+  amberEmployees     Int
+  redEmployees       Int
+
+  mandatoryMissingTotal Int
+  expiredDocsTotal      Int
+
+  checklistFailing  Int
+  checklistOverdue  Int
+  criticalRisksOpen Int
+
+  gatingReason String?
+
+  metricsJson      Json?
+  attestationsJson Json?
+
+  generatedAt DateTime
+  signedAt    DateTime?
+  signedBy    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, period], name: "aura_records_compliance_certificate_unique")
+  @@index([tenantId])
+  @@map("records_compliance_certificate")
 }
