@@ -44,14 +44,14 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
     }
 
     if (fromDate || toDate) {
-      where.createdAt = {};
+      where.timestamp = {};
       if (fromDate) {
-        where.createdAt.gte = new Date(
+        where.timestamp.gte = new Date(
           fromDate.includes('T') ? fromDate : `${fromDate}T00:00:00.000Z`
         );
       }
       if (toDate) {
-        where.createdAt.lte = new Date(toDate.includes('T') ? toDate : `${toDate}T23:59:59.999Z`);
+        where.timestamp.lte = new Date(toDate.includes('T') ? toDate : `${toDate}T23:59:59.999Z`);
       }
     }
 
@@ -71,6 +71,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
           success: true,
           metadata: true,
           userEmail: true,
+          timestamp: true,
           createdAt: true,
           user: {
             select: {
@@ -82,7 +83,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
         },
         skip: (page - 1) * limit,
         take: limit,
-        orderBy: { createdAt: 'desc' },
+        orderBy: { timestamp: 'desc' },
       }),
       prisma.auditLog.count({ where }),
     ]);

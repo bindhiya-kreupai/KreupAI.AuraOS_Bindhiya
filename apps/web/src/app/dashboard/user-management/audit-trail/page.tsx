@@ -19,6 +19,7 @@ interface AuditLog {
   ipAddress: string | null;
   success: boolean;
   metadata: Record<string, unknown> | null;
+  timestamp: string;
   createdAt: string;
 }
 
@@ -38,25 +39,34 @@ const SEVERITY_STYLES: Record<string, string> = {
 
 const ACTION_OPTIONS = [
   'CREATE',
+  'READ',
   'UPDATE',
   'DELETE',
   'LOGIN',
   'LOGOUT',
+  'LOGIN_SUCCESS',
   'EMPLOYEE_CREATED',
   'EMPLOYEE_UPDATED',
   'EMPLOYEE_DELETED',
   'EMPLOYEE_TERMINATED',
+  'EMPLOYEE_REHIRED',
   'PAYROLL_RUN_INITIATED',
   'PAYROLL_RUN_APPROVED',
   'PAYROLL_RUN_REJECTED',
+  'PAYSLIP_GENERATED',
+  'PAYSLIP_VIEWED',
   'SALARY_UPDATED',
   'LEAVE_REQUEST_CREATED',
   'LEAVE_REQUEST_APPROVED',
   'LEAVE_REQUEST_REJECTED',
   'LEAVE_REQUEST_CANCELLED',
+  'LEAVE_POLICY_CREATED',
+  'LEAVE_POLICY_UPDATED',
+  'LEAVE_ENCASHMENT_REQUESTED',
   'ATTENDANCE_MARKED',
   'ATTENDANCE_UPDATED',
   'ATTENDANCE_REGULARIZED',
+  'BULK_ATTENDANCE_IMPORTED',
   'USER_LOGIN',
   'USER_LOGOUT',
   'USER_LOGIN_FAILED',
@@ -70,11 +80,52 @@ const ACTION_OPTIONS = [
   'REPORT_GENERATED',
   'REPORT_DOWNLOADED',
   'SETTINGS_UPDATED',
+  'INTEGRATION_CONFIGURED',
   'API_KEY_CREATED',
   'API_KEY_REVOKED',
   'MFA_ENABLED',
   'MFA_VERIFIED',
   'MFA_DISABLED',
+  'MFA_SETUP_INITIATED',
+  'MFA_VALIDATION_FAILED',
+  'COMMENT_ATTENDANCE_REGULARIZATION',
+  'COMMENT_COMP_OFF_REQUEST',
+  'COMMENT_CONFIRMATION_REQUEST',
+  'COMMENT_EMPLOYMENT_HISTORY',
+  'COMMENT_EXIT_REQUEST',
+  'COMMENT_EXPENSE_CLAIM',
+  'COMMENT_INTER_COMPANY_TRANSFER',
+  'COMMENT_LEAVE_REQUEST',
+  'COMMENT_OVERTIME_REQUEST',
+  'COMMENT_SHIFT_SWAP_REQUEST',
+  'APPROVE_ATTENDANCE_REGULARIZATION',
+  'APPROVE_COMP_OFF_REQUEST',
+  'APPROVE_CONFIRMATION_REQUEST',
+  'APPROVE_EMPLOYMENT_HISTORY_CHANGE',
+  'APPROVE_EXIT_REQUEST',
+  'APPROVE_EXPENSE_CLAIM',
+  'APPROVE_INTER_COMPANY_TRANSFER',
+  'APPROVE_LEAVE_REQUEST',
+  'APPROVE_OVERTIME_REQUEST',
+  'APPROVE_SHIFT_SWAP_REQUEST',
+  'REJECT_ATTENDANCE_REGULARIZATION',
+  'REJECT_COMP_OFF_REQUEST',
+  'REJECT_CONFIRMATION_REQUEST',
+  'REJECT_EMPLOYMENT_HISTORY_CHANGE',
+  'REJECT_EXIT_REQUEST',
+  'REJECT_EXPENSE_CLAIM',
+  'REJECT_INTER_COMPANY_TRANSFER',
+  'REJECT_LEAVE_REQUEST',
+  'REJECT_OVERTIME_REQUEST',
+  'REJECT_SHIFT_SWAP_REQUEST',
+  'CANCEL_INTERVIEW',
+  'REQUEST_DOCUMENT',
+  'COMPANY_CREATED',
+  'COMPANY_UPDATED',
+  'COMPANY_DELETED',
+  'COMPANY_ACTIVATED',
+  'COMPANY_SUSPENDED',
+  'REQUEST_INFO',
 ];
 
 export default function AuditTrailPage() {
@@ -157,7 +208,7 @@ export default function AuditTrailPage() {
       'IP Address',
     ];
     const rows = allData.map((row) => [
-      new Date(row.createdAt).toISOString(),
+      new Date(row.timestamp).toISOString(),
       row.user?.email || row.userEmail || 'System',
       row.action,
       row.severity,
@@ -226,11 +277,11 @@ export default function AuditTrailPage() {
 
   const columns: Column<AuditLog>[] = [
     {
-      key: 'createdAt',
+      key: 'timestamp',
       header: 'Timestamp',
       width: '170px',
       render: (row) => (
-        <span className="text-xs text-silver-mist">{new Date(row.createdAt).toLocaleString()}</span>
+        <span className="text-xs text-silver-mist">{new Date(row.timestamp).toLocaleString()}</span>
       ),
     },
     {
