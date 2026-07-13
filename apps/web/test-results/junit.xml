@@ -1,148 +1,75 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuites name="vitest tests" tests="34" failures="1" errors="0" time="4.1324672">
-    <testsuite name="src/__tests__/integration/employees/employees.test.ts" timestamp="2026-07-04T08:42:53.423Z" hostname="DESKTOP-2HC5NM6" tests="34" failures="1" errors="0" skipped="33" time="4.1324672">
-        <testcase classname="src/__tests__/integration/employees/employees.test.ts" name="Employee API Integration Tests &gt; GET /api/v1/employees &gt; should list all employees for tenant" time="0">
-            <skipped/>
+<testsuites name="vitest tests" tests="34" failures="0" errors="0" time="0.0937954">
+    <testsuite name="src/lib/services/__tests__/compliance-audit-register.service.test.ts" timestamp="2026-07-08T17:39:02.308Z" hostname="DESKTOP-2HC5NM6" tests="18" failures="0" errors="0" skipped="0" time="0.0633037">
+        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="Seeds + supported domains &gt; ships seeds for all 5 Theme C domains" time="0.0069228">
         </testcase>
-        <testcase classname="src/__tests__/integration/employees/employees.test.ts" name="Employee API Integration Tests &gt; GET /api/v1/employees &gt; should filter employees by company ID" time="0">
-            <skipped/>
+        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="Seeds + supported domains &gt; each domain has at least 1 checklist seed and 1 risk seed" time="0.0022211">
         </testcase>
-        <testcase classname="src/__tests__/integration/employees/employees.test.ts" name="Employee API Integration Tests &gt; GET /api/v1/employees &gt; should filter employees by department ID" time="0">
-            <skipped/>
+        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="riskBandFromScore &gt; LOW for score 1-3" time="0.0022386">
         </testcase>
-        <testcase classname="src/__tests__/integration/employees/employees.test.ts" name="Employee API Integration Tests &gt; GET /api/v1/employees &gt; should search employees by name or email" time="0">
-            <skipped/>
+        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="riskBandFromScore &gt; MEDIUM for score 4-8" time="0.00208">
         </testcase>
-        <testcase classname="src/__tests__/integration/employees/employees.test.ts" name="Employee API Integration Tests &gt; GET /api/v1/employees &gt; should paginate results" time="0">
-            <skipped/>
+        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="riskBandFromScore &gt; HIGH for score 9-15" time="0.0015433">
         </testcase>
-        <testcase classname="src/__tests__/integration/employees/employees.test.ts" name="Employee API Integration Tests &gt; GET /api/v1/employees &gt; should enforce maximum limit of 100 per page" time="0">
-            <skipped/>
+        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="riskBandFromScore &gt; CRITICAL for score &gt;= 16" time="0.0016449">
         </testcase>
-        <testcase classname="src/__tests__/integration/employees/employees.test.ts" name="Employee API Integration Tests &gt; GET /api/v1/employees &gt; should sort employees by specified field" time="0">
-            <skipped/>
+        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="ComplianceChecklistService &gt; seed rejects unknown domain" time="0.0050028">
         </testcase>
-        <testcase classname="src/__tests__/integration/employees/employees.test.ts" name="Employee API Integration Tests &gt; GET /api/v1/employees &gt; should require authentication" time="0">
-            <skipped/>
+        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="ComplianceChecklistService &gt; seed reports created codes for ER" time="0.0022644">
         </testcase>
-        <testcase classname="src/__tests__/integration/employees/employees.test.ts" name="Employee API Integration Tests &gt; GET /api/v1/employees &gt; should enforce tenant isolation" time="0">
-            <skipped/>
+        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="ComplianceChecklistService &gt; marking item COMPLIANT sets completedAt + completedBy" time="0.002894">
         </testcase>
-        <testcase classname="src/__tests__/integration/employees/employees.test.ts" name="Employee API Integration Tests &gt; POST /api/v1/employees &gt; should create employee with valid data" time="0">
-            <skipped/>
+        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="ComplianceRiskService &gt; upsert rejects likelihood outside 1-5" time="0.0027996">
         </testcase>
-        <testcase classname="src/__tests__/integration/employees/employees.test.ts" name="Employee API Integration Tests &gt; POST /api/v1/employees &gt; should return 400 for missing required fields" time="0">
-            <skipped/>
+        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="ComplianceRiskService &gt; upsert rejects impact outside 1-5" time="0.001823">
         </testcase>
-        <testcase classname="src/__tests__/integration/employees/employees.test.ts" name="Employee API Integration Tests &gt; POST /api/v1/employees &gt; should return 400 for invalid email format" time="0">
-            <skipped/>
+        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="ComplianceRiskService &gt; upsert derives score = likelihood × impact and correct band" time="0.0017455">
         </testcase>
-        <testcase classname="src/__tests__/integration/employees/employees.test.ts" name="Employee API Integration Tests &gt; POST /api/v1/employees &gt; should return 400 for invalid UUID formats" time="0">
-            <skipped/>
+        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="ComplianceRiskService &gt; upsert derives MEDIUM for L×I = 6" time="0.0015848">
         </testcase>
-        <testcase classname="src/__tests__/integration/employees/employees.test.ts" name="Employee API Integration Tests &gt; POST /api/v1/employees &gt; should return 409 for duplicate employee code" time="0">
-            <skipped/>
+        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="ComplianceRiskService &gt; seed reports created codes for VISA_EXIT" time="0.0021654">
         </testcase>
-        <testcase classname="src/__tests__/integration/employees/employees.test.ts" name="Employee API Integration Tests &gt; POST /api/v1/employees &gt; should create audit log on employee creation" time="0">
-            <skipped/>
+        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="ComplianceRiskService &gt; review sets reviewedAt + reviewedBy + status" time="0.0018996">
         </testcase>
-        <testcase classname="src/__tests__/integration/employees/employees.test.ts" name="Employee API Integration Tests &gt; GET /api/v1/employees/:id &gt; should get employee by ID" time="0">
-            <skipped/>
+        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="dashboardSummary &gt; returns one row per supported domain with counters" time="0.0046288">
         </testcase>
-        <testcase classname="src/__tests__/integration/employees/employees.test.ts" name="Employee API Integration Tests &gt; GET /api/v1/employees/:id &gt; should return 404 for non-existent employee" time="0">
-            <skipped/>
+        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="Theme D — hr-forms-compliance default templates &gt; includes MISCONDUCT_REPORT, EOSB_CALC_SHEET, VISA_EXIT_CHECKLIST, EMPLOYEE_FILE_AUDIT_SHEET" time="0.0069717">
         </testcase>
-        <testcase classname="src/__tests__/integration/employees/employees.test.ts" name="Employee API Integration Tests &gt; GET /api/v1/employees/:id &gt; should return 400 for invalid ID format" time="0">
-            <skipped/>
+        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="Theme D — hr-forms-compliance default templates &gt; EOSB_CALC_SHEET writebackTarget points at eosb.calculation" time="0.0012695">
         </testcase>
-        <testcase classname="src/__tests__/integration/employees/employees.test.ts" name="Employee API Integration Tests &gt; GET /api/v1/employees/:id &gt; should require authentication" time="0">
-            <skipped/>
+    </testsuite>
+    <testsuite name="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" timestamp="2026-07-08T17:39:02.327Z" hostname="DESKTOP-2HC5NM6" tests="16" failures="0" errors="0" skipped="0" time="0.0304917">
+        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist canonicalizing redirect stubs &gt; AURA-361 checklist-items redirects to canonical route" time="0.0064817">
         </testcase>
-        <testcase classname="src/__tests__/integration/employees/employees.test.ts" name="Employee API Integration Tests &gt; PUT /api/v1/employees/:id &gt; should update employee with valid data" time="0">
-            <skipped/>
+        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist canonicalizing redirect stubs &gt; AURA-362 mandatory-enforcement redirects to canonical route" time="0.0015106">
         </testcase>
-        <testcase classname="src/__tests__/integration/employees/employees.test.ts" name="Employee API Integration Tests &gt; PUT /api/v1/employees/:id &gt; should partially update employee" time="0">
-            <skipped/>
+        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist canonicalizing redirect stubs &gt; AURA-363 per-domain-seeds redirects to canonical route" time="0.0034398">
         </testcase>
-        <testcase classname="src/__tests__/integration/employees/employees.test.ts" name="Employee API Integration Tests &gt; PUT /api/v1/employees/:id &gt; should return 404 for non-existent employee" time="0">
-            <skipped/>
+        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist canonicalizing redirect stubs &gt; AURA-364 risk-register-band redirects to canonical route" time="0.001408">
         </testcase>
-        <testcase classname="src/__tests__/integration/employees/employees.test.ts" name="Employee API Integration Tests &gt; PUT /api/v1/employees/:id &gt; should return 400 for invalid email format" time="0">
-            <skipped/>
+        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist re-export stubs resolve to existing feature pages &gt; AURA-374 annual-targets re-exports the canonical feature page" time="0.0013276">
         </testcase>
-        <testcase classname="src/__tests__/integration/employees/employees.test.ts" name="Employee API Integration Tests &gt; PUT /api/v1/employees/:id &gt; should create audit log on employee update" time="0">
-            <skipped/>
+        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist re-export stubs resolve to existing feature pages &gt; AURA-375 checkpoint-snapshots re-exports the canonical feature page" time="0.0006274">
         </testcase>
-        <testcase classname="src/__tests__/integration/employees/employees.test.ts" name="Employee API Integration Tests &gt; DELETE /api/v1/employees/:id &gt; should delete employee" time="0">
-            <skipped/>
+        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist re-export stubs resolve to existing feature pages &gt; AURA-376 establishment-scope re-exports the canonical feature page" time="0.0005456">
         </testcase>
-        <testcase classname="src/__tests__/integration/employees/employees.test.ts" name="Employee API Integration Tests &gt; DELETE /api/v1/employees/:id &gt; should return 404 for non-existent employee" time="0">
-            <skipped/>
+        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist re-export stubs resolve to existing feature pages &gt; AURA-377 monthly-certificate re-exports the canonical feature page" time="0.0004273">
         </testcase>
-        <testcase classname="src/__tests__/integration/employees/employees.test.ts" name="Employee API Integration Tests &gt; DELETE /api/v1/employees/:id &gt; should create audit log on employee deletion" time="0">
-            <skipped/>
+        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist re-export stubs resolve to existing feature pages &gt; AURA-357 checklist-templates re-exports the canonical feature page" time="0.0007907">
         </testcase>
-        <testcase classname="src/__tests__/integration/employees/employees.test.ts" name="Employee API Integration Tests &gt; DELETE /api/v1/employees/:id &gt; should require authentication" time="0">
-            <skipped/>
+        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist re-export stubs resolve to existing feature pages &gt; AURA-358 compliance-certificates re-exports the canonical feature page" time="0.0006301">
         </testcase>
-        <testcase classname="src/__tests__/integration/employees/employees.test.ts" name="Employee API Integration Tests &gt; Error Handling &gt; should handle database connection errors gracefully" time="0">
-            <skipped/>
+        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist re-export stubs resolve to existing feature pages &gt; AURA-359 exception-register re-exports the canonical feature page" time="0.0005453">
         </testcase>
-        <testcase classname="src/__tests__/integration/employees/employees.test.ts" name="Employee API Integration Tests &gt; Error Handling &gt; should return proper error codes for validation failures" time="0">
-            <skipped/>
+        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist re-export stubs resolve to existing feature pages &gt; AURA-360 run-workspace re-exports the canonical feature page" time="0.0004796">
         </testcase>
-        <testcase classname="src/__tests__/integration/employees/employees.test.ts" name="Employee API Integration Tests &gt; Error Handling &gt; should include request ID in error responses" time="0">
-            <skipped/>
+        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist re-export stubs resolve to existing feature pages &gt; AURA-365 annual-audit-plan re-exports the canonical feature page" time="0.0005419">
         </testcase>
-        <testcase classname="src/__tests__/integration/employees/employees.test.ts" name="Employee API Integration Tests &gt; Performance &gt; should respond within acceptable time" time="0">
-            <skipped/>
+        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist re-export stubs resolve to existing feature pages &gt; AURA-366 monthly-calendar-certificate re-exports the canonical feature page" time="0.000334">
         </testcase>
-        <testcase classname="src/__tests__/integration/employees/employees.test.ts" name="Employee API Integration Tests &gt; Performance &gt; should handle large result sets efficiently" time="0">
-            <skipped/>
+        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist re-export stubs resolve to existing feature pages &gt; AURA-367 recurrence-rules re-exports the canonical feature page" time="0.0005907">
         </testcase>
-        <testcase classname="src/__tests__/integration/employees/employees.test.ts" name="Employee API Integration Tests" time="4.1267091">
-            <system-err>
-❌ Failed to connect to test database: PrismaClientInitializationError: Can&apos;t reach database server at `localhost:5432`
-
-Please make sure your database server is running at `localhost:5432`.
-    at t (D:\KreupAI\KreupAI.AuraOS\node_modules\[4m.pnpm[24m\@prisma+client@5.22.0_prisma@5.22.0\node_modules\[4m@prisma\client[24m\runtime\library.js:112:2488)
-    at setupTestDb (D:/KreupAI/KreupAI.AuraOS/apps/web/src/__tests__/helpers/test-db.ts:39:5)
-    at D:/KreupAI/KreupAI.AuraOS/apps/web/src/__tests__/integration/employees/employees.test.ts:22:14 {
-  clientVersion: [32m&apos;5.22.0&apos;[39m,
-  errorCode: [32m&apos;P1001&apos;[39m
-}
-
-❌ Failed to disconnect from test database: TypeError: Cannot read properties of undefined (reading &apos;$disconnect&apos;)
-    at teardownTestDb (D:/KreupAI/KreupAI.AuraOS/apps/web/src/__tests__/helpers/test-db.ts:54:18)
-    at D:/KreupAI/KreupAI.AuraOS/apps/web/src/__tests__/integration/employees/employees.test.ts:35:11
-    at wrapper (file:///D:/KreupAI/KreupAI.AuraOS/node_modules/[4m.pnpm[24m/@vitest+runner@4.1.9/node_modules/[4m@vitest/runner[24m/dist/chunk-artifact.js:888:28)
-    at file:///D:/KreupAI/KreupAI.AuraOS/node_modules/[4m.pnpm[24m/@vitest+runner@4.1.9/node_modules/[4m@vitest/runner[24m/dist/chunk-artifact.js:294:11
-    at file:///D:/KreupAI/KreupAI.AuraOS/node_modules/[4m.pnpm[24m/@vitest+runner@4.1.9/node_modules/[4m@vitest/runner[24m/dist/chunk-artifact.js:901:10
-    at file:///D:/KreupAI/KreupAI.AuraOS/node_modules/[4m.pnpm[24m/@vitest+runner@4.1.9/node_modules/[4m@vitest/runner[24m/dist/chunk-artifact.js:2305:20
-    at new Promise (&lt;anonymous&gt;)
-    at runWithTimeout (file:///D:/KreupAI/KreupAI.AuraOS/node_modules/[4m.pnpm[24m/@vitest+runner@4.1.9/node_modules/[4m@vitest/runner[24m/dist/chunk-artifact.js:2272:10)
-    at file:///D:/KreupAI/KreupAI.AuraOS/node_modules/[4m.pnpm[24m/@vitest+runner@4.1.9/node_modules/[4m@vitest/runner[24m/dist/chunk-artifact.js:2621:52
-    at run (file:///D:/KreupAI/KreupAI.AuraOS/node_modules/[4m.pnpm[24m/@vitest+runner@4.1.9/node_modules/[4m@vitest/runner[24m/dist/chunk-artifact.js:1150:20)
-
-            </system-err>
-            <failure message="Can&apos;t reach database server at `localhost:5432`
-
-Please make sure your database server is running at `localhost:5432`." type="PrismaClientInitializationError">
-PrismaClientInitializationError: Can&apos;t reach database server at `localhost:5432`
-
-Please make sure your database server is running at `localhost:5432`.
- ❯ t ../../node_modules/.pnpm/@prisma+client@5.22.0_prisma@5.22.0/node_modules/@prisma/client/runtime/library.js:112:2488
- ❯ setupTestDb src/__tests__/helpers/test-db.ts:39:5
- ❯ src/__tests__/integration/employees/employees.test.ts:22:14
-
-⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
-Serialized Error: { clientVersion: &apos;5.22.0&apos;, errorCode: &apos;P1001&apos; }
-            </failure>
-            <failure message="Cannot read properties of undefined (reading &apos;$disconnect&apos;)" type="TypeError">
-TypeError: Cannot read properties of undefined (reading &apos;$disconnect&apos;)
- ❯ teardownTestDb src/__tests__/helpers/test-db.ts:54:18
- ❯ src/__tests__/integration/employees/employees.test.ts:35:11
-            </failure>
+        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist re-export stubs resolve to existing feature pages &gt; AURA-368 task-register re-exports the canonical feature page" time="0.0003222">
         </testcase>
     </testsuite>
 </testsuites>
