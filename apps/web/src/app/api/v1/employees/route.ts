@@ -109,7 +109,11 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
     const sortOrder = (searchParams.get('sortOrder') as 'asc' | 'desc') || 'desc';
 
     // Build where clause with tenant scoping
-    const where: Record<string, unknown> = { tenantId };
+    const where: any = {
+      company: {
+        tenantId,
+      },
+    };
 
     if (companyId) where.companyId = companyId;
     if (departmentId) where.departmentId = departmentId;
