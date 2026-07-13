@@ -62,9 +62,11 @@ export default function DisclosureChecklistPage() {
   const [verdict, setVerdict] = useState<any>(null);
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     async function loadData() {
+      setIsLoading(true);
       try {
         const res = await fetch('/api/v1/esg-compliance/sustainability?action=disclosure');
         const data = await res.json();
@@ -73,6 +75,8 @@ export default function DisclosureChecklistPage() {
         }
       } catch (err) {
         console.error('Failed to load disclosures', err);
+      } finally {
+        setIsLoading(false);
       }
     }
     loadData();
@@ -192,65 +196,77 @@ export default function DisclosureChecklistPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-                    {disclosures.map((d, index) => (
-                      <tr key={d.code} className="hover:bg-slate-50 dark:hover:bg-slate-850/30">
-                        <td className="px-4 py-3 text-center">
-                          <button
-                            onClick={() => toggleFiled(index)}
-                            className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded text-slate-600 dark:text-slate-350 transition-colors"
-                          >
-                            {d.filed ? (
-                              <CheckSquare className="w-5 h-5 text-emerald-600 dark:text-emerald-450" />
-                            ) : (
-                              <Square className="w-5 h-5 text-slate-300 dark:text-slate-600" />
-                            )}
-                          </button>
-                        </td>
-                        <td className="px-4 py-3 max-w-sm">
-                          <p className="font-semibold text-slate-900 dark:text-white">{d.label}</p>
-                          <p className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5">
-                            {d.code}
-                          </p>
-                          {d.labelAr && (
-                            <p
-                              className="text-[10px] text-slate-400 dark:text-slate-500 mt-0.5"
-                              dir="rtl"
-                            >
-                              {d.labelAr}
-                            </p>
-                          )}
-                        </td>
-                        <td className="px-4 py-3">
-                          <span
-                            className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${
-                              d.mandatory
-                                ? 'bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 text-amber-700 dark:text-amber-455'
-                                : 'bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400'
-                            }`}
-                          >
-                            {d.mandatory ? 'MANDATORY' : 'OPTIONAL'}
-                          </span>
-                        </td>
-                        <td className="px-4 py-3">
-                          {d.filed ? (
-                            <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 max-w-[125px]">
-                              <Calendar className="w-3 h-3 text-slate-400" />
-                              <input
-                                type="date"
-                                value={d.filedAt || ''}
-                                onChange={(e) => handleDateChange(index, e.target.value)}
-                                className="bg-transparent text-slate-700 dark:text-slate-200 font-medium outline-none text-[10px] w-full"
-                              />
-                            </div>
-                          ) : (
-                            <span className="text-slate-400 dark:text-slate-550 font-mono">—</span>
-                          )}
-                        </td>
-                        <td className="px-4 py-3 font-semibold text-slate-600 dark:text-slate-455">
-                          {d.cadenceDays ? `${d.cadenceDays}d` : 'None'}
-                        </td>
-                      </tr>
-                    ))}
+                    {isLoading
+                      ? Array.from({ length: 3 }).map((_, i) => (
+                          <tr key={`skel-${i}`} className="animate-pulse">
+                            <td colSpan={5} className="px-4 py-4">
+                              <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-full"></div>
+                            </td>
+                          </tr>
+                        ))
+                      : disclosures.map((d, index) => (
+                          <tr key={d.code} className="hover:bg-slate-50 dark:hover:bg-slate-850/30">
+                            <td className="px-4 py-3 text-center">
+                              <button
+                                onClick={() => toggleFiled(index)}
+                                className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded text-slate-600 dark:text-slate-350 transition-colors"
+                              >
+                                {d.filed ? (
+                                  <CheckSquare className="w-5 h-5 text-emerald-600 dark:text-emerald-450" />
+                                ) : (
+                                  <Square className="w-5 h-5 text-slate-300 dark:text-slate-600" />
+                                )}
+                              </button>
+                            </td>
+                            <td className="px-4 py-3 max-w-sm">
+                              <p className="font-semibold text-slate-900 dark:text-white">
+                                {d.label}
+                              </p>
+                              <p className="text-[10px] text-slate-400 dark:text-slate-550 mt-0.5">
+                                {d.code}
+                              </p>
+                              {d.labelAr && (
+                                <p
+                                  className="text-[10px] text-slate-400 dark:text-slate-550 mt-0.5"
+                                  dir="rtl"
+                                >
+                                  {d.labelAr}
+                                </p>
+                              )}
+                            </td>
+                            <td className="px-4 py-3">
+                              <span
+                                className={`inline-block px-2 py-0.5 rounded text-[10px] font-bold ${
+                                  d.mandatory
+                                    ? 'bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 text-amber-700 dark:text-amber-455'
+                                    : 'bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-500 dark:text-slate-400'
+                                }`}
+                              >
+                                {d.mandatory ? 'MANDATORY' : 'OPTIONAL'}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3">
+                              {d.filed ? (
+                                <div className="flex items-center gap-1.5 bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded px-2 py-1 max-w-[125px]">
+                                  <Calendar className="w-3 h-3 text-slate-400" />
+                                  <input
+                                    type="date"
+                                    value={d.filedAt || ''}
+                                    onChange={(e) => handleDateChange(index, e.target.value)}
+                                    className="bg-transparent text-slate-700 dark:text-slate-200 font-medium outline-none text-[10px] w-full"
+                                  />
+                                </div>
+                              ) : (
+                                <span className="text-slate-400 dark:text-slate-550 font-mono">
+                                  —
+                                </span>
+                              )}
+                            </td>
+                            <td className="px-4 py-3 font-semibold text-slate-655 dark:text-slate-455">
+                              {d.cadenceDays ? `${d.cadenceDays}d` : 'None'}
+                            </td>
+                          </tr>
+                        ))}
                   </tbody>
                 </table>
               </div>

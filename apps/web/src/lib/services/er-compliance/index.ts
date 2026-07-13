@@ -264,13 +264,9 @@ export class ErDisciplinaryService {
 
     const pct = salaryDeductionPct != null ? Number(salaryDeductionPct) : 0;
     const limit =
-      country && SALARY_DEDUCTION_LIMITS_PCT[country]
-        ? SALARY_DEDUCTION_LIMITS_PCT[country]
-        : 50;
+      country && SALARY_DEDUCTION_LIMITS_PCT[country] ? SALARY_DEDUCTION_LIMITS_PCT[country] : 50;
     if (pct > limit)
-      throw new Error(
-        `salary deduction ${pct}% exceeds ${country ?? 'default'} limit ${limit}%`
-      );
+      throw new Error(`salary deduction ${pct}% exceeds ${country ?? 'default'} limit ${limit}%`);
 
     return (prisma as any).erDisciplinaryAction.upsert({
       where: {
@@ -362,7 +358,19 @@ export class ErDisciplinaryService {
       }),
       (prisma as any).erDisciplinaryAction.count({ where }),
     ]);
-    return buildPaginatedResult(items, total, page);
+    const employeeIds = Array.from(
+      new Set(items.map((item: any) => item.employeeId).filter(Boolean))
+    );
+    const employees = await prisma.employee.findMany({
+      where: { id: { in: employeeIds } },
+      select: { id: true, firstName: true, lastName: true },
+    });
+    const employeeMap = new Map(employees.map((e) => [e.id, `${e.firstName} ${e.lastName}`]));
+    const enriched = items.map((item: any) => ({
+      ...item,
+      employeeName: employeeMap.get(item.employeeId) || 'Unknown',
+    }));
+    return buildPaginatedResult(enriched, total, page);
   }
 }
 
@@ -482,15 +490,8 @@ export class ErAppealService {
     },
     auth: AuthContext
   ) {
-    const {
-      appealNumber,
-      subjectType,
-      subjectId,
-      appellantId,
-      reason,
-      filedAt,
-      decisionDueAt,
-    } = input;
+    const { appealNumber, subjectType, subjectId, appellantId, reason, filedAt, decisionDueAt } =
+      input;
 
     const appellant = await prisma.employee.findFirst({
       where: { id: appellantId, company: { tenantId: auth.tenantId } },
@@ -553,7 +554,19 @@ export class ErAppealService {
       }),
       (prisma as any).erAppeal.count({ where }),
     ]);
-    return buildPaginatedResult(items, total, page);
+    const employeeIds = Array.from(
+      new Set(items.map((item: any) => item.appellantId).filter(Boolean))
+    );
+    const employees = await prisma.employee.findMany({
+      where: { id: { in: employeeIds } },
+      select: { id: true, firstName: true, lastName: true },
+    });
+    const employeeMap = new Map(employees.map((e) => [e.id, `${e.firstName} ${e.lastName}`]));
+    const enriched = items.map((item: any) => ({
+      ...item,
+      employeeName: employeeMap.get(item.appellantId) || 'Unknown',
+    }));
+    return buildPaginatedResult(enriched, total, page);
   }
 }
 

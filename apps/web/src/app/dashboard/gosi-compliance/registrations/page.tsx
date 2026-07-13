@@ -39,6 +39,7 @@ export default function RegistrationsPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [showDeleted, setShowDeleted] = useState(false);
   const [showForm, setShowForm] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [form, setForm] = useState({
     employeeId: '',
     establishmentId: '',
@@ -46,10 +47,15 @@ export default function RegistrationsPage() {
   });
 
   async function load() {
-    const r = await fetch('/api/v1/gosi-compliance/registrations');
-    const p = await r.json();
-    if (p.success) {
-      setRegs(Array.isArray(p.data) ? p.data : (p.data?.items ?? []));
+    setIsLoading(true);
+    try {
+      const r = await fetch('/api/v1/gosi-compliance/registrations');
+      const p = await r.json();
+      if (p.success) {
+        setRegs(Array.isArray(p.data) ? p.data : (p.data?.items ?? []));
+      }
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -323,55 +329,63 @@ export default function RegistrationsPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-850">
-              {filteredRegs.map((r) => (
-                <tr
-                  key={r.id}
-                  className="hover:bg-slate-50/40 dark:hover:bg-slate-800/40 transition-colors"
-                >
-                  <td className="px-4 py-4 font-mono text-xs text-slate-500 dark:text-slate-400">
-                    {r.employeeCode ?? '—'}
-                  </td>
-                  <td className="px-4 py-4 font-semibold text-slate-900 dark:text-white">
-                    {r.employeeName ?? '—'}
-                  </td>
-                  <td className="px-4 py-4 text-slate-550 dark:text-slate-400">
-                    {r.establishmentName ?? r.establishmentId}
-                  </td>
-                  <td className="px-4 py-4 text-slate-550 dark:text-slate-400">
-                    {r.nationalityClass}
-                  </td>
-                  <td className="px-4 py-4 font-mono text-xs text-slate-500 dark:text-slate-400">
-                    {r.registrationDate?.slice(0, 10)}
-                  </td>
-                  <td className="px-4 py-4">
-                    <span
-                      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold border ${
-                        r.status === 'ACTIVE'
-                          ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border-emerald-200/20'
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200/20'
-                      }`}
+              {isLoading
+                ? Array.from({ length: 3 }).map((_, i) => (
+                    <tr key={`skel-${i}`} className="animate-pulse">
+                      <td colSpan={7} className="px-4 py-4">
+                        <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-full"></div>
+                      </td>
+                    </tr>
+                  ))
+                : filteredRegs.map((r) => (
+                    <tr
+                      key={r.id}
+                      className="hover:bg-slate-50/40 dark:hover:bg-slate-800/40 transition-colors"
                     >
-                      {r.status === 'ACTIVE' ? 'Active ✓' : 'Deregistered'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-4 text-right">
-                    {r.status === 'ACTIVE' ? (
-                      <button
-                        type="button"
-                        onClick={() => deregister(r.employeeId)}
-                        className="rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50/50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 px-3 py-1.5 text-xs text-rose-600 dark:text-rose-400 font-bold transition-all shadow-sm cursor-pointer"
-                      >
-                        Deregister
-                      </button>
-                    ) : (
-                      <span className="text-slate-400 dark:text-slate-550 text-xs italic">
-                        {r.deregistrationReason ?? 'Deregistered'}
-                      </span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-              {filteredRegs.length === 0 && (
+                      <td className="px-4 py-4 font-mono text-xs text-slate-500 dark:text-slate-400">
+                        {r.employeeCode ?? '—'}
+                      </td>
+                      <td className="px-4 py-4 font-semibold text-slate-900 dark:text-white">
+                        {r.employeeName ?? '—'}
+                      </td>
+                      <td className="px-4 py-4 text-slate-550 dark:text-slate-400">
+                        {r.establishmentName ?? r.establishmentId}
+                      </td>
+                      <td className="px-4 py-4 text-slate-550 dark:text-slate-400">
+                        {r.nationalityClass}
+                      </td>
+                      <td className="px-4 py-4 font-mono text-xs text-slate-500 dark:text-slate-400">
+                        {r.registrationDate?.slice(0, 10)}
+                      </td>
+                      <td className="px-4 py-4">
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold border ${
+                            r.status === 'ACTIVE'
+                              ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-400 border-emerald-200/20'
+                              : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200/20'
+                          }`}
+                        >
+                          {r.status === 'ACTIVE' ? 'Active ✓' : 'Deregistered'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4 text-right">
+                        {r.status === 'ACTIVE' ? (
+                          <button
+                            type="button"
+                            onClick={() => deregister(r.employeeId)}
+                            className="rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50/50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 px-3 py-1.5 text-xs text-rose-600 dark:text-rose-400 font-bold transition-all shadow-sm cursor-pointer"
+                          >
+                            Deregister
+                          </button>
+                        ) : (
+                          <span className="text-slate-400 dark:text-slate-550 text-xs italic">
+                            {r.deregistrationReason ?? 'Deregistered'}
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+              {!isLoading && filteredRegs.length === 0 && (
                 <tr>
                   <td
                     colSpan={7}

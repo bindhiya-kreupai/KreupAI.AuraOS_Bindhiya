@@ -41,12 +41,18 @@ export default function ReconciliationPage() {
   const [variances, setVariances] = useState<Variance[]>([]);
   const [message, setMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
 
   async function load() {
-    const r = await fetch('/api/v1/gosi-compliance/reconciliation');
-    const p = await r.json();
-    if (p.success) {
-      setVariances(Array.isArray(p.data) ? p.data : (p.data?.items ?? []));
+    setIsLoading(true);
+    try {
+      const r = await fetch('/api/v1/gosi-compliance/reconciliation');
+      const p = await r.json();
+      if (p.success) {
+        setVariances(Array.isArray(p.data) ? p.data : (p.data?.items ?? []));
+      }
+    } finally {
+      setIsLoading(false);
     }
   }
 
@@ -143,63 +149,71 @@ export default function ReconciliationPage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-850">
-              {filteredVariances.map((v) => (
-                <tr
-                  key={v.id}
-                  className="hover:bg-slate-50/40 dark:hover:bg-slate-800/40 transition-colors"
-                >
-                  <td className="px-4 py-4 font-mono text-xs text-slate-500 dark:text-slate-400">
-                    {v.employeeId ?? '—'}
-                  </td>
-                  <td className="px-4 py-4 text-slate-650 dark:text-slate-400">{v.period}</td>
-                  <td className="px-4 py-4 text-slate-650 dark:text-slate-400 font-semibold">
-                    {v.type}
-                  </td>
-                  <td className="px-4 py-4 text-slate-650 dark:text-slate-400">
-                    {v.expected ?? '—'}
-                  </td>
-                  <td className="px-4 py-4 text-slate-650 dark:text-slate-400">
-                    {v.actual ?? '—'}
-                  </td>
-                  <td className="px-4 py-4 font-bold text-slate-900 dark:text-white">
-                    {v.difference ?? '—'}
-                  </td>
-                  <td className="px-4 py-4">
-                    <span
-                      className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold border ${sevColor[v.severity] ?? ''}`}
+              {isLoading
+                ? Array.from({ length: 3 }).map((_, i) => (
+                    <tr key={`skel-${i}`} className="animate-pulse">
+                      <td colSpan={9} className="px-4 py-4">
+                        <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-full"></div>
+                      </td>
+                    </tr>
+                  ))
+                : filteredVariances.map((v) => (
+                    <tr
+                      key={v.id}
+                      className="hover:bg-slate-50/40 dark:hover:bg-slate-800/40 transition-colors"
                     >
-                      {v.severity}
-                    </span>
-                  </td>
-                  <td className="px-4 py-4">
-                    <span
-                      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold border ${
-                        v.status === 'RESOLVED'
-                          ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-450 border-emerald-200/20'
-                          : 'bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-450 border-amber-200/20'
-                      }`}
-                    >
-                      {v.status === 'RESOLVED' ? 'Resolved ✓' : 'Open'}
-                    </span>
-                  </td>
-                  <td className="px-4 py-4 text-right">
-                    {v.status === 'OPEN' ? (
-                      <button
-                        type="button"
-                        onClick={() => resolve(v.id)}
-                        className="rounded-xl bg-slate-950 dark:bg-white text-white dark:text-slate-950 hover:bg-slate-800 dark:hover:bg-slate-100 px-3.5 py-1.5 text-xs font-bold transition-all shadow-sm cursor-pointer"
-                      >
-                        Resolve
-                      </button>
-                    ) : (
-                      <span className="text-slate-400 dark:text-slate-550 text-xs italic">
-                        Resolved
-                      </span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-              {filteredVariances.length === 0 && (
+                      <td className="px-4 py-4 font-mono text-xs text-slate-500 dark:text-slate-400">
+                        {v.employeeId ?? '—'}
+                      </td>
+                      <td className="px-4 py-4 text-slate-650 dark:text-slate-400">{v.period}</td>
+                      <td className="px-4 py-4 text-slate-650 dark:text-slate-400 font-semibold">
+                        {v.type}
+                      </td>
+                      <td className="px-4 py-4 text-slate-650 dark:text-slate-400">
+                        {v.expected ?? '—'}
+                      </td>
+                      <td className="px-4 py-4 text-slate-650 dark:text-slate-400">
+                        {v.actual ?? '—'}
+                      </td>
+                      <td className="px-4 py-4 font-bold text-slate-900 dark:text-white">
+                        {v.difference ?? '—'}
+                      </td>
+                      <td className="px-4 py-4">
+                        <span
+                          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold border ${sevColor[v.severity] ?? ''}`}
+                        >
+                          {v.severity}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4">
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold border ${
+                            v.status === 'RESOLVED'
+                              ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-450 border-emerald-200/20'
+                              : 'bg-amber-50 dark:bg-amber-950/30 text-amber-700 dark:text-amber-450 border-amber-200/20'
+                          }`}
+                        >
+                          {v.status === 'RESOLVED' ? 'Resolved ✓' : 'Open'}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4 text-right">
+                        {v.status === 'OPEN' ? (
+                          <button
+                            type="button"
+                            onClick={() => resolve(v.id)}
+                            className="rounded-xl bg-slate-950 dark:bg-white text-white dark:text-slate-950 hover:bg-slate-800 dark:hover:bg-slate-100 px-3.5 py-1.5 text-xs font-bold transition-all shadow-sm cursor-pointer"
+                          >
+                            Resolve
+                          </button>
+                        ) : (
+                          <span className="text-slate-400 dark:text-slate-550 text-xs italic">
+                            Resolved
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+              {!isLoading && filteredVariances.length === 0 && (
                 <tr>
                   <td
                     colSpan={9}

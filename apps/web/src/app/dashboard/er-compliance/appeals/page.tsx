@@ -17,8 +17,9 @@ interface Ap {
 }
 
 export default function AppealsPage() {
-  const [rows, setRows] = useState<Ap[]>([]);
+  const [rows, setRows] = useState<any[]>([]);
   const [filter, setFilter] = useState('OPEN');
+  const [isLoading, setIsLoading] = useState(true);
   const [form, setForm] = useState({
     appealNumber: '',
     subjectType: 'GRIEVANCE',
@@ -30,12 +31,17 @@ export default function AppealsPage() {
   const [message, setMessage] = useState('');
 
   async function load() {
-    const url = new URL('/api/v1/er-compliance/appeals', window.location.origin);
-    if (filter) url.searchParams.set('status', filter);
-    const r = await fetch(url.toString());
-    const p = await r.json();
-    if (p.success) {
-      setRows(Array.isArray(p.data) ? p.data : (p.data?.items ?? []));
+    setIsLoading(true);
+    try {
+      const url = new URL('/api/v1/er-compliance/appeals', window.location.origin);
+      if (filter) url.searchParams.set('status', filter);
+      const r = await fetch(url.toString());
+      const p = await r.json();
+      if (p.success) {
+        setRows(Array.isArray(p.data) ? p.data : (p.data?.items ?? []));
+      }
+    } finally {
+      setIsLoading(false);
     }
   }
   useEffect(() => {
@@ -157,31 +163,45 @@ export default function AppealsPage() {
               </tr>
             </thead>
             <tbody>
-              {rows.map((a) => (
-                <tr key={a.id} className="border-b border-slate-100 dark:border-slate-800/50">
-                  <td className="px-3 py-2 font-mono text-xs">{a.appealNumber}</td>
-                  <td className="px-3 py-2 text-xs">{a.filedAt?.slice(0, 10)}</td>
-                  <td className="px-3 py-2 text-xs">
-                    {a.subjectType} / {a.subjectId.slice(0, 8)}
-                  </td>
-                  <td className="px-3 py-2 font-mono text-xs">{a.appellantId}</td>
-                  <td className="px-3 py-2 text-xs">{a.reason ?? '—'}</td>
-                  <td className="px-3 py-2 text-xs">{a.outcome ?? '—'}</td>
-                  <td className="px-3 py-2 text-xs">{a.status}</td>
-                  <td className="px-3 py-2">
-                    {a.status === 'OPEN' && (
-                      <button
-                        type="button"
-                        onClick={() => decide(a.id)}
-                        className="rounded-md bg-emerald-700 px-2 py-1 text-xs text-white"
-                      >
-                        Decide
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-              {rows.length === 0 && (
+              {isLoading
+                ? Array.from({ length: 3 }).map((_, i) => (
+                    <tr
+                      key={`skel-${i}`}
+                      className="border-b border-slate-100 dark:border-slate-800/50 animate-pulse"
+                    >
+                      <td colSpan={8} className="px-3 py-4">
+                        <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-full"></div>
+                      </td>
+                    </tr>
+                  ))
+                : rows.map((a) => (
+                    <tr key={a.id} className="border-b border-slate-100 dark:border-slate-800/50">
+                      <td className="px-3 py-2 font-mono text-xs">{a.appealNumber}</td>
+                      <td className="px-3 py-2 text-xs">{a.filedAt?.slice(0, 10)}</td>
+                      <td className="px-3 py-2 text-xs">
+                        {a.subjectType} / {a.subjectId.slice(0, 8)}
+                      </td>
+                      <td className="px-3 py-2 font-semibold">
+                        <div>{a.employeeName}</div>
+                        <div className="text-[10px] text-slate-400 font-mono">{a.appellantId}</div>
+                      </td>
+                      <td className="px-3 py-2 text-xs">{a.reason ?? '—'}</td>
+                      <td className="px-3 py-2 text-xs">{a.outcome ?? '—'}</td>
+                      <td className="px-3 py-2 text-xs">{a.status}</td>
+                      <td className="px-3 py-2">
+                        {a.status === 'OPEN' && (
+                          <button
+                            type="button"
+                            onClick={() => decide(a.id)}
+                            className="rounded-md bg-emerald-700 px-2 py-1 text-xs text-white"
+                          >
+                            Decide
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+              {!isLoading && rows.length === 0 && (
                 <tr>
                   <td
                     colSpan={8}

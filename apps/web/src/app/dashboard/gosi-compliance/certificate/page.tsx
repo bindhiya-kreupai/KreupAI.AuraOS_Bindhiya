@@ -39,11 +39,17 @@ export default function CertificatePage() {
   const [period, setPeriod] = useState(periodNow());
   const [message, setMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
 
   async function load() {
-    const r = await fetch('/api/v1/gosi-compliance/certificate');
-    const p = await r.json();
-    if (p.success) setCerts(p.data ?? []);
+    setIsLoading(true);
+    try {
+      const r = await fetch('/api/v1/gosi-compliance/certificate');
+      const p = await r.json();
+      if (p.success) setCerts(p.data ?? []);
+    } finally {
+      setIsLoading(false);
+    }
   }
 
   useEffect(() => {
@@ -174,58 +180,66 @@ export default function CertificatePage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-850">
-              {filteredCerts.map((c) => (
-                <tr
-                  key={c.id}
-                  className="hover:bg-slate-50/40 dark:hover:bg-slate-800/40 transition-colors"
-                >
-                  <td className="px-4 py-4 font-semibold text-slate-900 dark:text-white">
-                    {c.period}
-                  </td>
-                  <td className="px-4 py-4">
-                    <span
-                      className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold border ${
-                        c.status === 'SIGNED'
-                          ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-450 border-emerald-200/20'
-                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200/20'
-                      }`}
+              {isLoading
+                ? Array.from({ length: 3 }).map((_, i) => (
+                    <tr key={`skel-${i}`} className="animate-pulse">
+                      <td colSpan={8} className="px-4 py-4">
+                        <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-full"></div>
+                      </td>
+                    </tr>
+                  ))
+                : filteredCerts.map((c) => (
+                    <tr
+                      key={c.id}
+                      className="hover:bg-slate-50/40 dark:hover:bg-slate-800/40 transition-colors"
                     >
-                      {c.status === 'SIGNED' ? 'Signed ✓' : c.status}
-                    </span>
-                  </td>
-                  <td className="px-4 py-4 text-slate-650 dark:text-slate-400">
-                    {c.submissionsCount}
-                  </td>
-                  <td className="px-4 py-4 text-slate-650 dark:text-slate-400">
-                    {c.openVariancesCount}
-                  </td>
-                  <td className="px-4 py-4 text-rose-700 dark:text-rose-400 font-semibold">
-                    {c.criticalVariancesCount}
-                  </td>
-                  <td className="px-4 py-4 text-amber-700 dark:text-amber-450 font-semibold">
-                    {c.lateSubmissionsCount}
-                  </td>
-                  <td className="px-4 py-4 text-xs text-rose-700 dark:text-rose-400 font-medium">
-                    {c.gatingReason ?? '—'}
-                  </td>
-                  <td className="px-4 py-4 text-right">
-                    {c.status === 'DRAFT' && !c.gatingReason ? (
-                      <button
-                        type="button"
-                        onClick={() => sign(c)}
-                        className="rounded-xl bg-slate-950 dark:bg-white text-white dark:text-slate-950 hover:bg-slate-800 dark:hover:bg-slate-100 px-3.5 py-1.5 text-xs font-bold transition-all shadow-sm cursor-pointer"
-                      >
-                        Sign
-                      </button>
-                    ) : (
-                      <span className="text-slate-400 dark:text-slate-550 text-xs italic">
-                        {c.status === 'SIGNED' ? 'Signed' : 'Blocked'}
-                      </span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-              {filteredCerts.length === 0 && (
+                      <td className="px-4 py-4 font-semibold text-slate-900 dark:text-white">
+                        {c.period}
+                      </td>
+                      <td className="px-4 py-4">
+                        <span
+                          className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-xs font-semibold border ${
+                            c.status === 'SIGNED'
+                              ? 'bg-emerald-50 dark:bg-emerald-950/30 text-emerald-700 dark:text-emerald-450 border-emerald-200/20'
+                              : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 border-slate-200/20'
+                          }`}
+                        >
+                          {c.status === 'SIGNED' ? 'Signed ✓' : c.status}
+                        </span>
+                      </td>
+                      <td className="px-4 py-4 text-slate-650 dark:text-slate-400">
+                        {c.submissionsCount}
+                      </td>
+                      <td className="px-4 py-4 text-slate-650 dark:text-slate-400">
+                        {c.openVariancesCount}
+                      </td>
+                      <td className="px-4 py-4 text-rose-700 dark:text-rose-400 font-semibold">
+                        {c.criticalVariancesCount}
+                      </td>
+                      <td className="px-4 py-4 text-amber-700 dark:text-amber-450 font-semibold">
+                        {c.lateSubmissionsCount}
+                      </td>
+                      <td className="px-4 py-4 text-xs text-rose-700 dark:text-rose-400 font-medium">
+                        {c.gatingReason ?? '—'}
+                      </td>
+                      <td className="px-4 py-4 text-right">
+                        {c.status === 'DRAFT' && !c.gatingReason ? (
+                          <button
+                            type="button"
+                            onClick={() => sign(c)}
+                            className="rounded-xl bg-slate-950 dark:bg-white text-white dark:text-slate-950 hover:bg-slate-800 dark:hover:bg-slate-100 px-3.5 py-1.5 text-xs font-bold transition-all shadow-sm cursor-pointer"
+                          >
+                            Sign
+                          </button>
+                        ) : (
+                          <span className="text-slate-400 dark:text-slate-550 text-xs italic">
+                            {c.status === 'SIGNED' ? 'Signed' : 'Blocked'}
+                          </span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+              {!isLoading && filteredCerts.length === 0 && (
                 <tr>
                   <td
                     colSpan={8}

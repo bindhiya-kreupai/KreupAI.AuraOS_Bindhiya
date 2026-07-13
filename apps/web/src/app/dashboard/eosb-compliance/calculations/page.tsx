@@ -29,8 +29,9 @@ const statusColor: Record<string, string> = {
 };
 
 export default function EosbCalcsPage() {
-  const [rows, setRows] = useState<Calc[]>([]);
+  const [rows, setRows] = useState<any[]>([]);
   const [filter, setFilter] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
   const [form, setForm] = useState({
     employeeId: '',
     countryCode: 'AE',
@@ -46,12 +47,17 @@ export default function EosbCalcsPage() {
   const [message, setMessage] = useState('');
 
   async function load() {
-    const url = new URL('/api/v1/eosb-compliance/calculations', window.location.origin);
-    if (filter) url.searchParams.set('status', filter);
-    const r = await fetch(url.toString());
-    const p = await r.json();
-    if (p.success) {
-      setRows(Array.isArray(p.data) ? p.data : (p.data?.items ?? []));
+    setIsLoading(true);
+    try {
+      const url = new URL('/api/v1/eosb-compliance/calculations', window.location.origin);
+      if (filter) url.searchParams.set('status', filter);
+      const r = await fetch(url.toString());
+      const p = await r.json();
+      if (p.success) {
+        setRows(Array.isArray(p.data) ? p.data : (p.data?.items ?? []));
+      }
+    } finally {
+      setIsLoading(false);
     }
   }
   useEffect(() => {
@@ -224,57 +230,66 @@ export default function EosbCalcsPage() {
               </tr>
             </thead>
             <tbody>
-              {rows.map((r) => (
-                <tr key={r.id} className="border-b border-slate-100">
-                  <td className="px-3 py-2 font-mono text-xs">{r.employeeId}</td>
-                  <td className="px-3 py-2">{r.countryCode}</td>
-                  <td className="px-3 py-2 text-xs">{r.terminationType}</td>
-                  <td className="px-3 py-2 text-xs">{r.lastWorkingDate?.slice(0, 10)}</td>
-                  <td className="px-3 py-2">{r.totalServiceYears}</td>
-                  <td className="px-3 py-2">
-                    {r.gratuityAmount} {r.currency}
-                  </td>
-                  <td className="px-3 py-2">{r.socialInsuranceOffset}</td>
-                  <td className="px-3 py-2 font-semibold text-emerald-700">
-                    {r.netPayable} {r.currency}
-                  </td>
-                  <td className="px-3 py-2">
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-xs font-semibold ${statusColor[r.status] ?? ''}`}
-                    >
-                      {r.status}
-                    </span>
-                  </td>
-                  <td className="px-3 py-2">
-                    <div className="flex gap-1">
-                      {r.status === 'DRAFT' && (
-                        <button
-                          type="button"
-                          onClick={() => approve(r.id)}
-                          className="rounded-md bg-indigo-700 px-2 py-1 text-xs text-white"
+              {isLoading
+                ? Array.from({ length: 3 }).map((_, i) => (
+                    <tr key={`skel-${i}`} className="animate-pulse">
+                      <td colSpan={10} className="px-3 py-4">
+                        <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-full"></div>
+                      </td>
+                    </tr>
+                  ))
+                : rows.map((r) => (
+                    <tr key={r.id} className="border-b border-slate-100">
+                      <td className="px-3 py-2 font-semibold">
+                        <div>{r.employeeName}</div>
+                        <div className="text-[10px] text-slate-400 font-mono">{r.employeeId}</div>
+                      </td>
+                      <td className="px-3 py-2">{r.countryCode}</td>
+                      <td className="px-3 py-2 text-xs">{r.terminationType}</td>
+                      <td className="px-3 py-2 text-xs">{r.lastWorkingDate?.slice(0, 10)}</td>
+                      <td className="px-3 py-2">{r.totalServiceYears}</td>
+                      <td className="px-3 py-2">{r.gratuityAmount} AED</td>
+                      <td className="px-3 py-2">{r.socialInsuranceOffset} AED</td>
+                      <td className="px-3 py-2 font-semibold text-emerald-700">
+                        {r.netPayable} AED
+                      </td>
+                      <td className="px-3 py-2">
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-xs font-semibold ${statusColor[r.status] ?? ''}`}
                         >
-                          Approve
-                        </button>
-                      )}
-                      {r.status === 'APPROVED' && (
-                        <button
-                          type="button"
-                          onClick={() => settle(r.id)}
-                          className="rounded-md bg-emerald-700 px-2 py-1 text-xs text-white"
-                        >
-                          Settle
-                        </button>
-                      )}
-                      {r.paymentReference && (
-                        <span className="font-mono text-xs text-slate-500">
-                          {r.paymentReference}
+                          {r.status}
                         </span>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {rows.length === 0 && (
+                      </td>
+                      <td className="px-3 py-2">
+                        <div className="flex gap-1">
+                          {r.status === 'DRAFT' && (
+                            <button
+                              type="button"
+                              onClick={() => approve(r.id)}
+                              className="rounded-md bg-indigo-700 px-2 py-1 text-xs text-white"
+                            >
+                              Approve
+                            </button>
+                          )}
+                          {r.status === 'APPROVED' && (
+                            <button
+                              type="button"
+                              onClick={() => settle(r.id)}
+                              className="rounded-md bg-emerald-700 px-2 py-1 text-xs text-white"
+                            >
+                              Settle
+                            </button>
+                          )}
+                          {r.paymentReference && (
+                            <span className="font-mono text-xs text-slate-500">
+                              {r.paymentReference}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+              {!isLoading && rows.length === 0 && (
                 <tr>
                   <td colSpan={10} className="px-3 py-6 text-center text-slate-500">
                     No calculations.

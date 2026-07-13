@@ -26,11 +26,17 @@ export default function EosbCertificatePage() {
   const [certs, setCerts] = useState<Cert[]>([]);
   const [period, setPeriod] = useState(periodNow());
   const [message, setMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
 
   async function load() {
-    const r = await fetch('/api/v1/eosb-compliance/certificate');
-    const p = await r.json();
-    if (p.success) setCerts(p.data ?? []);
+    setIsLoading(true);
+    try {
+      const r = await fetch('/api/v1/eosb-compliance/certificate');
+      const p = await r.json();
+      if (p.success) setCerts(p.data ?? []);
+    } finally {
+      setIsLoading(false);
+    }
   }
   useEffect(() => {
     load();
@@ -62,15 +68,19 @@ export default function EosbCertificatePage() {
   }
 
   return (
-    <main 
+    <main
       className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 text-slate-950 dark:text-slate-50 transition-colors duration-200"
       style={{ colorScheme: isDark ? 'dark' : 'light' }}
     >
       <div className="mx-auto flex max-w-7xl flex-col gap-6">
         <header className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
           <div>
-            <p className="text-sm uppercase text-slate-500 dark:text-slate-400">EPIC-28 · S17 / S19 / S29</p>
-            <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Monthly EOSB Compliance Certificate</h1>
+            <p className="text-sm uppercase text-slate-500 dark:text-slate-400">
+              EPIC-28 · S17 / S19 / S29
+            </p>
+            <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
+              Monthly EOSB Compliance Certificate
+            </h1>
           </div>
           <div className="flex gap-2">
             <input
@@ -106,35 +116,64 @@ export default function EosbCertificatePage() {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
-              {certs.map((c) => (
-                <tr key={c.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-850/50">
-                  <td className="px-3 py-2 text-slate-800 dark:text-slate-200">{c.period}</td>
-                  <td className="px-3 py-2 text-slate-800 dark:text-slate-200">{c.status}</td>
-                  <td className="px-3 py-2 text-slate-800 dark:text-slate-200">{c.calcsCount}</td>
-                  <td className="px-3 py-2 text-slate-800 dark:text-slate-200">{c.calcsTotalAmount}</td>
-                  <td className="px-3 py-2 text-slate-800 dark:text-slate-200">{c.accrualsCount}</td>
-                  <td className="px-3 py-2 text-slate-800 dark:text-slate-200">{c.accrualsTotalAmount}</td>
-                  <td className="px-3 py-2 text-amber-700 dark:text-amber-450 font-medium">{c.openDisputesCount}</td>
-                  <td className="px-3 py-2 text-rose-700 dark:text-rose-450 font-medium">{c.unsettledCount}</td>
-                  <td className="px-3 py-2 text-xs text-rose-700 dark:text-rose-455 font-medium">{c.gatingReason ?? '—'}</td>
-                  <td className="px-3 py-2">
-                    {c.status === 'DRAFT' && !c.gatingReason ? (
-                      <button
-                        type="button"
-                        onClick={() => sign(c)}
-                        className="rounded-md bg-emerald-700 dark:bg-emerald-650 hover:bg-emerald-800 dark:hover:bg-emerald-555 px-2 py-1 text-xs text-white transition-colors"
-                      >
-                        Sign
-                      </button>
-                    ) : (
-                      <span className="text-slate-400 dark:text-slate-500">—</span>
-                    )}
-                  </td>
-                </tr>
-              ))}
-              {certs.length === 0 && (
+              {isLoading
+                ? Array.from({ length: 3 }).map((_, i) => (
+                    <tr key={`skel-${i}`} className="animate-pulse">
+                      <td colSpan={10} className="px-3 py-4">
+                        <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-full"></div>
+                      </td>
+                    </tr>
+                  ))
+                : certs.map((c) => (
+                    <tr key={c.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-850/50">
+                      <td className="px-3 py-2 text-slate-800 dark:text-slate-200">{c.period}</td>
+                      <td className="px-3 py-2 text-slate-800 dark:text-slate-200">{c.status}</td>
+                      <td className="px-3 py-2 text-slate-800 dark:text-slate-200">
+                        {c.calcsCount}
+                      </td>
+                      <td className="px-3 py-2 text-slate-800 dark:text-slate-200">
+                        {c.calcsTotalAmount != null
+                          ? `${Number(c.calcsTotalAmount).toLocaleString()} AED`
+                          : '—'}
+                      </td>
+                      <td className="px-3 py-2 text-slate-800 dark:text-slate-200">
+                        {c.accrualsCount}
+                      </td>
+                      <td className="px-3 py-2 text-slate-800 dark:text-slate-200">
+                        {c.accrualsTotalAmount != null
+                          ? `${Number(c.accrualsTotalAmount).toLocaleString()} AED`
+                          : '—'}
+                      </td>
+                      <td className="px-3 py-2 text-amber-700 dark:text-amber-455 font-medium">
+                        {c.openDisputesCount}
+                      </td>
+                      <td className="px-3 py-2 text-rose-700 dark:text-rose-450 font-medium">
+                        {c.unsettledCount}
+                      </td>
+                      <td className="px-3 py-2 text-xs text-rose-700 dark:text-rose-455 font-medium">
+                        {c.gatingReason ?? '—'}
+                      </td>
+                      <td className="px-3 py-2">
+                        {c.status === 'DRAFT' && !c.gatingReason ? (
+                          <button
+                            type="button"
+                            onClick={() => sign(c)}
+                            className="rounded-md bg-emerald-700 dark:bg-emerald-650 hover:bg-emerald-800 dark:hover:bg-emerald-555 px-2 py-1 text-xs text-white transition-colors"
+                          >
+                            Sign
+                          </button>
+                        ) : (
+                          <span className="text-slate-400 dark:text-slate-550">—</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+              {!isLoading && certs.length === 0 && (
                 <tr>
-                  <td colSpan={10} className="px-3 py-6 text-center text-slate-500 dark:text-slate-400">
+                  <td
+                    colSpan={10}
+                    className="px-3 py-6 text-center text-slate-500 dark:text-slate-400"
+                  >
                     No certificates.
                   </td>
                 </tr>

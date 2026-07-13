@@ -160,7 +160,19 @@ export class EosbCalculationService {
       }),
       (prisma as any).eosbCalculation.count({ where }),
     ]);
-    return buildPaginatedResult(items, total, page);
+    const employeeIds = Array.from(
+      new Set(items.map((item: any) => item.employeeId).filter(Boolean))
+    );
+    const employees = await prisma.employee.findMany({
+      where: { id: { in: employeeIds } },
+      select: { id: true, firstName: true, lastName: true },
+    });
+    const employeeMap = new Map(employees.map((e) => [e.id, `${e.firstName} ${e.lastName}`]));
+    const enriched = items.map((item: any) => ({
+      ...item,
+      employeeName: employeeMap.get(item.employeeId) || 'Unknown',
+    }));
+    return buildPaginatedResult(enriched, total, page);
   }
 }
 
@@ -268,7 +280,19 @@ export class EosbAccrualService {
       }),
       (prisma as any).eosbAccrual.count({ where }),
     ]);
-    return buildPaginatedResult(items, total, page);
+    const employeeIds = Array.from(
+      new Set(items.map((item: any) => item.employeeId).filter(Boolean))
+    );
+    const employees = await prisma.employee.findMany({
+      where: { id: { in: employeeIds } },
+      select: { id: true, firstName: true, lastName: true },
+    });
+    const employeeMap = new Map(employees.map((e) => [e.id, `${e.firstName} ${e.lastName}`]));
+    const enriched = items.map((item: any) => ({
+      ...item,
+      employeeName: employeeMap.get(item.employeeId) || 'Unknown',
+    }));
+    return buildPaginatedResult(enriched, total, page);
   }
 }
 
@@ -359,7 +383,19 @@ export class EosbDisputeService {
       }),
       (prisma as any).eosbDispute.count({ where }),
     ]);
-    return buildPaginatedResult(items, total, page);
+    const employeeIds = Array.from(
+      new Set(items.map((item: any) => item.employeeId).filter(Boolean))
+    );
+    const employees = await prisma.employee.findMany({
+      where: { id: { in: employeeIds } },
+      select: { id: true, firstName: true, lastName: true },
+    });
+    const employeeMap = new Map(employees.map((e) => [e.id, `${e.firstName} ${e.lastName}`]));
+    const enriched = items.map((item: any) => ({
+      ...item,
+      employeeName: employeeMap.get(item.employeeId) || 'Unknown',
+    }));
+    return buildPaginatedResult(enriched, total, page);
   }
 }
 

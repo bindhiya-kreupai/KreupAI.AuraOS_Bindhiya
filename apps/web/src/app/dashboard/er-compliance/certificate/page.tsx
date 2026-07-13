@@ -27,11 +27,17 @@ export default function ErCertPage() {
   const [certs, setCerts] = useState<Cert[]>([]);
   const [period, setPeriod] = useState(periodNow());
   const [message, setMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
 
   async function load() {
-    const r = await fetch('/api/v1/er-compliance/certificate');
-    const p = await r.json();
-    if (p.success) setCerts(p.data ?? []);
+    setIsLoading(true);
+    try {
+      const r = await fetch('/api/v1/er-compliance/certificate');
+      const p = await r.json();
+      if (p.success) setCerts(p.data ?? []);
+    } finally {
+      setIsLoading(false);
+    }
   }
   useEffect(() => {
     load();
@@ -109,50 +115,60 @@ export default function ErCertPage() {
               </tr>
             </thead>
             <tbody>
-              {certs.map((c) => (
-                <tr key={c.id} className="border-b border-slate-100 dark:border-slate-800/50">
-                  <td className="px-3 py-2">{c.period}</td>
-                  <td className="px-3 py-2">{c.status}</td>
-                  <td className="px-3 py-2">{c.grievancesOpened}</td>
-                  <td className="px-3 py-2 text-emerald-700 dark:text-emerald-400">
-                    {c.grievancesClosed}
-                  </td>
-                  <td className="px-3 py-2 text-rose-700 dark:text-rose-400">
-                    {c.grievancesSlaBreached}
-                  </td>
-                  <td className="px-3 py-2 text-rose-700 dark:text-rose-400">
-                    {c.highSeverityOpen}
-                  </td>
-                  <td className="px-3 py-2">{c.disciplinaryActionsIssued}</td>
-                  <td className="px-3 py-2 text-rose-700 dark:text-rose-400">
-                    {c.actionsWithoutHearing}
-                  </td>
-                  <td className="px-3 py-2 text-amber-700 dark:text-amber-400">{c.appealsOpen}</td>
-                  <td className="px-3 py-2 text-amber-700 dark:text-amber-400">
-                    {c.labourAuthorityReferrals}
-                  </td>
-                  <td className="px-3 py-2 text-rose-700 dark:text-rose-400">
-                    {c.retaliationFlags}
-                  </td>
-                  <td className="px-3 py-2 text-xs text-rose-700 dark:text-rose-400">
-                    {c.gatingReason ?? '—'}
-                  </td>
-                  <td className="px-3 py-2">
-                    {c.status === 'DRAFT' && !c.gatingReason ? (
-                      <button
-                        type="button"
-                        onClick={() => sign(c)}
-                        className="rounded-md bg-emerald-700 px-2 py-1 text-xs text-white"
-                      >
-                        Sign
-                      </button>
-                    ) : (
-                      '—'
-                    )}
-                  </td>
-                </tr>
-              ))}
-              {certs.length === 0 && (
+              {isLoading
+                ? Array.from({ length: 3 }).map((_, i) => (
+                    <tr key={`skel-${i}`} className="animate-pulse">
+                      <td colSpan={13} className="px-3 py-4">
+                        <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-full"></div>
+                      </td>
+                    </tr>
+                  ))
+                : certs.map((c) => (
+                    <tr key={c.id} className="border-b border-slate-100 dark:border-slate-800/50">
+                      <td className="px-3 py-2">{c.period}</td>
+                      <td className="px-3 py-2">{c.status}</td>
+                      <td className="px-3 py-2">{c.grievancesOpened}</td>
+                      <td className="px-3 py-2 text-emerald-700 dark:text-emerald-400">
+                        {c.grievancesClosed}
+                      </td>
+                      <td className="px-3 py-2 text-rose-700 dark:text-rose-400">
+                        {c.grievancesSlaBreached}
+                      </td>
+                      <td className="px-3 py-2 text-rose-700 dark:text-rose-400">
+                        {c.highSeverityOpen}
+                      </td>
+                      <td className="px-3 py-2">{c.disciplinaryActionsIssued}</td>
+                      <td className="px-3 py-2 text-rose-700 dark:text-rose-400">
+                        {c.actionsWithoutHearing}
+                      </td>
+                      <td className="px-3 py-2 text-amber-700 dark:text-amber-400">
+                        {c.appealsOpen}
+                      </td>
+                      <td className="px-3 py-2 text-amber-700 dark:text-amber-400">
+                        {c.labourAuthorityReferrals}
+                      </td>
+                      <td className="px-3 py-2 text-rose-700 dark:text-rose-400">
+                        {c.retaliationFlags}
+                      </td>
+                      <td className="px-3 py-2 text-xs text-rose-700 dark:text-rose-400">
+                        {c.gatingReason ?? '—'}
+                      </td>
+                      <td className="px-3 py-2">
+                        {c.status === 'DRAFT' && !c.gatingReason ? (
+                          <button
+                            type="button"
+                            onClick={() => sign(c)}
+                            className="rounded-md bg-emerald-700 px-2 py-1 text-xs text-white"
+                          >
+                            Sign
+                          </button>
+                        ) : (
+                          '—'
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+              {!isLoading && certs.length === 0 && (
                 <tr>
                   <td
                     colSpan={13}

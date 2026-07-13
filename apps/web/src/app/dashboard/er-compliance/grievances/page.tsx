@@ -34,6 +34,7 @@ const statusColor: Record<string, string> = {
 export default function GrievancesPage() {
   const [rows, setRows] = useState<G[]>([]);
   const [filter, setFilter] = useState('OPEN');
+  const [isLoading, setIsLoading] = useState(true);
   const [form, setForm] = useState({
     caseNumber: '',
     channel: 'PORTAL',
@@ -47,12 +48,17 @@ export default function GrievancesPage() {
   const [message, setMessage] = useState('');
 
   async function load() {
-    const url = new URL('/api/v1/er-compliance/grievances', window.location.origin);
-    if (filter) url.searchParams.set('status', filter);
-    const r = await fetch(url.toString());
-    const p = await r.json();
-    if (p.success) {
-      setRows(Array.isArray(p.data) ? p.data : (p.data?.items ?? []));
+    setIsLoading(true);
+    try {
+      const url = new URL('/api/v1/er-compliance/grievances', window.location.origin);
+      if (filter) url.searchParams.set('status', filter);
+      const r = await fetch(url.toString());
+      const p = await r.json();
+      if (p.success) {
+        setRows(Array.isArray(p.data) ? p.data : (p.data?.items ?? []));
+      }
+    } finally {
+      setIsLoading(false);
     }
   }
   useEffect(() => {
@@ -204,83 +210,94 @@ export default function GrievancesPage() {
               </tr>
             </thead>
             <tbody>
-              {rows.map((g) => {
-                const ageDays = (Date.now() - new Date(g.raisedAt).getTime()) / (24 * 3600 * 1000);
-                const breached = g.status !== 'RESOLVED' && ageDays > g.slaDays;
-                return (
-                  <tr key={g.id} className="border-b border-slate-100 dark:border-slate-800/50">
-                    <td className="px-3 py-2 font-mono text-xs">{g.caseNumber}</td>
-                    <td className="px-3 py-2 text-xs">{g.raisedAt?.slice(0, 10)}</td>
-                    <td className="px-3 py-2 text-xs">{g.channel}</td>
-                    <td className="px-3 py-2 text-xs">{g.grievanceType}</td>
-                    <td className="px-3 py-2">
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-xs font-semibold ${sevColor[g.severity] ?? ''}`}
-                      >
-                        {g.severity}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2 text-xs">{g.subject}</td>
-                    <td
-                      className={`px-3 py-2 text-xs ${breached ? 'font-semibold text-rose-700 dark:text-rose-400' : ''}`}
-                    >
-                      {g.slaDays}d{breached ? ' ⚠' : ''}
-                    </td>
-                    <td className="px-3 py-2 font-mono text-xs">{g.labourAuthorityRef ?? '—'}</td>
-                    <td className="px-3 py-2">
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-xs font-semibold ${statusColor[g.status] ?? ''}`}
-                      >
-                        {g.status}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2">
-                      <div className="flex flex-wrap gap-1">
-                        {g.status === 'OPEN' && (
-                          <button
-                            type="button"
-                            onClick={() =>
-                              call('assign', g.id, {
-                                assigneeId: window.prompt('Assignee ID?') ?? '',
-                              })
-                            }
-                            className="rounded-md border border-slate-300 dark:border-slate-700 dark:hover:bg-slate-800 px-2 py-1 text-xs"
+              {isLoading
+                ? Array.from({ length: 3 }).map((_, i) => (
+                    <tr key={`skel-${i}`} className="animate-pulse">
+                      <td colSpan={10} className="px-3 py-4">
+                        <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-full"></div>
+                      </td>
+                    </tr>
+                  ))
+                : rows.map((g) => {
+                    const ageDays =
+                      (Date.now() - new Date(g.raisedAt).getTime()) / (24 * 3600 * 1000);
+                    const breached = g.status !== 'RESOLVED' && ageDays > g.slaDays;
+                    return (
+                      <tr key={g.id} className="border-b border-slate-100 dark:border-slate-800/50">
+                        <td className="px-3 py-2 font-mono text-xs">{g.caseNumber}</td>
+                        <td className="px-3 py-2 text-xs">{g.raisedAt?.slice(0, 10)}</td>
+                        <td className="px-3 py-2 text-xs">{g.channel}</td>
+                        <td className="px-3 py-2 text-xs">{g.grievanceType}</td>
+                        <td className="px-3 py-2">
+                          <span
+                            className={`rounded-full px-2 py-0.5 text-xs font-semibold ${sevColor[g.severity] ?? ''}`}
                           >
-                            Assign
-                          </button>
-                        )}
-                        {(g.status === 'OPEN' || g.status === 'IN_PROGRESS') && (
-                          <>
-                            <button
-                              type="button"
-                              onClick={() =>
-                                call('resolve', g.id, {
-                                  outcome: window.prompt('Outcome?') ?? '',
-                                })
-                              }
-                              className="rounded-md bg-emerald-700 px-2 py-1 text-xs text-white"
-                            >
-                              Resolve
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() =>
-                                call('refer-to-authority', g.id, {
-                                  reference: window.prompt('Authority ref?') ?? '',
-                                })
-                              }
-                              className="rounded-md bg-indigo-700 px-2 py-1 text-xs text-white"
-                            >
-                              Refer
-                            </button>
-                          </>
-                        )}
-                      </div>
-                    </td>
-                  </tr>
-                );
-              })}
-              {rows.length === 0 && (
+                            {g.severity}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2 text-xs">{g.subject}</td>
+                        <td
+                          className={`px-3 py-2 text-xs ${breached ? 'font-semibold text-rose-700 dark:text-rose-400' : ''}`}
+                        >
+                          {g.slaDays}d{breached ? ' ⚠' : ''}
+                        </td>
+                        <td className="px-3 py-2 font-mono text-xs">
+                          {g.labourAuthorityRef ?? '—'}
+                        </td>
+                        <td className="px-3 py-2">
+                          <span
+                            className={`rounded-full px-2 py-0.5 text-xs font-semibold ${statusColor[g.status] ?? ''}`}
+                          >
+                            {g.status}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2">
+                          <div className="flex flex-wrap gap-1">
+                            {g.status === 'OPEN' && (
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  call('assign', g.id, {
+                                    assigneeId: window.prompt('Assignee ID?') ?? '',
+                                  })
+                                }
+                                className="rounded-md border border-slate-300 dark:border-slate-700 dark:hover:bg-slate-800 px-2 py-1 text-xs"
+                              >
+                                Assign
+                              </button>
+                            )}
+                            {(g.status === 'OPEN' || g.status === 'IN_PROGRESS') && (
+                              <>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    call('resolve', g.id, {
+                                      outcome: window.prompt('Outcome?') ?? '',
+                                    })
+                                  }
+                                  className="rounded-md bg-emerald-700 px-2 py-1 text-xs text-white"
+                                >
+                                  Resolve
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    call('refer-to-authority', g.id, {
+                                      reference: window.prompt('Authority ref?') ?? '',
+                                    })
+                                  }
+                                  className="rounded-md bg-indigo-700 px-2 py-1 text-xs text-white"
+                                >
+                                  Refer
+                                </button>
+                              </>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
+              {!isLoading && rows.length === 0 && (
                 <tr>
                   <td colSpan={10} className="px-3 py-6 text-center text-slate-500">
                     No grievances.

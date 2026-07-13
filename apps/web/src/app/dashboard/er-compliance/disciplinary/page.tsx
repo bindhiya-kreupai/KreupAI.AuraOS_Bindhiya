@@ -27,8 +27,9 @@ const statusColor: Record<string, string> = {
 };
 
 export default function DisciplinaryPage() {
-  const [rows, setRows] = useState<A[]>([]);
+  const [rows, setRows] = useState<any[]>([]);
   const [filter, setFilter] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
   const [form, setForm] = useState({
     actionNumber: '',
     employeeId: '',
@@ -41,12 +42,17 @@ export default function DisciplinaryPage() {
   const [message, setMessage] = useState('');
 
   async function load() {
-    const url = new URL('/api/v1/er-compliance/disciplinary', window.location.origin);
-    if (filter) url.searchParams.set('status', filter);
-    const r = await fetch(url.toString());
-    const p = await r.json();
-    if (p.success) {
-      setRows(Array.isArray(p.data) ? p.data : (p.data?.items ?? []));
+    setIsLoading(true);
+    try {
+      const url = new URL('/api/v1/er-compliance/disciplinary', window.location.origin);
+      if (filter) url.searchParams.set('status', filter);
+      const r = await fetch(url.toString());
+      const p = await r.json();
+      if (p.success) {
+        setRows(Array.isArray(p.data) ? p.data : (p.data?.items ?? []));
+      }
+    } finally {
+      setIsLoading(false);
     }
   }
   useEffect(() => {
@@ -192,57 +198,71 @@ export default function DisciplinaryPage() {
               </tr>
             </thead>
             <tbody>
-              {rows.map((a) => (
-                <tr key={a.id} className="border-b border-slate-100 dark:border-slate-800/50">
-                  <td className="px-3 py-2 font-mono text-xs">{a.actionNumber}</td>
-                  <td className="px-3 py-2 font-mono text-xs">{a.employeeId}</td>
-                  <td className="px-3 py-2 text-xs">{a.misconductType}</td>
-                  <td className="px-3 py-2 text-xs">{a.actionType}</td>
-                  <td className="px-3 py-2 text-xs">
-                    {a.hearingHeld ? `✓ ${a.hearingDate?.slice(0, 10)}` : '—'}
-                  </td>
-                  <td className="px-3 py-2">{a.salaryDeductionPct}%</td>
-                  <td className="px-3 py-2">{a.country ?? '—'}</td>
-                  <td className="px-3 py-2">
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-xs font-semibold ${statusColor[a.status] ?? ''}`}
+              {isLoading
+                ? Array.from({ length: 3 }).map((_, i) => (
+                    <tr
+                      key={`skel-${i}`}
+                      className="border-b border-slate-100 dark:border-slate-800/50 animate-pulse"
                     >
-                      {a.status}
-                    </span>
-                  </td>
-                  <td className="px-3 py-2">
-                    <div className="flex flex-wrap gap-1">
-                      {a.status === 'DRAFT' && !a.hearingHeld && (
-                        <button
-                          type="button"
-                          onClick={() =>
-                            call('record-hearing', a.id, {
-                              hearingDate: new Date().toISOString().slice(0, 10),
-                            })
-                          }
-                          className="rounded-md border border-slate-300 dark:border-slate-700 dark:hover:bg-slate-800 px-2 py-1 text-xs"
+                      <td colSpan={9} className="px-3 py-4">
+                        <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-full"></div>
+                      </td>
+                    </tr>
+                  ))
+                : rows.map((a) => (
+                    <tr key={a.id} className="border-b border-slate-100 dark:border-slate-800/50">
+                      <td className="px-3 py-2 font-mono text-xs">{a.actionNumber}</td>
+                      <td className="px-3 py-2 font-semibold">
+                        <div>{a.employeeName}</div>
+                        <div className="text-[10px] text-slate-400 font-mono">{a.employeeId}</div>
+                      </td>
+                      <td className="px-3 py-2 text-xs">{a.misconductType}</td>
+                      <td className="px-3 py-2 text-xs">{a.actionType}</td>
+                      <td className="px-3 py-2 text-xs">
+                        {a.hearingHeld ? `✓ ${a.hearingDate?.slice(0, 10)}` : '—'}
+                      </td>
+                      <td className="px-3 py-2">{a.salaryDeductionPct}%</td>
+                      <td className="px-3 py-2">{a.country ?? '—'}</td>
+                      <td className="px-3 py-2">
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-xs font-semibold ${statusColor[a.status] ?? ''}`}
                         >
-                          Record Hearing
-                        </button>
-                      )}
-                      {a.status === 'DRAFT' && a.hearingHeld && (
-                        <button
-                          type="button"
-                          onClick={() =>
-                            call('issue', a.id, {
-                              effectiveFrom: new Date().toISOString().slice(0, 10),
-                            })
-                          }
-                          className="rounded-md bg-emerald-700 px-2 py-1 text-xs text-white"
-                        >
-                          Issue
-                        </button>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {rows.length === 0 && (
+                          {a.status}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2">
+                        <div className="flex flex-wrap gap-1">
+                          {a.status === 'DRAFT' && !a.hearingHeld && (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                call('record-hearing', a.id, {
+                                  hearingDate: new Date().toISOString().slice(0, 10),
+                                })
+                              }
+                              className="rounded-md border border-slate-300 dark:border-slate-700 dark:hover:bg-slate-800 px-2 py-1 text-xs"
+                            >
+                              Record Hearing
+                            </button>
+                          )}
+                          {a.status === 'DRAFT' && a.hearingHeld && (
+                            <button
+                              type="button"
+                              onClick={() =>
+                                call('issue', a.id, {
+                                  effectiveFrom: new Date().toISOString().slice(0, 10),
+                                })
+                              }
+                              className="rounded-md bg-emerald-700 px-2 py-1 text-xs text-white"
+                            >
+                              Issue
+                            </button>
+                          )}
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+              {!isLoading && rows.length === 0 && (
                 <tr>
                   <td
                     colSpan={9}

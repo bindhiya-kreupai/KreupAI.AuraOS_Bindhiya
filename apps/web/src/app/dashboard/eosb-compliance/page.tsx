@@ -109,7 +109,7 @@ export default function EosbHome() {
               <Tile label="Settlements" value={data.calcsCount} icon={Layers} type="info" />
               <Tile
                 label="Settlement Total"
-                value={`$${data.calcsTotalAmount.toLocaleString()}`}
+                value={`AED ${data.calcsTotalAmount.toLocaleString()}`}
                 icon={DollarSign}
                 type="info"
               />
@@ -121,7 +121,7 @@ export default function EosbHome() {
               />
               <Tile
                 label="Accrual Liability"
-                value={`$${data.accrualsTotalAmount.toLocaleString()}`}
+                value={`AED ${data.accrualsTotalAmount.toLocaleString()}`}
                 icon={DollarSign}
                 type="success"
               />
