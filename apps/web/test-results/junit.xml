@@ -1,79 +1,75 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuites name="vitest tests" tests="35" failures="0" errors="0" time="0.0439105">
-    <testsuite name="src/lib/services/__tests__/accommodation-compliance.service.test.ts" timestamp="2026-07-06T15:28:12.804Z" hostname="Anuvab" tests="12" failures="0" errors="0" skipped="0" time="0.0152059">
-        <testcase classname="src/lib/services/__tests__/accommodation-compliance.service.test.ts" name="isComplaintSlaBreached &gt; returns false for RESOLVED status" time="0.001473">
+<testsuites name="vitest tests" tests="34" failures="0" errors="0" time="0.0937954">
+    <testsuite name="src/lib/services/__tests__/compliance-audit-register.service.test.ts" timestamp="2026-07-08T17:39:02.308Z" hostname="DESKTOP-2HC5NM6" tests="18" failures="0" errors="0" skipped="0" time="0.0633037">
+        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="Seeds + supported domains &gt; ships seeds for all 5 Theme C domains" time="0.0069228">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/accommodation-compliance.service.test.ts" name="isComplaintSlaBreached &gt; returns false when within SLA" time="0.0004853">
+        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="Seeds + supported domains &gt; each domain has at least 1 checklist seed and 1 risk seed" time="0.0022211">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/accommodation-compliance.service.test.ts" name="isComplaintSlaBreached &gt; returns true when past SLA and not resolved" time="0.0003794">
+        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="riskBandFromScore &gt; LOW for score 1-3" time="0.0022386">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/accommodation-compliance.service.test.ts" name="accommodationAssignmentService.assign &gt; throws when site at capacity" time="0.0015631">
+        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="riskBandFromScore &gt; MEDIUM for score 4-8" time="0.00208">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/accommodation-compliance.service.test.ts" name="accommodationAssignmentService.assign &gt; increments site occupancy on assign" time="0.0010221">
+        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="riskBandFromScore &gt; HIGH for score 9-15" time="0.0015433">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/accommodation-compliance.service.test.ts" name="accommodationAssignmentService.checkOut &gt; decrements site occupancy on check-out" time="0.0005565">
+        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="riskBandFromScore &gt; CRITICAL for score &gt;= 16" time="0.0016449">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/accommodation-compliance.service.test.ts" name="accommodationInspectionService.record &gt; auto-closes inspection when no critical findings" time="0.0005992">
+        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="ComplianceChecklistService &gt; seed rejects unknown domain" time="0.0050028">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/accommodation-compliance.service.test.ts" name="accommodationInspectionService.record &gt; leaves inspection OPEN when critical findings present" time="0.0008576">
+        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="ComplianceChecklistService &gt; seed reports created codes for ER" time="0.0022644">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/accommodation-compliance.service.test.ts" name="accommodationInspectionService.record &gt; schedules next inspection 3 months out" time="0.0024442">
+        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="ComplianceChecklistService &gt; marking item COMPLIANT sets completedAt + completedBy" time="0.002894">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/accommodation-compliance.service.test.ts" name="accommodationCertificateService &gt; gates when sites over capacity" time="0.0007628">
+        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="ComplianceRiskService &gt; upsert rejects likelihood outside 1-5" time="0.0027996">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/accommodation-compliance.service.test.ts" name="accommodationCertificateService &gt; gates when CRITICAL findings open" time="0.0004646">
+        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="ComplianceRiskService &gt; upsert rejects impact outside 1-5" time="0.001823">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/accommodation-compliance.service.test.ts" name="accommodationCertificateService &gt; refuses to sign while gated" time="0.0011662">
+        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="ComplianceRiskService &gt; upsert derives score = likelihood × impact and correct band" time="0.0017455">
         </testcase>
-    </testsuite>
-    <testsuite name="src/lib/services/__tests__/holidays-compliance.service.test.ts" timestamp="2026-07-06T15:28:12.807Z" hostname="Anuvab" tests="8" failures="0" errors="0" skipped="0" time="0.0117356">
-        <testcase classname="src/lib/services/__tests__/holidays-compliance.service.test.ts" name="holidayPayRuleService.seedDefaults &gt; seeds GCC default pay rules" time="0.001813">
+        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="ComplianceRiskService &gt; upsert derives MEDIUM for L×I = 6" time="0.0015848">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/holidays-compliance.service.test.ts" name="holidayWorkApprovalService.approve &gt; auto-accrues comp-off on approve when rule exists" time="0.0010097">
+        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="ComplianceRiskService &gt; seed reports created codes for VISA_EXIT" time="0.0021654">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/holidays-compliance.service.test.ts" name="holidayWorkApprovalService.approve &gt; skips comp-off creation when rule has zero accrual" time="0.0005977">
+        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="ComplianceRiskService &gt; review sets reviewedAt + reviewedBy + status" time="0.0018996">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/holidays-compliance.service.test.ts" name="holidayCompOffService.consume &gt; refuses to consume more than available" time="0.0013283">
+        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="dashboardSummary &gt; returns one row per supported domain with counters" time="0.0046288">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/holidays-compliance.service.test.ts" name="holidayCompOffService.consume &gt; flips to CONSUMED when fully drawn" time="0.0003952">
+        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="Theme D — hr-forms-compliance default templates &gt; includes MISCONDUCT_REPORT, EOSB_CALC_SHEET, VISA_EXIT_CHECKLIST, EMPLOYEE_FILE_AUDIT_SHEET" time="0.0069717">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/holidays-compliance.service.test.ts" name="holidayCertificateService &gt; gates when work approvals pending" time="0.0006385">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/holidays-compliance.service.test.ts" name="holidayCertificateService &gt; gates when comp-off expiring soon" time="0.0004372">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/holidays-compliance.service.test.ts" name="holidayCertificateService &gt; refuses to sign while gated" time="0.0006041">
+        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="Theme D — hr-forms-compliance default templates &gt; EOSB_CALC_SHEET writebackTarget points at eosb.calculation" time="0.0012695">
         </testcase>
     </testsuite>
-    <testsuite name="src/lib/services/__tests__/separation-compliance.service.test.ts" timestamp="2026-07-06T15:28:12.808Z" hostname="Anuvab" tests="15" failures="0" errors="0" skipped="0" time="0.016969">
-        <testcase classname="src/lib/services/__tests__/separation-compliance.service.test.ts" name="isNoticeCompliant &gt; returns true when buyout" time="0.0015544">
+    <testsuite name="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" timestamp="2026-07-08T17:39:02.327Z" hostname="DESKTOP-2HC5NM6" tests="16" failures="0" errors="0" skipped="0" time="0.0304917">
+        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist canonicalizing redirect stubs &gt; AURA-361 checklist-items redirects to canonical route" time="0.0064817">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/separation-compliance.service.test.ts" name="isNoticeCompliant &gt; returns true when served &gt;= required" time="0.0005172">
+        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist canonicalizing redirect stubs &gt; AURA-362 mandatory-enforcement redirects to canonical route" time="0.0015106">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/separation-compliance.service.test.ts" name="isNoticeCompliant &gt; returns false when short of required" time="0.000437">
+        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist canonicalizing redirect stubs &gt; AURA-363 per-domain-seeds redirects to canonical route" time="0.0034398">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/separation-compliance.service.test.ts" name="separationCaseService.open &gt; uses country default notice period" time="0.0007301">
+        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist canonicalizing redirect stubs &gt; AURA-364 risk-register-band redirects to canonical route" time="0.001408">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/separation-compliance.service.test.ts" name="separationCaseService.open &gt; seeds clearance checklists for HR/IT/FINANCE/SECURITY/LINE_MANAGER/ADMIN" time="0.0010746">
+        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist re-export stubs resolve to existing feature pages &gt; AURA-374 annual-targets re-exports the canonical feature page" time="0.0013276">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/separation-compliance.service.test.ts" name="separationCaseService.open &gt; marks death in service when type DEATH" time="0.0004727">
+        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist re-export stubs resolve to existing feature pages &gt; AURA-375 checkpoint-snapshots re-exports the canonical feature page" time="0.0006274">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/separation-compliance.service.test.ts" name="separationCaseService.close &gt; refuses to close while clearances pending" time="0.0015502">
+        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist re-export stubs resolve to existing feature pages &gt; AURA-376 establishment-scope re-exports the canonical feature page" time="0.0005456">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/separation-compliance.service.test.ts" name="separationCaseService.close &gt; closes when all clearances done" time="0.0014754">
+        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist re-export stubs resolve to existing feature pages &gt; AURA-377 monthly-certificate re-exports the canonical feature page" time="0.0004273">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/separation-compliance.service.test.ts" name="separationClearanceService.updateChecklist &gt; flips status to CLEARED when all items completed" time="0.001339">
+        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist re-export stubs resolve to existing feature pages &gt; AURA-357 checklist-templates re-exports the canonical feature page" time="0.0007907">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/separation-compliance.service.test.ts" name="separationClearanceService.updateChecklist &gt; stays IN_PROGRESS when not yet complete" time="0.0010168">
+        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist re-export stubs resolve to existing feature pages &gt; AURA-358 compliance-certificates re-exports the canonical feature page" time="0.0006301">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/separation-compliance.service.test.ts" name="separationCertificateService &gt; gates when IT access remains open after close" time="0.0008497">
+        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist re-export stubs resolve to existing feature pages &gt; AURA-359 exception-register re-exports the canonical feature page" time="0.0005453">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/separation-compliance.service.test.ts" name="separationCertificateService &gt; gates when clearance pending" time="0.0005686">
+        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist re-export stubs resolve to existing feature pages &gt; AURA-360 run-workspace re-exports the canonical feature page" time="0.0004796">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/separation-compliance.service.test.ts" name="separationCertificateService &gt; refuses to sign while gated" time="0.0007716">
+        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist re-export stubs resolve to existing feature pages &gt; AURA-365 annual-audit-plan re-exports the canonical feature page" time="0.0005419">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/separation-compliance.service.test.ts" name="SEPARATION_CONSTANTS &gt; exposes GCC notice defaults" time="0.0004374">
+        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist re-export stubs resolve to existing feature pages &gt; AURA-366 monthly-calendar-certificate re-exports the canonical feature page" time="0.000334">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/separation-compliance.service.test.ts" name="SEPARATION_CONSTANTS &gt; exposes default clearance checklist" time="0.0004451">
+        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist re-export stubs resolve to existing feature pages &gt; AURA-367 recurrence-rules re-exports the canonical feature page" time="0.0005907">
+        </testcase>
+        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist re-export stubs resolve to existing feature pages &gt; AURA-368 task-register re-exports the canonical feature page" time="0.0003222">
         </testcase>
     </testsuite>
 </testsuites>

@@ -23,6 +23,12 @@ export class AuditPlanService {
     },
     auth: AuthContext
   ) {
+    const existing = await (prisma as any).auditPlan.findUnique({
+      where: { tenantId_year: { tenantId: auth.tenantId, year: input.year } },
+    });
+    if (existing) {
+      throw new Error(`An audit plan for the year ${input.year} already exists.`);
+    }
     return (prisma as any).auditPlan.create({
       data: {
         tenantId: auth.tenantId,
@@ -191,7 +197,7 @@ export class AuditPlanService {
       where: { tenantId: auth.tenantId, status: 'OPEN' },
     });
     return (prisma as any).managementReview.upsert({
-      where: { aura_management_review_unique: { tenantId: auth.tenantId, period: input.period } },
+      where: { tenantId_period: { tenantId: auth.tenantId, period: input.period } },
       update: {
         scheduledFor: input.scheduledFor,
         openActionsAtTime: openCount,

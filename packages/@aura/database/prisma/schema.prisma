@@ -12161,6 +12161,7 @@ model ComplianceCorrectiveAction {
   description       String?
   rootCause         String?
   severity          String    @default("MEDIUM")
+  priority          String    @default("MEDIUM")
   ownerId           String?
   raisedAt          DateTime  @default(now())
   raisedBy          String?
@@ -16279,4 +16280,111 @@ model IndustrySolution {
   updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
 
   @@map("aura_industry_solution")
+}
+
+model ComplianceAuditChecklistItem {
+  id                  String    @id @default(uuid())
+  tenantId            String
+  domainCode          String
+  categoryCode        String
+  itemCode            String
+  label               String
+  expectedBehavior    String?
+  evidenceRequirement String?
+  ownerRole           String?
+  isMandatory         Boolean   @default(false)
+  status              String    @default("OPEN")
+  owner               String?
+  dueDate             DateTime?
+  evidenceUrl         String?
+  notes               String?
+  completedAt         DateTime?
+  completedBy         String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  createdBy           String?
+  updatedBy           String?
+  deletedAt           DateTime?
+  isDeleted           Boolean   @default(false)
+
+  @@unique([tenantId, domainCode, itemCode], map: "aura_compliance_audit_checklist_item_unique")
+  @@index([tenantId])
+  @@index([status])
+  @@map("aura_compliance_audit_checklist_item")
+}
+
+model ComplianceRiskRegisterEntry {
+  id             String    @id @default(uuid())
+  tenantId       String
+  domainCode     String
+  riskCode       String
+  title          String
+  description    String?
+  category       String?
+  likelihood     Int
+  impact         Int
+  score          Int
+  band           String
+  ownerRole      String?
+  controlRef     String?
+  mitigationPlan String?
+  status         String    @default("OPEN")
+  reviewedAt     DateTime?
+  reviewedBy     String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  createdBy      String?
+  updatedBy      String?
+  deletedAt      DateTime?
+  isDeleted      Boolean   @default(false)
+
+  @@unique([tenantId, domainCode, riskCode], map: "aura_compliance_risk_register_entry_unique")
+  @@index([tenantId])
+  @@index([band])
+  @@index([status])
+  @@map("aura_compliance_risk_register_entry")
+}
+
+model ComplianceRegisterEvidence {
+  id             String    @id @default(uuid())
+  tenantId       String
+  targetType     String    // CHECKLIST | RISK | CAPA
+  targetId       String    // itemCode / riskCode / capaId
+  fileName       String
+  fileUrl        String
+  mimeType       String
+  fileSize       Int
+  uploadedBy     String?
+  uploadedAt     DateTime  @default(now())
+  verifiedBy     String?
+  verifiedAt     DateTime?
+  acceptedStatus String    @default("PENDING") // PENDING | ACCEPTED | REJECTED
+  checksum       String?
+  version        Int       @default(1)
+  expiresAt      DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  isDeleted      Boolean   @default(false)
+
+  @@index([tenantId])
+  @@index([targetType, targetId])
+  @@map("aura_compliance_register_evidence")
+}
+
+model ComplianceRegisterTimelineEvent {
+  id          String    @id @default(uuid())
+  tenantId    String
+  targetType  String    // CHECKLIST | RISK | CAPA
+  targetId    String    // itemCode / riskCode / capaId
+  eventType   String    // CREATED | EVIDENCE_UPLOADED | CONTROL_REVIEWED | RISK_ACCEPTED | RISK_MITIGATED | CAPA_CREATED | CAPA_CLOSED | APPROVED | REJECTED
+  title       String
+  description String?
+  userId      String?
+  userName    String?
+  timestamp   DateTime  @default(now())
+  createdAt   DateTime  @default(now())
+
+  @@index([tenantId])
+  @@index([targetType, targetId])
+  @@map("aura_compliance_register_timeline")
 }
