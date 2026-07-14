@@ -2,6 +2,7 @@
 'use client';
 
 import React from 'react';
+import { useRouter } from 'next/navigation';
 import { Home, Clock, User, MoreHorizontal } from 'lucide-react';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
@@ -25,9 +26,14 @@ export interface BottomNavigationProps {
 // ── Default items ──────────────────────────────────────────────────────────────
 
 const DEFAULT_ITEMS: BottomNavItem[] = [
-  { id: 'home', label: 'Home', icon: Home },
+  { id: 'home', label: 'Home', icon: Home, href: '/dashboard' },
   { id: 'approvals', label: 'Approvals', icon: Clock },
-  { id: 'profile', label: 'Profile', icon: User },
+  {
+    id: 'profile',
+    label: 'Profile',
+    icon: User,
+    href: '/dashboard/my-services/personal-info-update',
+  },
   { id: 'more', label: 'More', icon: MoreHorizontal },
 ];
 
@@ -39,7 +45,12 @@ export function BottomNavigation({
   onItemClick,
   className = '',
 }: BottomNavigationProps) {
+  const router = useRouter();
+
   const handleClick = (item: BottomNavItem) => {
+    if (item.href) {
+      router.push(item.href);
+    }
     item.onClick?.();
     onItemClick?.(item.id);
   };

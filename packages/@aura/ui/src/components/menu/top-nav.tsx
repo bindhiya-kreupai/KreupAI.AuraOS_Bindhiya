@@ -34,10 +34,11 @@ interface TopNavProps {
   onSignOut?: () => void;
   isDark?: boolean;
   onThemeToggle?: () => void;
+  user?: { email?: string; firstName?: string; lastName?: string; role?: string } | null;
   className?: string;
 }
 
-export const TopNav: React.FC<TopNavProps> = ({ onMenuClick, onSearchClick, onAIAssistantClick, onHelpClick, onSignOut, isDark = false, onThemeToggle, className }) => {
+export const TopNav: React.FC<TopNavProps> = ({ onMenuClick, onSearchClick, onAIAssistantClick, onHelpClick, onSignOut, isDark = false, onThemeToggle, user, className }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
@@ -167,13 +168,13 @@ export const TopNav: React.FC<TopNavProps> = ({ onMenuClick, onSearchClick, onAI
             <div className="absolute right-0 mt-2 w-56 bg-white dark:bg-stellar-blue rounded-xl shadow-lg border border-cloud dark:border-nebula-purple overflow-hidden">
               <div className="p-4 border-b border-cloud dark:border-nebula-purple">
                 <p className="font-semibold text-ink-black dark:text-pearl">
-                  John Doe
+                  {user ? [user.firstName, user.lastName].filter(Boolean).join(' ') || user.email : 'User'}
                 </p>
-                <p className="text-sm text-silver-mist">Super Admin</p>
+                <p className="text-sm text-silver-mist">{user?.role || ''}</p>
               </div>
               <div className="p-2">
                 <Link
-                  href="/profile"
+                  href="/dashboard/my-services/personal-info-update"
                   className="flex items-center gap-3 px-3 py-2 rounded-lg text-sm text-twilight dark:text-silver-mist hover:bg-pearl dark:hover:bg-nebula-purple transition-colors"
                 >
                   <User className="w-4 h-4" />

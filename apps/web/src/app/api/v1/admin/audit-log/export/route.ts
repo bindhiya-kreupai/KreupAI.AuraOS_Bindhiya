@@ -1,8 +1,9 @@
-// @ts-nocheck — Has Prisma schema drift (wrong field/relation names against current schema). Tracked under #29.
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
+import { Resource, Action, requirePermission } from '@/lib/auth';
 import { prisma } from '@aura/database';
+import { logger } from '@/lib/logger';
 
 export const dynamic = 'force-dynamic';
 
@@ -13,19 +14,8 @@ export const dynamic = 'force-dynamic';
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
     const { user, permissions } = context;
-    if (!permissions.includes('admin/audit-log:read')) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: {
-            code: 'E4030',
-            message: 'Forbidden: missing admin/audit-log:read permission',
-            messageAr: 'ممنوع',
-          },
-        },
-        { status: 403 }
-      );
-    }
+    const permissionError = requirePermission(Resource.AUDIT_LOGS, Action.READ, permissions);
+    if (permissionError) return permissionError;
     const { searchParams } = new URL(request.url);
 
     const startDate =
@@ -58,7 +48,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
           orderBy: { timestamp: 'desc' },
           take: limit,
           include: {
-            user: { select: { id: true, name: true, email: true } },
+            user: { select: { id: true, firstName: true, lastName: true, email: true } },
           },
         }),
         prisma.auditLog.count({ where }),
@@ -92,7 +82,9 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
       id: e.id,
       timestamp: e.timestamp.toISOString(),
       userId: e.userId,
-      userName: (e.user as any)?.name || null,
+      userName: e.user
+        ? [e.user.firstName, e.user.lastName].filter(Boolean).join(' ') || e.user.email
+        : null,
       action: e.action,
       module: e.resourceType || e.module,
       resource: e.resourceId ? `${e.resourceType}/${e.resourceId}` : e.resourceType,

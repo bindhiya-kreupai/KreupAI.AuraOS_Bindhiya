@@ -27,6 +27,7 @@ import { sendAnniversaryReminders } from '@/lib/jobs/anniversaryReminderJob';
 import { generateAIRecommendations } from '@/lib/jobs/aiRecommendationJob';
 import { generateReport } from '@/lib/jobs/reportGenerationJob';
 import { generateTaxDocuments } from '@/lib/jobs/taxDocumentGenerationJob';
+import { cleanupExpiredSessions } from '@/lib/jobs/sessionCleanupJob';
 
 export interface ScheduledJob {
   id: string;
@@ -106,6 +107,15 @@ const JOB_EXECUTORS: Record<string, JobExecutor> = {
     // tasks to the configured role, and re-derives due dates after holiday
     // / rule changes. Powers the GCC compliance calendar workspace.
     const result = await runGccComplianceMaintenance();
+    return {
+      success: result.success,
+      processedCount: result.processedCount,
+      errors: result.errors,
+    };
+  },
+
+  SESSION_CLEANUP: async () => {
+    const result = await cleanupExpiredSessions();
     return {
       success: result.success,
       processedCount: result.processedCount,
@@ -465,6 +475,18 @@ export class JobScheduler {
       cronExpression: '0 4 * * *', // Every day at 4 AM
       queue: QUEUE_NAMES.SCHEDULED_JOBS,
       jobType: 'GCC_COMPLIANCE_MAINTENANCE',
+      data: {},
+      enabled: true,
+    });
+
+    // Session cleanup (daily at 3:30 AM) — marks expired UserSessions as Expired,
+    // purges old revoked/expired records that exceed retention thresholds.
+    this.schedule({
+      id: 'daily-session-cleanup',
+      name: 'Daily Session Cleanup',
+      cronExpression: '30 3 * * *', // Every day at 3:30 AM
+      queue: QUEUE_NAMES.SCHEDULED_JOBS,
+      jobType: 'SESSION_CLEANUP',
       data: {},
       enabled: true,
     });

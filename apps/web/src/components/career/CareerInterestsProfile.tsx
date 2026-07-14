@@ -7,6 +7,7 @@
 'use client';
 
 import React, { useState, useCallback, useEffect } from 'react';
+import { useCurrentUser } from '@/lib/auth/AuthProvider';
 import {
   Target,
   Briefcase,
@@ -149,6 +150,7 @@ const EMPTY_INTERESTS: CareerInterests = {
 };
 
 export const CareerInterestsProfile: React.FC<CareerInterestsProfileProps> = ({ onSave }) => {
+  const { refresh } = useCurrentUser();
   const [interests, setInterests] = useState<CareerInterests>(EMPTY_INTERESTS);
   const [saved, setSaved] = useState(false);
   const [loading, setLoading] = useState(true);
@@ -239,6 +241,7 @@ export const CareerInterestsProfile: React.FC<CareerInterestsProfileProps> = ({ 
       if (!res.ok) throw new Error(`Failed to save (${res.status})`);
       onSave?.(interests);
       setSaved(true);
+      refresh();
       toast.success('Career interests saved');
       setTimeout(() => setSaved(false), 2000);
     } catch (error) {

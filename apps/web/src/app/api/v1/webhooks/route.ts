@@ -11,8 +11,8 @@ export const dynamic = 'force-dynamic';
  */
 export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
-    const { user, permissions } = context;
-    if (!permissions.includes('webhooks:read')) {
+    const { user, permissions, roles } = context;
+    if (!roles?.includes('SUPER_ADMIN') && !permissions.includes('webhooks:read')) {
       return NextResponse.json(
         {
           success: false,
@@ -126,8 +126,8 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
  */
 export const POST = withEnhancedAuth(async (request: NextRequest, context) => {
   try {
-    const { user, permissions } = context;
-    if (!permissions.includes('webhooks:create')) {
+    const { user, permissions, roles } = context;
+    if (!roles?.includes('SUPER_ADMIN') && !permissions.includes('webhooks:create')) {
       return NextResponse.json(
         {
           success: false,
