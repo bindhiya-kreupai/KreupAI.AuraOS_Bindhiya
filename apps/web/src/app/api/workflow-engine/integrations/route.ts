@@ -22,7 +22,9 @@ export const GET = createProtectedRoute(
 );
 
 export const POST = createProtectedRoute(
-  async (request: NextRequest, { auth, body }) => {
+  async (request: NextRequest, { auth }) => {
+    const body = await request.json().catch(() => ({}));
+
     const triggerEventPayload: Record<string, any> = {};
     if (body.connectionConfig) triggerEventPayload.connectionConfig = body.connectionConfig;
     if (body.authentication) triggerEventPayload.authentication = body.authentication;

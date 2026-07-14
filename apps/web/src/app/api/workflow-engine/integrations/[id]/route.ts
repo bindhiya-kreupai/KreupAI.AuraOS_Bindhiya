@@ -15,7 +15,8 @@ export const GET = createProtectedRoute(
 );
 
 export const PUT = createProtectedRoute(
-  async (request: NextRequest, { params, auth, body }) => {
+  async (request: NextRequest, { params, auth }) => {
+    const body = await request.json().catch(() => ({}));
     const existing = await prisma.workflowDefinition.findFirst({
       where: { id: params.id as string, tenantId: auth!.tenantId, isDeleted: false },
     });

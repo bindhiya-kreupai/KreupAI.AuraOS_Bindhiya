@@ -329,6 +329,7 @@ export class IntegrationService {
       description: data.description,
       integrationType: data.integrationType || 'rest_api',
       connectionConfig: data.connectionConfig || {},
+      authentication: data.authentication,
       availableActions: data.availableActions || [],
       status: data.status || 'DRAFT',
       isActive: false,
