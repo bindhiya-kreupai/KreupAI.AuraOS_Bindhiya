@@ -90,7 +90,8 @@ export default function WorkflowEnginePage() {
 
   const filteredExecutions = activeExecutions.filter((exec) => {
     const matchesSearch =
-      searchQuery === '' || exec.workflowName?.toLowerCase().includes(searchQuery.toLowerCase());
+      searchQuery === '' ||
+      (exec.definition?.name || '')?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === null || exec.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -233,7 +234,7 @@ export default function WorkflowEnginePage() {
                       >
                         <td className="px-6 py-4">
                           <div className="font-bold text-ink-black dark:text-pearl text-sm">
-                            {exec.workflowName}
+                            {exec.definition?.name || 'Unnamed'}
                           </div>
                           <div className="text-[10px] text-silver-mist font-mono">
                             {exec.referenceNumber || exec.id?.slice(0, 8) || ''}
@@ -294,16 +295,16 @@ export default function WorkflowEnginePage() {
                             />
                           </div>
                           <div className="text-[10px] text-silver-mist mt-1 italic">
-                            Currently at: {exec.currentNodeName || exec.status || '-'}
+                            Currently at: {exec.currentNode || exec.status || '-'}
                           </div>
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
                             <div className="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-[10px] font-bold">
-                              {exec.initiatorName?.charAt(0) || 'U'}
+                              {exec.submittedBy?.charAt(0) || 'U'}
                             </div>
                             <span className="text-xs font-medium text-ink-black dark:text-pearl">
-                              {exec.initiatorName || 'System'}
+                              {exec.submittedBy || 'System'}
                             </span>
                           </div>
                         </td>

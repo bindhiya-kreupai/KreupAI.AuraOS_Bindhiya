@@ -28,6 +28,13 @@ export const PUT = createProtectedRoute(
     if (body.isActive !== undefined) data.isActive = body.isActive;
     if (body.connectionConfig !== undefined)
       data.triggerEvent = JSON.stringify(body.connectionConfig);
+    if (body.authentication !== undefined) {
+      const existingConfig = existing.triggerEvent
+        ? JSON.parse(existing.triggerEvent as string)
+        : {};
+      const mergedConfig = { ...existingConfig, authentication: body.authentication };
+      data.triggerEvent = JSON.stringify(mergedConfig);
+    }
     if (body.availableActions !== undefined) data.nodes = body.availableActions;
     if (body.integrationType !== undefined) data.trigger = body.integrationType;
     data.updatedAt = new Date();

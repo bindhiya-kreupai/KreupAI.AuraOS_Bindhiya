@@ -17,6 +17,7 @@ export const updateDefinitionSchema = z.object({
   triggerEvent: z.string().optional(),
   processType: z.string().min(1).max(100).optional(),
   status: z.string().optional(),
+  isActive: z.boolean().optional(),
   nodes: z.array(z.record(z.unknown())).optional(),
   edges: z.array(z.record(z.unknown())).optional(),
 });

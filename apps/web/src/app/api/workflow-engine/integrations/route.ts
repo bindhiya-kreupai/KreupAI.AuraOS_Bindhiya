@@ -23,6 +23,10 @@ export const GET = createProtectedRoute(
 
 export const POST = createProtectedRoute(
   async (request: NextRequest, { auth, body }) => {
+    const triggerEventPayload: Record<string, any> = {};
+    if (body.connectionConfig) triggerEventPayload.connectionConfig = body.connectionConfig;
+    if (body.authentication) triggerEventPayload.authentication = body.authentication;
+
     const definition = await prisma.workflowDefinition.create({
       data: {
         tenantId: auth!.tenantId,
@@ -30,7 +34,8 @@ export const POST = createProtectedRoute(
         name: body.name,
         description: body.description || '',
         trigger: body.integrationType || 'REST_API',
-        triggerEvent: body.connectionConfig ? JSON.stringify(body.connectionConfig) : null,
+        triggerEvent:
+          Object.keys(triggerEventPayload).length > 0 ? JSON.stringify(triggerEventPayload) : null,
         nodes: body.availableActions || [],
         edges: [],
         status: body.status || 'DRAFT',

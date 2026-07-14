@@ -312,9 +312,8 @@ export default function ApprovalChainsPage() {
       const apiData = mapChainToApi(builderForm);
       if (editingChain?.id) {
         await ApprovalChainService.updateChain(editingChain.id, {
-          chainName: builderForm.name,
-          description: builderForm.description,
-          levels: builderForm.levels as any,
+          ...apiData,
+          isActive: builderForm.isActive,
         } as any);
       } else {
         await ApprovalChainService.createChain(apiData as any);

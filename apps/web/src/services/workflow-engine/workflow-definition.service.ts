@@ -78,6 +78,8 @@ export class WorkflowDefinitionService {
       nodes?: any;
       edges?: any;
       processType?: string;
+      isActive?: boolean;
+      status?: string;
       updatedBy: string;
     }
   ) {
@@ -87,12 +89,21 @@ export class WorkflowDefinitionService {
       });
       if (!existing) return { success: false, message: 'Workflow definition not found' };
 
+      const updateData: any = {
+        ...data,
+        updatedAt: new Date(),
+      };
+
+      if (data.isActive !== undefined) {
+        updateData.isActive = data.isActive;
+        if (data.status === undefined) {
+          updateData.status = data.isActive ? 'ACTIVE' : 'DRAFT';
+        }
+      }
+
       const updated = await prisma.workflowDefinition.update({
         where: { id },
-        data: {
-          ...data,
-          updatedAt: new Date(),
-        },
+        data: updateData,
       });
       return { success: true, data: updated };
     } catch (error: any) {

@@ -1344,6 +1344,7 @@ export default function FormBuilderPage() {
           formName: formData.name,
           description: formData.description,
           fields: nodes,
+          edges,
           triggerEvent,
         } as any);
       } else {
@@ -1351,6 +1352,7 @@ export default function FormBuilderPage() {
           formName: formData.name,
           description: formData.description,
           fields: nodes,
+          edges,
           triggerEvent,
         } as any);
         if (result?.id) {

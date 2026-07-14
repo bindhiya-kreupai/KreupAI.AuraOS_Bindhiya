@@ -20,11 +20,18 @@ export const POST = createProtectedRoute(
 
     let config: Record<string, any> = {};
     try {
-      config = definition.triggerEvent ? JSON.parse(definition.triggerEvent as string) : {};
+      const parsed = definition.triggerEvent ? JSON.parse(definition.triggerEvent as string) : {};
+      config = parsed.connectionConfig || parsed;
     } catch {}
 
     const url = config.baseUrl || config.url;
     if (!url) return { success: false, error: 'No endpoint URL configured', status: 400 };
+
+    let authConfig: Record<string, any> = {};
+    try {
+      const parsed = definition.triggerEvent ? JSON.parse(definition.triggerEvent as string) : {};
+      authConfig = parsed.authentication || {};
+    } catch {}
 
     const body = await request.json().catch(() => ({}));
 
@@ -34,7 +41,9 @@ export const POST = createProtectedRoute(
       const start = Date.now();
 
       const headers: Record<string, string> = { 'Content-Type': 'application/json' };
-      if (config.authHeader) headers['Authorization'] = config.authHeader;
+      if (authConfig.credentials?.token) {
+        headers['Authorization'] = `Bearer ${authConfig.credentials.token}`;
+      }
 
       const res = await fetch(url, {
         method: 'POST',

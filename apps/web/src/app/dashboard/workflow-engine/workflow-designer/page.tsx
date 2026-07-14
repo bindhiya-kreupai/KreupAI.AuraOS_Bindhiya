@@ -109,6 +109,7 @@ export default function WorkflowDesignerPage() {
                 await WorkflowService.createWorkflow({
                   name: workflowName || 'Untitled Workflow',
                   processType: 'GENERIC',
+                  trigger: 'MANUAL',
                   nodes: workflowNodes,
                 } as any);
                 toast.success('Workflow saved');

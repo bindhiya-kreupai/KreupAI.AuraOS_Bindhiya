@@ -250,7 +250,9 @@ export class ApprovalChainService {
   }
 
   static async getChains(): Promise<ApprovalChain[]> {
-    const res = await APIClient.get<any>('/workflow-engine/definitions', { trigger: 'EVENT' });
+    const res = await APIClient.get<any>('/workflow-engine/definitions', {
+      processType: 'APPROVAL_CHAIN',
+    });
     const data = this.unwrap<ApprovalChain[] | { definitions: ApprovalChain[] }>(res);
     if (Array.isArray(data)) return data;
     if (data && typeof data === 'object' && 'definitions' in data)
@@ -263,23 +265,33 @@ export class ApprovalChainService {
     return this.unwrap<ApprovalChain | null>(res);
   }
 
-  static async createChain(data: ApprovalChain): Promise<ApprovalChain> {
+  static async createChain(
+    data: Partial<ApprovalChain> & {
+      name?: string;
+      chainName?: string;
+      nodes?: any[];
+      edges?: any[];
+      isActive?: boolean;
+    }
+  ): Promise<ApprovalChain> {
     const res = await APIClient.post<any>('/workflow-engine/definitions', {
       processType: 'APPROVAL_CHAIN',
-      name: data.chainName,
+      name: data.name || data.chainName,
       description: data.description,
       trigger: 'EVENT',
-      nodes: data.levels || [],
-      edges: [],
+      nodes: data.nodes || [],
+      edges: data.edges || [],
     });
     return this.unwrap<ApprovalChain>(res);
   }
 
   static async updateChain(id: string, updates: Partial<ApprovalChain>): Promise<ApprovalChain> {
     const res = await APIClient.put<any>(`/workflow-engine/definitions/${id}`, {
-      name: updates.chainName,
+      name: updates.name || updates.chainName,
       description: updates.description,
-      nodes: updates.levels,
+      nodes: updates.nodes || updates.levels,
+      edges: updates.edges || [],
+      isActive: updates.isActive,
     });
     return this.unwrap<ApprovalChain>(res);
   }
@@ -329,9 +341,11 @@ export class IntegrationService {
       name: updates.integrationName,
       description: updates.description,
       connectionConfig: updates.connectionConfig,
+      authentication: updates.authentication,
       availableActions: updates.availableActions,
       integrationType: updates.integrationType,
       status: updates.status,
+      isActive: (updates as any).isActive,
     });
     return this.unwrap<Integration>(res);
   }
@@ -395,7 +409,9 @@ export class FormBuilderService {
       description: data.description,
       trigger: 'MANUAL',
       nodes: data.fields || [],
-      edges: [],
+      edges: (data as any).edges || [],
+      triggerEvent: (data as any).triggerEvent,
+      status: (data as any).status || 'DRAFT',
     });
     return this.unwrap<DynamicForm>(res);
   }
@@ -405,6 +421,7 @@ export class FormBuilderService {
       name: updates.formName,
       description: updates.description,
       nodes: updates.fields,
+      edges: (updates as any).edges,
       triggerEvent: (updates as any).triggerEvent,
       status: (updates as any).status,
     });
