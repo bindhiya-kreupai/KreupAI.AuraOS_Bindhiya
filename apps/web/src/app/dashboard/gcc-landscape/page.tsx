@@ -51,16 +51,21 @@ const ratingColor: Record<string, string> = {
   CRITICAL: 'bg-rose-100 text-rose-800',
 };
 
+const GCC_OPTIONS = ['AE', 'SA', 'BH', 'QA', 'OM', 'KW'];
+
 export default function GccLandscapeDashboardPage() {
   const [data, setData] = useState<DashboardPayload | null>(null);
   const [country, setCountry] = useState<string>('');
   const [message, setMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
 
   async function load(countryCode?: string) {
+    setIsLoading(true);
+    setMessage('');
     try {
       const url = new URL('/api/v1/gcc-landscape/dashboard', window.location.origin);
       if (countryCode) url.searchParams.set('countryCode', countryCode);
-      const res = await fetch(url.toString());
+      const res = await fetch(url.toString(), { cache: 'no-store' });
       const payload = await res.json();
       if (!res.ok || !payload.success) {
         throw new Error(payload.error?.message ?? 'load failed');
@@ -68,11 +73,18 @@ export default function GccLandscapeDashboardPage() {
       setData(payload.data);
     } catch (err) {
       setMessage(err instanceof Error ? err.message : 'load failed');
+    } finally {
+      setIsLoading(false);
     }
   }
 
   useEffect(() => {
-    load();
+    let savedCountry = '';
+    if (typeof window !== 'undefined') {
+      savedCountry = localStorage.getItem('auraos:gcc-landscape:dashboard-country') || '';
+      setCountry(savedCountry);
+    }
+    load(savedCountry || undefined);
   }, []);
 
   const tools = [
@@ -105,91 +117,115 @@ export default function GccLandscapeDashboardPage() {
             Country
             <select
               value={country}
+              disabled={isLoading}
               onChange={(e) => {
-                setCountry(e.target.value);
-                load(e.target.value || undefined);
+                const val = e.target.value;
+                setCountry(val);
+                if (typeof window !== 'undefined') {
+                  if (val) {
+                    localStorage.setItem('auraos:gcc-landscape:dashboard-country', val);
+                  } else {
+                    localStorage.removeItem('auraos:gcc-landscape:dashboard-country');
+                  }
+                }
+                load(val || undefined);
               }}
-              className="ml-2 rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+              className="ml-2 rounded-md border border-slate-300 px-2 py-1.5 text-sm disabled:opacity-50"
             >
               <option value="">All</option>
-              {(data?.countries ?? []).map((c) => (
-                <option key={c.countryCode} value={c.countryCode}>
-                  {c.countryCode}
-                </option>
-              ))}
+              {data?.countries?.length
+                ? data.countries.map((c) => (
+                    <option key={c.countryCode} value={c.countryCode}>
+                      {c.countryCode}
+                    </option>
+                  ))
+                : GCC_OPTIONS.map((code) => (
+                    <option key={code} value={code}>
+                      {code}
+                    </option>
+                  ))}
             </select>
           </label>
           <button
             type="button"
             onClick={() => load(country || undefined)}
-            className="rounded-md border border-slate-300 px-3 py-1.5 text-sm"
+            disabled={isLoading}
+            className="rounded-md border border-slate-300 px-3 py-1.5 text-sm disabled:opacity-50"
           >
-            Refresh
+            {isLoading ? 'Refreshing...' : 'Refresh'}
           </button>
           {message ? <p className="text-sm text-rose-600">{message}</p> : null}
         </section>
 
         <section className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-          {(data?.countries ?? []).map((c) => (
-            <div
-              key={c.countryCode}
-              className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-white p-4"
-            >
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold">{c.countryCode}</h3>
-                <span className="text-xs uppercase text-slate-500">
-                  {c.defaultCurrency} · {c.defaultTimezone}
-                </span>
-              </div>
-              {c.profile ? (
-                <div className="grid grid-cols-2 gap-2 text-xs text-slate-700">
-                  <span className="rounded bg-slate-50 px-2 py-1">
-                    Labour: {c.profile.labourAuthority}
-                  </span>
-                  <span className="rounded bg-slate-50 px-2 py-1">
-                    Social: {c.profile.socialInsuranceAuthority}
-                  </span>
-                  <span className="rounded bg-slate-50 px-2 py-1">
-                    Programme: {c.profile.nationalizationProgramme}
-                  </span>
-                  <span className="rounded bg-slate-50 px-2 py-1">
-                    Weekend: {c.profile.weekendPattern}
-                  </span>
-                </div>
-              ) : (
-                <p className="text-xs text-slate-500">No country profile seeded.</p>
-              )}
-              {c.kpi ? (
-                <div className="flex items-center justify-between rounded-md border border-slate-200 p-3">
-                  <div>
-                    <p className="text-xs text-slate-500">Headcount</p>
-                    <p className="text-lg font-semibold">{c.kpi.totalHeadcount}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-500">National %</p>
-                    <p className="text-lg font-semibold">{c.kpi.nationalPct}</p>
-                  </div>
-                  <div>
-                    <p className="text-xs text-slate-500">Target</p>
-                    <p className="text-lg font-semibold">{c.kpi.targetPct ?? '—'}</p>
-                  </div>
-                  {c.kpi.ragStatus ? (
-                    <span
-                      className={`rounded-full px-2 py-1 text-xs font-semibold ${ragColor[c.kpi.ragStatus] ?? ''}`}
-                    >
-                      {c.kpi.ragStatus}
+          {isLoading && !data ? (
+            <div className="col-span-full py-12 text-center text-sm text-slate-500">
+              Loading dashboard data...
+            </div>
+          ) : (
+            <>
+              {(data?.countries ?? []).map((c) => (
+                <div
+                  key={c.countryCode}
+                  className="flex flex-col gap-3 rounded-lg border border-slate-200 bg-white p-4"
+                >
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-lg font-semibold">{c.countryCode}</h3>
+                    <span className="text-xs uppercase text-slate-500">
+                      {c.defaultCurrency} · {c.defaultTimezone}
                     </span>
-                  ) : null}
+                  </div>
+                  {c.profile ? (
+                    <div className="grid grid-cols-2 gap-2 text-xs text-slate-700">
+                      <span className="rounded bg-slate-50 px-2 py-1">
+                        Labour: {c.profile.labourAuthority}
+                      </span>
+                      <span className="rounded bg-slate-50 px-2 py-1">
+                        Social: {c.profile.socialInsuranceAuthority}
+                      </span>
+                      <span className="rounded bg-slate-50 px-2 py-1">
+                        Programme: {c.profile.nationalizationProgramme}
+                      </span>
+                      <span className="rounded bg-slate-50 px-2 py-1">
+                        Weekend: {c.profile.weekendPattern}
+                      </span>
+                    </div>
+                  ) : (
+                    <p className="text-xs text-slate-500">No country profile seeded.</p>
+                  )}
+                  {c.kpi ? (
+                    <div className="flex items-center justify-between rounded-md border border-slate-200 p-3">
+                      <div>
+                        <p className="text-xs text-slate-500">Headcount</p>
+                        <p className="text-lg font-semibold">{c.kpi.totalHeadcount}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-slate-500">National %</p>
+                        <p className="text-lg font-semibold">{c.kpi.nationalPct}</p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-slate-500">Target</p>
+                        <p className="text-lg font-semibold">{c.kpi.targetPct ?? '—'}</p>
+                      </div>
+                      {c.kpi.ragStatus ? (
+                        <span
+                          className={`rounded-full px-2 py-1 text-xs font-semibold ${ragColor[c.kpi.ragStatus] ?? ''}`}
+                        >
+                          {c.kpi.ragStatus}
+                        </span>
+                      ) : null}
+                    </div>
+                  ) : (
+                    <p className="text-xs text-slate-500">No KPI snapshot yet.</p>
+                  )}
                 </div>
-              ) : (
-                <p className="text-xs text-slate-500">No KPI snapshot yet.</p>
+              ))}
+              {(!data?.countries || data.countries.length === 0) && (
+                <div className="col-span-full rounded-lg border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-600">
+                  No GCC countries enabled. Visit “Countries & Entities (S01)” to enable a country.
+                </div>
               )}
-            </div>
-          ))}
-          {(!data?.countries || data.countries.length === 0) && (
-            <div className="col-span-full rounded-lg border border-dashed border-slate-300 bg-white p-6 text-center text-sm text-slate-600">
-              No GCC countries enabled. Visit “Countries & Entities (S01)” to enable a country.
-            </div>
+            </>
           )}
         </section>
 

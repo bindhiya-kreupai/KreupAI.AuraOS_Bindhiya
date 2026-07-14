@@ -42,3 +42,19 @@ export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext)
     return serverError('Failed to create legal entity', err);
   }
 });
+
+export const DELETE = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) => {
+  if (!hasAny(ctx.permissions, 'tenant:manage')) return forbidden();
+  try {
+    const url = new URL(req.url);
+    const id = url.searchParams.get('id');
+    if (!id) return badRequest('id is required');
+    const data = await gccTenancyService.deactivateLegalEntity(id, {
+      tenantId: ctx.user.tenantId,
+      userId: ctx.user.id,
+    });
+    return ok(data, 'Legal entity deactivated');
+  } catch (err) {
+    return serverError('Failed to deactivate legal entity', err);
+  }
+});
