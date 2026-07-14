@@ -708,17 +708,17 @@ model DocumentType {
 }
 
 model BusinessUnit {
-  id        String    @id(map: "BusinessUnit_pkey") @default(uuid())
-  code      String    @unique(map: "BusinessUnit_code_key")
-  name      String
-  head      String?
-  status    String    @default("Active")
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @default(now())
-  createdBy String?
-  updatedBy String?
-  deletedAt DateTime?
-  isDeleted Boolean   @default(false)
+  id          String       @id(map: "BusinessUnit_pkey") @default(uuid())
+  code        String       @unique(map: "BusinessUnit_code_key")
+  name        String
+  head        String?
+  status      String       @default("Active")
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @default(now())
+  createdBy   String?
+  updatedBy   String?
+  deletedAt   DateTime?
+  isDeleted   Boolean      @default(false)
   departments Department[]
 
   @@map("aura_business_unit")
@@ -4201,26 +4201,26 @@ model AIAgentMessage {
 // ============================================================================
 
 model ChatbotDialogueFlow {
-  id              String    @id @default(uuid())
-  tenantId        String
-  flowName        String
-  description     String?
-  category        String?
-  nodes           Json
-  connections     Json
-  variables       Json?
-  isActive        Boolean   @default(false)
-  version         String    @default("1.0")
-  status          String    @default("draft")
-  triggerIntents  Json?
-  tags            Json?
-  publishedAt     DateTime?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  createdBy       String?
-  updatedBy       String?
-  deletedAt       DateTime?
-  isDeleted       Boolean   @default(false)
+  id             String    @id @default(uuid())
+  tenantId       String
+  flowName       String
+  description    String?
+  category       String?
+  nodes          Json
+  connections    Json
+  variables      Json?
+  isActive       Boolean   @default(false)
+  version        String    @default("1.0")
+  status         String    @default("draft")
+  triggerIntents Json?
+  tags           Json?
+  publishedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  createdBy      String?
+  updatedBy      String?
+  deletedAt      DateTime?
+  isDeleted      Boolean   @default(false)
 
   @@index([tenantId], map: "ChatbotDialogueFlow_tenantId_idx")
   @@index([tenantId, status], map: "ChatbotDialogueFlow_tenantId_status_idx")
@@ -4229,7 +4229,7 @@ model ChatbotDialogueFlow {
 }
 
 model ChatbotIntent {
-  id                  String   @id @default(uuid())
+  id                  String    @id @default(uuid())
   tenantId            String
   intentName          String
   displayName         String?
@@ -4239,19 +4239,19 @@ model ChatbotIntent {
   responses           Json?
   parameters          Json?
   contexts            Json?
-  priority            Int      @default(0)
-  webhookEnabled      Boolean  @default(false)
+  priority            Int       @default(0)
+  webhookEnabled      Boolean   @default(false)
   webhookUrl          String?
-  isActive            Boolean  @default(true)
-  confidenceThreshold Float    @default(0.7)
-  usageCount          Int      @default(0)
+  isActive            Boolean   @default(true)
+  confidenceThreshold Float     @default(0.7)
+  usageCount          Int       @default(0)
   averageConfidence   Float?
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
   createdBy           String?
   updatedBy           String?
   deletedAt           DateTime?
-  isDeleted           Boolean  @default(false)
+  isDeleted           Boolean   @default(false)
 
   @@index([tenantId], map: "ChatbotIntent_tenantId_idx")
   @@index([tenantId, isActive], map: "ChatbotIntent_tenantId_active_idx")
@@ -4259,21 +4259,21 @@ model ChatbotIntent {
 }
 
 model ChatbotEntity {
-  id              String   @id @default(uuid())
+  id              String    @id @default(uuid())
   tenantId        String
   entityName      String
   entityType      String
   description     String?
   values          Json?
-  fuzzyMatching   Boolean  @default(false)
-  isCaseSensitive Boolean  @default(false)
-  status          String   @default("active")
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  fuzzyMatching   Boolean   @default(false)
+  isCaseSensitive Boolean   @default(false)
+  status          String    @default("active")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
   createdBy       String?
   updatedBy       String?
   deletedAt       DateTime?
-  isDeleted       Boolean  @default(false)
+  isDeleted       Boolean   @default(false)
 
   @@index([tenantId], map: "ChatbotEntity_tenantId_idx")
   @@index([tenantId, status], map: "ChatbotEntity_tenantId_status_idx")
@@ -4281,21 +4281,21 @@ model ChatbotEntity {
 }
 
 model ChatbotTrainingDataset {
-  id            String   @id @default(uuid())
+  id            String    @id @default(uuid())
   tenantId      String
   datasetName   String
   description   String?
-  language      String   @default("en")
-  totalExamples Int      @default(0)
+  language      String    @default("en")
+  totalExamples Int       @default(0)
   intents       Json?
   entities      Json?
-  status        String   @default("draft")
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  status        String    @default("draft")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
   createdBy     String?
   updatedBy     String?
   deletedAt     DateTime?
-  isDeleted     Boolean  @default(false)
+  isDeleted     Boolean   @default(false)
 
   @@index([tenantId], map: "ChatbotTrainingDataset_tenantId_idx")
   @@index([tenantId, status], map: "ChatbotTrainingDataset_tenantId_status_idx")
@@ -4303,21 +4303,21 @@ model ChatbotTrainingDataset {
 }
 
 model ChatbotTrainingExample {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   tenantId    String
   datasetId   String?
   text        String
   intent      String
   entities    Json?
-  language    String   @default("en")
-  source      String   @default("manual")
-  isValidated Boolean  @default(false)
+  language    String    @default("en")
+  source      String    @default("manual")
+  isValidated Boolean   @default(false)
   validatedBy String?
   addedBy     String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
-  isDeleted   Boolean  @default(false)
+  isDeleted   Boolean   @default(false)
 
   @@index([tenantId], map: "ChatbotTrainingExample_tenantId_idx")
   @@index([datasetId], map: "ChatbotTrainingExample_datasetId_idx")
@@ -4348,21 +4348,21 @@ model ChatbotChannel {
 }
 
 model ChatbotHandoffRule {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   tenantId    String
   ruleName    String
   description String?
-  priority    Int      @default(0)
-  isActive    Boolean  @default(true)
+  priority    Int       @default(0)
+  isActive    Boolean   @default(true)
   triggers    Json?
   conditions  Json?
   action      Json?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   createdBy   String?
   updatedBy   String?
   deletedAt   DateTime?
-  isDeleted   Boolean  @default(false)
+  isDeleted   Boolean   @default(false)
 
   @@index([tenantId], map: "ChatbotHandoffRule_tenantId_idx")
   @@index([tenantId, isActive], map: "ChatbotHandoffRule_tenantId_active_idx")
@@ -4370,21 +4370,21 @@ model ChatbotHandoffRule {
 }
 
 model ChatbotLanguage {
-  id                  String   @id @default(uuid())
+  id                  String    @id @default(uuid())
   tenantId            String
   languageCode        String
   languageName        String
-  isEnabled           Boolean  @default(false)
-  isDefault           Boolean  @default(false)
+  isEnabled           Boolean   @default(false)
+  isDefault           Boolean   @default(false)
   translationModel    String?
-  confidenceThreshold Float    @default(0.7)
+  confidenceThreshold Float     @default(0.7)
   supportedFeatures   Json?
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
   createdBy           String?
   updatedBy           String?
   deletedAt           DateTime?
-  isDeleted           Boolean  @default(false)
+  isDeleted           Boolean   @default(false)
 
   @@unique([tenantId, languageCode], map: "ChatbotLanguage_tenantId_code_key")
   @@index([tenantId], map: "ChatbotLanguage_tenantId_idx")
@@ -4392,41 +4392,41 @@ model ChatbotLanguage {
 }
 
 model ChatbotTranslation {
-  id                String   @id @default(uuid())
+  id                String    @id @default(uuid())
   tenantId          String
   sourceLanguage    String
   targetLanguage    String
   sourceText        String
   translatedText    String
-  translationMethod String   @default("automatic")
+  translationMethod String    @default("automatic")
   quality           Float?
   translatedBy      String?
-  translatedDate    DateTime @default(now())
-  isApproved        Boolean  @default(false)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  translatedDate    DateTime  @default(now())
+  isApproved        Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
   createdBy         String?
   updatedBy         String?
   deletedAt         DateTime?
-  isDeleted         Boolean  @default(false)
+  isDeleted         Boolean   @default(false)
 
   @@index([tenantId], map: "ChatbotTranslation_tenantId_idx")
   @@map("aura_chatbot_translation")
 }
 
 model ChatbotLanguageContent {
-  id              String   @id @default(uuid())
+  id              String    @id @default(uuid())
   tenantId        String
   contentType     String
   referenceId     String
   translations    Json
   defaultLanguage String
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
   createdBy       String?
   updatedBy       String?
   deletedAt       DateTime?
-  isDeleted       Boolean  @default(false)
+  isDeleted       Boolean   @default(false)
 
   @@unique([tenantId, contentType, referenceId], map: "ChatbotContent_tenantId_type_ref_key")
   @@index([tenantId], map: "ChatbotLanguageContent_tenantId_idx")
@@ -4434,42 +4434,42 @@ model ChatbotLanguageContent {
 }
 
 model ChatbotLanguageDetection {
-  id                   String   @id @default(uuid())
+  id                   String    @id @default(uuid())
   tenantId             String
   text                 String
   detectedLanguage     String
   confidence           Float
   alternativeLanguages Json?
-  timestamp            DateTime @default(now())
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  timestamp            DateTime  @default(now())
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
   createdBy            String?
   updatedBy            String?
   deletedAt            DateTime?
-  isDeleted            Boolean  @default(false)
+  isDeleted            Boolean   @default(false)
 
   @@index([tenantId], map: "ChatbotLangDetection_tenantId_idx")
   @@map("aura_chatbot_language_detection")
 }
 
 model ChatbotLocalizationSettings {
-  id                              String   @id @default(uuid())
-  tenantId                        String   @unique(map: "ChatbotLocalization_tenantId_key")
-  autoDetectLanguage              Boolean  @default(false)
-  fallbackLanguage                String   @default("en")
-  supportedLanguages              Json?
-  translationProvider             String   @default("google")
-  translationApiKey               String?
-  enableAutoTranslation           Boolean  @default(false)
-  requireApprovalForAutoTranslation Boolean @default(true)
-  lastUpdatedAt                   DateTime @default(now())
-  lastUpdatedBy                   String?
-  createdAt                       DateTime @default(now())
-  updatedAt                       DateTime @updatedAt
-  createdBy                       String?
-  updatedBy                       String?
-  deletedAt                       DateTime?
-  isDeleted                       Boolean  @default(false)
+  id                                String    @id @default(uuid())
+  tenantId                          String    @unique(map: "ChatbotLocalization_tenantId_key")
+  autoDetectLanguage                Boolean   @default(false)
+  fallbackLanguage                  String    @default("en")
+  supportedLanguages                Json?
+  translationProvider               String    @default("google")
+  translationApiKey                 String?
+  enableAutoTranslation             Boolean   @default(false)
+  requireApprovalForAutoTranslation Boolean   @default(true)
+  lastUpdatedAt                     DateTime  @default(now())
+  lastUpdatedBy                     String?
+  createdAt                         DateTime  @default(now())
+  updatedAt                         DateTime  @updatedAt
+  createdBy                         String?
+  updatedBy                         String?
+  deletedAt                         DateTime?
+  isDeleted                         Boolean   @default(false)
 
   @@index([tenantId], map: "ChatbotLocalization_tenantId_idx")
   @@map("aura_chatbot_localization_settings")
@@ -5163,53 +5163,278 @@ model CustomReport {
 }
 
 model WorkflowDefinition {
-  id           String             @id(map: "WorkflowDefinition_pkey") @default(uuid())
-  tenantId     String
-  name         String
-  description  String?
-  trigger      String
-  triggerEvent String?
-  nodes        Json
-  edges        Json
-  isActive     Boolean            @default(true)
-  version      Int                @default(1)
-  createdBy    String
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
-  isDeleted    Boolean            @default(false)
-  deletedAt    DateTime?
-  updatedBy    String?
-  instances    WorkflowInstance[]
+  id            String             @id(map: "WorkflowDefinition_pkey") @default(uuid())
+  tenantId      String
+  processType   String             @default("GENERIC") @map("process_type")
+  name          String
+  description   String?
+  trigger       String
+  triggerEvent  String?
+  nodes         Json
+  edges         Json
+  status        String             @default("ACTIVE") @map("status")
+  isActive      Boolean            @default(true)
+  version       Int                @default(1)
+  effectiveFrom DateTime?          @map("effective_from")
+  effectiveTo   DateTime?          @map("effective_to")
+  createdBy     String
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  isDeleted     Boolean            @default(false)
+  deletedAt     DateTime?
+  updatedBy     String?
+  instances     WorkflowInstance[]
+  steps         WorkflowStep[]
 
+  @@index([processType, version], map: "WorkflowDefinition_processType_version_idx")
   @@index([isActive], map: "WorkflowDefinition_isActive_idx")
   @@index([tenantId], map: "WorkflowDefinition_tenantId_idx")
   @@index([trigger], map: "WorkflowDefinition_trigger_idx")
+  @@index([processType], map: "WorkflowDefinition_processType_idx")
+  @@index([status], map: "WorkflowDefinition_status_idx")
   @@map("aura_workflow_definition")
 }
 
 model WorkflowInstance {
-  id           String             @id(map: "WorkflowInstance_pkey") @default(uuid())
-  definitionId String
-  tenantId     String
-  status       String             @default("RUNNING")
-  currentNode  String?
-  context      Json?
-  startedAt    DateTime           @default(now())
-  completedAt  DateTime?
-  error        String?
-  triggeredBy  String
-  isDeleted    Boolean            @default(false)
-  deletedAt    DateTime?
-  createdBy    String?
-  updatedBy    String?
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @default(now())
-  definition   WorkflowDefinition @relation(fields: [definitionId], references: [id], map: "WorkflowInstance_definitionId_fkey")
+  id                String               @id(map: "WorkflowInstance_pkey") @default(uuid())
+  definitionId      String
+  tenantId          String
+  processType       String               @default("GENERIC") @map("process_type")
+  definitionVersion Int                  @default(1) @map("definition_version")
+  referenceNumber   String?              @unique @map("reference_number")
+  documentRef       String?              @map("document_ref")
+  documentType      String?              @map("document_type")
+  status            String               @default("RUNNING")
+  currentStepId     String?              @map("current_step_id")
+  currentNode       String?
+  submittedBy       String?              @map("submitted_by")
+  submittedAt       DateTime             @default(now()) @map("submitted_at")
+  snapshotData      Json                 @default("{}") @map("snapshot_data")
+  context           Json?
+  variables         Json                 @default("{}")
+  overallSlaDueAt   DateTime?            @map("overall_sla_due_at")
+  startedAt         DateTime             @default(now())
+  completedAt       DateTime?
+  outcome           String?
+  error             String?
+  triggeredBy       String
+  version           Int                  @default(1)
+  isDeleted         Boolean              @default(false)
+  deletedAt         DateTime?
+  createdBy         String?
+  updatedBy         String?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @default(now())
+  definition        WorkflowDefinition   @relation(fields: [definitionId], references: [id], map: "WorkflowInstance_definitionId_fkey")
+  steps             WorkflowStep[]
+  tasks             WorkflowTask[]
+  auditLogs         WorkflowAuditLog[]
+  comments          WorkflowComment[]
+  attachments       WorkflowAttachment[]
 
   @@index([definitionId], map: "WorkflowInstance_definitionId_idx")
   @@index([status], map: "WorkflowInstance_status_idx")
   @@index([tenantId], map: "WorkflowInstance_tenantId_idx")
+  @@index([processType], map: "WorkflowInstance_processType_idx")
+  @@index([submittedBy], map: "WorkflowInstance_submittedBy_idx")
+  @@index([referenceNumber], map: "WorkflowInstance_referenceNumber_idx")
+  @@index([currentStepId], map: "WorkflowInstance_currentStepId_idx")
   @@map("aura_workflow_instance")
+}
+
+model WorkflowStep {
+  id                       String               @id @default(uuid())
+  instanceId               String               @map("instance_id")
+  definitionId             String?              @map("definition_id")
+  stepId                   String               @map("step_id")
+  stepType                 String               @map("step_type")
+  stepName                 String               @map("step_name")
+  status                   String               @default("PENDING")
+  sequenceNumber           Int                  @default(0) @map("sequence_number")
+  startedAt                DateTime             @default(now()) @map("started_at")
+  completedAt              DateTime?            @map("completed_at")
+  slaDueAt                 DateTime?            @map("sla_due_at")
+  slaPausedAt              DateTime?            @map("sla_paused_at")
+  slaPausedDurationSeconds Int                  @default(0) @map("sla_paused_duration_seconds")
+  outcome                  String?
+  outcomeReasonCode        String?              @map("outcome_reason_code")
+  outcomeComment           String?              @map("outcome_comment")
+  outcomeBy                String?              @map("outcome_by")
+  retryCount               Int                  @default(0) @map("retry_count")
+  errorDetails             Json?                @map("error_details")
+  metadata                 Json                 @default("{}")
+  createdAt                DateTime             @default(now()) @map("created_at")
+  updatedAt                DateTime             @updatedAt @map("updated_at")
+  instance                 WorkflowInstance     @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+  definition               WorkflowDefinition?  @relation(fields: [definitionId], references: [id])
+  tasks                    WorkflowTask[]
+  auditLogs                WorkflowAuditLog[]
+  comments                 WorkflowComment[]
+  attachments              WorkflowAttachment[]
+
+  @@index([instanceId], map: "WorkflowStep_instanceId_idx")
+  @@index([status], map: "WorkflowStep_status_idx")
+  @@index([slaDueAt], map: "WorkflowStep_slaDueAt_idx")
+  @@map("aura_workflow_step")
+}
+
+model WorkflowTask {
+  id                  String           @id @default(uuid())
+  stepId              String           @map("step_id")
+  instanceId          String           @map("instance_id")
+  assignedTo          String?          @map("assigned_to")
+  assignedRole        String?          @map("assigned_role")
+  assignmentMode      String           @default("USER") @map("assignment_mode")
+  status              String           @default("PENDING")
+  claimedBy           String?          @map("claimed_by")
+  claimedAt           DateTime?        @map("claimed_at")
+  actionTaken         String?          @map("action_taken")
+  actionReasonCode    String?          @map("action_reason_code")
+  actionComment       String?          @map("action_comment")
+  actionAt            DateTime?        @map("action_at")
+  actionBy            String?          @map("action_by")
+  delegatedFrom       String?          @map("delegated_from")
+  delegationReason    String?          @map("delegation_reason")
+  delegationExpiresAt DateTime?        @map("delegation_expires_at")
+  slaDueAt            DateTime?        @map("sla_due_at")
+  reminderSentAt      DateTime?        @map("reminder_sent_at")
+  escalationLevel     Int              @default(0) @map("escalation_level")
+  createdAt           DateTime         @default(now()) @map("created_at")
+  updatedAt           DateTime         @updatedAt @map("updated_at")
+  version             Int              @default(1)
+  step                WorkflowStep     @relation(fields: [stepId], references: [id], onDelete: Cascade)
+  instance            WorkflowInstance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+
+  @@index([assignedTo], map: "WorkflowTask_assignedTo_idx")
+  @@index([assignedRole], map: "WorkflowTask_assignedRole_idx")
+  @@index([instanceId], map: "WorkflowTask_instanceId_idx")
+  @@index([stepId], map: "WorkflowTask_stepId_idx")
+  @@index([slaDueAt], map: "WorkflowTask_slaDueAt_idx")
+  @@index([status], map: "WorkflowTask_status_idx")
+  @@map("aura_workflow_task")
+}
+
+model WorkflowAuditLog {
+  id             String           @id @default(uuid())
+  instanceId     String           @map("instance_id")
+  stepId         String?          @map("step_id")
+  taskId         String?          @map("task_id")
+  eventType      String           @map("event_type")
+  action         String
+  actorId        String?          @map("actor_id")
+  actorType      String           @default("USER") @map("actor_type")
+  actorIp        String?          @map("actor_ip")
+  actorUserAgent String?          @map("actor_user_agent")
+  previousState  Json?            @map("previous_state")
+  newState       Json?            @map("new_state")
+  reasonCode     String?          @map("reason_code")
+  comment        String?
+  attachments    Json             @default("[]")
+  metadata       Json             @default("{}")
+  createdAt      DateTime         @default(now()) @map("created_at")
+  instance       WorkflowInstance @relation(fields: [instanceId], references: [id])
+  step           WorkflowStep?    @relation(fields: [stepId], references: [id])
+
+  @@index([instanceId], map: "WorkflowAuditLog_instanceId_idx")
+  @@index([actorId], map: "WorkflowAuditLog_actorId_idx")
+  @@index([eventType], map: "WorkflowAuditLog_eventType_idx")
+  @@index([createdAt], map: "WorkflowAuditLog_createdAt_idx")
+  @@map("aura_workflow_audit_log")
+}
+
+model WorkflowDelegation {
+  id             String   @id @default(uuid())
+  fromUserId     String   @map("from_user_id")
+  toUserId       String   @map("to_user_id")
+  delegationType String   @map("delegation_type")
+  processTypes   String[] @default([]) @map("process_types")
+  reason         String?
+  effectiveFrom  DateTime @map("effective_from")
+  effectiveTo    DateTime @map("effective_to")
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@index([fromUserId, isActive], map: "WorkflowDelegation_fromUserId_isActive_idx")
+  @@index([effectiveFrom, effectiveTo], map: "WorkflowDelegation_effectiveFrom_effectiveTo_idx")
+  @@map("aura_workflow_delegation")
+}
+
+model WorkflowComment {
+  id          String           @id @default(uuid())
+  instanceId  String           @map("instance_id")
+  stepId      String?          @map("step_id")
+  parentId    String?          @map("parent_id")
+  commentType String           @default("COMMENT") @map("comment_type")
+  visibility  String           @default("ALL")
+  content     String
+  mentions    String[]         @default([])
+  createdBy   String           @map("created_by")
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+  instance    WorkflowInstance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+  step        WorkflowStep?    @relation(fields: [stepId], references: [id])
+
+  @@index([instanceId], map: "WorkflowComment_instanceId_idx")
+  @@map("aura_workflow_comment")
+}
+
+model WorkflowAttachment {
+  id             String           @id @default(uuid())
+  instanceId     String           @map("instance_id")
+  stepId         String?          @map("step_id")
+  commentId      String?          @map("comment_id")
+  fileName       String           @map("file_name")
+  fileType       String           @map("file_type")
+  fileSize       Int              @map("file_size")
+  storagePath    String           @map("storage_path")
+  attachmentType String           @default("SUPPORTING") @map("attachment_type")
+  uploadedBy     String           @map("uploaded_by")
+  uploadedAt     DateTime         @default(now()) @map("uploaded_at")
+  instance       WorkflowInstance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+  step           WorkflowStep?    @relation(fields: [stepId], references: [id])
+
+  @@index([instanceId], map: "WorkflowAttachment_instanceId_idx")
+  @@map("aura_workflow_attachment")
+}
+
+model WorkflowReasonCode {
+  id          String  @id @default(uuid())
+  processType String  @map("process_type")
+  actionType  String  @map("action_type")
+  code        String
+  label       String
+  description String?
+  isActive    Boolean @default(true) @map("is_active")
+  sortOrder   Int     @default(0) @map("sort_order")
+
+  @@unique([processType, actionType, code], map: "WorkflowReasonCode_processType_actionType_code_key")
+  @@map("aura_workflow_reason_code")
+}
+
+model WorkflowSlaSchedule {
+  id           String    @id @default(uuid())
+  taskId       String    @map("task_id")
+  scheduleType String    @map("schedule_type")
+  scheduledAt  DateTime  @map("scheduled_at")
+  executedAt   DateTime? @map("executed_at")
+  status       String    @default("PENDING")
+
+  @@index([scheduledAt], map: "WorkflowSlaSchedule_scheduledAt_idx")
+  @@map("aura_workflow_sla_schedule")
+}
+
+model WorkflowIdempotencyKey {
+  idempotencyKey String   @id @map("idempotency_key")
+  instanceId     String   @map("instance_id")
+  stepId         String   @map("step_id")
+  actionId       String   @map("action_id")
+  result         Json?
+  createdAt      DateTime @default(now()) @map("created_at")
+  expiresAt      DateTime @map("expires_at")
+
+  @@index([expiresAt], map: "WorkflowIdempotencyKey_expiresAt_idx")
+  @@map("aura_workflow_idempotency_key")
 }
 
 model ProjectTimeEntry {
