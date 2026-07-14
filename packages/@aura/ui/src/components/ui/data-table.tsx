@@ -1,7 +1,7 @@
 import React from 'react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { Search, Filter, MoreHorizontal, ArrowUpDown, Download, Upload } from 'lucide-react';
+import { Search, Filter, ArrowUpDown, Download, Upload } from 'lucide-react';
 
 function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -101,13 +101,12 @@ export function DataTable<T extends { id: string | number }>({
                                     </div>
                                 </th>
                             ))}
-                            <th className="px-4 py-3 w-10"></th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-cloud dark:divide-nebula-purple/20">
                         {data.length === 0 ? (
                             <tr>
-                                <td colSpan={columns.length + 1} className="px-4 py-8 text-center text-silver-mist">
+                                <td colSpan={columns.length} className="px-4 py-8 text-center text-silver-mist">
                                     No data found
                                 </td>
                             </tr>
@@ -123,11 +122,6 @@ export function DataTable<T extends { id: string | number }>({
                                             {col.render ? col.render(row) : (row as any)[col.key]}
                                         </td>
                                     ))}
-                                    <td className="px-4 py-2.5 text-right">
-                                        <button className="p-1 text-silver-mist hover:text-ink-black dark:hover:text-pearl rounded opacity-0 group-hover:opacity-100 transition-all">
-                                            <MoreHorizontal className="w-4 h-4" />
-                                        </button>
-                                    </td>
                                 </tr>
                             ))
                         )}

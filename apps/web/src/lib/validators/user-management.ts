@@ -6,24 +6,31 @@ export const CreateUserSchema = z.object({
   password: z.string().min(8, 'Password must be at least 8 characters'),
   tenantId: z.string().uuid('Invalid tenant ID'),
   employeeId: z.string().uuid('Invalid employee ID').optional(),
+  firstName: z.string().max(100).nullish().default(null),
+  lastName: z.string().max(100).nullish().default(null),
   status: z.enum(['Active', 'Inactive', 'Suspended']).optional().default('Active'),
   mfaEnabled: z.boolean().optional().default(false),
 });
 
 export const UpdateUserSchema = z.object({
   email: z.string().email('Invalid email address').optional(),
+  password: z.string().min(8, 'Password must be at least 8 characters').optional(),
+  firstName: z.string().max(100).nullish(),
+  lastName: z.string().max(100).nullish(),
   status: z.enum(['Active', 'Inactive', 'Suspended']).optional(),
   mfaEnabled: z.boolean().optional(),
 });
 
-export const ChangePasswordSchema = z.object({
-  currentPassword: z.string().min(1, 'Current password is required'),
-  newPassword: z.string().min(8, 'New password must be at least 8 characters'),
-  confirmPassword: z.string().min(1, 'Password confirmation is required'),
-}).refine((data) => data.newPassword === data.confirmPassword, {
-  message: 'Passwords do not match',
-  path: ['confirmPassword'],
-});
+export const ChangePasswordSchema = z
+  .object({
+    currentPassword: z.string().min(1, 'Current password is required'),
+    newPassword: z.string().min(8, 'New password must be at least 8 characters'),
+    confirmPassword: z.string().min(1, 'Password confirmation is required'),
+  })
+  .refine((data) => data.newPassword === data.confirmPassword, {
+    message: 'Passwords do not match',
+    path: ['confirmPassword'],
+  });
 
 export const ResetPasswordSchema = z.object({
   userId: z.string().uuid('Invalid user ID'),
@@ -61,10 +68,10 @@ export const AuditLogQuerySchema = z.object({
   userId: z.string().uuid().optional(),
   action: z.string().optional(),
   module: z.string().optional(),
-  fromDate: z.string().datetime().or(z.date()).optional(),
-  toDate: z.string().datetime().or(z.date()).optional(),
+  fromDate: z.string().optional(),
+  toDate: z.string().optional(),
   page: z.coerce.number().int().min(1).optional().default(1),
-  limit: z.coerce.number().int().min(1).max(100).optional().default(20),
+  limit: z.coerce.number().int().min(1).max(10000).optional().default(20),
 });
 
 // Password Policy Schemas
@@ -142,46 +149,51 @@ export const LicenseQuerySchema = z.object({
 
 // User Deactivation Schemas
 export const DeactivateUserSchema = z.object({
-  userId: z.string().uuid('Invalid user ID'),
+  userId: z.string().min(1, 'Invalid user ID'),
   reason: z.string().min(1, 'Reason is required').max(500),
 });
 
 export const UserDeactivationQuerySchema = z.object({
-  userId: z.string().uuid().optional(),
-  deactivatedBy: z.string().uuid().optional(),
+  userId: z.string().optional(),
+  deactivatedBy: z.string().optional(),
   page: z.coerce.number().int().min(1).optional().default(1),
   limit: z.coerce.number().int().min(1).max(100).optional().default(20),
 });
 
 // User Delegation Schemas
-export const CreateUserDelegationSchema = z.object({
-  delegatorId: z.string().uuid('Invalid delegator ID'),
-  delegateeId: z.string().uuid('Invalid delegatee ID'),
-  role: z.string().min(1, 'Role is required').max(100),
-  startDate: z.string().datetime('Invalid start date').or(z.date()),
-  endDate: z.string().datetime('Invalid end date').or(z.date()),
-  reason: z.string().max(500).optional(),
-  status: z.enum(['Active', 'Scheduled', 'Expired']).optional().default('Scheduled'),
-}).refine((data) => {
-  const start = new Date(data.startDate);
-  const end = new Date(data.endDate);
-  return end > start;
-}, {
-  message: 'End date must be after start date',
-  path: ['endDate'],
-});
+export const CreateUserDelegationSchema = z
+  .object({
+    delegatorId: z.string().min(1, 'Invalid delegator ID'),
+    delegateeId: z.string().min(1, 'Invalid delegatee ID'),
+    role: z.string().min(1, 'Role is required').max(100),
+    startDate: z.string().min(1, 'Start date is required'),
+    endDate: z.string().min(1, 'End date is required'),
+    reason: z.string().max(500).optional(),
+    status: z.enum(['Active', 'Scheduled', 'Expired']).optional().default('Scheduled'),
+  })
+  .refine(
+    (data) => {
+      const start = new Date(data.startDate);
+      const end = new Date(data.endDate);
+      return !Number.isNaN(start.getTime()) && !Number.isNaN(end.getTime()) && end > start;
+    },
+    {
+      message: 'End date must be after start date',
+      path: ['endDate'],
+    }
+  );
 
 export const UpdateUserDelegationSchema = z.object({
   role: z.string().min(1).max(100).optional(),
-  startDate: z.string().datetime().or(z.date()).optional(),
-  endDate: z.string().datetime().or(z.date()).optional(),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
   reason: z.string().max(500).optional(),
   status: z.enum(['Active', 'Scheduled', 'Expired']).optional(),
 });
 
 export const UserDelegationQuerySchema = z.object({
-  delegatorId: z.string().uuid().optional(),
-  delegateeId: z.string().uuid().optional(),
+  delegatorId: z.string().optional(),
+  delegateeId: z.string().optional(),
   status: z.enum(['Active', 'Scheduled', 'Expired']).optional(),
   page: z.coerce.number().int().min(1).optional().default(1),
   limit: z.coerce.number().int().min(1).max(100).optional().default(20),

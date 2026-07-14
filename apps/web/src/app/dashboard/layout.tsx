@@ -5,6 +5,9 @@ import { usePathname } from 'next/navigation';
 import { SidebarMenu, TopNav } from '@aura/ui/components/menu';
 import { RightPanel } from '@aura/ui/components/layout';
 import { Info } from 'lucide-react';
+import { SearchProvider, useSearch } from '@/stores/search-store';
+import { ThemeProvider, useTheme } from '@/stores/theme-store';
+import { useCurrentUser } from '@/lib/auth/AuthProvider';
 
 // Modules that currently render demo UI only — their pages don't fetch from
 // any /api/ endpoint. Listed here so users see a clear "preview" banner
@@ -31,7 +34,6 @@ const PREVIEW_MODULES = new Set<string>([
   'hr-helpdesk',
   'industry',
   'industry-solutions',
-  'integration-hub',
   'legal',
   'localization',
   'logistics',
@@ -49,8 +51,6 @@ const PREVIEW_MODULES = new Set<string>([
   'retail',
 ]);
 
-import { ThemeProvider, useTheme } from '@/stores/theme-store';
-
 interface FavoriteItem {
   path: string;
   title: string;
@@ -66,6 +66,34 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const isPreviewModule = !!moduleSegment && PREVIEW_MODULES.has(moduleSegment);
 
   const { isDark, toggleTheme } = useTheme();
+  const { setIsOpen: setSearchOpen } = useSearch();
+  const { user: currentUser } = useCurrentUser();
+
+  const handleSignOut = useCallback(async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch {
+      // Continue client-side cleanup
+    }
+    // Clear client-side cookies
+    document.cookie.split(';').forEach((c) => {
+      const name = c.trim().split('=')[0];
+      if (name) {
+        document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+      }
+    });
+    localStorage.removeItem('aura_token');
+    localStorage.removeItem('aura_session');
+    router.push('/auth/login');
+  }, [router]);
+
+  const handleAIAssistantClick = useCallback(() => {
+    window.dispatchEvent(new CustomEvent('aura:toggle-chatbot'));
+  }, []);
+
+  const handleHelpClick = useCallback(() => {
+    router.push('/dashboard/hr-helpdesk');
+  }, [router]);
 
   const handleToggleFavorite = useCallback((item: FavoriteItem) => {
     setFavorites((prev) => {
@@ -97,6 +125,14 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top Navigation */}
         <TopNav isDark={isDark} onThemeToggle={toggleTheme} />
+          onSearchClick={() => setSearchOpen(true)}
+          onAIAssistantClick={handleAIAssistantClick}
+          onHelpClick={handleHelpClick}
+          onSignOut={handleSignOut}
+          isDark={isDark}
+          onThemeToggle={toggleTheme}
+          user={currentUser}
+        />
 
         {/* Page Content */}
         <main className="flex-1 overflow-y-auto p-2 scroll-smooth pr-16">

@@ -149,7 +149,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
             <span className="text-sm">Alerts</span>
           </Link>
           <Link
-            href="/profile"
+            href="/dashboard/my-services/personal-info-update"
             className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors"
           >
             <User className="w-4 h-4" />

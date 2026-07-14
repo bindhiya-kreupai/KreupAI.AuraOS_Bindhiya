@@ -1,0 +1,15 @@
+BEGIN;
+
+CREATE TABLE IF NOT EXISTS auraos.aura_agriculture_seasonal_crew (
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  name TEXT NOT NULL,
+  location TEXT NOT NULL,
+  size INTEGER NOT NULL,
+  origin TEXT NOT NULL,
+  status TEXT NOT NULL,
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+COMMIT;

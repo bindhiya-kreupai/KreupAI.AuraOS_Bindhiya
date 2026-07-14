@@ -146,6 +146,25 @@ export const RolePermissions: Record<string, Permission[]> = {
     'shift-assignments:manage',
     'shift-rosters:manage',
     'shift-swaps:manage',
+    'sso_config:manage',
+
+    // User Management sub-modules
+    'licenses:read',
+    'licenses:create',
+    'licenses:update',
+    'licenses:delete',
+    'user_delegation:read',
+    'user_delegation:create',
+    'user_delegation:update',
+    'user_delegation:delete',
+    'user_deactivation:read',
+    'user_deactivation:create',
+    'user_deactivation:update',
+    'password_policies:manage',
+    'mfa_config:manage',
+    'access_control:manage',
+    'system_settings:read',
+    'system_settings:update',
   ],
 
   HR_MANAGER: [
