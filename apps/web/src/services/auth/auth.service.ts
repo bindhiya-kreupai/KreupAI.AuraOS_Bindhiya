@@ -5,6 +5,27 @@ import crypto from 'crypto';
 import { logger } from '@/lib/logger';
 import { generateAccessToken, generateRefreshToken } from '@/lib/auth/jwt';
 import { comparePassword } from '@/lib/auth/password';
+import { generateDeviceFingerprint } from '@/lib/auth/device-fingerprint.service';
+import { resolveLocation, formatLocation } from '@/lib/auth/geolocation.service';
+
+function parseDuration(duration: string): number {
+  const match = duration.match(/^(\d+)\s*(h|d|m|s)$/);
+  if (!match) return 24 * 60 * 60 * 1000;
+  const value = parseInt(match[1], 10);
+  const unit = match[2];
+  switch (unit) {
+    case 's':
+      return value * 1000;
+    case 'm':
+      return value * 60 * 1000;
+    case 'h':
+      return value * 60 * 60 * 1000;
+    case 'd':
+      return value * 24 * 60 * 60 * 1000;
+    default:
+      return 24 * 60 * 60 * 1000;
+  }
+}
 
 /**
  * Authentication Service
@@ -177,7 +198,8 @@ export class AuthService {
   async login(
     credentials: LoginCredentials,
     ipAddress: string,
-    userAgent: string
+    userAgent: string,
+    acceptLanguage?: string | null
   ): Promise<LoginResult> {
     const { email, password, rememberMe = false } = credentials;
 
@@ -289,7 +311,7 @@ export class AuthService {
     }
 
     // Create session and generate tokens
-    return this.createSessionAndTokens(user, ipAddress, userAgent, rememberMe);
+    return this.createSessionAndTokens(user, ipAddress, userAgent, rememberMe, acceptLanguage);
   }
 
   /**
@@ -316,8 +338,44 @@ export class AuthService {
     },
     ipAddress: string,
     userAgent: string,
-    rememberMe: boolean = false
+    rememberMe: boolean = false,
+    acceptLanguage?: string | null
   ): Promise<LoginResult> {
+    // Enforce max concurrent sessions
+    const maxSessions = parseInt(process.env.MAX_CONCURRENT_SESSIONS || '10', 10);
+    const activeSessions = await prisma.userSession.count({
+      where: { userId: user.id, status: 'Active' },
+    });
+
+    if (activeSessions >= maxSessions) {
+      const oldestSessions = await prisma.userSession.findMany({
+        where: { userId: user.id, status: 'Active' },
+        orderBy: { lastActive: 'asc' },
+        take: activeSessions - maxSessions + 1,
+        select: { id: true },
+      });
+
+      if (oldestSessions.length > 0) {
+        await prisma.userSession.updateMany({
+          where: { id: { in: oldestSessions.map((s) => s.id) } },
+          data: { status: 'Revoked' },
+        });
+      }
+    }
+
+    // Calculate session expiry from JWT_EXPIRES_IN (default 24h)
+    const expiresInStr = process.env.JWT_EXPIRES_IN || '24h';
+    const expiresInMs = parseDuration(expiresInStr);
+    const expiresAt = new Date(Date.now() + expiresInMs);
+
+    // Generate device fingerprint and resolve location (best-effort)
+    const fingerprint = generateDeviceFingerprint(userAgent, ipAddress, acceptLanguage);
+    let locationStr = '';
+    try {
+      const geoLocation = await resolveLocation(ipAddress);
+      locationStr = formatLocation(geoLocation);
+    } catch (_) {}
+
     // Create user session
     const session = await prisma.userSession.create({
       data: {
@@ -325,7 +383,10 @@ export class AuthService {
         ipAddress,
         device: userAgent.substring(0, 200),
         browser: userAgent.split('/')[0]?.substring(0, 100),
+        deviceFingerprint: fingerprint.hash,
+        location: locationStr || null,
         status: 'Active',
+        expiresAt,
       },
     });
 
@@ -370,10 +431,7 @@ export class AuthService {
       },
     });
 
-    logger.info(
-      { userId: user.id, email: user.email, ipAddress },
-      'User logged in successfully'
-    );
+    logger.info({ userId: user.id, email: user.email, ipAddress }, 'User logged in successfully');
 
     return {
       success: true,
@@ -666,7 +724,9 @@ export class AuthService {
    *      * }
    * ```
    */
-  async resetPassword(confirm: PasswordResetConfirm): Promise<{ success: boolean; message: string; error?: string }> {
+  async resetPassword(
+    confirm: PasswordResetConfirm
+  ): Promise<{ success: boolean; message: string; error?: string }> {
     const { token, newPassword, ipAddress } = confirm;
 
     // Find all unused, non-expired reset tokens
@@ -806,7 +866,10 @@ export class AuthService {
    *      * }
    * ```
    */
-  async verifyCredentials(email: string, password: string): Promise<{ valid: boolean; userId?: string }> {
+  async verifyCredentials(
+    email: string,
+    password: string
+  ): Promise<{ valid: boolean; userId?: string }> {
     const user = await prisma.user.findFirst({
       where: {
         email: {
@@ -874,10 +937,7 @@ export class AuthService {
       },
     });
 
-    logger.info(
-      { userId, count: result.count, reason, ipAddress },
-      'All active sessions revoked'
-    );
+    logger.info({ userId, count: result.count, reason, ipAddress }, 'All active sessions revoked');
 
     return result.count;
   }

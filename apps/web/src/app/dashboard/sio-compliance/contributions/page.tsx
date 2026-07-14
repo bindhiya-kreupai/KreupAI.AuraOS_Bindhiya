@@ -35,7 +35,9 @@ export default function SioContributionsPage() {
   async function load() {
     const r = await fetch(`/api/v1/sio-compliance/contributions?period=${period}`);
     const p = await r.json();
-    if (p.success) setList(p.data ?? []);
+    console.log('API Response:', p);
+
+    if (p.success) setList(p.data.items ?? []);
   }
   useEffect(() => {
     load();

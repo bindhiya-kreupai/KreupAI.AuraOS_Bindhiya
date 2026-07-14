@@ -50,6 +50,18 @@ export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext)
         'Saved'
       );
     }
+    if (body.action === 'soft-delete') {
+      if (!body.id) return badRequest('id required');
+      return ok(await hrDocumentService.softDelete(body.id, auth), 'Soft deleted');
+    }
+    if (body.action === 'restore') {
+      if (!body.id) return badRequest('id required');
+      return ok(await hrDocumentService.restore(body.id, auth), 'Restored');
+    }
+    if (body.action === 'hard-delete') {
+      if (!body.id) return badRequest('id required');
+      return ok(await hrDocumentService.hardDelete(body.id), 'Hard deleted');
+    }
     return badRequest('unknown action');
   } catch (err) {
     return serverError('Failed to update document', err);

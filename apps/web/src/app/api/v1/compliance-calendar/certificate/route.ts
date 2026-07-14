@@ -18,7 +18,7 @@ export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext)
   if (!hasAny(ctx.permissions, 'tenant:manage', 'compliance_kpi:read')) return forbidden();
   try {
     const body = await req.json();
-    const auth = { tenantId: ctx.user.tenantId, userId: ctx.user.id };
+    const auth = { tenantId: ctx.user.tenantId, userId: (ctx.user as any).userId || ctx.user.id };
     if (body.action === 'generate') {
       if (!body.period) return badRequest('period required');
       return ok(await calendarCertificateService.generate(body.period, auth), 'Generated');
@@ -31,7 +31,15 @@ export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext)
       );
     }
     return badRequest('unknown action');
-  } catch (err) {
+  } catch (err: any) {
+    if (
+      err instanceof Error &&
+      !err.message.includes('Prisma') &&
+      !err.message.includes('db') &&
+      !err.stack?.includes('prisma')
+    ) {
+      return badRequest(err.message);
+    }
     return serverError('Failed to update certificate', err);
   }
 });

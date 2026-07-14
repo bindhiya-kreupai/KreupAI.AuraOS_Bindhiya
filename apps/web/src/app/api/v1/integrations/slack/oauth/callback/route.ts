@@ -26,25 +26,37 @@ async function exchangeSlackCode(code: string, redirectUri: string) {
 }
 
 async function persistSlackConnection(tenantId: string, userId: string | undefined, data: any) {
-  await (prisma as any).integrationConnection?.upsert?.({
-    where: { tenantId_provider: { tenantId, provider: 'slack' } },
+  await prisma.integrationConnection.upsert({
+    where: { tenantId_integrationId: { tenantId, integrationId: 'int_slack' } },
     create: {
       tenantId,
+      integrationId: 'int_slack',
+      integrationName: 'Slack',
       provider: 'slack',
+      category: 'COMMUNICATION',
       status: 'CONNECTED',
-      externalAccountId: data.team?.id,
-      externalAccountName: data.team?.name,
-      accessTokenEncrypted: data.access_token,
-      scopes: typeof data.scope === 'string' ? data.scope.split(',') : [],
-      connectedBy: userId,
+      configuration: {
+        teamId: data.team?.id,
+        teamName: data.team?.name,
+      },
+      credentials: {
+        accessToken: data.access_token,
+        scopes: typeof data.scope === 'string' ? data.scope.split(',') : [],
+      },
       connectedAt: new Date(),
+      connectedBy: userId,
+      healthStatus: 'HEALTHY',
     },
     update: {
       status: 'CONNECTED',
-      externalAccountId: data.team?.id,
-      externalAccountName: data.team?.name,
-      accessTokenEncrypted: data.access_token,
-      scopes: typeof data.scope === 'string' ? data.scope.split(',') : [],
+      configuration: {
+        teamId: data.team?.id,
+        teamName: data.team?.name,
+      },
+      credentials: {
+        accessToken: data.access_token,
+        scopes: typeof data.scope === 'string' ? data.scope.split(',') : [],
+      },
       connectedAt: new Date(),
     },
   });
@@ -67,7 +79,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const stateRow: any = await (prisma as any).oAuthState?.findUnique?.({ where: { state } });
+    const stateRow = await prisma.oAuthState.findUnique({ where: { state } });
     if (!stateRow || stateRow.expiresAt < new Date()) {
       return NextResponse.redirect(
         new URL('/dashboard/integration-hub?error=invalid_state', request.url)

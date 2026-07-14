@@ -28,6 +28,9 @@ export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext)
         )
       );
     }
+    if (body.action === 'upsert') {
+      return ok(await docRetentionScheduleService.upsert(body, auth));
+    }
     return badRequest('unknown action');
   } catch (err) {
     return serverError('Failed to update schedule', err);

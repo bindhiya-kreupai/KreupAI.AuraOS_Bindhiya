@@ -3,49 +3,14 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { authenticator } from 'otplib';
 import QRCode from 'qrcode';
-import crypto from 'crypto';
-import bcrypt from 'bcryptjs';
 import { withEnhancedAuth } from '@/lib/auth/enhanced-middleware';
+import { encryptSecret, generateBackupCodes } from '@/lib/auth/mfa-crypto';
 import { logger } from '@/lib/logger';
 
 /**
  * MFA Setup API - Initialize TOTP-based Multi-Factor Authentication
  * Requires authentication
  */
-
-if (!process.env.MFA_ENCRYPTION_KEY) {
-  throw new Error(
-    'FATAL: MFA_ENCRYPTION_KEY environment variable is not set. Refusing to start with an insecure default.'
-  );
-}
-const ENCRYPTION_KEY = process.env.MFA_ENCRYPTION_KEY;
-const BACKUP_CODES_COUNT = 10;
-
-/**
- * Simple encryption for TOTP secrets (use proper encryption in production)
- */
-function encryptSecret(secret: string): string {
-  const cipher = crypto.createCipher('aes-256-cbc', ENCRYPTION_KEY);
-  let encrypted = cipher.update(secret, 'utf8', 'hex');
-  encrypted += cipher.final('hex');
-  return encrypted;
-}
-
-/**
- * Generate backup codes
- */
-function generateBackupCodes(): { codes: string[]; hashed: string[] } {
-  const codes: string[] = [];
-  const hashed: string[] = [];
-
-  for (let i = 0; i < BACKUP_CODES_COUNT; i++) {
-    const code = crypto.randomBytes(4).toString('hex').toUpperCase();
-    codes.push(code);
-    hashed.push(bcrypt.hashSync(code, 10));
-  }
-
-  return { codes, hashed };
-}
 
 /**
  * POST /api/auth/mfa/setup

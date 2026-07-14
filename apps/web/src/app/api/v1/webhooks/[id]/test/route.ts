@@ -6,8 +6,9 @@ import { forbidden, notFound, serverError, successItem } from '@/lib/api/crud-he
 
 export const POST = withEnhancedAuth(async (_request: NextRequest, context: any) => {
   try {
-    const { user, params, permissions } = context;
-    if (!permissions.includes('webhooks:test')) return forbidden('webhooks:test');
+    const { user, params, permissions, roles } = context;
+    if (!roles?.includes('SUPER_ADMIN') && !permissions.includes('webhooks:test'))
+      return forbidden('webhooks:test');
     const webhook = await prisma.webhook.findFirst({
       where: { id: params.id, tenantId: user.tenantId },
     });
@@ -40,7 +41,7 @@ export const POST = withEnhancedAuth(async (_request: NextRequest, context: any)
     } catch (e: any) {
       errorMsg = e?.message || String(e);
     }
-    const durationMs = Date.now() - start;
+    const responseTime = Date.now() - start;
     await prisma.webhookLog.create({
       data: {
         webhookId: webhook.id,
@@ -48,12 +49,19 @@ export const POST = withEnhancedAuth(async (_request: NextRequest, context: any)
         payload: payload as any,
         statusCode,
         responseBody,
+        responseTime,
         success,
-        error: errorMsg,
-        durationMs,
-      } as any,
+        attempts: 1,
+        lastAttempt: new Date(),
+      },
     });
-    return successItem({ statusCode, success, durationMs, responseBody, error: errorMsg });
+    return successItem({
+      statusCode,
+      success,
+      durationMs: responseTime,
+      responseBody,
+      error: errorMsg,
+    });
   } catch (error: any) {
     return serverError(error, 'test webhook');
   }
