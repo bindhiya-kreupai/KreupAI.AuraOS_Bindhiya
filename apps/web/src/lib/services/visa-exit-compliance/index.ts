@@ -42,12 +42,7 @@ export type ExitScenario =
   | 'DEATH';
 
 export type CaseStatus =
-  | 'OPEN'
-  | 'IN_PROGRESS'
-  | 'AWAITING_AUTHORITY'
-  | 'AWAITING_EMPLOYEE'
-  | 'CLOSED'
-  | 'CANCELLED';
+  'OPEN' | 'IN_PROGRESS' | 'AWAITING_AUTHORITY' | 'AWAITING_EMPLOYEE' | 'CLOSED' | 'CANCELLED';
 
 export const DEFAULT_GRACE_DAYS: Record<string, number> = {
   UAE: 30,

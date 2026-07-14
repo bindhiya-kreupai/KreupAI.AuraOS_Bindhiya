@@ -102,7 +102,7 @@ export class ErGrievanceService {
   ) {
     return (prisma as any).erGrievanceCase.upsert({
       where: {
-        aura_er_grievance_case_unique: {
+        tenantId_caseNumber: {
           tenantId: auth.tenantId,
           caseNumber: input.caseNumber,
         },
