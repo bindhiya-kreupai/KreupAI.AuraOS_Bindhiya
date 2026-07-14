@@ -18,6 +18,9 @@ export interface CurrentUser {
   // Temporary alias — until the Employee model lands, employeeId === userId.
   // Interns: read `employeeId` from this object instead of hardcoding 'EMP001'.
   employeeId: string;
+  firstName?: string;
+  lastName?: string;
+  role?: string;
 }
 
 interface AuthContextValue {

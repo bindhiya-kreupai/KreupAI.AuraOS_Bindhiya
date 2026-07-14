@@ -2,10 +2,10 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
-import { Resource, Action, requirePermission, RolePermissions } from '@/lib/auth';
+import { Resource, Action, requirePermission } from '@/lib/auth';
 import { logger } from '@/lib/logger';
 
-// GET - Fetch access control overview (roles and their permissions)
+// GET - Fetch access control overview (roles and their permissions from DB)
 export const GET = withEnhancedAuth(async (request: NextRequest, { user, permissions }) => {
   try {
     // Check permission
@@ -27,16 +27,27 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
         _count: {
           select: { userRoles: true },
         },
+        permissions: {
+          select: {
+            permission: {
+              select: {
+                resource: true,
+                action: true,
+              },
+            },
+          },
+        },
         createdAt: true,
         updatedAt: true,
       },
       orderBy: { name: 'asc' },
     });
 
-    // Map roles to their permissions from the RolePermissions system
+    // Map roles to their permissions from the database
     const accessControlData = roles.map((role) => {
-      const roleKey = role.name.toUpperCase().replace(/\s+/g, '_');
-      const rolePermissions = RolePermissions[roleKey] || [];
+      const rolePermissions = role.permissions.map(
+        (rp) => `${rp.permission.resource}:${rp.permission.action}`
+      );
 
       return {
         id: role.id,
@@ -95,6 +106,16 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
         _count: {
           select: { userRoles: true },
         },
+        permissions: {
+          select: {
+            permission: {
+              select: {
+                resource: true,
+                action: true,
+              },
+            },
+          },
+        },
         createdAt: true,
         updatedAt: true,
       },
@@ -104,9 +125,10 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
       return NextResponse.json({ success: false, error: 'Role not found' }, { status: 404 });
     }
 
-    // Get permissions for this role
-    const roleKey = role.name.toUpperCase().replace(/\s+/g, '_');
-    const rolePermissions = RolePermissions[roleKey] || [];
+    // Get permissions for this role from the database
+    const rolePermissions = role.permissions.map(
+      (rp) => `${rp.permission.resource}:${rp.permission.action}`
+    );
 
     // Group permissions by resource
     const permissionsByResource: Record<string, string[]> = {};

@@ -1,7 +1,8 @@
-"use client";
+'use client';
 
-import React from "react";
-import { CheckCircle, Circle, AlertCircle } from "lucide-react";
+import React from 'react';
+import { useQuery } from '@tanstack/react-query';
+import { CheckCircle, Circle, AlertCircle } from 'lucide-react';
 
 interface ProfileField {
   label: string;
@@ -9,42 +10,70 @@ interface ProfileField {
   category: string;
 }
 
-const profileFields: ProfileField[] = [
-  { label: "Profile Photo", completed: true, category: "Basic" },
-  { label: "Full Name", completed: true, category: "Basic" },
-  { label: "Job Title", completed: true, category: "Basic" },
-  { label: "Personal Email", completed: true, category: "Contact" },
-  { label: "Mobile Number", completed: true, category: "Contact" },
-  { label: "Current Address", completed: true, category: "Contact" },
-  { label: "Emergency Contact", completed: true, category: "Emergency" },
-  { label: "Emergency Phone", completed: true, category: "Emergency" },
-  { label: "Bank Name", completed: true, category: "Financial" },
-  { label: "Account Number", completed: true, category: "Financial" },
-  { label: "Routing Number", completed: true, category: "Financial" },
-  { label: "Skills & Certifications", completed: false, category: "Professional" },
-  { label: "Career Interests", completed: false, category: "Professional" },
-  { label: "Resume Upload", completed: false, category: "Documents" },
-  { label: "ID Verification", completed: true, category: "Documents" },
-];
+function buildProfileFields(data: Record<string, unknown>): ProfileField[] {
+  return [
+    { label: 'First Name', completed: !!data.firstName, category: 'Basic' },
+    { label: 'Last Name', completed: !!data.lastName, category: 'Basic' },
+    { label: 'Job Title', completed: !!data.jobTitle, category: 'Basic' },
+    { label: 'Department', completed: !!data.department, category: 'Basic' },
+    { label: 'Personal Email', completed: !!data.personalEmail, category: 'Contact' },
+    { label: 'Mobile Phone', completed: !!data.mobilePhone, category: 'Contact' },
+    { label: 'Address', completed: !!data.address, category: 'Contact' },
+    { label: 'City', completed: !!data.city, category: 'Contact' },
+    { label: 'Country', completed: !!data.country, category: 'Contact' },
+    { label: 'Date of Birth', completed: !!data.dateOfBirth, category: 'Personal' },
+    {
+      label: 'Gender',
+      completed: !!data.gender && data.gender !== 'prefer_not_to_say',
+      category: 'Personal',
+    },
+    { label: 'Nationality', completed: !!data.nationality, category: 'Personal' },
+    { label: 'Profile Photo', completed: !!data.profilePhoto, category: 'Profile' },
+  ];
+}
 
 export default function ProfileCompletenessIndicator() {
+  const { data, isLoading } = useQuery({
+    queryKey: ['my-services', 'profile'],
+    queryFn: async () => {
+      const res = await fetch('/api/my-services/profile');
+      if (!res.ok) throw new Error('Failed to fetch');
+      const json = await res.json();
+      return json.success ? json.data : null;
+    },
+    staleTime: 30_000,
+  });
+
+  const profileFields = data ? buildProfileFields(data) : [];
   const completedCount = profileFields.filter((f) => f.completed).length;
   const totalCount = profileFields.length;
-  const percentage = Math.round((completedCount / totalCount) * 100);
+  const percentage = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
   const categories = Array.from(new Set(profileFields.map((f) => f.category)));
 
   const getProgressColor = (pct: number) => {
-    if (pct >= 80) return "bg-green-500";
-    if (pct >= 50) return "bg-amber-500";
-    return "bg-red-500";
+    if (pct >= 80) return 'bg-green-500';
+    if (pct >= 50) return 'bg-amber-500';
+    return 'bg-red-500';
   };
 
   const getStatusColor = (pct: number) => {
-    if (pct >= 80) return "text-green-600 dark:text-green-400";
-    if (pct >= 50) return "text-amber-600 dark:text-amber-400";
-    return "text-red-600 dark:text-red-400";
+    if (pct >= 80) return 'text-green-600 dark:text-green-400';
+    if (pct >= 50) return 'text-amber-600 dark:text-amber-400';
+    return 'text-red-600 dark:text-red-400';
   };
+
+  if (isLoading) {
+    return (
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
+        <div className="animate-pulse space-y-3">
+          <div className="h-5 bg-slate-200 dark:bg-slate-700 rounded w-1/3" />
+          <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-full" />
+          <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-2/3" />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
@@ -53,9 +82,7 @@ export default function ProfileCompletenessIndicator() {
         <h3 className="font-bold text-lg text-slate-900 dark:text-slate-100">
           Profile Completeness
         </h3>
-        <span className={`text-2xl font-bold ${getStatusColor(percentage)}`}>
-          {percentage}%
-        </span>
+        <span className={`text-2xl font-bold ${getStatusColor(percentage)}`}>{percentage}%</span>
       </div>
 
       {/* Progress Bar */}
@@ -75,7 +102,6 @@ export default function ProfileCompletenessIndicator() {
           const fields = profileFields.filter((f) => f.category === category);
           const catCompleted = fields.filter((f) => f.completed).length;
           const catTotal = fields.length;
-          const allDone = catCompleted === catTotal;
 
           return (
             <div key={category}>
@@ -89,10 +115,7 @@ export default function ProfileCompletenessIndicator() {
               </div>
               <div className="space-y-1.5">
                 {fields.map((field) => (
-                  <div
-                    key={field.label}
-                    className="flex items-center gap-2 text-sm"
-                  >
+                  <div key={field.label} className="flex items-center gap-2 text-sm">
                     {field.completed ? (
                       <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
                     ) : (
@@ -101,8 +124,8 @@ export default function ProfileCompletenessIndicator() {
                     <span
                       className={
                         field.completed
-                          ? "text-slate-600 dark:text-slate-400"
-                          : "text-slate-900 dark:text-slate-100 font-medium"
+                          ? 'text-slate-600 dark:text-slate-400'
+                          : 'text-slate-900 dark:text-slate-100 font-medium'
                       }
                     >
                       {field.label}

@@ -3,6 +3,7 @@
  * Phase 4: Enterprise Expansion - Integration Marketplace
  */
 
+import { prisma } from '@aura/database';
 import type {
   Integration,
   IntegrationCategory,
@@ -192,7 +193,10 @@ const INTEGRATION_CATALOG: Integration[] = [
         tokenUrl: 'https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer',
         refreshUrl: 'https://oauth.platform.intuit.com/oauth2/v1/tokens/bearer',
         scopes: [
-          { scope: 'com.intuit.quickbooks.accounting', description: 'Access QuickBooks accounting data' },
+          {
+            scope: 'com.intuit.quickbooks.accounting',
+            description: 'Access QuickBooks accounting data',
+          },
         ],
         grantTypes: ['authorization_code', 'refresh_token'],
       },
@@ -268,9 +272,19 @@ const INTEGRATION_CATALOG: Integration[] = [
         remoteEntity: 'Candidate',
         direction: 'INBOUND',
         fieldMappings: [
-          { localField: 'firstName', remoteField: 'first_name', dataType: 'STRING', required: true },
+          {
+            localField: 'firstName',
+            remoteField: 'first_name',
+            dataType: 'STRING',
+            required: true,
+          },
           { localField: 'lastName', remoteField: 'last_name', dataType: 'STRING', required: true },
-          { localField: 'email', remoteField: 'email_addresses[0].value', dataType: 'STRING', required: true },
+          {
+            localField: 'email',
+            remoteField: 'email_addresses[0].value',
+            dataType: 'STRING',
+            required: true,
+          },
         ],
       },
     ],
@@ -311,9 +325,7 @@ const INTEGRATION_CATALOG: Integration[] = [
           section: 'authentication',
         },
       ],
-      sections: [
-        { id: 'authentication', title: 'Authentication', titleAr: 'المصادقة', order: 1 },
-      ],
+      sections: [{ id: 'authentication', title: 'Authentication', titleAr: 'المصادقة', order: 1 }],
     },
     isSystem: true,
     isPremium: false,
@@ -359,9 +371,24 @@ const INTEGRATION_CATALOG: Integration[] = [
         remoteEntity: 'SIFFile',
         direction: 'OUTBOUND',
         fieldMappings: [
-          { localField: 'employeeId', remoteField: 'employeeNumber', dataType: 'STRING', required: true },
-          { localField: 'bankRoutingCode', remoteField: 'routingCode', dataType: 'STRING', required: true },
-          { localField: 'bankAccountNumber', remoteField: 'accountNumber', dataType: 'STRING', required: true },
+          {
+            localField: 'employeeId',
+            remoteField: 'employeeNumber',
+            dataType: 'STRING',
+            required: true,
+          },
+          {
+            localField: 'bankRoutingCode',
+            remoteField: 'routingCode',
+            dataType: 'STRING',
+            required: true,
+          },
+          {
+            localField: 'bankAccountNumber',
+            remoteField: 'accountNumber',
+            dataType: 'STRING',
+            required: true,
+          },
           { localField: 'netPay', remoteField: 'amount', dataType: 'NUMBER', required: true },
         ],
       },
@@ -455,10 +482,25 @@ const INTEGRATION_CATALOG: Integration[] = [
         remoteEntity: 'Contribution',
         direction: 'OUTBOUND',
         fieldMappings: [
-          { localField: 'employeeNationalId', remoteField: 'nationalId', dataType: 'STRING', required: true },
+          {
+            localField: 'employeeNationalId',
+            remoteField: 'nationalId',
+            dataType: 'STRING',
+            required: true,
+          },
           { localField: 'basicSalary', remoteField: 'wage', dataType: 'NUMBER', required: true },
-          { localField: 'employeeContribution', remoteField: 'employeeShare', dataType: 'NUMBER', required: true },
-          { localField: 'employerContribution', remoteField: 'employerShare', dataType: 'NUMBER', required: true },
+          {
+            localField: 'employeeContribution',
+            remoteField: 'employeeShare',
+            dataType: 'NUMBER',
+            required: true,
+          },
+          {
+            localField: 'employerContribution',
+            remoteField: 'employerShare',
+            dataType: 'NUMBER',
+            required: true,
+          },
         ],
       },
     ],
@@ -575,9 +617,7 @@ const INTEGRATION_CATALOG: Integration[] = [
           section: 'settings',
         },
       ],
-      sections: [
-        { id: 'settings', title: 'Settings', titleAr: 'الإعدادات', order: 1 },
-      ],
+      sections: [{ id: 'settings', title: 'Settings', titleAr: 'الإعدادات', order: 1 }],
     },
     isSystem: true,
     isPremium: false,
@@ -625,7 +665,12 @@ const INTEGRATION_CATALOG: Integration[] = [
         remoteEntity: 'User',
         direction: 'BIDIRECTIONAL',
         fieldMappings: [
-          { localField: 'email', remoteField: 'userPrincipalName', dataType: 'STRING', required: true },
+          {
+            localField: 'email',
+            remoteField: 'userPrincipalName',
+            dataType: 'STRING',
+            required: true,
+          },
           { localField: 'firstName', remoteField: 'givenName', dataType: 'STRING', required: true },
           { localField: 'lastName', remoteField: 'surname', dataType: 'STRING', required: true },
         ],
@@ -677,7 +722,12 @@ const INTEGRATION_CATALOG: Integration[] = [
         },
       ],
       sections: [
-        { id: 'connection', title: 'Azure AD Configuration', titleAr: 'إعدادات Azure AD', order: 1 },
+        {
+          id: 'connection',
+          title: 'Azure AD Configuration',
+          titleAr: 'إعدادات Azure AD',
+          order: 1,
+        },
       ],
     },
     isSystem: true,
@@ -700,7 +750,7 @@ const MARKETPLACE_CATEGORIES: MarketplaceCategory[] = [
     description: 'Enterprise resource planning integrations',
     descriptionAr: 'تكامل أنظمة تخطيط موارد المؤسسات',
     icon: 'building',
-    integrationCount: INTEGRATION_CATALOG.filter(i => i.category === 'ERP').length,
+    integrationCount: INTEGRATION_CATALOG.filter((i) => i.category === 'ERP').length,
   },
   {
     id: 'ACCOUNTING',
@@ -709,7 +759,7 @@ const MARKETPLACE_CATEGORIES: MarketplaceCategory[] = [
     description: 'Accounting and finance software',
     descriptionAr: 'برامج المحاسبة والمالية',
     icon: 'calculator',
-    integrationCount: INTEGRATION_CATALOG.filter(i => i.category === 'ACCOUNTING').length,
+    integrationCount: INTEGRATION_CATALOG.filter((i) => i.category === 'ACCOUNTING').length,
   },
   {
     id: 'ATS',
@@ -718,7 +768,7 @@ const MARKETPLACE_CATEGORIES: MarketplaceCategory[] = [
     description: 'Recruitment and applicant tracking systems',
     descriptionAr: 'أنظمة التوظيف وتتبع المتقدمين',
     icon: 'users',
-    integrationCount: INTEGRATION_CATALOG.filter(i => i.category === 'ATS').length,
+    integrationCount: INTEGRATION_CATALOG.filter((i) => i.category === 'ATS').length,
   },
   {
     id: 'BANKING',
@@ -727,7 +777,7 @@ const MARKETPLACE_CATEGORIES: MarketplaceCategory[] = [
     description: 'Bank transfers and payment processing',
     descriptionAr: 'التحويلات البنكية ومعالجة المدفوعات',
     icon: 'credit-card',
-    integrationCount: INTEGRATION_CATALOG.filter(i => i.category === 'BANKING').length,
+    integrationCount: INTEGRATION_CATALOG.filter((i) => i.category === 'BANKING').length,
   },
   {
     id: 'GOVERNMENT',
@@ -736,7 +786,7 @@ const MARKETPLACE_CATEGORIES: MarketplaceCategory[] = [
     description: 'Government and regulatory integrations',
     descriptionAr: 'التكامل مع الجهات الحكومية والتنظيمية',
     icon: 'landmark',
-    integrationCount: INTEGRATION_CATALOG.filter(i => i.category === 'GOVERNMENT').length,
+    integrationCount: INTEGRATION_CATALOG.filter((i) => i.category === 'GOVERNMENT').length,
   },
   {
     id: 'COMMUNICATION',
@@ -745,7 +795,7 @@ const MARKETPLACE_CATEGORIES: MarketplaceCategory[] = [
     description: 'Messaging and notification platforms',
     descriptionAr: 'منصات المراسلة والإشعارات',
     icon: 'message-circle',
-    integrationCount: INTEGRATION_CATALOG.filter(i => i.category === 'COMMUNICATION').length,
+    integrationCount: INTEGRATION_CATALOG.filter((i) => i.category === 'COMMUNICATION').length,
   },
   {
     id: 'SSO',
@@ -754,7 +804,7 @@ const MARKETPLACE_CATEGORIES: MarketplaceCategory[] = [
     description: 'Identity and access management',
     descriptionAr: 'إدارة الهوية والوصول',
     icon: 'key',
-    integrationCount: INTEGRATION_CATALOG.filter(i => i.category === 'SSO').length,
+    integrationCount: INTEGRATION_CATALOG.filter((i) => i.category === 'SSO').length,
   },
 ];
 
@@ -772,13 +822,13 @@ export class IntegrationRegistryService {
     let integrations = [...INTEGRATION_CATALOG];
 
     if (category) {
-      integrations = integrations.filter(i => i.category === category);
+      integrations = integrations.filter((i) => i.category === category);
     }
 
     if (search) {
       const searchLower = search.toLowerCase();
       integrations = integrations.filter(
-        i =>
+        (i) =>
           i.name.toLowerCase().includes(searchLower) ||
           i.nameAr.includes(search) ||
           i.description.toLowerCase().includes(searchLower) ||
@@ -793,7 +843,7 @@ export class IntegrationRegistryService {
    * Get integration by ID
    */
   static async getIntegrationById(id: string): Promise<Integration | null> {
-    return INTEGRATION_CATALOG.find(i => i.id === id) || null;
+    return INTEGRATION_CATALOG.find((i) => i.id === id) || null;
   }
 
   /**
@@ -813,33 +863,48 @@ export class IntegrationRegistryService {
   ): Promise<MarketplaceListing[]> {
     const integrations = await this.getIntegrations(category, search);
 
-    // In production, check tenant's installed integrations
-    return integrations.map(integration => ({
-      integration,
-      rating: 4.0 + Math.random(),
-      reviewCount: Math.floor(Math.random() * 100) + 10,
-      installCount: Math.floor(Math.random() * 1000) + 100,
-      isInstalled: false, // Check from database
-      isPremium: integration.isPremium,
-      pricing: integration.isPremium
-        ? {
-            type: 'PAID' as const,
-            monthlyPrice: 99,
-            yearlyPrice: 999,
-            currency: 'USD',
-          }
-        : { type: 'FREE' as const },
-    }));
+    // Check which integrations are already connected for this tenant
+    const connected = await prisma.integrationConnection.findMany({
+      where: {
+        tenantId,
+        integrationId: { in: integrations.map((i) => i.id) },
+        isDeleted: false,
+      },
+      select: { integrationId: true, id: true, status: true },
+    });
+    const connectedIds = new Set(connected.map((c) => c.integrationId));
+    const connectionByIntegration = new Map(connected.map((c) => [c.integrationId, c.id]));
+
+    return integrations.map((integration, idx) => {
+      const rating = Math.min(4.5 + (idx % 5) * 0.3, 5.0);
+      const isInstalled = connectedIds.has(integration.id);
+
+      return {
+        integration,
+        rating: Math.round(rating * 10) / 10,
+        reviewCount: 20 + idx * 8,
+        installCount: 100 + idx * 45,
+        isInstalled,
+        isPremium: integration.isPremium,
+        connectionId: connectionByIntegration.get(integration.id) ?? undefined,
+        pricing: integration.isPremium
+          ? {
+              type: 'PAID' as const,
+              monthlyPrice: 99,
+              yearlyPrice: 999,
+              currency: 'USD',
+            }
+          : { type: 'FREE' as const },
+      };
+    });
   }
 
   /**
    * Get integrations by country
    */
-  static async getIntegrationsByCountry(
-    countryCode: string
-  ): Promise<Integration[]> {
+  static async getIntegrationsByCountry(countryCode: string): Promise<Integration[]> {
     return INTEGRATION_CATALOG.filter(
-      i => !i.supportedCountries || i.supportedCountries.includes(countryCode)
+      (i) => !i.supportedCountries || i.supportedCountries.includes(countryCode)
     );
   }
 

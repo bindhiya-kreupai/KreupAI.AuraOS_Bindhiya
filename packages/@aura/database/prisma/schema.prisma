@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
 model Tenant {
@@ -27,6 +28,10 @@ model Tenant {
   wpsSubmissions    WPSSubmission[]
   biometricDevices  BiometricDevice[]
   ramadanConfig     RamadanAutoSwitchConfig?
+  deactivations     UserDeactivation[]
+  passwordPolicies  PasswordPolicy[]
+  ssoConfigs        SSOConfig[]
+  licenses          License[]
 
   @@map("aura_tenant")
 }
@@ -500,6 +505,7 @@ model User {
   refreshTokens       RefreshToken[]
   tenant              Tenant               @relation(fields: [tenantId], references: [id], map: "User_tenantId_fkey")
   deactivations       UserDeactivation[]
+  deactivatedUsers    UserDeactivation[]   @relation("DeactivatedBy")
   delegatedFrom       UserDelegation[]     @relation("Delegatee")
   delegatedTo         UserDelegation[]     @relation("Delegator")
   roles               UserRole[]
@@ -1269,6 +1275,7 @@ model AccessControl {
 
 model PasswordPolicy {
   id                  String    @id(map: "PasswordPolicy_pkey") @default(uuid())
+  tenantId            String
   minLength           Int       @default(8)
   requireUppercase    Boolean   @default(true)
   requireLowercase    Boolean   @default(true)
@@ -1283,12 +1290,15 @@ model PasswordPolicy {
   updatedBy           String?
   deletedAt           DateTime?
   isDeleted           Boolean   @default(false)
+  tenant              Tenant    @relation(fields: [tenantId], references: [id], map: "PasswordPolicy_tenantId_fkey")
 
+  @@index([tenantId], map: "PasswordPolicy_tenantId_idx")
   @@map("aura_password_policy")
 }
 
 model SSOConfig {
   id          String    @id(map: "SSOConfig_pkey") @default(uuid())
+  tenantId    String
   enabled     Boolean   @default(false)
   provider    String
   issuerUrl   String?
@@ -1300,27 +1310,30 @@ model SSOConfig {
   updatedBy   String?
   deletedAt   DateTime?
   isDeleted   Boolean   @default(false)
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], map: "SSOConfig_tenantId_fkey")
 
+  @@index([tenantId], map: "SSOConfig_tenantId_idx")
   @@map("aura_sso_config")
 }
 
 model UserSession {
-  id         String    @id(map: "UserSession_pkey") @default(uuid())
-  userId     String
-  ipAddress  String
-  device     String?
-  browser    String?
-  location   String?
-  lastActive DateTime  @default(now())
-  status     String    @default("Active")
-  createdAt  DateTime  @default(now())
-  expiresAt  DateTime?
-  updatedAt  DateTime  @default(now())
-  createdBy  String?
-  updatedBy  String?
-  deletedAt  DateTime?
-  isDeleted  Boolean   @default(false)
-  user       User      @relation(fields: [userId], references: [id], map: "UserSession_userId_fkey")
+  id               String    @id(map: "UserSession_pkey") @default(uuid())
+  userId           String
+  ipAddress        String
+  device           String?
+  browser          String?
+  deviceFingerprint String?
+  location         String?
+  lastActive       DateTime  @default(now())
+  status           String    @default("Active")
+  createdAt        DateTime  @default(now())
+  expiresAt        DateTime?
+  updatedAt        DateTime  @default(now())
+  createdBy        String?
+  updatedBy        String?
+  deletedAt        DateTime?
+  isDeleted        Boolean   @default(false)
+  user             User      @relation(fields: [userId], references: [id], map: "UserSession_userId_fkey")
 
   @@map("aura_user_session")
 }
@@ -1426,7 +1439,8 @@ model UserDelegation {
 
 model License {
   id        String    @id(map: "License_pkey") @default(uuid())
-  name      String    @unique(map: "License_name_key")
+  tenantId  String
+  name      String
   total     Int
   used      Int       @default(0)
   type      String
@@ -1437,12 +1451,16 @@ model License {
   updatedBy String?
   deletedAt DateTime?
   isDeleted Boolean   @default(false)
+  tenant    Tenant    @relation(fields: [tenantId], references: [id], map: "License_tenantId_fkey")
 
+  @@unique([tenantId, name], map: "License_tenantId_name_key")
+  @@index([tenantId], map: "License_tenantId_idx")
   @@map("aura_license")
 }
 
 model UserDeactivation {
   id            String    @id(map: "UserDeactivation_pkey") @default(uuid())
+  tenantId      String
   userId        String
   reason        String?
   deactivatedBy String
@@ -1454,7 +1472,10 @@ model UserDeactivation {
   deletedAt     DateTime?
   isDeleted     Boolean   @default(false)
   user          User      @relation(fields: [userId], references: [id], map: "UserDeactivation_userId_fkey")
+  deactivator   User      @relation("DeactivatedBy", fields: [deactivatedBy], references: [id], map: "UserDeactivation_deactivatedBy_fkey")
+  tenant        Tenant    @relation(fields: [tenantId], references: [id], map: "UserDeactivation_tenantId_fkey")
 
+  @@index([tenantId], map: "UserDeactivation_tenantId_idx")
   @@map("aura_user_deactivation")
 }
 
@@ -5136,6 +5157,139 @@ model WebhookLog {
   @@index([success], map: "WebhookLog_success_idx")
   @@index([webhookId], map: "WebhookLog_webhookId_idx")
   @@map("aura_webhook_log")
+}
+
+model OAuthState {
+  id         String    @id @default(uuid())
+  state      String    @unique(map: "OAuthState_state_key")
+  tenantId   String
+  userId     String?
+  provider   String
+  redirectTo String?
+  data       Json?
+  expiresAt  DateTime
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  isDeleted  Boolean   @default(false)
+  deletedAt  DateTime?
+
+  @@index([expiresAt], map: "OAuthState_expiresAt_idx")
+  @@index([provider], map: "OAuthState_provider_idx")
+  @@index([tenantId], map: "OAuthState_tenantId_idx")
+  @@map("aura_oauth_state")
+}
+
+model IntegrationConnection {
+  id                   String                @id @default(uuid())
+  tenantId             String
+  integrationId        String
+  integrationName      String
+  provider             String?
+  category             String?
+  status               String                @default("PENDING")
+  configuration        Json?
+  credentials          Json?
+  fieldMappings        Json?
+  syncEnabled          Boolean               @default(false)
+  syncFrequency        String?
+  lastSyncAt           DateTime?
+  nextSyncAt           DateTime?
+  connectedAt          DateTime?
+  connectedBy          String?
+  disconnectedAt       DateTime?
+  disconnectedBy       String?
+  healthStatus         String                @default("UNKNOWN")
+  lastHealthCheck      DateTime?
+  errorMessage         String?
+  isActive             Boolean               @default(true)
+  metadata             Json?
+  createdAt            DateTime              @default(now())
+  updatedAt            DateTime              @updatedAt
+  createdBy            String?
+  updatedBy            String?
+  deletedAt            DateTime?
+  isDeleted            Boolean               @default(false)
+  syncJobs             IntegrationSyncJob[]
+  logs                 IntegrationLog[]
+
+  @@unique([tenantId, integrationId], map: "IntegrationConnection_tenantId_integrationId_key")
+  @@index([status], map: "IntegrationConnection_status_idx")
+  @@index([tenantId], map: "IntegrationConnection_tenantId_idx")
+  @@index([provider], map: "IntegrationConnection_provider_idx")
+  @@index([isActive], map: "IntegrationConnection_isActive_idx")
+  @@map("aura_integration_connection")
+}
+
+model IntegrationSyncJob {
+  id                String                @id @default(uuid())
+  tenantId          String
+  integrationId     String
+  connectionId      String
+  type              String                @default("INCREMENTAL")
+  direction         String                @default("BIDIRECTIONAL")
+  entity            String
+  action            String?
+  status            String                @default("QUEUED")
+  progress          Int                   @default(0)
+  recordsProcessed  Int                   @default(0)
+  recordsCreated    Int                   @default(0)
+  recordsUpdated    Int                   @default(0)
+  recordsFailed     Int                   @default(0)
+  errors            Json?
+  scheduledAt       DateTime?
+  startedAt         DateTime?
+  completedAt       DateTime?
+  duration          Int?
+  triggeredBy       String                @default("MANUAL")
+  triggeredByUser   String?
+  createdAt         DateTime              @default(now())
+  updatedAt         DateTime              @updatedAt
+  createdBy         String?
+  updatedBy         String?
+  deletedAt         DateTime?
+  isDeleted         Boolean               @default(false)
+  connection        IntegrationConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade, map: "IntegrationSyncJob_connectionId_fkey")
+
+  @@index([status], map: "IntegrationSyncJob_status_idx")
+  @@index([connectionId], map: "IntegrationSyncJob_connectionId_idx")
+  @@index([tenantId], map: "IntegrationSyncJob_tenantId_idx")
+  @@map("aura_integration_sync_job")
+}
+
+model IntegrationLog {
+  id              String                @id @default(uuid())
+  tenantId        String
+  integrationId   String
+  connectionId    String
+  direction       String
+  method          String
+  endpoint        String
+  requestHeaders  Json?
+  requestBody     String?
+  statusCode      Int
+  responseHeaders Json?
+  responseBody    String?
+  responseTime    Int
+  action          String?
+  entity          String?
+  recordId        String?
+  syncJobId       String?
+  success         Boolean               @default(false)
+  errorMessage    String?
+  timestamp       DateTime              @default(now())
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @default(now())
+  createdBy       String?
+  updatedBy       String?
+  deletedAt       DateTime?
+  isDeleted       Boolean               @default(false)
+  connection      IntegrationConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade, map: "IntegrationLog_connectionId_fkey")
+
+  @@index([timestamp], map: "IntegrationLog_timestamp_idx")
+  @@index([connectionId], map: "IntegrationLog_connectionId_idx")
+  @@index([success], map: "IntegrationLog_success_idx")
+  @@index([tenantId], map: "IntegrationLog_tenantId_idx")
+  @@map("aura_integration_log")
 }
 
 model CustomReport {
