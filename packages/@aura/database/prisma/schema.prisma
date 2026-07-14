@@ -75,7 +75,6 @@ model Department {
   name                      String
   parentId                  String?
   costCenterId              String?
-  businessUnitId            String?
   createdAt                 DateTime            @default(now())
   updatedAt                 DateTime            @default(now()) @updatedAt
   createdBy                 String?
@@ -84,7 +83,6 @@ model Department {
   isDeleted                 Boolean             @default(false)
   company                   Company             @relation(fields: [companyId], references: [id], map: "Department_companyId_fkey")
   costCenter                CostCenter?         @relation(fields: [costCenterId], references: [id], map: "Department_costCenterId_fkey")
-  businessUnit              BusinessUnit?       @relation(fields: [businessUnitId], references: [id], onDelete: SetNull, map: "Department_businessUnitId_fkey")
   parent                    Department?         @relation("DeptHierarchy", fields: [parentId], references: [id], map: "Department_parentId_fkey")
   children                  Department[]        @relation("DeptHierarchy")
   employees                 Employee[]
@@ -1317,23 +1315,23 @@ model SSOConfig {
 }
 
 model UserSession {
-  id               String    @id(map: "UserSession_pkey") @default(uuid())
-  userId           String
-  ipAddress        String
-  device           String?
-  browser          String?
+  id                String    @id(map: "UserSession_pkey") @default(uuid())
+  userId            String
+  ipAddress         String
+  device            String?
+  browser           String?
   deviceFingerprint String?
-  location         String?
-  lastActive       DateTime  @default(now())
-  status           String    @default("Active")
-  createdAt        DateTime  @default(now())
-  expiresAt        DateTime?
-  updatedAt        DateTime  @default(now())
-  createdBy        String?
-  updatedBy        String?
-  deletedAt        DateTime?
-  isDeleted        Boolean   @default(false)
-  user             User      @relation(fields: [userId], references: [id], map: "UserSession_userId_fkey")
+  location          String?
+  lastActive        DateTime  @default(now())
+  status            String    @default("Active")
+  createdAt         DateTime  @default(now())
+  expiresAt         DateTime?
+  updatedAt         DateTime  @default(now())
+  createdBy         String?
+  updatedBy         String?
+  deletedAt         DateTime?
+  isDeleted         Boolean   @default(false)
+  user              User      @relation(fields: [userId], references: [id], map: "UserSession_userId_fkey")
 
   @@map("aura_user_session")
 }
@@ -5180,37 +5178,37 @@ model OAuthState {
 }
 
 model IntegrationConnection {
-  id                   String                @id @default(uuid())
-  tenantId             String
-  integrationId        String
-  integrationName      String
-  provider             String?
-  category             String?
-  status               String                @default("PENDING")
-  configuration        Json?
-  credentials          Json?
-  fieldMappings        Json?
-  syncEnabled          Boolean               @default(false)
-  syncFrequency        String?
-  lastSyncAt           DateTime?
-  nextSyncAt           DateTime?
-  connectedAt          DateTime?
-  connectedBy          String?
-  disconnectedAt       DateTime?
-  disconnectedBy       String?
-  healthStatus         String                @default("UNKNOWN")
-  lastHealthCheck      DateTime?
-  errorMessage         String?
-  isActive             Boolean               @default(true)
-  metadata             Json?
-  createdAt            DateTime              @default(now())
-  updatedAt            DateTime              @updatedAt
-  createdBy            String?
-  updatedBy            String?
-  deletedAt            DateTime?
-  isDeleted            Boolean               @default(false)
-  syncJobs             IntegrationSyncJob[]
-  logs                 IntegrationLog[]
+  id              String               @id @default(uuid())
+  tenantId        String
+  integrationId   String
+  integrationName String
+  provider        String?
+  category        String?
+  status          String               @default("PENDING")
+  configuration   Json?
+  credentials     Json?
+  fieldMappings   Json?
+  syncEnabled     Boolean              @default(false)
+  syncFrequency   String?
+  lastSyncAt      DateTime?
+  nextSyncAt      DateTime?
+  connectedAt     DateTime?
+  connectedBy     String?
+  disconnectedAt  DateTime?
+  disconnectedBy  String?
+  healthStatus    String               @default("UNKNOWN")
+  lastHealthCheck DateTime?
+  errorMessage    String?
+  isActive        Boolean              @default(true)
+  metadata        Json?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  createdBy       String?
+  updatedBy       String?
+  deletedAt       DateTime?
+  isDeleted       Boolean              @default(false)
+  syncJobs        IntegrationSyncJob[]
+  logs            IntegrationLog[]
 
   @@unique([tenantId, integrationId], map: "IntegrationConnection_tenantId_integrationId_key")
   @@index([status], map: "IntegrationConnection_status_idx")
@@ -5221,34 +5219,34 @@ model IntegrationConnection {
 }
 
 model IntegrationSyncJob {
-  id                String                @id @default(uuid())
-  tenantId          String
-  integrationId     String
-  connectionId      String
-  type              String                @default("INCREMENTAL")
-  direction         String                @default("BIDIRECTIONAL")
-  entity            String
-  action            String?
-  status            String                @default("QUEUED")
-  progress          Int                   @default(0)
-  recordsProcessed  Int                   @default(0)
-  recordsCreated    Int                   @default(0)
-  recordsUpdated    Int                   @default(0)
-  recordsFailed     Int                   @default(0)
-  errors            Json?
-  scheduledAt       DateTime?
-  startedAt         DateTime?
-  completedAt       DateTime?
-  duration          Int?
-  triggeredBy       String                @default("MANUAL")
-  triggeredByUser   String?
-  createdAt         DateTime              @default(now())
-  updatedAt         DateTime              @updatedAt
-  createdBy         String?
-  updatedBy         String?
-  deletedAt         DateTime?
-  isDeleted         Boolean               @default(false)
-  connection        IntegrationConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade, map: "IntegrationSyncJob_connectionId_fkey")
+  id               String                @id @default(uuid())
+  tenantId         String
+  integrationId    String
+  connectionId     String
+  type             String                @default("INCREMENTAL")
+  direction        String                @default("BIDIRECTIONAL")
+  entity           String
+  action           String?
+  status           String                @default("QUEUED")
+  progress         Int                   @default(0)
+  recordsProcessed Int                   @default(0)
+  recordsCreated   Int                   @default(0)
+  recordsUpdated   Int                   @default(0)
+  recordsFailed    Int                   @default(0)
+  errors           Json?
+  scheduledAt      DateTime?
+  startedAt        DateTime?
+  completedAt      DateTime?
+  duration         Int?
+  triggeredBy      String                @default("MANUAL")
+  triggeredByUser  String?
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+  createdBy        String?
+  updatedBy        String?
+  deletedAt        DateTime?
+  isDeleted        Boolean               @default(false)
+  connection       IntegrationConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade, map: "IntegrationSyncJob_connectionId_fkey")
 
   @@index([status], map: "IntegrationSyncJob_status_idx")
   @@index([connectionId], map: "IntegrationSyncJob_connectionId_idx")

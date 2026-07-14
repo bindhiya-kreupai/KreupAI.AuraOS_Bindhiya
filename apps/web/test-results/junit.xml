@@ -1,75 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuites name="vitest tests" tests="34" failures="0" errors="0" time="0.0937954">
-    <testsuite name="src/lib/services/__tests__/compliance-audit-register.service.test.ts" timestamp="2026-07-08T17:39:02.308Z" hostname="DESKTOP-2HC5NM6" tests="18" failures="0" errors="0" skipped="0" time="0.0633037">
-        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="Seeds + supported domains &gt; ships seeds for all 5 Theme C domains" time="0.0069228">
+<testsuites name="vitest tests" tests="5" failures="0" errors="0" time="0.010415667">
+    <testsuite name="src/__tests__/api/attendance-regularization-route.test.ts" timestamp="2026-07-01T18:41:04.708Z" hostname="MacBookPro.lan" tests="5" failures="0" errors="0" skipped="0" time="0.010415667">
+        <testcase classname="src/__tests__/api/attendance-regularization-route.test.ts" name="attendance regularization API &gt; uses the authenticated employee when the submitted employee id is a placeholder" time="0.005250666">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="Seeds + supported domains &gt; each domain has at least 1 checklist seed and 1 risk seed" time="0.0022211">
+        <testcase classname="src/__tests__/api/attendance-regularization-route.test.ts" name="attendance regularization API &gt; falls back to the authenticated approver and scopes approve actions by tenant" time="0.001275125">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="riskBandFromScore &gt; LOW for score 1-3" time="0.0022386">
+        <testcase classname="src/__tests__/api/attendance-regularization-route.test.ts" name="attendance regularization API &gt; cancels a pending request owned by the authenticated employee" time="0.000882709">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="riskBandFromScore &gt; MEDIUM for score 4-8" time="0.00208">
+        <testcase classname="src/__tests__/api/attendance-regularization-route.test.ts" name="attendance regularization API &gt; rejects cancelling a request owned by another employee (bilingual error)" time="0.000759959">
         </testcase>
-        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="riskBandFromScore &gt; HIGH for score 9-15" time="0.0015433">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="riskBandFromScore &gt; CRITICAL for score &gt;= 16" time="0.0016449">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="ComplianceChecklistService &gt; seed rejects unknown domain" time="0.0050028">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="ComplianceChecklistService &gt; seed reports created codes for ER" time="0.0022644">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="ComplianceChecklistService &gt; marking item COMPLIANT sets completedAt + completedBy" time="0.002894">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="ComplianceRiskService &gt; upsert rejects likelihood outside 1-5" time="0.0027996">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="ComplianceRiskService &gt; upsert rejects impact outside 1-5" time="0.001823">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="ComplianceRiskService &gt; upsert derives score = likelihood × impact and correct band" time="0.0017455">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="ComplianceRiskService &gt; upsert derives MEDIUM for L×I = 6" time="0.0015848">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="ComplianceRiskService &gt; seed reports created codes for VISA_EXIT" time="0.0021654">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="ComplianceRiskService &gt; review sets reviewedAt + reviewedBy + status" time="0.0018996">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="dashboardSummary &gt; returns one row per supported domain with counters" time="0.0046288">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="Theme D — hr-forms-compliance default templates &gt; includes MISCONDUCT_REPORT, EOSB_CALC_SHEET, VISA_EXIT_CHECKLIST, EMPLOYEE_FILE_AUDIT_SHEET" time="0.0069717">
-        </testcase>
-        <testcase classname="src/lib/services/__tests__/compliance-audit-register.service.test.ts" name="Theme D — hr-forms-compliance default templates &gt; EOSB_CALC_SHEET writebackTarget points at eosb.calculation" time="0.0012695">
-        </testcase>
-    </testsuite>
-    <testsuite name="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" timestamp="2026-07-08T17:39:02.327Z" hostname="DESKTOP-2HC5NM6" tests="16" failures="0" errors="0" skipped="0" time="0.0304917">
-        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist canonicalizing redirect stubs &gt; AURA-361 checklist-items redirects to canonical route" time="0.0064817">
-        </testcase>
-        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist canonicalizing redirect stubs &gt; AURA-362 mandatory-enforcement redirects to canonical route" time="0.0015106">
-        </testcase>
-        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist canonicalizing redirect stubs &gt; AURA-363 per-domain-seeds redirects to canonical route" time="0.0034398">
-        </testcase>
-        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist canonicalizing redirect stubs &gt; AURA-364 risk-register-band redirects to canonical route" time="0.001408">
-        </testcase>
-        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist re-export stubs resolve to existing feature pages &gt; AURA-374 annual-targets re-exports the canonical feature page" time="0.0013276">
-        </testcase>
-        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist re-export stubs resolve to existing feature pages &gt; AURA-375 checkpoint-snapshots re-exports the canonical feature page" time="0.0006274">
-        </testcase>
-        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist re-export stubs resolve to existing feature pages &gt; AURA-376 establishment-scope re-exports the canonical feature page" time="0.0005456">
-        </testcase>
-        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist re-export stubs resolve to existing feature pages &gt; AURA-377 monthly-certificate re-exports the canonical feature page" time="0.0004273">
-        </testcase>
-        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist re-export stubs resolve to existing feature pages &gt; AURA-357 checklist-templates re-exports the canonical feature page" time="0.0007907">
-        </testcase>
-        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist re-export stubs resolve to existing feature pages &gt; AURA-358 compliance-certificates re-exports the canonical feature page" time="0.0006301">
-        </testcase>
-        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist re-export stubs resolve to existing feature pages &gt; AURA-359 exception-register re-exports the canonical feature page" time="0.0005453">
-        </testcase>
-        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist re-export stubs resolve to existing feature pages &gt; AURA-360 run-workspace re-exports the canonical feature page" time="0.0004796">
-        </testcase>
-        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist re-export stubs resolve to existing feature pages &gt; AURA-365 annual-audit-plan re-exports the canonical feature page" time="0.0005419">
-        </testcase>
-        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist re-export stubs resolve to existing feature pages &gt; AURA-366 monthly-calendar-certificate re-exports the canonical feature page" time="0.000334">
-        </testcase>
-        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist re-export stubs resolve to existing feature pages &gt; AURA-367 recurrence-rules re-exports the canonical feature page" time="0.0005907">
-        </testcase>
-        <testcase classname="src/app/dashboard/compliance-audit-register/__tests__/g12-emiratchecklist-stubs.test.tsx" name="g12 emirat/checklist re-export stubs resolve to existing feature pages &gt; AURA-368 task-register re-exports the canonical feature page" time="0.0003222">
+        <testcase classname="src/__tests__/api/attendance-regularization-route.test.ts" name="attendance regularization API &gt; rejects cancelling a non-pending request" time="0.000841708">
         </testcase>
     </testsuite>
 </testsuites>

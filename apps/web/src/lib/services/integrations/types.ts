@@ -20,12 +20,7 @@ export type IntegrationCategory =
   | 'CUSTOM';
 
 export type IntegrationStatus =
-  | 'AVAILABLE'
-  | 'CONNECTED'
-  | 'DISCONNECTED'
-  | 'ERROR'
-  | 'PENDING'
-  | 'DEPRECATED';
+  'AVAILABLE' | 'CONNECTED' | 'DISCONNECTED' | 'ERROR' | 'PENDING' | 'DEPRECATED';
 
 export type AuthType = 'OAUTH2' | 'API_KEY' | 'BASIC' | 'JWT' | 'CERTIFICATE' | 'CUSTOM';
 

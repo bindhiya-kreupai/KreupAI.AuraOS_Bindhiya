@@ -287,9 +287,12 @@ export class VisaExitGraceService {
       where: { id: input.caseId },
       data: { graceExpiresAt: expiresAt },
     });
-    return (prisma as any).visaExitGrace.upsert({
+    return prisma.visaExitGrace.upsert({
       where: {
-        aura_visa_exit_grace_unique: { tenantId: auth.tenantId, caseId: input.caseId },
+        tenantId_caseId: {
+          tenantId: auth.tenantId,
+          caseId: input.caseId,
+        },
       },
       update: {
         grantedAt: input.grantedAt,
@@ -312,7 +315,12 @@ export class VisaExitGraceService {
 
   async extend(caseId: string, extraDays: number, auth: AuthContext) {
     const cur = await (prisma as any).visaExitGrace.findUnique({
-      where: { aura_visa_exit_grace_unique: { tenantId: auth.tenantId, caseId } },
+      where: {
+        tenantId_caseId: {
+          tenantId: auth.tenantId,
+          caseId,
+        },
+      },
     });
     if (!cur) throw new Error('no grace record for case');
     const newExpiry = new Date(cur.expiresAt);
@@ -322,7 +330,12 @@ export class VisaExitGraceService {
       data: { graceExpiresAt: newExpiry },
     });
     return (prisma as any).visaExitGrace.update({
-      where: { aura_visa_exit_grace_unique: { tenantId: auth.tenantId, caseId } },
+      where: {
+        tenantId_caseId: {
+          tenantId: auth.tenantId,
+          caseId,
+        },
+      },
       data: {
         expiresAt: newExpiry,
         daysGranted: cur.daysGranted + extraDays,
@@ -333,8 +346,16 @@ export class VisaExitGraceService {
 
   async close(caseId: string, auth: AuthContext) {
     return (prisma as any).visaExitGrace.update({
-      where: { aura_visa_exit_grace_unique: { tenantId: auth.tenantId, caseId } },
-      data: { status: 'CLOSED', closedAt: new Date() },
+      where: {
+        tenantId_caseId: {
+          tenantId: auth.tenantId,
+          caseId,
+        },
+      },
+      data: {
+        status: 'CLOSED',
+        closedAt: new Date(),
+      },
     });
   }
 
@@ -479,7 +500,7 @@ export class VisaExitCertificateService {
       reasons.push(`${stats.graceExpiringCount} grace expiry/expiries within 7 days`);
     const gatingReason = reasons.length ? `Blocked: ${reasons.join('; ')}` : null;
     return (prisma as any).visaExitCertificate.upsert({
-      where: { aura_visa_exit_certificate_unique: { tenantId: auth.tenantId, period } },
+      where: { tenantId_period: { tenantId: auth.tenantId, period } },
       update: {
         casesOpened: stats.casesOpened,
         casesClosed: stats.casesClosed,
@@ -513,7 +534,7 @@ export class VisaExitCertificateService {
     auth: AuthContext
   ) {
     const cert = await (prisma as any).visaExitCertificate.findUnique({
-      where: { aura_visa_exit_certificate_unique: { tenantId: auth.tenantId, period } },
+      where: { tenantId_period: { tenantId: auth.tenantId, period } },
     });
     if (!cert) throw new Error('certificate not generated');
     if (cert.gatingReason) throw new Error(`cannot sign while gated: ${cert.gatingReason}`);

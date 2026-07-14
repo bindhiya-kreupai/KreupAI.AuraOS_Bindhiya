@@ -60,15 +60,10 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
     // Engine expects DateRange { start: Date, end: Date }, not { startDate, endDate }.
     // Only build a range if the caller actually provided both — otherwise pass undefined
     // and let the engine use its own default (last 12 months).
-    const defaultEnd = new Date();
-    const defaultStart = new Date();
-    defaultStart.setMonth(defaultStart.getMonth() - 11);
-    defaultStart.setDate(1);
-
-    const dateRange = {
-      start: startDateStr ? new Date(startDateStr) : defaultStart,
-      end: endDateStr ? new Date(endDateStr) : defaultEnd,
-    };
+    const dateRange =
+      startDateStr && endDateStr
+        ? { start: new Date(startDateStr), end: new Date(endDateStr) }
+        : undefined;
 
     switch (action) {
       case 'dashboard': {
@@ -77,7 +72,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
       }
 
       case 'headcount': {
-        const data = await HRAnalyticsEngineService.getHeadcountAnalytics(user.tenantId);
+        const data = await HRAnalyticsEngineService.getHeadcountAnalytics(user.tenantId, dateRange);
         return NextResponse.json({ success: true, data });
       }
 
