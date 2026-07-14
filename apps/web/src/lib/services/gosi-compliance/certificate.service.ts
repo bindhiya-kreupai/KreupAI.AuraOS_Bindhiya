@@ -26,6 +26,67 @@ export class GosiCertificateService {
     const criticalVariances = await (prisma as any).gosiVariance.count({
       where: { tenantId, period, status: 'OPEN', severity: 'CRITICAL' },
     });
+
+    // ----------------- Restructured GOSI Registration Dashboard Stats -----------------
+    const allRegs = await (prisma as any).gosiEmployeeRegistration.findMany({
+      where: { tenantId },
+    });
+
+    const activeRegList = allRegs.filter((r: any) => r.status === 'ACTIVE');
+    const deregisteredList = allRegs.filter((r: any) => r.status === 'DEREGISTERED');
+    const pendingList = allRegs.filter((r: any) => r.status === 'PENDING');
+    const expiredList = allRegs.filter((r: any) => r.status === 'EXPIRED');
+
+    const activeEmpIds = activeRegList.map((r: any) => r.employeeId);
+    const activeEmployees = await prisma.employee.findMany({
+      where: { id: { in: activeEmpIds }, isDeleted: false },
+      include: { company: true, department: true },
+    });
+
+    // Nationality breakdown for active registrations
+    const saudiCount = activeRegList.filter((r: any) => r.nationalityClass === 'SAUDI').length;
+    const gccCount = activeRegList.filter((r: any) => r.nationalityClass === 'GCC_NATIONAL_OTHER').length;
+    const expatCount = activeRegList.filter((r: any) => r.nationalityClass === 'EXPAT').length;
+
+    // Breakdowns by hierarchy
+    const byCompany: Record<string, number> = {};
+    const byDepartment: Record<string, number> = {};
+    const byEstablishment: Record<string, number> = {};
+
+    // Get Saudi Legal Entities to map establishmentId
+    const legalEntities = await (prisma as any).gccLegalEntity.findMany({
+      where: { tenantId, countryCode: 'SA' },
+    });
+
+    activeEmployees.forEach((emp) => {
+      const cName = emp.company?.name || 'Unknown';
+      byCompany[cName] = (byCompany[cName] || 0) + 1;
+
+      const dName = emp.department?.name || 'Unknown';
+      byDepartment[dName] = (byDepartment[dName] || 0) + 1;
+    });
+
+    activeRegList.forEach((r: any) => {
+      const le = legalEntities.find((l: any) => l.id === r.establishmentId);
+      const estName = le ? `${le.legalName} (${le.registrationRef})` : r.establishmentId || 'Unknown';
+      byEstablishment[estName] = (byEstablishment[estName] || 0) + 1;
+    });
+
+    // Monthly trends (last 6 months)
+    const registrationTrend: Record<string, number> = {};
+    const deregistrationTrend: Record<string, number> = {};
+
+    allRegs.forEach((r: any) => {
+      if (r.registrationDate) {
+        const m = new Date(r.registrationDate).toISOString().slice(0, 7);
+        registrationTrend[m] = (registrationTrend[m] || 0) + 1;
+      }
+      if (r.deregistrationDate) {
+        const m = new Date(r.deregistrationDate).toISOString().slice(0, 7);
+        deregistrationTrend[m] = (deregistrationTrend[m] || 0) + 1;
+      }
+    });
+
     return {
       period,
       submissions: subCount,
@@ -33,6 +94,21 @@ export class GosiCertificateService {
       late: lateCount,
       openVariances,
       criticalVariances,
+      registrationStats: {
+        totalRegistered: allRegs.length,
+        activeRegistrations: activeRegList.length,
+        pendingRegistrations: pendingList.length,
+        expiredRegistrations: expiredList.length,
+        deregistered: deregisteredList.length,
+        saudiNationals: saudiCount,
+        gccNationals: gccCount,
+        expat: expatCount,
+        byCompany,
+        byDepartment,
+        byEstablishment,
+        registrationTrend,
+        deregistrationTrend,
+      },
     };
   }
 
@@ -44,7 +120,7 @@ export class GosiCertificateService {
     if (stats.late > 0) reasons.push(`${stats.late} late submission(s)`);
     const gatingReason = reasons.length ? `Blocked: ${reasons.join('; ')}` : null;
     return (prisma as any).gosiCertificate.upsert({
-      where: { aura_gosi_certificate_unique: { tenantId: auth.tenantId, period } },
+      where: { tenantId_period: { tenantId: auth.tenantId, period } },
       update: {
         submissionsCount: stats.submissions,
         openVariancesCount: stats.openVariances,
@@ -74,7 +150,7 @@ export class GosiCertificateService {
     auth: AuthContext
   ) {
     const cert = await (prisma as any).gosiCertificate.findUnique({
-      where: { aura_gosi_certificate_unique: { tenantId: auth.tenantId, period } },
+      where: { tenantId_period: { tenantId: auth.tenantId, period } },
     });
     if (!cert) throw new Error('certificate not generated');
     if (cert.gatingReason) throw new Error(`cannot sign while gated: ${cert.gatingReason}`);

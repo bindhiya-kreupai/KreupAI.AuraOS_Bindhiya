@@ -14,6 +14,7 @@ import {
   X
 } from 'lucide-react';
 import Link from 'next/link';
+import { useTheme } from '@/stores/theme-store';
 
 type CountryCode = 'AE' | 'SA' | 'BH' | 'QA' | 'OM' | 'KW' | 'IN';
 type TerminationType = 'RESIGNATION' | 'TERMINATION' | 'TERMINATION_WITHOUT_CAUSE' | 'END_OF_CONTRACT' | 'RETIREMENT' | 'DEATH' | 'DISABILITY' | 'MUTUAL_AGREEMENT';
@@ -84,6 +85,7 @@ const terminationTypes = [
 ];
 
 export default function EOSBPage() {
+  const { isDark } = useTheme();
   const [countryCode, setCountryCode] = useState<CountryCode>('AE');
   const [terminationType, setTerminationType] = useState<TerminationType>('RESIGNATION');
   const [joiningDate, setJoiningDate] = useState('');
@@ -166,11 +168,14 @@ export default function EOSBPage() {
   };
 
   return (
-    <div className="space-y-4 pb-6">
+    <div 
+      className="space-y-4 pb-6 text-slate-900 dark:text-slate-100"
+      style={{ colorScheme: isDark ? 'dark' : 'light' }}
+    >
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
-          <Link href="/dashboard/payroll-compliance" className="text-indigo-600 hover:text-indigo-700 text-sm flex items-center gap-1 mb-2">
+          <Link href="/dashboard/payroll-compliance" className="text-indigo-600 hover:text-indigo-700 dark:text-indigo-400 dark:hover:text-indigo-300 text-sm flex items-center gap-1 mb-2">
             <ArrowLeft className="w-4 h-4" /> Back to Compliance
           </Link>
           <h1 className="text-2xl font-bold flex items-center gap-3 text-slate-900 dark:text-slate-100">
@@ -219,8 +224,8 @@ export default function EOSBPage() {
                     onClick={() => setCountryCode(country.code as CountryCode)}
                     className={`p-3 rounded-xl border text-center transition-all ${
                       countryCode === country.code
-                        ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30'
-                        : 'border-slate-200 dark:border-slate-700 hover:border-indigo-300'
+                        ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300'
+                        : 'border-slate-200 dark:border-slate-700 hover:border-indigo-300 bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300'
                     }`}
                   >
                     <span className="text-2xl block mb-1">{country.flag}</span>
@@ -238,10 +243,10 @@ export default function EOSBPage() {
               <select
                 value={terminationType}
                 onChange={(e) => setTerminationType(e.target.value as TerminationType)}
-                className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800"
+                className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
               >
                 {terminationTypes.map((type) => (
-                  <option key={type.code} value={type.code}>
+                  <option key={type.code} value={type.code} className="bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">
                     {type.name} | {type.nameAr}
                   </option>
                 ))}
@@ -256,10 +261,10 @@ export default function EOSBPage() {
               <select
                 value={contractType}
                 onChange={(e) => setContractType(e.target.value as 'FIXED' | 'INDEFINITE')}
-                className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800"
+                className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
               >
-                <option value="INDEFINITE">Indefinite | غير محدد المدة</option>
-                <option value="FIXED">Fixed Term | محدد المدة</option>
+                <option value="INDEFINITE" className="bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">Indefinite | غير محدد المدة</option>
+                <option value="FIXED" className="bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100">Fixed Term | محدد المدة</option>
               </select>
             </div>
 
@@ -274,7 +279,7 @@ export default function EOSBPage() {
                   type="date"
                   value={joiningDate}
                   onChange={(e) => setJoiningDate(e.target.value)}
-                  className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800"
+                  className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
                 />
               </div>
               <div>
@@ -286,7 +291,7 @@ export default function EOSBPage() {
                   type="date"
                   value={lastWorkingDate}
                   onChange={(e) => setLastWorkingDate(e.target.value)}
-                  className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800"
+                  className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
                 />
               </div>
             </div>
@@ -302,7 +307,7 @@ export default function EOSBPage() {
                 value={basicSalary}
                 onChange={(e) => setBasicSalary(e.target.value)}
                 placeholder="Enter basic salary"
-                className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800"
+                className="w-full px-4 py-3 border border-slate-200 dark:border-slate-700 rounded-xl bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
               />
             </div>
 
@@ -341,36 +346,36 @@ export default function EOSBPage() {
                 <div className="text-2xl font-bold text-indigo-700 dark:text-indigo-300">
                   {result.yearsOfService} years, {result.monthsOfService - (result.yearsOfService * 12)} months
                 </div>
-                <div className="text-sm text-indigo-500">{result.daysOfService} days total</div>
+                <div className="text-sm text-indigo-500 dark:text-indigo-400/80">{result.daysOfService} days total</div>
               </div>
 
               {/* Breakdown */}
               <div className="space-y-3">
                 <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800">
                   <span className="text-slate-600 dark:text-slate-400">Basic Salary</span>
-                  <span className="font-medium">{result.currency} {result.basicSalary.toLocaleString()}</span>
+                  <span className="font-medium text-slate-900 dark:text-slate-100">{result.currency} {result.basicSalary.toLocaleString()}</span>
                 </div>
                 <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800">
                   <span className="text-slate-600 dark:text-slate-400">Daily Rate</span>
-                  <span className="font-medium">{result.currency} {result.dailyRate.toFixed(2)}</span>
+                  <span className="font-medium text-slate-900 dark:text-slate-100">{result.currency} {result.dailyRate.toFixed(2)}</span>
                 </div>
                 <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800">
                   <span className="text-slate-600 dark:text-slate-400">
                     First Period ({result.firstPeriodDays} days)
                   </span>
-                  <span className="font-medium">{result.currency} {result.firstPeriodAmount.toFixed(2)}</span>
+                  <span className="font-medium text-slate-900 dark:text-slate-100">{result.currency} {result.firstPeriodAmount.toFixed(2)}</span>
                 </div>
                 {result.secondPeriodAmount > 0 && (
                   <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800">
                     <span className="text-slate-600 dark:text-slate-400">
                       Second Period ({result.secondPeriodDays} days)
                     </span>
-                    <span className="font-medium">{result.currency} {result.secondPeriodAmount.toFixed(2)}</span>
+                    <span className="font-medium text-slate-900 dark:text-slate-100">{result.currency} {result.secondPeriodAmount.toFixed(2)}</span>
                   </div>
                 )}
                 <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800">
                   <span className="text-slate-600 dark:text-slate-400">Gross Amount</span>
-                  <span className="font-medium">{result.currency} {result.grossAmount.toFixed(2)}</span>
+                  <span className="font-medium text-slate-900 dark:text-slate-100">{result.currency} {result.grossAmount.toFixed(2)}</span>
                 </div>
                 {result.resignationFactor < 1 && (
                   <div className="flex justify-between py-2 border-b border-slate-100 dark:border-slate-800">
@@ -415,7 +420,7 @@ export default function EOSBPage() {
 
               {/* Actions */}
               <div className="flex gap-3">
-                <button className="flex-1 py-3 bg-slate-100 dark:bg-slate-800 rounded-xl text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-200 flex items-center justify-center gap-2">
+                <button className="flex-1 py-3 bg-slate-100 dark:bg-slate-800 rounded-xl text-slate-700 dark:text-slate-300 font-medium hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors flex items-center justify-center gap-2">
                   <FileText className="w-4 h-4" />
                   View Details
                 </button>
@@ -451,48 +456,48 @@ export default function EOSBPage() {
         ) : countryRules?.eosb ? (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
-              <div className="text-sm text-slate-500 mb-1">
+              <div className="text-sm text-slate-500 dark:text-slate-400 mb-1">
                 {countryRules.eosb.firstPeriodYears > 0
                   ? `First ${countryRules.eosb.firstPeriodYears} Years`
                   : 'Rate per Year'}
               </div>
-              <div className="text-lg font-semibold">{countryRules.eosb.firstPeriodDaysPerYear} days per year</div>
-              <div className="text-sm text-slate-400" dir="rtl">{countryRules.eosb.firstPeriodDaysPerYear} يوم لكل سنة</div>
+              <div className="text-lg font-semibold text-slate-900 dark:text-slate-100">{countryRules.eosb.firstPeriodDaysPerYear} days per year</div>
+              <div className="text-sm text-slate-400 dark:text-slate-500" dir="rtl">{countryRules.eosb.firstPeriodDaysPerYear} يوم لكل سنة</div>
             </div>
             {countryRules.eosb.firstPeriodYears > 0 && countryRules.eosb.afterPeriodDaysPerYear !== countryRules.eosb.firstPeriodDaysPerYear && (
               <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
-                <div className="text-sm text-slate-500 mb-1">After {countryRules.eosb.firstPeriodYears} Years</div>
-                <div className="text-lg font-semibold">{countryRules.eosb.afterPeriodDaysPerYear} days per year</div>
-                <div className="text-sm text-slate-400" dir="rtl">{countryRules.eosb.afterPeriodDaysPerYear} يوم لكل سنة</div>
+                <div className="text-sm text-slate-500 dark:text-slate-400 mb-1">After {countryRules.eosb.firstPeriodYears} Years</div>
+                <div className="text-lg font-semibold text-slate-900 dark:text-slate-100">{countryRules.eosb.afterPeriodDaysPerYear} days per year</div>
+                <div className="text-sm text-slate-400 dark:text-slate-500" dir="rtl">{countryRules.eosb.afterPeriodDaysPerYear} يوم لكل سنة</div>
               </div>
             )}
             <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
-              <div className="text-sm text-slate-500 mb-1">Minimum Service Required</div>
-              <div className="text-lg font-semibold">{countryRules.eosb.minServiceMonths} months</div>
-              <div className="text-sm text-slate-400" dir="rtl">{countryRules.eosb.minServiceMonths} شهر كحد أدنى</div>
+              <div className="text-sm text-slate-500 dark:text-slate-400 mb-1">Minimum Service Required</div>
+              <div className="text-lg font-semibold text-slate-900 dark:text-slate-100">{countryRules.eosb.minServiceMonths} months</div>
+              <div className="text-sm text-slate-400 dark:text-slate-500" dir="rtl">{countryRules.eosb.minServiceMonths} شهر كحد أدنى</div>
             </div>
             <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
-              <div className="text-sm text-slate-500 mb-1">Calculation Base</div>
-              <div className="text-lg font-semibold">{countryRules.eosb.calculationBase === 'BASIC' ? 'Basic Salary' : 'Total Salary'}</div>
-              <div className="text-sm text-slate-400" dir="rtl">الراتب الأساسي</div>
+              <div className="text-sm text-slate-500 dark:text-slate-400 mb-1">Calculation Base</div>
+              <div className="text-lg font-semibold text-slate-900 dark:text-slate-100">{countryRules.eosb.calculationBase === 'BASIC' ? 'Basic Salary' : 'Total Salary'}</div>
+              <div className="text-sm text-slate-400 dark:text-slate-500" dir="rtl">الراتب الأساسي</div>
             </div>
           </div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
             <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
-              <div className="text-sm text-slate-500 mb-1">First 5 Years</div>
-              <div className="text-lg font-semibold">21 days per year</div>
-              <div className="text-sm text-slate-400" dir="rtl">21 يوم لكل سنة</div>
+              <div className="text-sm text-slate-500 dark:text-slate-400 mb-1">First 5 Years</div>
+              <div className="text-lg font-semibold text-slate-900 dark:text-slate-100">21 days per year</div>
+              <div className="text-sm text-slate-400 dark:text-slate-500" dir="rtl">21 يوم لكل سنة</div>
             </div>
             <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
-              <div className="text-sm text-slate-500 mb-1">After 5 Years</div>
-              <div className="text-lg font-semibold">30 days per year</div>
-              <div className="text-sm text-slate-400" dir="rtl">30 يوم لكل سنة</div>
+              <div className="text-sm text-slate-500 dark:text-slate-400 mb-1">After 5 Years</div>
+              <div className="text-lg font-semibold text-slate-900 dark:text-slate-100">30 days per year</div>
+              <div className="text-sm text-slate-400 dark:text-slate-500" dir="rtl">30 يوم لكل سنة</div>
             </div>
             <div className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
-              <div className="text-sm text-slate-500 mb-1">Calculation Base</div>
-              <div className="text-lg font-semibold">Basic Salary</div>
-              <div className="text-sm text-slate-400" dir="rtl">الراتب الأساسي</div>
+              <div className="text-sm text-slate-500 dark:text-slate-400 mb-1">Calculation Base</div>
+              <div className="text-lg font-semibold text-slate-900 dark:text-slate-100">Basic Salary</div>
+              <div className="text-sm text-slate-400 dark:text-slate-500" dir="rtl">الراتب الأساسي</div>
             </div>
           </div>
         )}

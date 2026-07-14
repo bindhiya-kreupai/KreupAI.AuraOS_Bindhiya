@@ -22,7 +22,8 @@ const periodNow = () => {
 };
 
 export default function EosbAccrualsPage() {
-  const [rows, setRows] = useState<Accrual[]>([]);
+  const [rows, setRows] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [form, setForm] = useState({
     employeeId: '',
     period: periodNow(),
@@ -35,9 +36,16 @@ export default function EosbAccrualsPage() {
   const [message, setMessage] = useState('');
 
   async function load() {
-    const r = await fetch('/api/v1/eosb-compliance/accruals');
-    const p = await r.json();
-    if (p.success) setRows(p.data ?? []);
+    setIsLoading(true);
+    try {
+      const r = await fetch('/api/v1/eosb-compliance/accruals');
+      const p = await r.json();
+      if (p.success) {
+        setRows(Array.isArray(p.data) ? p.data : (p.data?.items ?? []));
+      }
+    } finally {
+      setIsLoading(false);
+    }
   }
   useEffect(() => {
     load();
@@ -154,44 +162,53 @@ export default function EosbAccrualsPage() {
               </tr>
             </thead>
             <tbody>
-              {rows.map((a) => (
-                <tr key={a.id} className="border-b border-slate-100">
-                  <td className="px-3 py-2">{a.period}</td>
-                  <td className="px-3 py-2 font-mono text-xs">{a.employeeId}</td>
-                  <td className="px-3 py-2">{a.countryCode}</td>
-                  <td className="px-3 py-2">{a.serviceMonths}</td>
-                  <td className="px-3 py-2">{a.basicSalary}</td>
-                  <td className="px-3 py-2 font-semibold">
-                    {a.accruedGratuity} {a.currency}
-                  </td>
-                  <td
-                    className={`px-3 py-2 ${Number(a.monthDelta) >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}
-                  >
-                    {a.monthDelta}
-                  </td>
-                  <td className="px-3 py-2 text-xs">
-                    {a.glPosted ? (
-                      <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-emerald-800">
-                        ✓ {a.glJournalRef}
-                      </span>
-                    ) : (
-                      'pending'
-                    )}
-                  </td>
-                  <td className="px-3 py-2">
-                    {!a.glPosted && (
-                      <button
-                        type="button"
-                        onClick={() => markPosted(a.id)}
-                        className="rounded-md border border-slate-300 px-2 py-1 text-xs"
+              {isLoading
+                ? Array.from({ length: 3 }).map((_, i) => (
+                    <tr key={`skel-${i}`} className="animate-pulse">
+                      <td colSpan={9} className="px-3 py-4">
+                        <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-full"></div>
+                      </td>
+                    </tr>
+                  ))
+                : rows.map((a) => (
+                    <tr key={a.id} className="border-b border-slate-100">
+                      <td className="px-3 py-2">{a.period}</td>
+                      <td className="px-3 py-2 font-semibold">
+                        <div>{a.employeeName}</div>
+                        <div className="text-[10px] text-slate-400 font-mono">{a.employeeId}</div>
+                      </td>
+                      <td className="px-3 py-2">{a.countryCode}</td>
+                      <td className="px-3 py-2">{a.serviceMonths}</td>
+                      <td className="px-3 py-2">{a.basicSalary} AED</td>
+                      <td className="px-3 py-2 font-semibold">{a.accruedGratuity} AED</td>
+                      <td
+                        className={`px-3 py-2 ${Number(a.monthDelta) >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}
                       >
-                        Post to GL
-                      </button>
-                    )}
-                  </td>
-                </tr>
-              ))}
-              {rows.length === 0 && (
+                        {a.monthDelta} AED
+                      </td>
+                      <td className="px-3 py-2 text-xs">
+                        {a.glPosted ? (
+                          <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-emerald-800">
+                            ✓ {a.glJournalRef}
+                          </span>
+                        ) : (
+                          'pending'
+                        )}
+                      </td>
+                      <td className="px-3 py-2">
+                        {!a.glPosted && (
+                          <button
+                            type="button"
+                            onClick={() => markPosted(a.id)}
+                            className="rounded-md border border-slate-300 px-2 py-1 text-xs"
+                          >
+                            Post to GL
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+              {!isLoading && rows.length === 0 && (
                 <tr>
                   <td colSpan={9} className="px-3 py-6 text-center text-slate-500">
                     No accruals.

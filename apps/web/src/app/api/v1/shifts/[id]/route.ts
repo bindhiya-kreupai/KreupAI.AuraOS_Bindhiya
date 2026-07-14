@@ -70,9 +70,13 @@ export const PUT = withAudit(
 
       return NextResponse.json({ success: true, data: shift });
     } catch (error: any) {
+      const isValidationError = error.message && error.message.includes('already exists');
       return NextResponse.json(
-        { success: false, error: { code: 'E5000', message: error.message } },
-        { status: 500 }
+        {
+          success: false,
+          error: { code: isValidationError ? 'E1001' : 'E5000', message: error.message },
+        },
+        { status: isValidationError ? 400 : 500 }
       );
     }
   }),

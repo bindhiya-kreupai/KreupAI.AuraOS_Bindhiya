@@ -264,6 +264,7 @@ export const superAdminMenu: MenuDefinition = {
                 'Overtime Management',
                 'Comp-off',
                 'Comp-off Management',
+                'Biometric Integration',
                 'Punch Rules',
                 'Rules',
                 'Time Rounding',
@@ -385,6 +386,7 @@ export const superAdminMenu: MenuDefinition = {
                 'Regulatory Reports',
             ],
         },
+
         {
             code: 'GCC_COMPLIANCE',
             label: 'GCC Compliance',
@@ -404,6 +406,20 @@ export const superAdminMenu: MenuDefinition = {
                 'Nitaqat (Saudization)',
             ],
             items: [
+                {
+                    code: 'EXPENSE_COMPLIANCE',
+                    label: 'Expense Compliance',
+                    icon: 'compensation',
+                    path: '/dashboard/expense-compliance',
+                    features: ['Checks'],
+                },
+                {
+                    code: 'EXTERNAL_REPORTING_COMPLIANCE',
+                    label: 'External Reporting Compliance',
+                    icon: 'reports',
+                    path: '/dashboard/external-reporting-compliance',
+                    features: ['Bilingual Disclosure', 'File Format', 'Submission Cadence'],
+                },
                 {
                     code: 'COMPLIANCE_EVALUATORS',
                     label: 'Compliance Evaluators',
@@ -721,10 +737,11 @@ export const superAdminMenu: MenuDefinition = {
                     icon: 'benefits',
                     path: '/dashboard/gosi-compliance',
                     features: [
-                        'Employee Registrations',
-                        'Wages & Contributions',
-                        'Reconciliation & Variance',
-                        'Monthly Certificate',
+                        'GOSI Compliance',
+                        'Registrations',
+                        'Contributions',
+                        'Reconciliation',
+                        'Certificate',
                     ],
                 },
                 {
@@ -863,10 +880,11 @@ export const superAdminMenu: MenuDefinition = {
                     icon: 'payroll',
                     path: '/dashboard/eosb-compliance',
                     features: [
-                        'Finalized Calculations (DRAFT→APPROVED→SETTLED)',
-                        'Monthly Accruals & GL Posting',
-                        'Dispute Register',
-                        'Monthly Compliance Certificate',
+                        'EOSB Compliance',
+                        'Calculations',
+                        'Accruals',
+                        'Disputes',
+                        'Certificate',
                     ],
                 },
                 {
@@ -965,11 +983,12 @@ export const superAdminMenu: MenuDefinition = {
                     icon: 'policy',
                     path: '/dashboard/er-compliance',
                     features: [
-                        'Grievance Register (multi-channel + SLA)',
-                        'Disciplinary Actions (hearing-gated issuance)',
-                        'Investigation Register',
+                        'ER Compliance',
+                        'Grievances',
+                        'Disciplinary',
+                        'Investigations',
                         'Appeals',
-                        'Monthly Compliance Certificate',
+                        'Certificate',
                     ],
                 },
                 {
@@ -1062,6 +1081,18 @@ export const superAdminMenu: MenuDefinition = {
                         'Transfer & Mobility Cases (REQUESTED → APPROVED → COMPLETED)',
                         'Immigration Audit Checklist & Risk Register',
                         'Monthly Compliance Certificate',
+                    ],
+                },
+                {
+                    code: 'ESG_COMPLIANCE',
+                    label: 'ESG Compliance',
+                    icon: 'policy',
+                    path: '/dashboard/esg-compliance',
+                    features: [
+                        'Carbon Per Employee',
+                        'Diversity',
+                        'Disclosure Checklist',
+                        'Certificate',
                     ],
                 },
             ],
@@ -1731,7 +1762,7 @@ export const superAdminMenu: MenuDefinition = {
                     label: 'KSA GOSI',
                     icon: 'labor',
                     path: '/payroll-compliance/gosi',
-                    features: ['Contribution Simulation', 'Saudization', 'Mudad Bridge'],
+                    features: ['Registrations', 'Contributions', 'Reconciliation', 'Certificate'],
                 },
                 {
                     code: 'COMPLIANCE_INDIA',
@@ -1745,7 +1776,7 @@ export const superAdminMenu: MenuDefinition = {
                     label: 'EOSB & Gratuity',
                     icon: 'labor',
                     path: '/payroll-compliance/eosb',
-                    features: ['Settlement Simulation', 'Multi-Jurisdiction', 'Accruals'],
+                    features: ['Calculations', 'Accruals', 'Disputes', 'Certificate'],
                 },
             ],
         },

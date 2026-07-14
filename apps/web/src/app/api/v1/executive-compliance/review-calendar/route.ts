@@ -35,9 +35,10 @@ export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext)
       for (const f of ['title', 'domain', 'dueAt']) {
         if (!body[f]) return badRequest(`${f} required`);
       }
+      const { action, ...data } = body;
       return ok(
         await complianceReviewCalendarService.upsert(
-          { ...body, dueAt: new Date(body.dueAt) },
+          { ...data, dueAt: new Date(data.dueAt) },
           auth
         ),
         'Saved'

@@ -100,19 +100,71 @@ export class ErGrievanceService {
     },
     auth: AuthContext
   ) {
+    const {
+      caseNumber,
+      channel,
+      grievanceType,
+      severity,
+      subject,
+      description,
+      complainantId,
+      respondentId,
+      isWhistleblower,
+      country,
+      slaDays,
+    } = input;
+
+    if (complainantId) {
+      const complainant = await prisma.employee.findFirst({
+        where: { id: complainantId, company: { tenantId: auth.tenantId } },
+      });
+      if (!complainant) {
+        throw new Error(`Complainant employee with ID ${complainantId} not found`);
+      }
+    }
+
+    if (respondentId) {
+      const respondent = await prisma.employee.findFirst({
+        where: { id: respondentId, company: { tenantId: auth.tenantId } },
+      });
+      if (!respondent) {
+        throw new Error(`Respondent employee with ID ${respondentId} not found`);
+      }
+    }
+
     return (prisma as any).erGrievanceCase.upsert({
       where: {
         tenantId_caseNumber: {
           tenantId: auth.tenantId,
-          caseNumber: input.caseNumber,
+          caseNumber,
         },
       },
-      update: { ...input, status: 'OPEN' },
+      update: {
+        channel,
+        grievanceType,
+        severity: severity ?? 'MEDIUM',
+        subject,
+        description,
+        complainantId,
+        respondentId,
+        isWhistleblower: !!isWhistleblower,
+        country,
+        slaDays: slaDays ?? 30,
+        status: 'OPEN',
+      },
       create: {
         tenantId: auth.tenantId,
-        ...input,
-        severity: input.severity ?? 'MEDIUM',
-        slaDays: input.slaDays ?? 30,
+        caseNumber,
+        channel,
+        grievanceType,
+        severity: severity ?? 'MEDIUM',
+        subject,
+        description,
+        complainantId,
+        respondentId,
+        isWhistleblower: !!isWhistleblower,
+        country,
+        slaDays: slaDays ?? 30,
         status: 'OPEN',
       },
     });
@@ -188,26 +240,69 @@ export class ErDisciplinaryService {
     },
     auth: AuthContext
   ) {
+    const {
+      actionNumber,
+      employeeId,
+      linkedGrievanceId,
+      misconductType,
+      severity,
+      actionType,
+      warningCount,
+      suspensionDays,
+      salaryDeductionDays,
+      salaryDeductionPct,
+      country,
+      evidenceCount,
+    } = input;
+
+    const employee = await prisma.employee.findFirst({
+      where: { id: employeeId, company: { tenantId: auth.tenantId } },
+    });
+    if (!employee) {
+      throw new Error(`Employee with ID ${employeeId} not found`);
+    }
+
+    const pct = salaryDeductionPct != null ? Number(salaryDeductionPct) : 0;
     const limit =
-      input.country && SALARY_DEDUCTION_LIMITS_PCT[input.country]
-        ? SALARY_DEDUCTION_LIMITS_PCT[input.country]
-        : 50;
-    if ((input.salaryDeductionPct ?? 0) > limit)
-      throw new Error(
-        `salary deduction ${input.salaryDeductionPct}% exceeds ${input.country ?? 'default'} limit ${limit}%`
-      );
+      country && SALARY_DEDUCTION_LIMITS_PCT[country] ? SALARY_DEDUCTION_LIMITS_PCT[country] : 50;
+    if (pct > limit)
+      throw new Error(`salary deduction ${pct}% exceeds ${country ?? 'default'} limit ${limit}%`);
+
     return (prisma as any).erDisciplinaryAction.upsert({
       where: {
-        aura_er_disciplinary_action_unique: {
+        tenantId_actionNumber: {
           tenantId: auth.tenantId,
-          actionNumber: input.actionNumber,
+          actionNumber,
         },
       },
-      update: { ...input, status: 'DRAFT' },
+      update: {
+        employeeId,
+        linkedGrievanceId,
+        misconductType,
+        severity: severity ?? 'MEDIUM',
+        actionType,
+        warningCount,
+        suspensionDays,
+        salaryDeductionDays,
+        salaryDeductionPct: pct,
+        country,
+        evidenceCount,
+        status: 'DRAFT',
+      },
       create: {
         tenantId: auth.tenantId,
-        ...input,
-        severity: input.severity ?? 'MEDIUM',
+        actionNumber,
+        employeeId,
+        linkedGrievanceId,
+        misconductType,
+        severity: severity ?? 'MEDIUM',
+        actionType,
+        warningCount,
+        suspensionDays,
+        salaryDeductionDays,
+        salaryDeductionPct: pct,
+        country,
+        evidenceCount,
         status: 'DRAFT',
       },
     });
@@ -263,7 +358,19 @@ export class ErDisciplinaryService {
       }),
       (prisma as any).erDisciplinaryAction.count({ where }),
     ]);
-    return buildPaginatedResult(items, total, page);
+    const employeeIds = Array.from(
+      new Set(items.map((item: any) => item.employeeId).filter(Boolean))
+    );
+    const employees = await prisma.employee.findMany({
+      where: { id: { in: employeeIds } },
+      select: { id: true, firstName: true, lastName: true },
+    });
+    const employeeMap = new Map(employees.map((e) => [e.id, `${e.firstName} ${e.lastName}`]));
+    const enriched = items.map((item: any) => ({
+      ...item,
+      employeeName: employeeMap.get(item.employeeId) || 'Unknown',
+    }));
+    return buildPaginatedResult(enriched, total, page);
   }
 }
 
@@ -281,15 +388,40 @@ export class ErInvestigationService {
     },
     auth: AuthContext
   ) {
+    const {
+      investigationNumber,
+      grievanceCaseId,
+      disciplinaryActionId,
+      investigatorId,
+      scope,
+      startedAt,
+    } = input;
+
     return (prisma as any).erInvestigation.upsert({
       where: {
-        aura_er_investigation_unique: {
+        tenantId_investigationNumber: {
           tenantId: auth.tenantId,
-          investigationNumber: input.investigationNumber,
+          investigationNumber,
         },
       },
-      update: { ...input, status: 'OPEN' },
-      create: { tenantId: auth.tenantId, ...input, status: 'OPEN' },
+      update: {
+        grievanceCaseId,
+        disciplinaryActionId,
+        investigatorId,
+        scope,
+        startedAt,
+        status: 'OPEN',
+      },
+      create: {
+        tenantId: auth.tenantId,
+        investigationNumber,
+        grievanceCaseId,
+        disciplinaryActionId,
+        investigatorId,
+        scope,
+        startedAt,
+        status: 'OPEN',
+      },
     });
   }
 
@@ -358,12 +490,40 @@ export class ErAppealService {
     },
     auth: AuthContext
   ) {
+    const { appealNumber, subjectType, subjectId, appellantId, reason, filedAt, decisionDueAt } =
+      input;
+
+    const appellant = await prisma.employee.findFirst({
+      where: { id: appellantId, company: { tenantId: auth.tenantId } },
+    });
+    if (!appellant) {
+      throw new Error(`Appellant employee with ID ${appellantId} not found`);
+    }
+
     return (prisma as any).erAppeal.upsert({
       where: {
-        aura_er_appeal_unique: { tenantId: auth.tenantId, appealNumber: input.appealNumber },
+        tenantId_appealNumber: { tenantId: auth.tenantId, appealNumber },
       },
-      update: { ...input, status: 'OPEN' },
-      create: { tenantId: auth.tenantId, ...input, status: 'OPEN' },
+      update: {
+        subjectType,
+        subjectId,
+        appellantId,
+        reason,
+        filedAt: new Date(filedAt),
+        decisionDueAt: decisionDueAt ? new Date(decisionDueAt) : null,
+        status: 'OPEN',
+      },
+      create: {
+        tenantId: auth.tenantId,
+        appealNumber,
+        subjectType,
+        subjectId,
+        appellantId,
+        reason,
+        filedAt: new Date(filedAt),
+        decisionDueAt: decisionDueAt ? new Date(decisionDueAt) : null,
+        status: 'OPEN',
+      },
     });
   }
 
@@ -394,7 +554,19 @@ export class ErAppealService {
       }),
       (prisma as any).erAppeal.count({ where }),
     ]);
-    return buildPaginatedResult(items, total, page);
+    const employeeIds = Array.from(
+      new Set(items.map((item: any) => item.appellantId).filter(Boolean))
+    );
+    const employees = await prisma.employee.findMany({
+      where: { id: { in: employeeIds } },
+      select: { id: true, firstName: true, lastName: true },
+    });
+    const employeeMap = new Map(employees.map((e) => [e.id, `${e.firstName} ${e.lastName}`]));
+    const enriched = items.map((item: any) => ({
+      ...item,
+      employeeName: employeeMap.get(item.appellantId) || 'Unknown',
+    }));
+    return buildPaginatedResult(enriched, total, page);
   }
 }
 
@@ -484,7 +656,7 @@ export class ErCertificateService {
       reasons.push(`${stats.retaliationFlags} open RETALIATION case(s)`);
     const gatingReason = reasons.length ? `Blocked: ${reasons.join('; ')}` : null;
     return (prisma as any).erCertificate.upsert({
-      where: { aura_er_certificate_unique: { tenantId: auth.tenantId, period } },
+      where: { tenantId_period: { tenantId: auth.tenantId, period } },
       update: { ...stats, gatingReason, generatedAt: new Date(), status: 'DRAFT' },
       create: {
         tenantId: auth.tenantId,
@@ -502,7 +674,7 @@ export class ErCertificateService {
     auth: AuthContext
   ) {
     const cert = await (prisma as any).erCertificate.findUnique({
-      where: { aura_er_certificate_unique: { tenantId: auth.tenantId, period } },
+      where: { tenantId_period: { tenantId: auth.tenantId, period } },
     });
     if (!cert) throw new Error('certificate not generated');
     if (cert.gatingReason) throw new Error(`cannot sign while gated: ${cert.gatingReason}`);

@@ -8,10 +8,18 @@
 // ============================================================================
 
 export type CompetencyCategoryType =
-  'Technical' | 'Leadership' | 'Behavioral' | 'Functional' | 'Core';
+  | 'Technical'
+  | 'Leadership'
+  | 'Behavioral'
+  | 'Functional'
+  | 'Core';
 export type CompetencyStatus = 'Active' | 'Draft' | 'Archived' | 'Under Review';
 export type ProficiencyLevelName =
-  'Foundational' | 'Developing' | 'Proficient' | 'Advanced' | 'Expert';
+  | 'Foundational'
+  | 'Developing'
+  | 'Proficient'
+  | 'Advanced'
+  | 'Expert';
 
 export interface CompetencyCategory {
   id: string;
@@ -275,7 +283,12 @@ export interface GapAnalysisItem {
 export type DevelopmentPlanType = 'Individual' | 'Team' | 'Department' | 'Organization';
 export type DevelopmentPlanStatus = 'Draft' | 'Active' | 'In Progress' | 'Completed' | 'Cancelled';
 export type ActivityType =
-  'Training' | 'Course' | 'Mentoring' | 'Workshop' | 'Certification' | 'On-the-job';
+  | 'Training'
+  | 'Course'
+  | 'Mentoring'
+  | 'Workshop'
+  | 'Certification'
+  | 'On-the-job';
 export type ActivityStatus = 'Planned' | 'In Progress' | 'Completed' | 'Cancelled';
 export type MilestoneStatus = 'Pending' | 'Achieved' | 'Missed';
 
