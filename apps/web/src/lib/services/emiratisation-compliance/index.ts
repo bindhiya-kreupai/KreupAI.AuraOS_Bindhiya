@@ -94,26 +94,28 @@ export class EmiratisationConfigService {
     auth: AuthContext
   ) {
     const { appliesAt } = await this.getDefaults();
-    return (prisma as any).emiratisationConfig.upsert({
-      where: {
-        aura_emiratisation_config_unique: {
-          tenantId: auth.tenantId,
-          legalEntityId: input.legalEntityId ?? null,
-        },
-      },
-      update: {
-        establishmentName: input.establishmentName,
-        skilledWorkforceCount: input.skilledWorkforceCount,
-        sector: input.sector,
-        isInScope: input.skilledWorkforceCount >= appliesAt,
-      },
-      create: {
+    const where = {
+      tenantId: auth.tenantId,
+      legalEntityId: input.legalEntityId ?? null,
+    };
+    const data = {
+      establishmentName: input.establishmentName,
+      skilledWorkforceCount: input.skilledWorkforceCount,
+      sector: input.sector,
+      isInScope: input.skilledWorkforceCount >= appliesAt,
+    };
+    const existing = await (prisma as any).emiratisationConfig.findFirst({ where });
+    if (existing) {
+      return (prisma as any).emiratisationConfig.update({
+        where: { id: existing.id },
+        data,
+      });
+    }
+    return (prisma as any).emiratisationConfig.create({
+      data: {
+        ...data,
         tenantId: auth.tenantId,
         legalEntityId: input.legalEntityId ?? null,
-        establishmentName: input.establishmentName,
-        skilledWorkforceCount: input.skilledWorkforceCount,
-        sector: input.sector,
-        isInScope: input.skilledWorkforceCount >= appliesAt,
       },
     });
   }
@@ -153,26 +155,29 @@ export class EmiratisationConfigService {
     auth: AuthContext
   ) {
     const defaults = await this.getDefaults();
-    return (prisma as any).emiratisationTarget.upsert({
-      where: {
-        aura_emiratisation_target_unique: {
-          tenantId: auth.tenantId,
-          legalEntityId: input.legalEntityId ?? null,
-          year: input.year,
-        },
-      },
-      update: {
-        halfYearTargetPct: input.halfYearTargetPct ?? defaults.halfYearTargetPct,
-        yearEndTargetPct: input.yearEndTargetPct ?? defaults.yearEndTargetPct,
-        finePerMissedHire: input.finePerMissedHire ?? defaults.finePerMissedHire,
-      },
-      create: {
+    const where = {
+      tenantId: auth.tenantId,
+      legalEntityId: input.legalEntityId ?? null,
+      year: input.year,
+    };
+    const data = {
+      halfYearTargetPct: input.halfYearTargetPct ?? defaults.halfYearTargetPct,
+      yearEndTargetPct: input.yearEndTargetPct ?? defaults.yearEndTargetPct,
+      finePerMissedHire: input.finePerMissedHire ?? defaults.finePerMissedHire,
+    };
+    const existing = await (prisma as any).emiratisationTarget.findFirst({ where });
+    if (existing) {
+      return (prisma as any).emiratisationTarget.update({
+        where: { id: existing.id },
+        data,
+      });
+    }
+    return (prisma as any).emiratisationTarget.create({
+      data: {
+        ...data,
         tenantId: auth.tenantId,
         legalEntityId: input.legalEntityId ?? null,
         year: input.year,
-        halfYearTargetPct: input.halfYearTargetPct ?? defaults.halfYearTargetPct,
-        yearEndTargetPct: input.yearEndTargetPct ?? defaults.yearEndTargetPct,
-        finePerMissedHire: input.finePerMissedHire ?? defaults.finePerMissedHire,
         effectiveFrom: new Date(input.year, 0, 1),
         createdBy: auth.userId,
       },
@@ -180,13 +185,11 @@ export class EmiratisationConfigService {
   }
 
   async getTarget(tenantId: string, legalEntityId: string | null, year: number) {
-    return (prisma as any).emiratisationTarget.findUnique({
+    return (prisma as any).emiratisationTarget.findFirst({
       where: {
-        aura_emiratisation_target_unique: {
-          tenantId,
-          legalEntityId: legalEntityId ?? null,
-          year,
-        },
+        tenantId,
+        legalEntityId: legalEntityId ?? null,
+        year,
       },
     });
   }
@@ -333,12 +336,10 @@ export class EmiratisationSnapshotService {
     },
     auth: AuthContext
   ) {
-    const config = await (prisma as any).emiratisationConfig.findUnique({
+    const config = await (prisma as any).emiratisationConfig.findFirst({
       where: {
-        aura_emiratisation_config_unique: {
-          tenantId: auth.tenantId,
-          legalEntityId: input.legalEntityId ?? null,
-        },
+        tenantId: auth.tenantId,
+        legalEntityId: input.legalEntityId ?? null,
       },
     });
     if (!config) throw new Error('emiratisation config not found');
@@ -375,38 +376,37 @@ export class EmiratisationSnapshotService {
     const finePerHire = Number(target.finePerMissedHire);
     const projectedFine = Number((missedHires * finePerHire).toFixed(2));
 
-    return (prisma as any).emiratisationSnapshot.upsert({
-      where: {
-        aura_emiratisation_snapshot_unique: {
-          tenantId: auth.tenantId,
-          legalEntityId: input.legalEntityId ?? null,
-          checkpointDate: input.checkpointDate,
-        },
-      },
-      update: {
-        checkpoint: input.checkpoint,
-        skilledHeadcount,
-        uaeNationalCount: validHires,
-        actualPct,
-        targetPct,
-        gapPct,
-        missedHires,
-        projectedFine,
-        ragStatus: rag(actualPct, targetPct),
-      },
-      create: {
+    const snapWhere = {
+      tenantId: auth.tenantId,
+      legalEntityId: input.legalEntityId ?? null,
+      checkpointDate: input.checkpointDate,
+    };
+    const snapData = {
+      checkpoint: input.checkpoint,
+      skilledHeadcount,
+      uaeNationalCount: validHires,
+      actualPct,
+      targetPct,
+      gapPct,
+      missedHires,
+      projectedFine,
+      ragStatus: rag(actualPct, targetPct),
+      checkpointDate: input.checkpointDate,
+    };
+    const existingSnap = await (prisma as any).emiratisationSnapshot.findFirst({
+      where: snapWhere,
+    });
+    if (existingSnap) {
+      return (prisma as any).emiratisationSnapshot.update({
+        where: { id: existingSnap.id },
+        data: snapData,
+      });
+    }
+    return (prisma as any).emiratisationSnapshot.create({
+      data: {
+        ...snapData,
         tenantId: auth.tenantId,
         legalEntityId: input.legalEntityId ?? null,
-        checkpointDate: input.checkpointDate,
-        checkpoint: input.checkpoint,
-        skilledHeadcount,
-        uaeNationalCount: validHires,
-        actualPct,
-        targetPct,
-        gapPct,
-        missedHires,
-        projectedFine,
-        ragStatus: rag(actualPct, targetPct),
       },
     });
   }
@@ -516,7 +516,7 @@ export class EmiratisationCertificateService {
     if (stats.fakeRiskCount > 0) reasons.push(`${stats.fakeRiskCount} fake-risk hire(s)`);
     const gatingReason = reasons.length ? `Blocked: ${reasons.join('; ')}` : null;
     return (prisma as any).emiratisationCertificate.upsert({
-      where: { aura_emiratisation_certificate_unique: { tenantId: auth.tenantId, period } },
+      where: { tenantId_period: { tenantId: auth.tenantId, period } },
       update: {
         entitiesInScope: stats.entitiesInScope,
         entitiesAtTarget: stats.entitiesAtTarget,
@@ -547,7 +547,7 @@ export class EmiratisationCertificateService {
     auth: AuthContext
   ) {
     const cert = await (prisma as any).emiratisationCertificate.findUnique({
-      where: { aura_emiratisation_certificate_unique: { tenantId: auth.tenantId, period } },
+      where: { tenantId_period: { tenantId: auth.tenantId, period } },
     });
     if (!cert) throw new Error('certificate not generated');
     if (cert.gatingReason) throw new Error(`cannot sign while gated: ${cert.gatingReason}`);

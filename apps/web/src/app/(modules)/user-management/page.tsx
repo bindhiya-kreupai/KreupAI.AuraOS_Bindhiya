@@ -5,17 +5,8 @@
  * @reference docs/aura-master-instructions.md
  */
 
-import { ModulePage } from '@/components/ui';
+import { redirect } from 'next/navigation';
 
 export default function UserManagementPage() {
-  return (
-    <ModulePage
-      moduleCode="USER_MANAGEMENT"
-      moduleName="User Management"
-      moduleIcon="userManagement"
-      featureCount={12}
-      isImplemented={false}
-    />
-  );
+  redirect('/dashboard/user-management');
 }
-
