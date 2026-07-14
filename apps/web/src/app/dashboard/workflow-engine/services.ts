@@ -311,16 +311,46 @@ export class IntegrationService {
     return (a?.data ?? a) as T;
   }
 
+  private static mapDefinition(d: any): Integration {
+    let parsed: any = {};
+    try {
+      parsed = d.triggerEvent ? JSON.parse(d.triggerEvent) : {};
+    } catch {}
+    const connConfig = parsed.connectionConfig || parsed;
+    return {
+      id: d.id,
+      integrationName: d.name || '',
+      integrationType: ((d.trigger || 'REST_API') as string)
+        .toLowerCase()
+        .replace(/_/g, '_') as any,
+      status: (d.status || 'DRAFT').toLowerCase() as any,
+      description: d.description || '',
+      connectionConfig:
+        connConfig.baseUrl !== undefined || connConfig.timeout !== undefined ? connConfig : {},
+      authentication: parsed.authentication,
+      availableActions: Array.isArray(d.nodes) ? d.nodes : [],
+      testConnection: false,
+      lastTestedDate: undefined,
+      lastTestedStatus: undefined,
+      usedInWorkflows: [],
+      createdBy: d.createdBy || '',
+      createdDate: d.createdAt || '',
+      lastModified: d.updatedAt || '',
+    } as Integration;
+  }
+
   static async getIntegrations(search?: string): Promise<Integration[]> {
     const params: Record<string, string> = {};
     if (search) params.search = search;
     const res = await APIClient.get<any>('/workflow-engine/integrations', params);
-    return this.unwrap<Integration[]>(res) || [];
+    const raw = this.unwrap<any[]>(res) || [];
+    return raw.map((d: any) => this.mapDefinition(d));
   }
 
   static async getIntegrationById(id: string): Promise<Integration | null> {
     const res = await APIClient.get<any>(`/workflow-engine/integrations/${id}`);
-    return this.unwrap<Integration | null>(res);
+    const raw = this.unwrap<any>(res);
+    return raw ? this.mapDefinition(raw) : null;
   }
 
   static async createIntegration(data: Partial<Integration>): Promise<Integration> {
@@ -334,7 +364,8 @@ export class IntegrationService {
       status: data.status || 'DRAFT',
       isActive: false,
     });
-    return this.unwrap<Integration>(res);
+    const raw = this.unwrap<any>(res);
+    return this.mapDefinition(raw);
   }
 
   static async updateIntegration(id: string, updates: Partial<Integration>): Promise<Integration> {
@@ -348,7 +379,8 @@ export class IntegrationService {
       status: updates.status,
       isActive: (updates as any).isActive,
     });
-    return this.unwrap<Integration>(res);
+    const raw = this.unwrap<any>(res);
+    return this.mapDefinition(raw);
   }
 
   static async deleteIntegration(id: string): Promise<void> {

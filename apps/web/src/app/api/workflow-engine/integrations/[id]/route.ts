@@ -27,17 +27,31 @@ export const PUT = createProtectedRoute(
     if (body.description !== undefined) data.description = body.description;
     if (body.status !== undefined) data.status = body.status;
     if (body.isActive !== undefined) data.isActive = body.isActive;
-    if (body.connectionConfig !== undefined)
-      data.triggerEvent = JSON.stringify(body.connectionConfig);
-    if (body.authentication !== undefined) {
-      const existingConfig = existing.triggerEvent
-        ? JSON.parse(existing.triggerEvent as string)
-        : {};
-      const mergedConfig = { ...existingConfig, authentication: body.authentication };
-      data.triggerEvent = JSON.stringify(mergedConfig);
-    }
     if (body.availableActions !== undefined) data.nodes = body.availableActions;
     if (body.integrationType !== undefined) data.trigger = body.integrationType;
+
+    if (body.connectionConfig !== undefined || body.authentication !== undefined) {
+      let triggerEventPayload: Record<string, any> = {};
+      try {
+        triggerEventPayload = existing.triggerEvent
+          ? JSON.parse(existing.triggerEvent as string)
+          : {};
+      } catch {}
+      if (!triggerEventPayload.connectionConfig && existing.triggerEvent) {
+        try {
+          const old = JSON.parse(existing.triggerEvent as string);
+          if (old.baseUrl !== undefined || old.timeout !== undefined) {
+            triggerEventPayload.connectionConfig = old;
+          }
+        } catch {}
+      }
+      if (body.connectionConfig !== undefined)
+        triggerEventPayload.connectionConfig = body.connectionConfig;
+      if (body.authentication !== undefined)
+        triggerEventPayload.authentication = body.authentication;
+      data.triggerEvent = JSON.stringify(triggerEventPayload);
+    }
+
     data.updatedAt = new Date();
 
     const updated = await prisma.workflowDefinition.update({ where: { id: existing.id }, data });
