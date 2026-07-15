@@ -71,6 +71,7 @@ model Company {
 model Department {
   id                        String              @id(map: "Department_pkey") @default(uuid())
   companyId                 String
+  businessUnitId            String?
   code                      String
   name                      String
   parentId                  String?
@@ -82,6 +83,7 @@ model Department {
   deletedAt                 DateTime?
   isDeleted                 Boolean             @default(false)
   company                   Company             @relation(fields: [companyId], references: [id], map: "Department_companyId_fkey")
+  businessUnit              BusinessUnit?       @relation(fields: [businessUnitId], references: [id], map: "Department_businessUnitId_fkey")
   costCenter                CostCenter?         @relation(fields: [costCenterId], references: [id], map: "Department_costCenterId_fkey")
   parent                    Department?         @relation("DeptHierarchy", fields: [parentId], references: [id], map: "Department_parentId_fkey")
   children                  Department[]        @relation("DeptHierarchy")
@@ -91,6 +93,7 @@ model Department {
   Position                  Position[]
 
   @@unique([companyId, code], map: "Department_companyId_code_key")
+  @@index([businessUnitId], map: "Department_businessUnitId_idx")
   @@map("aura_department")
 }
 

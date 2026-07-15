@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { SidebarMenu, TopNav } from '@aura/ui/components/menu';
 import { RightPanel } from '@aura/ui/components/layout';
 import { Info } from 'lucide-react';
@@ -62,6 +62,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
   const pathname = usePathname() || '';
+  const router = useRouter();
   const moduleSegment = pathname.split('/').filter(Boolean)[1];
   const isPreviewModule = !!moduleSegment && PREVIEW_MODULES.has(moduleSegment);
 
@@ -124,13 +125,13 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top Navigation */}
-        <TopNav isDark={isDark} onThemeToggle={toggleTheme} />
+        <TopNav
+          isDark={isDark}
+          onThemeToggle={toggleTheme}
           onSearchClick={() => setSearchOpen(true)}
           onAIAssistantClick={handleAIAssistantClick}
           onHelpClick={handleHelpClick}
           onSignOut={handleSignOut}
-          isDark={isDark}
-          onThemeToggle={toggleTheme}
           user={currentUser}
         />
 
@@ -163,7 +164,9 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider>
-      <DashboardLayoutInner>{children}</DashboardLayoutInner>
+      <SearchProvider>
+        <DashboardLayoutInner>{children}</DashboardLayoutInner>
+      </SearchProvider>
     </ThemeProvider>
   );
 }
