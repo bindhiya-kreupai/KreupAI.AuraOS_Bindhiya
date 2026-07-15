@@ -119,7 +119,7 @@ class TaAuditChecklistService {
     },
     auth: AuthContext
   ) {
-    return (prisma as any).taAuditChecklistItem.upsert({
+    return prisma.taAuditChecklistItem.upsert({
       where: {
         aura_ta_audit_checklist_item_unique: {
           tenantId: auth.tenantId,
@@ -153,7 +153,7 @@ class TaAuditChecklistService {
     notes: string | undefined,
     auth: AuthContext
   ) {
-    return (prisma as any).taAuditChecklistItem.update({
+    return prisma.taAuditChecklistItem.update({
       where: { id },
       data: {
         lastReviewedAt: new Date(),
@@ -165,7 +165,7 @@ class TaAuditChecklistService {
   }
 
   async list(tenantId: string, filter: { stage?: string; category?: string } = {}) {
-    return (prisma as any).taAuditChecklistItem.findMany({
+    return prisma.taAuditChecklistItem.findMany({
       where: {
         tenantId,
         status: 'ACTIVE',
@@ -178,18 +178,18 @@ class TaAuditChecklistService {
   }
 
   async overdueCount(tenantId: string, now: Date = new Date()): Promise<number> {
-    const rows = await (prisma as any).taAuditChecklistItem.findMany({
+    const rows = await prisma.taAuditChecklistItem.findMany({
       where: { tenantId, status: 'ACTIVE' },
       select: { lastReviewedAt: true },
     });
-    return rows.filter((r: any) => {
+    return rows.filter((r) => {
       const last = r.lastReviewedAt ? new Date(r.lastReviewedAt).getTime() : 0;
       return (now.getTime() - last) / 86_400_000 > 35;
     }).length;
   }
 
   async failingHighOrCriticalCount(tenantId: string): Promise<number> {
-    return (prisma as any).taAuditChecklistItem.count({
+    return prisma.taAuditChecklistItem.count({
       where: {
         tenantId,
         status: 'ACTIVE',
@@ -200,9 +200,7 @@ class TaAuditChecklistService {
   }
 
   async stageBreakdown(tenantId: string) {
-    const rows: Array<{ stage: string; lastResult: string | null }> = await (
-      prisma as any
-    ).taAuditChecklistItem.findMany({
+    const rows = await prisma.taAuditChecklistItem.findMany({
       where: { tenantId, status: 'ACTIVE' },
       select: { stage: true, lastResult: true },
     });
@@ -242,7 +240,7 @@ class TaRiskService {
   ) {
     const score =
       Math.max(1, Math.min(5, input.likelihood)) * Math.max(1, Math.min(5, input.impact));
-    return (prisma as any).taRiskEntry.upsert({
+    return prisma.taRiskEntry.upsert({
       where: {
         aura_ta_risk_entry_unique: {
           tenantId: auth.tenantId,
@@ -255,7 +253,7 @@ class TaRiskService {
   }
 
   async close(id: string, _auth: AuthContext) {
-    return (prisma as any).taRiskEntry.update({
+    return prisma.taRiskEntry.update({
       where: { id },
       data: { status: 'CLOSED' },
     });
@@ -274,12 +272,12 @@ class TaRiskService {
     };
     const page = normalisePaging(paging);
     const [items, total] = await Promise.all([
-      (prisma as any).taRiskEntry.findMany({
+      prisma.taRiskEntry.findMany({
         where,
         orderBy: { score: 'desc' },
         ...prismaPageArgs(page),
       }),
-      (prisma as any).taRiskEntry.count({ where }),
+      prisma.taRiskEntry.count({ where }),
     ]);
     return buildPaginatedResult(items, total, page);
   }
@@ -292,10 +290,10 @@ class TaComplianceCertificateService {
     const tenantId = auth.tenantId;
     const [checklistTotal, checklistFailing, checklistOverdue, criticalRisksOpen, stageBreakdown] =
       await Promise.all([
-        (prisma as any).taAuditChecklistItem.count({ where: { tenantId, status: 'ACTIVE' } }),
+        prisma.taAuditChecklistItem.count({ where: { tenantId, status: 'ACTIVE' } }),
         taAuditChecklistService.failingHighOrCriticalCount(tenantId),
         taAuditChecklistService.overdueCount(tenantId),
-        (prisma as any).taRiskEntry.count({
+        prisma.taRiskEntry.count({
           where: { tenantId, status: 'OPEN', band: { in: ['HIGH', 'CRITICAL'] } },
         }),
         taAuditChecklistService.stageBreakdown(tenantId),
@@ -305,7 +303,7 @@ class TaComplianceCertificateService {
       checklistOverdue,
       criticalRisksOpen,
     });
-    return (prisma as any).taComplianceCertificate.upsert({
+    return prisma.taComplianceCertificate.upsert({
       where: { aura_ta_compliance_certificate_unique: { tenantId, period } },
       update: {
         checklistTotal,
@@ -340,12 +338,12 @@ class TaComplianceCertificateService {
     attestations: Array<{ field: string; value: string }>,
     auth: AuthContext
   ) {
-    const cert = await (prisma as any).taComplianceCertificate.findUnique({
+    const cert = await prisma.taComplianceCertificate.findUnique({
       where: { aura_ta_compliance_certificate_unique: { tenantId: auth.tenantId, period } },
     });
     if (!cert) throw new Error('certificate not found');
     if (cert.gatingReason) throw new Error('cannot sign while gated');
-    return (prisma as any).taComplianceCertificate.update({
+    return prisma.taComplianceCertificate.update({
       where: { aura_ta_compliance_certificate_unique: { tenantId: auth.tenantId, period } },
       data: {
         status: 'SIGNED',
@@ -357,7 +355,7 @@ class TaComplianceCertificateService {
   }
 
   async list(tenantId: string) {
-    return (prisma as any).taComplianceCertificate.findMany({
+    return prisma.taComplianceCertificate.findMany({
       where: { tenantId },
       orderBy: { period: 'desc' },
       take: 24,
