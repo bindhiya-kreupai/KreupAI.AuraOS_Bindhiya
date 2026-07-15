@@ -121,7 +121,7 @@ class TaAuditChecklistService {
   ) {
     return prisma.taAuditChecklistItem.upsert({
       where: {
-        aura_ta_audit_checklist_item_unique: {
+        tenantId_itemCode: {
           tenantId: auth.tenantId,
           itemCode: input.itemCode,
         },
@@ -242,7 +242,7 @@ class TaRiskService {
       Math.max(1, Math.min(5, input.likelihood)) * Math.max(1, Math.min(5, input.impact));
     return prisma.taRiskEntry.upsert({
       where: {
-        aura_ta_risk_entry_unique: {
+        tenantId_riskCode: {
           tenantId: auth.tenantId,
           riskCode: input.riskCode,
         },
@@ -304,7 +304,7 @@ class TaComplianceCertificateService {
       criticalRisksOpen,
     });
     return prisma.taComplianceCertificate.upsert({
-      where: { aura_ta_compliance_certificate_unique: { tenantId, period } },
+      where: { tenantId_period: { tenantId, period } },
       update: {
         checklistTotal,
         checklistFailing,
@@ -339,12 +339,12 @@ class TaComplianceCertificateService {
     auth: AuthContext
   ) {
     const cert = await prisma.taComplianceCertificate.findUnique({
-      where: { aura_ta_compliance_certificate_unique: { tenantId: auth.tenantId, period } },
+      where: { tenantId_period: { tenantId: auth.tenantId, period } },
     });
     if (!cert) throw new Error('certificate not found');
     if (cert.gatingReason) throw new Error('cannot sign while gated');
     return prisma.taComplianceCertificate.update({
-      where: { aura_ta_compliance_certificate_unique: { tenantId: auth.tenantId, period } },
+      where: { tenantId_period: { tenantId: auth.tenantId, period } },
       data: {
         status: 'SIGNED',
         attestationsJson: attestations as any,
