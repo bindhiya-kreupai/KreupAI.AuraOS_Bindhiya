@@ -208,8 +208,15 @@ export const GET = createProtectedRoute(
         const day = new Date(inst.createdAt).toISOString().slice(0, 10);
         dayMap.set(day, (dayMap.get(day) || 0) + 1);
       }
-      for (const [period, value] of dayMap) {
-        executionTrends.push({ period, value });
+
+      if (dayMap.size > 0) {
+        const dates = Array.from(dayMap.keys()).sort();
+        const start = new Date(dates[0]);
+        const end = new Date(dates[dates.length - 1]);
+        for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+          const key = d.toISOString().slice(0, 10);
+          executionTrends.push({ period: key, value: dayMap.get(key) || 0 });
+        }
       }
     }
 
