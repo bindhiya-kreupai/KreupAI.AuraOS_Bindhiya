@@ -33,30 +33,48 @@ export default function AIPathPredictionPage() {
         WorkflowService.getWorkflows(),
         WorkflowExecutionService.getExecutions(),
       ]);
-      const results: PathAnalysis[] = workflows.map((wf: any) => {
-        const wfExecs = executions.filter(
-          (e: any) => e.workflowId === wf.id || e.workflowName === wf.workflowName
-        );
-        const completed = wfExecs.filter(
-          (e: any) => e.status === 'completed' || e.status === 'approved'
-        );
-        const nodes = Array.isArray(wf.nodes) ? wf.nodes : [];
-        return {
-          id: wf.id,
-          name: wf.workflowName || 'Unnamed Workflow',
-          totalRuns: wfExecs.length,
-          successRate:
-            wfExecs.length > 0 ? ((completed.length / wfExecs.length) * 100).toFixed(1) : '0.0',
-          bottleneck:
-            nodes.length > 2
-              ? nodes[Math.floor(nodes.length / 2)]?.name || 'Middle step'
-              : nodes.length > 0
-                ? nodes[nodes.length - 1]?.name || 'Last step'
-                : 'N/A',
-          confidence: wfExecs.length >= 5 ? Math.min(95, 50 + wfExecs.length * 3) : 0,
-          nodeCount: nodes.length,
-        };
-      });
+
+      const executionWorkflowIds = new Set(
+        executions.map((e: any) => e.workflowId).filter(Boolean)
+      );
+
+      const workflowTypes = new Set([
+        'GENERIC',
+        'LEAVE_REQUEST',
+        'EXPENSE_CLAIM',
+        'PURCHASE_ORDER',
+        'ONBOARDING',
+        'OFFBOARDING',
+      ]);
+      const relevantWorkflows = workflows.filter(
+        (wf: any) => workflowTypes.has((wf as any).category) || executionWorkflowIds.has(wf.id)
+      );
+
+      const results: PathAnalysis[] = relevantWorkflows
+        .map((wf: any) => {
+          const wfExecs = executions.filter((e: any) => e.workflowId === wf.id);
+          const completed = wfExecs.filter(
+            (e: any) => e.status === 'completed' || e.status === 'approved'
+          );
+          const nodes = Array.isArray(wf.nodes) ? wf.nodes : [];
+          return {
+            id: wf.id,
+            name: wf.workflowName || 'Unnamed Workflow',
+            totalRuns: wfExecs.length,
+            successRate:
+              wfExecs.length > 0 ? ((completed.length / wfExecs.length) * 100).toFixed(1) : '0.0',
+            bottleneck:
+              nodes.length > 2
+                ? nodes[Math.floor(nodes.length / 2)]?.name || 'Middle step'
+                : nodes.length > 0
+                  ? nodes[nodes.length - 1]?.name || 'Last step'
+                  : 'N/A',
+            confidence: wfExecs.length >= 5 ? Math.min(95, 50 + wfExecs.length * 3) : 0,
+            nodeCount: nodes.length,
+          };
+        })
+        .filter((a: PathAnalysis) => a.totalRuns > 0);
+
       setAnalyses(results);
     } catch (error: any) {
       console.error('Failed to load path analyses:', error);
