@@ -35,15 +35,15 @@ export default function AIPathPredictionPage() {
       ]);
       const results: PathAnalysis[] = workflows.map((wf: any) => {
         const wfExecs = executions.filter(
-          (e: any) => e.definitionId === wf.id || e.workflowName === wf.name
+          (e: any) => e.workflowId === wf.id || e.workflowName === wf.workflowName
         );
         const completed = wfExecs.filter(
-          (e: any) => e.status === 'COMPLETED' || e.status === 'APPROVED'
+          (e: any) => e.status === 'completed' || e.status === 'approved'
         );
         const nodes = Array.isArray(wf.nodes) ? wf.nodes : [];
         return {
           id: wf.id,
-          name: wf.name || 'Unnamed Workflow',
+          name: wf.workflowName || 'Unnamed Workflow',
           totalRuns: wfExecs.length,
           successRate:
             wfExecs.length > 0 ? ((completed.length / wfExecs.length) * 100).toFixed(1) : '0.0',

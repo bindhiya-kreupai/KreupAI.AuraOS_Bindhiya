@@ -162,6 +162,11 @@ export default function ApprovalChainsPage() {
       dueHours: n.config?.dueHours || 24,
     }));
 
+    let triggerMeta: any = {};
+    try {
+      triggerMeta = c.triggerEvent ? JSON.parse(c.triggerEvent) : {};
+    } catch {}
+
     return {
       id: c.id,
       name: c.name || c.chainName || 'Unnamed Chain',
@@ -169,8 +174,8 @@ export default function ApprovalChainsPage() {
       processType: c.processType || 'APPROVAL_CHAIN',
       isActive: c.isActive ?? true,
       levels,
-      isSequential: c.isSequential ?? true,
-      requireAllLevels: c.requireAllLevels ?? true,
+      isSequential: triggerMeta.isSequential ?? c.isSequential ?? true,
+      requireAllLevels: triggerMeta.requireAllLevels ?? c.requireAllLevels ?? true,
       nodes: c.nodes,
       edges: c.edges,
       version: c.version,
@@ -218,6 +223,10 @@ export default function ApprovalChainsPage() {
       trigger: 'EVENT',
       nodes,
       edges,
+      triggerEvent: JSON.stringify({
+        isSequential: form.isSequential,
+        requireAllLevels: form.requireAllLevels,
+      }),
     };
   };
 

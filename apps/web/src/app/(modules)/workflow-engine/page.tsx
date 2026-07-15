@@ -58,15 +58,15 @@ export default function WorkflowEnginePage() {
       ]);
 
       const completed = executions.filter(
-        (e) => e.status === 'COMPLETED' || e.status === 'APPROVED'
+        (e) => e.status === 'completed' || e.status === 'approved'
       ).length;
       const failed = executions.filter(
-        (e) => e.status === 'FAILED' || e.status === 'REJECTED'
+        (e) => e.status === 'failed' || e.status === 'rejected'
       ).length;
       const total = executions.length;
       const durations = executions
-        .filter((e) => e.startedAt && e.completedAt)
-        .map((e) => (new Date(e.completedAt).getTime() - new Date(e.startedAt).getTime()) / 1000);
+        .filter((e) => e.startDate && e.endDate)
+        .map((e) => (new Date(e.endDate).getTime() - new Date(e.startDate).getTime()) / 1000);
       const avgDuration =
         durations.length > 0
           ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length)
@@ -75,7 +75,7 @@ export default function WorkflowEnginePage() {
       setActiveExecutions(executions.slice(0, 5));
       setStats({
         total: workflows.length,
-        active: executions.filter((e) => e.status === 'RUNNING' || e.status === 'IN_PROGRESS')
+        active: executions.filter((e) => e.status === 'running' || e.status === 'in_progress')
           .length,
         successRate: total > 0 ? Math.round((completed / total) * 1000) / 10 : 0,
         avgDuration,
@@ -91,7 +91,7 @@ export default function WorkflowEnginePage() {
   const filteredExecutions = activeExecutions.filter((exec) => {
     const matchesSearch =
       searchQuery === '' ||
-      (exec.definition?.name || '')?.toLowerCase().includes(searchQuery.toLowerCase());
+      (exec.workflowName || '')?.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === null || exec.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -188,7 +188,7 @@ export default function WorkflowEnginePage() {
                 />
               </button>
               <button
-                onClick={() => setStatusFilter(statusFilter === null ? 'RUNNING' : null)}
+                onClick={() => setStatusFilter(statusFilter === null ? 'running' : null)}
                 className={cn(
                   'p-1.5 rounded-lg transition-colors',
                   statusFilter
@@ -234,10 +234,10 @@ export default function WorkflowEnginePage() {
                       >
                         <td className="px-6 py-4">
                           <div className="font-bold text-ink-black dark:text-pearl text-sm">
-                            {exec.definition?.name || 'Unnamed'}
+                            {exec.workflowName || 'Unnamed'}
                           </div>
                           <div className="text-[10px] text-silver-mist font-mono">
-                            {exec.referenceNumber || exec.id?.slice(0, 8) || ''}
+                            {exec.executionCode || exec.id?.slice(0, 8) || ''}
                           </div>
                         </td>
                         <td className="px-6 py-4">
@@ -245,7 +245,7 @@ export default function WorkflowEnginePage() {
                             <StepNode
                               icon={Clock}
                               label="Initiated"
-                              status={exec.status === 'INITIATED' ? 'active' : 'done'}
+                              status={exec.status === 'initiated' ? 'active' : 'done'}
                               active
                             />
                             <div className="w-12 h-px bg-slate-200 dark:bg-slate-800" />
@@ -253,9 +253,9 @@ export default function WorkflowEnginePage() {
                               icon={Settings2}
                               label="In Progress"
                               status={
-                                exec.status === 'IN_PROGRESS'
+                                exec.status === 'in_progress'
                                   ? 'active'
-                                  : exec.status === 'INITIATED'
+                                  : exec.status === 'initiated'
                                     ? 'pending'
                                     : 'done'
                               }
@@ -266,9 +266,9 @@ export default function WorkflowEnginePage() {
                               icon={Zap}
                               label="Approval"
                               status={
-                                exec.status === 'PENDING_APPROVAL'
+                                exec.status === 'pending_approval'
                                   ? 'active'
-                                  : ['APPROVED', 'REJECTED', 'CANCELLED', 'FAILED'].includes(
+                                  : ['approved', 'rejected', 'cancelled', 'failed'].includes(
                                         exec.status
                                       )
                                     ? 'done'
@@ -279,14 +279,14 @@ export default function WorkflowEnginePage() {
                             <StepNode
                               icon={Layers}
                               label={
-                                exec.status === 'APPROVED'
+                                exec.status === 'approved'
                                   ? 'Approved'
-                                  : exec.status === 'REJECTED'
+                                  : exec.status === 'rejected'
                                     ? 'Rejected'
                                     : 'Complete'
                               }
                               status={
-                                ['APPROVED', 'REJECTED', 'CANCELLED', 'FAILED'].includes(
+                                ['approved', 'rejected', 'cancelled', 'failed'].includes(
                                   exec.status
                                 )
                                   ? 'done'
@@ -295,16 +295,16 @@ export default function WorkflowEnginePage() {
                             />
                           </div>
                           <div className="text-[10px] text-silver-mist mt-1 italic">
-                            Currently at: {exec.currentNode || exec.status || '-'}
+                            Currently at: {exec.currentNodeName || exec.status || '-'}
                           </div>
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
                             <div className="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-[10px] font-bold">
-                              {exec.submittedBy?.charAt(0) || 'U'}
+                              {exec.initiatorId?.charAt(0) || 'U'}
                             </div>
                             <span className="text-xs font-medium text-ink-black dark:text-pearl">
-                              {exec.submittedBy || 'System'}
+                              {exec.initiatorId || 'System'}
                             </span>
                           </div>
                         </td>
@@ -312,7 +312,7 @@ export default function WorkflowEnginePage() {
                           <span
                             className={cn(
                               'inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold',
-                              exec.status === 'RUNNING'
+                              exec.status === 'running'
                                 ? 'bg-emerald-50 text-emerald-600 border border-emerald-100'
                                 : 'bg-slate-50 text-slate-600 border border-slate-100'
                             )}

@@ -24,13 +24,71 @@ export class WorkflowService {
     return (a?.data ?? a) as T;
   }
 
+  private static mapDefinition(d: any): Workflow {
+    return {
+      id: d.id,
+      workflowCode: d.id?.slice(0, 8) || '',
+      workflowName: d.name || '',
+      category: (d.processType || 'custom') as any,
+      status: (d.status || 'DRAFT').toLowerCase() as any,
+      description: d.description || '',
+      version: String(d.version || 1),
+      nodes: Array.isArray(d.nodes) ? d.nodes : [],
+      edges: Array.isArray(d.edges) ? d.edges : [],
+      startNodeId: '',
+      endNodeIds: [],
+      triggers: d.trigger
+        ? [
+            {
+              id: '1',
+              triggerType: d.trigger.toLowerCase(),
+              enabled: true,
+              config: { type: d.trigger.toLowerCase() } as any,
+            },
+          ]
+        : [],
+      allowParallel: false,
+      maxConcurrentExecutions: 10,
+      executionTimeout: 30,
+      retryPolicy: {
+        maxRetries: 3,
+        retryDelay: 5,
+        retryableErrors: [],
+        backoffStrategy: 'exponential',
+      },
+      inputSchema: [],
+      outputSchema: [],
+      variables: [],
+      allowedRoles: [],
+      allowedUsers: [],
+      isPublic: false,
+      notificationSettings: {
+        notifyOnStart: false,
+        notifyOnCompletion: true,
+        notifyOnFailure: true,
+        notifyOnApproval: false,
+        notifyOnEscalation: false,
+        recipients: [],
+        channels: ['in_app'],
+      },
+      totalExecutions: d._count?.instances || 0,
+      successfulExecutions: 0,
+      failedExecutions: 0,
+      averageExecutionTime: 0,
+      isDraft: (d.status || 'DRAFT').toUpperCase() === 'DRAFT',
+      createdBy: d.createdBy || '',
+      createdByName: d.createdBy || '',
+      createdDate: d.createdAt || '',
+      lastModified: d.updatedAt || '',
+      tags: [],
+    } as Workflow;
+  }
+
   static async getWorkflows(): Promise<Workflow[]> {
     const res = await APIClient.get<any>('/workflow-engine/definitions');
-    const data = this.unwrap<Workflow[] | { workflows: Workflow[] }>(res);
-    if (Array.isArray(data)) return data;
-    if (data && typeof data === 'object' && 'workflows' in data)
-      return (data as any).workflows || [];
-    return [];
+    const data = this.unwrap<any>(res);
+    const list = Array.isArray(data) ? data : data?.workflows || data?.definitions || [];
+    return list.map((d: any) => this.mapDefinition(d));
   }
 
   static async getWorkflowById(id: string): Promise<Workflow | null> {
@@ -93,13 +151,34 @@ export class WorkflowExecutionService {
     return (a?.data ?? a) as T;
   }
 
+  private static mapInstance(d: any): WorkflowExecution {
+    return {
+      id: d.id,
+      executionCode: d.referenceNumber || d.id?.slice(0, 8) || '',
+      workflowId: d.definitionId || '',
+      workflowName: d.definition?.name || '',
+      workflowVersion: String(d.definitionVersion || 1),
+      initiatorId: d.submittedBy || '',
+      initiatorName: d.submittedBy || '',
+      initiatedDate: d.submittedAt || d.createdAt || '',
+      status: (d.status || 'INITIATED').toLowerCase() as any,
+      currentNodeId: d.currentStepId || undefined,
+      currentNodeName: d.currentNode || undefined,
+      input: d.snapshotData || {},
+      variables: d.variables || {},
+      steps: [],
+      startDate: d.startedAt || d.submittedAt || d.createdAt || '',
+      endDate: d.completedAt || undefined,
+      metadata: {},
+      logs: [],
+    } as WorkflowExecution;
+  }
+
   static async getExecutions(): Promise<WorkflowExecution[]> {
     const res = await APIClient.get<any>('/workflow-engine/instances', { limit: 100 });
-    const data = this.unwrap<WorkflowExecution[] | { instances: WorkflowExecution[] }>(res);
-    if (Array.isArray(data)) return data;
-    if (data && typeof data === 'object' && 'instances' in data)
-      return (data as any).instances || [];
-    return [];
+    const data = this.unwrap<any>(res);
+    const list = Array.isArray(data) ? data : data?.instances || [];
+    return list.map((d: any) => this.mapInstance(d));
   }
 
   static async getExecutionById(id: string): Promise<WorkflowExecution | null> {
@@ -272,6 +351,7 @@ export class ApprovalChainService {
       nodes?: any[];
       edges?: any[];
       isActive?: boolean;
+      triggerEvent?: string;
     }
   ): Promise<ApprovalChain> {
     const res = await APIClient.post<any>('/workflow-engine/definitions', {
@@ -281,6 +361,7 @@ export class ApprovalChainService {
       trigger: 'EVENT',
       nodes: data.nodes || [],
       edges: data.edges || [],
+      triggerEvent: data.triggerEvent,
     });
     return this.unwrap<ApprovalChain>(res);
   }
@@ -292,6 +373,7 @@ export class ApprovalChainService {
       nodes: updates.nodes || updates.levels,
       edges: updates.edges || [],
       isActive: updates.isActive,
+      triggerEvent: (updates as any).triggerEvent,
     });
     return this.unwrap<ApprovalChain>(res);
   }
