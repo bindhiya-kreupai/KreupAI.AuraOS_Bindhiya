@@ -75,6 +75,7 @@ model Department {
   name                      String
   parentId                  String?
   costCenterId              String?
+  businessUnitId            String?
   createdAt                 DateTime            @default(now())
   updatedAt                 DateTime            @default(now()) @updatedAt
   createdBy                 String?
@@ -85,12 +86,14 @@ model Department {
   costCenter                CostCenter?         @relation(fields: [costCenterId], references: [id], map: "Department_costCenterId_fkey")
   parent                    Department?         @relation("DeptHierarchy", fields: [parentId], references: [id], map: "Department_parentId_fkey")
   children                  Department[]        @relation("DeptHierarchy")
+  businessUnit              BusinessUnit?       @relation(fields: [businessUnitId], references: [id], map: "Department_businessUnitId_fkey")
   employees                 Employee[]
   newEmploymentHistory      EmploymentHistory[] @relation("NewDepartment")
   previousEmploymentHistory EmploymentHistory[] @relation("PreviousDepartment")
   Position                  Position[]
 
   @@unique([companyId, code], map: "Department_companyId_code_key")
+  @@index([businessUnitId], map: "Department_businessUnitId_idx")
   @@map("aura_department")
 }
 
@@ -17040,4 +17043,107 @@ model AutomotivePartRequisition {
   updatedAt  DateTime @default(now()) @map("updated_at")
 
   @@map("aura_automotive_part_requisition")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EPIC-03 / EPIC-04 / EPIC-05  Talent Acquisition Compliance Overlay
+// Previously absent — service code in talent-acquisition-compliance/index.ts
+// referenced these via (prisma as any) bypass. Adding proper model definitions
+// restores full Prisma Client type-safety and prevents runtime P2021 failures.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model TaAuditChecklistItem {
+  id             String    @id @default(uuid())
+  tenantId       String
+  itemCode       String
+  label          String
+  stage          String    // PLANNING | SOURCING | SELECTION | OFFER | PRE_EMPLOYMENT
+  category       String    // 25-category TA taxonomy
+  country        String?   // null = global; ISO-3166 alpha-2 = country-specific rule
+  expectation    String?   // human-readable control expectation text
+  severity       String    @default("MEDIUM") // LOW | MEDIUM | HIGH | CRITICAL
+  isMandatory    Boolean   @default(false)
+  sortOrder      Int       @default(0)
+  status         String    @default("ACTIVE") // ACTIVE | DEPRECATED
+  lastReviewedAt DateTime?
+  lastReviewedBy String?
+  lastResult     String?   // PASS | FAIL | OBSERVATION | null (not yet reviewed)
+  notes          String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  createdBy      String?
+  updatedBy      String?
+  deletedAt      DateTime?
+  isDeleted      Boolean   @default(false)
+
+  @@unique([tenantId, itemCode], map: "aura_ta_audit_checklist_item_unique")
+  @@index([tenantId], map: "aura_ta_audit_checklist_item_tenant_idx")
+  @@index([tenantId, stage], map: "aura_ta_audit_checklist_item_stage_idx")
+  @@index([tenantId, category], map: "aura_ta_audit_checklist_item_category_idx")
+  @@index([tenantId, status, severity], map: "aura_ta_audit_checklist_item_severity_idx")
+  @@index([lastResult], map: "aura_ta_audit_checklist_item_result_idx")
+  @@map("aura_ta_audit_checklist_item")
+}
+
+model TaRiskEntry {
+  id         String    @id @default(uuid())
+  tenantId   String
+  riskCode   String
+  title      String
+  stage      String    // PLANNING | SOURCING | SELECTION | OFFER | PRE_EMPLOYMENT
+  category   String    // maps to 25-category TA taxonomy
+  country    String?
+  likelihood Int       // 1-5 scale
+  impact     Int       // 1-5 scale
+  score      Int       // likelihood × impact (1-25)
+  band       String    // LOW | MEDIUM | HIGH | CRITICAL
+  ownerId    String?   // Employee/User id of risk owner
+  mitigation String?
+  controlRef String?
+  status     String    @default("OPEN") // OPEN | MITIGATED | ACCEPTED | CLOSED
+  reviewedAt DateTime?
+  reviewedBy String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  createdBy  String?
+  updatedBy  String?
+  deletedAt  DateTime?
+  isDeleted  Boolean   @default(false)
+
+  @@unique([tenantId, riskCode], map: "aura_ta_risk_entry_unique")
+  @@index([tenantId], map: "aura_ta_risk_entry_tenant_idx")
+  @@index([tenantId, band], map: "aura_ta_risk_entry_band_idx")
+  @@index([tenantId, status], map: "aura_ta_risk_entry_status_idx")
+  @@index([tenantId, stage], map: "aura_ta_risk_entry_stage_idx")
+  @@map("aura_ta_risk_entry")
+}
+
+model TaComplianceCertificate {
+  id                 String    @id @default(uuid())
+  tenantId           String
+  period             String    // YYYY-MM format
+  status             String    @default("DRAFT") // DRAFT | SIGNED
+  checklistTotal     Int       @default(0)
+  checklistFailing   Int       @default(0)
+  checklistOverdue   Int       @default(0)
+  criticalRisksOpen  Int       @default(0)
+  stagesCovered      Int       @default(0)
+  stageBreakdownJson Json?     // snapshot of stage breakdown at generation time
+  gatingReason       String?   // null = signable; non-null = blocked with reason
+  metricsJson        Json?     // extended KPI snapshot at generation time
+  attestationsJson   Json?     // [{ field, value }] recorded at sign time
+  generatedAt        DateTime
+  signedAt           DateTime?
+  signedBy           String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  createdBy          String?
+  updatedBy          String?
+  deletedAt          DateTime?
+  isDeleted          Boolean   @default(false)
+
+  @@unique([tenantId, period], map: "aura_ta_compliance_certificate_unique")
+  @@index([tenantId], map: "aura_ta_compliance_certificate_tenant_idx")
+  @@index([tenantId, status], map: "aura_ta_compliance_certificate_status_idx")
+  @@map("aura_ta_compliance_certificate")
 }
