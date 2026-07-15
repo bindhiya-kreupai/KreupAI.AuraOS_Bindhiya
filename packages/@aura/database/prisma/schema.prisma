@@ -76,7 +76,6 @@ model Department {
   name                      String
   parentId                  String?
   costCenterId              String?
-  businessUnitId            String?
   createdAt                 DateTime            @default(now())
   updatedAt                 DateTime            @default(now()) @updatedAt
   createdBy                 String?
@@ -88,7 +87,6 @@ model Department {
   costCenter                CostCenter?         @relation(fields: [costCenterId], references: [id], map: "Department_costCenterId_fkey")
   parent                    Department?         @relation("DeptHierarchy", fields: [parentId], references: [id], map: "Department_parentId_fkey")
   children                  Department[]        @relation("DeptHierarchy")
-  businessUnit              BusinessUnit?       @relation(fields: [businessUnitId], references: [id], map: "Department_businessUnitId_fkey")
   employees                 Employee[]
   newEmploymentHistory      EmploymentHistory[] @relation("NewDepartment")
   previousEmploymentHistory EmploymentHistory[] @relation("PreviousDepartment")
@@ -17059,17 +17057,17 @@ model TaAuditChecklistItem {
   tenantId       String
   itemCode       String
   label          String
-  stage          String    // PLANNING | SOURCING | SELECTION | OFFER | PRE_EMPLOYMENT
-  category       String    // 25-category TA taxonomy
-  country        String?   // null = global; ISO-3166 alpha-2 = country-specific rule
-  expectation    String?   // human-readable control expectation text
+  stage          String // PLANNING | SOURCING | SELECTION | OFFER | PRE_EMPLOYMENT
+  category       String // 25-category TA taxonomy
+  country        String? // null = global; ISO-3166 alpha-2 = country-specific rule
+  expectation    String? // human-readable control expectation text
   severity       String    @default("MEDIUM") // LOW | MEDIUM | HIGH | CRITICAL
   isMandatory    Boolean   @default(false)
   sortOrder      Int       @default(0)
   status         String    @default("ACTIVE") // ACTIVE | DEPRECATED
   lastReviewedAt DateTime?
   lastReviewedBy String?
-  lastResult     String?   // PASS | FAIL | OBSERVATION | null (not yet reviewed)
+  lastResult     String? // PASS | FAIL | OBSERVATION | null (not yet reviewed)
   notes          String?
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
@@ -17092,14 +17090,14 @@ model TaRiskEntry {
   tenantId   String
   riskCode   String
   title      String
-  stage      String    // PLANNING | SOURCING | SELECTION | OFFER | PRE_EMPLOYMENT
-  category   String    // maps to 25-category TA taxonomy
+  stage      String // PLANNING | SOURCING | SELECTION | OFFER | PRE_EMPLOYMENT
+  category   String // maps to 25-category TA taxonomy
   country    String?
-  likelihood Int       // 1-5 scale
-  impact     Int       // 1-5 scale
-  score      Int       // likelihood × impact (1-25)
-  band       String    // LOW | MEDIUM | HIGH | CRITICAL
-  ownerId    String?   // Employee/User id of risk owner
+  likelihood Int // 1-5 scale
+  impact     Int // 1-5 scale
+  score      Int // likelihood × impact (1-25)
+  band       String // LOW | MEDIUM | HIGH | CRITICAL
+  ownerId    String? // Employee/User id of risk owner
   mitigation String?
   controlRef String?
   status     String    @default("OPEN") // OPEN | MITIGATED | ACCEPTED | CLOSED
@@ -17123,17 +17121,17 @@ model TaRiskEntry {
 model TaComplianceCertificate {
   id                 String    @id @default(uuid())
   tenantId           String
-  period             String    // YYYY-MM format
+  period             String // YYYY-MM format
   status             String    @default("DRAFT") // DRAFT | SIGNED
   checklistTotal     Int       @default(0)
   checklistFailing   Int       @default(0)
   checklistOverdue   Int       @default(0)
   criticalRisksOpen  Int       @default(0)
   stagesCovered      Int       @default(0)
-  stageBreakdownJson Json?     // snapshot of stage breakdown at generation time
-  gatingReason       String?   // null = signable; non-null = blocked with reason
-  metricsJson        Json?     // extended KPI snapshot at generation time
-  attestationsJson   Json?     // [{ field, value }] recorded at sign time
+  stageBreakdownJson Json? // snapshot of stage breakdown at generation time
+  gatingReason       String? // null = signable; non-null = blocked with reason
+  metricsJson        Json? // extended KPI snapshot at generation time
+  attestationsJson   Json? // [{ field, value }] recorded at sign time
   generatedAt        DateTime
   signedAt           DateTime?
   signedBy           String?
