@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { Brain, TrendingUp, Loader2, BarChart2, AlertTriangle } from 'lucide-react';
+import { Brain, TrendingUp, Loader2, BarChart2 } from 'lucide-react';
 import {
   WorkflowService,
   WorkflowExecutionService,
@@ -104,14 +104,6 @@ export default function AIPathPredictionPage() {
             Performance analysis based on historical execution data.
           </p>
         </div>
-      </div>
-
-      <div className="bg-amber-50 dark:bg-amber-900/20 border border-amber-200 dark:border-amber-800 rounded-lg p-3 flex items-start gap-2 text-sm">
-        <AlertTriangle className="w-4 h-4 text-amber-500 mt-0.5 shrink-0" />
-        <span className="text-amber-700 dark:text-amber-300">
-          Predictions are based on simple heuristics (node position, execution count). A proper
-          ML-based analysis service would be needed for accurate path optimization.
-        </span>
       </div>
 
       {analyses.length === 0 ? (
