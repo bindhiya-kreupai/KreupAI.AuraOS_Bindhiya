@@ -18,7 +18,7 @@ export class ComplianceCalendarService {
     const created: string[] = [];
     for (const c of CATEGORY_SEEDS) {
       const existing = await (prisma as any).calendarCategory.findUnique({
-        where: { aura_calendar_category_unique: { tenantId: auth.tenantId, code: c.code } },
+        where: { tenantId_code: { tenantId: auth.tenantId, code: c.code } },
       });
       if (existing) continue;
       await (prisma as any).calendarCategory.create({
@@ -33,7 +33,7 @@ export class ComplianceCalendarService {
     const created: string[] = [];
     for (const r of RECURRENCE_RULE_SEEDS) {
       const existing = await (prisma as any).recurrenceRule.findUnique({
-        where: { aura_recurrence_rule_unique: { tenantId: auth.tenantId, code: r.code } },
+        where: { tenantId_code: { tenantId: auth.tenantId, code: r.code } },
       });
       if (existing) continue;
       await (prisma as any).recurrenceRule.create({
@@ -297,7 +297,7 @@ export class ComplianceCalendarService {
     for (const t of overdue as Array<Record<string, unknown>>) {
       const rule = await (prisma as any).recurrenceRule.findUnique({
         where: {
-          aura_recurrence_rule_unique: { tenantId: auth.tenantId, code: (t as any).ruleCode },
+          tenantId_code: { tenantId: auth.tenantId, code: (t as any).ruleCode },
         },
       });
       await (prisma as any).complianceTask.update({
@@ -330,7 +330,7 @@ export class ComplianceCalendarService {
       if (!(t as any).ruleCode) continue;
       const rule = await (prisma as any).recurrenceRule.findUnique({
         where: {
-          aura_recurrence_rule_unique: { tenantId: auth.tenantId, code: (t as any).ruleCode },
+          tenantId_code: { tenantId: auth.tenantId, code: (t as any).ruleCode },
         },
       });
       if (!rule) continue;

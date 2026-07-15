@@ -33,16 +33,18 @@ describe('security/field-security route', () => {
   });
 
   it('seeds default rules when a role has none', async () => {
-    p.fieldSecurityRule.findMany.mockResolvedValueOnce([]).mockResolvedValueOnce([
-      {
-        id: 'r1',
-        roleName: 'HR Manager',
-        entityType: 'Employee',
-        fieldName: 'salary',
-        access: 'view',
-        masked: true,
-      },
-    ]);
+    p.fieldSecurityRule.findMany
+      .mockResolvedValueOnce([])
+      .mockResolvedValueOnce([
+        {
+          id: 'r1',
+          roleName: 'HR Manager',
+          entityType: 'Employee',
+          fieldName: 'salary',
+          access: 'view',
+          masked: true,
+        },
+      ]);
     p.fieldSecurityRule.createMany.mockResolvedValue({ count: 6 });
 
     const req = new NextRequest(

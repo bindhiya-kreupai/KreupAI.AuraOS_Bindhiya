@@ -3,6 +3,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth/enhanced-middleware';
+import { Resource, Action, requirePermission } from '@/lib/auth';
 import { logger } from '@/lib/logger';
 
 /**
@@ -25,12 +26,8 @@ export const GET = withEnhancedAuth(
   async (request: NextRequest, { user, permissions, params }: any) => {
     try {
       // Check permission
-      if (!permissions.includes('users:read') && !permissions.includes('users:manage')) {
-        return NextResponse.json(
-          { success: false, error: 'Insufficient permissions' },
-          { status: 403 }
-        );
-      }
+      const readError = requirePermission(Resource.USERS, Action.READ, permissions);
+      if (readError) return readError;
 
       const userId = params.id;
 
@@ -103,12 +100,8 @@ export const POST = withEnhancedAuth(
   async (request: NextRequest, { user, permissions, params }: any) => {
     try {
       // Check permission
-      if (!permissions.includes('users:update') && !permissions.includes('users:manage')) {
-        return NextResponse.json(
-          { success: false, error: 'Insufficient permissions' },
-          { status: 403 }
-        );
-      }
+      const updateError = requirePermission(Resource.USERS, Action.UPDATE, permissions);
+      if (updateError) return updateError;
 
       const userId = params.id;
 
@@ -128,11 +121,11 @@ export const POST = withEnhancedAuth(
         return NextResponse.json({ success: false, error: 'User not found' }, { status: 404 });
       }
 
-      // Verify role exists and belongs to tenant
+      // Verify role exists — allow system-wide roles (null tenantId) + tenant-owned roles
       const role = await prisma.role.findFirst({
         where: {
           id: validatedData.roleId,
-          tenantId: user.tenantId,
+          OR: [{ tenantId: null }, { tenantId: user.tenantId }],
           isActive: true,
         },
       });
@@ -246,12 +239,8 @@ export const DELETE = withEnhancedAuth(
   async (request: NextRequest, { user, permissions, params }: any) => {
     try {
       // Check permission
-      if (!permissions.includes('users:update') && !permissions.includes('users:manage')) {
-        return NextResponse.json(
-          { success: false, error: 'Insufficient permissions' },
-          { status: 403 }
-        );
-      }
+      const deleteError = requirePermission(Resource.USERS, Action.UPDATE, permissions);
+      if (deleteError) return deleteError;
 
       const userId = params.id;
 

@@ -2,7 +2,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { ImportDialog, type ImportPreview } from '@aura/ui/components/ui/import-dialog';
+import { ImportDialog, type ImportPreview } from '@aura/ui';
 
 function makePreview(overrides: Partial<ImportPreview> = {}): ImportPreview {
   return {

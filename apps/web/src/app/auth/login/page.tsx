@@ -15,6 +15,26 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
+  const [ssoLoading, setSsoLoading] = useState(false);
+
+  const handleSSOLogin = async () => {
+    setSsoLoading(true);
+    setErrorMsg(null);
+    try {
+      const res = await fetch('/api/public/sso-config');
+      const json = await res.json();
+      if (json.success && json.data?.enabled && json.data?.ssoUrl) {
+        window.location.href = json.data.ssoUrl;
+      } else {
+        setErrorMsg('SSO is not configured. Please contact your administrator.');
+      }
+    } catch {
+      setErrorMsg('Failed to check SSO configuration');
+    } finally {
+      setSsoLoading(false);
+    }
+  };
+
   const isDev = process.env.NODE_ENV !== 'production';
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -229,7 +249,11 @@ export default function LoginPage() {
               </svg>
               Google
             </button>
-            <button className="flex items-center justify-center px-4 py-2 border border-cloud dark:border-nebula-purple rounded-lg hover:bg-cloud/50 dark:hover:bg-stellar-blue/10 transition-colors">
+            <button
+              onClick={handleSSOLogin}
+              disabled={ssoLoading}
+              className="flex items-center justify-center px-4 py-2 border border-cloud dark:border-nebula-purple rounded-lg hover:bg-cloud/50 dark:hover:bg-stellar-blue/10 transition-colors disabled:opacity-50"
+            >
               <svg
                 className="w-5 h-5 mr-2 text-ink-black dark:text-pearl"
                 fill="currentColor"
@@ -237,7 +261,7 @@ export default function LoginPage() {
               >
                 <path d="M13.43 12v3.36C18.46 15.36 22 10.74 22 5.5c0-1.09-.17-2.12-.48-3.1H12v3.91h3.9c-.43 2.16-2.31 3.79-4.55 3.79-2.57 0-4.65-2.08-4.65-4.65S8.82.8 11.39.8c1.13 0 2.17.41 2.97 1.08l2.91-2.91C15.65.91 13.63 0 11.39 0 5.1 0 0 5.1 0 11.39s5.1 11.39 11.39 11.39c6.29 0 11.39-5.1 11.39-11.39H13.43z" />
               </svg>
-              SSO
+              {ssoLoading ? 'Redirecting...' : 'SSO'}
             </button>
           </div>
         </div>

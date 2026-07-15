@@ -36,7 +36,10 @@ export default function GracePage() {
     if (expiringOnly) url.searchParams.set('expiringWithinDays', '7');
     const r = await fetch(url.toString());
     const p = await r.json();
-    if (p.success) setRows(p.data ?? []);
+
+    if (p.success) {
+      setRows(p.data?.items ?? []);
+    }
   }
   useEffect(() => {
     load();

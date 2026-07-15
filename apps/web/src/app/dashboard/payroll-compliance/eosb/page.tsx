@@ -3,10 +3,16 @@
 import React from 'react';
 import { Calculator, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import { useTheme } from '@/stores/theme-store';
 
 export default function EOSBPage() {
+  const { isDark } = useTheme();
+
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div 
+      className="p-6 max-w-7xl mx-auto text-slate-900 dark:text-slate-100"
+      style={{ colorScheme: isDark ? 'dark' : 'light' }}
+    >
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-slate-900 dark:text-white mb-2">
           End of Service Benefits (EOSB)
@@ -19,7 +25,7 @@ export default function EOSBPage() {
       <div className="grid gap-3 md:grid-cols-2 lg:grid-cols-3">
         <Link
           href="/dashboard/payroll-compliance/eosb/end-of-service-benefits-calculator"
-          className="group p-6 bg-white dark:bg-slate-800 rounded-xl border-2 border-slate-200 dark:border-slate-700 hover:border-celestial-indigo dark:hover:border-quantum-rose transition-all duration-200 hover:shadow-lg"
+          className="group p-6 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 hover:border-celestial-indigo dark:hover:border-quantum-rose transition-all duration-200 hover:shadow-lg"
         >
           <div className="flex items-start justify-between mb-4">
             <div className="p-3 bg-celestial-indigo/10 dark:bg-quantum-rose/10 rounded-lg">
@@ -36,7 +42,7 @@ export default function EOSBPage() {
         </Link>
       </div>
 
-      <div className="mt-8 p-6 bg-slate-50 dark:bg-slate-800/50 rounded-xl">
+      <div className="mt-8 p-6 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
         <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">
           About EOSB
         </h2>

@@ -90,166 +90,31 @@ export const useAviation = () => {
   }, []);
 
   // ==================== Data Loading ====================
-
   const loadAllData = useCallback(async () => {
     setLoading(true);
+    setError(null);
+
     try {
-      // Load all data in parallel
-      const [
-        crewData,
-        assignmentsData,
-        dutyData,
-        restData,
-        pilotsData,
-        trainingData,
-        simData,
-        checksData,
-        staffData,
-        turnaroundsData,
-        equipmentData,
-        proceduresData,
-        complianceData,
-        settingsData,
-        alertsData,
-      ] = await Promise.all([
-        CabinCrewService.getAllCrewMembers(),
-        CabinCrewService.getAllFlightAssignments(),
-        CabinCrewService.getAllDutyTimes(),
-        CabinCrewService.getAllRestPeriods(),
-        PilotTrainingService.getAllPilots(),
-        PilotTrainingService.getAllTrainingRecords(),
-        PilotTrainingService.getAllSimulatorSessions(),
-        PilotTrainingService.getAllProficiencyChecks(),
-        GroundOperationsService.getAllGroundStaff(),
-        GroundOperationsService.getAllTurnarounds(),
-        GroundOperationsService.getAllEquipment(),
-        GroundOperationsService.getAllProcedures(),
-        GroundOperationsService.getAllSafetyCompliance(),
-        AviationSettingsService.getSettings(),
-        AlertsService.getAll(),
-      ]);
+      const crewData = await CabinCrewService.getAllCrewMembers();
 
-      // Initialize with sample data if empty
-      if (crewData.length === 0) {
-        for (const crew of sampleCrewMembers) {
-          await CabinCrewService.createCrewMember(crew);
-        }
-        setCrewMembers(sampleCrewMembers);
-      } else {
-        setCrewMembers(crewData);
-      }
-
-      if (dutyData.length === 0) {
-        for (const duty of sampleDutyTimes) {
-          await CabinCrewService.recordDutyTime(duty);
-        }
-        setDutyTimes(sampleDutyTimes);
-      } else {
-        setDutyTimes(dutyData);
-      }
-
-      if (restData.length === 0) {
-        for (const rest of sampleRestPeriods) {
-          await CabinCrewService.recordRestPeriod(rest);
-        }
-        setRestPeriods(sampleRestPeriods);
-      } else {
-        setRestPeriods(restData);
-      }
-
-      if (pilotsData.length === 0) {
-        for (const pilot of samplePilots) {
-          await PilotTrainingService.createPilot(pilot);
-        }
-        setPilots(samplePilots);
-      } else {
-        setPilots(pilotsData);
-      }
-
-      if (trainingData.length === 0) {
-        for (const training of sampleTrainingRecords) {
-          await PilotTrainingService.createTrainingRecord('pilot-002', training);
-        }
-        setTrainingRecords(sampleTrainingRecords);
-      } else {
-        setTrainingRecords(trainingData);
-      }
-
-      if (simData.length === 0) {
-        for (const sim of sampleSimulatorSessions) {
-          await PilotTrainingService.createSimulatorSession(sim);
-        }
-        setSimulatorSessions(sampleSimulatorSessions);
-      } else {
-        setSimulatorSessions(simData);
-      }
-
-      if (checksData.length === 0) {
-        for (const check of sampleProficiencyChecks) {
-          await PilotTrainingService.createProficiencyCheck(check);
-        }
-        setProficiencyChecks(sampleProficiencyChecks);
-      } else {
-        setProficiencyChecks(checksData);
-      }
-
-      if (staffData.length === 0) {
-        for (const staff of sampleGroundStaff) {
-          await GroundOperationsService.createGroundStaff(staff);
-        }
-        setGroundStaff(sampleGroundStaff);
-      } else {
-        setGroundStaff(staffData);
-      }
-
-      if (turnaroundsData.length === 0) {
-        for (const turn of sampleTurnarounds) {
-          await GroundOperationsService.createTurnaround(turn);
-        }
-        setTurnarounds(sampleTurnarounds);
-      } else {
-        setTurnarounds(turnaroundsData);
-      }
-
-      if (equipmentData.length === 0) {
-        for (const equip of sampleGroundEquipment) {
-          await GroundOperationsService.createEquipment(equip);
-        }
-        setGroundEquipment(sampleGroundEquipment);
-      } else {
-        setGroundEquipment(equipmentData);
-      }
-
-      if (proceduresData.length === 0) {
-        for (const proc of sampleRampProcedures) {
-          await GroundOperationsService.createProcedure(proc);
-        }
-        setRampProcedures(sampleRampProcedures);
-      } else {
-        setRampProcedures(proceduresData);
-      }
-
-      if (complianceData.length === 0) {
-        for (const comp of sampleSafetyCompliance) {
-          await GroundOperationsService.createSafetyCompliance(comp);
-        }
-        setSafetyCompliance(sampleSafetyCompliance);
-      } else {
-        setSafetyCompliance(complianceData);
-      }
-
-      if (!settingsData) {
-        await AviationSettingsService.updateSettings(sampleAviationSettings);
-        setSettings(sampleAviationSettings);
-      } else {
-        setSettings(settingsData);
-      }
-
-      setFlightAssignments(assignmentsData);
-      setAlerts(alertsData);
+      setCrewMembers(crewData);
+      setFlightAssignments([]);
+      setDutyTimes([]);
+      setRestPeriods([]);
     } catch (_error: any) {
-      setError(_error instanceof Error ? _error.message : 'Failed to load data');
-      addToast({ type: 'error', message: 'Failed to load aviation data' });
+      console.error('Cabin crew load error:', _error);
+
+      const errorMessage =
+        _error?.message && typeof _error.message === 'string'
+          ? _error.message
+          : 'Failed to load cabin crew data';
+
+      setError(errorMessage);
+
+      addToast({
+        type: 'error',
+        message: errorMessage,
+      });
     } finally {
       setLoading(false);
     }
@@ -414,8 +279,24 @@ export const useAviation = () => {
   // ==================== Pilot Training Methods ====================
 
   const loadPilots = async () => {
-    const data = await PilotTrainingService.getAllPilots();
-    setPilots(data);
+    setLoading(true);
+    setError(null);
+
+    try {
+      const data = await PilotTrainingService.getAllPilots();
+      setPilots(data);
+    } catch (_error: any) {
+      console.error('Pilot training load error:', _error);
+
+      const message =
+        typeof _error?.message === 'string' && _error.message !== '[object Object]'
+          ? _error.message
+          : 'Failed to load pilot training data';
+
+      setError(message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const createPilot = async (pilotData: Partial<PilotProfile>) => {

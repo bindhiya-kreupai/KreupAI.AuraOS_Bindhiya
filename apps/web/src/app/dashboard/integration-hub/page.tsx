@@ -6,13 +6,12 @@ import {
   Plug,
   Store,
   Webhook,
-  FolderOpen,
+  Key,
   RefreshCw,
   Unplug,
   AlertCircle,
   CheckCircle2,
   Loader2,
-  ExternalLink,
   Clock,
   Zap,
   Search,
@@ -26,6 +25,7 @@ interface ConnectionItem {
   category?: string;
   status: string; // 'connected' | 'error' | 'syncing' | 'disconnected' | 'ACTIVE' | ...
   lastSyncAt?: string | null;
+  configuration?: Record<string, any>;
 }
 
 interface CatalogItem {
@@ -42,13 +42,21 @@ interface Toast {
 
 function normalizeStatus(status?: string): 'connected' | 'error' | 'syncing' | 'disconnected' {
   const s = (status || '').toLowerCase();
-  if (s === 'connected' || s === 'active') return 'connected';
+  if (s === 'connected' || s === 'active' || s === 'needs_config') return 'connected';
   if (s === 'error' || s === 'failed') return 'error';
   if (s === 'syncing' || s === 'pending' || s === 'in_progress') return 'syncing';
   return 'disconnected';
 }
 
 function getStatusBadge(status: string) {
+  const s = status.toLowerCase();
+  if (s === 'needs_config') {
+    return {
+      label: 'Needs Config',
+      className: 'bg-amber-100 dark:bg-amber-900/30 text-amber-700 dark:text-amber-400',
+      icon: AlertCircle,
+    };
+  }
   switch (normalizeStatus(status)) {
     case 'connected':
       return {
@@ -91,24 +99,6 @@ function formatLastSync(iso?: string | null): string {
   return `${Math.floor(diffH / 24)}d ago`;
 }
 
-const SUB_PAGES = [
-  {
-    name: 'API Marketplace',
-    description: 'Discover and connect third-party APIs',
-    path: '/dashboard/integration-hub/api-marketplace',
-  },
-  {
-    name: 'Webhook Manager',
-    description: 'Configure and monitor webhook endpoints',
-    path: '/dashboard/integration-hub/webhook-manager',
-  },
-  {
-    name: 'App Directory',
-    description: 'Browse available app integrations',
-    path: '/dashboard/integration-hub/app-directory',
-  },
-];
-
 function IntegrationHubPageInner() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -144,11 +134,17 @@ function IntegrationHubPageInner() {
           raw.map((c: any) => ({
             id: c.id,
             integrationId: c.integrationId || c.integration?.id || c.id,
-            name: c.name || c.integration?.name || c.integrationId || 'Integration',
+            name:
+              c.integrationName ||
+              c.name ||
+              c.integration?.name ||
+              c.integrationId ||
+              'Integration',
             provider: c.provider || c.integration?.provider,
             category: c.category || c.integration?.category,
             status: c.status || 'connected',
             lastSyncAt: c.lastSyncAt || c.lastSync || null,
+            configuration: c.configuration ?? {},
           }))
         );
       } else {
@@ -281,7 +277,7 @@ function IntegrationHubPageInner() {
         body: JSON.stringify({
           action: 'connect',
           integrationId: conn.integrationId,
-          configuration: {},
+          configuration: conn.configuration ?? {},
           credentials: {},
         }),
       });
@@ -382,11 +378,11 @@ function IntegrationHubPageInner() {
             Create Webhook
           </button>
           <button
-            onClick={() => router.push('/dashboard/integration-hub/webhook-manager')}
+            onClick={() => router.push('/dashboard/integration-hub/api-marketplace')}
             className="px-3 py-2 bg-white dark:bg-stellar-blue border border-cloud dark:border-nebula-purple/30 rounded-lg text-sm font-medium hover:bg-gray-50 dark:hover:bg-deep-cosmos transition-colors flex items-center gap-2 text-ink-black dark:text-pearl"
           >
-            <FolderOpen className="w-4 h-4 text-celestial-indigo" />
-            View Logs
+            <Key className="w-4 h-4 text-celestial-indigo" />
+            API Marketplace
           </button>
         </div>
       </div>
@@ -521,28 +517,6 @@ function IntegrationHubPageInner() {
             })}
           </div>
         )}
-      </div>
-
-      {/* Feature Links */}
-      <div>
-        <h2 className="text-lg font-bold text-ink-black dark:text-pearl mb-4">Explore</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {SUB_PAGES.map((page) => (
-            <a
-              key={page.name}
-              href={page.path}
-              className="bg-white dark:bg-stellar-blue p-5 rounded-xl border border-cloud dark:border-nebula-purple/30 shadow-sm hover:shadow-md transition-all group"
-            >
-              <div className="flex items-center justify-between">
-                <h3 className="font-bold text-ink-black dark:text-pearl group-hover:text-celestial-indigo transition-colors">
-                  {page.name}
-                </h3>
-                <ExternalLink className="w-4 h-4 text-silver-mist group-hover:text-celestial-indigo transition-colors" />
-              </div>
-              <p className="text-sm text-silver-mist mt-1">{page.description}</p>
-            </a>
-          ))}
-        </div>
       </div>
     </div>
   );

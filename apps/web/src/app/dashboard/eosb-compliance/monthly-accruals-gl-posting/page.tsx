@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { useTheme } from '@/stores/theme-store';
 
 interface Accrual {
   id: string;
@@ -22,6 +23,7 @@ const periodNow = () => {
 };
 
 export default function MonthlyAccrualsGlPostingPage() {
+  const { isDark } = useTheme();
   const [rows, setRows] = useState<Accrual[]>([]);
   const [form, setForm] = useState({
     employeeId: '',
@@ -85,74 +87,79 @@ export default function MonthlyAccrualsGlPostingPage() {
     void post({ action: 'mark-gl-posted', id, glJournalRef: ref }, 'GL posted');
   }
 
+  const inputClass = "mt-1 w-full rounded-md border border-slate-300 dark:border-slate-700 px-2 py-1.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500";
+
   return (
-    <main className="min-h-screen bg-slate-50 p-6 text-slate-950">
+    <main 
+      className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 text-slate-950 dark:text-slate-50 transition-colors duration-200"
+      style={{ colorScheme: isDark ? 'dark' : 'light' }}
+    >
       <div className="mx-auto flex max-w-7xl flex-col gap-6">
-        <header className="border-b border-slate-200 pb-4">
-          <p className="text-sm uppercase text-slate-500">EPIC-28 · S11 / S17</p>
-          <h1 className="text-2xl font-semibold">Monthly EOSB Accruals &amp; GL Posting</h1>
+        <header className="border-b border-slate-200 dark:border-slate-800 pb-4">
+          <p className="text-sm uppercase text-slate-500 dark:text-slate-400">EPIC-28 · S11 / S17</p>
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Monthly EOSB Accruals &amp; GL Posting</h1>
         </header>
 
-        <section className="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 md:grid-cols-6">
-          <label className="text-sm">
+        <section className="grid gap-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 md:grid-cols-6 items-end">
+          <label className="text-sm text-slate-700 dark:text-slate-300">
             Employee
             <input
               value={form.employeeId}
               onChange={(e) => setForm((f) => ({ ...f, employeeId: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5"
+              className={inputClass}
             />
           </label>
-          <label className="text-sm">
+          <label className="text-sm text-slate-700 dark:text-slate-300">
             Period
             <input
               value={form.period}
               onChange={(e) => setForm((f) => ({ ...f, period: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5"
+              className={inputClass}
             />
           </label>
-          <label className="text-sm">
+          <label className="text-sm text-slate-700 dark:text-slate-300">
             Country
             <select
               value={form.countryCode}
               onChange={(e) => setForm((f) => ({ ...f, countryCode: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5"
+              className={inputClass}
             >
               {['AE', 'SA', 'BH', 'QA', 'OM', 'KW', 'IN'].map((c) => (
-                <option key={c}>{c}</option>
+                <option key={c} className="bg-white dark:bg-slate-800">{c}</option>
               ))}
             </select>
           </label>
-          <label className="text-sm">
+          <label className="text-sm text-slate-700 dark:text-slate-300">
             Joining
             <input
               type="date"
               value={form.joiningDate}
               onChange={(e) => setForm((f) => ({ ...f, joiningDate: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5"
+              className={inputClass}
             />
           </label>
-          <label className="text-sm">
+          <label className="text-sm text-slate-700 dark:text-slate-300">
             Basic Salary
             <input
               value={form.basicSalary}
               onChange={(e) => setForm((f) => ({ ...f, basicSalary: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5"
+              className={inputClass}
             />
           </label>
           <button
             type="button"
             onClick={snapshot}
             disabled={busy}
-            className="rounded-md bg-slate-900 px-3 py-2 text-sm text-white disabled:opacity-50"
+            className="w-full rounded-md bg-slate-900 dark:bg-slate-750 hover:bg-slate-800 dark:hover:bg-slate-650 px-3 py-2 text-sm text-white disabled:opacity-50 transition-colors h-[38px] mb-[1px]"
           >
             Take Snapshot
           </button>
         </section>
-        {message ? <p className="text-sm">{message}</p> : null}
+        {message ? <p className="text-sm text-amber-600 dark:text-amber-400">{message}</p> : null}
 
-        <section className="rounded-lg border border-slate-200 bg-white p-4">
+        <section className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-slate-200 text-xs uppercase text-slate-500">
+            <thead className="border-b border-slate-200 dark:border-slate-800 text-xs uppercase text-slate-500 dark:text-slate-400">
               <tr>
                 <th className="px-3 py-2">Period</th>
                 <th className="px-3 py-2">Employee</th>
@@ -165,29 +172,29 @@ export default function MonthlyAccrualsGlPostingPage() {
                 <th className="px-3 py-2">Post to GL</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {rows.map((a) => (
-                <tr key={a.id} className="border-b border-slate-100">
-                  <td className="px-3 py-2">{a.period}</td>
-                  <td className="px-3 py-2 font-mono text-xs">{a.employeeId}</td>
-                  <td className="px-3 py-2">{a.countryCode}</td>
-                  <td className="px-3 py-2">{a.serviceMonths}</td>
-                  <td className="px-3 py-2">{a.basicSalary}</td>
-                  <td className="px-3 py-2 font-semibold">
+                <tr key={a.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-850/50">
+                  <td className="px-3 py-2 text-slate-800 dark:text-slate-200">{a.period}</td>
+                  <td className="px-3 py-2 font-mono text-xs text-slate-700 dark:text-slate-300">{a.employeeId}</td>
+                  <td className="px-3 py-2 text-slate-800 dark:text-slate-200">{a.countryCode}</td>
+                  <td className="px-3 py-2 text-slate-800 dark:text-slate-200">{a.serviceMonths}</td>
+                  <td className="px-3 py-2 text-slate-800 dark:text-slate-200">{a.basicSalary}</td>
+                  <td className="px-3 py-2 font-semibold text-slate-900 dark:text-white">
                     {a.accruedGratuity} {a.currency}
                   </td>
                   <td
-                    className={`px-3 py-2 ${Number(a.monthDelta) >= 0 ? 'text-emerald-700' : 'text-rose-700'}`}
+                    className={`px-3 py-2 font-medium ${Number(a.monthDelta) >= 0 ? 'text-emerald-700 dark:text-emerald-450' : 'text-rose-700 dark:text-rose-400'}`}
                   >
                     {a.monthDelta}
                   </td>
-                  <td className="px-3 py-2 text-xs">
+                  <td className="px-3 py-2 text-xs text-slate-800 dark:text-slate-200">
                     {a.glPosted ? (
-                      <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-emerald-800">
+                      <span className="rounded-full bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-400 px-2 py-0.5">
                         ✓ {a.glJournalRef}
                       </span>
                     ) : (
-                      'pending'
+                      <span className="text-slate-400 dark:text-slate-500">pending</span>
                     )}
                   </td>
                   <td className="px-3 py-2">
@@ -197,13 +204,13 @@ export default function MonthlyAccrualsGlPostingPage() {
                           value={rowRef[a.id] ?? ''}
                           onChange={(e) => setRowRef((m) => ({ ...m, [a.id]: e.target.value }))}
                           placeholder="Journal ref"
-                          className="w-28 rounded-md border border-slate-300 px-2 py-1 text-xs"
+                          className="w-28 rounded-md border border-slate-300 dark:border-slate-700 px-2 py-1 text-xs bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
                         />
                         <button
                           type="button"
                           onClick={() => markPosted(a.id)}
                           disabled={busy}
-                          className="rounded-md border border-slate-300 px-2 py-1 text-xs disabled:opacity-50"
+                          className="rounded-md border border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-500 px-2 py-1 text-xs text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 transition-colors disabled:opacity-50"
                         >
                           Post
                         </button>
@@ -214,7 +221,7 @@ export default function MonthlyAccrualsGlPostingPage() {
               ))}
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="px-3 py-6 text-center text-slate-500">
+                  <td colSpan={9} className="px-3 py-6 text-center text-slate-500 dark:text-slate-400">
                     No accruals.
                   </td>
                 </tr>

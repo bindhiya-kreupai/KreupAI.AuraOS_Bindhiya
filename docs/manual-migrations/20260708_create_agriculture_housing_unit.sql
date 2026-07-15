@@ -1,0 +1,15 @@
+BEGIN;
+
+CREATE TABLE IF NOT EXISTS auraos.aura_agriculture_housing_unit (
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  unit TEXT NOT NULL,
+  occupied INTEGER NOT NULL,
+  capacity INTEGER NOT NULL,
+  status TEXT NOT NULL,
+  type TEXT NOT NULL,
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+COMMIT;

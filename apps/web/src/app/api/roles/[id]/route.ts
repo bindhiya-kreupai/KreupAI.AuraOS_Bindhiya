@@ -36,7 +36,7 @@ export const GET = withEnhancedAuth(
       const role = await prisma.role.findFirst({
         where: {
           id: roleId,
-          tenantId: user.tenantId, // Ensure tenant isolation
+          OR: [{ tenantId: null }, { tenantId: user.tenantId }],
         },
         select: {
           id: true,
@@ -109,16 +109,24 @@ export const PUT = withEnhancedAuth(
       const body = await request.json();
       const validatedData = UpdateRoleSchema.parse(body);
 
-      // Check if role exists and belongs to tenant
+      // Check if role exists — allow viewing system-wide roles, but restrict mutation to tenant-owned
       const existingRole = await prisma.role.findFirst({
         where: {
           id: roleId,
-          tenantId: user.tenantId,
+          OR: [{ tenantId: null }, { tenantId: user.tenantId }],
         },
       });
 
       if (!existingRole) {
         return NextResponse.json({ success: false, error: 'Role not found' }, { status: 404 });
+      }
+
+      // Prevent modification of system-wide roles (null tenantId)
+      if (!existingRole.tenantId) {
+        return NextResponse.json(
+          { success: false, error: 'Cannot modify system-wide roles' },
+          { status: 403 }
+        );
       }
 
       // Prevent modification of system roles
@@ -229,11 +237,11 @@ export const DELETE = withEnhancedAuth(
 
       const roleId = params.id;
 
-      // Check if role exists and belongs to tenant
+      // Check if role exists — allow viewing system-wide roles, but restrict deletion to tenant-owned
       const existingRole = await prisma.role.findFirst({
         where: {
           id: roleId,
-          tenantId: user.tenantId,
+          OR: [{ tenantId: null }, { tenantId: user.tenantId }],
         },
         select: {
           id: true,
@@ -250,6 +258,14 @@ export const DELETE = withEnhancedAuth(
 
       if (!existingRole) {
         return NextResponse.json({ success: false, error: 'Role not found' }, { status: 404 });
+      }
+
+      // Prevent deletion of system-wide roles (null tenantId)
+      if (!existingRole.tenantId) {
+        return NextResponse.json(
+          { success: false, error: 'Cannot delete system-wide roles' },
+          { status: 403 }
+        );
       }
 
       // Prevent deletion of system roles

@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
 model Tenant {
@@ -27,6 +28,10 @@ model Tenant {
   wpsSubmissions    WPSSubmission[]
   biometricDevices  BiometricDevice[]
   ramadanConfig     RamadanAutoSwitchConfig?
+  deactivations     UserDeactivation[]
+  passwordPolicies  PasswordPolicy[]
+  ssoConfigs        SSOConfig[]
+  licenses          License[]
 
   @@map("aura_tenant")
 }
@@ -70,7 +75,6 @@ model Department {
   name                      String
   parentId                  String?
   costCenterId              String?
-  businessUnitId            String?
   createdAt                 DateTime            @default(now())
   updatedAt                 DateTime            @default(now()) @updatedAt
   createdBy                 String?
@@ -79,7 +83,6 @@ model Department {
   isDeleted                 Boolean             @default(false)
   company                   Company             @relation(fields: [companyId], references: [id], map: "Department_companyId_fkey")
   costCenter                CostCenter?         @relation(fields: [costCenterId], references: [id], map: "Department_costCenterId_fkey")
-  businessUnit              BusinessUnit?       @relation(fields: [businessUnitId], references: [id], onDelete: SetNull, map: "Department_businessUnitId_fkey")
   parent                    Department?         @relation("DeptHierarchy", fields: [parentId], references: [id], map: "Department_parentId_fkey")
   children                  Department[]        @relation("DeptHierarchy")
   employees                 Employee[]
@@ -500,6 +503,7 @@ model User {
   refreshTokens       RefreshToken[]
   tenant              Tenant               @relation(fields: [tenantId], references: [id], map: "User_tenantId_fkey")
   deactivations       UserDeactivation[]
+  deactivatedUsers    UserDeactivation[]   @relation("DeactivatedBy")
   delegatedFrom       UserDelegation[]     @relation("Delegatee")
   delegatedTo         UserDelegation[]     @relation("Delegator")
   roles               UserRole[]
@@ -1269,6 +1273,7 @@ model AccessControl {
 
 model PasswordPolicy {
   id                  String    @id(map: "PasswordPolicy_pkey") @default(uuid())
+  tenantId            String
   minLength           Int       @default(8)
   requireUppercase    Boolean   @default(true)
   requireLowercase    Boolean   @default(true)
@@ -1283,12 +1288,15 @@ model PasswordPolicy {
   updatedBy           String?
   deletedAt           DateTime?
   isDeleted           Boolean   @default(false)
+  tenant              Tenant    @relation(fields: [tenantId], references: [id], map: "PasswordPolicy_tenantId_fkey")
 
+  @@index([tenantId], map: "PasswordPolicy_tenantId_idx")
   @@map("aura_password_policy")
 }
 
 model SSOConfig {
   id          String    @id(map: "SSOConfig_pkey") @default(uuid())
+  tenantId    String
   enabled     Boolean   @default(false)
   provider    String
   issuerUrl   String?
@@ -1300,27 +1308,30 @@ model SSOConfig {
   updatedBy   String?
   deletedAt   DateTime?
   isDeleted   Boolean   @default(false)
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], map: "SSOConfig_tenantId_fkey")
 
+  @@index([tenantId], map: "SSOConfig_tenantId_idx")
   @@map("aura_sso_config")
 }
 
 model UserSession {
-  id         String    @id(map: "UserSession_pkey") @default(uuid())
-  userId     String
-  ipAddress  String
-  device     String?
-  browser    String?
-  location   String?
-  lastActive DateTime  @default(now())
-  status     String    @default("Active")
-  createdAt  DateTime  @default(now())
-  expiresAt  DateTime?
-  updatedAt  DateTime  @default(now())
-  createdBy  String?
-  updatedBy  String?
-  deletedAt  DateTime?
-  isDeleted  Boolean   @default(false)
-  user       User      @relation(fields: [userId], references: [id], map: "UserSession_userId_fkey")
+  id                String    @id(map: "UserSession_pkey") @default(uuid())
+  userId            String
+  ipAddress         String
+  device            String?
+  browser           String?
+  deviceFingerprint String?
+  location          String?
+  lastActive        DateTime  @default(now())
+  status            String    @default("Active")
+  createdAt         DateTime  @default(now())
+  expiresAt         DateTime?
+  updatedAt         DateTime  @default(now())
+  createdBy         String?
+  updatedBy         String?
+  deletedAt         DateTime?
+  isDeleted         Boolean   @default(false)
+  user              User      @relation(fields: [userId], references: [id], map: "UserSession_userId_fkey")
 
   @@map("aura_user_session")
 }
@@ -1426,7 +1437,8 @@ model UserDelegation {
 
 model License {
   id        String    @id(map: "License_pkey") @default(uuid())
-  name      String    @unique(map: "License_name_key")
+  tenantId  String
+  name      String
   total     Int
   used      Int       @default(0)
   type      String
@@ -1437,12 +1449,16 @@ model License {
   updatedBy String?
   deletedAt DateTime?
   isDeleted Boolean   @default(false)
+  tenant    Tenant    @relation(fields: [tenantId], references: [id], map: "License_tenantId_fkey")
 
+  @@unique([tenantId, name], map: "License_tenantId_name_key")
+  @@index([tenantId], map: "License_tenantId_idx")
   @@map("aura_license")
 }
 
 model UserDeactivation {
   id            String    @id(map: "UserDeactivation_pkey") @default(uuid())
+  tenantId      String
   userId        String
   reason        String?
   deactivatedBy String
@@ -1454,7 +1470,10 @@ model UserDeactivation {
   deletedAt     DateTime?
   isDeleted     Boolean   @default(false)
   user          User      @relation(fields: [userId], references: [id], map: "UserDeactivation_userId_fkey")
+  deactivator   User      @relation("DeactivatedBy", fields: [deactivatedBy], references: [id], map: "UserDeactivation_deactivatedBy_fkey")
+  tenant        Tenant    @relation(fields: [tenantId], references: [id], map: "UserDeactivation_tenantId_fkey")
 
+  @@index([tenantId], map: "UserDeactivation_tenantId_idx")
   @@map("aura_user_deactivation")
 }
 
@@ -5136,6 +5155,139 @@ model WebhookLog {
   @@index([success], map: "WebhookLog_success_idx")
   @@index([webhookId], map: "WebhookLog_webhookId_idx")
   @@map("aura_webhook_log")
+}
+
+model OAuthState {
+  id         String    @id @default(uuid())
+  state      String    @unique(map: "OAuthState_state_key")
+  tenantId   String
+  userId     String?
+  provider   String
+  redirectTo String?
+  data       Json?
+  expiresAt  DateTime
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  isDeleted  Boolean   @default(false)
+  deletedAt  DateTime?
+
+  @@index([expiresAt], map: "OAuthState_expiresAt_idx")
+  @@index([provider], map: "OAuthState_provider_idx")
+  @@index([tenantId], map: "OAuthState_tenantId_idx")
+  @@map("aura_oauth_state")
+}
+
+model IntegrationConnection {
+  id              String               @id @default(uuid())
+  tenantId        String
+  integrationId   String
+  integrationName String
+  provider        String?
+  category        String?
+  status          String               @default("PENDING")
+  configuration   Json?
+  credentials     Json?
+  fieldMappings   Json?
+  syncEnabled     Boolean              @default(false)
+  syncFrequency   String?
+  lastSyncAt      DateTime?
+  nextSyncAt      DateTime?
+  connectedAt     DateTime?
+  connectedBy     String?
+  disconnectedAt  DateTime?
+  disconnectedBy  String?
+  healthStatus    String               @default("UNKNOWN")
+  lastHealthCheck DateTime?
+  errorMessage    String?
+  isActive        Boolean              @default(true)
+  metadata        Json?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  createdBy       String?
+  updatedBy       String?
+  deletedAt       DateTime?
+  isDeleted       Boolean              @default(false)
+  syncJobs        IntegrationSyncJob[]
+  logs            IntegrationLog[]
+
+  @@unique([tenantId, integrationId], map: "IntegrationConnection_tenantId_integrationId_key")
+  @@index([status], map: "IntegrationConnection_status_idx")
+  @@index([tenantId], map: "IntegrationConnection_tenantId_idx")
+  @@index([provider], map: "IntegrationConnection_provider_idx")
+  @@index([isActive], map: "IntegrationConnection_isActive_idx")
+  @@map("aura_integration_connection")
+}
+
+model IntegrationSyncJob {
+  id               String                @id @default(uuid())
+  tenantId         String
+  integrationId    String
+  connectionId     String
+  type             String                @default("INCREMENTAL")
+  direction        String                @default("BIDIRECTIONAL")
+  entity           String
+  action           String?
+  status           String                @default("QUEUED")
+  progress         Int                   @default(0)
+  recordsProcessed Int                   @default(0)
+  recordsCreated   Int                   @default(0)
+  recordsUpdated   Int                   @default(0)
+  recordsFailed    Int                   @default(0)
+  errors           Json?
+  scheduledAt      DateTime?
+  startedAt        DateTime?
+  completedAt      DateTime?
+  duration         Int?
+  triggeredBy      String                @default("MANUAL")
+  triggeredByUser  String?
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+  createdBy        String?
+  updatedBy        String?
+  deletedAt        DateTime?
+  isDeleted        Boolean               @default(false)
+  connection       IntegrationConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade, map: "IntegrationSyncJob_connectionId_fkey")
+
+  @@index([status], map: "IntegrationSyncJob_status_idx")
+  @@index([connectionId], map: "IntegrationSyncJob_connectionId_idx")
+  @@index([tenantId], map: "IntegrationSyncJob_tenantId_idx")
+  @@map("aura_integration_sync_job")
+}
+
+model IntegrationLog {
+  id              String                @id @default(uuid())
+  tenantId        String
+  integrationId   String
+  connectionId    String
+  direction       String
+  method          String
+  endpoint        String
+  requestHeaders  Json?
+  requestBody     String?
+  statusCode      Int
+  responseHeaders Json?
+  responseBody    String?
+  responseTime    Int
+  action          String?
+  entity          String?
+  recordId        String?
+  syncJobId       String?
+  success         Boolean               @default(false)
+  errorMessage    String?
+  timestamp       DateTime              @default(now())
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @default(now())
+  createdBy       String?
+  updatedBy       String?
+  deletedAt       DateTime?
+  isDeleted       Boolean               @default(false)
+  connection      IntegrationConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade, map: "IntegrationLog_connectionId_fkey")
+
+  @@index([timestamp], map: "IntegrationLog_timestamp_idx")
+  @@index([connectionId], map: "IntegrationLog_connectionId_idx")
+  @@index([success], map: "IntegrationLog_success_idx")
+  @@index([tenantId], map: "IntegrationLog_tenantId_idx")
+  @@map("aura_integration_log")
 }
 
 model CustomReport {
@@ -12386,6 +12538,7 @@ model ComplianceCorrectiveAction {
   description       String?
   rootCause         String?
   severity          String    @default("MEDIUM")
+  priority          String    @default("MEDIUM")
   ownerId           String?
   raisedAt          DateTime  @default(now())
   raisedBy          String?
@@ -16504,4 +16657,387 @@ model IndustrySolution {
   updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
 
   @@map("aura_industry_solution")
+}
+
+model ComplianceAuditChecklistItem {
+  id                  String    @id @default(uuid())
+  tenantId            String
+  domainCode          String
+  categoryCode        String
+  itemCode            String
+  label               String
+  expectedBehavior    String?
+  evidenceRequirement String?
+  ownerRole           String?
+  isMandatory         Boolean   @default(false)
+  status              String    @default("OPEN")
+  owner               String?
+  dueDate             DateTime?
+  evidenceUrl         String?
+  notes               String?
+  completedAt         DateTime?
+  completedBy         String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  createdBy           String?
+  updatedBy           String?
+  deletedAt           DateTime?
+  isDeleted           Boolean   @default(false)
+
+  @@unique([tenantId, domainCode, itemCode], map: "aura_compliance_audit_checklist_item_unique")
+  @@index([tenantId])
+  @@index([status])
+  @@map("aura_compliance_audit_checklist_item")
+}
+
+model ComplianceRiskRegisterEntry {
+  id             String    @id @default(uuid())
+  tenantId       String
+  domainCode     String
+  riskCode       String
+  title          String
+  description    String?
+  category       String?
+  likelihood     Int
+  impact         Int
+  score          Int
+  band           String
+  ownerRole      String?
+  controlRef     String?
+  mitigationPlan String?
+  status         String    @default("OPEN")
+  reviewedAt     DateTime?
+  reviewedBy     String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  createdBy      String?
+  updatedBy      String?
+  deletedAt      DateTime?
+  isDeleted      Boolean   @default(false)
+
+  @@unique([tenantId, domainCode, riskCode], map: "aura_compliance_risk_register_entry_unique")
+  @@index([tenantId])
+  @@index([band])
+  @@index([status])
+  @@map("aura_compliance_risk_register_entry")
+}
+
+model ComplianceRegisterEvidence {
+  id             String    @id @default(uuid())
+  tenantId       String
+  targetType     String // CHECKLIST | RISK | CAPA
+  targetId       String // itemCode / riskCode / capaId
+  fileName       String
+  fileUrl        String
+  mimeType       String
+  fileSize       Int
+  uploadedBy     String?
+  uploadedAt     DateTime  @default(now())
+  verifiedBy     String?
+  verifiedAt     DateTime?
+  acceptedStatus String    @default("PENDING") // PENDING | ACCEPTED | REJECTED
+  checksum       String?
+  version        Int       @default(1)
+  expiresAt      DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  isDeleted      Boolean   @default(false)
+
+  @@index([tenantId])
+  @@index([targetType, targetId])
+  @@map("aura_compliance_register_evidence")
+}
+
+model ComplianceRegisterTimelineEvent {
+  id          String   @id @default(uuid())
+  tenantId    String
+  targetType  String // CHECKLIST | RISK | CAPA
+  targetId    String // itemCode / riskCode / capaId
+  eventType   String // CREATED | EVIDENCE_UPLOADED | CONTROL_REVIEWED | RISK_ACCEPTED | RISK_MITIGATED | CAPA_CREATED | CAPA_CLOSED | APPROVED | REJECTED
+  title       String
+  description String?
+  userId      String?
+  userName    String?
+  timestamp   DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([targetType, targetId])
+  @@map("aura_compliance_register_timeline")
+}
+
+model RecordsDocumentMatrix {
+  id                   String  @id @default(cuid())
+  tenantId             String
+  country              String
+  documentCode         String
+  label                String
+  category             String
+  isMandatory          Boolean @default(true)
+  appliesWhen          String?
+  retentionYears       Int     @default(7)
+  renewalCadenceMonths Int?
+  sensitivity          String  @default("CONFIDENTIAL")
+  regulatorRef         String?
+  notes                String?
+  status               String  @default("ACTIVE")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, country, documentCode], name: "aura_records_document_matrix_unique")
+  @@index([tenantId])
+  @@map("records_document_matrix")
+}
+
+model RecordsCompletenessSnapshot {
+  id         String  @id @default(cuid())
+  tenantId   String
+  period     String
+  employeeId String
+  country    String?
+
+  mandatoryTotal   Int
+  mandatoryPresent Int
+  mandatoryMissing Int
+  expiringWithin30 Int @default(0)
+  expired          Int @default(0)
+
+  score        Float
+  band         String
+  missingCodes Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, period, employeeId], name: "aura_records_completeness_snapshot_unique")
+  @@index([tenantId, period])
+  @@map("records_completeness_snapshot")
+}
+
+model RecordsAuditChecklistItem {
+  id          String  @id @default(cuid())
+  tenantId    String
+  itemCode    String
+  label       String
+  category    String
+  country     String?
+  expectation String?
+  severity    String  @default("MEDIUM")
+
+  lastReviewedAt DateTime?
+  lastReviewedBy String?
+  lastResult     String?
+  notes          String?
+
+  status String @default("ACTIVE")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, itemCode], name: "aura_records_audit_checklist_item_unique")
+  @@index([tenantId])
+  @@map("records_audit_checklist_item")
+}
+
+model RecordsRiskEntry {
+  id         String  @id @default(cuid())
+  tenantId   String
+  riskCode   String
+  title      String
+  category   String
+  country    String?
+  likelihood Int
+  impact     Int
+  score      Int
+  band       String
+  ownerId    String?
+  mitigation String?
+  status     String  @default("OPEN")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, riskCode], name: "aura_records_risk_entry_unique")
+  @@index([tenantId])
+  @@map("records_risk_entry")
+}
+
+model RecordsComplianceCertificate {
+  id       String @id @default(cuid())
+  tenantId String
+  period   String
+
+  status String @default("DRAFT")
+
+  employeesEvaluated Int
+  averageScore       Float
+  greenEmployees     Int
+  amberEmployees     Int
+  redEmployees       Int
+
+  mandatoryMissingTotal Int
+  expiredDocsTotal      Int
+
+  checklistFailing  Int
+  checklistOverdue  Int
+  criticalRisksOpen Int
+
+  gatingReason String?
+
+  metricsJson      Json?
+  attestationsJson Json?
+
+  generatedAt DateTime
+  signedAt    DateTime?
+  signedBy    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, period], name: "aura_records_compliance_certificate_unique")
+  @@index([tenantId])
+  @@map("records_compliance_certificate")
+}
+
+model AgricultureSeasonalCrew {
+  id        String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  name      String
+  location  String
+  size      Int
+  origin    String
+  status    String
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  @@map("aura_agriculture_seasonal_crew")
+}
+
+model AgricultureHousingUnit {
+  id        String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  unit      String
+  occupied  Int
+  capacity  Int
+  status    String
+  type      String
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  @@map("aura_agriculture_housing_unit")
+}
+
+model AgricultureCropCycle {
+  id        String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  crop      String
+  field     String
+  stage     String
+  harvest   String
+  progress  Int
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  @@map("aura_agriculture_crop_cycle")
+}
+
+model AutomotiveTechnicianRoster {
+  id        String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  bay       String
+  tech      String
+  job       String
+  time      String
+  status    String
+  skill     String?
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  @@map("aura_automotive_technician_roster")
+}
+
+model AutomotivePartInventory {
+  id        String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  part      String
+  sku       String
+  stock     Int
+  minStock  Int      @map("min_stock")
+  status    String
+  supplier  String?
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  @@map("aura_automotive_part_inventory")
+}
+
+model AutomotiveSalesCommission {
+  id          String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  rank        Int
+  salesperson String
+  unitsSold   Int      @map("units_sold")
+  grossProfit Int      @map("gross_profit")
+  commission  Int
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @map("updated_at")
+
+  @@map("aura_automotive_sales_commission")
+}
+
+model AutomotiveServiceBay {
+  id         String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  name       String
+  status     String
+  car        String?
+  technician String?
+  isActive   Boolean  @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @default(now()) @map("updated_at")
+
+  @@map("aura_automotive_service_bay")
+}
+
+model AutomotiveServiceTechnician {
+  id         String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  name       String
+  level      String
+  efficiency Int
+  hours      Float
+  status     String
+  isActive   Boolean  @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @default(now()) @map("updated_at")
+
+  @@map("aura_automotive_service_technician")
+}
+
+model AutomotivePartStock {
+  id        String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  part      String
+  category  String
+  stock     Int
+  minStock  Int      @map("min_stock")
+  location  String
+  status    String
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  @@map("aura_automotive_part_stock")
+}
+
+model AutomotivePartRequisition {
+  id         String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  technician String
+  bay        String
+  item       String
+  priority   String
+  status     String   @default("Pending")
+  isActive   Boolean  @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @default(now()) @map("updated_at")
+
+  @@map("aura_automotive_part_requisition")
 }

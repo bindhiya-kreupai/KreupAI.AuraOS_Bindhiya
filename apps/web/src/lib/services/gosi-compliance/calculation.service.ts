@@ -50,7 +50,7 @@ export class GosiCalculationService {
     return prisma.$transaction(async (tx) => {
       const row = await (tx as any).gosiContributionWage.upsert({
         where: {
-          aura_gosi_contribution_wage_unique: {
+          tenantId_employeeId_period: {
             tenantId: auth.tenantId,
             employeeId: input.employeeId,
             period: input.period,
@@ -101,7 +101,7 @@ export class GosiCalculationService {
         ? { contributionWage: input.contributionWage }
         : await (prisma as any).gosiContributionWage.findUnique({
             where: {
-              aura_gosi_contribution_wage_unique: {
+              tenantId_employeeId_period: {
                 tenantId: auth.tenantId,
                 employeeId: input.employeeId,
                 period: input.period,
@@ -154,7 +154,7 @@ export class GosiCalculationService {
     return prisma.$transaction(async (tx) => {
       return (tx as any).gosiContribution.upsert({
         where: {
-          aura_gosi_contribution_unique: {
+          tenantId_employeeId_period: {
             tenantId: auth.tenantId,
             employeeId: input.employeeId,
             period: input.period,
@@ -211,6 +211,18 @@ export class GosiCalculationService {
       (prisma as any).gosiContribution.count({ where }),
     ]);
     return buildPaginatedResult(items, total, page);
+  }
+
+  async deleteContribution(employeeId: string, period: string, tenantId: string) {
+    return (prisma as any).gosiContribution.delete({
+      where: {
+        tenantId_employeeId_period: {
+          tenantId,
+          employeeId,
+          period,
+        },
+      },
+    });
   }
 }
 

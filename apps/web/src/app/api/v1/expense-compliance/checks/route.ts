@@ -1,15 +1,7 @@
-/**
- * EPIC-27 — Travel / expense compliance checks.
- *
- * Actions:
- *   { action: 'exceptionCadence', ... }   → SLA freshness for policy exception
- *   { action: 'duplicateReceipts', ... }  → identical-receipt detection
- *   { action: 'perDiemCap', ... }         → per-diem cap evaluator
- */
-
 import type { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
+import { prisma } from '@aura/database';
 import {
   detectDuplicateReceipts,
   evaluatePerDiemCap,
@@ -66,6 +58,38 @@ const perDiemSchema = z.object({
 
 const inputSchema = z.discriminatedUnion('action', [exceptionSchema, dupeSchema, perDiemSchema]);
 
+async function updateComplianceSettings(tenantId: string, key: string, val: any) {
+  const existing = await prisma.complianceSettingEntry.findUnique({
+    where: { tenantId },
+  });
+  const settingsObj = existing ? (existing.settings as any) : {};
+  settingsObj[key] = val;
+  return await prisma.complianceSettingEntry.upsert({
+    where: { tenantId },
+    update: { settings: settingsObj },
+    create: { tenantId, settings: settingsObj },
+  });
+}
+
+export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) => {
+  if (!hasAny(ctx.permissions, 'expenses:read', 'travel:read', 'dashboard:read')) {
+    return forbidden();
+  }
+  try {
+    const tenantId = ctx.user.tenantId;
+    const existing = await prisma.complianceSettingEntry.findUnique({
+      where: { tenantId },
+    });
+    const settings = existing ? (existing.settings as any) : {};
+    return ok({
+      perDiemClaim: settings.perDiemClaim || null,
+      perDiemPolicy: settings.perDiemPolicy || null,
+    });
+  } catch (err) {
+    return serverError('Failed to fetch expense settings', err);
+  }
+});
+
 export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) => {
   if (
     !hasAny(
@@ -84,6 +108,8 @@ export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext)
     const parsed = inputSchema.safeParse(raw);
     if (!parsed.success) return badRequest('Invalid input', { issues: parsed.error.flatten() });
     const body = parsed.data;
+    const tenantId = ctx.user.tenantId;
+
     if (body.action === 'exceptionCadence') {
       const verdict = evaluatePolicyExceptionCadence(
         {
@@ -101,6 +127,8 @@ export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext)
       return ok({ verdict });
     }
     const verdict = evaluatePerDiemCap(body.claim, body.policy);
+    await updateComplianceSettings(tenantId, 'perDiemClaim', body.claim);
+    await updateComplianceSettings(tenantId, 'perDiemPolicy', body.policy);
     return ok({ verdict });
   } catch (err) {
     return serverError('Failed to evaluate expense compliance check', err);

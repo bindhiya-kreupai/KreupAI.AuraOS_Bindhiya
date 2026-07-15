@@ -30,7 +30,7 @@ export default function DestructionLogPage() {
               key: 'destroyedAt',
               label: 'Destroyed',
               labelAr: 'تاريخ',
-              type: 'text',
+              type: 'date',
               required: true,
               widthClass: 'w-40',
             },

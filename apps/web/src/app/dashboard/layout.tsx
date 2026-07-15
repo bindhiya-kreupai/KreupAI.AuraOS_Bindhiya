@@ -1,12 +1,13 @@
 'use client';
 
 import React, { useState, useCallback } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { SidebarMenu, TopNav } from '@aura/ui/components/menu';
 import { RightPanel } from '@aura/ui/components/layout';
 import { Info } from 'lucide-react';
 import { SearchProvider, useSearch } from '@/stores/search-store';
 import { ThemeProvider, useTheme } from '@/stores/theme-store';
+import { useCurrentUser } from '@/lib/auth/AuthProvider';
 
 // Modules that currently render demo UI only — their pages don't fetch from
 // any /api/ endpoint. Listed here so users see a clear "preview" banner
@@ -33,7 +34,6 @@ const PREVIEW_MODULES = new Set<string>([
   'hr-helpdesk',
   'industry',
   'industry-solutions',
-  'integration-hub',
   'legal',
   'localization',
   'logistics',
@@ -49,7 +49,6 @@ const PREVIEW_MODULES = new Set<string>([
   'projects',
   'remote-work',
   'retail',
-  'reveal',
 ]);
 
 interface FavoriteItem {
@@ -66,9 +65,9 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const moduleSegment = pathname.split('/').filter(Boolean)[1];
   const isPreviewModule = !!moduleSegment && PREVIEW_MODULES.has(moduleSegment);
 
-  const router = useRouter();
   const { isDark, toggleTheme } = useTheme();
   const { setIsOpen: setSearchOpen } = useSearch();
+  const { user: currentUser } = useCurrentUser();
 
   const handleSignOut = useCallback(async () => {
     try {
@@ -125,13 +124,14 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
       {/* Main Content Area */}
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top Navigation */}
-        <TopNav
+        <TopNav isDark={isDark} onThemeToggle={toggleTheme} />
           onSearchClick={() => setSearchOpen(true)}
           onAIAssistantClick={handleAIAssistantClick}
           onHelpClick={handleHelpClick}
           onSignOut={handleSignOut}
           isDark={isDark}
           onThemeToggle={toggleTheme}
+          user={currentUser}
         />
 
         {/* Page Content */}
@@ -163,9 +163,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
     <ThemeProvider>
-      <SearchProvider>
-        <DashboardLayoutInner>{children}</DashboardLayoutInner>
-      </SearchProvider>
+      <DashboardLayoutInner>{children}</DashboardLayoutInner>
     </ThemeProvider>
   );
 }
