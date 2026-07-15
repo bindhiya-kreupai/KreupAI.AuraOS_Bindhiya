@@ -66,13 +66,15 @@ export const GET = createProtectedRoute(
         completedAt: { not: null },
         status: { in: ['APPROVED', 'REJECTED', 'CANCELLED', 'FAILED'] },
       },
-      select: { createdAt: true, completedAt: true, status: true },
+      select: { startedAt: true, completedAt: true, status: true },
     });
 
     let totalDurationMs = 0;
     const durations: number[] = [];
     for (const inst of completedInstances) {
-      const dur = new Date(inst.completedAt!).getTime() - new Date(inst.createdAt).getTime();
+      const start = new Date(inst.startedAt).getTime();
+      const end = new Date(inst.completedAt!).getTime();
+      const dur = Math.max(0, end - start);
       totalDurationMs += dur;
       durations.push(dur);
     }
@@ -86,19 +88,20 @@ export const GET = createProtectedRoute(
 
     const [totalTasks, completedTasks, overdueTasks] = await Promise.all([
       prisma.workflowTask.count({ where: taskWhere }),
-      prisma.workflowTask.count({ where: { ...taskWhere, status: 'COMPLETED' } }),
+      prisma.workflowTask.count({ where: { ...taskWhere, actionTaken: { not: null } } }),
       prisma.workflowTask.count({
         where: { ...taskWhere, status: 'PENDING', slaDueAt: { lt: new Date() } },
       }),
     ]);
 
     const allTasks = await prisma.workflowTask.findMany({
-      where: { ...taskWhere, status: 'COMPLETED', actionAt: { not: null } },
+      where: { ...taskWhere, actionTaken: { not: null }, actionAt: { not: null } },
       select: { createdAt: true, actionAt: true },
     });
     let totalTaskDurationMs = 0;
     for (const t of allTasks) {
-      totalTaskDurationMs += new Date(t.actionAt!).getTime() - new Date(t.createdAt).getTime();
+      const dur = Math.max(0, new Date(t.actionAt!).getTime() - new Date(t.createdAt).getTime());
+      totalTaskDurationMs += dur;
     }
     const avgTaskCompletionTime =
       allTasks.length > 0 ? totalTaskDurationMs / allTasks.length / 1000 : 0;
@@ -116,7 +119,8 @@ export const GET = createProtectedRoute(
     });
     let totalApprovalDurationMs = 0;
     for (const a of approvalsWithTime) {
-      totalApprovalDurationMs += new Date(a.actionAt!).getTime() - new Date(a.createdAt).getTime();
+      const dur = Math.max(0, new Date(a.actionAt!).getTime() - new Date(a.createdAt).getTime());
+      totalApprovalDurationMs += dur;
     }
     const avgApprovalTime =
       approvalsWithTime.length > 0
@@ -143,13 +147,22 @@ export const GET = createProtectedRoute(
     });
     const defMap = new Map(definitions.map((d) => [d.id, d.name]));
 
-    const topWorkflowsByUsage = topByUsage.map((t) => ({
-      workflowId: t.definitionId,
-      workflowName: defMap.get(t.definitionId) || 'Unknown',
-      count: t._count.id,
-      averageDuration: 0,
-      successRate: 0,
-    }));
+    const topWorkflowsByUsage = (() => {
+      const merged = new Map<string, { workflowName: string; count: number }>();
+      for (const t of topByUsage) {
+        const name = defMap.get(t.definitionId) || 'Unknown';
+        const existing = merged.get(name);
+        if (existing) {
+          existing.count += t._count.id;
+        } else {
+          merged.set(name, { workflowName: name, count: t._count.id });
+        }
+      }
+      return Array.from(merged.values())
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5)
+        .map((t) => ({ workflowId: '', ...t, averageDuration: 0, successRate: 0 }));
+    })();
 
     const topWorkflowsByFailure = await prisma.workflowInstance.groupBy({
       by: ['definitionId'],
@@ -166,13 +179,22 @@ export const GET = createProtectedRoute(
     });
     const failDefMap = new Map(failDefs.map((d) => [d.id, d.name]));
 
-    const topByFailure = topWorkflowsByFailure.map((t) => ({
-      workflowId: t.definitionId,
-      workflowName: failDefMap.get(t.definitionId) || 'Unknown',
-      count: t._count.id,
-      averageDuration: 0,
-      successRate: 0,
-    }));
+    const topByFailure = (() => {
+      const merged = new Map<string, { workflowName: string; count: number }>();
+      for (const t of topWorkflowsByFailure) {
+        const name = failDefMap.get(t.definitionId) || 'Unknown';
+        const existing = merged.get(name);
+        if (existing) {
+          existing.count += t._count.id;
+        } else {
+          merged.set(name, { workflowName: name, count: t._count.id });
+        }
+      }
+      return Array.from(merged.values())
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 5)
+        .map((t) => ({ workflowId: '', ...t, averageDuration: 0, successRate: 0 }));
+    })();
 
     const executionTrends: { period: string; value: number }[] = [];
     if (total > 0) {
