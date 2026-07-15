@@ -476,10 +476,16 @@ function TrendChart({ data }: { data: TrendData[] }) {
               className="w-full bg-blue-500 rounded-t transition-all hover:bg-blue-400"
               style={{ height: `${Math.max(h, 2)}%` }}
             />
-            {display.length <= 15 && (
+            {display.length <= 15 ? (
               <span className="text-[9px] text-slate-400 truncate w-full text-center">
                 {d.period.slice(5)}
               </span>
+            ) : (
+              i % Math.max(1, Math.floor(display.length / 6)) === 0 && (
+                <span className="text-[9px] text-slate-400 truncate w-full text-center">
+                  {d.period.slice(5)}
+                </span>
+              )
             )}
           </div>
         );

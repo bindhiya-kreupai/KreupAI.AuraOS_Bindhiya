@@ -201,15 +201,20 @@ export class WorkflowExecutionService {
     workflowId: string,
     initiatorId: string,
     initiatorName: string,
-    input: Record<string, any>
+    input: Record<string, any>,
+    processType?: string
   ): Promise<WorkflowExecution> {
     const res = await APIClient.post<any>('/workflow-engine/instances', {
       definitionId: workflowId,
-      processType: input.processType || 'GENERIC',
+      processType: processType || input.processType || 'GENERIC',
       snapshotData: input,
       variables: input,
     });
-    return this.unwrap<WorkflowExecution>(res);
+    const raw = this.unwrap<any>(res);
+    if (!raw || raw.success === false) {
+      throw new Error(raw?.message || 'Failed to start execution — is the workflow ACTIVE?');
+    }
+    return this.mapInstance(raw);
   }
 
   static async cancelExecution(executionId: string, reason: string): Promise<void> {
