@@ -21,11 +21,22 @@ const periodNow = () => {
 export default function HolidaysHome() {
   const [data, setData] = useState<Dashboard | null>(null);
   const [period, setPeriod] = useState(periodNow());
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   async function load() {
-    const r = await fetch(`/api/v1/holidays-compliance/dashboard?period=${period}`);
-    const p = await r.json();
-    if (p.success) setData(p.data);
+    setLoading(true);
+    setError('');
+    try {
+      const r = await fetch(`/api/v1/holidays-compliance/dashboard?period=${period}`);
+      const p = await r.json();
+      if (p.success) setData(p.data);
+      else setError(p.error?.message ?? p.message ?? 'Failed to load dashboard');
+    } catch {
+      setError('Network error while loading dashboard');
+    } finally {
+      setLoading(false);
+    }
   }
   useEffect(() => {
     load();
@@ -48,7 +59,29 @@ export default function HolidaysHome() {
           />
         </header>
 
-        {data ? (
+        {error ? (
+          <div className="flex items-center justify-between rounded-md border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+            <span>{error}</span>
+            <button
+              type="button"
+              onClick={load}
+              className="rounded-md border border-rose-300 px-3 py-1.5 text-xs"
+            >
+              Retry
+            </button>
+          </div>
+        ) : null}
+
+        {loading ? (
+          <section className="grid grid-cols-2 gap-4 md:grid-cols-7">
+            {Array.from({ length: 7 }).map((_, i) => (
+              <div
+                key={i}
+                className="h-24 animate-pulse rounded-lg border border-slate-200 bg-slate-100"
+              />
+            ))}
+          </section>
+        ) : data ? (
           <section className="grid grid-cols-2 gap-4 md:grid-cols-7">
             <Tile label="Published" value={data.publishedHolidaysCount} colour="emerald" />
             <Tile label="Provisional" value={data.provisionalCount} colour="amber" />
@@ -58,7 +91,12 @@ export default function HolidaysHome() {
             <Tile label="Comp-Off ≤30d" value={data.compOffExpiringSoon} colour="rose" />
             <Tile label="Unapproved Work" value={data.unapprovedHolidayWorkCount} colour="rose" />
           </section>
-        ) : null}
+        ) : (
+          <p className="text-sm text-slate-500">
+            No records yet for {period}. Data will appear here once holidays and approvals are
+            recorded.
+          </p>
+        )}
 
         <section className="rounded-lg border border-slate-200 bg-white p-4">
           <p className="text-sm text-slate-700">
