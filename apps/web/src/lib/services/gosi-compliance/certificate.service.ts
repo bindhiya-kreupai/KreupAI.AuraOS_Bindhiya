@@ -45,7 +45,9 @@ export class GosiCertificateService {
 
     // Nationality breakdown for active registrations
     const saudiCount = activeRegList.filter((r: any) => r.nationalityClass === 'SAUDI').length;
-    const gccCount = activeRegList.filter((r: any) => r.nationalityClass === 'GCC_NATIONAL_OTHER').length;
+    const gccCount = activeRegList.filter(
+      (r: any) => r.nationalityClass === 'GCC_NATIONAL_OTHER'
+    ).length;
     const expatCount = activeRegList.filter((r: any) => r.nationalityClass === 'EXPAT').length;
 
     // Breakdowns by hierarchy
@@ -68,7 +70,9 @@ export class GosiCertificateService {
 
     activeRegList.forEach((r: any) => {
       const le = legalEntities.find((l: any) => l.id === r.establishmentId);
-      const estName = le ? `${le.legalName} (${le.registrationRef})` : r.establishmentId || 'Unknown';
+      const estName = le
+        ? `${le.legalName} (${le.registrationRef})`
+        : r.establishmentId || 'Unknown';
       byEstablishment[estName] = (byEstablishment[estName] || 0) + 1;
     });
 

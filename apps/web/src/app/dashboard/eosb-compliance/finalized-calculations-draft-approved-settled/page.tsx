@@ -111,10 +111,11 @@ export default function FinalizedCalculationsPage() {
     void post({ action: 'settle', id, paymentReference: ref }, 'Settled');
   }
 
-  const inputClass = "mt-1 w-full rounded-md border border-slate-300 dark:border-slate-700 px-2 py-1.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500";
+  const inputClass =
+    'mt-1 w-full rounded-md border border-slate-300 dark:border-slate-700 px-2 py-1.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500';
 
   return (
-    <main 
+    <main
       className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 text-slate-950 dark:text-slate-50 transition-colors duration-200"
       style={{ colorScheme: isDark ? 'dark' : 'light' }}
     >
@@ -133,10 +134,18 @@ export default function FinalizedCalculationsPage() {
             onChange={(e) => setFilter(e.target.value)}
             className="rounded-md border border-slate-300 dark:border-slate-700 px-2 py-1.5 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
           >
-            <option value="" className="bg-white dark:bg-slate-850">All</option>
-            <option value="DRAFT" className="bg-white dark:bg-slate-850">DRAFT</option>
-            <option value="APPROVED" className="bg-white dark:bg-slate-850">APPROVED</option>
-            <option value="SETTLED" className="bg-white dark:bg-slate-850">SETTLED</option>
+            <option value="" className="bg-white dark:bg-slate-850">
+              All
+            </option>
+            <option value="DRAFT" className="bg-white dark:bg-slate-850">
+              DRAFT
+            </option>
+            <option value="APPROVED" className="bg-white dark:bg-slate-850">
+              APPROVED
+            </option>
+            <option value="SETTLED" className="bg-white dark:bg-slate-850">
+              SETTLED
+            </option>
           </select>
         </header>
 
@@ -157,7 +166,9 @@ export default function FinalizedCalculationsPage() {
               className={inputClass}
             >
               {['AE', 'SA', 'BH', 'QA', 'OM', 'KW', 'IN'].map((c) => (
-                <option key={c} className="bg-white dark:bg-slate-800">{c}</option>
+                <option key={c} className="bg-white dark:bg-slate-800">
+                  {c}
+                </option>
               ))}
             </select>
           </label>
@@ -204,7 +215,9 @@ export default function FinalizedCalculationsPage() {
                 'DISABILITY',
                 'MUTUAL_AGREEMENT',
               ].map((t) => (
-                <option key={t} className="bg-white dark:bg-slate-800">{t}</option>
+                <option key={t} className="bg-white dark:bg-slate-800">
+                  {t}
+                </option>
               ))}
             </select>
           </label>
@@ -246,15 +259,25 @@ export default function FinalizedCalculationsPage() {
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {rows.map((r) => (
                 <tr key={r.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-850/50">
-                  <td className="px-3 py-2 font-mono text-xs text-slate-700 dark:text-slate-300">{r.employeeId}</td>
+                  <td className="px-3 py-2 font-mono text-xs text-slate-700 dark:text-slate-300">
+                    {r.employeeId}
+                  </td>
                   <td className="px-3 py-2 text-slate-800 dark:text-slate-200">{r.countryCode}</td>
-                  <td className="px-3 py-2 text-xs text-slate-700 dark:text-slate-300">{r.terminationType}</td>
-                  <td className="px-3 py-2 text-xs text-slate-700 dark:text-slate-300">{r.lastWorkingDate?.slice(0, 10)}</td>
-                  <td className="px-3 py-2 text-slate-800 dark:text-slate-200">{r.totalServiceYears}</td>
+                  <td className="px-3 py-2 text-xs text-slate-700 dark:text-slate-300">
+                    {r.terminationType}
+                  </td>
+                  <td className="px-3 py-2 text-xs text-slate-700 dark:text-slate-300">
+                    {r.lastWorkingDate?.slice(0, 10)}
+                  </td>
+                  <td className="px-3 py-2 text-slate-800 dark:text-slate-200">
+                    {r.totalServiceYears}
+                  </td>
                   <td className="px-3 py-2 text-slate-800 dark:text-slate-200">
                     {r.gratuityAmount} {r.currency}
                   </td>
-                  <td className="px-3 py-2 text-slate-800 dark:text-slate-200">{r.socialInsuranceOffset}</td>
+                  <td className="px-3 py-2 text-slate-800 dark:text-slate-200">
+                    {r.socialInsuranceOffset}
+                  </td>
                   <td className="px-3 py-2 font-semibold text-emerald-700 dark:text-emerald-450">
                     {r.netPayable} {r.currency}
                   </td>
@@ -306,7 +329,10 @@ export default function FinalizedCalculationsPage() {
               ))}
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={10} className="px-3 py-6 text-center text-slate-500 dark:text-slate-400">
+                  <td
+                    colSpan={10}
+                    className="px-3 py-6 text-center text-slate-500 dark:text-slate-400"
+                  >
                     No calculations.
                   </td>
                 </tr>

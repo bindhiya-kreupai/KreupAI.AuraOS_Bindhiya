@@ -94,30 +94,47 @@ export default function DisputeRegisterPage() {
     void post({ action: 'transition', id, next, resolutionNotes: rowNotes[id] || undefined }, next);
   }
 
-  const inputClass = "mt-1 w-full rounded-md border border-slate-300 dark:border-slate-700 px-2 py-1.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm";
+  const inputClass =
+    'mt-1 w-full rounded-md border border-slate-300 dark:border-slate-700 px-2 py-1.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm';
 
   return (
-    <main 
+    <main
       className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 text-slate-950 dark:text-slate-50 transition-colors duration-200"
       style={{ colorScheme: isDark ? 'dark' : 'light' }}
     >
       <div className="mx-auto flex max-w-7xl flex-col gap-6">
         <header className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
           <div>
-            <p className="text-sm uppercase text-slate-500 dark:text-slate-400 font-semibold tracking-wider">EPIC-28 · S13 / S20 / S28</p>
-            <h1 className="text-2xl font-bold text-slate-900 dark:text-white mt-1">EOSB Dispute Register</h1>
+            <p className="text-sm uppercase text-slate-500 dark:text-slate-400 font-semibold tracking-wider">
+              EPIC-28 · S13 / S20 / S28
+            </p>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
+              EOSB Dispute Register
+            </h1>
           </div>
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
             className="rounded-md border border-slate-300 dark:border-slate-700 px-2 py-1.5 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
           >
-            <option value="" className="bg-white dark:bg-slate-850">All</option>
-            <option value="OPEN" className="bg-white dark:bg-slate-850">OPEN</option>
-            <option value="UNDER_REVIEW" className="bg-white dark:bg-slate-850">UNDER_REVIEW</option>
-            <option value="RESOLVED" className="bg-white dark:bg-slate-850">RESOLVED</option>
-            <option value="REJECTED" className="bg-white dark:bg-slate-850">REJECTED</option>
-            <option value="WITHDRAWN" className="bg-white dark:bg-slate-850">WITHDRAWN</option>
+            <option value="" className="bg-white dark:bg-slate-850">
+              All
+            </option>
+            <option value="OPEN" className="bg-white dark:bg-slate-850">
+              OPEN
+            </option>
+            <option value="UNDER_REVIEW" className="bg-white dark:bg-slate-850">
+              UNDER_REVIEW
+            </option>
+            <option value="RESOLVED" className="bg-white dark:bg-slate-850">
+              RESOLVED
+            </option>
+            <option value="REJECTED" className="bg-white dark:bg-slate-850">
+              REJECTED
+            </option>
+            <option value="WITHDRAWN" className="bg-white dark:bg-slate-850">
+              WITHDRAWN
+            </option>
           </select>
         </header>
 
@@ -161,7 +178,9 @@ export default function DisputeRegisterPage() {
                 'SI_OFFSET',
                 'OTHER',
               ].map((c) => (
-                <option key={c} className="bg-white dark:bg-slate-800">{c}</option>
+                <option key={c} className="bg-white dark:bg-slate-800">
+                  {c}
+                </option>
               ))}
             </select>
           </label>
@@ -209,10 +228,16 @@ export default function DisputeRegisterPage() {
             <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {rows.map((d) => (
                 <tr key={d.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-850/50">
-                  <td className="px-3 py-2 text-xs text-slate-700 dark:text-slate-300">{d.raisedAt?.slice(0, 10)}</td>
-                  <td className="px-3 py-2 font-mono text-xs text-slate-700 dark:text-slate-300">{d.employeeId}</td>
+                  <td className="px-3 py-2 text-xs text-slate-700 dark:text-slate-300">
+                    {d.raisedAt?.slice(0, 10)}
+                  </td>
+                  <td className="px-3 py-2 font-mono text-xs text-slate-700 dark:text-slate-300">
+                    {d.employeeId}
+                  </td>
                   <td className="px-3 py-2 text-slate-800 dark:text-slate-200">{d.subject}</td>
-                  <td className="px-3 py-2 text-xs text-slate-700 dark:text-slate-300">{d.category}</td>
+                  <td className="px-3 py-2 text-xs text-slate-700 dark:text-slate-300">
+                    {d.category}
+                  </td>
                   <td className="px-3 py-2 text-slate-800 dark:text-slate-200">
                     {d.claimedAmount ?? '—'} {d.currency}
                   </td>
@@ -270,7 +295,10 @@ export default function DisputeRegisterPage() {
               ))}
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-3 py-6 text-center text-slate-500 dark:text-slate-400">
+                  <td
+                    colSpan={8}
+                    className="px-3 py-6 text-center text-slate-500 dark:text-slate-400"
+                  >
                     No disputes.
                   </td>
                 </tr>

@@ -1,7 +1,17 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { DollarSign, Calculator, PieChart, Plus, Edit2, CheckCircle2, Loader2, Trash2, X } from 'lucide-react';
+import {
+  DollarSign,
+  Calculator,
+  PieChart,
+  Plus,
+  Edit2,
+  CheckCircle2,
+  Loader2,
+  Trash2,
+  X,
+} from 'lucide-react';
 import { SalaryComponentService, SalaryStructureService } from '../services';
 import SalaryStructureBuilder from '@/components/payroll/SalaryStructureBuilder';
 
@@ -154,7 +164,7 @@ export default function SalaryStructurePage() {
           </p>
         </div>
         <button
-onClick={openCreateModal}
+          onClick={openCreateModal}
           className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-indigo-700 transition-all"
         >
           <Plus className="w-4 h-4" /> Add Component
@@ -206,12 +216,12 @@ onClick={openCreateModal}
                         {comp.isTaxable ? 'Taxable' : 'Exempt'}
                       </span>
                       <button
-onClick={() => openEditModal(comp)}
+                        onClick={() => openEditModal(comp)}
                         className="text-slate-400 hover:text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         <Edit2 className="w-4 h-4" />
                       </button>
-<button
+                      <button
                         onClick={() => handleDelete(comp.id)}
                         className="text-slate-400 hover:text-rose-600 opacity-0 group-hover:opacity-100 transition-opacity"
                       >
@@ -231,7 +241,7 @@ onClick={() => openEditModal(comp)}
                 {deductions.map((comp: any, i: number) => (
                   <div
                     key={comp.id || i}
-className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 group hover:border-indigo-200 dark:hover:border-indigo-800 transition-colors"
+                    className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 group hover:border-indigo-200 dark:hover:border-indigo-800 transition-colors"
                   >
                     <div className="flex items-center gap-3">
                       <div className="p-2 rounded-lg bg-rose-100 text-rose-600">
@@ -253,7 +263,7 @@ className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/5
                       <span className="text-xs font-bold px-2 py-1 rounded bg-rose-50 text-rose-700">
                         {comp.isStatutory ? 'Mandatory' : 'Optional'}
                       </span>
-<button
+                      <button
                         onClick={() => openEditModal(comp)}
                         className="text-slate-400 hover:text-indigo-600 opacity-0 group-hover:opacity-100 transition-opacity"
                       >

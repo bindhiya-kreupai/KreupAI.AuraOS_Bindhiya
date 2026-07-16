@@ -14,7 +14,10 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
     if (action === 'preview-employee') {
       const employeeId = url.searchParams.get('employeeId');
       if (!employeeId) return badRequest('employeeId required');
-      const preview = await gosiRegistrationService.getEmployeePreview(employeeId, ctx.user.tenantId);
+      const preview = await gosiRegistrationService.getEmployeePreview(
+        employeeId,
+        ctx.user.tenantId
+      );
       return ok(preview);
     }
     return ok(

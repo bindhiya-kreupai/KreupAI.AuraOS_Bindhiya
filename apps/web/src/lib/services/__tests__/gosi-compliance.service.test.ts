@@ -38,7 +38,7 @@ beforeEach(() => {
         isDeleted: false,
         company: { id: 'company-1', name: 'Test Company', status: 'ACTIVE', tenantId: 'tenant-1' },
         status: { name: 'Active' },
-      }
+      },
     ]),
   };
   m.gccLegalEntity = {
@@ -64,7 +64,7 @@ beforeEach(() => {
         registrationType: 'GOSI',
         isActive: true,
         isDeleted: false,
-      }
+      },
     ]),
   };
   m.tenant = {
@@ -98,13 +98,15 @@ beforeEach(() => {
     findFirst: vi.fn().mockImplementation(async () => {
       const mockVal = await m.gosiEmployeeRegistration.findUnique();
       if (mockVal === null) return null;
-      return mockVal || {
-        id: 'reg-1',
-        employeeId: 'emp-1',
-        establishmentId: 'est-1',
-        status: 'ACTIVE',
-        nationalityClass: 'SAUDI',
-      };
+      return (
+        mockVal || {
+          id: 'reg-1',
+          employeeId: 'emp-1',
+          establishmentId: 'est-1',
+          status: 'ACTIVE',
+          nationalityClass: 'SAUDI',
+        }
+      );
     }),
     findMany: vi.fn().mockResolvedValue([]),
     create: vi.fn().mockImplementation(async ({ data }: any) => ({ id: 'reg-1', ...data })),

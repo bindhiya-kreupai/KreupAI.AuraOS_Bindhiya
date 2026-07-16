@@ -37,7 +37,9 @@ export class GosiRegistrationService {
 
     const employeeStatusName = (employee.status?.name || '').toUpperCase();
     if (employeeStatusName !== 'ACTIVE' && employeeStatusName !== 'CONFIRMED') {
-      throw new Error(`Employment Validation: Employee status is inactive (${employee.status?.name ?? 'Unknown'})`);
+      throw new Error(
+        `Employment Validation: Employee status is inactive (${employee.status?.name ?? 'Unknown'})`
+      );
     }
 
     // Step 2 & 9: Determine Country & Validate SA Country
@@ -51,19 +53,25 @@ export class GosiRegistrationService {
       },
     });
     if (!legalEntity) {
-      throw new Error('Country Validation: Employee does not belong to a Saudi Arabia Legal Entity.');
+      throw new Error(
+        'Country Validation: Employee does not belong to a Saudi Arabia Legal Entity.'
+      );
     }
 
     // Step 3 & 4 & 10: Determine Establishment, active, and GOSI configuration
     if (!legalEntity.registrationRef) {
-      throw new Error('Registration Validation: No GOSI Establishment configured (registrationRef is missing).');
+      throw new Error(
+        'Registration Validation: No GOSI Establishment configured (registrationRef is missing).'
+      );
     }
-    const isGosiConfigured = 
-      legalEntity.registrationType?.toUpperCase() === 'GOSI' || 
+    const isGosiConfigured =
+      legalEntity.registrationType?.toUpperCase() === 'GOSI' ||
       !!legalEntity.gosiEstablishmentId ||
       !!legalEntity.registrationRef;
     if (!isGosiConfigured) {
-      throw new Error('Registration Validation: Legal entity is not configured as a GOSI Establishment.');
+      throw new Error(
+        'Registration Validation: Legal entity is not configured as a GOSI Establishment.'
+      );
     }
 
     // Step 5: Duplicate Validation
@@ -76,7 +84,9 @@ export class GosiRegistrationService {
       },
     });
     if (activeReg) {
-      throw new Error('Duplicate Validation: Employee already registered under an ACTIVE registration');
+      throw new Error(
+        'Duplicate Validation: Employee already registered under an ACTIVE registration'
+      );
     }
 
     // Step 6: Nationality Validation
@@ -94,7 +104,9 @@ export class GosiRegistrationService {
       expectedClass = 'GCC_NATIONAL_OTHER';
     }
     if (input.nationalityClass !== expectedClass) {
-      throw new Error(`Nationality Validation: Nationality mismatch. Employee profile (${nationality}) maps to ${expectedClass}, not ${input.nationalityClass}`);
+      throw new Error(
+        `Nationality Validation: Nationality mismatch. Employee profile (${nationality}) maps to ${expectedClass}, not ${input.nationalityClass}`
+      );
     }
 
     // Step 7: Employment status checks (join dates, resignation etc.)
@@ -136,13 +148,13 @@ export class GosiRegistrationService {
           tenantId: auth.tenantId,
           employeeId: input.employeeId,
           eventType: 'REGISTRATION',
-          payload: { 
+          payload: {
             action: 'REGISTER',
-            nationalityClass: input.nationalityClass, 
+            nationalityClass: input.nationalityClass,
             establishmentId: input.establishmentId,
             registrationRef: legalEntity.registrationRef,
             user: auth.userId,
-            newValue: 'ACTIVE'
+            newValue: 'ACTIVE',
           },
         },
       });
@@ -184,12 +196,12 @@ export class GosiRegistrationService {
           tenantId: auth.tenantId,
           employeeId,
           eventType: 'DEREGISTRATION',
-          payload: { 
+          payload: {
             action: 'DEREGISTER',
-            reason: input.reason, 
-            oldStatus: 'ACTIVE', 
+            reason: input.reason,
+            oldStatus: 'ACTIVE',
             newStatus: 'DEREGISTERED',
-            user: auth.userId
+            user: auth.userId,
           },
         },
       });
@@ -227,7 +239,9 @@ export class GosiRegistrationService {
           ...item,
           employeeName: employee ? `${employee.firstName} ${employee.lastName}` : 'Unknown',
           employeeCode: employee?.employeeCode ?? '—',
-          establishmentName: legalEntity ? `${legalEntity.legalName} (${legalEntity.registrationRef})` : item.establishmentId,
+          establishmentName: legalEntity
+            ? `${legalEntity.legalName} (${legalEntity.registrationRef})`
+            : item.establishmentId,
         };
       })
     );
@@ -275,7 +289,7 @@ export class GosiRegistrationService {
     const nationality = (compliance?.nationality || '').toUpperCase();
     const isSaudi = nationality === 'SA';
     const isGcc = ['AE', 'BH', 'QA', 'OM', 'KW'].includes(nationality);
-    
+
     let expectedClass = 'EXPAT';
     if (isSaudi) expectedClass = 'SAUDI';
     else if (isGcc) expectedClass = 'GCC_NATIONAL_OTHER';
@@ -291,7 +305,10 @@ export class GosiRegistrationService {
       establishmentNumber: legalEntity?.registrationRef ?? 'No GOSI Establishment Configured',
       nationalityClass: expectedClass,
       nationality,
-      isGosiConfigured: !!legalEntity?.registrationRef && (legalEntity.registrationType?.toUpperCase() === 'GOSI' || !!legalEntity.gosiEstablishmentId),
+      isGosiConfigured:
+        !!legalEntity?.registrationRef &&
+        (legalEntity.registrationType?.toUpperCase() === 'GOSI' ||
+          !!legalEntity.gosiEstablishmentId),
     };
   }
 }

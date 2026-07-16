@@ -426,13 +426,7 @@ export const approvalWorkflow = {
   async createWorkflow(data: {
     name: string;
     requestType:
-      | 'LEAVE'
-      | 'OVERTIME'
-      | 'COMP_OFF'
-      | 'WFH'
-      | 'SHIFT_SWAP'
-      | 'REGULARIZATION'
-      | 'TIMESHEET';
+      'LEAVE' | 'OVERTIME' | 'COMP_OFF' | 'WFH' | 'SHIFT_SWAP' | 'REGULARIZATION' | 'TIMESHEET';
     applicableTo: 'ALL' | 'DEPARTMENT' | 'DESIGNATION' | 'CUSTOM';
     approvalLevels: Array<{
       level: number;

@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React from 'react';
 import { Calculator, ArrowRight } from 'lucide-react';
@@ -9,7 +9,7 @@ export default function EOSBPage() {
   const { isDark } = useTheme();
 
   return (
-    <div 
+    <div
       className="p-6 max-w-7xl mx-auto text-slate-900 dark:text-slate-100"
       style={{ colorScheme: isDark ? 'dark' : 'light' }}
     >
@@ -37,18 +37,19 @@ export default function EOSBPage() {
             EOSB Calculator
           </h3>
           <p className="text-slate-600 dark:text-slate-400 text-sm">
-            Calculate end of service benefits based on country-specific labor laws for UAE, Saudi Arabia, Bahrain, Qatar, Oman, Kuwait, and India.
+            Calculate end of service benefits based on country-specific labor laws for UAE, Saudi
+            Arabia, Bahrain, Qatar, Oman, Kuwait, and India.
           </p>
         </Link>
       </div>
 
       <div className="mt-8 p-6 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800">
-        <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">
-          About EOSB
-        </h2>
+        <h2 className="text-xl font-semibold text-slate-900 dark:text-white mb-4">About EOSB</h2>
         <div className="space-y-3 text-slate-600 dark:text-slate-400">
           <p>
-            End of Service Benefits (EOSB) are statutory payments that employers must make to employees upon termination of employment. The calculation varies by country and depends on factors such as:
+            End of Service Benefits (EOSB) are statutory payments that employers must make to
+            employees upon termination of employment. The calculation varies by country and depends
+            on factors such as:
           </p>
           <ul className="list-disc list-inside space-y-2 ml-4">
             <li>Length of service</li>
@@ -57,11 +58,11 @@ export default function EOSBPage() {
             <li>Country-specific labor laws</li>
           </ul>
           <p className="mt-4">
-            Our EOSB calculator supports all GCC countries and India, ensuring compliance with local labor regulations.
+            Our EOSB calculator supports all GCC countries and India, ensuring compliance with local
+            labor regulations.
           </p>
         </div>
       </div>
     </div>
   );
 }
-

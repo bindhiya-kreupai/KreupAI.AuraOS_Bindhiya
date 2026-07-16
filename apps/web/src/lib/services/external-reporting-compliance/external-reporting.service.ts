@@ -110,11 +110,7 @@ export interface FileSubmission {
 }
 
 export type FormatDefect =
-  | 'MISSING_COLUMN'
-  | 'EXTRA_COLUMN'
-  | 'WRONG_COLUMN_ORDER'
-  | 'TOO_MANY_ROWS'
-  | 'WRONG_ENCODING';
+  'MISSING_COLUMN' | 'EXTRA_COLUMN' | 'WRONG_COLUMN_ORDER' | 'TOO_MANY_ROWS' | 'WRONG_ENCODING';
 
 export interface FormatValidatorResult {
   defects: FormatDefect[];

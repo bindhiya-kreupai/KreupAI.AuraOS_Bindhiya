@@ -34,12 +34,7 @@ export interface AuthContext {
 }
 
 export type GrievanceChannel =
-  | 'EMAIL'
-  | 'PORTAL'
-  | 'HOTLINE'
-  | 'IN_PERSON'
-  | 'ANONYMOUS'
-  | 'WHISTLEBLOWER';
+  'EMAIL' | 'PORTAL' | 'HOTLINE' | 'IN_PERSON' | 'ANONYMOUS' | 'WHISTLEBLOWER';
 
 export type GrievanceType =
   | 'HARASSMENT'

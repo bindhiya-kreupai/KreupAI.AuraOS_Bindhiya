@@ -84,7 +84,9 @@ export default function RiskHeatmapPage() {
       <div className="mx-auto flex max-w-7xl flex-col gap-6">
         <header className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
           <div>
-            <p className="text-sm uppercase text-slate-500 dark:text-slate-400 font-semibold">EPIC-31 · S10</p>
+            <p className="text-sm uppercase text-slate-500 dark:text-slate-400 font-semibold">
+              EPIC-31 · S10
+            </p>
             <h1 className="text-2xl font-semibold dark:text-white">Compliance Risk Heatmap</h1>
           </div>
           <select
@@ -92,9 +94,15 @@ export default function RiskHeatmapPage() {
             onChange={(e) => setFilter(e.target.value)}
             className="rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-1.5 text-sm dark:text-white focus:outline-none focus:ring-2 focus:ring-slate-400"
           >
-            <option value="" className="dark:bg-slate-900">All</option>
-            <option value="OPEN" className="dark:bg-slate-900">OPEN</option>
-            <option value="CLOSED" className="dark:bg-slate-900">CLOSED</option>
+            <option value="" className="dark:bg-slate-900">
+              All
+            </option>
+            <option value="OPEN" className="dark:bg-slate-900">
+              OPEN
+            </option>
+            <option value="CLOSED" className="dark:bg-slate-900">
+              CLOSED
+            </option>
           </select>
         </header>
 
@@ -165,7 +173,10 @@ export default function RiskHeatmapPage() {
             </thead>
             <tbody>
               {rows.map((r) => (
-                <tr key={r.id} className="border-b border-slate-100 dark:border-slate-800/60 hover:bg-slate-50/50 dark:hover:bg-slate-850/30">
+                <tr
+                  key={r.id}
+                  className="border-b border-slate-100 dark:border-slate-800/60 hover:bg-slate-50/50 dark:hover:bg-slate-850/30"
+                >
                   <td className="px-3 py-2 dark:text-slate-300">{r.title}</td>
                   <td className="px-3 py-2 font-mono text-xs dark:text-slate-300">{r.domain}</td>
                   <td className="px-3 py-2 text-xs dark:text-slate-350">{r.country ?? '—'}</td>
@@ -181,7 +192,9 @@ export default function RiskHeatmapPage() {
                     </span>
                   </td>
                   <td className="px-3 py-2">
-                    <span className={`inline-block rounded px-2 py-0.5 text-xs font-semibold ${r.status === 'CLOSED' ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-450' : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-450'}`}>
+                    <span
+                      className={`inline-block rounded px-2 py-0.5 text-xs font-semibold ${r.status === 'CLOSED' ? 'bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-450' : 'bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-450'}`}
+                    >
                       {r.status}
                     </span>
                   </td>
@@ -200,7 +213,10 @@ export default function RiskHeatmapPage() {
               ))}
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-3 py-6 text-center text-slate-500 dark:text-slate-400">
+                  <td
+                    colSpan={8}
+                    className="px-3 py-6 text-center text-slate-500 dark:text-slate-400"
+                  >
                     No risks.
                   </td>
                 </tr>

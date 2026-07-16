@@ -168,12 +168,7 @@ interface Certificate {
 }
 
 type WorkspaceTab =
-  | 'establishments'
-  | 'targets'
-  | 'employees'
-  | 'checkpoints'
-  | 'fines'
-  | 'certificates';
+  'establishments' | 'targets' | 'employees' | 'checkpoints' | 'fines' | 'certificates';
 
 type DrawerRecord =
   | { type: 'establishment'; data: EstablishmentConfig }

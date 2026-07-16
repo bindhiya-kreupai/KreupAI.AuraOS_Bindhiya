@@ -87,17 +87,22 @@ export default function MonthlyAccrualsGlPostingPage() {
     void post({ action: 'mark-gl-posted', id, glJournalRef: ref }, 'GL posted');
   }
 
-  const inputClass = "mt-1 w-full rounded-md border border-slate-300 dark:border-slate-700 px-2 py-1.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500";
+  const inputClass =
+    'mt-1 w-full rounded-md border border-slate-300 dark:border-slate-700 px-2 py-1.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500';
 
   return (
-    <main 
+    <main
       className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 text-slate-950 dark:text-slate-50 transition-colors duration-200"
       style={{ colorScheme: isDark ? 'dark' : 'light' }}
     >
       <div className="mx-auto flex max-w-7xl flex-col gap-6">
         <header className="border-b border-slate-200 dark:border-slate-800 pb-4">
-          <p className="text-sm uppercase text-slate-500 dark:text-slate-400">EPIC-28 · S11 / S17</p>
-          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">Monthly EOSB Accruals &amp; GL Posting</h1>
+          <p className="text-sm uppercase text-slate-500 dark:text-slate-400">
+            EPIC-28 · S11 / S17
+          </p>
+          <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
+            Monthly EOSB Accruals &amp; GL Posting
+          </h1>
         </header>
 
         <section className="grid gap-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 md:grid-cols-6 items-end">
@@ -125,7 +130,9 @@ export default function MonthlyAccrualsGlPostingPage() {
               className={inputClass}
             >
               {['AE', 'SA', 'BH', 'QA', 'OM', 'KW', 'IN'].map((c) => (
-                <option key={c} className="bg-white dark:bg-slate-800">{c}</option>
+                <option key={c} className="bg-white dark:bg-slate-800">
+                  {c}
+                </option>
               ))}
             </select>
           </label>
@@ -176,9 +183,13 @@ export default function MonthlyAccrualsGlPostingPage() {
               {rows.map((a) => (
                 <tr key={a.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-850/50">
                   <td className="px-3 py-2 text-slate-800 dark:text-slate-200">{a.period}</td>
-                  <td className="px-3 py-2 font-mono text-xs text-slate-700 dark:text-slate-300">{a.employeeId}</td>
+                  <td className="px-3 py-2 font-mono text-xs text-slate-700 dark:text-slate-300">
+                    {a.employeeId}
+                  </td>
                   <td className="px-3 py-2 text-slate-800 dark:text-slate-200">{a.countryCode}</td>
-                  <td className="px-3 py-2 text-slate-800 dark:text-slate-200">{a.serviceMonths}</td>
+                  <td className="px-3 py-2 text-slate-800 dark:text-slate-200">
+                    {a.serviceMonths}
+                  </td>
                   <td className="px-3 py-2 text-slate-800 dark:text-slate-200">{a.basicSalary}</td>
                   <td className="px-3 py-2 font-semibold text-slate-900 dark:text-white">
                     {a.accruedGratuity} {a.currency}
@@ -221,7 +232,10 @@ export default function MonthlyAccrualsGlPostingPage() {
               ))}
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="px-3 py-6 text-center text-slate-500 dark:text-slate-400">
+                  <td
+                    colSpan={9}
+                    className="px-3 py-6 text-center text-slate-500 dark:text-slate-400"
+                  >
                     No accruals.
                   </td>
                 </tr>
