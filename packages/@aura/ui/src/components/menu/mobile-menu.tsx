@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * @module MobileMenu
  * @description Mobile navigation drawer for AURA HCM
@@ -6,7 +8,6 @@
  * @reference docs/aura-uiux-design.md
  */
 
-'use client';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';

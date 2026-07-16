@@ -63,7 +63,6 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
   const router = useRouter();
   const pathname = usePathname() || '';
-  const router = useRouter();
   const moduleSegment = pathname.split('/').filter(Boolean)[1];
   const isPreviewModule = !!moduleSegment && PREVIEW_MODULES.has(moduleSegment);
 

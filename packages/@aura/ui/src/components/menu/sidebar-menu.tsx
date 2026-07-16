@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * @module SidebarMenu
  * @description Main sidebar navigation component for AURA HCM
@@ -6,7 +8,6 @@
  * @reference docs/aura-uiux-design.md
  */
 
-'use client';
 
 import React, { useState, useMemo, useCallback } from 'react';
 import Link from 'next/link';

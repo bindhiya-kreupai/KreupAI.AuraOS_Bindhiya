@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * @module TopNav
  * @description Top navigation bar for AURA HCM
@@ -6,7 +8,6 @@
  * @reference docs/aura-uiux-design.md
  */
 
-'use client';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
