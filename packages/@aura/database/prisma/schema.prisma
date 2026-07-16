@@ -11997,7 +11997,7 @@ model SeparationCase {
   deletedAt                 DateTime?
   isDeleted                 Boolean   @default(false)
 
-  @@unique([tenantId, caseNumber], map: "aura_separation_case_unique")
+ @@unique([tenantId, caseNumber], name: "aura_separation_case_unique", map: "aura_separation_case_unique")
   @@index([tenantId, employeeId], map: "aura_separation_case_employee")
   @@map("aura_separation_case")
 }
@@ -12044,7 +12044,7 @@ model SeparationHandover {
   deletedAt       DateTime?
   isDeleted       Boolean   @default(false)
 
-  @@index([tenantId, caseId], map: "aura_separation_handover_case")
+  @@index([tenantId, caseId],map: "aura_separation_handover_case")
   @@map("aura_separation_handover")
 }
 
@@ -12067,7 +12067,7 @@ model SeparationExitInterview {
   deletedAt         DateTime?
   isDeleted         Boolean   @default(false)
 
-  @@unique([tenantId, caseId], map: "aura_separation_exit_interview_unique")
+  @@unique([tenantId, caseId],name:"aura_separation_exit_interview_unique", map: "aura_separation_exit_interview_unique")
   @@map("aura_separation_exit_interview")
 }
 
@@ -12098,7 +12098,7 @@ model SeparationCertificate {
   deletedAt              DateTime?
   isDeleted              Boolean   @default(false)
 
-  @@unique([tenantId, period], map: "aura_separation_certificate_unique")
+  @@unique([tenantId, period],name:"aura_separation_certificate_unique",map: "aura_separation_certificate_unique")
   @@map("aura_separation_certificate")
 }
 

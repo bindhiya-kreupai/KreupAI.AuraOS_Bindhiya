@@ -364,7 +364,14 @@ export class SeparationHandoverService {
     auth: AuthContext
   ) {
     return (prisma as any).separationHandover.create({
-      data: { tenantId: auth.tenantId, ...input, status: 'PENDING' },
+      data: {
+        tenantId: auth.tenantId,
+        caseId: input.caseId,
+        itemDescription: input.itemDescription,
+        itemType: input.itemType,
+        successorId: input.successorId,
+        status: 'PENDING',
+      },
     });
   }
 
