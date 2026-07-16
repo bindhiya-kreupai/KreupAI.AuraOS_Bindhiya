@@ -11,7 +11,13 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     if (!permissions.includes('ai-automation:read')) return forbidden('ai-automation:read');
     const { page, limit, skip } = parsePagination(new URL(request.url).searchParams);
     const employees: any[] = await (prisma as any).employee.findMany({
-      where: { tenantId: user.tenantId, status: 'ACTIVE' as any },
+      // Employee has no tenantId scalar (schema.prisma:284). Filter through Company relation.
+      // Employee.status is a relation, not a scalar — use isDeleted:false as the "active" proxy.
+      where: { company: { tenantId: user.tenantId }, isDeleted: false },
+      select: {
+        id: true,
+        joiningDate: true,
+      },
       take: 500,
     });
     const since = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);

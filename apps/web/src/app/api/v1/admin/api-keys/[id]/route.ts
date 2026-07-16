@@ -9,8 +9,8 @@ import { logger } from '@/lib/logger';
 export const DELETE = withAudit(
   withEnhancedAuth(async (_request: NextRequest, context: any) => {
     try {
-      const { user, params, permissions } = context;
-      if (!permissions.includes('admin/api-keys:delete')) {
+      const { user, params, permissions, roles } = context;
+      if (!roles?.includes('SUPER_ADMIN') && !permissions.includes('admin/api-keys:delete')) {
         return NextResponse.json(
           {
             success: false,

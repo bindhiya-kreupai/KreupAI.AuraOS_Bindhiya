@@ -18,8 +18,14 @@ export default function RecruitmentStageGatePage() {
       fields={[
         { name: 'caseId', label: 'Recruitment case ID', type: 'text', required: true },
         {
-          name: 'fromStage',
-          label: 'From stage',
+          name: 'candidateId',
+          label: 'Candidate ID',
+          type: 'text',
+          required: true,
+        },
+        {
+          name: 'currentStage',
+          label: 'currentStage',
           type: 'text',
           required: true,
           placeholder: 'SCREENED',
@@ -35,10 +41,13 @@ export default function RecruitmentStageGatePage() {
       ]}
       endpoint={{ method: 'POST', url: '/api/v1/recruitment-compliance/stage-gate' }}
       buildPayload={(v) => ({
-        caseId: v.caseId,
-        fromStage: v.fromStage,
+        snapshot: {
+          caseId: String(v.caseId),
+          candidateId: String(v.candidateId),
+          currentStage: v.currentStage,
+          countryCode: v.countryCode || undefined,
+        },
         toStage: v.toStage,
-        countryCode: v.countryCode || undefined,
       })}
       buildVerdict={(data: any) => {
         const v = data?.verdict;

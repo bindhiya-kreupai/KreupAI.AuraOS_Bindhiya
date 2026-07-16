@@ -11,8 +11,10 @@ const PROD_ORIGINS = (process.env.CORS_ALLOWED_ORIGINS ?? '')
 const DEV_ORIGINS = [
   'http://localhost:3000',
   'http://localhost:3001',
+  'http://localhost:3006',
   'http://localhost:5173',
   'http://127.0.0.1:3000',
+  'http://127.0.0.1:3006',
 ];
 
 function isOriginAllowed(origin: string | null): boolean {

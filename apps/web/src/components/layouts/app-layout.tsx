@@ -17,6 +17,7 @@ import { SearchProvider, useSearch } from '@/stores/search-store';
 import { ThemeProvider, useTheme } from '@/stores/theme-store';
 import { GlobalSearchCommand } from '@/components/search/GlobalSearchCommand';
 import HRChatbot from '@/components/ai/HRChatbot';
+import { useCurrentUser } from '@/lib/auth/AuthProvider';
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -33,6 +34,7 @@ const AppLayoutInner: React.FC<AppLayoutProps> = ({ children }) => {
     useActivity();
   const { setIsOpen: setSearchOpen } = useSearch();
   const { isDark, toggleTheme } = useTheme();
+  const { user: currentUser } = useCurrentUser();
 
   const handleSignOut = useCallback(async () => {
     try {
@@ -120,6 +122,7 @@ const AppLayoutInner: React.FC<AppLayoutProps> = ({ children }) => {
         onSignOut={handleSignOut}
         isDark={isDark}
         onThemeToggle={toggleTheme}
+        user={currentUser}
       />
 
       <div className="flex h-[calc(100vh-4rem)]">

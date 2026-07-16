@@ -15,19 +15,19 @@ import {
 // GET - Fetch user deactivation records with filters
 export const GET = withEnhancedAuth(async (request: NextRequest, { user, permissions }) => {
   try {
-    // Check permission
-    const permissionError = requirePermission(Resource.USERS, Action.READ, permissions);
+    const permissionError = requirePermission(Resource.USER_DEACTIVATION, Action.READ, permissions);
     if (permissionError) return permissionError;
 
-    // Validate query parameters
     const { searchParams } = new URL(request.url);
     const { userId, deactivatedBy, page, limit } = validateQueryParams(
       UserDeactivationQuerySchema,
       searchParams
     );
 
-    // Build where clause
-    const where: any = {};
+    const where: any = {
+      isDeleted: false,
+      tenantId: user.tenantId,
+    };
 
     if (userId) {
       where.userId = userId;
@@ -37,7 +37,6 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
       where.deactivatedBy = deactivatedBy;
     }
 
-    // Execute query
     const [deactivations, total] = await Promise.all([
       prisma.userDeactivation.findMany({
         where,
@@ -46,7 +45,17 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
             select: {
               id: true,
               email: true,
+              firstName: true,
+              lastName: true,
               status: true,
+            },
+          },
+          deactivator: {
+            select: {
+              id: true,
+              email: true,
+              firstName: true,
+              lastName: true,
             },
           },
         },
@@ -83,18 +92,18 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
 // POST - Deactivate a user
 export const POST = withEnhancedAuth(async (request: NextRequest, { user, permissions }) => {
   try {
-    // Check permission
-    const permissionError = requirePermission(Resource.USERS, Action.DELETE, permissions);
+    const permissionError = requirePermission(
+      Resource.USER_DEACTIVATION,
+      Action.CREATE,
+      permissions
+    );
     if (permissionError) return permissionError;
 
-    // Validate request body
     const body = await request.json();
     const validatedData = DeactivateUserSchema.parse(body);
 
-    // Fetch the user to deactivate
-    // tenant-ok: id from authenticated JWT or tenant-scoped lookup above
-    const targetUser = await prisma.user.findUnique({
-      where: { id: validatedData.userId },
+    const targetUser = await prisma.user.findFirst({
+      where: { id: validatedData.userId, isDeleted: false },
       select: { id: true, email: true, status: true, tenantId: true },
     });
 
@@ -102,7 +111,6 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
       return NextResponse.json({ success: false, error: 'User not found' }, { status: 404 });
     }
 
-    // Prevent self-deactivation
     if (targetUser.id === user.userId) {
       return NextResponse.json(
         { success: false, error: 'You cannot deactivate your own account' },
@@ -110,7 +118,6 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
       );
     }
 
-    // Check if user is already inactive
     if (targetUser.status === 'Inactive') {
       return NextResponse.json(
         { success: false, error: 'User is already deactivated' },
@@ -118,7 +125,6 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
       );
     }
 
-    // Tenant isolation check
     if (targetUser.tenantId !== user.tenantId) {
       return NextResponse.json(
         { success: false, error: 'Cannot deactivate users from other tenants' },
@@ -126,32 +132,30 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
       );
     }
 
-    // Begin transaction - deactivate user and create deactivation record
     const [updatedUser, deactivationRecord] = await prisma.$transaction([
-      // Update user status to Inactive
-      // tenant-ok: targetUser.tenantId equality was verified directly above
       prisma.user.update({
         where: { id: validatedData.userId },
         data: { status: 'Inactive' },
       }),
 
-      // Create deactivation record
       prisma.userDeactivation.create({
         data: {
           userId: validatedData.userId,
           reason: validatedData.reason,
           deactivatedBy: user.userId,
+          tenantId: user.tenantId,
+          createdBy: user.userId,
         },
         include: {
           user: {
-            select: {
-              email: true,
-            },
+            select: { email: true, firstName: true, lastName: true },
+          },
+          deactivator: {
+            select: { email: true, firstName: true, lastName: true },
           },
         },
       }),
 
-      // Revoke all active sessions
       prisma.userSession.updateMany({
         where: {
           userId: validatedData.userId,
@@ -161,7 +165,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
       }),
     ]);
 
-    // Create audit log
+    // Manual audit log with rich metadata (withEnhancedAuth auto-audit handles the basic CRUD log)
     const ipAddress =
       request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
 
@@ -169,6 +173,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
       data: {
         tenantId: user.tenantId,
         userId: user.userId,
+        resourceId: targetUser.id,
         action: 'DELETE',
         module: 'User Management',
         resourceType: 'User Management',

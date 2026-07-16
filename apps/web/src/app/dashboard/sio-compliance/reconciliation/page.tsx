@@ -28,7 +28,9 @@ export default function SioReconciliationPage() {
   async function load() {
     const r = await fetch('/api/v1/sio-compliance/reconciliation');
     const p = await r.json();
-    if (p.success) setVariances(p.data ?? []);
+    if (p.success) {
+      setVariances(p.data?.items ?? []);
+    }
   }
   useEffect(() => {
     load();

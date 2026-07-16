@@ -243,6 +243,8 @@ async function main() {
     for (const dept of departmentsSeed) {
         const company = await prisma.company.findFirst({ where: { code: 'KREUP_GLOBAL' } });
         const costCenter = await prisma.costCenter.findUnique({ where: { code: dept.costCenter } });
+        // @ts-ignore
+        const businessUnit = dept.businessUnit ? await prisma.businessUnit.findUnique({ where: { code: dept.businessUnit } }) : null;
 
         if (company) {
             const existing = await prisma.department.findMany({ where: { code: dept.code, companyId: company.id } });
@@ -252,7 +254,8 @@ async function main() {
                         code: dept.code,
                         name: dept.name,
                         companyId: company.id,
-                        costCenterId: costCenter?.id
+                        costCenterId: costCenter?.id,
+                        businessUnitId: businessUnit?.id
                     }
                 });
             }

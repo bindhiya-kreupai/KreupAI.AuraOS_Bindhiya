@@ -75,6 +75,7 @@ export default function TaChecklistPage() {
       `/api/v1/talent-acquisition-compliance/audit-checklist${stageFilter ? `?stage=${stageFilter}` : ''}`
     );
     const p = await r.json();
+    console.log('LOAD RESPONSE', p);
     if (p.success) setRows(p.data ?? []);
   }
   useEffect(() => {
@@ -88,6 +89,7 @@ export default function TaChecklistPage() {
       body: JSON.stringify({ action: 'upsert', ...form }),
     });
     const p = await r.json();
+    console.log('SAVE RESPONSE', p);
     setMessage(p.success ? 'Saved' : (p.error?.details?.error ?? p.error?.message ?? 'failed'));
     load();
   }
@@ -106,6 +108,7 @@ export default function TaChecklistPage() {
         }),
       });
       const p = await r.json();
+      console.log('RECORD RESPONSE', p);
       setMessage(
         p.success ? 'Recorded' : (p.error?.details?.error ?? p.error?.message ?? 'failed')
       );

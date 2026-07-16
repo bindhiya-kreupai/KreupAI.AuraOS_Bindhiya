@@ -1,81 +1,81 @@
 /**
- * Employee Search API
- * Uses @aura/search for full-text search
+ * Employee Search API — Prisma-backed implementation.
+ * Previously used @aura/search (Elasticsearch); rewired to Postgres so the
+ * endpoint works without the search backend running.
  */
 
-import type { NextRequest} from 'next/server';
-import { NextResponse } from 'next/server';
-import { employeeSearchService } from '@/lib/search/employee-search.service';
-import { logger } from '@/lib/logger';
+import type { NextRequest } from 'next/server';
+import { createProtectedRoute } from '@/lib/api/route-wrapper';
+import { prisma } from '@aura/database';
 
-/**
- * GET /api/employees/search
- * Search employees with full-text search and filtering
- */
-export async function GET(request: NextRequest) {
-  try {
-    const searchParams = request.nextUrl.searchParams;
+export const dynamic = 'force-dynamic';
 
-    // Extract query parameters
-    const query = searchParams.get('q') || '';
-    const department = searchParams.get('department') || undefined;
-    const status = searchParams.get('status') || undefined;
-    const location = searchParams.get('location') || undefined;
-    const from = parseInt(searchParams.get('from') || '0');
-    const size = parseInt(searchParams.get('size') || '20');
-    const sortBy = (searchParams.get('sortBy') as any) || 'fullName';
-    const sortOrder = (searchParams.get('sortOrder') as 'asc' | 'desc') || 'asc';
+export const GET = createProtectedRoute(
+  async (request: NextRequest, { auth }) => {
+    const sp = request.nextUrl.searchParams;
+    const query = (sp.get('q') || '').trim();
+    const department = sp.get('department') || undefined;
+    const status = sp.get('status') || undefined;
+    const location = sp.get('location') || undefined;
+    const from = Math.max(0, parseInt(sp.get('from') || '0', 10));
+    const size = Math.min(100, Math.max(1, parseInt(sp.get('size') || '20', 10)));
+    const sortBy = sp.get('sortBy') || 'firstName';
+    const sortOrder = (sp.get('sortOrder') === 'desc' ? 'desc' : 'asc') as 'asc' | 'desc';
 
-    // TODO: Extract tenantId from authenticated session
-    const tenantId = 'default';
+    // Tenant filter via Company relation (Employee has no tenantId scalar).
+    const where: any = {
+      company: { tenantId: auth!.tenantId },
+      isDeleted: false,
+    };
 
-    // Validate pagination
-    if (from < 0 || size < 1 || size > 100) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Invalid pagination parameters',
-        },
-        { status: 400 }
-      );
+    if (department) where.departmentId = department;
+    if (location) where.locationId = location;
+    if (status) where.status = { code: status };
+
+    if (query) {
+      where.OR = [
+        { firstName: { contains: query, mode: 'insensitive' } },
+        { lastName: { contains: query, mode: 'insensitive' } },
+        { email: { contains: query, mode: 'insensitive' } },
+        { employeeCode: { contains: query, mode: 'insensitive' } },
+      ];
     }
 
-    // Search employees
-    const result = await employeeSearchService.searchEmployees({
-      tenantId,
-      query,
-      department,
-      status,
-      location,
-      from,
-      size,
-      sortBy,
-      sortOrder,
-    });
+    const orderBy: any = { [sortBy]: sortOrder };
 
-    return NextResponse.json({
-      success: true,
-      data: {
-        employees: result.employees,
-        pagination: {
-          total: result.total,
-          from: result.from,
-          size: result.size,
-          hasMore: result.from + result.size < result.total,
+    const [total, rows] = await Promise.all([
+      prisma.employee.count({ where }),
+      prisma.employee.findMany({
+        where,
+        select: {
+          id: true,
+          employeeCode: true,
+          firstName: true,
+          lastName: true,
+          email: true,
+          joiningDate: true,
+          department: { select: { id: true, name: true, code: true } },
+          location: { select: { id: true, name: true } },
+          status: { select: { id: true, code: true, name: true } },
         },
-        took: result.took,
-      },
-    });
-  } catch (error: any) {
-    logger.error({ error }, 'Error in employee search API');
+        orderBy,
+        skip: from,
+        take: size,
+      }),
+    ]);
 
-    return NextResponse.json(
-      {
-        success: false,
-        error: 'Internal server error',
-        message: error instanceof Error ? error.message : 'Unknown error',
+    return {
+      employees: rows,
+      pagination: {
+        total,
+        from,
+        size,
+        hasMore: from + size < total,
       },
-      { status: 500 }
-    );
+    };
+  },
+  {
+    requiredPermissions: ['employees:read'],
+    rateLimit: 'API_USER',
   }
-}
+);

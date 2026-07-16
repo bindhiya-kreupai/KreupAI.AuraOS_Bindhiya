@@ -17,20 +17,9 @@ function cn(...inputs: ClassValue[]) {
  *   - one column per field (typed: text / number / select / boolean)
  *   - Add row / Remove row buttons
  *   - bilingual column headers
- *
- * Used by the rule-simulation, three-way-reconciliation, and
- * fake-risk-clustering evaluator pages — three places that previously
- * asked the user to hand-craft a JSON array in a text field. The
- * editor produces the same typed array; the caller passes it
- * straight to the API.
- *
- * Each row is a `Record<string, unknown>`. The caller defines the
- * column schema; the component handles state, validation hints, and
- * the per-cell input controls. The full array is exposed via
- * `onChange(rows)` so the parent can stage it for submission.
  */
 
-export type StructuredFieldType = 'text' | 'number' | 'boolean' | 'select';
+export type StructuredFieldType = 'text' | 'number' | 'boolean' | 'select'| 'date';
 
 export interface StructuredColumn {
     key: string;
@@ -64,6 +53,7 @@ export interface StructuredArrayEditorProps<T extends Record<string, unknown> = 
     /** Customise the Add Row button label. */
     addLabel?: string;
     addLabelAr?: string;
+    disabled?: boolean;
 }
 
 function emptyRowFor(columns: StructuredColumn[]): Record<string, unknown> {
@@ -92,6 +82,7 @@ export function StructuredArrayEditor<T extends Record<string, unknown> = Record
         className,
         addLabel,
         addLabelAr,
+        disabled = false,
     } = props;
 
     const headerLabel = locale === 'ar' && labelAr ? labelAr : label;
@@ -102,6 +93,7 @@ export function StructuredArrayEditor<T extends Record<string, unknown> = Record
             : (addLabel ?? (locale === 'ar' ? 'إضافة صف' : 'Add row'));
 
     function update(idx: number, key: string, raw: unknown) {
+        if (disabled) return;
         const next = value.map((row, i) =>
             i === idx ? { ...row, [key]: raw } : row,
         ) as T[];
@@ -109,13 +101,13 @@ export function StructuredArrayEditor<T extends Record<string, unknown> = Record
     }
 
     function removeRow(idx: number) {
-        if (value.length <= minRows) return;
+        if (disabled || value.length <= minRows) return;
         const next = value.filter((_, i) => i !== idx) as T[];
         onChange(next);
     }
 
     function addRow() {
-        if (value.length >= maxRows) return;
+        if (disabled || value.length >= maxRows) return;
         const next = [...value, emptyRowFor(columns) as T];
         onChange(next);
     }
@@ -124,29 +116,29 @@ export function StructuredArrayEditor<T extends Record<string, unknown> = Record
         <div className={cn('space-y-2', className)} dir={locale === 'ar' ? 'rtl' : 'ltr'}>
             {headerLabel && (
                 <div className="flex items-center justify-between">
-                    <label className="text-sm font-medium text-gray-800">{headerLabel}</label>
+                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">{headerLabel}</label>
                     <button
                         type="button"
                         onClick={addRow}
-                        disabled={value.length >= maxRows}
-                        className="inline-flex items-center gap-1 rounded-md bg-blue-600 text-white px-3 py-1 text-xs font-medium hover:bg-blue-700 disabled:opacity-50"
+                        disabled={disabled || value.length >= maxRows}
+                        className="inline-flex items-center gap-1 rounded-xl bg-slate-950 dark:bg-white text-white dark:text-slate-950 px-3 py-1.5 text-xs font-semibold hover:bg-slate-800 dark:hover:bg-slate-100 disabled:opacity-50 transition-all cursor-pointer shadow-sm"
                     >
-                        <Plus className="w-3 h-3" />
+                        <Plus className="w-3.5 h-3.5" />
                         {headerAdd}
                     </button>
                 </div>
             )}
-            {headerHelp && <p className="text-xs text-gray-500">{headerHelp}</p>}
-            <div className="overflow-x-auto border border-gray-200 rounded-md">
+            {headerHelp && <p className="text-xs text-slate-455 dark:text-slate-500">{headerHelp}</p>}
+            <div className="overflow-x-auto border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
                 <table className="min-w-full text-sm">
-                    <thead className="bg-gray-50">
+                    <thead className="bg-slate-50/75 dark:bg-slate-950/40 border-b border-slate-200 dark:border-slate-800">
                         <tr>
                             {columns.map((col) => (
                                 <th
                                     key={col.key}
                                     scope="col"
                                     className={cn(
-                                        'px-2 py-1.5 text-left text-xs font-semibold text-gray-700 whitespace-nowrap',
+                                        'px-3 py-2.5 text-left text-xs font-semibold text-slate-655 dark:text-slate-400 whitespace-nowrap',
                                         col.widthClass,
                                     )}
                                 >
@@ -158,19 +150,19 @@ export function StructuredArrayEditor<T extends Record<string, unknown> = Record
                                     )}
                                 </th>
                             ))}
-                            <th scope="col" className="w-10 px-2 py-1.5">
+                            <th scope="col" className="w-10 px-3 py-2.5">
                                 <span className="sr-only">
                                     {locale === 'ar' ? 'حذف' : 'Remove'}
                                 </span>
                             </th>
                         </tr>
                     </thead>
-                    <tbody>
+                    <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
                         {value.length === 0 && (
                             <tr>
                                 <td
                                     colSpan={columns.length + 1}
-                                    className="px-2 py-4 text-center text-xs text-gray-500"
+                                    className="px-3 py-6 text-center text-xs text-slate-400 dark:text-slate-500"
                                 >
                                     {locale === 'ar'
                                         ? 'لا توجد صفوف. اضغط "إضافة صف" للبدء.'
@@ -179,13 +171,13 @@ export function StructuredArrayEditor<T extends Record<string, unknown> = Record
                             </tr>
                         )}
                         {value.map((row, rowIdx) => (
-                            <tr key={rowIdx} className="border-t border-gray-100">
+                            <tr key={rowIdx} className="hover:bg-slate-50/30 dark:hover:bg-slate-950/10 transition-colors">
                                 {columns.map((col) => {
                                     const cellValue = (row as Record<string, unknown>)[col.key];
                                     const cellId = `editor-${rowIdx}-${col.key}`;
                                     if (col.type === 'select' && col.options) {
                                         return (
-                                            <td key={col.key} className="px-2 py-1">
+                                            <td key={col.key} className="px-2.5 py-2">
                                                 <select
                                                     id={cellId}
                                                     aria-label={`${col.label} row ${rowIdx + 1}`}
@@ -193,16 +185,17 @@ export function StructuredArrayEditor<T extends Record<string, unknown> = Record
                                                     onChange={(e) =>
                                                         update(rowIdx, col.key, e.target.value)
                                                     }
+                                                    disabled={disabled}
                                                     className={cn(
-                                                        'w-full border border-gray-300 rounded px-1.5 py-1 text-sm',
+                                                        'w-full border border-slate-200 dark:border-slate-750 rounded-xl px-2.5 py-1.5 text-sm bg-slate-50/50 hover:bg-slate-50 dark:bg-slate-950 dark:text-white transition-all focus:outline-none focus:ring-2 focus:ring-slate-950 dark:focus:ring-white/30 disabled:opacity-50 disabled:cursor-not-allowed',
                                                         col.widthClass,
                                                     )}
                                                 >
-                                                    <option value="">
+                                                    <option value="" className="dark:bg-slate-950">
                                                         {locale === 'ar' ? 'اختر…' : '—'}
                                                     </option>
                                                     {col.options.map((o) => (
-                                                        <option key={o.value} value={o.value}>
+                                                        <option key={o.value} value={o.value} className="dark:bg-slate-950">
                                                             {o.label}
                                                         </option>
                                                     ))}
@@ -212,23 +205,26 @@ export function StructuredArrayEditor<T extends Record<string, unknown> = Record
                                     }
                                     if (col.type === 'boolean') {
                                         return (
-                                            <td key={col.key} className="px-2 py-1">
-                                                <input
-                                                    id={cellId}
-                                                    type="checkbox"
-                                                    aria-label={`${col.label} row ${rowIdx + 1}`}
-                                                    checked={!!cellValue}
-                                                    onChange={(e) =>
-                                                        update(rowIdx, col.key, e.target.checked)
-                                                    }
-                                                    className="rounded border-gray-300"
-                                                />
+                                            <td key={col.key} className="px-2.5 py-2">
+                                                <div className="flex items-center justify-start h-8">
+                                                    <input
+                                                        id={cellId}
+                                                        type="checkbox"
+                                                        aria-label={`${col.label} row ${rowIdx + 1}`}
+                                                        checked={!!cellValue}
+                                                        onChange={(e) =>
+                                                            update(rowIdx, col.key, e.target.checked)
+                                                        }
+                                                        disabled={disabled}
+                                                        className="rounded border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white focus:ring-0 w-4 h-4 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                                                    />
+                                                </div>
                                             </td>
                                         );
                                     }
                                     if (col.type === 'number') {
                                         return (
-                                            <td key={col.key} className="px-2 py-1">
+                                            <td key={col.key} className="px-2.5 py-2">
                                                 <input
                                                     id={cellId}
                                                     type="number"
@@ -244,8 +240,30 @@ export function StructuredArrayEditor<T extends Record<string, unknown> = Record
                                                                 : Number(e.target.value),
                                                         )
                                                     }
+                                                    disabled={disabled}
                                                     className={cn(
-                                                        'w-full border border-gray-300 rounded px-1.5 py-1 text-sm tabular-nums',
+                                                        'w-full border border-slate-200 dark:border-slate-750 rounded-xl px-2.5 py-1.5 text-sm bg-slate-50/50 hover:bg-slate-50 dark:bg-slate-950 dark:text-white transition-all focus:outline-none focus:ring-2 focus:ring-slate-950 dark:focus:ring-white/30 tabular-nums disabled:opacity-50 disabled:cursor-not-allowed',
+                                                        col.widthClass,
+                                                    )}
+                                                />
+                                            </td>
+                                        );
+                                    }
+                                    
+                                    if (col.type === 'date') {
+                                        return (
+                                            <td key={col.key} className="px-2.5 py-2">
+                                                <input
+                                                    id={cellId}
+                                                    type="date"
+                                                    aria-label={`${col.label} row ${rowIdx + 1}`}
+                                                    value={(cellValue as string) ?? ''}
+                                                    onChange={(e) =>
+                                                        update(rowIdx, col.key, e.target.value)
+                                                    }
+                                                    disabled={disabled}
+                                                    className={cn(
+                                                        'w-full border border-slate-200 dark:border-slate-750 rounded-xl px-2.5 py-1.5 text-sm bg-slate-50/50 hover:bg-slate-50 dark:bg-slate-950 dark:text-white transition-all focus:outline-none focus:ring-2 focus:ring-slate-950 dark:focus:ring-white/30 disabled:opacity-50 disabled:cursor-not-allowed',
                                                         col.widthClass,
                                                     )}
                                                 />
@@ -253,7 +271,7 @@ export function StructuredArrayEditor<T extends Record<string, unknown> = Record
                                         );
                                     }
                                     return (
-                                        <td key={col.key} className="px-2 py-1">
+                                        <td key={col.key} className="px-2.5 py-2">
                                             <input
                                                 id={cellId}
                                                 type="text"
@@ -263,25 +281,26 @@ export function StructuredArrayEditor<T extends Record<string, unknown> = Record
                                                 onChange={(e) =>
                                                     update(rowIdx, col.key, e.target.value)
                                                 }
+                                                disabled={disabled}
                                                 className={cn(
-                                                    'w-full border border-gray-300 rounded px-1.5 py-1 text-sm',
+                                                    'w-full border border-slate-200 dark:border-slate-750 rounded-xl px-2.5 py-1.5 text-sm bg-slate-50/50 hover:bg-slate-50 dark:bg-slate-950 dark:text-white transition-all focus:outline-none focus:ring-2 focus:ring-slate-950 dark:focus:ring-white/30 disabled:opacity-50 disabled:cursor-not-allowed',
                                                     col.widthClass,
                                                 )}
                                             />
                                         </td>
                                     );
                                 })}
-                                <td className="px-2 py-1 text-right">
+                                <td className="px-2.5 py-2 text-right">
                                     <button
                                         type="button"
                                         onClick={() => removeRow(rowIdx)}
-                                        disabled={value.length <= minRows}
+                                        disabled={disabled || value.length <= minRows}
                                         aria-label={
                                             locale === 'ar'
                                                 ? `حذف الصف ${rowIdx + 1}`
                                                 : `Remove row ${rowIdx + 1}`
                                         }
-                                        className="inline-flex items-center text-rose-600 hover:text-rose-800 disabled:text-gray-300"
+                                        className="inline-flex items-center justify-center p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 hover:text-rose-700 disabled:opacity-30 disabled:hover:bg-transparent transition-all cursor-pointer"
                                     >
                                         <Trash2 className="w-4 h-4" />
                                     </button>

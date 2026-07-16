@@ -63,8 +63,8 @@ export interface ConsumerStats {
 // ============================================================================
 
 export class EventConsumer {
-  private connection: amqplib.Connection | null = null;
-  private channel: amqplib.Channel | null = null;
+  private connection: any = null;
+  private channel: any = null;
   private readonly amqpUrl: string;
   private readonly stats = new Map<string, ConsumerStats>();
   private consumerTags = new Map<string, string>();
@@ -156,7 +156,7 @@ export class EventConsumer {
       active: true,
     });
 
-    const { consumerTag } = await this.channel.consume(queue, async (msg) => {
+    const { consumerTag } = await this.channel.consume(queue, async (msg: any) => {
       if (!msg) return; // Consumer cancelled
 
       const stats = this.stats.get(queue)!;
@@ -244,7 +244,7 @@ export class EventConsumer {
     };
     this.stats.set(queue, stats);
 
-    const { consumerTag } = await this.channel.consume(queue, async (msg) => {
+    const { consumerTag } = await this.channel.consume(queue, async (msg: any) => {
       if (!msg) return;
 
       const start = Date.now();

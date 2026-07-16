@@ -155,11 +155,138 @@ export class AttendancePolicyService {
     });
   }
 
-  async list(tenantId: string) {
-    return (prisma as any).attendancePolicy.findMany({
-      where: { tenantId, status: 'ACTIVE' },
-      orderBy: [{ country: 'asc' }, { grade: 'asc' }],
+  async create(input: any, auth: AuthContext) {
+    return (prisma as any).attendancePolicy.create({
+      data: {
+        tenantId: auth.tenantId,
+        country: input.country,
+        grade: input.grade || null,
+        isEligible: input.isEligible ?? true,
+        lateToleranceMin: input.lateToleranceMin ?? 10,
+        earlyDepartureToleranceMin: input.earlyDepartureToleranceMin ?? 10,
+        missingPunchSlaHours: input.missingPunchSlaHours ?? 24,
+        regularizationSlaDays: input.regularizationSlaDays ?? 3,
+        ramadanReducedHours: input.ramadanReducedHours ?? 6,
+        remoteWorkAllowed: input.remoteWorkAllowed ?? true,
+        fraudGeofenceRadiusM: input.fraudGeofenceRadiusM ?? 200,
+        biometricRequired: input.biometricRequired ?? false,
+        effectiveFrom: new Date(input.effectiveFrom),
+        effectiveTo: input.effectiveTo ? new Date(input.effectiveTo) : null,
+        status: 'ACTIVE',
+      },
     });
+  }
+
+  async update(id: string, input: any, auth: AuthContext) {
+    return (prisma as any).attendancePolicy.update({
+      where: { id, tenantId: auth.tenantId },
+      data: {
+        country: input.country,
+        grade: input.grade || null,
+        isEligible: input.isEligible,
+        lateToleranceMin: input.lateToleranceMin,
+        earlyDepartureToleranceMin: input.earlyDepartureToleranceMin,
+        missingPunchSlaHours: input.missingPunchSlaHours,
+        regularizationSlaDays: input.regularizationSlaDays,
+        ramadanReducedHours: input.ramadanReducedHours,
+        remoteWorkAllowed: input.remoteWorkAllowed,
+        fraudGeofenceRadiusM: input.fraudGeofenceRadiusM,
+        biometricRequired: input.biometricRequired,
+        effectiveFrom: input.effectiveFrom ? new Date(input.effectiveFrom) : undefined,
+        effectiveTo: input.effectiveTo ? new Date(input.effectiveTo) : null,
+        status: input.status,
+      },
+    });
+  }
+
+  async archive(id: string, auth: AuthContext) {
+    return (prisma as any).attendancePolicy.update({
+      where: { id, tenantId: auth.tenantId },
+      data: { isDeleted: true, deletedAt: new Date(), status: 'ARCHIVED' },
+    });
+  }
+
+  async restore(id: string, auth: AuthContext) {
+    return (prisma as any).attendancePolicy.update({
+      where: { id, tenantId: auth.tenantId },
+      data: { isDeleted: false, deletedAt: null, status: 'ACTIVE' },
+    });
+  }
+
+  async hardDelete(id: string, auth: AuthContext) {
+    return (prisma as any).attendancePolicy.delete({
+      where: { id, tenantId: auth.tenantId },
+    });
+  }
+
+  async bulkArchive(ids: string[], auth: AuthContext) {
+    return (prisma as any).attendancePolicy.updateMany({
+      where: { id: { in: ids }, tenantId: auth.tenantId },
+      data: { isDeleted: true, deletedAt: new Date(), status: 'ARCHIVED' },
+    });
+  }
+
+  async bulkRestore(ids: string[], auth: AuthContext) {
+    return (prisma as any).attendancePolicy.updateMany({
+      where: { id: { in: ids }, tenantId: auth.tenantId },
+      data: { isDeleted: false, deletedAt: null, status: 'ACTIVE' },
+    });
+  }
+
+  async bulkDelete(ids: string[], auth: AuthContext) {
+    return (prisma as any).attendancePolicy.deleteMany({
+      where: { id: { in: ids }, tenantId: auth.tenantId },
+    });
+  }
+
+  async list(
+    tenantId: string,
+    filter: {
+      search?: string;
+      country?: string;
+      grade?: string;
+      status?: string;
+      isDeleted?: boolean;
+      sortBy?: string;
+      sortOrder?: string;
+    } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const page = normalisePaging(paging);
+    const where: any = {
+      tenantId,
+      isDeleted: filter.isDeleted ?? false,
+    };
+    if (filter.status) {
+      where.status = filter.status;
+    }
+    if (filter.country) {
+      where.country = filter.country;
+    }
+    if (filter.grade) {
+      where.grade = filter.grade;
+    }
+    if (filter.search) {
+      where.OR = [
+        { country: { contains: filter.search, mode: 'insensitive' } },
+        { grade: { contains: filter.search, mode: 'insensitive' } },
+      ];
+    }
+
+    let orderBy: any = [{ country: 'asc' }, { grade: 'asc' }];
+    if (filter.sortBy) {
+      orderBy = { [filter.sortBy]: filter.sortOrder ?? 'asc' };
+    }
+
+    const [items, total] = await Promise.all([
+      (prisma as any).attendancePolicy.findMany({
+        where,
+        orderBy,
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).attendancePolicy.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 
   async resolve(tenantId: string, country: string, grade: string | null = null) {
@@ -257,6 +384,20 @@ export class AttendanceFraudService {
     });
   }
 
+  async update(id: string, input: any, auth: AuthContext) {
+    return (prisma as any).attendanceFraudFlag.update({
+      where: { id, tenantId: auth.tenantId },
+      data: {
+        punchDate: input.punchDate ? new Date(input.punchDate) : undefined,
+        flagType: input.flagType,
+        score: input.score,
+        severity: input.severity,
+        evidenceJson: input.evidence || {},
+        status: input.status,
+      },
+    });
+  }
+
   async resolve(id: string, notes: string | undefined, auth: AuthContext) {
     return (prisma as any).attendanceFraudFlag.update({
       where: { id },
@@ -269,27 +410,125 @@ export class AttendanceFraudService {
     });
   }
 
+  async archive(id: string, auth: AuthContext) {
+    return (prisma as any).attendanceFraudFlag.update({
+      where: { id, tenantId: auth.tenantId },
+      data: { isDeleted: true, deletedAt: new Date() },
+    });
+  }
+
+  async restore(id: string, auth: AuthContext) {
+    return (prisma as any).attendanceFraudFlag.update({
+      where: { id, tenantId: auth.tenantId },
+      data: { isDeleted: false, deletedAt: null },
+    });
+  }
+
+  async hardDelete(id: string, auth: AuthContext) {
+    return (prisma as any).attendanceFraudFlag.delete({
+      where: { id, tenantId: auth.tenantId },
+    });
+  }
+
+  async bulkArchive(ids: string[], auth: AuthContext) {
+    return (prisma as any).attendanceFraudFlag.updateMany({
+      where: { id: { in: ids }, tenantId: auth.tenantId },
+      data: { isDeleted: true, deletedAt: new Date() },
+    });
+  }
+
+  async bulkRestore(ids: string[], auth: AuthContext) {
+    return (prisma as any).attendanceFraudFlag.updateMany({
+      where: { id: { in: ids }, tenantId: auth.tenantId },
+      data: { isDeleted: false, deletedAt: null },
+    });
+  }
+
+  async bulkDelete(ids: string[], auth: AuthContext) {
+    return (prisma as any).attendanceFraudFlag.deleteMany({
+      where: { id: { in: ids }, tenantId: auth.tenantId },
+    });
+  }
+
   async list(
     tenantId: string,
-    filter: { status?: string; severity?: string; employeeId?: string } = {},
+    filter: {
+      status?: string;
+      severity?: string;
+      employeeId?: string;
+      flagType?: string;
+      search?: string;
+      isDeleted?: boolean;
+      sortBy?: string;
+      sortOrder?: string;
+    } = {},
     paging?: PaginationInput
   ): Promise<PaginatedResult<unknown>> {
-    const where = {
+    const where: any = {
       tenantId,
-      ...(filter.status ? { status: filter.status } : {}),
-      ...(filter.severity ? { severity: filter.severity } : {}),
-      ...(filter.employeeId ? { employeeId: filter.employeeId } : {}),
+      isDeleted: filter.isDeleted ?? false,
     };
+    if (filter.status) {
+      where.status = filter.status;
+    }
+    if (filter.severity) {
+      where.severity = filter.severity;
+    }
+    if (filter.employeeId) {
+      where.employeeId = filter.employeeId;
+    }
+    if (filter.flagType) {
+      where.flagType = filter.flagType;
+    }
+    if (filter.search) {
+      const matchedEmployees = await (prisma as any).employee.findMany({
+        where: {
+          tenantId,
+          OR: [
+            { employeeCode: { contains: filter.search, mode: 'insensitive' } },
+            { firstName: { contains: filter.search, mode: 'insensitive' } },
+            { lastName: { contains: filter.search, mode: 'insensitive' } },
+          ],
+        },
+        select: { id: true },
+      });
+      const matchedEmployeeIds = matchedEmployees.map((emp: any) => emp.id);
+      where.employeeId = { in: matchedEmployeeIds };
+    }
     const page = normalisePaging(paging);
+
+    let orderBy: any = { punchDate: 'desc' };
+    if (filter.sortBy) {
+      orderBy = { [filter.sortBy]: filter.sortOrder ?? 'asc' };
+    }
+
     const [items, total] = await Promise.all([
       (prisma as any).attendanceFraudFlag.findMany({
         where,
-        orderBy: { punchDate: 'desc' },
+        orderBy,
         ...prismaPageArgs(page),
       }),
       (prisma as any).attendanceFraudFlag.count({ where }),
     ]);
-    return buildPaginatedResult(items, total, page);
+
+    // Stitch employee data in-memory since relation is missing in prisma schema
+    const employeeIds = Array.from(new Set(items.map((item: any) => item.employeeId)));
+    const employees = await (prisma as any).employee.findMany({
+      where: { id: { in: employeeIds } },
+      select: {
+        id: true,
+        employeeCode: true,
+        firstName: true,
+        lastName: true,
+      },
+    });
+    const employeeMap = new Map(employees.map((emp: any) => [emp.id, emp]));
+    const itemsWithEmployee = items.map((item: any) => ({
+      ...item,
+      employee: employeeMap.get(item.employeeId) || null,
+    }));
+
+    return buildPaginatedResult(itemsWithEmployee, total, page);
   }
 }
 
@@ -304,7 +543,7 @@ export class AttendanceConsentService {
   ) {
     return (prisma as any).attendanceConsent.upsert({
       where: {
-        aura_attendance_consent_unique: {
+        tenantId_employeeId_consentType: {
           tenantId: auth.tenantId,
           employeeId,
           consentType,
@@ -324,7 +563,7 @@ export class AttendanceConsentService {
   async revoke(employeeId: string, consentType: AttendanceConsentType, auth: AuthContext) {
     return (prisma as any).attendanceConsent.update({
       where: {
-        aura_attendance_consent_unique: {
+        tenantId_employeeId_consentType: {
           tenantId: auth.tenantId,
           employeeId,
           consentType,
@@ -334,22 +573,141 @@ export class AttendanceConsentService {
     });
   }
 
+  async update(id: string, input: any, auth: AuthContext) {
+    return (prisma as any).attendanceConsent.update({
+      where: { id, tenantId: auth.tenantId },
+      data: {
+        consentType: input.consentType,
+        evidenceUrl: input.evidenceUrl || null,
+        grantedAt: input.grantedAt ? new Date(input.grantedAt) : null,
+        revokedAt: input.revokedAt ? new Date(input.revokedAt) : null,
+      },
+    });
+  }
+
+  async archive(id: string, auth: AuthContext) {
+    return (prisma as any).attendanceConsent.update({
+      where: { id, tenantId: auth.tenantId },
+      data: { isDeleted: true, deletedAt: new Date() },
+    });
+  }
+
+  async restore(id: string, auth: AuthContext) {
+    return (prisma as any).attendanceConsent.update({
+      where: { id, tenantId: auth.tenantId },
+      data: { isDeleted: false, deletedAt: null },
+    });
+  }
+
+  async hardDelete(id: string, auth: AuthContext) {
+    return (prisma as any).attendanceConsent.delete({
+      where: { id, tenantId: auth.tenantId },
+    });
+  }
+
+  async bulkArchive(ids: string[], auth: AuthContext) {
+    return (prisma as any).attendanceConsent.updateMany({
+      where: { id: { in: ids }, tenantId: auth.tenantId },
+      data: { isDeleted: true, deletedAt: new Date() },
+    });
+  }
+
+  async bulkRestore(ids: string[], auth: AuthContext) {
+    return (prisma as any).attendanceConsent.updateMany({
+      where: { id: { in: ids }, tenantId: auth.tenantId },
+      data: { isDeleted: false, deletedAt: null },
+    });
+  }
+
+  async bulkDelete(ids: string[], auth: AuthContext) {
+    return (prisma as any).attendanceConsent.deleteMany({
+      where: { id: { in: ids }, tenantId: auth.tenantId },
+    });
+  }
+
   async list(
     tenantId: string,
-    filter: { employeeId?: string } = {},
+    filter: {
+      employeeId?: string;
+      consentType?: string;
+      status?: string;
+      search?: string;
+      isDeleted?: boolean;
+      sortBy?: string;
+      sortOrder?: string;
+    } = {},
     paging?: PaginationInput
   ): Promise<PaginatedResult<unknown>> {
-    const where = { tenantId, ...(filter.employeeId ? { employeeId: filter.employeeId } : {}) };
     const page = normalisePaging(paging);
+    const where: any = {
+      tenantId,
+      isDeleted: filter.isDeleted ?? false,
+    };
+    if (filter.employeeId) {
+      where.employeeId = filter.employeeId;
+    }
+    if (filter.consentType) {
+      where.consentType = filter.consentType;
+    }
+    if (filter.status) {
+      if (filter.status === 'GRANTED') {
+        where.grantedAt = { not: null };
+        where.revokedAt = null;
+      } else if (filter.status === 'REVOKED') {
+        where.revokedAt = { not: null };
+      } else if (filter.status === 'MISSING') {
+        where.grantedAt = null;
+        where.revokedAt = null;
+      }
+    }
+    if (filter.search) {
+      const matchedEmployees = await (prisma as any).employee.findMany({
+        where: {
+          tenantId,
+          OR: [
+            { employeeCode: { contains: filter.search, mode: 'insensitive' } },
+            { firstName: { contains: filter.search, mode: 'insensitive' } },
+            { lastName: { contains: filter.search, mode: 'insensitive' } },
+          ],
+        },
+        select: { id: true },
+      });
+      const matchedEmployeeIds = matchedEmployees.map((emp: any) => emp.id);
+      where.employeeId = { in: matchedEmployeeIds };
+    }
+
+    let orderBy: any = { updatedAt: 'desc' };
+    if (filter.sortBy) {
+      orderBy = { [filter.sortBy]: filter.sortOrder ?? 'asc' };
+    }
+
     const [items, total] = await Promise.all([
       (prisma as any).attendanceConsent.findMany({
         where,
-        orderBy: { updatedAt: 'desc' },
+        orderBy,
         ...prismaPageArgs(page),
       }),
       (prisma as any).attendanceConsent.count({ where }),
     ]);
-    return buildPaginatedResult(items, total, page);
+
+    // Stitch employee data in-memory since relation is missing in prisma schema
+    const employeeIds = Array.from(new Set(items.map((item: any) => item.employeeId)));
+    const employees = await (prisma as any).employee.findMany({
+      where: { id: { in: employeeIds } },
+      select: {
+        id: true,
+        employeeCode: true,
+        firstName: true,
+        lastName: true,
+      },
+    });
+    const employeeMap = new Map(employees.map((emp: any) => [emp.id, emp]));
+    const itemsWithEmployee = items.map((item: any) => ({
+      ...item,
+      employee: employeeMap.get(item.employeeId) || null,
+    }));
+
+    return buildPaginatedResult(itemsWithEmployee, total, page);
   }
 }
 
@@ -361,12 +719,12 @@ export class AttendanceCertificateService {
     const start = new Date(y, m - 1, 1);
     const end = new Date(y, m, 0, 23, 59, 59);
     const punchesTotal = await (prisma as any).attendancePunch.count({
-      where: { tenantId, punchedAt: { gte: start, lte: end } },
+      where: { tenantId, punchDate: { gte: start, lte: end } },
     });
     const missingPunchCount = await (prisma as any).attendanceRecord.count({
       where: {
         tenantId,
-        OR: [{ checkInTime: null }, { checkOutTime: null }],
+        OR: [{ clockIn: null }, { clockOut: null }],
         date: { gte: start, lte: end },
       },
     });
@@ -422,7 +780,7 @@ export class AttendanceCertificateService {
     const gatingReason = reasons.length ? `Blocked: ${reasons.join('; ')}` : null;
     return (prisma as any).attendanceCertificate.upsert({
       where: {
-        aura_attendance_certificate_unique: { tenantId: auth.tenantId, period },
+        tenantId_period: { tenantId: auth.tenantId, period },
       },
       update: { ...stats, gatingReason, generatedAt: new Date(), status: 'DRAFT' },
       create: {
@@ -441,7 +799,7 @@ export class AttendanceCertificateService {
     auth: AuthContext
   ) {
     const cert = await (prisma as any).attendanceCertificate.findUnique({
-      where: { aura_attendance_certificate_unique: { tenantId: auth.tenantId, period } },
+      where: { tenantId_period: { tenantId: auth.tenantId, period } },
     });
     if (!cert) throw new Error('certificate not generated');
     if (cert.gatingReason) throw new Error(`cannot sign while gated: ${cert.gatingReason}`);
@@ -456,12 +814,83 @@ export class AttendanceCertificateService {
     });
   }
 
-  async list(tenantId: string) {
-    return (prisma as any).attendanceCertificate.findMany({
-      where: { tenantId },
-      orderBy: { period: 'desc' },
-      take: 24,
+  async archive(id: string, auth: AuthContext) {
+    return (prisma as any).attendanceCertificate.update({
+      where: { id, tenantId: auth.tenantId },
+      data: { isDeleted: true, deletedAt: new Date() },
     });
+  }
+
+  async restore(id: string, auth: AuthContext) {
+    return (prisma as any).attendanceCertificate.update({
+      where: { id, tenantId: auth.tenantId },
+      data: { isDeleted: false, deletedAt: null },
+    });
+  }
+
+  async hardDelete(id: string, auth: AuthContext) {
+    return (prisma as any).attendanceCertificate.delete({
+      where: { id, tenantId: auth.tenantId },
+    });
+  }
+
+  async bulkArchive(ids: string[], auth: AuthContext) {
+    return (prisma as any).attendanceCertificate.updateMany({
+      where: { id: { in: ids }, tenantId: auth.tenantId },
+      data: { isDeleted: true, deletedAt: new Date() },
+    });
+  }
+
+  async bulkRestore(ids: string[], auth: AuthContext) {
+    return (prisma as any).attendanceCertificate.updateMany({
+      where: { id: { in: ids }, tenantId: auth.tenantId },
+      data: { isDeleted: false, deletedAt: null },
+    });
+  }
+
+  async bulkDelete(ids: string[], auth: AuthContext) {
+    return (prisma as any).attendanceCertificate.deleteMany({
+      where: { id: { in: ids }, tenantId: auth.tenantId },
+    });
+  }
+
+  async list(
+    tenantId: string,
+    filter: {
+      status?: string;
+      search?: string;
+      isDeleted?: boolean;
+      sortBy?: string;
+      sortOrder?: string;
+    } = {},
+    paging?: PaginationInput
+  ): Promise<PaginatedResult<unknown>> {
+    const page = normalisePaging(paging);
+    const where: any = {
+      tenantId,
+      isDeleted: filter.isDeleted ?? false,
+    };
+    if (filter.status) {
+      where.status = filter.status;
+    }
+    if (filter.search) {
+      where.period = { contains: filter.search, mode: 'insensitive' };
+    }
+
+    let orderBy: any = { period: 'desc' };
+    if (filter.sortBy) {
+      orderBy = { [filter.sortBy]: filter.sortOrder ?? 'asc' };
+    }
+
+    const [items, total] = await Promise.all([
+      (prisma as any).attendanceCertificate.findMany({
+        where,
+        orderBy,
+        ...prismaPageArgs(page),
+      }),
+      (prisma as any).attendanceCertificate.count({ where }),
+    ]);
+    return buildPaginatedResult(items, total, page);
   }
 }
 

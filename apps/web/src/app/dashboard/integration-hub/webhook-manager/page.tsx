@@ -1,7 +1,17 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { Webhook, Plus, Activity, Trash2, Loader2, X, Send, CheckCircle2 } from 'lucide-react';
+import {
+  Webhook,
+  Plus,
+  Activity,
+  Trash2,
+  Loader2,
+  X,
+  Send,
+  CheckCircle2,
+  AlertCircle,
+} from 'lucide-react';
 
 interface WebhookItem {
   id: string;
@@ -229,7 +239,7 @@ export default function WebhookManagerPage() {
           {toast.type === 'success' ? (
             <CheckCircle2 className="w-4 h-4" />
           ) : (
-            <X className="w-4 h-4" />
+            <AlertCircle className="w-4 h-4" />
           )}
           {toast.message}
         </div>

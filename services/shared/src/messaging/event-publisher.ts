@@ -112,8 +112,8 @@ export type Exchange = (typeof EXCHANGES)[keyof typeof EXCHANGES];
 // ============================================================================
 
 export class EventPublisher {
-  private connection: amqplib.Connection | null = null;
-  private channel: amqplib.Channel | null = null;
+  private connection: any = null;
+  private channel: any = null;
   private readonly amqpUrl: string;
   private reconnectTimer: ReturnType<typeof setTimeout> | null = null;
   private isConnecting = false;
@@ -145,7 +145,7 @@ export class EventPublisher {
         ),
       );
 
-      this.connection.on('error', (err) => {
+      this.connection.on('error', (err: any) => {
         console.error('[EventPublisher] Connection error:', err.message);
         this.scheduleReconnect();
       });

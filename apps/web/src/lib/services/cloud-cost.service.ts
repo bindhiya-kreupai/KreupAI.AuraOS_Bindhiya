@@ -2,13 +2,7 @@ import { prisma } from '@aura/database';
 import { BaseService } from './base.service';
 
 export type CloudService =
-  | 'COMPUTE'
-  | 'STORAGE'
-  | 'DB'
-  | 'NETWORK'
-  | 'OBSERVABILITY'
-  | 'ML'
-  | 'LICENSE';
+  'COMPUTE' | 'STORAGE' | 'DB' | 'NETWORK' | 'OBSERVABILITY' | 'ML' | 'LICENSE';
 
 export type CloudProvider = 'AWS' | 'GCP' | 'AZURE' | 'SUPABASE' | 'DATADOG' | 'OPENAI';
 

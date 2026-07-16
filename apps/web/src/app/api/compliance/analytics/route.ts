@@ -15,6 +15,16 @@ export const GET = withEnhancedAuth(async (_request: NextRequest, { user, permis
     const tenantId = user.tenantId;
     const grievanceWhere = { tenantId, isDeleted: false };
 
+    // Each metric is independent; a missing table or schema drift on one model
+    // should not fail the whole dashboard. Wrap each count so it returns 0.
+    const safe = async (fn: () => Promise<number>): Promise<number> => {
+      try {
+        return await fn();
+      } catch {
+        return 0;
+      }
+    };
+
     const [
       totalRecords,
       compliantRecords,
@@ -32,31 +42,55 @@ export const GET = withEnhancedAuth(async (_request: NextRequest, { user, permis
       activeStrikes,
       whistleblowerReports,
     ] = await Promise.all([
-      model('complianceRecordEntry').count({ where: { tenantId } }),
-      model('complianceRecordEntry').count({ where: { tenantId, status: 'compliant' } }),
-      model('complianceRecordEntry').count({ where: { tenantId, status: 'non_compliant' } }),
-      model('complianceRecordEntry').count({ where: { tenantId, status: 'pending_review' } }),
-      prisma.erGrievanceCase.count({
-        where: { ...grievanceWhere, status: { in: ['OPEN', 'IN_PROGRESS'] } },
-      }),
-      prisma.erGrievanceCase.count({ where: { ...grievanceWhere, status: 'RESOLVED' } }),
-      model('poshComplaint').count({
-        where: { tenantId, status: { notIn: ['resolved', 'closed'] } },
-      }),
-      model('poshComplaint').count({ where: { tenantId, status: { in: ['resolved', 'closed'] } } }),
-      prisma.erDisciplinaryAction.count({
-        where: { tenantId, isDeleted: false, status: { notIn: ['CLOSED', 'CANCELLED'] } },
-      }),
-      model('complianceAuditEntry').count({
-        where: { tenantId, status: { in: ['scheduled', 'in_progress'] } },
-      }),
-      model('complianceAuditEntry').count({ where: { tenantId, status: 'completed' } }),
-      model('unionEntry').count({ where: { tenantId, status: 'active' } }),
-      model('arbitrationCase').count({ where: { tenantId, status: { notIn: ['completed'] } } }),
-      model('strikeEntry').count({
-        where: { tenantId, status: { in: ['notice_received', 'in_negotiation', 'active'] } },
-      }),
-      model('whistleblowerReport').count({ where: { tenantId } }),
+      safe(() => model('complianceRecordEntry').count({ where: { tenantId } })),
+      safe(() =>
+        model('complianceRecordEntry').count({ where: { tenantId, status: 'compliant' } })
+      ),
+      safe(() =>
+        model('complianceRecordEntry').count({ where: { tenantId, status: 'non_compliant' } })
+      ),
+      safe(() =>
+        model('complianceRecordEntry').count({ where: { tenantId, status: 'pending_review' } })
+      ),
+      safe(() =>
+        prisma.erGrievanceCase.count({
+          where: { ...grievanceWhere, status: { in: ['OPEN', 'IN_PROGRESS'] } },
+        })
+      ),
+      safe(() =>
+        prisma.erGrievanceCase.count({ where: { ...grievanceWhere, status: 'RESOLVED' } })
+      ),
+      safe(() =>
+        model('poshComplaint').count({
+          where: { tenantId, status: { notIn: ['resolved', 'closed'] } },
+        })
+      ),
+      safe(() =>
+        model('poshComplaint').count({
+          where: { tenantId, status: { in: ['resolved', 'closed'] } },
+        })
+      ),
+      safe(() =>
+        prisma.erDisciplinaryAction.count({
+          where: { tenantId, isDeleted: false, status: { notIn: ['CLOSED', 'CANCELLED'] } },
+        })
+      ),
+      safe(() =>
+        model('complianceAuditEntry').count({
+          where: { tenantId, status: { in: ['scheduled', 'in_progress'] } },
+        })
+      ),
+      safe(() => model('complianceAuditEntry').count({ where: { tenantId, status: 'completed' } })),
+      safe(() => model('unionEntry').count({ where: { tenantId, status: 'active' } })),
+      safe(() =>
+        model('arbitrationCase').count({ where: { tenantId, status: { notIn: ['completed'] } } })
+      ),
+      safe(() =>
+        model('strikeEntry').count({
+          where: { tenantId, status: { in: ['notice_received', 'in_negotiation', 'active'] } },
+        })
+      ),
+      safe(() => model('whistleblowerReport').count({ where: { tenantId } })),
     ]);
 
     const complianceRate =

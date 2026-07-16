@@ -246,7 +246,7 @@ export default function CostCenterPage() {
                       ))}
                     </Pie>
                     <Tooltip
-                      formatter={(val: number) => `$${(val / 1000).toFixed(0)}k`}
+                      formatter={(val: any) => `$${(val / 1000).toFixed(0)}k`}
                       contentStyle={{ borderRadius: 8 }}
                     />
                     <Legend />

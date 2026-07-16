@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * @module RightPanel
  * @description Collapsible right panel for quick access, history, and notifications
@@ -5,7 +7,6 @@
  * @reference docs/aura-uiux-design.md
  */
 
-'use client';
 
 import React, { useState, useEffect } from 'react';
 import {
@@ -175,7 +176,7 @@ export const RightPanel = () => {
     );
 };
 
-const QuickAccessItem = ({ icon: Icon, label }: { icon: any, label: string }) => (
+const QuickAccessItem = ({ icon: Icon, label }: { icon: React.ElementType, label: string }) => (
     <button className="w-full flex items-center gap-3 p-3 rounded-xl hover:bg-pearl dark:hover:bg-stellar-blue transition-colors group">
         <div className="p-2 rounded-lg bg-white dark:bg-deep-cosmos border border-cloud dark:border-nebula-purple group-hover:border-celestial-indigo/30 transition-colors">
             <Icon className="w-4 h-4 text-celestial-indigo" />

@@ -43,3 +43,17 @@ export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext)
     return serverError('Failed to compute contribution', err);
   }
 });
+
+export const DELETE = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) => {
+  if (!hasAny(ctx.permissions, 'tenant:manage', 'payroll:manage')) return forbidden();
+  try {
+    const url = new URL(req.url);
+    const employeeId = url.searchParams.get('employeeId');
+    const period = url.searchParams.get('period');
+    if (!employeeId || !period) return badRequest('employeeId/period required');
+    await gosiCalculationService.deleteContribution(employeeId, period, ctx.user.tenantId);
+    return ok({ deleted: true }, 'Deleted contribution');
+  } catch (err) {
+    return serverError('Failed to delete contribution', err);
+  }
+});

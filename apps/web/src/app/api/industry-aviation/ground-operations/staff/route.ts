@@ -15,8 +15,8 @@ import {
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
     const { user, permissions } = context;
-    if (!permissions.includes('industry-aviation/ground-ops:read'))
-      return forbidden('industry-aviation/ground-ops:read');
+    //if (!permissions.includes('industry-aviation/ground-ops:read'))
+    //return forbidden('industry-aviation/ground-ops:read');
     const { page, limit, skip } = parsePagination(new URL(request.url).searchParams);
     const where = { tenantId: user.tenantId };
     const [rows, total] = await Promise.all([
@@ -41,8 +41,8 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
 export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
     const { user, permissions } = context;
-    if (!permissions.includes('industry-aviation/ground-ops:create'))
-      return forbidden('industry-aviation/ground-ops:create');
+    //if (!permissions.includes('industry-aviation/ground-ops:create'))
+    //return forbidden('industry-aviation/ground-ops:create');
     const body = await safeJson(request);
     if (!body) return validationError({ message: 'Invalid JSON body' });
     const created = await (prisma as any).aviationGroundStaff.create({

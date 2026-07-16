@@ -319,18 +319,78 @@ const MOCK_ENROLLMENTS: BiometricEnrollment[] = [
 // ── Service Class ──────────────────────────────────────────────────────────────
 
 export class BiometricService {
-  private static delay(ms = 400): Promise<void> {
-    return new Promise((r) => setTimeout(r, ms));
-  }
-
   static async getDevices(): Promise<BiometricDevice[]> {
-    await this.delay();
-    return [...MOCK_DEVICES];
+    try {
+      const res = await fetch('/api/attendance/biometric-devices');
+      const json = await res.json();
+      return json.success
+        ? json.data.map((d: any) => ({
+            ...d,
+            metrics: {
+              successRate: d.successRate ?? 100,
+              avgScanTimeMs: d.avgScanTimeMs ?? 0,
+              dailyScans: d.dailyScans ?? 0,
+              failedScans: d.failedScans ?? 0,
+              peakHour: d.peakHour ?? '09:00–10:00',
+              uptime: d.uptime ?? 100,
+            },
+          }))
+        : [];
+    } catch {
+      return [];
+    }
   }
 
   static async getDeviceStatus(deviceId: string): Promise<BiometricDevice | null> {
-    await this.delay(200);
-    return MOCK_DEVICES.find((d) => d.id === deviceId) ?? null;
+    try {
+      const devs = await this.getDevices();
+      return devs.find((d) => d.id === deviceId) ?? null;
+    } catch {
+      return null;
+    }
+  }
+
+  static async addDevice(device: Partial<BiometricDevice>): Promise<BiometricDevice | null> {
+    try {
+      const res = await fetch('/api/attendance/biometric-devices', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(device),
+      });
+      const json = await res.json();
+      return json.success ? json.data : null;
+    } catch {
+      return null;
+    }
+  }
+
+  static async updateDevice(
+    deviceId: string,
+    device: Partial<BiometricDevice>
+  ): Promise<BiometricDevice | null> {
+    try {
+      const res = await fetch(`/api/attendance/biometric-devices/${deviceId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(device),
+      });
+      const json = await res.json();
+      return json.success ? json.data : null;
+    } catch {
+      return null;
+    }
+  }
+
+  static async deleteDevice(deviceId: string): Promise<boolean> {
+    try {
+      const res = await fetch(`/api/attendance/biometric-devices/${deviceId}`, {
+        method: 'DELETE',
+      });
+      const json = await res.json();
+      return json.success || false;
+    } catch {
+      return false;
+    }
   }
 
   static async enrollEmployee(
@@ -338,7 +398,6 @@ export class BiometricService {
     deviceId: string,
     method: BiometricMethod
   ): Promise<BiometricEnrollment> {
-    await this.delay(1000);
     const enrollment: BiometricEnrollment = {
       employeeId,
       deviceId,
@@ -348,7 +407,16 @@ export class BiometricService {
       status: 'active',
       templateQuality: 75 + Math.floor(Math.random() * 25),
     };
-    MOCK_ENROLLMENTS.push(enrollment);
+    try {
+      const dev = await this.getDeviceStatus(deviceId);
+      if (dev) {
+        await this.updateDevice(deviceId, {
+          enrolledEmployees: (dev.enrolledEmployees || 0) + 1,
+        });
+      }
+    } catch {
+      // ignore
+    }
     return enrollment;
   }
 
@@ -356,17 +424,14 @@ export class BiometricService {
     deviceId: string,
     dateRange: { start: string; end: string }
   ): Promise<SyncResult> {
-    await this.delay(2000); // Simulate sync delay
-    const device = MOCK_DEVICES.find((d) => d.id === deviceId);
+    const device = await this.getDeviceStatus(deviceId);
     if (!device) throw new Error('Device not found');
 
-    const newPunches = device.pendingPunches + Math.floor(Math.random() * 50);
-    const idx = MOCK_DEVICES.findIndex((d) => d.id === deviceId);
-    MOCK_DEVICES[idx] = {
-      ...MOCK_DEVICES[idx],
+    const newPunches = Math.floor(Math.random() * 50);
+    await this.updateDevice(deviceId, {
       pendingPunches: 0,
       lastSyncAt: new Date().toISOString(),
-    };
+    });
 
     return {
       deviceId,
@@ -379,26 +444,31 @@ export class BiometricService {
   }
 
   static async getAttendanceLogs(deviceId: string, _date: string): Promise<AttendancePunch[]> {
-    await this.delay(300);
     return MOCK_PUNCHES.filter((p) => p.deviceId === deviceId).slice(0, 20);
   }
 
   static async getBiometricAnalytics(): Promise<BiometricAnalytics> {
-    await this.delay(500);
-    const totalPunches = MOCK_DEVICES.reduce((s, d) => s + d.metrics.dailyScans, 0);
-    const totalFailed = MOCK_DEVICES.reduce((s, d) => s + d.metrics.failedScans, 0);
+    const devices = await this.getDevices();
+    const totalPunches = devices.reduce((s, d) => s + (d.metrics?.dailyScans || 0), 0);
+    const totalFailed = devices.reduce((s, d) => s + (d.metrics?.failedScans || 0), 0);
 
     return {
       period: 'Today',
-      totalDevices: MOCK_DEVICES.length,
-      onlineDevices: MOCK_DEVICES.filter((d) => d.status === 'online').length,
+      totalDevices: devices.length,
+      onlineDevices: devices.filter((d) => d.status === 'online').length,
       totalPunches,
       successfulPunches: totalPunches - totalFailed,
       failedPunches: totalFailed,
-      successRate: parseFloat((((totalPunches - totalFailed) / totalPunches) * 100).toFixed(1)),
-      avgScanTime: Math.round(
-        MOCK_DEVICES.reduce((s, d) => s + d.metrics.avgScanTimeMs, 0) / MOCK_DEVICES.length
-      ),
+      successRate:
+        totalPunches > 0
+          ? parseFloat((((totalPunches - totalFailed) / totalPunches) * 100).toFixed(1))
+          : 100,
+      avgScanTime:
+        devices.length > 0
+          ? Math.round(
+              devices.reduce((s, d) => s + (d.metrics?.avgScanTimeMs || 0), 0) / devices.length
+            )
+          : 0,
       peakUsageHour: '09:00–10:00',
       topFailureReasons: [
         { reason: 'Low finger quality / dirty sensor', count: 18 },
@@ -407,11 +477,11 @@ export class BiometricService {
         { reason: 'Timeout — no match found', count: 5 },
         { reason: 'Template corrupted', count: 2 },
       ],
-      devicePerformance: MOCK_DEVICES.map((d) => ({
+      devicePerformance: devices.map((d) => ({
         deviceId: d.id,
         deviceName: d.name,
-        successRate: d.metrics.successRate,
-        dailyAvg: d.metrics.dailyScans,
+        successRate: d.metrics?.successRate || 100,
+        dailyAvg: d.metrics?.dailyScans || 0,
       })),
     };
   }
@@ -420,7 +490,6 @@ export class BiometricService {
     deviceId: string,
     settings: Partial<DeviceConfiguration>
   ): Promise<DeviceConfiguration> {
-    await this.delay(600);
     return {
       deviceId,
       attendanceRule: 'first_last',
@@ -437,7 +506,6 @@ export class BiometricService {
   }
 
   static async getEnrollments(deviceId?: string): Promise<BiometricEnrollment[]> {
-    await this.delay(300);
     if (deviceId) return MOCK_ENROLLMENTS.filter((e) => e.deviceId === deviceId);
     return [...MOCK_ENROLLMENTS];
   }
