@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma as db } from '@aura/database';
+import { createProtectedRoute } from '@/lib/api/route-wrapper';
 
-export async function GET(request: Request) {
+export const GET = createProtectedRoute(async (request: Request) => {
   try {
     const { searchParams } = new URL(request.url);
     const advisorId = searchParams.get('advisorId');
@@ -26,9 +27,9 @@ export async function GET(request: Request) {
     console.error('Failed to fetch service sales:', error);
     return NextResponse.json({ error: 'Failed to fetch service sales' }, { status: 500 });
   }
-}
+});
 
-export async function POST(request: Request) {
+export const POST = createProtectedRoute(async (request: Request) => {
   try {
     const body = await request.json();
     const sale = await db.serviceSale.create({
@@ -50,4 +51,4 @@ export async function POST(request: Request) {
     console.error('Failed to create service sale:', error);
     return NextResponse.json({ error: 'Failed to create service sale' }, { status: 500 });
   }
-}
+});

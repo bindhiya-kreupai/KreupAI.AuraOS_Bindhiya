@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma as db } from '@aura/database';
+import { createProtectedRoute } from '@/lib/api/route-wrapper';
 
-export async function PUT(request: Request, { params }: { params: { shiftId: string } }) {
+export const PUT = createProtectedRoute(async (request: Request, { params }: any) => {
   try {
     const body = await request.json();
 
@@ -18,9 +19,9 @@ export async function PUT(request: Request, { params }: { params: { shiftId: str
     console.error('Failed to update shift:', error);
     return NextResponse.json({ error: 'Failed to update shift' }, { status: 500 });
   }
-}
+});
 
-export async function DELETE(request: Request, { params }: { params: { shiftId: string } }) {
+export const DELETE = createProtectedRoute(async (request: Request, { params }: any) => {
   try {
     await db.technicianShift.delete({
       where: { shiftId: params.shiftId },
@@ -31,4 +32,4 @@ export async function DELETE(request: Request, { params }: { params: { shiftId: 
     console.error('Failed to delete shift:', error);
     return NextResponse.json({ error: 'Failed to delete shift' }, { status: 500 });
   }
-}
+});

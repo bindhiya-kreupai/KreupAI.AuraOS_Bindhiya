@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma as db } from '@aura/database';
+import { createProtectedRoute } from '@/lib/api/route-wrapper';
 
-export async function GET(request: Request, { params }: { params: { technicianId: string } }) {
+export const GET = createProtectedRoute(async (request: Request, { params }: any) => {
   try {
     const { searchParams } = new URL(request.url);
     const startDate = searchParams.get('startDate');
@@ -24,4 +25,4 @@ export async function GET(request: Request, { params }: { params: { technicianId
     console.error('Failed to fetch technician shifts:', error);
     return NextResponse.json({ error: 'Failed to fetch technician shifts' }, { status: 500 });
   }
-}
+});

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
+import { createProtectedRoute } from '@/lib/api/route-wrapper';
 
-export async function PUT(request: Request, { params }: { params: { alertId: string } }) {
+export const PUT = createProtectedRoute(async (request: Request, { params }: any) => {
   const body = await request.json();
   return NextResponse.json({
     alert: {
@@ -8,4 +9,4 @@ export async function PUT(request: Request, { params }: { params: { alertId: str
       alertId: params.alertId,
     },
   });
-}
+});

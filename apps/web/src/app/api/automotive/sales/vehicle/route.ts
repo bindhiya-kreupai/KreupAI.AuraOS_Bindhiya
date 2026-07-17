@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma as db } from '@aura/database';
+import { createProtectedRoute } from '@/lib/api/route-wrapper';
 
-export async function GET(request: Request) {
+export const GET = createProtectedRoute(async (request: Request) => {
   try {
     const { searchParams } = new URL(request.url);
     const salesPersonId = searchParams.get('salesPersonId');
@@ -26,9 +27,9 @@ export async function GET(request: Request) {
     console.error('Failed to fetch vehicle sales:', error);
     return NextResponse.json({ error: 'Failed to fetch vehicle sales' }, { status: 500 });
   }
-}
+});
 
-export async function POST(request: Request) {
+export const POST = createProtectedRoute(async (request: Request) => {
   try {
     const body = await request.json();
     const sale = await db.vehicleSale.create({
@@ -53,4 +54,4 @@ export async function POST(request: Request) {
     console.error('Failed to create vehicle sale:', error);
     return NextResponse.json({ error: 'Failed to create vehicle sale' }, { status: 500 });
   }
-}
+});

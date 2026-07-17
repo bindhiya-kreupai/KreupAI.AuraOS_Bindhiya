@@ -271,6 +271,21 @@ export class SalesPersonService {
     );
     return response.salesPerson;
   }
+
+  static async updateSalesPerson(
+    salesPersonId: string,
+    updates: Partial<SalesPerson>
+  ): Promise<SalesPerson> {
+    const response = await APIClient.put<{ salesPerson: SalesPerson }>(
+      `${this.endpoint}/${salesPersonId}`,
+      updates
+    );
+    return response.salesPerson;
+  }
+
+  static async deleteSalesPerson(salesPersonId: string): Promise<void> {
+    await APIClient.delete<void>(`${this.endpoint}/${salesPersonId}`);
+  }
 }
 
 export class CommissionService {
@@ -399,7 +414,7 @@ export class CommissionReportService {
 // ============================================================================
 
 export class PartService {
-  private static endpoint = '/automotive/parts';
+  private static endpoint = '/automotive/inventory/parts';
 
   static async getAllParts(): Promise<Part[]> {
     try {
@@ -446,10 +461,14 @@ export class PartService {
       return [];
     }
   }
+
+  static async deletePart(partId: string): Promise<void> {
+    await APIClient.delete<void>(`${this.endpoint}/${partId}`);
+  }
 }
 
 export class InventoryMovementService {
-  private static endpoint = '/automotive/inventory-movements';
+  private static endpoint = '/automotive/inventory/movements';
 
   static async getAllMovements(): Promise<InventoryMovement[]> {
     try {
@@ -481,7 +500,7 @@ export class InventoryMovementService {
 }
 
 export class PurchaseOrderService {
-  private static endpoint = '/automotive/purchase-orders';
+  private static endpoint = '/automotive/inventory/orders';
 
   static async getAllPurchaseOrders(): Promise<PurchaseOrder[]> {
     try {
@@ -518,7 +537,7 @@ export class PurchaseOrderService {
 }
 
 export class StockAdjustmentService {
-  private static endpoint = '/automotive/stock-adjustments';
+  private static endpoint = '/automotive/inventory/stock-adjustments';
 
   static async getAllAdjustments(): Promise<StockAdjustment[]> {
     try {
@@ -552,7 +571,7 @@ export class StockAdjustmentService {
 }
 
 export class InventoryAnalysisService {
-  private static endpoint = '/automotive/inventory-analysis';
+  private static endpoint = '/automotive/inventory/analysis';
 
   static async generateAnalysis(startDate: Date, endDate: Date): Promise<InventoryAnalysis> {
     const response = await APIClient.post<{ analysis: InventoryAnalysis }>(

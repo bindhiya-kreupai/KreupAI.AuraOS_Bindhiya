@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
+import { createProtectedRoute } from '@/lib/api/route-wrapper';
 
-export async function GET() {
+export const GET = createProtectedRoute(async () => {
   return NextResponse.json({
     settings: {
       settingsId: 'auto-settings-1',
@@ -25,9 +26,9 @@ export async function GET() {
       },
     },
   });
-}
+});
 
-export async function PUT(request: Request) {
+export const PUT = createProtectedRoute(async (request: Request) => {
   const body = await request.json();
   return NextResponse.json({ settings: body });
-}
+});

@@ -1,56 +1,67 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
-import { Package, AlertTriangle, Truck, Download, Plus, Search } from 'lucide-react';
-import { useAutomotive } from '../hooks/useAutomotive';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
+import { Package, AlertTriangle, Truck, Download, Plus, Search, AlertCircle } from 'lucide-react';
 import { PartModal } from '../components/PartModal';
-import { LoadingOverlay } from '../../agriculture/components/LoadingSpinner'; // reuse spinner
-import { ToastContainer } from '../../agriculture/components/Toast'; // reuse toast
+import { toast } from 'sonner';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import {
+  useParts,
+  usePurchaseOrders,
+  useCreatePart,
+  useUpdatePart,
+  useDeletePart,
+} from '../hooks/queries';
 import type { Part } from '../types';
 
 export default function PartsInventoryPage() {
-  const {
-    parts,
-    purchaseOrders,
-    loading,
-    createPart,
-    updatePart,
-    // The hook might not expose deletePart, so we mock delete if needed.
-  } = useAutomotive();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const initialQuery = searchParams.get('q') || '';
 
-  const [searchQuery, setSearchQuery] = useState('');
+  const { data: parts = [], isLoading, isError, refetch } = useParts();
+  const { data: purchaseOrders = [], isLoading: isLoadingPOs } = usePurchaseOrders();
+
+  const createMutation = useCreatePart();
+  const updateMutation = useUpdatePart();
+  const deleteMutation = useDeletePart();
+
+  const [searchQuery, setSearchQuery] = useState(initialQuery);
+  const [debouncedQuery, setDebouncedQuery] = useState(initialQuery);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPart, setEditingPart] = useState<Part | null>(null);
 
-  const [localToasts, setLocalToasts] = useState<any[]>([]);
-  const [mockDeletedIds, setMockDeletedIds] = useState<Set<string>>(new Set());
-
-  const addToast = (toast: { type: string; message: string }) => {
-    setLocalToasts((prev) => [...prev, { ...toast, id: Date.now().toString() }]);
-  };
-  const removeToast = (id: string) => {
-    setLocalToasts((prev) => prev.filter((t) => t.id !== id));
-  };
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+      const params = new URLSearchParams(searchParams.toString());
+      if (searchQuery) {
+        params.set('q', searchQuery);
+      } else {
+        params.delete('q');
+      }
+      router.push(`${pathname}?${params.toString()}`);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery, router, pathname, searchParams]);
 
   const visibleParts = useMemo(() => {
-    let filtered = parts.filter((p) => !mockDeletedIds.has(p.partId));
-    if (searchQuery.trim()) {
-      const lowerQuery = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (p) =>
-          p.partName.toLowerCase().includes(lowerQuery) ||
-          p.partNumber.toLowerCase().includes(lowerQuery) ||
-          p.category.toLowerCase().includes(lowerQuery)
-      );
-    }
-    return filtered;
-  }, [parts, searchQuery, mockDeletedIds]);
+    if (!debouncedQuery.trim()) return parts;
+    const lowerQuery = debouncedQuery.toLowerCase();
+    return parts.filter(
+      (p) =>
+        p.partName.toLowerCase().includes(lowerQuery) ||
+        p.partNumber.toLowerCase().includes(lowerQuery) ||
+        p.category.toLowerCase().includes(lowerQuery)
+    );
+  }, [parts, debouncedQuery]);
 
   const lowStockParts = visibleParts.filter((p) => p.quantityOnHand <= p.minStockLevel);
 
-  const handleExportCSV = () => {
+  const handleExportCSV = useCallback(() => {
     if (visibleParts.length === 0) {
-      addToast({ type: 'warning', message: 'No parts to export' });
+      toast.warning('No parts to export');
       return;
     }
 
@@ -92,36 +103,42 @@ export default function PartsInventoryPage() {
     a.download = `parts_inventory_${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    addToast({ type: 'success', message: 'Exported parts successfully' });
-  };
+    toast.success('Exported parts successfully');
+  }, [visibleParts]);
 
   const handleSavePart = async (data: Partial<Part>) => {
-    if (editingPart) {
-      await updatePart(editingPart.partId, data);
-      addToast({ type: 'success', message: 'Part updated successfully' });
-    } else {
-      await createPart({
-        ...data,
-        applicableVehicles: [],
-        quantityOnOrder: 0,
-        quantityReserved: 0,
-        quantityAvailable: data.quantityOnHand || 0,
-        reorderPoint: data.minStockLevel || 5,
-        reorderQuantity: 20,
-        leadTimeDays: 7,
-        binLocation: 'A-1-1',
-        isSerialized: false,
-        isCore: false,
-        supplier: {
-          supplierId: 'SUP-001',
-          supplierName: 'AutoParts Direct',
-          leadTimeDays: 5,
-          preferredSupplier: true,
-        },
-        createdDate: new Date(),
-        updatedDate: new Date(),
-      });
-      addToast({ type: 'success', message: 'Part created successfully' });
+    try {
+      if (editingPart) {
+        await updateMutation.mutateAsync({ id: editingPart.partId, updates: data });
+        toast.success('Part updated successfully');
+      } else {
+        await createMutation.mutateAsync({
+          ...data,
+          partId: `PRT-${Date.now()}`,
+          applicableVehicles: [],
+          quantityOnOrder: 0,
+          quantityReserved: 0,
+          quantityAvailable: data.quantityOnHand || 0,
+          reorderPoint: data.minStockLevel || 5,
+          reorderQuantity: 20,
+          leadTimeDays: 7,
+          binLocation: 'A-1-1',
+          isSerialized: false,
+          isCore: false,
+          supplier: {
+            supplierId: 'SUP-001',
+            supplierName: 'AutoParts Direct',
+            leadTimeDays: 5,
+            preferredSupplier: true,
+          },
+          createdDate: new Date(),
+          updatedDate: new Date(),
+        });
+        toast.success('Part created successfully');
+      }
+      setIsModalOpen(false);
+    } catch (e) {
+      toast.error('Failed to save part');
     }
   };
 
@@ -135,17 +152,19 @@ export default function PartsInventoryPage() {
     setIsModalOpen(true);
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     if (confirm('Are you sure you want to delete this part?')) {
-      setMockDeletedIds((prev) => new Set(prev).add(id));
-      addToast({ type: 'success', message: 'Part deleted' });
+      try {
+        await deleteMutation.mutateAsync(id);
+        toast.success('Part deleted');
+      } catch (e) {
+        toast.error('Failed to delete part');
+      }
     }
   };
 
   return (
     <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-      {loading && <LoadingOverlay message="Loading inventory data..." />}
-
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
@@ -185,10 +204,36 @@ export default function PartsInventoryPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full overflow-y-auto pb-10">
         <div className="lg:col-span-2 space-y-4">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 min-h-[400px]">
             <h3 className="font-bold text-lg mb-4">Stock Overview</h3>
             <div className="space-y-4">
-              {visibleParts.length === 0 ? (
+              {isLoading ? (
+                <div className="space-y-4">
+                  {[1, 2, 3, 4].map((i) => (
+                    <div
+                      key={i}
+                      className="animate-pulse flex items-center justify-between bg-slate-50 dark:bg-slate-800 p-4 rounded-xl"
+                    >
+                      <div className="h-10 w-10 bg-slate-200 dark:bg-slate-700 rounded-full"></div>
+                      <div className="ml-4 space-y-2 flex-1">
+                        <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/3"></div>
+                        <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/4"></div>
+                      </div>
+                      <div className="h-6 w-20 bg-slate-200 dark:bg-slate-700 rounded"></div>
+                    </div>
+                  ))}
+                </div>
+              ) : isError ? (
+                <div className="p-4 bg-red-50 dark:bg-red-900/20 text-red-600 rounded-xl flex items-center gap-3">
+                  <AlertCircle className="w-5 h-5" />
+                  <span>
+                    Failed to load inventory data.{' '}
+                    <button onClick={() => refetch()} className="underline font-medium">
+                      Retry
+                    </button>
+                  </span>
+                </div>
+              ) : visibleParts.length === 0 ? (
                 <div className="text-sm text-slate-500 text-center py-4">No parts found.</div>
               ) : (
                 visibleParts.map((item) => (
@@ -234,8 +279,9 @@ export default function PartsInventoryPage() {
                           Edit
                         </button>
                         <button
+                          disabled={deleteMutation.isPending}
                           onClick={() => handleDelete(item.partId)}
-                          className="text-xs font-bold text-rose-500 hover:underline"
+                          className="text-xs font-bold text-rose-500 hover:underline disabled:opacity-50"
                         >
                           Delete
                         </button>
@@ -249,7 +295,7 @@ export default function PartsInventoryPage() {
         </div>
 
         <div className="space-y-4">
-          {lowStockParts.length > 0 && (
+          {!isLoading && lowStockParts.length > 0 && (
             <div className="bg-amber-50 dark:bg-amber-900/10 p-6 rounded-2xl border border-amber-100 dark:border-amber-900/30">
               <div className="flex items-center gap-2 mb-2">
                 <AlertTriangle className="w-5 h-5 text-amber-500" />
@@ -271,7 +317,13 @@ export default function PartsInventoryPage() {
               <Truck className="w-4 h-4 text-slate-400" />
             </div>
             <div className="space-y-3">
-              {purchaseOrders.length === 0 ? (
+              {isLoadingPOs ? (
+                <div className="animate-pulse space-y-3">
+                  {[1, 2].map((i) => (
+                    <div key={i} className="h-16 bg-slate-100 dark:bg-slate-800 rounded-xl"></div>
+                  ))}
+                </div>
+              ) : purchaseOrders.length === 0 ? (
                 <div className="text-sm text-slate-500">No incoming deliveries.</div>
               ) : (
                 purchaseOrders.slice(0, 3).map((po) => (
@@ -283,8 +335,11 @@ export default function PartsInventoryPage() {
                       {po.poNumber} - {po.supplierName}
                     </div>
                     <div className="text-slate-500 mt-1">
-                      Arriving {new Date(po.expectedDeliveryDate).toLocaleDateString()} •{' '}
-                      {po.items.length} Items
+                      Arriving{' '}
+                      {po.expectedDeliveryDate
+                        ? new Date(po.expectedDeliveryDate).toLocaleDateString()
+                        : 'TBD'}{' '}
+                      • {po.items?.length || 0} Items
                     </div>
                   </div>
                 ))
@@ -300,8 +355,6 @@ export default function PartsInventoryPage() {
         onSave={handleSavePart}
         part={editingPart}
       />
-
-      <ToastContainer toasts={localToasts} onClose={removeToast} />
     </div>
   );
 }

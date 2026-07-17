@@ -1,71 +1,78 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
-import { Wrench, Clock, Download, Plus, Search } from 'lucide-react';
-import { useAutomotive } from '../hooks/useAutomotive';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
+import { Wrench, Clock, Download, Plus, Search, AlertCircle } from 'lucide-react';
 import { TechnicianModal } from '../components/TechnicianModal';
-import { LoadingOverlay } from '../../agriculture/components/LoadingSpinner'; // reuse spinner
-import { ToastContainer } from '../../agriculture/components/Toast'; // reuse toast
+import { toast } from 'sonner';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import {
+  useTechnicians,
+  useShifts,
+  useCreateTechnician,
+  useUpdateTechnician,
+  useDeleteTechnician,
+} from '../hooks/queries';
 import type { Technician } from '../types';
 
 export default function TechnicianRosteringPage() {
-  const { technicians, shifts, loading, createTechnician, updateTechnician, deleteTechnician } =
-    useAutomotive();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const initialQuery = searchParams.get('q') || '';
 
-  const [searchQuery, setSearchQuery] = useState('');
+  const [searchQuery, setSearchQuery] = useState(initialQuery);
+  const [debouncedQuery, setDebouncedQuery] = useState(initialQuery);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingTechnician, setEditingTechnician] = useState<Technician | null>(null);
 
-  const [localToasts, setLocalToasts] = useState<any[]>([]);
+  const { data: technicians = [], isLoading, isError, refetch } = useTechnicians();
+  const { data: shifts = [], isLoading: isLoadingShifts } = useShifts();
 
-  const addToast = (toast: { type: string; message: string }) => {
-    setLocalToasts((prev) => [...prev, { ...toast, id: Date.now().toString() }]);
-  };
-  const removeToast = (id: string) => {
-    setLocalToasts((prev) => prev.filter((t) => t.id !== id));
-  };
+  const createMutation = useCreateTechnician();
+  const updateMutation = useUpdateTechnician();
+  const deleteMutation = useDeleteTechnician();
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedQuery(searchQuery);
+      const params = new URLSearchParams(searchParams.toString());
+      if (searchQuery) {
+        params.set('q', searchQuery);
+      } else {
+        params.delete('q');
+      }
+      router.push(`${pathname}?${params.toString()}`);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [searchQuery, router, pathname, searchParams]);
 
   const visibleTechnicians = useMemo(() => {
-    let filtered = technicians;
-    if (searchQuery.trim()) {
-      const lowerQuery = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (t) =>
-          t.firstName.toLowerCase().includes(lowerQuery) ||
-          t.lastName.toLowerCase().includes(lowerQuery) ||
-          t.skillLevel.toLowerCase().includes(lowerQuery)
-      );
-    }
-    return filtered;
-  }, [technicians, searchQuery]);
+    if (!debouncedQuery.trim()) return technicians;
+    const lowerQuery = debouncedQuery.toLowerCase();
+    return technicians.filter(
+      (t) =>
+        t.firstName.toLowerCase().includes(lowerQuery) ||
+        t.lastName.toLowerCase().includes(lowerQuery) ||
+        t.department.toLowerCase().includes(lowerQuery)
+    );
+  }, [technicians, debouncedQuery]);
 
-  const handleExportCSV = () => {
-    if (technicians.length === 0) {
-      addToast({ type: 'warning', message: 'No technicians to export' });
+  const handleExportCSV = useCallback(() => {
+    if (visibleTechnicians.length === 0) {
+      toast.warning('No technicians to export');
       return;
     }
 
-    const headers = [
-      'Technician ID',
-      'First Name',
-      'Last Name',
-      'Email',
-      'Phone',
-      'Skill Level',
-      'Employment Type',
-      'Status',
-    ];
-    const csvRows = [headers.join(',')];
+    const headers = ['Technician ID', 'Name', 'Email', 'Phone', 'Role', 'Status'];
 
-    for (const tech of technicians) {
+    const csvRows = [headers.join(',')];
+    for (const tech of visibleTechnicians) {
       const row = [
         tech.technicianId,
-        `"${tech.firstName}"`,
-        `"${tech.lastName}"`,
+        `${tech.firstName} ${tech.lastName}`,
         `"${tech.email}"`,
         `"${tech.phone}"`,
-        tech.skillLevel,
-        tech.employmentType,
+        tech.department,
         tech.status,
       ];
       csvRows.push(row.join(','));
@@ -79,33 +86,39 @@ export default function TechnicianRosteringPage() {
     a.download = `technicians_${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    addToast({ type: 'success', message: 'Exported technicians successfully' });
-  };
+    toast.success('Exported technicians successfully');
+  }, [visibleTechnicians]);
 
   const handleSaveTechnician = async (data: Partial<Technician>) => {
-    if (editingTechnician) {
-      await updateTechnician(editingTechnician.technicianId, data);
-      addToast({ type: 'success', message: 'Technician updated successfully' });
-    } else {
-      await createTechnician({
-        ...data,
-        employeeId: `EMP-${Math.floor(Math.random() * 10000)}`,
-        certifications: [],
-        specializations: [],
-        hourlyRate: 35,
-        availability: [],
-        performanceMetrics: {
-          averageJobTime: 60,
-          jobsCompleted: 0,
-          customerSatisfactionScore: 100,
-          qualityScore: 100,
-          efficiency: 100,
-          comebackRate: 0,
-          lastReviewDate: new Date(),
-        },
-        hireDate: new Date(),
-      });
-      addToast({ type: 'success', message: 'Technician created successfully' });
+    try {
+      if (editingTechnician) {
+        await updateMutation.mutateAsync({ id: editingTechnician.technicianId, updates: data });
+        toast.success('Technician updated successfully');
+      } else {
+        await createMutation.mutateAsync({
+          ...data,
+          technicianId: `tech-${Date.now()}`,
+          certifications: [],
+          specializations: [],
+          skillLevel: 'apprentice',
+          hourlyRate: 35,
+          availability: [],
+          performanceMetrics: {
+            averageJobTime: 0,
+            jobsCompleted: 0,
+            customerSatisfactionScore: 100,
+            qualityScore: 100,
+            efficiency: 100,
+            comebackRate: 0,
+            lastReviewDate: new Date(),
+          },
+          hireDate: new Date(),
+        });
+        toast.success('Technician created successfully');
+      }
+      setIsModalOpen(false);
+    } catch (e) {
+      toast.error('Operation failed. Please try again.');
     }
   };
 
@@ -119,13 +132,10 @@ export default function TechnicianRosteringPage() {
     setIsModalOpen(true);
   };
 
-  // Filter shifts for today only (mock logic)
-  const activeShifts = shifts.slice(0, 5); // Just grab first 5 for UI
+  const activeShifts = shifts.slice(0, 5);
 
   return (
     <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-      {loading && <LoadingOverlay message="Loading rostering data..." />}
-
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
@@ -167,7 +177,33 @@ export default function TechnicianRosteringPage() {
         <div className="lg:col-span-2 space-y-4">
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
             <h3 className="font-bold text-lg mb-4">Technician Roster</h3>
-            {visibleTechnicians.length === 0 ? (
+
+            {isLoading ? (
+              <div className="space-y-4">
+                {[1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className="animate-pulse flex p-4 bg-slate-50 dark:bg-slate-800 rounded-xl"
+                  >
+                    <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700"></div>
+                    <div className="ml-4 space-y-2 flex-1">
+                      <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/4"></div>
+                      <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/3"></div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : isError ? (
+              <div className="p-4 bg-red-50 dark:bg-red-900/20 text-red-600 rounded-xl flex items-center gap-3">
+                <AlertCircle className="w-5 h-5" />
+                <span>
+                  Failed to load technicians.{' '}
+                  <button onClick={() => refetch()} className="underline font-medium">
+                    Retry
+                  </button>
+                </span>
+              </div>
+            ) : visibleTechnicians.length === 0 ? (
               <div className="text-sm text-slate-500 text-center py-4">No technicians found.</div>
             ) : (
               <div className="space-y-4">
@@ -178,15 +214,15 @@ export default function TechnicianRosteringPage() {
                   >
                     <div className="flex items-center gap-4">
                       <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-sm">
-                        {tech.firstName[0]}
-                        {tech.lastName[0]}
+                        {tech.firstName.substring(0, 1).toUpperCase()}
+                        {tech.lastName.substring(0, 1).toUpperCase()}
                       </div>
                       <div>
                         <div className="font-bold text-slate-800 dark:text-slate-100">
                           {tech.firstName} {tech.lastName}
                         </div>
                         <div className="text-sm text-slate-500 capitalize">
-                          {tech.skillLevel.replace('_', ' ')} • {tech.department}
+                          {tech.department.replace('_', ' ')}
                         </div>
                       </div>
                     </div>
@@ -204,6 +240,7 @@ export default function TechnicianRosteringPage() {
                           Edit
                         </button>
                         <button
+                          disabled={deleteMutation.isPending}
                           onClick={async () => {
                             if (
                               confirm(
@@ -211,14 +248,14 @@ export default function TechnicianRosteringPage() {
                               )
                             ) {
                               try {
-                                await deleteTechnician(tech.technicianId);
-                                addToast({ type: 'success', message: 'Technician deleted' });
+                                await deleteMutation.mutateAsync(tech.technicianId);
+                                toast.success('Technician deleted');
                               } catch (e) {
-                                addToast({ type: 'error', message: 'Failed to delete' });
+                                toast.error('Failed to delete');
                               }
                             }
                           }}
-                          className="text-xs font-bold text-rose-500 hover:underline"
+                          className="text-xs font-bold text-rose-500 hover:underline disabled:opacity-50"
                         >
                           Delete
                         </button>
@@ -235,28 +272,34 @@ export default function TechnicianRosteringPage() {
           <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
             <h3 className="font-bold text-lg mb-4">Current Shifts</h3>
             <div className="space-y-3">
-              {activeShifts.map((shift, i) => (
-                <div
-                  key={shift.shiftId || i}
-                  className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800"
-                >
-                  <div className="flex justify-between items-start mb-1">
-                    <h4 className="font-bold text-sm text-slate-700 dark:text-slate-300">
-                      {shift.technicianName}
-                    </h4>
-                    <span
-                      className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${shift.status === 'in_progress' ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-500'}`}
-                    >
-                      {shift.status.replace('_', ' ')}
-                    </span>
-                  </div>
-                  <p className="text-xs text-slate-500 flex items-center gap-1 mt-2">
-                    <Clock className="w-3 h-3" /> {shift.startTime} - {shift.endTime} •{' '}
-                    {shift.location || 'Service Bay'}
-                  </p>
+              {isLoadingShifts ? (
+                <div className="animate-pulse space-y-3">
+                  {[1, 2].map((i) => (
+                    <div key={i} className="h-16 bg-slate-100 dark:bg-slate-800 rounded-xl"></div>
+                  ))}
                 </div>
-              ))}
-              {activeShifts.length === 0 && (
+              ) : activeShifts.length > 0 ? (
+                activeShifts.map((shift, i) => (
+                  <div
+                    key={shift.shiftId || i}
+                    className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800"
+                  >
+                    <div className="flex justify-between items-start mb-1">
+                      <h4 className="font-bold text-sm text-slate-700 dark:text-slate-300">
+                        {shift.technicianName}
+                      </h4>
+                      <span
+                        className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${shift.status === 'in_progress' ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-500'}`}
+                      >
+                        {shift.status.replace('_', ' ')}
+                      </span>
+                    </div>
+                    <p className="text-xs text-slate-500 flex items-center gap-1 mt-2">
+                      <Clock className="w-3 h-3" /> {shift.startTime} - {shift.endTime}
+                    </p>
+                  </div>
+                ))
+              ) : (
                 <div className="text-sm text-slate-500">No active shifts right now.</div>
               )}
             </div>
@@ -270,8 +313,6 @@ export default function TechnicianRosteringPage() {
         onSave={handleSaveTechnician}
         technician={editingTechnician}
       />
-
-      <ToastContainer toasts={localToasts} onClose={removeToast} />
     </div>
   );
 }

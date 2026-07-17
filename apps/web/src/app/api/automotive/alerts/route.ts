@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
+import { createProtectedRoute } from '@/lib/api/route-wrapper';
 
-export async function GET() {
+export const GET = createProtectedRoute(async () => {
   return NextResponse.json({ alerts: [] });
-}
+});
 
-export async function POST(request: Request) {
+export const POST = createProtectedRoute(async (request: Request) => {
   const body = await request.json();
   return NextResponse.json(
     {
@@ -16,4 +17,4 @@ export async function POST(request: Request) {
     },
     { status: 201 }
   );
-}
+});

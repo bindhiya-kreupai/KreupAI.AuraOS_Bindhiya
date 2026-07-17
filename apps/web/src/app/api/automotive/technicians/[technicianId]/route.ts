@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma as db } from '@aura/database';
+import { createProtectedRoute } from '@/lib/api/route-wrapper';
 
-export async function GET(request: Request, { params }: { params: { technicianId: string } }) {
+export const GET = createProtectedRoute(async (request: Request, { params }: any) => {
   try {
     const technician = await db.technician.findUnique({
       where: { technicianId: params.technicianId },
@@ -16,9 +17,9 @@ export async function GET(request: Request, { params }: { params: { technicianId
     console.error('Failed to fetch technician:', error);
     return NextResponse.json({ error: 'Failed to fetch technician' }, { status: 500 });
   }
-}
+});
 
-export async function PUT(request: Request, { params }: { params: { technicianId: string } }) {
+export const PUT = createProtectedRoute(async (request: Request, { params }: any) => {
   try {
     const body = await request.json();
 
@@ -35,9 +36,9 @@ export async function PUT(request: Request, { params }: { params: { technicianId
     console.error('Failed to update technician:', error);
     return NextResponse.json({ error: 'Failed to update technician' }, { status: 500 });
   }
-}
+});
 
-export async function DELETE(request: Request, { params }: { params: { technicianId: string } }) {
+export const DELETE = createProtectedRoute(async (request: Request, { params }: any) => {
   try {
     await db.technician.delete({
       where: { technicianId: params.technicianId },
@@ -48,4 +49,4 @@ export async function DELETE(request: Request, { params }: { params: { technicia
     console.error('Failed to delete technician:', error);
     return NextResponse.json({ error: 'Failed to delete technician' }, { status: 500 });
   }
-}
+});

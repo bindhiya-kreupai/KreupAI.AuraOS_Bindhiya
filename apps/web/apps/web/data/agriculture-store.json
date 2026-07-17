@@ -216,6 +216,37 @@
       "createdDate": "2024-02-08T00:00:00.000Z",
       "lastUpdatedDate": "2026-07-17T05:17:44.484Z",
       "notes": "Experienced crew lead, excellent with team management"
+    },
+    {
+      "fullName": "John",
+      "nationality": "India ",
+      "phone": "8897868668",
+      "email": "john@gmail.com",
+      "employmentType": "seasonal",
+      "seasonType": "Summer Harvest",
+      "status": "recruited",
+      "dateOfBirth": "1990-01-01T00:00:00.000Z",
+      "startDate": "2026-07-17T05:50:43.710Z",
+      "endDate": "2026-10-15T05:50:43.710Z",
+      "contractedHours": 40,
+      "hourlyRate": 15,
+      "skills": [],
+      "certifications": [],
+      "languages": ["English"],
+      "previousSeasons": 0,
+      "housingRequired": false,
+      "attendanceRate": 100,
+      "rehireEligible": true,
+      "documents": [],
+      "assignmentHistory": [],
+      "createdDate": "2026-07-17T05:50:45.791Z",
+      "lastUpdatedDate": "2026-07-17T05:50:45.791Z",
+      "emergencyContact": {
+        "name": "Unknown",
+        "relationship": "Unknown",
+        "phone": "000-000-0000"
+      },
+      "workerId": "worker-mroirodb-9gtxy3"
     }
   ],
   "pools": [

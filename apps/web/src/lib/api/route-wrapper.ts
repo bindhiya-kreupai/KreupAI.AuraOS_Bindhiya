@@ -218,6 +218,18 @@ async function extractAuth(request: NextRequest): Promise<AuthContext | null> {
     const payload = verifyAccessTokenFn(token);
     if (!payload) return null;
 
+    // DEV BYPASS: If using the dev-login token, bypass DB lookup
+    if (process.env.NODE_ENV !== 'production' && payload.userId === 'dev-user') {
+      return {
+        userId: payload.userId,
+        email: payload.email || 'dev@auraos.local',
+        tenantId: payload.tenantId || 'dev-tenant',
+        sessionId: payload.sessionId,
+        roles: ['SUPER_ADMIN'],
+        permissions: ['*:*'], // Give all permissions for local dev
+      };
+    }
+
     // Get user with roles and permissions
     const user = await prismaLocal.user.findUnique({
       where: { id: payload.userId },

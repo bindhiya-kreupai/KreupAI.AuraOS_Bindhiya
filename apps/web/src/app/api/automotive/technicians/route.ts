@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma as db } from '@aura/database';
+import { createProtectedRoute } from '@/lib/api/route-wrapper';
 
-export async function GET() {
+export const GET = createProtectedRoute(async () => {
   try {
     const technicians = await db.technician.findMany({
       orderBy: { createdAt: 'desc' },
@@ -11,9 +12,9 @@ export async function GET() {
     console.error('Failed to fetch technicians:', error);
     return NextResponse.json({ error: 'Failed to fetch technicians' }, { status: 500 });
   }
-}
+});
 
-export async function POST(request: Request) {
+export const POST = createProtectedRoute(async (request: Request) => {
   try {
     const body = await request.json();
     const technician = await db.technician.create({
@@ -37,4 +38,4 @@ export async function POST(request: Request) {
     console.error('Failed to create technician:', error);
     return NextResponse.json({ error: 'Failed to create technician' }, { status: 500 });
   }
-}
+});

@@ -14,7 +14,6 @@ import { ThemeProvider, useTheme } from '@/stores/theme-store';
 const PREVIEW_MODULES = new Set<string>([
   'ai',
   'ai-automation',
-  'automotive',
   'aviation',
   'career',
   'collaboration',

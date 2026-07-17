@@ -1,7 +1,8 @@
 import { NextResponse } from 'next/server';
 import { prisma as db } from '@aura/database';
+import { createProtectedRoute } from '@/lib/api/route-wrapper';
 
-export async function POST(request: Request) {
+export const POST = createProtectedRoute(async (request: Request) => {
   try {
     const body = await request.json();
     const template = await db.rosterTemplate.create({
@@ -18,4 +19,4 @@ export async function POST(request: Request) {
     console.error('Failed to create roster template:', error);
     return NextResponse.json({ error: 'Failed to create roster template' }, { status: 500 });
   }
-}
+});
