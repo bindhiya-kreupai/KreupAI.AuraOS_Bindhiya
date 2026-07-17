@@ -7393,12 +7393,19 @@ model ManufacturingAlert {
 model AviationCabinCrewMember {
   id            String    @id @default(uuid())
   tenantId      String
+  crewId        String    @unique
   employeeId    String    @unique
-  certification String?
-  languages     String[]
-  baseAirport   String?
-  status        String    @default("ACTIVE")
-  certExpiresAt DateTime?
+  personalInfo  Json
+  crewType      String
+  seniority     Json?
+  qualifications Json?
+  languages     Json?
+  certifications Json?
+  medicalStatus Json?
+  dutyStatus    String
+  preferences   Json?
+  performanceRating Json?
+  status        String    @default("active")
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
   createdBy     String?
@@ -7413,13 +7420,18 @@ model AviationCabinCrewMember {
 model AviationPilotTraining {
   id                String    @id @default(uuid())
   tenantId          String
+  recordId          String    @unique
   pilotId           String
-  trainingType      String
-  aircraftType      String?
+  programName       String
+  programType       String
   startDate         DateTime
   endDate           DateTime?
-  status            String    @default("SCHEDULED")
-  certificateNumber String?
+  status            String
+  syllabus          Json?
+  progress          Json?
+  instructor        Json?
+  certification     Json?
+  notes             String?
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
   createdBy         String?
@@ -7453,10 +7465,19 @@ model AviationGroundEquipment {
 model AviationGroundStaff {
   id             String    @id @default(uuid())
   tenantId       String
+  staffId        String    @unique
   employeeId     String    @unique
-  role           String
-  baseAirport    String
-  certifications String[]
+  personalInfo   Json
+  jobRole        String
+  department     String
+  baseStation    String
+  shiftInfo      Json?
+  qualifications Json?
+  certifications Json?
+  equipmentQualifications Json?
+  safetyRecord   Json?
+  performanceMetrics Json?
+  status         String
   createdAt      DateTime  @default(now())
   updatedAt      DateTime  @updatedAt
   createdBy      String?
@@ -17138,4 +17159,421 @@ model HousekeepingTask {
   notes                String?
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
+}
+
+
+
+model AviationFlightAssignment {
+  id              String    @id @default(uuid())
+  tenantId        String
+  assignmentId    String    @unique
+  flightNumber    String
+  departureAirport String
+  arrivalAirport   String
+  scheduledDeparture DateTime
+  scheduledArrival   DateTime
+  status          String
+  aircraftType    String
+  aircraftRegistration String?
+  position        String
+  reportTime      DateTime
+  clearTime       DateTime
+  flightTimeMinutes Int
+  dutyTimeMinutes   Int
+  briefingInfo    Json?
+  crewComplement  Json?
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  createdBy       String?
+  updatedBy       String?
+  deletedAt       DateTime?
+  isDeleted       Boolean   @default(false)
+
+  @@index([tenantId])
+  @@index([flightNumber])
+  @@map("aura_av_flight_assignment")
+}
+
+model AviationDutyTime {
+  id              String    @id @default(uuid())
+  tenantId        String
+  dutyId          String    @unique
+  crewId          String
+  dutyType        String
+  startTime       DateTime
+  endTime         DateTime
+  baseAirport     String
+  status          String
+  totalMinutes    Int
+  flightMinutes   Int
+  fatigueAssessment Json?
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  createdBy       String?
+  updatedBy       String?
+  deletedAt       DateTime?
+  isDeleted       Boolean   @default(false)
+
+  @@index([tenantId])
+  @@index([crewId])
+  @@map("aura_av_duty_time")
+}
+
+model AviationRestPeriod {
+  id              String    @id @default(uuid())
+  tenantId        String
+  restId          String    @unique
+  crewId          String
+  restType        String
+  startTime       DateTime
+  endTime         DateTime
+  location        String
+  status          String
+  durationMinutes Int
+  accommodation   Json?
+  isCompliant     Boolean   @default(true)
+  complianceNotes String?
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  createdBy       String?
+  updatedBy       String?
+  deletedAt       DateTime?
+  isDeleted       Boolean   @default(false)
+
+  @@index([tenantId])
+  @@index([crewId])
+  @@map("aura_av_rest_period")
+}
+
+model AviationPilotProfile {
+  id              String    @id @default(uuid())
+  tenantId        String
+  pilotId         String    @unique
+  employeeId      String    @unique
+  personalInfo    Json
+  pilotType       String
+  rank            String
+  baseAirport     String
+  status          String
+  licenses        Json?
+  typeRatings     Json?
+  medicalStatus   Json?
+  flightHours     Json?
+  performanceRating Json?
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  createdBy       String?
+  updatedBy       String?
+  deletedAt       DateTime?
+  isDeleted       Boolean   @default(false)
+
+  @@index([tenantId])
+  @@index([employeeId])
+  @@map("aura_av_pilot_profile")
+}
+
+model AviationSimulatorSession {
+  id              String    @id @default(uuid())
+  tenantId        String
+  sessionId       String    @unique
+  pilotId         String
+  sessionType     String
+  simulatorId     String
+  aircraftType    String
+  date            DateTime
+  durationMinutes Int
+  location        String
+  instructor      Json?
+  scenarios       Json?
+  performance     Json?
+  overallGrade    String?
+  status          String
+  notes           String?
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  createdBy       String?
+  updatedBy       String?
+  deletedAt       DateTime?
+  isDeleted       Boolean   @default(false)
+
+  @@index([tenantId])
+  @@index([pilotId])
+  @@map("aura_av_simulator_session")
+}
+
+model AviationProficiencyCheck {
+  id              String    @id @default(uuid())
+  tenantId        String
+  checkId         String    @unique
+  pilotId         String
+  checkType       String
+  aircraftType    String
+  date            DateTime
+  location        String
+  examiner        Json?
+  checklist       Json?
+  result          String
+  validUntil      DateTime
+  restrictions    String[]
+  notes           String?
+  status          String
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  createdBy       String?
+  updatedBy       String?
+  deletedAt       DateTime?
+  isDeleted       Boolean   @default(false)
+
+  @@index([tenantId])
+  @@index([pilotId])
+  @@map("aura_av_proficiency_check")
+}
+
+model AviationRampProcedure {
+  id              String    @id @default(uuid())
+  tenantId        String
+  procedureId     String    @unique
+  title           String
+  aircraftType    String
+  category        String
+  version         String
+  lastUpdated     DateTime
+  author          String
+  status          String
+  steps           Json?
+  requiredEquipment String[]
+  safetyWarnings  String[]
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  createdBy       String?
+  updatedBy       String?
+  deletedAt       DateTime?
+  isDeleted       Boolean   @default(false)
+
+  @@index([tenantId])
+  @@map("aura_av_ramp_procedure")
+}
+
+model AviationSafetyCompliance {
+  id              String    @id @default(uuid())
+  tenantId        String
+  recordId        String    @unique
+  auditType       String
+  date            DateTime
+  location        String
+  department      String
+  auditor         Json?
+  areas           Json?
+  overallScore    Float
+  status          String
+  nextAuditDate   DateTime?
+  findings        Json?
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  createdBy       String?
+  updatedBy       String?
+  deletedAt       DateTime?
+  isDeleted       Boolean   @default(false)
+
+  @@index([tenantId])
+  @@map("aura_av_safety_compliance")
+}
+
+
+// ==========================================
+// AUTOMOTIVE MODULE
+// ==========================================
+
+model AutomotiveTechnician {
+  id                String   @id @default(uuid())
+  tenantId          String
+  employeeId        String
+  firstName         String
+  lastName          String
+  email             String
+  phone             String
+  specializations   String[]
+  skillLevel        String
+  hourlyRate        Float
+  employmentType    String
+  status            String
+  hireDate          DateTime
+  department        String
+  isDeleted         Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdBy         String?
+  updatedBy         String?
+
+  shifts AutomotiveTechnicianShift[]
+
+  @@map("aura_automotive_technician")
+}
+
+model AutomotiveTechnicianShift {
+  id                String   @id @default(uuid())
+  tenantId          String
+  technicianId      String
+  date              DateTime
+  shiftType         String
+  startTime         String
+  endTime           String
+  breakDuration     Int
+  location          String
+  serviceAdvisor    String?
+  assignedJobs      String[]
+  actualStartTime   String?
+  actualEndTime     String?
+  notes             String?
+  status            String
+  overtimeHours     Float?
+  isDeleted         Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdBy         String?
+  updatedBy         String?
+
+  technician AutomotiveTechnician @relation(fields: [technicianId], references: [id])
+
+  @@map("aura_automotive_technician_shift")
+}
+
+model AutomotiveTimeOffRequest {
+  id                String   @id @default(uuid())
+  tenantId          String
+  technicianId      String
+  startDate         DateTime
+  endDate           DateTime
+  requestType       String
+  reason            String?
+  affectedShifts    String[]
+  coverageArranged  Boolean
+  coverageTechnicianId String?
+  requestDate       DateTime
+  status            String
+  approvedBy        String?
+  approvalDate      DateTime?
+  isDeleted         Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdBy         String?
+  updatedBy         String?
+
+  @@map("aura_automotive_time_off_request")
+}
+
+model AutomotiveSalesCommission {
+  id                String   @id @default(uuid())
+  tenantId          String
+  salesPersonId     String
+  salesPersonName   String
+  periodStart       DateTime
+  periodEnd         DateTime
+  totalVehicleSales Float
+  totalServiceSales Float
+  totalSalesAmount  Float
+  baseCommission    Float
+  totalBonuses      Float
+  totalDeductions   Float
+  netCommission     Float
+  commissionRate    Float
+  status            String
+  calculatedDate    DateTime
+  approvedBy        String?
+  approvalDate      DateTime?
+  paymentDate       DateTime?
+  paymentMethod     String?
+  isDeleted         Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdBy         String?
+  updatedBy         String?
+
+  @@map("aura_automotive_sales_commission")
+}
+
+model AutomotiveCommissionStructure {
+  id                String   @id @default(uuid())
+  tenantId          String
+  structureName     String
+  description       String
+  applicableTo      String
+  commissionType    String
+  baseRate          Float?
+  flatAmount        Float?
+  effectiveFrom     DateTime
+  effectiveTo       DateTime?
+  isActive          Boolean
+  isDeleted         Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdBy         String?
+  updatedBy         String?
+
+  @@map("aura_automotive_commission_structure")
+}
+
+model AutomotivePart {
+  id                String   @id @default(uuid())
+  tenantId          String
+  partNumber        String
+  partName          String
+  description       String
+  category          String
+  manufacturer      String
+  barcode           String?
+  supplierId        String?
+  unitOfMeasure     String
+  costPrice         Float
+  retailPrice       Float
+  taxRate           Float
+  quantityOnHand    Int
+  reorderPoint      Int
+  reorderQuantity   Int
+  locationBin       String
+  status            String
+  lastRestockDate   DateTime?
+  isDeleted         Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdBy         String?
+  updatedBy         String?
+
+  movements AutomotivePartMovement[]
+
+  @@map("aura_automotive_part")
+}
+
+model AutomotivePartMovement {
+  id                String   @id @default(uuid())
+  tenantId          String
+  partId            String
+  movementType      String
+  quantity          Int
+  unitCost          Float?
+  totalCost         Float?
+  referenceId       String?
+  referenceType     String?
+  locationFrom      String?
+  locationTo        String?
+  notes             String?
+  movementDate      DateTime
+  performedBy       String
+  isDeleted         Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdBy         String?
+  updatedBy         String?
+
+  part AutomotivePart @relation(fields: [partId], references: [id])
+
+  @@map("aura_automotive_part_movement")
 }

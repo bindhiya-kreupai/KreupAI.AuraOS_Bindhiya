@@ -1,63 +1,42 @@
 import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
-import { withEnhancedAuth } from '@/lib/auth';
-import { logger } from '@/lib/logger';
-import {
-  forbidden,
-  parsePagination,
-  safeJson,
-  serverError,
-  successItem,
-  successList,
-  validationError,
-} from '@/lib/api/crud-helpers';
+import { createProtectedRoute } from '@/lib/api/route-wrapper';
 
-export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
-  try {
-    const { user, permissions } = context;
-    if (!permissions.includes('industry-aviation/ground-ops:read'))
-      return forbidden('industry-aviation/ground-ops:read');
-    const { page, limit, skip } = parsePagination(new URL(request.url).searchParams);
-    const where = { tenantId: user.tenantId };
-    const [rows, total] = await Promise.all([
-      (prisma as any).aviationTurnaround.findMany({
-        where,
+export const GET = createProtectedRoute(
+  async (request: NextRequest, context: any) => {
+    try {
+      const tenantId = context.auth!.tenantId;
+      const data = await prisma.aviationTurnaround.findMany({
+        where: { tenantId, isDeleted: false },
         orderBy: { createdAt: 'desc' },
-        skip,
-        take: limit,
-      }),
-      (prisma as any).aviationTurnaround.count({ where }),
-    ]);
-    return successList(rows, page, limit, total);
-  } catch (error: any) {
-    logger.error(
-      { err: error, route: 'industry-aviation/ground-operations/turnarounds/route.ts' },
-      'Failed to list'
-    );
-    return serverError(error, 'list');
-  }
-});
+      });
+      return NextResponse.json({ turnarounds: data }, { status: 200 });
+    } catch (error: any) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+  },
+  { requiredPermissions: ['aviation:read'] }
+);
 
-export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
-  try {
-    const { user, permissions } = context;
-    if (!permissions.includes('industry-aviation/ground-ops:create'))
-      return forbidden('industry-aviation/ground-ops:create');
-    const body = await safeJson(request);
-    if (!body) return validationError({ message: 'Invalid JSON body' });
-    const created = await (prisma as any).aviationTurnaround.create({
-      data: {
-        ...body,
-        tenantId: user.tenantId,
-        createdBy: user.userId,
-      },
-    });
-    return successItem(created, { status: 201 });
-  } catch (error: any) {
-    logger.error(
-      { err: error, route: 'industry-aviation/ground-operations/turnarounds/route.ts' },
-      'Failed to create'
-    );
-    return serverError(error, 'create');
-  }
-});
+export const POST = createProtectedRoute(
+  async (request: NextRequest, context: any) => {
+    try {
+      const tenantId = context.auth!.tenantId;
+      const body = await request.json();
+
+      const data = await prisma.aviationTurnaround.create({
+        data: {
+          ...body,
+          tenantId,
+          createdBy: context.auth!.userId,
+        },
+      });
+
+      return NextResponse.json({ turnaround: data }, { status: 201 });
+    } catch (error: any) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+  },
+  { requiredPermissions: ['aviation:write'] }
+);

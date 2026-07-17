@@ -7,11 +7,11 @@ export const GET = createProtectedRoute(
   async (request: NextRequest, context: any) => {
     try {
       const tenantId = context.auth!.tenantId;
-      const data = await prisma.aviationGroundEquipment.findMany({
+      const data = await prisma.aviationPilotTraining.findMany({
         where: { tenantId, isDeleted: false },
         orderBy: { createdAt: 'desc' },
       });
-      return NextResponse.json({ equipment: data }, { status: 200 });
+      return NextResponse.json({ trainingRecords: data }, { status: 200 });
     } catch (error: any) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
@@ -25,7 +25,7 @@ export const POST = createProtectedRoute(
       const tenantId = context.auth!.tenantId;
       const body = await request.json();
 
-      const data = await prisma.aviationGroundEquipment.create({
+      const data = await prisma.aviationPilotTraining.create({
         data: {
           ...body,
           tenantId,
@@ -33,7 +33,7 @@ export const POST = createProtectedRoute(
         },
       });
 
-      return NextResponse.json({ equipment: data }, { status: 201 });
+      return NextResponse.json({ trainingRecord: data }, { status: 201 });
     } catch (error: any) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }

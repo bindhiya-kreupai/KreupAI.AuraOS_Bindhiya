@@ -199,6 +199,11 @@ async function extractAuth(request: NextRequest): Promise<AuthContext | null> {
 
     // If auth subsystem isn't available, treat as unauthorized.
     if (!verifyAccessTokenFn || !ACCESS_COOKIE_LOCAL || !prismaLocal) {
+      console.log('extractAuth: missing subsystem', {
+        hasJwt: !!verifyAccessTokenFn,
+        hasCookie: !!ACCESS_COOKIE_LOCAL,
+        hasDb: !!prismaLocal,
+      });
       return null;
     }
 
@@ -212,11 +217,17 @@ async function extractAuth(request: NextRequest): Promise<AuthContext | null> {
       token = request.cookies.get(ACCESS_COOKIE_LOCAL)?.value ?? null;
     }
 
-    if (!token) return null;
+    if (!token) {
+      console.log('extractAuth: no token found');
+      return null;
+    }
 
     // Verify JWT token
     const payload = verifyAccessTokenFn(token);
-    if (!payload) return null;
+    if (!payload) {
+      console.log('extractAuth: payload is null');
+      return null;
+    }
 
     // DEV BYPASS: If using the dev-login token, bypass DB lookup
     if (process.env.NODE_ENV !== 'production' && payload.userId === 'dev-user') {
@@ -264,7 +275,14 @@ async function extractAuth(request: NextRequest): Promise<AuthContext | null> {
       },
     });
 
-    if (!user || user.status !== 'Active') return null;
+    if (!user) {
+      console.log('extractAuth: user not found in DB for id:', payload.userId);
+      return null;
+    }
+    if (user.status !== 'Active') {
+      console.log('extractAuth: user status is not Active:', user.status);
+      return null;
+    }
 
     const roles = user.roles.filter((ur: any) => ur.role.isActive).map((ur: any) => ur.role.code);
 
@@ -289,6 +307,7 @@ async function extractAuth(request: NextRequest): Promise<AuthContext | null> {
     const loggerMod = await safeImport(async () => import('@/lib/logger'));
     const logger = loggerMod && (loggerMod as any).logger ? (loggerMod as any).logger : null;
     if (logger) logger.error({ error }, 'Failed to extract authentication');
+    console.error('extractAuth: exception thrown', error);
     return null;
   }
 }

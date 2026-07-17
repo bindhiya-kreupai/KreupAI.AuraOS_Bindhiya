@@ -27,7 +27,7 @@ import type {
 // ============================================================================
 
 export class TechnicianService {
-  private static endpoint = '/automotive/technicians';
+  private static endpoint = '/industry-automotive/technician-rostering/technicians';
 
   static async getAllTechnicians(): Promise<Technician[]> {
     try {
@@ -72,7 +72,7 @@ export class TechnicianService {
 }
 
 export class ShiftService {
-  private static endpoint = '/automotive/shifts';
+  private static endpoint = '/industry-automotive/technician-rostering/shifts';
 
   static async getAllShifts(): Promise<TechnicianShift[]> {
     try {
@@ -289,7 +289,7 @@ export class SalesPersonService {
 }
 
 export class CommissionService {
-  private static endpoint = '/automotive/commissions';
+  private static endpoint = '/industry-automotive/sales-commissions/commissions';
 
   static async getAllCommissions(): Promise<SalesCommission[]> {
     try {
@@ -414,7 +414,7 @@ export class CommissionReportService {
 // ============================================================================
 
 export class PartService {
-  private static endpoint = '/automotive/inventory/parts';
+  private static endpoint = '/industry-automotive/parts-inventory/parts';
 
   static async getAllParts(): Promise<Part[]> {
     try {
@@ -468,7 +468,7 @@ export class PartService {
 }
 
 export class InventoryMovementService {
-  private static endpoint = '/automotive/inventory/movements';
+  private static endpoint = '/industry-automotive/parts-inventory/movements';
 
   static async getAllMovements(): Promise<InventoryMovement[]> {
     try {

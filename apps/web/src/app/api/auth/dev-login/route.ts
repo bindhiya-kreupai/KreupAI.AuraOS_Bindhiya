@@ -42,3 +42,31 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+export async function GET(request: NextRequest) {
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });
+  }
+
+  try {
+    const userId = 'dev-user';
+    const email = 'dev@auraos.local';
+    const tenantId = 'dev-tenant';
+    const sessionId = crypto.randomUUID();
+
+    // Generate tokens
+    const accessToken = generateAccessToken({ userId, email, tenantId, sessionId });
+    const refreshToken = generateRefreshToken({ userId, email, tenantId, sessionId });
+
+    // Redirect to dashboard (or wherever user came from)
+    const url = new URL('/dashboard/aviation/cabin-crew', request.url);
+    const response = NextResponse.redirect(url);
+
+    // Set cookies
+    setAuthCookies(response, { accessToken, refreshToken });
+
+    return response;
+  } catch (error: any) {
+    return NextResponse.json({ success: false, error: error?.message }, { status: 500 });
+  }
+}
