@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { EmployeeSearchableSelect } from '@/components/shared/EmployeeSearchableSelect';
 
 interface Dispute {
   id: string;
@@ -111,12 +112,12 @@ export default function EosbDisputesPage() {
         </header>
 
         <section className="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 md:grid-cols-7">
-          <label className="text-sm">
-            Employee
-            <input
+          <label className="text-sm flex flex-col gap-1">
+            Employee Name
+            <EmployeeSearchableSelect
               value={form.employeeId}
-              onChange={(e) => setForm((f) => ({ ...f, employeeId: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5"
+              onChange={(val) => setForm((f) => ({ ...f, employeeId: val }))}
+              placeholder="Search employee..."
             />
           </label>
           <label className="text-sm">

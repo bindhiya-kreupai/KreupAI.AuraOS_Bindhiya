@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useTheme } from '@/stores/theme-store';
+import { EmployeeSearchableSelect } from '@/components/shared/EmployeeSearchableSelect';
 import {
   Search,
   SlidersHorizontal,
@@ -35,6 +36,8 @@ export default function RegistrationsPage() {
   const [employees, setEmployees] = useState<any[]>([]);
   const [preview, setPreview] = useState<any>(null);
   const [previewLoading, setPreviewLoading] = useState(false);
+  const [isRegistering, setIsRegistering] = useState(false);
+  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
   const [message, setMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [showDeleted, setShowDeleted] = useState(false);
@@ -110,22 +113,27 @@ export default function RegistrationsPage() {
   }, [form.employeeId]);
 
   async function register() {
+    setIsRegistering(true);
     setMessage('');
-    const r = await fetch('/api/v1/gosi-compliance/registrations', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'register', ...form }),
-    });
-    const p = await r.json();
-    if (p.success) {
-      setMessage('Successfully registered employee in GOSI');
-      setForm({ employeeId: '', establishmentId: '', nationalityClass: 'SAUDI' });
-      setPreview(null);
-      setShowForm(false);
-    } else {
-      setMessage(p.error?.details?.error ?? p.error?.message ?? 'Registration failed');
+    try {
+      const r = await fetch('/api/v1/gosi-compliance/registrations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'register', ...form }),
+      });
+      const p = await r.json();
+      if (p.success) {
+        setMessage('Successfully registered employee in GOSI');
+        setForm({ employeeId: '', establishmentId: '', nationalityClass: 'SAUDI' });
+        setPreview(null);
+        setShowForm(false);
+      } else {
+        setMessage(p.error?.details?.error ?? p.error?.message ?? 'Registration failed');
+      }
+    } finally {
+      setIsRegistering(false);
+      load();
     }
-    load();
   }
 
   async function deregister(employeeId: string) {
@@ -133,19 +141,24 @@ export default function RegistrationsPage() {
       'Enter GOSI deregistration reason (e.g. Resignation, Contract End):'
     );
     if (!reason) return;
+    setActionLoadingId(employeeId);
     setMessage('');
-    const r = await fetch('/api/v1/gosi-compliance/registrations', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'deregister', employeeId, reason }),
-    });
-    const p = await r.json();
-    setMessage(
-      p.success
-        ? 'Deregistered successfully'
-        : (p.error?.details?.error ?? p.error?.message ?? 'failed')
-    );
-    load();
+    try {
+      const r = await fetch('/api/v1/gosi-compliance/registrations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'deregister', employeeId, reason }),
+      });
+      const p = await r.json();
+      setMessage(
+        p.success
+          ? 'Deregistered successfully'
+          : (p.error?.details?.error ?? p.error?.message ?? 'failed')
+      );
+    } finally {
+      setActionLoadingId(null);
+      load();
+    }
   }
 
   // Filter local results based on search input
@@ -200,19 +213,12 @@ export default function RegistrationsPage() {
 
             <div className="grid gap-5 md:grid-cols-2 lg:grid-cols-3">
               <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex flex-col gap-1.5">
-                Employee
-                <select
+                Employee Name
+                <EmployeeSearchableSelect
                   value={form.employeeId}
-                  onChange={(e) => setForm((f) => ({ ...f, employeeId: e.target.value }))}
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-700 bg-slate-50/50 focus:bg-white dark:bg-slate-850 px-3.5 py-2.5 text-slate-950 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-950 text-sm transition-all"
-                >
-                  <option value="">-- Select Employee --</option>
-                  {employees.map((emp) => (
-                    <option key={emp.id} value={emp.id} className="dark:bg-slate-900">
-                      {emp.firstName} {emp.lastName} ({emp.employeeCode})
-                    </option>
-                  ))}
-                </select>
+                  onChange={(val) => setForm((f) => ({ ...f, employeeId: val }))}
+                  placeholder="Search employee..."
+                />
               </label>
 
               <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex flex-col gap-1.5">
@@ -255,11 +261,22 @@ export default function RegistrationsPage() {
                 <button
                   type="button"
                   onClick={register}
-                  disabled={!form.employeeId || previewLoading || !preview?.isGosiConfigured}
+                  disabled={
+                    !form.employeeId ||
+                    previewLoading ||
+                    isRegistering ||
+                    !preview?.isGosiConfigured
+                  }
                   className="w-full rounded-xl bg-slate-950 dark:bg-white text-white dark:text-slate-950 hover:bg-slate-800 dark:hover:bg-slate-100 disabled:bg-slate-100 dark:disabled:bg-slate-850 disabled:text-slate-400 dark:disabled:text-slate-600 px-4 py-3 text-sm font-semibold transition-all shadow-sm cursor-pointer disabled:cursor-not-allowed flex items-center justify-center gap-2"
                 >
-                  {previewLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-                  {previewLoading ? 'Loading Preview...' : 'Register in GOSI'}
+                  {(previewLoading || isRegistering) && (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  )}
+                  {previewLoading
+                    ? 'Loading Preview...'
+                    : isRegistering
+                      ? 'Registering...'
+                      : 'Register in GOSI'}
                 </button>
               </div>
             </div>
@@ -373,9 +390,13 @@ export default function RegistrationsPage() {
                           <button
                             type="button"
                             onClick={() => deregister(r.employeeId)}
-                            className="rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50/50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 px-3 py-1.5 text-xs text-rose-600 dark:text-rose-400 font-bold transition-all shadow-sm cursor-pointer"
+                            disabled={actionLoadingId === r.employeeId}
+                            className="rounded-xl border border-rose-200 dark:border-rose-900/50 bg-rose-50/50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 px-3 py-1.5 text-xs text-rose-600 dark:text-rose-400 font-bold transition-all shadow-sm cursor-pointer flex items-center justify-center gap-1.5"
                           >
-                            Deregister
+                            {actionLoadingId === r.employeeId && (
+                              <Loader2 className="h-3 w-3 animate-spin" />
+                            )}
+                            {actionLoadingId === r.employeeId ? 'Deregistering...' : 'Deregister'}
                           </button>
                         ) : (
                           <span className="text-slate-400 dark:text-slate-550 text-xs italic">
