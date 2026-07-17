@@ -1,13 +1,13 @@
 import type { NextRequest } from 'next/server';
-import { createProtectedRoute } from '@/lib/api/route-wrapper';
+import { createPublicRoute } from '@/lib/api/route-wrapper';
 import store from '../../store';
 
-export const GET = createProtectedRoute(async () => {
+export const GET = createPublicRoute(async () => {
   const inspections = await store.getInspections();
   return { inspections };
 });
 
-export const POST = createProtectedRoute(async (request: NextRequest) => {
+export const POST = createPublicRoute(async (request: NextRequest) => {
   const body = await request.json().catch(() => null);
   if (!body || !body.facilityId || !body.inspectorName) {
     return new Response(

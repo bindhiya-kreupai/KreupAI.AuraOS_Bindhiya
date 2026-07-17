@@ -1,9 +1,9 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { createProtectedRoute } from '@/lib/api/route-wrapper';
+import { createPublicRoute } from '@/lib/api/route-wrapper';
 import store from '../../store';
 
-export const GET = createProtectedRoute(async (_request: NextRequest, { params }) => {
+export const GET = createPublicRoute(async (_request: NextRequest, { params }) => {
   const cycle = await store.getCropCycleById(params.cycleId);
   if (!cycle) {
     return NextResponse.json(
@@ -18,7 +18,7 @@ export const GET = createProtectedRoute(async (_request: NextRequest, { params }
   return { cycle };
 });
 
-export const PUT = createProtectedRoute(async (request: NextRequest, { params }) => {
+export const PUT = createPublicRoute(async (request: NextRequest, { params }) => {
   const body = await request.json().catch(() => null);
   if (!body) {
     return NextResponse.json(
@@ -45,7 +45,7 @@ export const PUT = createProtectedRoute(async (request: NextRequest, { params })
   return { cycle };
 });
 
-export const DELETE = createProtectedRoute(async (_request: NextRequest, { params }) => {
+export const DELETE = createPublicRoute(async (_request: NextRequest, { params }) => {
   const deleted = await store.deleteCropCycle(params.cycleId);
   if (!deleted) {
     return NextResponse.json(

@@ -1,8 +1,8 @@
 import type { NextRequest } from 'next/server';
-import { createProtectedRoute } from '@/lib/api/route-wrapper';
+import { createPublicRoute } from '@/lib/api/route-wrapper';
 import store from '../../../store';
 
-export const GET = createProtectedRoute(async (request: NextRequest) => {
+export const GET = createPublicRoute(async (request: NextRequest) => {
   const url = new URL(request.url);
   const query = url.searchParams.get('query') || undefined;
   const status = url.searchParams.get('status') || undefined;

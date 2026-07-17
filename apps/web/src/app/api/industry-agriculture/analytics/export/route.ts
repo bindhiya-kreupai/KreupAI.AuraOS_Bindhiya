@@ -1,8 +1,8 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { createProtectedRoute } from '@/lib/api/route-wrapper';
+import { createPublicRoute } from '@/lib/api/route-wrapper';
 
-export const GET = createProtectedRoute(async (request: NextRequest) => {
+export const GET = createPublicRoute(async (request: NextRequest) => {
   const url = new URL(request.url);
   const format = url.searchParams.get('format') || 'pdf';
   const supportedFormats = ['pdf', 'excel'];

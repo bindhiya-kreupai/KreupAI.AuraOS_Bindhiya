@@ -12,7 +12,6 @@ import { ThemeProvider, useTheme } from '@/stores/theme-store';
 // any /api/ endpoint. Listed here so users see a clear "preview" banner
 // instead of wondering why nothing happens when they click.
 const PREVIEW_MODULES = new Set<string>([
-  'agriculture',
   'ai',
   'ai-automation',
   'automotive',

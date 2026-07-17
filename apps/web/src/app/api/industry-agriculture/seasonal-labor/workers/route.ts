@@ -1,13 +1,13 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { createProtectedRoute } from '@/lib/api/route-wrapper';
+import { createPublicRoute } from '@/lib/api/route-wrapper';
 import store from '../../store';
 
 const debugHeaders = {
   'x-route-hit': 'industry-agriculture/seasonal-labor/workers',
 };
 
-export const GET = createProtectedRoute(async () => {
+export const GET = createPublicRoute(async () => {
   try {
     const workers = await store.getWorkers();
     return NextResponse.json({ routeHit: true, workers }, { headers: debugHeaders });
@@ -19,7 +19,7 @@ export const GET = createProtectedRoute(async () => {
   }
 });
 
-export const POST = createProtectedRoute(async (request: NextRequest) => {
+export const POST = createPublicRoute(async (request: NextRequest) => {
   try {
     const body = await request.json().catch(() => null);
     if (!body || !body.fullName) {

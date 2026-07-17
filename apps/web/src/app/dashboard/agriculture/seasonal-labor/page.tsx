@@ -1,55 +1,84 @@
 'use client';
 
-import React, { useMemo, useState } from 'react';
+import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import { Users, Tractor, Globe, Download, Plus, Search } from 'lucide-react';
-import { useAgriculture } from '../hooks/useAgriculture';
-import { ToastContainer } from '../components/Toast';
-import { LoadingOverlay } from '../components/LoadingSpinner';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import { toast } from 'sonner';
+import { useWorkers, useDeleteWorker, useCreateWorker, useUpdateWorker } from '../hooks/queries';
+import { useDebounce } from '../hooks/useDebounce';
 import { WorkerModal } from '../components/WorkerModal';
+import { Skeleton } from '../components/Skeleton';
+import { ErrorState } from '../components/ErrorState';
+import { EmptyState } from '../components/EmptyState';
 import type { SeasonalWorker } from '../types';
 
 export default function SeasonalLaborPage() {
-  const {
-    workers,
-    loading,
-    toasts,
-    addToast,
-    removeToast,
-    loadWorkers,
-    createWorker,
-    updateWorker,
-    deleteWorker,
-  } = useAgriculture();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
-  const [statusFilter, setStatusFilter] = useState<
-    'all' | 'active' | 'on_leave' | 'onboarding' | 'recruited' | 'completed' | 'terminated'
-  >('all');
-  const [searchQuery, setSearchQuery] = useState('');
+  const urlStatus = searchParams.get('status') || 'all';
+  const urlSearch = searchParams.get('search') || '';
+
+  const [statusFilter, setStatusFilter] = useState<string>(urlStatus);
+  const [searchQuery, setSearchQuery] = useState(urlSearch);
+  const debouncedSearch = useDebounce(searchQuery, 300);
+
+  // Sync state to URL params
+  const createQueryString = useCallback(
+    (name: string, value: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (value && value !== 'all') {
+        params.set(name, value);
+      } else {
+        params.delete(name);
+      }
+      return params.toString();
+    },
+    [searchParams]
+  );
+
+  useEffect(() => {
+    router.replace(
+      `${pathname}?${createQueryString('search', debouncedSearch)}&${createQueryString('status', statusFilter)}`,
+      { scroll: false }
+    );
+  }, [debouncedSearch, statusFilter, pathname, router, createQueryString]);
+
+  // Server-side filtering parameters passed to React Query
+  const queryParams = {
+    ...(statusFilter !== 'all' ? { status: statusFilter } : {}),
+    ...(debouncedSearch ? { query: debouncedSearch } : {}),
+  };
+
+  const { data: workers = [], isLoading, isError, error, refetch } = useWorkers(queryParams);
+  const { mutateAsync: deleteWorker } = useDeleteWorker();
+  const { mutateAsync: createWorker } = useCreateWorker();
+  const { mutateAsync: updateWorker } = useUpdateWorker();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingWorker, setEditingWorker] = useState<SeasonalWorker | null>(null);
 
+  // Client-side fallback filtering just in case server doesn't filter perfectly
   const visibleWorkers = useMemo(() => {
     let filtered = workers;
-
     if (statusFilter !== 'all') {
       filtered = filtered.filter((worker) => worker.status === statusFilter);
     }
-
-    if (searchQuery.trim()) {
-      const lowerQuery = searchQuery.toLowerCase();
+    if (debouncedSearch.trim()) {
+      const lowerQuery = debouncedSearch.toLowerCase();
       filtered = filtered.filter(
         (worker) =>
           worker.fullName.toLowerCase().includes(lowerQuery) ||
           (worker.employeeId || '').toLowerCase().includes(lowerQuery)
       );
     }
-
     return filtered;
-  }, [workers, statusFilter, searchQuery]);
+  }, [workers, statusFilter, debouncedSearch]);
 
   const handleExportCSV = () => {
-    if (workers.length === 0) {
-      addToast({ type: 'warning', message: 'No workers to export' });
+    if (visibleWorkers.length === 0) {
+      toast.warning('No workers to export');
       return;
     }
 
@@ -64,7 +93,7 @@ export default function SeasonalLaborPage() {
     ];
     const csvRows = [headers.join(',')];
 
-    for (const worker of workers) {
+    for (const worker of visibleWorkers) {
       const row = [
         worker.workerId,
         `"${worker.fullName}"`,
@@ -85,37 +114,44 @@ export default function SeasonalLaborPage() {
     a.download = `seasonal_workers_${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    addToast({ type: 'success', message: 'Exported workers successfully' });
+    toast.success('Exported workers successfully');
   };
 
   const handleSaveWorker = async (workerData: Partial<SeasonalWorker>) => {
-    if (editingWorker) {
-      await updateWorker(editingWorker.workerId, workerData);
-    } else {
-      await createWorker({
-        ...workerData,
-        dateOfBirth: new Date('1990-01-01'), // Default dummy dates for mockup
-        startDate: new Date(),
-        endDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000), // 90 days from now
-        contractedHours: 40,
-        hourlyRate: 15,
-        skills: [],
-        certifications: [],
-        languages: ['English'],
-        previousSeasons: 0,
-        housingRequired: false,
-        attendanceRate: 100,
-        rehireEligible: true,
-        documents: [],
-        assignmentHistory: [],
-        createdDate: new Date(),
-        lastUpdatedDate: new Date(),
-        emergencyContact: {
-          name: 'Unknown',
-          relationship: 'Unknown',
-          phone: '000-000-0000',
-        },
-      });
+    try {
+      if (editingWorker) {
+        await updateWorker({ workerId: editingWorker.workerId, updates: workerData });
+        toast.success('Worker updated successfully');
+      } else {
+        await createWorker({
+          ...workerData,
+          dateOfBirth: new Date('1990-01-01'), // Default dummy dates for mockup
+          startDate: new Date(),
+          endDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000), // 90 days from now
+          contractedHours: 40,
+          hourlyRate: 15,
+          skills: [],
+          certifications: [],
+          languages: ['English'],
+          previousSeasons: 0,
+          housingRequired: false,
+          attendanceRate: 100,
+          rehireEligible: true,
+          documents: [],
+          assignmentHistory: [],
+          createdDate: new Date(),
+          lastUpdatedDate: new Date(),
+          emergencyContact: {
+            name: 'Unknown',
+            relationship: 'Unknown',
+            phone: '000-000-0000',
+          },
+        });
+        toast.success('Worker added successfully');
+      }
+      setIsModalOpen(false);
+    } catch (e) {
+      toast.error('Failed to save worker. Please try again.');
     }
   };
 
@@ -129,10 +165,19 @@ export default function SeasonalLaborPage() {
     setIsModalOpen(true);
   };
 
-  return (
-    <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-      {loading && <LoadingOverlay message="Loading agriculture data..." />}
+  const handleDeleteWorker = async (worker: SeasonalWorker) => {
+    if (confirm(`Are you sure you want to delete ${worker.fullName}?`)) {
+      try {
+        await deleteWorker(worker.workerId);
+        toast.success(`${worker.fullName} has been deleted.`);
+      } catch (e) {
+        toast.error('Failed to delete worker');
+      }
+    }
+  };
 
+  return (
+    <div className="space-y-4 pb-6 min-h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
@@ -170,7 +215,7 @@ export default function SeasonalLaborPage() {
         </div>
         <select
           value={statusFilter}
-          onChange={(event) => setStatusFilter(event.target.value as typeof statusFilter)}
+          onChange={(event) => setStatusFilter(event.target.value)}
           className="rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-200"
         >
           <option value="all">All statuses</option>
@@ -187,10 +232,42 @@ export default function SeasonalLaborPage() {
         <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
           <h3 className="font-bold text-lg mb-4">Worker Roster</h3>
           <div className="space-y-4">
-            {visibleWorkers.length === 0 ? (
-              <div className="text-sm text-slate-500 text-center py-8">
-                No workers found for the current search and filters.
-              </div>
+            {isLoading ? (
+              Array.from({ length: 4 }).map((_, i) => (
+                <div
+                  key={i}
+                  className="flex gap-4 p-4 border border-slate-100 dark:border-slate-800 rounded-xl"
+                >
+                  <Skeleton className="w-12 h-12 rounded-full" />
+                  <div className="space-y-2 flex-grow">
+                    <Skeleton className="h-4 w-1/3" />
+                    <Skeleton className="h-3 w-1/4" />
+                  </div>
+                </div>
+              ))
+            ) : isError ? (
+              <ErrorState
+                title="Failed to load workers"
+                message={error?.message || 'Something went wrong while fetching the worker roster.'}
+                onRetry={() => refetch()}
+              />
+            ) : visibleWorkers.length === 0 ? (
+              <EmptyState
+                title="No seasonal workers found"
+                description={
+                  debouncedSearch || statusFilter !== 'all'
+                    ? 'Try adjusting your search query or filters.'
+                    : 'Get started by adding your first seasonal worker.'
+                }
+                action={
+                  <button
+                    onClick={openAddModal}
+                    className="flex items-center gap-2 px-4 py-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-xl font-bold hover:bg-indigo-100 dark:hover:bg-indigo-900/50"
+                  >
+                    <Plus className="w-4 h-4" /> Add Worker
+                  </button>
+                }
+              />
             ) : (
               visibleWorkers.map((worker, i) => (
                 <div
@@ -236,15 +313,7 @@ export default function SeasonalLaborPage() {
                         Edit
                       </button>
                       <button
-                        onClick={async () => {
-                          if (confirm(`Are you sure you want to delete ${worker.fullName}?`)) {
-                            try {
-                              await deleteWorker(worker.workerId);
-                            } catch (e) {
-                              addToast({ type: 'error', message: 'Failed to delete worker' });
-                            }
-                          }
-                        }}
+                        onClick={() => handleDeleteWorker(worker)}
                         className="text-xs font-bold text-rose-500 hover:underline"
                       >
                         Delete
@@ -258,32 +327,49 @@ export default function SeasonalLaborPage() {
         </div>
 
         <div className="space-y-4">
-          <div className="bg-indigo-50 dark:bg-indigo-900/10 p-6 rounded-2xl border border-indigo-100 dark:border-indigo-900/30">
+          <div className="bg-indigo-50 dark:bg-indigo-900/10 p-6 rounded-2xl border border-indigo-100 dark:border-indigo-900/30 relative overflow-hidden">
             <h3 className="font-bold text-indigo-900 dark:text-indigo-300 mb-2">Total Headcount</h3>
             <div className="text-4xl font-bold text-indigo-700 dark:text-indigo-400 mb-1">
-              {workers.length}
+              {isLoading ? (
+                <Skeleton className="h-10 w-16 bg-indigo-200 dark:bg-indigo-800" />
+              ) : (
+                visibleWorkers.length
+              )}
             </div>
             <p className="text-sm text-indigo-600/80 dark:text-indigo-400/70">
-              Peak harvest capacity: {Math.max(150, workers.length + 50)}
+              Peak harvest capacity: {Math.max(150, visibleWorkers.length + 50)}
             </p>
+            <Users className="w-24 h-24 absolute -bottom-4 -right-4 text-indigo-500 opacity-10" />
           </div>
 
           <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
             <h3 className="font-bold text-lg mb-4">Compliance Checks</h3>
-            <div className="space-y-3">
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-slate-600 dark:text-slate-300">I-9 Verification</span>
-                <span className="font-bold text-amber-600">1 Pending</span>
+            {isLoading ? (
+              <div className="space-y-3">
+                <Skeleton className="h-6 w-full" />
+                <Skeleton className="h-6 w-full" />
+                <Skeleton className="h-6 w-full" />
               </div>
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-slate-600 dark:text-slate-300">Safety Training</span>
-                <span className="font-bold text-emerald-600">All Clear</span>
+            ) : isError ? (
+              <div className="text-sm text-rose-500 py-4 text-center">
+                Cannot load compliance info.
               </div>
-              <div className="flex justify-between items-center text-sm">
-                <span className="text-slate-600 dark:text-slate-300">Heat Stress Protocol</span>
-                <span className="font-bold text-emerald-600">Active</span>
+            ) : (
+              <div className="space-y-3">
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-slate-600 dark:text-slate-300">I-9 Verification</span>
+                  <span className="font-bold text-amber-600">1 Pending</span>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-slate-600 dark:text-slate-300">Safety Training</span>
+                  <span className="font-bold text-emerald-600">All Clear</span>
+                </div>
+                <div className="flex justify-between items-center text-sm">
+                  <span className="text-slate-600 dark:text-slate-300">Heat Stress Protocol</span>
+                  <span className="font-bold text-emerald-600">Active</span>
+                </div>
               </div>
-            </div>
+            )}
           </div>
         </div>
       </div>
@@ -294,8 +380,6 @@ export default function SeasonalLaborPage() {
         onSave={handleSaveWorker}
         worker={editingWorker}
       />
-
-      <ToastContainer toasts={toasts} onClose={removeToast} />
     </div>
   );
 }

@@ -23,23 +23,15 @@ export class SeasonalLaborService {
   private static endpoint = '/industry-agriculture/seasonal-labor';
 
   // Get all seasonal workers
-  static async getAllWorkers(): Promise<SeasonalWorker[]> {
-    try {
-      const response = await APIClient.get<unknown>(`${this.endpoint}/workers`);
-      return APIClient.unwrapList<SeasonalWorker>(response, 'workers');
-    } catch (error: any) {
-      return [];
-    }
+  static async getAllWorkers(params?: any): Promise<SeasonalWorker[]> {
+    const response = await APIClient.get<unknown>(`${this.endpoint}/workers`, params);
+    return APIClient.unwrapList<SeasonalWorker>(response, 'workers');
   }
 
   // Get worker by ID
   static async getWorkerById(workerId: string): Promise<SeasonalWorker | null> {
-    try {
-      const response = await APIClient.get<unknown>(`${this.endpoint}/workers/${workerId}`);
-      return APIClient.unwrapItem<SeasonalWorker>(response, 'worker');
-    } catch (error: any) {
-      return null;
-    }
+    const response = await APIClient.get<unknown>(`${this.endpoint}/workers/${workerId}`);
+    return APIClient.unwrapItem<SeasonalWorker>(response, 'worker');
   }
 
   // Create seasonal worker
@@ -77,15 +69,11 @@ export class SeasonalLaborService {
       skills?: string[];
     }
   ): Promise<SeasonalWorker[]> {
-    try {
-      const response = await APIClient.get<unknown>(`${this.endpoint}/workers/search`, {
-        query,
-        ...filters,
-      });
-      return APIClient.unwrapList<SeasonalWorker>(response, 'workers');
-    } catch (error: any) {
-      return [];
-    }
+    const response = await APIClient.get<unknown>(`${this.endpoint}/workers/search`, {
+      query,
+      ...filters,
+    });
+    return APIClient.unwrapList<SeasonalWorker>(response, 'workers');
   }
 
   // Assign worker to labor task
@@ -101,13 +89,9 @@ export class SeasonalLaborService {
   }
 
   // Get labor pools
-  static async getAllLaborPools(): Promise<SeasonalLaborPool[]> {
-    try {
-      const response = await APIClient.get<unknown>(`${this.endpoint}/pools`);
-      return APIClient.unwrapList<SeasonalLaborPool>(response, 'pools');
-    } catch (error: any) {
-      return [];
-    }
+  static async getAllLaborPools(params?: any): Promise<SeasonalLaborPool[]> {
+    const response = await APIClient.get<unknown>(`${this.endpoint}/pools`, params);
+    return APIClient.unwrapList<SeasonalLaborPool>(response, 'pools');
   }
 
   // Create labor pool
@@ -128,23 +112,15 @@ export class HousingManagementService {
   private static endpoint = '/industry-agriculture/housing';
 
   // Get all housing facilities
-  static async getAllFacilities(): Promise<HousingFacility[]> {
-    try {
-      const response = await APIClient.get<unknown>(`${this.endpoint}/facilities`);
-      return APIClient.unwrapList<HousingFacility>(response, 'facilities');
-    } catch (error: any) {
-      return [];
-    }
+  static async getAllFacilities(params?: any): Promise<HousingFacility[]> {
+    const response = await APIClient.get<unknown>(`${this.endpoint}/facilities`, params);
+    return APIClient.unwrapList<HousingFacility>(response, 'facilities');
   }
 
   // Get facility by ID
   static async getFacilityById(facilityId: string): Promise<HousingFacility | null> {
-    try {
-      const response = await APIClient.get<unknown>(`${this.endpoint}/facilities/${facilityId}`);
-      return APIClient.unwrapItem<HousingFacility>(response, 'facility');
-    } catch (error: any) {
-      return null;
-    }
+    const response = await APIClient.get<unknown>(`${this.endpoint}/facilities/${facilityId}`);
+    return APIClient.unwrapItem<HousingFacility>(response, 'facility');
   }
 
   // Create housing facility
@@ -174,13 +150,9 @@ export class HousingManagementService {
   }
 
   // Get housing assignments
-  static async getAllAssignments(): Promise<HousingAssignment[]> {
-    try {
-      const response = await APIClient.get<unknown>(`${this.endpoint}/assignments`);
-      return APIClient.unwrapList<HousingAssignment>(response, 'assignments');
-    } catch (error: any) {
-      return [];
-    }
+  static async getAllAssignments(params?: any): Promise<HousingAssignment[]> {
+    const response = await APIClient.get<unknown>(`${this.endpoint}/assignments`, params);
+    return APIClient.unwrapList<HousingAssignment>(response, 'assignments');
   }
 
   // Create housing assignment
@@ -204,13 +176,9 @@ export class HousingManagementService {
   }
 
   // Get housing inspections
-  static async getAllInspections(): Promise<HousingInspection[]> {
-    try {
-      const response = await APIClient.get<unknown>(`${this.endpoint}/inspections`);
-      return APIClient.unwrapList<HousingInspection>(response, 'inspections');
-    } catch (error: any) {
-      return [];
-    }
+  static async getAllInspections(params?: any): Promise<HousingInspection[]> {
+    const response = await APIClient.get<unknown>(`${this.endpoint}/inspections`, params);
+    return APIClient.unwrapList<HousingInspection>(response, 'inspections');
   }
 
   // Create housing inspection
@@ -233,23 +201,15 @@ export class CropCycleService {
   private static endpoint = '/industry-agriculture/crop-cycles';
 
   // Get all crop cycles
-  static async getAllCropCycles(): Promise<CropCycle[]> {
-    try {
-      const response = await APIClient.get<unknown>(this.endpoint);
-      return APIClient.unwrapList<CropCycle>(response, 'cycles');
-    } catch (error: any) {
-      return [];
-    }
+  static async getAllCropCycles(params?: any): Promise<CropCycle[]> {
+    const response = await APIClient.get<unknown>(this.endpoint, params);
+    return APIClient.unwrapList<CropCycle>(response, 'cycles');
   }
 
   // Get crop cycle by ID
   static async getCropCycleById(cycleId: string): Promise<CropCycle | null> {
-    try {
-      const response = await APIClient.get<unknown>(`${this.endpoint}/${cycleId}`);
-      return APIClient.unwrapItem<CropCycle>(response, 'cycle');
-    } catch (error: any) {
-      return null;
-    }
+    const response = await APIClient.get<unknown>(`${this.endpoint}/${cycleId}`);
+    return APIClient.unwrapItem<CropCycle>(response, 'cycle');
   }
 
   // Create crop cycle
@@ -282,13 +242,9 @@ export class CropCycleService {
   }
 
   // Get harvest schedules
-  static async getAllHarvestSchedules(): Promise<HarvestSchedule[]> {
-    try {
-      const response = await APIClient.get<unknown>(`${this.endpoint}/harvest-schedules`);
-      return APIClient.unwrapList<HarvestSchedule>(response, 'schedules');
-    } catch (error: any) {
-      return [];
-    }
+  static async getAllHarvestSchedules(params?: any): Promise<HarvestSchedule[]> {
+    const response = await APIClient.get<unknown>(`${this.endpoint}/harvest-schedules`, params);
+    return APIClient.unwrapList<HarvestSchedule>(response, 'schedules');
   }
 
   // Create harvest schedule
@@ -311,23 +267,18 @@ export class AgricultureAnalyticsService {
   private static endpoint = '/industry-agriculture/analytics';
 
   // Get analytics
-  static async getAnalytics(): Promise<AgricultureAnalytics> {
-    try {
-      const response = await APIClient.get<{ analytics: AgricultureAnalytics }>(this.endpoint);
-      return response.analytics;
-    } catch (error: any) {
-      throw error;
-    }
+  static async getAnalytics(params?: any): Promise<AgricultureAnalytics> {
+    const response = await APIClient.get<{ analytics: AgricultureAnalytics }>(
+      this.endpoint,
+      params
+    );
+    return response.analytics;
   }
 
   // Export analytics report
   static async exportReport(format: 'pdf' | 'excel'): Promise<Blob> {
-    try {
-      const response = await APIClient.get<Blob>(`${this.endpoint}/export`, { format });
-      return response;
-    } catch (error: any) {
-      throw error;
-    }
+    const response = await APIClient.get<Blob>(`${this.endpoint}/export`, { format });
+    return response;
   }
 }
 
@@ -339,13 +290,9 @@ export class AgricultureSettingsService {
   private static endpoint = '/industry-agriculture/settings';
 
   // Get settings
-  static async getSettings(): Promise<AgricultureSettings> {
-    try {
-      const response = await APIClient.get<{ settings: AgricultureSettings }>(this.endpoint);
-      return response.settings;
-    } catch (error: any) {
-      throw error;
-    }
+  static async getSettings(params?: any): Promise<AgricultureSettings> {
+    const response = await APIClient.get<{ settings: AgricultureSettings }>(this.endpoint, params);
+    return response.settings;
   }
 
   // Update settings

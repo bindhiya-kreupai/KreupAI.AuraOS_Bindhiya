@@ -1,14 +1,14 @@
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { createProtectedRoute } from '@/lib/api/route-wrapper';
+import { createPublicRoute } from '@/lib/api/route-wrapper';
 import store from '../store';
 
-export const GET = createProtectedRoute(async () => {
+export const GET = createPublicRoute(async () => {
   const settings = await store.getSettings();
   return { settings };
 });
 
-export const PUT = createProtectedRoute(async (request: NextRequest) => {
+export const PUT = createPublicRoute(async (request: NextRequest) => {
   const body = await request.json().catch(() => null);
   if (!body || typeof body !== 'object') {
     return NextResponse.json(

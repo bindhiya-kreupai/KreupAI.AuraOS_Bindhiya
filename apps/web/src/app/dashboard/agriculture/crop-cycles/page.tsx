@@ -1,34 +1,67 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import { Sprout, Calendar, CloudRain, BarChart3, Download, Plus, Search } from 'lucide-react';
-import { useAgriculture } from '../hooks/useAgriculture';
-import { LoadingOverlay } from '../components/LoadingSpinner';
-import { ToastContainer } from '../components/Toast';
+import { useSearchParams, useRouter, usePathname } from 'next/navigation';
+import { toast } from 'sonner';
+import {
+  useCropCycles,
+  useHarvestSchedules,
+  useCreateCropCycle,
+  useUpdateCropCycle,
+  useDeleteCropCycle,
+} from '../hooks/queries';
+import { useDebounce } from '../hooks/useDebounce';
 import { CropCycleModal } from '../components/CropCycleModal';
+import { Skeleton } from '../components/Skeleton';
+import { ErrorState } from '../components/ErrorState';
+import { EmptyState } from '../components/EmptyState';
 import type { CropCycle } from '../types';
 
 export default function CropCyclesPage() {
-  const {
-    cropCycles,
-    harvestSchedules,
-    loading,
-    toasts,
-    removeToast,
-    addToast,
-    createCropCycle,
-    updateCropCycle,
-    deleteCropCycle,
-  } = useAgriculture();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
-  const [searchQuery, setSearchQuery] = useState('');
+  const urlSearch = searchParams.get('search') || '';
+  const [searchQuery, setSearchQuery] = useState(urlSearch);
+  const debouncedSearch = useDebounce(searchQuery, 300);
+
+  const createQueryString = useCallback(
+    (name: string, value: string) => {
+      const params = new URLSearchParams(searchParams.toString());
+      if (value) {
+        params.set(name, value);
+      } else {
+        params.delete(name);
+      }
+      return params.toString();
+    },
+    [searchParams]
+  );
+
+  useEffect(() => {
+    router.replace(`${pathname}?${createQueryString('search', debouncedSearch)}`, {
+      scroll: false,
+    });
+  }, [debouncedSearch, pathname, router, createQueryString]);
+
+  const queryParams = debouncedSearch ? { query: debouncedSearch } : {};
+
+  const { data: cropCycles = [], isLoading, isError, error, refetch } = useCropCycles(queryParams);
+  const { data: harvestSchedules = [], isLoading: loadingSchedules } = useHarvestSchedules();
+
+  const { mutateAsync: createCropCycle } = useCreateCropCycle();
+  const { mutateAsync: updateCropCycle } = useUpdateCropCycle();
+  const { mutateAsync: deleteCropCycle } = useDeleteCropCycle();
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCycle, setEditingCycle] = useState<CropCycle | null>(null);
 
   const visibleCycles = useMemo(() => {
     let filtered = cropCycles;
-    if (searchQuery.trim()) {
-      const lowerQuery = searchQuery.toLowerCase();
+    if (debouncedSearch.trim()) {
+      const lowerQuery = debouncedSearch.toLowerCase();
       filtered = filtered.filter(
         (c) =>
           c.cropName.toLowerCase().includes(lowerQuery) ||
@@ -36,11 +69,11 @@ export default function CropCyclesPage() {
       );
     }
     return filtered;
-  }, [cropCycles, searchQuery]);
+  }, [cropCycles, debouncedSearch]);
 
   const handleExportCSV = () => {
-    if (cropCycles.length === 0) {
-      addToast({ type: 'warning', message: 'No crop cycles to export' });
+    if (visibleCycles.length === 0) {
+      toast.warning('No crop cycles to export');
       return;
     }
 
@@ -55,7 +88,7 @@ export default function CropCyclesPage() {
     ];
     const csvRows = [headers.join(',')];
 
-    for (const cycle of cropCycles) {
+    for (const cycle of visibleCycles) {
       const row = [
         cycle.cycleId,
         `"${cycle.cropName}"`,
@@ -76,45 +109,63 @@ export default function CropCyclesPage() {
     a.download = `crop_cycles_${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    addToast({ type: 'success', message: 'Exported crop cycles successfully' });
+    toast.success('Exported crop cycles successfully');
   };
 
   const handleSaveCycle = async (data: Partial<CropCycle>) => {
-    if (editingCycle) {
-      await updateCropCycle(editingCycle.cycleId, data);
-    } else {
-      await createCropCycle({
-        ...data,
-        farm: 'Main Farm',
-        farmId: 'F-001',
-        fields: [],
-        plantingDate: new Date(),
-        expectedHarvestDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000), // 90 days from now
-        cycleDuration: 90,
-        growingSeason: 'Current Season',
-        stages: [],
-        laborRequirements: [],
-        peakLaborNeed: 50,
-        currentLaborAssigned: 0,
-        yieldUnit: 'lbs',
-        weatherImpact: [],
-        irrigationRequired: true,
-        seedCost: 500,
-        laborCost: 2000,
-        irrigationCost: 300,
-        fertilizerCost: 600,
-        pesticideCost: 400,
-        equipmentCost: 800,
-        totalCost: 4600,
-        expectedRevenue: 15000,
-        cropHealth: 'good',
-        diseasePresent: false,
-        pestPresent: false,
-        issues: [],
-        risks: [],
-        createdDate: new Date(),
-        lastUpdatedDate: new Date(),
-      });
+    try {
+      if (editingCycle) {
+        await updateCropCycle({ cycleId: editingCycle.cycleId, updates: data });
+        toast.success('Crop cycle updated successfully');
+      } else {
+        await createCropCycle({
+          ...data,
+          farm: 'Main Farm',
+          farmId: 'F-001',
+          fields: [],
+          plantingDate: new Date(),
+          expectedHarvestDate: new Date(Date.now() + 90 * 24 * 60 * 60 * 1000), // 90 days from now
+          cycleDuration: 90,
+          growingSeason: 'Current Season',
+          stages: [],
+          laborRequirements: [],
+          peakLaborNeed: 50,
+          currentLaborAssigned: 0,
+          yieldUnit: 'lbs',
+          weatherImpact: [],
+          irrigationRequired: true,
+          seedCost: 500,
+          laborCost: 2000,
+          irrigationCost: 300,
+          fertilizerCost: 600,
+          pesticideCost: 400,
+          equipmentCost: 800,
+          totalCost: 4600,
+          expectedRevenue: 15000,
+          cropHealth: 'good',
+          diseasePresent: false,
+          pestPresent: false,
+          issues: [],
+          risks: [],
+          createdDate: new Date(),
+          lastUpdatedDate: new Date(),
+        });
+        toast.success('Crop cycle added successfully');
+      }
+      setIsModalOpen(false);
+    } catch (e) {
+      toast.error('Failed to save crop cycle');
+    }
+  };
+
+  const handleDeleteCycle = async (cycle: CropCycle) => {
+    if (confirm(`Are you sure you want to delete the ${cycle.cropName} cycle?`)) {
+      try {
+        await deleteCropCycle(cycle.cycleId);
+        toast.success(`${cycle.cropName} cycle has been deleted.`);
+      } catch (e) {
+        toast.error('Failed to delete cycle');
+      }
     }
   };
 
@@ -135,9 +186,7 @@ export default function CropCyclesPage() {
   };
 
   return (
-    <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
-      {loading && <LoadingOverlay message="Loading crop cycle data..." />}
-
+    <div className="space-y-4 pb-6 min-h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 shrink-0">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2">
@@ -148,7 +197,9 @@ export default function CropCyclesPage() {
         </div>
         <div className="flex flex-wrap items-center gap-2">
           <div className="flex items-center gap-2 bg-emerald-50 dark:bg-emerald-900/20 text-emerald-600 dark:text-emerald-300 px-4 py-2 rounded-xl text-sm font-bold border border-emerald-100 dark:border-emerald-900/30">
-            <Calendar className="w-4 h-4" /> {cropCycles.length} Active Cycles
+            <Calendar className="w-4 h-4" />{' '}
+            {isLoading ? <Skeleton className="h-4 w-6 inline-block" /> : cropCycles.length} Active
+            Cycles
           </div>
           <button
             onClick={handleExportCSV}
@@ -179,15 +230,59 @@ export default function CropCyclesPage() {
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 h-full overflow-y-auto pb-10">
-        {visibleCycles.length === 0 ? (
-          <div className="text-sm text-slate-500 text-center py-8 col-span-2">
-            No crop cycles found.
+        {isLoading ? (
+          Array.from({ length: 4 }).map((_, i) => (
+            <div
+              key={i}
+              className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800"
+            >
+              <div className="flex justify-between items-start mb-4">
+                <div className="space-y-2">
+                  <Skeleton className="h-6 w-32" />
+                  <Skeleton className="h-4 w-24" />
+                </div>
+                <div className="space-y-2 flex flex-col items-end">
+                  <Skeleton className="h-3 w-10" />
+                  <Skeleton className="h-5 w-20" />
+                </div>
+              </div>
+              <Skeleton className="h-4 w-32 mb-2" />
+              <Skeleton className="h-3 w-full rounded-full mb-4" />
+              <Skeleton className="h-8 w-full mt-6" />
+            </div>
+          ))
+        ) : isError ? (
+          <div className="col-span-1 lg:col-span-2">
+            <ErrorState
+              title="Failed to load crop cycles"
+              message={error?.message || 'Something went wrong while fetching the crop cycle data.'}
+              onRetry={() => refetch()}
+            />
+          </div>
+        ) : visibleCycles.length === 0 ? (
+          <div className="col-span-1 lg:col-span-2">
+            <EmptyState
+              title="No crop cycles found"
+              description={
+                debouncedSearch
+                  ? 'Try adjusting your search query.'
+                  : 'Add your first crop cycle to begin monitoring growth stages.'
+              }
+              action={
+                <button
+                  onClick={openAddModal}
+                  className="flex items-center gap-2 px-4 py-2 bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-xl font-bold hover:bg-indigo-100 dark:hover:bg-indigo-900/50"
+                >
+                  <Plus className="w-4 h-4" /> Add Cycle
+                </button>
+              }
+            />
           </div>
         ) : (
           visibleCycles.map((cycle) => (
             <div
               key={cycle.cycleId}
-              className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 hover:shadow-md transition-all"
+              className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800 hover:shadow-md transition-all flex flex-col"
             >
               <div className="flex justify-between items-start mb-4">
                 <div>
@@ -219,7 +314,7 @@ export default function CropCyclesPage() {
                 ></div>
               </div>
 
-              <div className="flex justify-between items-center mt-6 pt-4 border-t border-slate-100 dark:border-slate-800">
+              <div className="flex justify-between items-center mt-auto pt-4 border-t border-slate-100 dark:border-slate-800">
                 <div className="flex gap-3">
                   <button className="flex items-center gap-1.5 text-xs font-bold text-slate-500 hover:text-indigo-600">
                     <CloudRain className="w-3.5 h-3.5" /> Log
@@ -237,15 +332,7 @@ export default function CropCyclesPage() {
                     Edit
                   </button>
                   <button
-                    onClick={async () => {
-                      if (confirm(`Are you sure you want to delete the ${cycle.cropName} cycle?`)) {
-                        try {
-                          await deleteCropCycle(cycle.cycleId);
-                        } catch (e) {
-                          addToast({ type: 'error', message: 'Failed to delete cycle' });
-                        }
-                      }
-                    }}
+                    onClick={() => handleDeleteCycle(cycle)}
                     className="text-xs font-bold text-rose-500 hover:underline"
                   >
                     Delete
@@ -261,7 +348,13 @@ export default function CropCyclesPage() {
         <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
           <Calendar className="w-5 h-5 text-sky-500" /> Upcoming Harvests
         </h3>
-        {harvestSchedules.length === 0 ? (
+        {loadingSchedules ? (
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <Skeleton className="h-16 w-full rounded-xl" />
+            <Skeleton className="h-16 w-full rounded-xl" />
+            <Skeleton className="h-16 w-full rounded-xl" />
+          </div>
+        ) : harvestSchedules.length === 0 ? (
           <div className="text-sm text-slate-500">No harvest schedules available.</div>
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -293,8 +386,6 @@ export default function CropCyclesPage() {
         onSave={handleSaveCycle}
         cycle={editingCycle}
       />
-
-      <ToastContainer toasts={toasts} onClose={removeToast} />
     </div>
   );
 }

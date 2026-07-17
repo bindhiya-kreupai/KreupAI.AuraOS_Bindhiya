@@ -4,7 +4,7 @@ import store from '../store';
 
 // Simple permission check placeholder — replace with real wrapper when available
 function checkPermission() {
-  // TODO: integrate with createProtectedRoute or withEnhancedAuth
+  // TODO: integrate with createPublicRoute or withEnhancedAuth
   return true;
 }
 
