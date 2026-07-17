@@ -803,6 +803,17 @@ export const superAdminMenu: MenuDefinition = {
                         'Monthly Certificate',
                     ],
                 },
+                  {
+  code: 'WHISTLEBLOWER_COMPLIANCE',
+  label: 'Whistleblower Compliance',
+  icon: 'benefits',
+  path: '/dashboard/whistleblower-compliance',
+  features: [
+    'Anonymous Intake',
+    'Retaliation Detection',
+    'Case Cycle SLA',
+  ],
+},
                 {
                     code: 'EMIRATISATION_COMPLIANCE',
                     label: 'Emiratisation (UAE)',
