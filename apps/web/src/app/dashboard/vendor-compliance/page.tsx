@@ -1,40 +1,40 @@
 'use client';
 
 import Link from 'next/link';
-import { ShieldCheck, AlertTriangle, Clock, ArrowRight } from 'lucide-react';
+import { ShieldCheck, Search, Ban, ArrowRight } from 'lucide-react';
 
 const workspaces = [
   {
-    title: 'Anonymous Intake',
-    description: 'Submit and manage confidential whistleblower reports.',
-    href: '/dashboard/whistleblower-compliance/anonymous-intake',
+    title: 'Conflict of Interest',
+    description: 'Identify and manage vendor conflict of interest cases.',
+    href: '/dashboard/vendor-compliance/conflict-of-interest',
     icon: ShieldCheck,
   },
   {
-    title: 'Retaliation Detection',
-    description: 'Monitor and identify potential retaliation against reporters.',
-    href: '/dashboard/whistleblower-compliance/retaliation-detection',
-    icon: AlertTriangle,
+    title: 'Due Diligence',
+    description: 'Perform vendor due diligence and compliance verification.',
+    href: '/dashboard/vendor-compliance/due-diligence',
+    icon: Search,
   },
   {
-    title: 'Case Cycle SLA',
-    description: 'Configure and monitor investigation SLA timelines.',
-    href: '/dashboard/whistleblower-compliance/case-cycle-sla',
-    icon: Clock,
+    title: 'Sanctions Screening',
+    description: 'Screen vendors against sanctions and watchlists.',
+    href: '/dashboard/vendor-compliance/sanctions-screening',
+    icon: Ban,
   },
 ];
 
-export default function WhistleblowerCompliancePage() {
+export default function VendorCompliancePage() {
   return (
     <div className="space-y-8 p-6">
       <div>
-        <p className="text-sm uppercase tracking-wide text-slate-500">Whistleblower Compliance</p>
+        <p className="text-sm uppercase tracking-wide text-slate-500">Vendor Compliance</p>
 
-        <h1 className="mt-2 text-3xl font-bold">Whistleblower Compliance</h1>
+        <h1 className="mt-2 text-3xl font-bold">Vendor Compliance</h1>
 
         <p className="mt-2 text-slate-600">
-          Protect employees by enabling confidential reporting, monitoring retaliation risks, and
-          ensuring timely investigations.
+          Manage vendor onboarding, due diligence, conflict checks and sanctions screening through
+          dedicated compliance workspaces.
         </p>
       </div>
 

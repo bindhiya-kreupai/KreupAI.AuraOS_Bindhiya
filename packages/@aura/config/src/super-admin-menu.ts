@@ -803,18 +803,28 @@ export const superAdminMenu: MenuDefinition = {
                         'Monthly Certificate',
                     ],
                 },
-                  {
+{
   code: 'WHISTLEBLOWER_COMPLIANCE',
   label: 'Whistleblower Compliance',
-  icon: 'benefits',
+  icon: 'shield',
   path: '/dashboard/whistleblower-compliance',
   features: [
-    'Anonymous Intake',
-    'Retaliation Detection',
-    'Case Cycle SLA',
+  'anonymous-intake',
+  'retaliation-detection',
+  'case-cycle-sla',
   ],
 },
-                {
+  {
+  code: 'VENDOR_COMPLIANCE',
+  label: 'Vendor Compliance',
+  icon: 'briefcase',
+  path: '/dashboard/vendor-compliance',
+  features: [
+    'Conflict of Interest',
+    'Due Diligence',
+    'Sanctions Screening',
+  ],
+},              {
                     code: 'EMIRATISATION_COMPLIANCE',
                     label: 'Emiratisation (UAE)',
                     icon: 'localization',
