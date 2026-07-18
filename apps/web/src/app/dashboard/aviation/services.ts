@@ -124,6 +124,11 @@ export class CabinCrewService {
     return response.assignment;
   }
 
+  static async deleteFlightAssignment(assignmentId: string): Promise<boolean> {
+    await APIClient.delete(`${this.endpoint}/assignments/${assignmentId}`);
+    return true;
+  }
+
   // Duty Time Management
   static async getAllDutyTimes(): Promise<DutyTime[]> {
     try {
@@ -447,6 +452,11 @@ export class GroundOperationsService {
       updates
     );
     return response.turnaround;
+  }
+
+  static async deleteTurnaround(assignmentId: string): Promise<boolean> {
+    await APIClient.delete(`${this.endpoint}/turnarounds/${assignmentId}`);
+    return true;
   }
 
   // Ground Equipment

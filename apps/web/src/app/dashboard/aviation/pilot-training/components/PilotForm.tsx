@@ -53,11 +53,17 @@ export const PilotForm: React.FC<PilotFormProps> = ({ open, onClose, initialData
   const onSubmit = (data: any) => {
     const payload = {
       ...data,
+      pilotId: data.employeeId,
+      pilotType: data.pilotType || 'COMMERCIAL',
+      baseAirport: data.baseAirport || 'LHR',
+      licenses: data.license ? [data.license] : [],
       personalInfo: {
+        ...(data.personalInfo || {}),
         firstName: data['personalInfo.firstName'] || data.personalInfo?.firstName || '',
         lastName: data['personalInfo.lastName'] || data.personalInfo?.lastName || '',
       },
       flightHours: {
+        ...(data.flightHours || {}),
         total: parseInt(data['flightHours.total'] || data.flightHours?.total || '0', 10),
         pic: parseInt(data['flightHours.pic'] || data.flightHours?.pic || '0', 10),
       },
