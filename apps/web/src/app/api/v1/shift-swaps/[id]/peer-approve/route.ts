@@ -6,7 +6,7 @@ import { withEnhancedAuth } from '@/lib/auth';
 export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
     const { user, params, permissions } = context;
-    if (!permissions.includes('shift-swaps:create')) {
+    if (!permissions.includes('shift-swaps:update')) {
       return NextResponse.json(
         {
           success: false,
@@ -25,7 +25,10 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
     return NextResponse.json({ success: true, data: swap });
   } catch (error: any) {
     return NextResponse.json(
-      { success: false, error: { code: 'E3001', message: error.message } },
+      {
+        success: false,
+        error: { code: 'E3001', message: error.message, messageAr: 'خطأ في الموافقة' },
+      },
       { status: 400 }
     );
   }

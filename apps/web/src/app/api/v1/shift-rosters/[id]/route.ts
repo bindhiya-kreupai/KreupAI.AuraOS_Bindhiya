@@ -25,7 +25,10 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) =
     const roster = await ShiftManagementService.updateRoster(id, user.tenantId, body);
     if (!roster) {
       return NextResponse.json(
-        { success: false, error: { code: 'E2001', message: 'Roster not found' } },
+        {
+          success: false,
+          error: { code: 'E2001', message: 'Roster not found', messageAr: 'الجدول غير موجود' },
+        },
         { status: 404 }
       );
     }
@@ -33,7 +36,10 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) =
     return NextResponse.json({ success: true, data: roster });
   } catch (error: any) {
     return NextResponse.json(
-      { success: false, error: { code: 'E5000', message: error.message } },
+      {
+        success: false,
+        error: { code: 'E5000', message: error.message, messageAr: 'خطأ في الخادم' },
+      },
       { status: 500 }
     );
   }
@@ -60,7 +66,10 @@ export const DELETE = withEnhancedAuth(async (request: NextRequest, context: any
     const roster = await ShiftManagementService.deleteRoster(id, user.tenantId);
     if (!roster) {
       return NextResponse.json(
-        { success: false, error: { code: 'E2001', message: 'Roster not found' } },
+        {
+          success: false,
+          error: { code: 'E2001', message: 'Roster not found', messageAr: 'الجدول غير موجود' },
+        },
         { status: 404 }
       );
     }
@@ -68,7 +77,10 @@ export const DELETE = withEnhancedAuth(async (request: NextRequest, context: any
     return NextResponse.json({ success: true, data: roster });
   } catch (error: any) {
     return NextResponse.json(
-      { success: false, error: { code: 'E5000', message: error.message } },
+      {
+        success: false,
+        error: { code: 'E5000', message: error.message, messageAr: 'خطأ في الخادم' },
+      },
       { status: 500 }
     );
   }

@@ -48,7 +48,10 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     });
   } catch (error: any) {
     return NextResponse.json(
-      { success: false, error: { code: 'E5000', message: error.message } },
+      {
+        success: false,
+        error: { code: 'E5000', message: error.message, messageAr: 'خطأ في الخادم' },
+      },
       { status: 500 }
     );
   }
@@ -77,7 +80,10 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
     return NextResponse.json({ success: true, data: assignment }, { status: 201 });
   } catch (error: any) {
     return NextResponse.json(
-      { success: false, error: { code: 'E1001', message: error.message } },
+      {
+        success: false,
+        error: { code: 'E1001', message: error.message, messageAr: 'خطأ في الإدخال' },
+      },
       { status: 400 }
     );
   }

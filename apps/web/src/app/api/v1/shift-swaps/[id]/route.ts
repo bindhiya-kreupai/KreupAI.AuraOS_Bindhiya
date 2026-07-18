@@ -3,16 +3,16 @@ import { NextResponse } from 'next/server';
 import { ShiftManagementService } from '@/lib/services/shift-management.service';
 import { withEnhancedAuth } from '@/lib/auth';
 
-export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) => {
+export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
     const { user, params, permissions } = context;
-    if (!permissions.includes('shift-assignments:update')) {
+    if (!permissions.includes('shift-swaps:read')) {
       return NextResponse.json(
         {
           success: false,
           error: {
             code: 'E4030',
-            message: 'Forbidden: missing shift-assignments:update permission',
+            message: 'Forbidden: missing shift-swaps:read permission',
             messageAr: 'ممنوع',
           },
         },
@@ -20,20 +20,23 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) =
       );
     }
     const { id } = params;
-    const body = await request.json();
 
-    const assignment = await ShiftManagementService.updateAssignment(id, user.tenantId, body);
-    if (!assignment) {
+    const swap = await ShiftManagementService.findSwapById(id, user.tenantId);
+    if (!swap) {
       return NextResponse.json(
         {
           success: false,
-          error: { code: 'E2001', message: 'Assignment not found', messageAr: 'التكليف غير موجود' },
+          error: {
+            code: 'E2001',
+            message: 'Swap request not found',
+            messageAr: 'طلب التبادل غير موجود',
+          },
         },
         { status: 404 }
       );
     }
 
-    return NextResponse.json({ success: true, data: assignment });
+    return NextResponse.json({ success: true, data: swap });
   } catch (error: any) {
     return NextResponse.json(
       {
@@ -45,16 +48,16 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) =
   }
 });
 
-export const DELETE = withEnhancedAuth(async (request: NextRequest, context: any) => {
+export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
     const { user, params, permissions } = context;
-    if (!permissions.includes('shift-assignments:delete')) {
+    if (!permissions.includes('shift-swaps:update')) {
       return NextResponse.json(
         {
           success: false,
           error: {
             code: 'E4030',
-            message: 'Forbidden: missing shift-assignments:delete permission',
+            message: 'Forbidden: missing shift-swaps:update permission',
             messageAr: 'ممنوع',
           },
         },
@@ -62,19 +65,24 @@ export const DELETE = withEnhancedAuth(async (request: NextRequest, context: any
       );
     }
     const { id } = params;
+    const body = await request.json();
 
-    const assignment = await ShiftManagementService.deleteAssignment(id, user.tenantId);
-    if (!assignment) {
+    const swap = await ShiftManagementService.updateSwap(id, user.tenantId, body);
+    if (!swap) {
       return NextResponse.json(
         {
           success: false,
-          error: { code: 'E2001', message: 'Assignment not found', messageAr: 'التكليف غير موجود' },
+          error: {
+            code: 'E2001',
+            message: 'Swap request not found',
+            messageAr: 'طلب التبادل غير موجود',
+          },
         },
         { status: 404 }
       );
     }
 
-    return NextResponse.json({ success: true, data: assignment });
+    return NextResponse.json({ success: true, data: swap });
   } catch (error: any) {
     return NextResponse.json(
       {
