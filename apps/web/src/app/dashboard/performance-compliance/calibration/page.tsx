@@ -52,10 +52,11 @@ export default function PerformanceComplianceCalibrationPage() {
         },
         {
           name: 'minuteRef',
-          label: 'Minute reference (document ID)',
+          label: 'Minute reference (document)',
           labelAr: 'مرجع المحضر',
-          type: 'text',
-          placeholder: 'e.g. DOC-4521',
+          type: 'searchable-select',
+          apiUrl: '/api/v1/records-compliance/document-matrix',
+          placeholder: 'Search document...',
         },
         {
           name: 'distributionReviewed',

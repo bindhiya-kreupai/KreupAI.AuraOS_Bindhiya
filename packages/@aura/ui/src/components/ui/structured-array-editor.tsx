@@ -348,8 +348,7 @@ export function StructuredArrayEditor<T extends Record<string, unknown> = Record
         </div>
     );
 }
-
-function SearchableSelect({
+export function SearchableSelect({
     apiUrl,
     value,
     onSelect,
@@ -386,14 +385,24 @@ function SearchableSelect({
             try {
                 const res = await fetch(`${apiUrl}?search=${encodeURIComponent(query)}&limit=10`);
                 const json = await res.json();
-                const items = Array.isArray(json?.data) ? json.data : [];
-                setResults(
-                    items.map((it: any) => ({
-                        id: it.id,
-                        label: it.name ?? `${it.firstName ?? ''} ${it.lastName ?? ''}`.trim() ?? it.email ?? it.id,
-                        role: it.role ?? undefined,
-                    })),
-                );
+                const items = Array.isArray(json?.data)
+    ? json.data
+    : Array.isArray(json?.data?.items)
+      ? json.data.items
+      : [];
+setResults(
+    items.map((it: any) => ({
+        id: it.id,
+        label:
+            it.name ??
+            it.label ??
+            it.documentCode ??
+            `${it.firstName ?? ''} ${it.lastName ?? ''}`.trim() ??
+            it.email ??
+            it.id,
+        role: it.role ?? undefined,
+    })),
+);
             } catch {
                 setResults([]);
             } finally {
@@ -441,3 +450,4 @@ function SearchableSelect({
         </div>
     );
 }
+                                 

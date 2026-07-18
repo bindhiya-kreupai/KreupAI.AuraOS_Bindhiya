@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { Loader2 } from 'lucide-react';
 import { VerdictPanel, type VerdictPanelProps } from './verdict-panel';
-import { StructuredArrayEditor, type StructuredColumn } from './structured-array-editor';
+import { StructuredArrayEditor, SearchableSelect, type StructuredColumn } from './structured-array-editor';
 import { SkeletonVerdict } from './skeleton';
 import { ErrorState, type ZodFlattenedShape } from './error-state';
 import { clsx, type ClassValue } from 'clsx';
@@ -21,6 +21,7 @@ export type EvaluatorFieldType =
     | 'datetime-local'
     | 'select'
     | 'boolean'
+    | 'searchable-select'
     | 'structured-array';
 
 export interface EvaluatorField {
@@ -38,6 +39,7 @@ export interface EvaluatorField {
     defaultRows?: Array<Record<string, unknown>>;
     minRows?: number;
     maxRows?: number;
+    apiUrl?: string;
 }
 
 export interface EvaluatorEndpoint {
@@ -162,11 +164,21 @@ export function EvaluatorPage({
                 }
                 return;
             }
-            const v = buildVerdict(json.data);
-            setVerdict(v);
-            if (onSuccess) {
-                onSuccess(json.data, setValues);
-            }
+           const v = buildVerdict(json.data);
+setVerdict(v);
+const resetValues: Record<string, unknown> = {};
+for (const f of fields) {
+    if (f.type === 'structured-array') {
+        resetValues[f.name] = f.defaultRows ?? [];
+    } else {
+        resetValues[f.name] = f.defaultValue ?? '';
+    }
+}
+setValues(resetValues);
+if (onSuccess) {
+    onSuccess(json.data, setValues);
+}
+
         } catch (err) {
             setError(
                 err instanceof Error
@@ -280,6 +292,13 @@ export function EvaluatorPage({
                                     required={f.required}
                                     disabled={loading}
                                 />
+                             ) : f.type === 'searchable-select' ? (
+                               <SearchableSelect
+                                   apiUrl={f.apiUrl ?? ''}
+                                   value={stringValue}
+                                   onSelect={(id) => onChange(f.name, id)}
+                                   placeholder={f.placeholder ?? (locale === 'ar' ? 'بحث...' : 'Search...')}
+                               />
                             ) : (
                                 <input
                                     id={id}
