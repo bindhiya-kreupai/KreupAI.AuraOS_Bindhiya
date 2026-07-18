@@ -1,27 +1,38 @@
-// @ts-nocheck — Service has Prisma schema drift (field/model name mismatches against current schema). Tracked under #29 for proper rewrite. Runtime behavior may need verification.
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@aura/database';
 import { z } from 'zod';
 
-const prisma = new PrismaClient();
+const timeRegex = /^([01]\d|2[0-3]):[0-5]\d$/;
 
-export const createShiftSchema = z.object({
-  tenantId: z.string(),
-  code: z.string(),
-  name: z.string(),
-  description: z.string().optional(),
-  startTime: z.string(), // HH:MM
-  endTime: z.string(), // HH:MM
-  graceInMinutes: z.number().default(0),
-  graceOutMinutes: z.number().default(0),
-  breakDuration: z.number().default(0),
-  isPaidBreak: z.boolean().default(true),
-  workHours: z.number(),
-  weekendDays: z.array(z.string()).default([]),
-  overtimeAllowed: z.boolean().default(false),
-  maxOvertimeHours: z.number().default(0),
-  isFlexible: z.boolean().default(false),
-  flexWindow: z.number().default(0),
-});
+export const createShiftSchema = z
+  .object({
+    tenantId: z.string(),
+    code: z.string().min(1),
+    name: z.string().min(1),
+    description: z.string().optional(),
+    startTime: z.string().regex(timeRegex, 'Start time must be in HH:MM format (00:00–23:59)'),
+    endTime: z.string().regex(timeRegex, 'End time must be in HH:MM format (00:00–23:59)'),
+    graceInMinutes: z.number().min(0).default(0),
+    graceOutMinutes: z.number().min(0).default(0),
+    breakDuration: z.number().min(0).default(0),
+    isPaidBreak: z.boolean().default(true),
+    workHours: z.number().min(0.5),
+    weekendDays: z.array(z.string()).default([]),
+    overtimeAllowed: z.boolean().default(false),
+    maxOvertimeHours: z.number().min(0).default(0),
+    isFlexible: z.boolean().default(false),
+    flexWindow: z.number().min(0).default(0),
+  })
+  .refine(
+    (data) => {
+      if (!timeRegex.test(data.startTime) || !timeRegex.test(data.endTime)) return true;
+      const [sh, sm] = data.startTime.split(':').map(Number);
+      const [eh, em] = data.endTime.split(':').map(Number);
+      const startMin = sh * 60 + sm;
+      const endMin = eh * 60 + em;
+      return endMin !== startMin;
+    },
+    { message: 'Start time and end time must be different', path: ['endTime'] }
+  );
 
 export const updateShiftSchema = createShiftSchema.partial().omit({ tenantId: true });
 
@@ -268,10 +279,25 @@ export class ShiftManagementService {
 
   static async createRoster(data: z.infer<typeof createShiftRosterSchema>) {
     const validated = createShiftRosterSchema.parse(data);
+    const rosterDate = new Date(validated.rosterDate);
+
+    const existing = await prisma.shiftRoster.findFirst({
+      where: {
+        tenantId: validated.tenantId,
+        employeeId: validated.employeeId,
+        rosterDate,
+      },
+    });
+    if (existing) {
+      throw new Error(
+        `Employee ${validated.employeeId} already has a roster entry for ${rosterDate.toISOString().slice(0, 10)}. Update or delete the existing entry first.`
+      );
+    }
+
     return prisma.shiftRoster.create({
       data: {
         ...validated,
-        rosterDate: new Date(validated.rosterDate),
+        rosterDate,
       },
       include: { shift: true },
     });
@@ -337,6 +363,18 @@ export class ShiftManagementService {
         swapWithDate: new Date(validated.swapWithDate),
       },
     });
+  }
+
+  static async findSwapById(id: string, tenantId: string) {
+    return prisma.shiftSwapRequest.findFirst({
+      where: { id, tenantId },
+    });
+  }
+
+  static async updateSwap(id: string, tenantId: string, data: any) {
+    const existing = await prisma.shiftSwapRequest.findFirst({ where: { id, tenantId } });
+    if (!existing) return null;
+    return prisma.shiftSwapRequest.update({ where: { id }, data });
   }
 
   static async peerApproveSwap(id: string, tenantId: string, swapWithId: string) {
