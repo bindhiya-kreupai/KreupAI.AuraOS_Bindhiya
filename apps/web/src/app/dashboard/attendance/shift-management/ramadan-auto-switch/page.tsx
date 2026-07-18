@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { toast } from 'sonner';
+import { fetchJson } from '@/lib/api-utils';
 import {
   ArrowLeft,
   Moon,
@@ -56,17 +58,6 @@ type Shift = {
 
 const MAPPING_STORAGE_KEY = 'auraos.shiftManagement.ramadanMapping.v1';
 const ENABLED_STORAGE_KEY = 'auraos.shiftManagement.ramadanEnabled.v1';
-
-async function fetchJson<T>(url: string): Promise<T | null> {
-  try {
-    const res = await fetch(url);
-    const json = await res.json().catch(() => ({}));
-    if (!res.ok || json?.success === false) return null;
-    return (json?.data ?? json) as T;
-  } catch {
-    return null;
-  }
-}
 
 // POST helper for the working-hours engine — returns .data or throws a bilingual message
 async function postWorkingHours(body: Record<string, unknown>): Promise<any> {
@@ -537,11 +528,12 @@ export default function RamadanAutoSwitchPage() {
       const json = await res.json();
       if (json.success) {
         setSavedAt(Date.now());
+        toast.success('Ramadan mapping saved');
       } else {
-        alert(`Could not save: ${json.error || 'Server error'}`);
+        toast.error(json.error || 'Failed to save');
       }
     } catch (e: any) {
-      alert(`Could not save: ${e?.message || 'storage unavailable'}`);
+      toast.error(e?.message || 'Storage unavailable');
     }
   };
 

@@ -3,6 +3,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import Link from 'next/link';
 import { DataPage, type Column } from '@aura/ui/components/ui';
+import { toast } from 'sonner';
+import { apiJson } from '@/lib/api-utils';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 import {
   Clock,
   Users,
@@ -14,6 +17,9 @@ import {
   LayoutTemplate,
   Moon,
   CalendarDays,
+  AlertCircle,
+  Loader2,
+  Search,
 } from 'lucide-react';
 
 type Stats = {
@@ -84,32 +90,9 @@ const swapStatusColors: Record<Swap['status'], string> = {
   REJECTED: 'bg-red-100 text-red-800',
 };
 
-async function apiJson<T = unknown>(
-  url: string,
-  init?: RequestInit
-): Promise<{ ok: boolean; data?: T; error?: { message: string; messageAr?: string } }> {
-  try {
-    const res = await fetch(url, {
-      ...init,
-      headers: { 'Content-Type': 'application/json', ...(init?.headers || {}) },
-    });
-    const json = await res.json().catch(() => ({}));
-    if (!res.ok || json?.success === false) {
-      return { ok: false, error: json?.error || { message: `Request failed (${res.status})` } };
-    }
-    return { ok: true, data: json?.data as T };
-  } catch (err: any) {
-    return { ok: false, error: { message: err?.message || 'Network error' } };
-  }
-}
-
-function showError(action: string, error?: { message: string; messageAr?: string }) {
-  const msg = error?.message || 'Unknown error';
-  alert(`${action} failed: ${msg}`);
-}
-
 export default function ShiftManagementPage() {
   const [stats, setStats] = useState<Stats | null>(null);
+  const [statsLoading, setStatsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'shifts' | 'assignments' | 'rosters' | 'swaps'>(
     'shifts'
   );
@@ -119,38 +102,73 @@ export default function ShiftManagementPage() {
   const [rosters, setRosters] = useState<Roster[]>([]);
   const [swaps, setSwaps] = useState<Swap[]>([]);
 
+  const [shiftsLoading, setShiftsLoading] = useState(true);
+  const [assignmentsLoading, setAssignmentsLoading] = useState(true);
+  const [rostersLoading, setRostersLoading] = useState(true);
+  const [swapsLoading, setSwapsLoading] = useState(true);
+
+  const [rejectDialogOpen, setRejectDialogOpen] = useState(false);
+  const [rejectSwapId, setRejectSwapId] = useState<string | null>(null);
+  const [rejectReason, setRejectReason] = useState('');
+
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [confirmTitle, setConfirmTitle] = useState('');
+  const [confirmMessage, setConfirmMessage] = useState('');
+  const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null);
+
   const fetchStats = useCallback(async () => {
+    setStatsLoading(true);
     const r = await apiJson<Stats>('/api/v1/shifts/stats');
     if (r.ok && r.data) setStats(r.data);
+    setStatsLoading(false);
   }, []);
 
   const fetchShifts = useCallback(async () => {
+    setShiftsLoading(true);
     const r = await apiJson<Shift[]>('/api/v1/shifts?limit=200');
     if (r.ok && r.data) setShifts(r.data);
+    setShiftsLoading(false);
   }, []);
 
   const fetchAssignments = useCallback(async () => {
+    setAssignmentsLoading(true);
     const r = await apiJson<Assignment[]>('/api/v1/shift-assignments?limit=200');
     if (r.ok && r.data) setAssignments(r.data);
+    setAssignmentsLoading(false);
   }, []);
 
   const fetchRosters = useCallback(async () => {
+    setRostersLoading(true);
     const r = await apiJson<Roster[]>('/api/v1/shift-rosters?limit=200');
     if (r.ok && r.data) setRosters(r.data);
+    setRostersLoading(false);
   }, []);
 
   const fetchSwaps = useCallback(async () => {
+    setSwapsLoading(true);
     const r = await apiJson<Swap[]>('/api/v1/shift-swaps?limit=200');
     if (r.ok && r.data) setSwaps(r.data);
+    setSwapsLoading(false);
   }, []);
 
   useEffect(() => {
     fetchStats();
     fetchShifts();
-    fetchAssignments();
-    fetchRosters();
-    fetchSwaps();
-  }, [fetchStats, fetchShifts, fetchAssignments, fetchRosters, fetchSwaps]);
+  }, [fetchStats, fetchShifts]);
+
+  useEffect(() => {
+    if (activeTab === 'assignments' && assignmentsLoading) fetchAssignments();
+    if (activeTab === 'rosters' && rostersLoading) fetchRosters();
+    if (activeTab === 'swaps' && swapsLoading) fetchSwaps();
+  }, [
+    activeTab,
+    fetchAssignments,
+    fetchRosters,
+    fetchSwaps,
+    assignmentsLoading,
+    rostersLoading,
+    swapsLoading,
+  ]);
 
   // ---------------------------------------------------------------------------
   // Shifts tab
@@ -214,20 +232,38 @@ export default function ShiftManagementPage() {
     const url = record.id ? `/api/v1/shifts/${record.id}` : '/api/v1/shifts';
     const method = record.id ? 'PUT' : 'POST';
     const r = await apiJson(url, { method, body: JSON.stringify(payload) });
-    if (!r.ok) return showError('Save shift', r.error);
+    if (!r.ok) {
+      toast.error(r.error?.message || 'Failed to save shift');
+      return;
+    }
+    toast.success(record.id ? 'Shift updated' : 'Shift created');
     await Promise.all([fetchShifts(), fetchStats()]);
   };
 
   const deleteShift = async (row: Shift) => {
-    if (!confirm(`Delete shift "${row.name}"?`)) return;
-    const r = await apiJson(`/api/v1/shifts/${row.id}`, { method: 'DELETE' });
-    if (!r.ok) return showError('Delete shift', r.error);
-    await Promise.all([fetchShifts(), fetchStats()]);
+    setConfirmTitle('Delete Shift');
+    setConfirmMessage(
+      `Are you sure you want to delete "${row.name}"? This action cannot be undone.`
+    );
+    setConfirmAction(() => async () => {
+      const r = await apiJson(`/api/v1/shifts/${row.id}`, { method: 'DELETE' });
+      if (!r.ok) {
+        toast.error(r.error?.message || 'Failed to delete shift');
+        return;
+      }
+      toast.success('Shift deleted');
+      await Promise.all([fetchShifts(), fetchStats()]);
+    });
+    setConfirmOpen(true);
   };
 
   const setShiftDefault = async (row: Shift) => {
     const r = await apiJson(`/api/v1/shifts/${row.id}/set-default`, { method: 'POST' });
-    if (!r.ok) return showError('Set default', r.error);
+    if (!r.ok) {
+      toast.error(r.error?.message || 'Failed to set default shift');
+      return;
+    }
+    toast.success(`"${row.name}" set as default shift`);
     await fetchShifts();
   };
 
@@ -282,15 +318,27 @@ export default function ShiftManagementPage() {
     const url = record.id ? `/api/v1/shift-assignments/${record.id}` : '/api/v1/shift-assignments';
     const method = record.id ? 'PUT' : 'POST';
     const r = await apiJson(url, { method, body: JSON.stringify(payload) });
-    if (!r.ok) return showError('Save assignment', r.error);
+    if (!r.ok) {
+      toast.error(r.error?.message || 'Failed to save assignment');
+      return;
+    }
+    toast.success(record.id ? 'Assignment updated' : 'Assignment created');
     await Promise.all([fetchAssignments(), fetchStats()]);
   };
 
   const deleteAssignment = async (row: Assignment) => {
-    if (!confirm('End this assignment?')) return;
-    const r = await apiJson(`/api/v1/shift-assignments/${row.id}`, { method: 'DELETE' });
-    if (!r.ok) return showError('Delete assignment', r.error);
-    await Promise.all([fetchAssignments(), fetchStats()]);
+    setConfirmTitle('End Assignment');
+    setConfirmMessage('Are you sure you want to end this assignment?');
+    setConfirmAction(() => async () => {
+      const r = await apiJson(`/api/v1/shift-assignments/${row.id}`, { method: 'DELETE' });
+      if (!r.ok) {
+        toast.error(r.error?.message || 'Failed to delete assignment');
+        return;
+      }
+      toast.success('Assignment ended');
+      await Promise.all([fetchAssignments(), fetchStats()]);
+    });
+    setConfirmOpen(true);
   };
 
   // ---------------------------------------------------------------------------
@@ -334,15 +382,27 @@ export default function ShiftManagementPage() {
     const url = record.id ? `/api/v1/shift-rosters/${record.id}` : '/api/v1/shift-rosters';
     const method = record.id ? 'PUT' : 'POST';
     const r = await apiJson(url, { method, body: JSON.stringify(payload) });
-    if (!r.ok) return showError('Save roster', r.error);
+    if (!r.ok) {
+      toast.error(r.error?.message || 'Failed to save roster');
+      return;
+    }
+    toast.success(record.id ? 'Roster updated' : 'Roster entry created');
     await fetchRosters();
   };
 
   const deleteRoster = async (row: Roster) => {
-    if (!confirm('Delete this roster entry?')) return;
-    const r = await apiJson(`/api/v1/shift-rosters/${row.id}`, { method: 'DELETE' });
-    if (!r.ok) return showError('Delete roster', r.error);
-    await fetchRosters();
+    setConfirmTitle('Delete Roster Entry');
+    setConfirmMessage('Are you sure you want to delete this roster entry?');
+    setConfirmAction(() => async () => {
+      const r = await apiJson(`/api/v1/shift-rosters/${row.id}`, { method: 'DELETE' });
+      if (!r.ok) {
+        toast.error(r.error?.message || 'Failed to delete roster');
+        return;
+      }
+      toast.success('Roster entry deleted');
+      await fetchRosters();
+    });
+    setConfirmOpen(true);
   };
 
   // ---------------------------------------------------------------------------
@@ -386,7 +446,7 @@ export default function ShiftManagementPage() {
 
   const saveSwap = async (record: Partial<Swap>) => {
     if (record.id) {
-      showError('Edit swap', { message: 'Swap requests cannot be edited — use approve/reject.' });
+      toast.error('Swap requests cannot be edited — use approve/reject.');
       return;
     }
     const payload = {
@@ -402,27 +462,53 @@ export default function ShiftManagementPage() {
       method: 'POST',
       body: JSON.stringify(payload),
     });
-    if (!r.ok) return showError('Create swap request', r.error);
+    if (!r.ok) {
+      toast.error(r.error?.message || 'Failed to create swap request');
+      return;
+    }
+    toast.success('Swap request created');
     await Promise.all([fetchSwaps(), fetchStats()]);
   };
 
   const swapAction = async (
     id: string,
     action: 'peer-approve' | 'manager-approve' | 'reject',
-    label: string
+    label: string,
+    reason?: string
   ) => {
     let body: string | undefined;
-    if (action === 'reject') {
-      const reason = prompt('Rejection reason:') || '';
-      if (!reason.trim()) return;
+    if (action === 'reject' && reason) {
       body = JSON.stringify({ reason });
     }
     const r = await apiJson(`/api/v1/shift-swaps/${id}/${action}`, {
       method: 'POST',
       body,
     });
-    if (!r.ok) return showError(label, r.error);
+    if (!r.ok) {
+      toast.error(r.error?.message || `Failed to ${label.toLowerCase()}`);
+      return;
+    }
+    toast.success(label);
     await Promise.all([fetchSwaps(), fetchStats()]);
+  };
+
+  const handleRejectClick = (id: string) => {
+    setRejectSwapId(id);
+    setRejectReason('');
+    setRejectDialogOpen(true);
+  };
+
+  const handleRejectConfirm = async () => {
+    if (!rejectReason.trim()) {
+      toast.error('Please provide a rejection reason');
+      return;
+    }
+    if (rejectSwapId) {
+      await swapAction(rejectSwapId, 'reject', 'Swap rejected', rejectReason);
+    }
+    setRejectDialogOpen(false);
+    setRejectSwapId(null);
+    setRejectReason('');
   };
 
   const swapRowActions = (row: Swap) => {
@@ -437,7 +523,7 @@ export default function ShiftManagementPage() {
         label: 'Peer approve',
         icon: CheckCircle,
         variant: 'success',
-        onClick: () => swapAction(row.id, 'peer-approve', 'Peer approve'),
+        onClick: () => swapAction(row.id, 'peer-approve', 'Peer approved'),
       });
     }
     if (row.status === 'APPROVED_BY_PEER') {
@@ -445,7 +531,7 @@ export default function ShiftManagementPage() {
         label: 'Manager approve',
         icon: CheckCircle,
         variant: 'success',
-        onClick: () => swapAction(row.id, 'manager-approve', 'Manager approve'),
+        onClick: () => swapAction(row.id, 'manager-approve', 'Manager approved'),
       });
     }
     if (row.status === 'PENDING' || row.status === 'APPROVED_BY_PEER') {
@@ -453,7 +539,7 @@ export default function ShiftManagementPage() {
         label: 'Reject',
         icon: XCircle,
         variant: 'danger',
-        onClick: () => swapAction(row.id, 'reject', 'Reject swap'),
+        onClick: () => handleRejectClick(row.id),
       });
     }
     return actions;
@@ -464,6 +550,18 @@ export default function ShiftManagementPage() {
   // ---------------------------------------------------------------------------
   return (
     <div className="space-y-4 pb-6">
+      <ConfirmDialog
+        open={confirmOpen}
+        title={confirmTitle}
+        message={confirmMessage}
+        confirmLabel="Delete"
+        variant="danger"
+        onConfirm={async () => {
+          setConfirmOpen(false);
+          await confirmAction?.();
+        }}
+        onCancel={() => setConfirmOpen(false)}
+      />
       {/* Page header + sub-page links */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div>
@@ -504,24 +602,28 @@ export default function ShiftManagementPage() {
           label="Total shifts"
           value={stats?.totalShifts ?? '—'}
           tone="blue"
+          loading={statsLoading}
         />
         <StatCard
           icon={<Users className="h-7 w-7 text-green-600 dark:text-green-400" />}
           label="Active shifts"
           value={stats?.activeShifts ?? '—'}
           tone="green"
+          loading={statsLoading}
         />
         <StatCard
           icon={<Calendar className="h-7 w-7 text-purple-600 dark:text-purple-400" />}
           label="Active assignments"
           value={stats?.activeAssignments ?? '—'}
           tone="purple"
+          loading={statsLoading}
         />
         <StatCard
           icon={<RefreshCw className="h-7 w-7 text-orange-600 dark:text-orange-400" />}
           label="Pending swaps"
           value={stats?.pendingSwaps ?? '—'}
           tone="orange"
+          loading={statsLoading}
         />
       </div>
 
@@ -530,10 +632,10 @@ export default function ShiftManagementPage() {
         <div className="border-b border-cloud dark:border-nebula-purple/40">
           <nav className="flex gap-6 px-4 overflow-x-auto" aria-label="Tabs">
             {[
-              { id: 'shifts', label: 'Shifts' },
-              { id: 'assignments', label: 'Assignments' },
-              { id: 'rosters', label: 'Rosters' },
-              { id: 'swaps', label: 'Swap Requests' },
+              { id: 'shifts', label: 'Shifts', count: shifts.length },
+              { id: 'assignments', label: 'Assignments', count: assignments.length },
+              { id: 'rosters', label: 'Rosters', count: rosters.length },
+              { id: 'swaps', label: 'Swap Requests', count: swaps.length },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -545,6 +647,11 @@ export default function ShiftManagementPage() {
                 }`}
               >
                 {tab.label}
+                {tab.count > 0 && (
+                  <span className="ml-1.5 px-1.5 py-0.5 text-xs rounded-full bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-300">
+                    {tab.count}
+                  </span>
+                )}
               </button>
             ))}
           </nav>
@@ -559,6 +666,13 @@ export default function ShiftManagementPage() {
               onSave={saveShift}
               onDelete={deleteShift}
               addButtonText="Add shift"
+              searchKeys={['code', 'name', 'description', 'startTime', 'endTime']}
+              searchPlaceholder="Search shifts by code, name, time..."
+              emptyState={{
+                title: 'No shifts configured',
+                description: 'Create your first shift to get started with shift management.',
+                icon: Clock,
+              }}
               rowActions={(row) =>
                 row.isDefault
                   ? []
@@ -623,6 +737,13 @@ export default function ShiftManagementPage() {
               onSave={saveAssignment}
               onDelete={deleteAssignment}
               addButtonText="Assign shift"
+              searchKeys={['employeeId', 'shift.name']}
+              searchPlaceholder="Search by employee or shift..."
+              emptyState={{
+                title: 'No shift assignments',
+                description: 'Assign shifts to employees to define their work schedule.',
+                icon: Users,
+              }}
               formFields={[
                 { name: 'employeeId', label: 'Employee ID', type: 'text', required: true },
                 { name: 'shiftId', label: 'Shift ID', type: 'text', required: true },
@@ -641,6 +762,13 @@ export default function ShiftManagementPage() {
               onSave={saveRoster}
               onDelete={deleteRoster}
               addButtonText="Add roster entry"
+              searchKeys={['employeeId', 'shift.name', 'status']}
+              searchPlaceholder="Search by employee, shift, or status..."
+              emptyState={{
+                title: 'No roster entries',
+                description: 'Plan daily shift rosters for your employees.',
+                icon: Calendar,
+              }}
               formFields={[
                 { name: 'employeeId', label: 'Employee ID', type: 'text', required: true },
                 { name: 'shiftId', label: 'Shift ID', type: 'text', required: true },
@@ -661,6 +789,14 @@ export default function ShiftManagementPage() {
               onSave={saveSwap}
               rowActions={swapRowActions}
               addButtonText="New swap request"
+              enableDelete={false}
+              searchKeys={['requestorId', 'swapWithId', 'reason', 'status']}
+              searchPlaceholder="Search by requestor, swap partner, or status..."
+              emptyState={{
+                title: 'No swap requests',
+                description: 'Shift swap requests from employees will appear here.',
+                icon: RefreshCw,
+              }}
               formFields={[
                 { name: 'requestorId', label: 'Your employee ID', type: 'text', required: true },
                 { name: 'requestorShiftId', label: 'Your shift ID', type: 'text', required: true },
@@ -679,6 +815,64 @@ export default function ShiftManagementPage() {
           )}
         </div>
       </div>
+
+      {/* Reject swap reason dialog */}
+      {rejectDialogOpen && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          onKeyDown={(e) => {
+            if (e.key === 'Escape') {
+              setRejectDialogOpen(false);
+              setRejectSwapId(null);
+              setRejectReason('');
+            }
+          }}
+          ref={(el) => {
+            if (el && rejectDialogOpen) el.focus();
+          }}
+          tabIndex={-1}
+        >
+          <div className="relative w-full max-w-md bg-white dark:bg-stellar-blue rounded-2xl shadow-2xl border border-cloud dark:border-nebula-purple/50 p-6 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="flex items-center justify-center w-10 h-10 rounded-full bg-red-100 dark:bg-red-900/30">
+                <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
+              </div>
+              <div>
+                <h3 className="text-lg font-semibold text-ink-black dark:text-pearl">
+                  Reject Swap Request
+                </h3>
+                <p className="text-sm text-silver-mist">Please provide a reason for rejection.</p>
+              </div>
+            </div>
+            <textarea
+              value={rejectReason}
+              onChange={(e) => setRejectReason(e.target.value)}
+              placeholder="Enter rejection reason..."
+              rows={3}
+              className="w-full p-3 border border-cloud dark:border-nebula-purple/50 rounded-lg text-sm bg-white dark:bg-slate-800 text-ink-black dark:text-pearl focus:outline-none focus:ring-2 focus:ring-red-500 resize-none"
+              autoFocus
+            />
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setRejectDialogOpen(false);
+                  setRejectSwapId(null);
+                  setRejectReason('');
+                }}
+                className="px-4 py-2 text-sm font-medium text-silver-mist hover:text-ink-black dark:hover:text-pearl transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleRejectConfirm}
+                className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-medium transition-colors"
+              >
+                Reject
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
@@ -688,11 +882,13 @@ function StatCard({
   label,
   value,
   tone,
+  loading,
 }: {
   icon: React.ReactNode;
   label: string;
   value: number | string;
   tone: 'blue' | 'green' | 'purple' | 'orange';
+  loading?: boolean;
 }) {
   const tones: Record<typeof tone, string> = {
     blue: 'from-blue-50 to-blue-100 dark:from-blue-900/40 dark:to-blue-800/40 text-blue-700 dark:text-blue-200',
@@ -710,7 +906,11 @@ function StatCard({
       <div className="flex items-center justify-between">
         <div>
           <p className="text-xs font-medium opacity-80">{label}</p>
-          <p className="text-2xl font-bold mt-1">{value}</p>
+          {loading ? (
+            <div className="mt-1 h-7 w-12 animate-pulse rounded bg-current opacity-20" />
+          ) : (
+            <p className="text-2xl font-bold mt-1">{value}</p>
+          )}
         </div>
         {icon}
       </div>

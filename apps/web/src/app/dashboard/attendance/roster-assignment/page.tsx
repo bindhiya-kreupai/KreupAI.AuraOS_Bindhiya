@@ -14,6 +14,7 @@ import {
   Users,
   X,
 } from 'lucide-react';
+import { apiJson } from '@/lib/api-utils';
 
 type Employee = {
   id: string;
@@ -73,28 +74,6 @@ function weekNumber(d: Date) {
   return Math.ceil(((date.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
 }
 
-async function api<T>(
-  url: string,
-  init?: RequestInit
-): Promise<{ ok: boolean; data?: T; error?: string }> {
-  try {
-    const res = await fetch(url, {
-      ...init,
-      headers: { 'Content-Type': 'application/json', ...(init?.headers || {}) },
-    });
-    const json = await res.json().catch(() => ({}));
-    if (!res.ok || json?.success === false) {
-      return {
-        ok: false,
-        error: json?.error?.message || json?.error || `Request failed (${res.status})`,
-      };
-    }
-    return { ok: true, data: json?.data as T };
-  } catch (e: any) {
-    return { ok: false, error: e?.message || 'Network error' };
-  }
-}
-
 export default function RosterAssignmentPage() {
   const [weekStart, setWeekStart] = useState<Date>(() => startOfWeek(new Date()));
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -132,9 +111,9 @@ export default function RosterAssignmentPage() {
     const startStr = isoDate(weekStart);
     const endStr = isoDate(weekEnd);
     const [empRes, shiftRes, rosterRes] = await Promise.all([
-      api<any>('/api/v1/employees?limit=200'),
-      api<Shift[]>('/api/v1/shifts?limit=100'),
-      api<Roster[]>(`/api/v1/shift-rosters?startDate=${startStr}&endDate=${endStr}&limit=2000`),
+      apiJson<any>('/api/v1/employees?limit=200'),
+      apiJson<Shift[]>('/api/v1/shifts?limit=100'),
+      apiJson<Roster[]>(`/api/v1/shift-rosters?startDate=${startStr}&endDate=${endStr}&limit=2000`),
     ]);
 
     if (empRes.ok && empRes.data) {
@@ -159,7 +138,8 @@ export default function RosterAssignmentPage() {
     if (shiftRes.ok && shiftRes.data) setShifts(shiftRes.data);
     if (rosterRes.ok && rosterRes.data) setRosters(rosterRes.data);
 
-    if (!empRes.ok) setStatus({ kind: 'error', text: empRes.error || 'Failed to load employees' });
+    if (!empRes.ok)
+      setStatus({ kind: 'error', text: empRes.error?.message || 'Failed to load employees' });
     setLoading(false);
   };
 
@@ -237,10 +217,10 @@ export default function RosterAssignmentPage() {
     const existing = rosterByKey.get(`${empId}:${date}`);
     if (existing) {
       // Delete existing then create new (simpler than partial update with version)
-      await api(`/api/v1/shift-rosters/${existing.id}`, { method: 'DELETE' });
+      await apiJson(`/api/v1/shift-rosters/${existing.id}`, { method: 'DELETE' });
     }
     if (choice.shiftId || choice.isWeekOff || choice.isHoliday) {
-      const r = await api<Roster>('/api/v1/shift-rosters', {
+      const r = await apiJson<Roster>('/api/v1/shift-rosters', {
         method: 'POST',
         body: JSON.stringify({
           employeeId: empId,
@@ -251,7 +231,7 @@ export default function RosterAssignmentPage() {
         }),
       });
       if (!r.ok) {
-        setStatus({ kind: 'error', text: r.error || 'Failed to save roster' });
+        setStatus({ kind: 'error', text: r.error?.message || 'Failed to save roster' });
         return;
       }
     }
