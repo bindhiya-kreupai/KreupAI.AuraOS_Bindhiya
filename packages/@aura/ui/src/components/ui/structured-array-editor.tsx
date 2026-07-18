@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -19,7 +19,7 @@ function cn(...inputs: ClassValue[]) {
  *   - bilingual column headers
  */
 
-export type StructuredFieldType = 'text' | 'number' | 'boolean' | 'select'| 'date';
+export type StructuredFieldType = 'text' | 'number' | 'boolean' | 'select' | 'date' | 'searchable-select';
 
 export interface StructuredColumn {
     key: string;
@@ -29,8 +29,9 @@ export interface StructuredColumn {
     options?: Array<{ value: string; label: string }>;
     required?: boolean;
     placeholder?: string;
-    /** Width hint (CSS class, e.g. 'w-24'). */
     widthClass?: string;
+    apiUrl?: string;
+    readOnly?: boolean;
 }
 
 export interface StructuredArrayEditorProps<T extends Record<string, unknown> = Record<string, unknown>> {
@@ -270,6 +271,40 @@ export function StructuredArrayEditor<T extends Record<string, unknown> = Record
                                             </td>
                                         );
                                     }
+                                   if (col.type === 'searchable-select') {
+                                        return (
+                                            <td key={col.key} className="px-2 py-1">
+                                                <SearchableSelect
+                                                    apiUrl={col.apiUrl ?? ''}
+                                                    value={(cellValue as string) ?? ''}
+                                                    onSelect={(id, label, extra) => {
+                                                        update(rowIdx, col.key, id);
+                                                        // If there's a linked role column, auto-fill it.
+                                                        const roleCol = columns.find((c) => c.key === 'role');
+                                                        if (roleCol && extra?.role) {
+                                                            update(rowIdx, 'role', extra.role);
+                                                        }
+                                                    }}
+                                                    placeholder={col.placeholder ?? 'Search...'}
+                                                />
+                                            </td>
+                                        );
+                                    }
+                                    if (col.readOnly) {
+                                        return (
+                                            <td key={col.key} className="px-2 py-1">
+                                                <input
+                                                    type="text"
+                                                    value={(cellValue as string) ?? ''}
+                                                    readOnly
+                                                    className={cn(
+                                                        'w-full border border-gray-200 bg-gray-50 rounded px-1.5 py-1 text-sm text-gray-600',
+                                                        col.widthClass,
+                                                    )}
+                                                />
+                                            </td>
+                                        );
+                                    }
                                     return (
                                         <td key={col.key} className="px-2.5 py-2">
                                             <input
@@ -310,6 +345,99 @@ export function StructuredArrayEditor<T extends Record<string, unknown> = Record
                     </tbody>
                 </table>
             </div>
+        </div>
+    );
+}
+
+function SearchableSelect({
+    apiUrl,
+    value,
+    onSelect,
+    placeholder,
+}: {
+    apiUrl: string;
+    value: string;
+    onSelect: (id: string, label: string, extra?: Record<string, unknown>) => void;
+    placeholder: string;
+}) {
+    const [query, setQuery] = useState('');
+    const [results, setResults] = useState<Array<{ id: string; label: string; role?: string }>>([]);
+    const [open, setOpen] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const boxRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        function handleClickOutside(e: MouseEvent) {
+            if (boxRef.current && !boxRef.current.contains(e.target as Node)) {
+                setOpen(false);
+            }
+        }
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    useEffect(() => {
+        if (!query || query.length < 2) {
+            setResults([]);
+            return;
+        }
+        const timer = setTimeout(async () => {
+            setLoading(true);
+            try {
+                const res = await fetch(`${apiUrl}?search=${encodeURIComponent(query)}&limit=10`);
+                const json = await res.json();
+                const items = Array.isArray(json?.data) ? json.data : [];
+                setResults(
+                    items.map((it: any) => ({
+                        id: it.id,
+                        label: it.name ?? `${it.firstName ?? ''} ${it.lastName ?? ''}`.trim() ?? it.email ?? it.id,
+                        role: it.role ?? undefined,
+                    })),
+                );
+            } catch {
+                setResults([]);
+            } finally {
+                setLoading(false);
+            }
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [query, apiUrl]);
+
+    return (
+        <div className="relative" ref={boxRef}>
+            <input
+                type="text"
+                value={open ? query : value}
+                onChange={(e) => {
+                    setQuery(e.target.value);
+                    setOpen(true);
+                }}
+                onFocus={() => setOpen(true)}
+                placeholder={placeholder}
+                className="w-full border border-gray-300 rounded px-1.5 py-1 text-sm"
+            />
+            {open && (query.length >= 2) && (
+                <div className="absolute z-10 mt-1 w-full max-h-48 overflow-auto rounded-md border border-gray-200 bg-white shadow-lg">
+                    {loading && <div className="px-2 py-1 text-xs text-gray-500">Searching…</div>}
+                    {!loading && results.length === 0 && (
+                        <div className="px-2 py-1 text-xs text-gray-500">No results</div>
+                    )}
+                    {results.map((r) => (
+                        <button
+                            key={r.id}
+                            type="button"
+                            onClick={() => {
+                                onSelect(r.id, r.label, { role: r.role });
+                                setQuery(r.label);
+                                setOpen(false);
+                            }}
+                            className="block w-full text-left px-2 py-1 text-sm hover:bg-blue-50"
+                        >
+                            {r.label}
+                        </button>
+                    ))}
+                </div>
+            )}
         </div>
     );
 }

@@ -43,13 +43,7 @@ export default function PerformanceComplianceCalibrationPage() {
           type: 'boolean',
           required: true,
         },
-        {
-          name: 'cycleId',
-          label: 'Cycle ID',
-          labelAr: 'معرف الدورة',
-          type: 'text',
-          placeholder: 'e.g. CYCLE-2026-H1',
-        },
+
         {
           name: 'meetingAt',
           label: 'Meeting date & time',
@@ -80,21 +74,18 @@ export default function PerformanceComplianceCalibrationPage() {
               key: 'userId',
               label: 'User ID',
               labelAr: 'معرف المستخدم',
-              type: 'text',
+              type: 'searchable-select',
               required: true,
-              widthClass: 'w-40',
+              apiUrl: '/api/v1/employees',
+              placeholder: 'Search employee...',
+              widthClass: 'w-48',
             },
             {
               key: 'role',
               label: 'Role',
               labelAr: 'الدور',
-              type: 'select',
-              required: true,
-              options: [
-                { value: 'HR_OBSERVER', label: 'HR Observer' },
-                { value: 'PANEL', label: 'Panel' },
-                { value: 'SPONSOR', label: 'Sponsor' },
-              ],
+              type: 'text',
+              readOnly: true,
               widthClass: 'w-40',
             },
           ],
@@ -111,7 +102,6 @@ export default function PerformanceComplianceCalibrationPage() {
           ...(hasEvidence
             ? {
                 evidence: {
-                  cycleId: String(v.cycleId ?? ''),
                   meetingAt: String(v.meetingAt ?? ''),
                   ...(v.minuteRef ? { minuteRef: String(v.minuteRef) } : {}),
                   attendees: ((v.attendees as Array<Record<string, unknown>>) ?? []).map((a) => ({
