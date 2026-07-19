@@ -113,7 +113,7 @@ export const POST = withAudit(
       });
     } catch (error: any) {
       return NextResponse.json(
-        { success: false, error: { code: 'E5001', message: error.message } },
+        { success: false, error: { code: 'E5001', message: 'Failed to claim shift' } },
         { status: 500 }
       );
     }

@@ -5,6 +5,33 @@ import { withEnhancedAuth } from '@/lib/auth';
 import { withAudit } from '@/lib/middleware/audit.middleware';
 import { AuditAction } from '@/lib/audit/audit.service';
 
+const timeRegex = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+function validateShiftPayload(body: Record<string, unknown>): { valid: boolean; error?: string } {
+  if (!body.code || typeof body.code !== 'string' || body.code.trim().length === 0) {
+    return { valid: false, error: 'Shift code is required' };
+  }
+  if (!body.name || typeof body.name !== 'string' || body.name.trim().length === 0) {
+    return { valid: false, error: 'Shift name is required' };
+  }
+  if (!body.startTime || typeof body.startTime !== 'string' || !timeRegex.test(body.startTime)) {
+    return { valid: false, error: 'Start time must be in HH:MM format (00:00-23:59)' };
+  }
+  if (!body.endTime || typeof body.endTime !== 'string' || !timeRegex.test(body.endTime)) {
+    return { valid: false, error: 'End time must be in HH:MM format (00:00-23:59)' };
+  }
+  if (body.startTime === body.endTime) {
+    return { valid: false, error: 'Start time and end time must be different' };
+  }
+  if (
+    body.workHours !== undefined &&
+    (typeof body.workHours !== 'number' || body.workHours < 0.5)
+  ) {
+    return { valid: false, error: 'Work hours must be at least 0.5' };
+  }
+  return { valid: true };
+}
+
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
     const { user, permissions } = context;
@@ -32,16 +59,38 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
             ? false
             : undefined,
       page: Number(searchParams.get('page')) || 1,
-      limit: Number(searchParams.get('limit')) || 20,
+      limit: Math.min(Number(searchParams.get('limit')) || 20, 200),
       sortBy: searchParams.get('sortBy') || 'name',
       sortOrder: (searchParams.get('sortOrder') || 'asc') as 'asc' | 'desc',
     };
 
     const result = await ShiftManagementService.findAllShifts(filter);
 
+    const data = result.data.map((shift: any) => ({
+      id: shift.id,
+      code: shift.code,
+      name: shift.name,
+      description: shift.description,
+      startTime: shift.startTime,
+      endTime: shift.endTime,
+      workHours: shift.workHours,
+      graceInMinutes: shift.graceInMinutes,
+      graceOutMinutes: shift.graceOutMinutes ?? 0,
+      breakDuration: shift.breakDuration,
+      isPaidBreak: shift.isPaidBreak ?? true,
+      overtimeAllowed: shift.overtimeAllowed,
+      maxOvertimeHours: shift.maxOvertimeHours,
+      isFlexible: shift.isFlexible,
+      flexWindow: shift.flexWindow,
+      isActive: shift.isActive,
+      isDefault: shift.isDefault,
+      weekendDays: shift.weekendDays,
+      _count: shift._count,
+    }));
+
     return NextResponse.json({
       success: true,
-      data: result.data,
+      data,
       meta: {
         pagination: result.pagination,
         timestamp: new Date().toISOString(),
@@ -50,7 +99,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     });
   } catch (error: any) {
     return NextResponse.json(
-      { success: false, error: { code: 'E5000', message: error.message } },
+      { success: false, error: { code: 'E5000', message: 'Internal server error' } },
       { status: 500 }
     );
   }
@@ -74,14 +123,46 @@ export const POST = withAudit(
         );
       }
       const body = await request.json();
+      const validation = validateShiftPayload(body);
+      if (!validation.valid) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: { code: 'E1001', message: validation.error, messageAr: 'خطأ في الإدخال' },
+          },
+          { status: 400 }
+        );
+      }
+
       body.tenantId = user.tenantId;
 
       const shift = await ShiftManagementService.createShift(body);
 
-      return NextResponse.json({ success: true, data: shift }, { status: 201 });
+      const responseData = {
+        id: shift.id,
+        code: shift.code,
+        name: shift.name,
+        description: shift.description,
+        startTime: shift.startTime,
+        endTime: shift.endTime,
+        workHours: shift.workHours,
+        graceInMinutes: shift.graceInMinutes,
+        graceOutMinutes: shift.graceOutMinutes ?? 0,
+        breakDuration: shift.breakDuration,
+        isPaidBreak: shift.isPaidBreak ?? true,
+        overtimeAllowed: shift.overtimeAllowed,
+        maxOvertimeHours: shift.maxOvertimeHours,
+        isFlexible: shift.isFlexible,
+        flexWindow: shift.flexWindow,
+        isActive: shift.isActive,
+        isDefault: shift.isDefault,
+        weekendDays: shift.weekendDays,
+      };
+
+      return NextResponse.json({ success: true, data: responseData }, { status: 201 });
     } catch (error: any) {
       return NextResponse.json(
-        { success: false, error: { code: 'E1001', message: error.message } },
+        { success: false, error: { code: 'E1001', message: 'Failed to create shift' } },
         { status: 400 }
       );
     }

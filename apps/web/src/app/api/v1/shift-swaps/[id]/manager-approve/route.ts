@@ -2,34 +2,48 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { ShiftManagementService } from '@/lib/services/shift-management.service';
 import { withEnhancedAuth } from '@/lib/auth';
+import { withAudit } from '@/lib/middleware/audit.middleware';
+import { AuditAction } from '@/lib/audit/audit.service';
 
-export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
-  try {
-    const { user, params, permissions } = context;
-    if (!permissions.includes('shift-swaps:update')) {
+export const POST = withAudit(
+  withEnhancedAuth(async (request: NextRequest, context: any) => {
+    try {
+      const { user, params, permissions } = context;
+      if (!permissions.includes('shift-swaps:update')) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'E4030',
+              message: 'Forbidden: missing shift-swaps:update permission',
+              messageAr: 'ممنوع',
+            },
+          },
+          { status: 403 }
+        );
+      }
+      const { id } = params;
+      const employeeId = context.employeeId || user.userId;
+
+      const swap = await ShiftManagementService.managerApproveSwap(id, user.tenantId, employeeId);
+      return NextResponse.json({ success: true, data: swap });
+    } catch (error: any) {
       return NextResponse.json(
         {
           success: false,
           error: {
-            code: 'E4030',
-            message: 'Forbidden: missing shift-swaps:create permission',
-            messageAr: 'ممنوع',
+            code: 'E3001',
+            message: 'Failed to approve swap request',
+            messageAr: 'خطأ في الموافقة على طلب التبادل',
           },
         },
-        { status: 403 }
+        { status: 400 }
       );
     }
-    const { id } = params;
-
-    const swap = await ShiftManagementService.managerApproveSwap(id, user.tenantId, user.id);
-    return NextResponse.json({ success: true, data: swap });
-  } catch (error: any) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: { code: 'E3001', message: error.message, messageAr: 'خطأ في الموافقة' },
-      },
-      { status: 400 }
-    );
+  }),
+  {
+    action: AuditAction.LEAVE_REQUEST_APPROVED,
+    resourceType: 'shiftSwap',
+    extractResourceId: (req, ctx) => ctx?.params?.id,
   }
-});
+);

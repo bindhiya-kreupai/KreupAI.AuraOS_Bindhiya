@@ -139,7 +139,6 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { _user, permis
       error: {
         code: 'E5001',
         message: 'Failed to get shift differential rates',
-        details: { error: error instanceof Error ? error.message : 'Unknown error' },
       },
       meta: {
         timestamp: new Date().toISOString(),

@@ -135,7 +135,6 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { _user, permis
       error: {
         code: 'E5001',
         message: 'Failed to list shift patterns',
-        details: { error: error instanceof Error ? error.message : 'Unknown error' },
       },
       meta: {
         timestamp: new Date().toISOString(),
@@ -229,7 +228,6 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { _user, permi
       error: {
         code: 'E5001',
         message: 'Failed to create shift pattern',
-        details: { error: error instanceof Error ? error.message : 'Unknown error' },
       },
       meta: {
         timestamp: new Date().toISOString(),

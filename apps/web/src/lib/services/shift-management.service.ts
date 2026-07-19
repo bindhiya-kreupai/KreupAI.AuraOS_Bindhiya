@@ -3,38 +3,39 @@ import { z } from 'zod';
 
 const timeRegex = /^([01]\d|2[0-3]):[0-5]\d$/;
 
-export const createShiftSchema = z
-  .object({
-    tenantId: z.string(),
-    code: z.string().min(1),
-    name: z.string().min(1),
-    description: z.string().optional(),
-    startTime: z.string().regex(timeRegex, 'Start time must be in HH:MM format (00:00–23:59)'),
-    endTime: z.string().regex(timeRegex, 'End time must be in HH:MM format (00:00–23:59)'),
-    graceInMinutes: z.number().min(0).default(0),
-    graceOutMinutes: z.number().min(0).default(0),
-    breakDuration: z.number().min(0).default(0),
-    isPaidBreak: z.boolean().default(true),
-    workHours: z.number().min(0.5),
-    weekendDays: z.array(z.string()).default([]),
-    overtimeAllowed: z.boolean().default(false),
-    maxOvertimeHours: z.number().min(0).default(0),
-    isFlexible: z.boolean().default(false),
-    flexWindow: z.number().min(0).default(0),
-  })
-  .refine(
-    (data) => {
-      if (!timeRegex.test(data.startTime) || !timeRegex.test(data.endTime)) return true;
-      const [sh, sm] = data.startTime.split(':').map(Number);
-      const [eh, em] = data.endTime.split(':').map(Number);
-      const startMin = sh * 60 + sm;
-      const endMin = eh * 60 + em;
-      return endMin !== startMin;
-    },
-    { message: 'Start time and end time must be different', path: ['endTime'] }
-  );
+const createShiftBaseSchema = z.object({
+  tenantId: z.string(),
+  code: z.string().min(1),
+  name: z.string().min(1),
+  description: z.string().optional(),
+  startTime: z.string().regex(timeRegex, 'Start time must be in HH:MM format (00:00–23:59)'),
+  endTime: z.string().regex(timeRegex, 'End time must be in HH:MM format (00:00–23:59)'),
+  graceInMinutes: z.number().min(0).default(0),
+  graceOutMinutes: z.number().min(0).default(0),
+  breakDuration: z.number().min(0).default(0),
+  isPaidBreak: z.boolean().default(true),
+  workHours: z.number().min(0.5),
+  weekendDays: z.array(z.string()).default([]),
+  overtimeAllowed: z.boolean().default(false),
+  maxOvertimeHours: z.number().min(0).default(0),
+  isFlexible: z.boolean().default(false),
+  flexWindow: z.number().min(0).default(0),
+  isDefault: z.boolean().default(false),
+});
 
-export const updateShiftSchema = createShiftSchema.partial().omit({ tenantId: true });
+export const createShiftSchema = createShiftBaseSchema.refine(
+  (data) => {
+    if (!timeRegex.test(data.startTime) || !timeRegex.test(data.endTime)) return true;
+    const [sh, sm] = data.startTime.split(':').map(Number);
+    const [eh, em] = data.endTime.split(':').map(Number);
+    const startMin = sh * 60 + sm;
+    const endMin = eh * 60 + em;
+    return endMin !== startMin;
+  },
+  { message: 'Start time and end time must be different', path: ['endTime'] }
+);
+
+export const updateShiftSchema = createShiftBaseSchema.partial().omit({ tenantId: true });
 
 export const createShiftAssignmentSchema = z.object({
   tenantId: z.string(),
@@ -73,6 +74,18 @@ export class ShiftManagementService {
   static async findAllShifts(filter: any) {
     const { tenantId, isActive, page = 1, limit = 20, sortBy = 'name', sortOrder = 'asc' } = filter;
 
+    const ALLOWED_SORT_FIELDS = [
+      'name',
+      'code',
+      'startTime',
+      'endTime',
+      'workHours',
+      'createdAt',
+      'updatedAt',
+    ] as const;
+    const safeSortBy = ALLOWED_SORT_FIELDS.includes(sortBy) ? sortBy : 'name';
+    const safeLimit = Math.min(Math.max(Number(limit) || 20, 1), 200);
+
     const where: any = { tenantId };
     if (isActive !== undefined) where.isActive = isActive;
 
@@ -87,14 +100,17 @@ export class ShiftManagementService {
             },
           },
         },
-        skip: (page - 1) * limit,
-        take: limit,
-        orderBy: { [sortBy]: sortOrder },
+        skip: (page - 1) * safeLimit,
+        take: safeLimit,
+        orderBy: { [safeSortBy]: sortOrder },
       }),
       prisma.shift.count({ where }),
     ]);
 
-    return { data, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+    return {
+      data,
+      pagination: { total, page, limit: safeLimit, totalPages: Math.ceil(total / safeLimit) },
+    };
   }
 
   static async findShiftById(id: string, tenantId: string) {
@@ -164,19 +180,19 @@ export class ShiftManagementService {
   }
 
   static async setDefaultShift(id: string, tenantId: string) {
-    const shift = await prisma.shift.findFirst({ where: { id, tenantId } });
-    if (!shift) throw new Error('Shift not found');
+    return prisma.$transaction(async (tx) => {
+      const shift = await tx.shift.findFirst({ where: { id, tenantId } });
+      if (!shift) throw new Error('Shift not found');
 
-    // Remove default from other shifts
-    await prisma.shift.updateMany({
-      where: { tenantId, isDefault: true },
-      data: { isDefault: false },
-    });
+      await tx.shift.updateMany({
+        where: { tenantId, isDefault: true },
+        data: { isDefault: false },
+      });
 
-    // Set this as default
-    return prisma.shift.update({
-      where: { id },
-      data: { isDefault: true },
+      return tx.shift.update({
+        where: { id },
+        data: { isDefault: true },
+      });
     });
   }
 
@@ -184,6 +200,7 @@ export class ShiftManagementService {
 
   static async findAllAssignments(filter: any) {
     const { tenantId, employeeId, shiftId, isActive, page = 1, limit = 50 } = filter;
+    const safeLimit = Math.min(Math.max(Number(limit) || 50, 1), 200);
 
     const where: any = { tenantId };
     if (employeeId) where.employeeId = employeeId;
@@ -194,14 +211,17 @@ export class ShiftManagementService {
       prisma.shiftAssignment.findMany({
         where,
         include: { shift: true },
-        skip: (page - 1) * limit,
-        take: limit,
+        skip: (page - 1) * safeLimit,
+        take: safeLimit,
         orderBy: { effectiveFrom: 'desc' },
       }),
       prisma.shiftAssignment.count({ where }),
     ]);
 
-    return { data, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+    return {
+      data,
+      pagination: { total, page, limit: safeLimit, totalPages: Math.ceil(total / safeLimit) },
+    };
   }
 
   static async createAssignment(
@@ -210,36 +230,48 @@ export class ShiftManagementService {
   ) {
     const validated = createShiftAssignmentSchema.parse(data);
 
-    // Deactivate existing assignments for this employee if any
-    await prisma.shiftAssignment.updateMany({
-      where: {
-        tenantId: validated.tenantId,
-        employeeId: validated.employeeId,
-        isActive: true,
-      },
-      data: { isActive: false, effectiveTo: new Date() },
-    });
+    return prisma.$transaction(async (tx) => {
+      await tx.shiftAssignment.updateMany({
+        where: {
+          tenantId: validated.tenantId,
+          employeeId: validated.employeeId,
+          isActive: true,
+        },
+        data: { isActive: false, effectiveTo: new Date() },
+      });
 
-    return prisma.shiftAssignment.create({
-      data: {
-        ...validated,
-        effectiveFrom: new Date(validated.effectiveFrom),
-        effectiveTo: validated.effectiveTo ? new Date(validated.effectiveTo) : undefined,
-        assignedBy,
-      },
-      include: { shift: true },
+      return tx.shiftAssignment.create({
+        data: {
+          ...validated,
+          effectiveFrom: new Date(validated.effectiveFrom),
+          effectiveTo: validated.effectiveTo ? new Date(validated.effectiveTo) : undefined,
+          assignedBy,
+        },
+        include: { shift: true },
+      });
     });
   }
 
-  static async updateAssignment(id: string, tenantId: string, data: any) {
+  static async updateAssignment(id: string, tenantId: string, data: Record<string, unknown>) {
     const existing = await prisma.shiftAssignment.findFirst({ where: { id, tenantId } });
     if (!existing) return null;
 
-    const updateData: any = { ...data };
-    if (data.effectiveFrom) updateData.effectiveFrom = new Date(data.effectiveFrom);
-    if (data.effectiveTo) updateData.effectiveTo = new Date(data.effectiveTo);
+    const allowedFields = [
+      'shiftId',
+      'effectiveFrom',
+      'effectiveTo',
+      'isActive',
+      'reason',
+    ] as const;
+    const updateData: Record<string, unknown> = {};
+    for (const key of allowedFields) {
+      if (key in data) updateData[key] = data[key];
+    }
+    if (updateData.effectiveFrom)
+      updateData.effectiveFrom = new Date(updateData.effectiveFrom as string);
+    if (updateData.effectiveTo) updateData.effectiveTo = new Date(updateData.effectiveTo as string);
 
-    return prisma.shiftAssignment.update({ where: { id }, data: updateData });
+    return prisma.shiftAssignment.update({ where: { id }, data: updateData as any });
   }
 
   static async deleteAssignment(id: string, tenantId: string) {
@@ -252,6 +284,7 @@ export class ShiftManagementService {
 
   static async findAllRosters(filter: any) {
     const { tenantId, employeeId, shiftId, startDate, endDate, page = 1, limit = 100 } = filter;
+    const safeLimit = Math.min(Math.max(Number(limit) || 100, 1), 500);
 
     const where: any = { tenantId };
     if (employeeId) where.employeeId = employeeId;
@@ -267,14 +300,17 @@ export class ShiftManagementService {
       prisma.shiftRoster.findMany({
         where,
         include: { shift: true },
-        skip: (page - 1) * limit,
-        take: limit,
+        skip: (page - 1) * safeLimit,
+        take: safeLimit,
         orderBy: { rosterDate: 'asc' },
       }),
       prisma.shiftRoster.count({ where }),
     ]);
 
-    return { data, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+    return {
+      data,
+      pagination: { total, page, limit: safeLimit, totalPages: Math.ceil(total / safeLimit) },
+    };
   }
 
   static async createRoster(data: z.infer<typeof createShiftRosterSchema>) {
@@ -315,14 +351,26 @@ export class ShiftManagementService {
     });
   }
 
-  static async updateRoster(id: string, tenantId: string, data: any) {
+  static async updateRoster(id: string, tenantId: string, data: Record<string, unknown>) {
     const existing = await prisma.shiftRoster.findFirst({ where: { id, tenantId } });
     if (!existing) return null;
 
-    const updateData: any = { ...data };
-    if (data.rosterDate) updateData.rosterDate = new Date(data.rosterDate);
+    const allowedFields = [
+      'shiftId',
+      'rosterDate',
+      'customStartTime',
+      'customEndTime',
+      'isWeekOff',
+      'isHoliday',
+      'status',
+    ] as const;
+    const updateData: Record<string, unknown> = {};
+    for (const key of allowedFields) {
+      if (key in data) updateData[key] = data[key];
+    }
+    if (updateData.rosterDate) updateData.rosterDate = new Date(updateData.rosterDate as string);
 
-    return prisma.shiftRoster.update({ where: { id }, data: updateData });
+    return prisma.shiftRoster.update({ where: { id }, data: updateData as any });
   }
 
   static async deleteRoster(id: string, tenantId: string) {
@@ -335,6 +383,7 @@ export class ShiftManagementService {
 
   static async findAllSwaps(filter: any) {
     const { tenantId, requestorId, swapWithId, status, page = 1, limit = 20 } = filter;
+    const safeLimit = Math.min(Math.max(Number(limit) || 20, 1), 200);
 
     const where: any = { tenantId };
     if (requestorId) where.requestorId = requestorId;
@@ -344,14 +393,17 @@ export class ShiftManagementService {
     const [data, total] = await Promise.all([
       prisma.shiftSwapRequest.findMany({
         where,
-        skip: (page - 1) * limit,
-        take: limit,
+        skip: (page - 1) * safeLimit,
+        take: safeLimit,
         orderBy: { createdAt: 'desc' },
       }),
       prisma.shiftSwapRequest.count({ where }),
     ]);
 
-    return { data, pagination: { total, page, limit, totalPages: Math.ceil(total / limit) } };
+    return {
+      data,
+      pagination: { total, page, limit: safeLimit, totalPages: Math.ceil(total / safeLimit) },
+    };
   }
 
   static async createSwap(data: z.infer<typeof createShiftSwapSchema>) {
@@ -371,10 +423,24 @@ export class ShiftManagementService {
     });
   }
 
-  static async updateSwap(id: string, tenantId: string, data: any) {
+  static async updateSwap(id: string, tenantId: string, data: Record<string, unknown>) {
     const existing = await prisma.shiftSwapRequest.findFirst({ where: { id, tenantId } });
     if (!existing) return null;
-    return prisma.shiftSwapRequest.update({ where: { id }, data });
+
+    const allowedFields = [
+      'requestorDate',
+      'requestorShiftId',
+      'swapWithDate',
+      'swapWithShiftId',
+      'reason',
+      'status',
+    ] as const;
+    const updateData: Record<string, unknown> = {};
+    for (const key of allowedFields) {
+      if (key in data) updateData[key] = data[key];
+    }
+
+    return prisma.shiftSwapRequest.update({ where: { id }, data: updateData as any });
   }
 
   static async peerApproveSwap(id: string, tenantId: string, swapWithId: string) {

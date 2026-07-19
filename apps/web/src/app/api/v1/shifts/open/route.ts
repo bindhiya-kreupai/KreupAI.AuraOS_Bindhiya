@@ -72,7 +72,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     });
   } catch (error: any) {
     return NextResponse.json(
-      { success: false, error: { code: 'E5001', message: error.message } },
+      { success: false, error: { code: 'E5001', message: 'Internal server error' } },
       { status: 500 }
     );
   }

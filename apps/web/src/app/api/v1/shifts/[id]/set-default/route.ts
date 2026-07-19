@@ -28,7 +28,7 @@ export const POST = withAudit(
       return NextResponse.json({ success: true, data: shift });
     } catch (error: any) {
       return NextResponse.json(
-        { success: false, error: { code: 'E3001', message: error.message } },
+        { success: false, error: { code: 'E3001', message: 'Failed to set default shift' } },
         { status: 400 }
       );
     }

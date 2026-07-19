@@ -34,7 +34,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     return NextResponse.json({ success: true, data: shift });
   } catch (error: any) {
     return NextResponse.json(
-      { success: false, error: { code: 'E5000', message: error.message } },
+      { success: false, error: { code: 'E5000', message: 'Internal server error' } },
       { status: 500 }
     );
   }
@@ -74,7 +74,12 @@ export const PUT = withAudit(
       return NextResponse.json(
         {
           success: false,
-          error: { code: isValidationError ? 'E1001' : 'E5000', message: error.message },
+          error: {
+            code: isValidationError ? 'E1001' : 'E5000',
+            message: isValidationError
+              ? 'Shift with this code already exists'
+              : 'Internal server error',
+          },
         },
         { status: isValidationError ? 400 : 500 }
       );
@@ -118,7 +123,7 @@ export const DELETE = withAudit(
       return NextResponse.json({ success: true, data: shift });
     } catch (error: any) {
       return NextResponse.json(
-        { success: false, error: { code: 'E5000', message: error.message } },
+        { success: false, error: { code: 'E5000', message: 'Internal server error' } },
         { status: 500 }
       );
     }

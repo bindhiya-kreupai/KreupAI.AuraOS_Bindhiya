@@ -23,7 +23,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     return NextResponse.json({ success: true, data: stats });
   } catch (error: any) {
     return NextResponse.json(
-      { success: false, error: { code: 'E5000', message: error.message } },
+      { success: false, error: { code: 'E5000', message: 'Internal server error' } },
       { status: 500 }
     );
   }
