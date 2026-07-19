@@ -16,6 +16,7 @@ import {
 } from 'lucide-react';
 import { ShiftSwapService } from '../services';
 import { useCurrentUser } from '@/lib/auth/AuthProvider';
+import { useI18n } from '@/lib/i18n/I18nProvider';
 
 interface Shift {
   id: string;
@@ -41,6 +42,7 @@ interface MarketShift {
 
 export default function ShiftSwappingPage() {
   const { user, loading: authLoading } = useCurrentUser();
+  const { t, isRTL } = useI18n();
   const [activeTab, setActiveTab] = useState<'My Shifts' | 'Marketplace'>('My Shifts');
   const [myShifts, setMyShifts] = useState<Shift[]>([]);
   const [marketplace, setMarketplace] = useState<MarketShift[]>([]);
@@ -73,7 +75,7 @@ export default function ShiftSwappingPage() {
       const marketplaceResult = await ShiftSwapService.getMarketplace();
       setMarketplace((marketplaceResult || []) as any);
     } catch (error: any) {
-      console.error('Error:', error);
+      // Error handled by status message
     } finally {
       setLoading(false);
     }
@@ -96,7 +98,6 @@ export default function ShiftSwappingPage() {
       await fetchShiftData();
       setStatusMsg({ kind: 'success', text: 'Swap request submitted.' });
     } catch (error: any) {
-      console.error('Error:', error);
       setStatusMsg({ kind: 'error', text: error?.message || 'Failed to request swap.' });
     } finally {
       setLoading(false);
@@ -115,7 +116,6 @@ export default function ShiftSwappingPage() {
       await fetchShiftData();
       setStatusMsg({ kind: 'success', text: 'Swap accepted.' });
     } catch (error: any) {
-      console.error('Error:', error);
       setStatusMsg({ kind: 'error', text: error?.message || 'Failed to accept swap.' });
     } finally {
       setLoading(false);
@@ -123,13 +123,30 @@ export default function ShiftSwappingPage() {
   };
 
   return (
-    <div className="space-y-4 pb-6">
+    <div dir={isRTL ? 'rtl' : 'ltr'} className="space-y-4 pb-6">
+      {/* Breadcrumb */}
+      <nav className="flex items-center gap-1.5 text-sm text-silver-mist" aria-label="Breadcrumb">
+        <Link href="/dashboard/attendance" className="hover:text-indigo-500 transition-colors">
+          Attendance
+        </Link>
+        <span>/</span>
+        <Link
+          href="/dashboard/attendance/shift-management"
+          className="hover:text-indigo-500 transition-colors"
+        >
+          {t('shiftManagement.title')}
+        </Link>
+        <span>/</span>
+        <span className="text-ink-black dark:text-pearl font-medium">
+          {t('shiftManagement.tabs.swaps')}
+        </span>
+      </nav>
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
             <ArrowRightLeft className="w-6 h-6 text-celestial-indigo" />
-            Shift Swapping
+            {t('shiftManagement.tabs.swaps')}
           </h1>
           <p className="text-silver-mist text-sm">
             Trade shifts with colleagues to manage your schedule flexibility.

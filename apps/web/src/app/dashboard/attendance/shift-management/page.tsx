@@ -21,6 +21,7 @@ import {
   Loader2,
   Search,
 } from 'lucide-react';
+import { useI18n } from '@/lib/i18n/I18nProvider';
 
 type Stats = {
   totalShifts: number;
@@ -83,11 +84,11 @@ type Swap = {
 };
 
 const swapStatusColors: Record<Swap['status'], string> = {
-  PENDING: 'bg-yellow-100 text-yellow-800',
-  APPROVED_BY_PEER: 'bg-blue-100 text-blue-800',
-  APPROVED_BY_MANAGER: 'bg-green-100 text-green-800',
-  COMPLETED: 'bg-purple-100 text-purple-800',
-  REJECTED: 'bg-red-100 text-red-800',
+  PENDING: 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300',
+  APPROVED_BY_PEER: 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300',
+  APPROVED_BY_MANAGER: 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300',
+  COMPLETED: 'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-300',
+  REJECTED: 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
 };
 
 export default function ShiftManagementPage() {
@@ -115,6 +116,8 @@ export default function ShiftManagementPage() {
   const [confirmTitle, setConfirmTitle] = useState('');
   const [confirmMessage, setConfirmMessage] = useState('');
   const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null);
+
+  const { t, isRTL } = useI18n();
 
   const fetchStats = useCallback(async () => {
     setStatsLoading(true);
@@ -189,7 +192,7 @@ export default function ShiftManagementPage() {
       header: 'Default',
       render: (r) =>
         r.isDefault ? (
-          <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+          <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
             Default
           </span>
         ) : null,
@@ -200,7 +203,9 @@ export default function ShiftManagementPage() {
       render: (r) => (
         <span
           className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
-            r.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700'
+            r.isActive
+              ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+              : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
           }`}
         >
           {r.isActive ? 'Active' : 'Inactive'}
@@ -298,7 +303,9 @@ export default function ShiftManagementPage() {
       render: (r) => (
         <span
           className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
-            r.isActive ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-700'
+            r.isActive
+              ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
+              : 'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
           }`}
         >
           {r.isActive ? 'Active' : 'Inactive'}
@@ -362,7 +369,7 @@ export default function ShiftManagementPage() {
       key: 'status',
       header: 'Status',
       render: (r) => (
-        <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-800">
+        <span className="px-2 py-0.5 text-xs font-semibold rounded-full bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300">
           {r.status}
         </span>
       ),
@@ -549,7 +556,7 @@ export default function ShiftManagementPage() {
   // Render
   // ---------------------------------------------------------------------------
   return (
-    <div className="space-y-4 pb-6">
+    <div className="space-y-4 pb-6" dir={isRTL ? 'rtl' : 'ltr'}>
       <ConfirmDialog
         open={confirmOpen}
         title={confirmTitle}
@@ -562,16 +569,24 @@ export default function ShiftManagementPage() {
         }}
         onCancel={() => setConfirmOpen(false)}
       />
+      {/* Breadcrumb */}
+      <nav className="flex items-center gap-1.5 text-sm text-silver-mist" aria-label="Breadcrumb">
+        <Link href="/dashboard/attendance" className="hover:text-indigo-500 transition-colors">
+          Attendance
+        </Link>
+        <span>/</span>
+        <span className="text-ink-black dark:text-pearl font-medium">
+          {t('shiftManagement.title')}
+        </span>
+      </nav>
       {/* Page header + sub-page links */}
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
             <Clock className="w-6 h-6 text-indigo-500" />
-            Shift Management
+            {t('shiftManagement.title')}
           </h1>
-          <p className="text-silver-mist text-sm mt-1">
-            Configure shifts, assign employees, plan rosters and approve swap requests.
-          </p>
+          <p className="text-silver-mist text-sm mt-1">{t('shiftManagement.subtitle')}</p>
         </div>
         <div className="flex flex-wrap gap-2">
           <Link
@@ -599,28 +614,28 @@ export default function ShiftManagementPage() {
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
         <StatCard
           icon={<Clock className="h-7 w-7 text-blue-600 dark:text-blue-400" />}
-          label="Total shifts"
+          label={t('shiftManagement.overview.totalShifts')}
           value={stats?.totalShifts ?? '—'}
           tone="blue"
           loading={statsLoading}
         />
         <StatCard
           icon={<Users className="h-7 w-7 text-green-600 dark:text-green-400" />}
-          label="Active shifts"
+          label={t('shiftManagement.overview.activeShifts')}
           value={stats?.activeShifts ?? '—'}
           tone="green"
           loading={statsLoading}
         />
         <StatCard
           icon={<Calendar className="h-7 w-7 text-purple-600 dark:text-purple-400" />}
-          label="Active assignments"
+          label={t('shiftManagement.overview.totalAssignments')}
           value={stats?.activeAssignments ?? '—'}
           tone="purple"
           loading={statsLoading}
         />
         <StatCard
           icon={<RefreshCw className="h-7 w-7 text-orange-600 dark:text-orange-400" />}
-          label="Pending swaps"
+          label={t('shiftManagement.overview.pendingSwaps')}
           value={stats?.pendingSwaps ?? '—'}
           tone="orange"
           loading={statsLoading}
@@ -632,10 +647,14 @@ export default function ShiftManagementPage() {
         <div className="border-b border-cloud dark:border-nebula-purple/40">
           <nav className="flex gap-6 px-4 overflow-x-auto" aria-label="Tabs">
             {[
-              { id: 'shifts', label: 'Shifts', count: shifts.length },
-              { id: 'assignments', label: 'Assignments', count: assignments.length },
-              { id: 'rosters', label: 'Rosters', count: rosters.length },
-              { id: 'swaps', label: 'Swap Requests', count: swaps.length },
+              { id: 'shifts', label: t('shiftManagement.tabs.overview'), count: shifts.length },
+              {
+                id: 'assignments',
+                label: t('shiftManagement.tabs.assignments'),
+                count: assignments.length,
+              },
+              { id: 'rosters', label: t('shiftManagement.tabs.rosters'), count: rosters.length },
+              { id: 'swaps', label: t('shiftManagement.tabs.swaps'), count: swaps.length },
             ].map((tab) => (
               <button
                 key={tab.id}
@@ -667,7 +686,7 @@ export default function ShiftManagementPage() {
               onDelete={deleteShift}
               addButtonText="Add shift"
               searchKeys={['code', 'name', 'description', 'startTime', 'endTime']}
-              searchPlaceholder="Search shifts by code, name, time..."
+              searchPlaceholder={t('shiftManagement.shift.searchPlaceholder')}
               emptyState={{
                 title: 'No shifts configured',
                 description: 'Create your first shift to get started with shift management.',
@@ -820,6 +839,9 @@ export default function ShiftManagementPage() {
       {rejectDialogOpen && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="reject-swap-title"
           onKeyDown={(e) => {
             if (e.key === 'Escape') {
               setRejectDialogOpen(false);
@@ -838,7 +860,10 @@ export default function ShiftManagementPage() {
                 <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400" />
               </div>
               <div>
-                <h3 className="text-lg font-semibold text-ink-black dark:text-pearl">
+                <h3
+                  id="reject-swap-title"
+                  className="text-lg font-semibold text-ink-black dark:text-pearl"
+                >
                   Reject Swap Request
                 </h3>
                 <p className="text-sm text-silver-mist">Please provide a reason for rejection.</p>

@@ -15,6 +15,7 @@ import {
   X,
 } from 'lucide-react';
 import { apiJson } from '@/lib/api-utils';
+import { useI18n } from '@/lib/i18n/I18nProvider';
 
 type Employee = {
   id: string;
@@ -75,6 +76,7 @@ function weekNumber(d: Date) {
 }
 
 export default function RosterAssignmentPage() {
+  const { t, isRTL } = useI18n();
   const [weekStart, setWeekStart] = useState<Date>(() => startOfWeek(new Date()));
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [shifts, setShifts] = useState<Shift[]>([]);
@@ -196,6 +198,16 @@ export default function RosterAssignmentPage() {
     });
   }, [employees, search, filterRole, filterShiftId, filterCoverage, weekDates, rosterByKey]);
 
+  const dayKeys = [
+    t('shiftManagement.days.sunday'),
+    t('shiftManagement.days.monday'),
+    t('shiftManagement.days.tuesday'),
+    t('shiftManagement.days.wednesday'),
+    t('shiftManagement.days.thursday'),
+    t('shiftManagement.days.friday'),
+    t('shiftManagement.days.saturday'),
+  ];
+
   const hoursForEmployee = (empId: string) => {
     let total = 0;
     weekDates.forEach((d) => {
@@ -241,12 +253,12 @@ export default function RosterAssignmentPage() {
   };
 
   return (
-    <div className="space-y-4 pb-6">
+    <div className="space-y-4 pb-6" dir={isRTL ? 'rtl' : 'ltr'}>
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
             <CalendarDays className="w-6 h-6 text-indigo-500" />
-            Roster Assignment
+            {t('shiftManagement.tabs.rosters')}
           </h1>
           <p className="text-silver-mist text-sm mt-1">
             Manage weekly shift schedules and assignments.
@@ -263,10 +275,28 @@ export default function RosterAssignmentPage() {
             onClick={() => reload()}
             className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition-colors shadow-sm text-sm"
           >
-            <Save className="w-4 h-4" /> Refresh
+            <Save className="w-4 h-4" /> {t('common.refresh')}
           </button>
         </div>
       </div>
+
+      {/* Breadcrumb */}
+      <nav className="flex items-center gap-1.5 text-sm text-silver-mist" aria-label="Breadcrumb">
+        <Link href="/dashboard/attendance" className="hover:text-indigo-500 transition-colors">
+          Attendance
+        </Link>
+        <span>/</span>
+        <Link
+          href="/dashboard/attendance/shift-management"
+          className="hover:text-indigo-500 transition-colors"
+        >
+          Shift Management
+        </Link>
+        <span>/</span>
+        <span className="text-ink-black dark:text-pearl font-medium">
+          {t('shiftManagement.tabs.rosters')}
+        </span>
+      </nav>
 
       {status && (
         <div
@@ -333,7 +363,7 @@ export default function RosterAssignmentPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               type="text"
-              placeholder="Search employee..."
+              placeholder={t('common.search') + '...'}
               className="pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-900/50 border border-cloud dark:border-nebula-purple/50 rounded-lg text-sm focus:outline-none"
             />
           </div>
@@ -377,7 +407,9 @@ export default function RosterAssignmentPage() {
             </select>
           </label>
           <label className="block">
-            <span className="block text-xs font-bold text-silver-mist mb-1 uppercase">Shift</span>
+            <span className="block text-xs font-bold text-silver-mist mb-1 uppercase">
+              {t('attendance.shift')}
+            </span>
             <select
               value={filterShiftId}
               onChange={(e) => setFilterShiftId(e.target.value)}
@@ -415,7 +447,7 @@ export default function RosterAssignmentPage() {
             disabled={activeFilterCount === 0}
             className="px-4 py-2 text-sm font-bold border border-cloud dark:border-nebula-purple/50 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            Clear filters
+            {t('common.clear')}
           </button>
         </div>
       )}
@@ -425,7 +457,7 @@ export default function RosterAssignmentPage() {
           <thead className="bg-slate-50 dark:bg-slate-900/50">
             <tr>
               <th className="p-4 text-left min-w-[220px] border-b border-r border-cloud dark:border-nebula-purple/50 sticky left-0 bg-slate-50 dark:bg-slate-900/50 z-10">
-                Employee
+                {t('shiftManagement.roster.employee')}
               </th>
               {weekDates.map((d) => {
                 const isWeekend = d.getDay() === 0 || d.getDay() === 6;
@@ -436,7 +468,7 @@ export default function RosterAssignmentPage() {
                   >
                     <div className="flex flex-col items-center">
                       <span className="text-xs text-silver-mist font-medium uppercase">
-                        {d.toLocaleDateString(undefined, { weekday: 'short' })}
+                        {dayKeys[d.getDay()]}
                       </span>
                       <span
                         className={`text-lg font-bold ${
@@ -450,7 +482,7 @@ export default function RosterAssignmentPage() {
                 );
               })}
               <th className="p-4 text-center border-b border-cloud dark:border-nebula-purple/50 min-w-[70px]">
-                Hours
+                {t('attendance.totalHours')}
               </th>
             </tr>
           </thead>
@@ -569,13 +601,23 @@ function RosterCellModal({
           : 'shift'
   );
   const [shiftId, setShiftId] = useState<string>(existing?.shiftId || shifts[0]?.id || '');
+  const { t, isRTL } = useI18n();
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div
+      className="fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center p-0 sm:p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="roster-modal-title"
+      dir={isRTL ? 'rtl' : 'ltr'}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') onClose();
+      }}
+    >
       <div className="bg-white dark:bg-stellar-blue w-full max-w-md rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col">
         <div className="flex items-center justify-between px-5 py-3 border-b border-cloud dark:border-nebula-purple/30">
-          <h3 className="font-bold">
-            Roster ·{' '}
+          <h3 id="roster-modal-title" className="font-bold">
+            {t('attendance.roster')} ·{' '}
             {new Date(date).toLocaleDateString(undefined, {
               weekday: 'short',
               day: '2-digit',
@@ -591,7 +633,7 @@ function RosterCellModal({
         </div>
         <div className="px-5 py-4 space-y-3 text-sm">
           <div className="text-xs text-silver-mist">
-            Employee: <span className="font-mono">{empId}</span>
+            {t('shiftManagement.roster.employee')}: <span className="font-mono">{empId}</span>
           </div>
           <div className="flex gap-2 flex-wrap">
             {(['shift', 'week-off', 'holiday', 'clear'] as const).map((m) => (
@@ -605,18 +647,20 @@ function RosterCellModal({
                 }`}
               >
                 {m === 'shift'
-                  ? 'Shift'
+                  ? t('attendance.shift')
                   : m === 'week-off'
                     ? 'Week off'
                     : m === 'holiday'
                       ? 'Holiday'
-                      : 'Clear'}
+                      : t('common.clear')}
               </button>
             ))}
           </div>
           {mode === 'shift' && (
             <label className="block">
-              <span className="block text-xs font-medium text-silver-mist mb-1">Shift</span>
+              <span className="block text-xs font-medium text-silver-mist mb-1">
+                {t('attendance.shift')}
+              </span>
               <select
                 value={shiftId}
                 onChange={(e) => setShiftId(e.target.value)}
@@ -636,7 +680,7 @@ function RosterCellModal({
             onClick={onClose}
             className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
           >
-            Cancel
+            {t('common.cancel')}
           </button>
           <button
             onClick={() => {
@@ -647,7 +691,7 @@ function RosterCellModal({
             }}
             className="px-4 py-2 text-sm font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
           >
-            Save
+            {t('common.save')}
           </button>
         </div>
       </div>

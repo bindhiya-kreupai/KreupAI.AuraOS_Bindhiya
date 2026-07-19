@@ -14,6 +14,7 @@ import {
   Briefcase,
   Plane,
 } from 'lucide-react';
+import { useI18n } from '@/lib/i18n/I18nProvider';
 
 type Template = {
   id: string;
@@ -180,6 +181,7 @@ const TEMPLATES: Template[] = [
 ];
 
 export default function ShiftTemplatesPage() {
+  const { t, isRTL } = useI18n();
   const [creating, setCreating] = useState<string | null>(null);
   const [created, setCreated] = useState<Record<string, boolean>>({});
   const [error, setError] = useState<string | null>(null);
@@ -209,18 +211,27 @@ export default function ShiftTemplatesPage() {
   };
 
   return (
-    <div className="space-y-4 pb-6">
+    <div className="space-y-4 pb-6" dir={isRTL ? 'rtl' : 'ltr'}>
+      {/* Breadcrumb */}
+      <nav className="flex items-center gap-1.5 text-sm text-silver-mist" aria-label="Breadcrumb">
+        <Link href="/dashboard/attendance" className="hover:text-indigo-500 transition-colors">
+          Attendance
+        </Link>
+        <span>/</span>
+        <Link
+          href="/dashboard/attendance/shift-management"
+          className="hover:text-indigo-500 transition-colors"
+        >
+          Shift Management
+        </Link>
+        <span>/</span>
+        <span className="text-ink-black dark:text-pearl font-medium">Templates</span>
+      </nav>
       <div className="flex items-start justify-between gap-3">
         <div>
-          <Link
-            href="/dashboard/attendance/shift-management"
-            className="inline-flex items-center gap-1 text-sm text-silver-mist hover:text-indigo-500 transition-colors mb-1"
-          >
-            <ArrowLeft className="w-4 h-4" /> Back to Shift Management
-          </Link>
           <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
             <LayoutTemplate className="w-6 h-6 text-indigo-500" />
-            Shift Templates
+            {t('shiftManagement.tabs.templates')}
           </h1>
           <p className="text-silver-mist text-sm mt-1">
             Pre-built shift configurations. Pick a template to create a new shift in one click — you
@@ -287,7 +298,7 @@ export default function ShiftTemplatesPage() {
                     <Loader2 className="w-4 h-4 animate-spin" /> Creating…
                   </>
                 ) : (
-                  <>Use this template</>
+                  <>{t('shiftManagement.shift.create')}</>
                 )}
               </button>
             </div>
