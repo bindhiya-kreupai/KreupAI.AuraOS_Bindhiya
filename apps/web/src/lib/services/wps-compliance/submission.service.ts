@@ -55,7 +55,7 @@ export class WpsSubmissionService {
     return prisma.$transaction(async (tx) => {
       const sub = await (tx as any).wpsPeriodSubmission.upsert({
         where: {
-          aura_wps_period_submission_unique: {
+          tenantId_establishmentId_period: {
             tenantId: auth.tenantId,
             establishmentId: input.establishmentId,
             period: input.period,
