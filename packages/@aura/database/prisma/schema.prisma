@@ -32,6 +32,7 @@ model Tenant {
   passwordPolicies  PasswordPolicy[]
   ssoConfigs        SSOConfig[]
   licenses          License[]
+  shiftTypes        ShiftType[]
 
   @@map("aura_tenant")
 }
@@ -799,7 +800,8 @@ model LeaveType {
 
 model ShiftType {
   id        String    @id(map: "ShiftType_pkey") @default(uuid())
-  code      String    @unique(map: "ShiftType_code_key")
+  tenantId  String
+  code      String
   name      String
   startTime String
   endTime   String
@@ -811,6 +813,10 @@ model ShiftType {
   deletedAt DateTime?
   isDeleted Boolean   @default(false)
 
+  tenant Tenant @relation(fields: [tenantId], references: [id], map: "ShiftType_tenantId_fkey")
+
+  @@unique([tenantId, code], map: "ShiftType_tenantId_code_key")
+  @@index([tenantId], map: "ShiftType_tenantId_idx")
   @@map("aura_shift_type")
 }
 
