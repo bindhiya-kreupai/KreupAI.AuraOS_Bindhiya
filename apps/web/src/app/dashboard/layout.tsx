@@ -8,6 +8,7 @@ import { Info } from 'lucide-react';
 import { SearchProvider, useSearch } from '@/stores/search-store';
 import { ThemeProvider, useTheme } from '@/stores/theme-store';
 import { useCurrentUser } from '@/lib/auth/AuthProvider';
+import { I18nProvider, useI18n } from '@/lib/i18n/I18nProvider';
 
 // Modules that currently render demo UI only — their pages don't fetch from
 // any /api/ endpoint. Listed here so users see a clear "preview" banner
@@ -69,6 +70,11 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const { isDark, toggleTheme } = useTheme();
   const { setIsOpen: setSearchOpen } = useSearch();
   const { user: currentUser } = useCurrentUser();
+  const { locale, setLocale } = useI18n();
+
+  const handleLanguageToggle = useCallback(() => {
+    setLocale(locale === 'en' ? 'ar' : 'en');
+  }, [locale, setLocale]);
 
   const handleSignOut = useCallback(async () => {
     try {
@@ -128,6 +134,7 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
         <TopNav
           isDark={isDark}
           onThemeToggle={toggleTheme}
+          onLanguageToggle={handleLanguageToggle}
           onSearchClick={() => setSearchOpen(true)}
           onAIAssistantClick={handleAIAssistantClick}
           onHelpClick={handleHelpClick}
@@ -163,10 +170,12 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ThemeProvider>
-      <SearchProvider>
-        <DashboardLayoutInner>{children}</DashboardLayoutInner>
-      </SearchProvider>
-    </ThemeProvider>
+    <I18nProvider>
+      <ThemeProvider>
+        <SearchProvider>
+          <DashboardLayoutInner>{children}</DashboardLayoutInner>
+        </SearchProvider>
+      </ThemeProvider>
+    </I18nProvider>
   );
 }
