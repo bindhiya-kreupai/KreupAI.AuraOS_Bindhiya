@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
 model Tenant {
@@ -27,6 +28,10 @@ model Tenant {
   wpsSubmissions    WPSSubmission[]
   biometricDevices  BiometricDevice[]
   ramadanConfig     RamadanAutoSwitchConfig?
+  deactivations     UserDeactivation[]
+  passwordPolicies  PasswordPolicy[]
+  ssoConfigs        SSOConfig[]
+  licenses          License[]
 
   @@map("aura_tenant")
 }
@@ -500,6 +505,7 @@ model User {
   refreshTokens       RefreshToken[]
   tenant              Tenant               @relation(fields: [tenantId], references: [id], map: "User_tenantId_fkey")
   deactivations       UserDeactivation[]
+  deactivatedUsers    UserDeactivation[]   @relation("DeactivatedBy")
   delegatedFrom       UserDelegation[]     @relation("Delegatee")
   delegatedTo         UserDelegation[]     @relation("Delegator")
   roles               UserRole[]
@@ -1269,6 +1275,7 @@ model AccessControl {
 
 model PasswordPolicy {
   id                  String    @id(map: "PasswordPolicy_pkey") @default(uuid())
+  tenantId            String
   minLength           Int       @default(8)
   requireUppercase    Boolean   @default(true)
   requireLowercase    Boolean   @default(true)
@@ -1283,12 +1290,15 @@ model PasswordPolicy {
   updatedBy           String?
   deletedAt           DateTime?
   isDeleted           Boolean   @default(false)
+  tenant              Tenant    @relation(fields: [tenantId], references: [id], map: "PasswordPolicy_tenantId_fkey")
 
+  @@index([tenantId], map: "PasswordPolicy_tenantId_idx")
   @@map("aura_password_policy")
 }
 
 model SSOConfig {
   id          String    @id(map: "SSOConfig_pkey") @default(uuid())
+  tenantId    String
   enabled     Boolean   @default(false)
   provider    String
   issuerUrl   String?
@@ -1300,27 +1310,30 @@ model SSOConfig {
   updatedBy   String?
   deletedAt   DateTime?
   isDeleted   Boolean   @default(false)
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], map: "SSOConfig_tenantId_fkey")
 
+  @@index([tenantId], map: "SSOConfig_tenantId_idx")
   @@map("aura_sso_config")
 }
 
 model UserSession {
-  id         String    @id(map: "UserSession_pkey") @default(uuid())
-  userId     String
-  ipAddress  String
-  device     String?
-  browser    String?
-  location   String?
-  lastActive DateTime  @default(now())
-  status     String    @default("Active")
-  createdAt  DateTime  @default(now())
-  expiresAt  DateTime?
-  updatedAt  DateTime  @default(now())
-  createdBy  String?
-  updatedBy  String?
-  deletedAt  DateTime?
-  isDeleted  Boolean   @default(false)
-  user       User      @relation(fields: [userId], references: [id], map: "UserSession_userId_fkey")
+  id                String    @id(map: "UserSession_pkey") @default(uuid())
+  userId            String
+  ipAddress         String
+  device            String?
+  browser           String?
+  deviceFingerprint String?
+  location          String?
+  lastActive        DateTime  @default(now())
+  status            String    @default("Active")
+  createdAt         DateTime  @default(now())
+  expiresAt         DateTime?
+  updatedAt         DateTime  @default(now())
+  createdBy         String?
+  updatedBy         String?
+  deletedAt         DateTime?
+  isDeleted         Boolean   @default(false)
+  user              User      @relation(fields: [userId], references: [id], map: "UserSession_userId_fkey")
 
   @@map("aura_user_session")
 }
@@ -1426,7 +1439,8 @@ model UserDelegation {
 
 model License {
   id        String    @id(map: "License_pkey") @default(uuid())
-  name      String    @unique(map: "License_name_key")
+  tenantId  String
+  name      String
   total     Int
   used      Int       @default(0)
   type      String
@@ -1437,12 +1451,16 @@ model License {
   updatedBy String?
   deletedAt DateTime?
   isDeleted Boolean   @default(false)
+  tenant    Tenant    @relation(fields: [tenantId], references: [id], map: "License_tenantId_fkey")
 
+  @@unique([tenantId, name], map: "License_tenantId_name_key")
+  @@index([tenantId], map: "License_tenantId_idx")
   @@map("aura_license")
 }
 
 model UserDeactivation {
   id            String    @id(map: "UserDeactivation_pkey") @default(uuid())
+  tenantId      String
   userId        String
   reason        String?
   deactivatedBy String
@@ -1454,7 +1472,10 @@ model UserDeactivation {
   deletedAt     DateTime?
   isDeleted     Boolean   @default(false)
   user          User      @relation(fields: [userId], references: [id], map: "UserDeactivation_userId_fkey")
+  deactivator   User      @relation("DeactivatedBy", fields: [deactivatedBy], references: [id], map: "UserDeactivation_deactivatedBy_fkey")
+  tenant        Tenant    @relation(fields: [tenantId], references: [id], map: "UserDeactivation_tenantId_fkey")
 
+  @@index([tenantId], map: "UserDeactivation_tenantId_idx")
   @@map("aura_user_deactivation")
 }
 
@@ -5136,6 +5157,139 @@ model WebhookLog {
   @@index([success], map: "WebhookLog_success_idx")
   @@index([webhookId], map: "WebhookLog_webhookId_idx")
   @@map("aura_webhook_log")
+}
+
+model OAuthState {
+  id         String    @id @default(uuid())
+  state      String    @unique(map: "OAuthState_state_key")
+  tenantId   String
+  userId     String?
+  provider   String
+  redirectTo String?
+  data       Json?
+  expiresAt  DateTime
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  isDeleted  Boolean   @default(false)
+  deletedAt  DateTime?
+
+  @@index([expiresAt], map: "OAuthState_expiresAt_idx")
+  @@index([provider], map: "OAuthState_provider_idx")
+  @@index([tenantId], map: "OAuthState_tenantId_idx")
+  @@map("aura_oauth_state")
+}
+
+model IntegrationConnection {
+  id              String               @id @default(uuid())
+  tenantId        String
+  integrationId   String
+  integrationName String
+  provider        String?
+  category        String?
+  status          String               @default("PENDING")
+  configuration   Json?
+  credentials     Json?
+  fieldMappings   Json?
+  syncEnabled     Boolean              @default(false)
+  syncFrequency   String?
+  lastSyncAt      DateTime?
+  nextSyncAt      DateTime?
+  connectedAt     DateTime?
+  connectedBy     String?
+  disconnectedAt  DateTime?
+  disconnectedBy  String?
+  healthStatus    String               @default("UNKNOWN")
+  lastHealthCheck DateTime?
+  errorMessage    String?
+  isActive        Boolean              @default(true)
+  metadata        Json?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  createdBy       String?
+  updatedBy       String?
+  deletedAt       DateTime?
+  isDeleted       Boolean              @default(false)
+  syncJobs        IntegrationSyncJob[]
+  logs            IntegrationLog[]
+
+  @@unique([tenantId, integrationId], map: "IntegrationConnection_tenantId_integrationId_key")
+  @@index([status], map: "IntegrationConnection_status_idx")
+  @@index([tenantId], map: "IntegrationConnection_tenantId_idx")
+  @@index([provider], map: "IntegrationConnection_provider_idx")
+  @@index([isActive], map: "IntegrationConnection_isActive_idx")
+  @@map("aura_integration_connection")
+}
+
+model IntegrationSyncJob {
+  id               String                @id @default(uuid())
+  tenantId         String
+  integrationId    String
+  connectionId     String
+  type             String                @default("INCREMENTAL")
+  direction        String                @default("BIDIRECTIONAL")
+  entity           String
+  action           String?
+  status           String                @default("QUEUED")
+  progress         Int                   @default(0)
+  recordsProcessed Int                   @default(0)
+  recordsCreated   Int                   @default(0)
+  recordsUpdated   Int                   @default(0)
+  recordsFailed    Int                   @default(0)
+  errors           Json?
+  scheduledAt      DateTime?
+  startedAt        DateTime?
+  completedAt      DateTime?
+  duration         Int?
+  triggeredBy      String                @default("MANUAL")
+  triggeredByUser  String?
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+  createdBy        String?
+  updatedBy        String?
+  deletedAt        DateTime?
+  isDeleted        Boolean               @default(false)
+  connection       IntegrationConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade, map: "IntegrationSyncJob_connectionId_fkey")
+
+  @@index([status], map: "IntegrationSyncJob_status_idx")
+  @@index([connectionId], map: "IntegrationSyncJob_connectionId_idx")
+  @@index([tenantId], map: "IntegrationSyncJob_tenantId_idx")
+  @@map("aura_integration_sync_job")
+}
+
+model IntegrationLog {
+  id              String                @id @default(uuid())
+  tenantId        String
+  integrationId   String
+  connectionId    String
+  direction       String
+  method          String
+  endpoint        String
+  requestHeaders  Json?
+  requestBody     String?
+  statusCode      Int
+  responseHeaders Json?
+  responseBody    String?
+  responseTime    Int
+  action          String?
+  entity          String?
+  recordId        String?
+  syncJobId       String?
+  success         Boolean               @default(false)
+  errorMessage    String?
+  timestamp       DateTime              @default(now())
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @default(now())
+  createdBy       String?
+  updatedBy       String?
+  deletedAt       DateTime?
+  isDeleted       Boolean               @default(false)
+  connection      IntegrationConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade, map: "IntegrationLog_connectionId_fkey")
+
+  @@index([timestamp], map: "IntegrationLog_timestamp_idx")
+  @@index([connectionId], map: "IntegrationLog_connectionId_idx")
+  @@index([success], map: "IntegrationLog_success_idx")
+  @@index([tenantId], map: "IntegrationLog_tenantId_idx")
+  @@map("aura_integration_log")
 }
 
 model CustomReport {
@@ -12182,6 +12336,7 @@ model ComplianceCorrectiveAction {
   description       String?
   rootCause         String?
   severity          String    @default("MEDIUM")
+  priority          String    @default("MEDIUM")
   ownerId           String?
   raisedAt          DateTime  @default(now())
   raisedBy          String?
@@ -16417,51 +16572,52 @@ model EducationAdjunctPool {
 
   @@map("aura_education_adjunct_pool")
 }
+
 // ==========================================
 // FINANCIAL SERVICES MODULE
 // ==========================================
 
 model FinancialAccount {
-  id              String   @id @default(uuid())
-  accountId       String   @unique
-  accountNumber   String
-  accountType     String
-  customerId      String
-  customerName    String
-  balance         Json     // Stores AccountBalance
-  status          String
-  openDate        DateTime
-  closedDate      DateTime?
-  interestRate    Decimal? @db.Decimal(5, 2)
-  minimumBalance  Decimal? @db.Decimal(18, 2)
-  fees            Json?    // Array of AccountFee
-  features        Json?    // Array of strings
-  linkedAccounts  Json?    // Array of strings
-  alerts          Json?    // Array of AccountAlert
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @default(now()) @updatedAt
+  id             String    @id @default(uuid())
+  accountId      String    @unique
+  accountNumber  String
+  accountType    String
+  customerId     String
+  customerName   String
+  balance        Json // Stores AccountBalance
+  status         String
+  openDate       DateTime
+  closedDate     DateTime?
+  interestRate   Decimal?  @db.Decimal(5, 2)
+  minimumBalance Decimal?  @db.Decimal(18, 2)
+  fees           Json? // Array of AccountFee
+  features       Json? // Array of strings
+  linkedAccounts Json? // Array of strings
+  alerts         Json? // Array of AccountAlert
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @default(now()) @updatedAt
 
   @@map("aura_financial_account")
 }
 
 model FinancialTransaction {
-  id              String   @id @default(uuid())
-  transactionId   String   @unique
-  accountId       String
-  accountName     String
-  type            String
-  amount          Decimal  @db.Decimal(18, 2)
-  currency        String
-  status          String
-  date            DateTime
-  description     String
-  category        String
-  merchant        String?
-  location        Json?    // Stores TransactionLocation
-  metadata        Json?    // Stores TransactionMetadata
-  reference       String?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @default(now()) @updatedAt
+  id            String   @id @default(uuid())
+  transactionId String   @unique
+  accountId     String
+  accountName   String
+  type          String
+  amount        Decimal  @db.Decimal(18, 2)
+  currency      String
+  status        String
+  date          DateTime
+  description   String
+  category      String
+  merchant      String?
+  location      Json? // Stores TransactionLocation
+  metadata      Json? // Stores TransactionMetadata
+  reference     String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now()) @updatedAt
 
   @@map("aura_financial_transaction")
 }
@@ -16478,11 +16634,11 @@ model FinancialLoan {
   interestRate    Decimal  @db.Decimal(5, 2)
   startDate       DateTime
   endDate         DateTime
-  term            Json     // Stores LoanTerm
-  nextPayment     Json     // Stores LoanPayment
-  paymentHistory  Json?    // Array of PaymentRecord
-  collateral      Json?    // Array of Collateral
-  delinquency     Json?    // Stores DelinquencyInfo
+  term            Json // Stores LoanTerm
+  nextPayment     Json // Stores LoanPayment
+  paymentHistory  Json? // Array of PaymentRecord
+  collateral      Json? // Array of Collateral
+  delinquency     Json? // Stores DelinquencyInfo
   createdAt       DateTime @default(now())
   updatedAt       DateTime @default(now()) @updatedAt
 
@@ -16490,46 +16646,46 @@ model FinancialLoan {
 }
 
 model InsurancePolicy {
-  id              String   @id @default(uuid())
-  policyId        String   @unique
-  policyType      String
-  policyNumber    String
-  status          String
-  holder          Json     // Stores PolicyHolder
-  riskProfile     Json?    // Stores RiskProfile
-  coverage        Json     // Stores Coverage
-  riders          Json?    // Array of PolicyRider
-  premium         Json     // Stores Premium
-  deductible      Decimal  @db.Decimal(18, 2)
-  beneficiaries   Json?    // Array of Beneficiary
-  effectiveDate   DateTime
-  expirationDate  DateTime
-  documents       Json?    // Array of strings
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @default(now()) @updatedAt
+  id             String   @id @default(uuid())
+  policyId       String   @unique
+  policyType     String
+  policyNumber   String
+  status         String
+  holder         Json // Stores PolicyHolder
+  riskProfile    Json? // Stores RiskProfile
+  coverage       Json // Stores Coverage
+  riders         Json? // Array of PolicyRider
+  premium        Json // Stores Premium
+  deductible     Decimal  @db.Decimal(18, 2)
+  beneficiaries  Json? // Array of Beneficiary
+  effectiveDate  DateTime
+  expirationDate DateTime
+  documents      Json? // Array of strings
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @default(now()) @updatedAt
 
   @@map("aura_insurance_policy")
 }
 
 model InsuranceClaim {
-  id              String   @id @default(uuid())
-  claimId         String   @unique
-  policyId        String
-  claimNumber     String
-  status          String
-  dateOfLoss      DateTime
-  dateReported    DateTime
-  claimant        Json     // Stores Claimant
-  incident        Json     // Stores Incident
-  adjuster        Json?    // Stores Adjuster
-  investigation   Json?    // Stores Investigation
-  reserveAmount   Decimal? @db.Decimal(18, 2)
-  paidAmount      Decimal? @db.Decimal(18, 2)
-  timeline        Json?    // Array of ClaimTimeline
-  documents       Json?    // Array of ClaimDocument
-  communications  Json?    // Array of Communication
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @default(now()) @updatedAt
+  id             String   @id @default(uuid())
+  claimId        String   @unique
+  policyId       String
+  claimNumber    String
+  status         String
+  dateOfLoss     DateTime
+  dateReported   DateTime
+  claimant       Json // Stores Claimant
+  incident       Json // Stores Incident
+  adjuster       Json? // Stores Adjuster
+  investigation  Json? // Stores Investigation
+  reserveAmount  Decimal? @db.Decimal(18, 2)
+  paidAmount     Decimal? @db.Decimal(18, 2)
+  timeline       Json? // Array of ClaimTimeline
+  documents      Json? // Array of ClaimDocument
+  communications Json? // Array of Communication
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @default(now()) @updatedAt
 
   @@map("aura_insurance_claim")
 }
@@ -16544,12 +16700,12 @@ model WealthPortfolio {
   totalValue      Decimal  @db.Decimal(18, 2)
   cashBalance     Decimal  @db.Decimal(18, 2)
   currency        String
-  advisor         Json?    // Stores Advisor
-  assetAllocation Json     // Array of AssetAllocation
-  holdings        Json     // Array of Holding
-  performance     Json?    // Stores Performance
-  riskProfile     Json?    // Stores InvestmentRiskProfile
-  taxInfo         Json?    // Stores TaxConsideration
+  advisor         Json? // Stores Advisor
+  assetAllocation Json // Array of AssetAllocation
+  holdings        Json // Array of Holding
+  performance     Json? // Stores Performance
+  riskProfile     Json? // Stores InvestmentRiskProfile
+  taxInfo         Json? // Stores TaxConsideration
   createdAt       DateTime @default(now())
   updatedAt       DateTime @default(now()) @updatedAt
 
@@ -16557,62 +16713,62 @@ model WealthPortfolio {
 }
 
 model WealthTradeOrder {
-  id              String   @id @default(uuid())
-  orderId         String   @unique
-  portfolioId     String
-  ticker          String
-  assetClass      String
-  orderType       String
-  action          String
-  quantity        Decimal  @db.Decimal(18, 4)
-  limitPrice      Decimal? @db.Decimal(18, 2)
-  status          String
-  submittedAt     DateTime
-  executedAt      DateTime?
-  executionPrice  Decimal? @db.Decimal(18, 2)
-  fees            Decimal? @db.Decimal(18, 2)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @default(now()) @updatedAt
+  id             String    @id @default(uuid())
+  orderId        String    @unique
+  portfolioId    String
+  ticker         String
+  assetClass     String
+  orderType      String
+  action         String
+  quantity       Decimal   @db.Decimal(18, 4)
+  limitPrice     Decimal?  @db.Decimal(18, 2)
+  status         String
+  submittedAt    DateTime
+  executedAt     DateTime?
+  executionPrice Decimal?  @db.Decimal(18, 2)
+  fees           Decimal?  @db.Decimal(18, 2)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @default(now()) @updatedAt
 
   @@map("aura_wealth_trade_order")
 }
 
 model ComplianceProgram {
-  id              String   @id @default(uuid())
-  programId       String   @unique
-  programName     String
-  complianceArea  String
-  status          String
-  lastReviewDate  DateTime
-  nextReviewDate  DateTime
+  id                 String   @id @default(uuid())
+  programId          String   @unique
+  programName        String
+  complianceArea     String
+  status             String
+  lastReviewDate     DateTime
+  nextReviewDate     DateTime
   responsibleOfficer String
-  policies        Json?    // Array of CompliancePolicy
-  procedures      Json?    // Array of ComplianceProcedure
-  controls        Json?    // Array of ComplianceControl
-  training        Json?    // Array of ComplianceTraining
-  audits          Json?    // Array of string (Audit IDs)
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @default(now()) @updatedAt
+  policies           Json? // Array of CompliancePolicy
+  procedures         Json? // Array of ComplianceProcedure
+  controls           Json? // Array of ComplianceControl
+  training           Json? // Array of ComplianceTraining
+  audits             Json? // Array of string (Audit IDs)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @default(now()) @updatedAt
 
   @@map("aura_compliance_program")
 }
 
 model ComplianceAudit {
-  id              String   @id @default(uuid())
-  auditId         String   @unique
-  auditName       String
-  auditType       String
-  status          String
-  scheduledDate   DateTime
-  completionDate  DateTime?
-  overallRating   String
-  scope           Json?    // Array of strings
-  auditor         Json?    // Stores AuditorInfo
-  findings        Json?    // Array of AuditFinding
-  reportUrl       String?
-  followUpDate    DateTime?
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @default(now()) @updatedAt
+  id             String    @id @default(uuid())
+  auditId        String    @unique
+  auditName      String
+  auditType      String
+  status         String
+  scheduledDate  DateTime
+  completionDate DateTime?
+  overallRating  String
+  scope          Json? // Array of strings
+  auditor        Json? // Stores AuditorInfo
+  findings       Json? // Array of AuditFinding
+  reportUrl      String?
+  followUpDate   DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @default(now()) @updatedAt
 
   @@map("aura_compliance_audit")
 }
@@ -16642,26 +16798,26 @@ model CivilServiceGrade {
 }
 
 model SecurityClearance {
-  id                     String   @id @default(uuid())
-  clearanceId            String   @unique
-  employeeId             String
-  employeeName           String
-  department             String
-  position               String
-  clearanceLevel         String
-  status                 String
-  grantedDate            DateTime
-  expiryDate             DateTime
-  investigationType      String
-  investigationDetails   Json
-  polygraphRequired      Boolean
-  polygraphStatus        String?
-  continuousEvaluation   Json
-  accessAuthorizations   Json
-  suspensionHistory      Json
-  debriefRequired        Boolean
-  createdAt              DateTime @default(now())
-  updatedAt              DateTime @updatedAt
+  id                   String   @id @default(uuid())
+  clearanceId          String   @unique
+  employeeId           String
+  employeeName         String
+  department           String
+  position             String
+  clearanceLevel       String
+  status               String
+  grantedDate          DateTime
+  expiryDate           DateTime
+  investigationType    String
+  investigationDetails Json
+  polygraphRequired    Boolean
+  polygraphStatus      String?
+  continuousEvaluation Json
+  accessAuthorizations Json
+  suspensionHistory    Json
+  debriefRequired      Boolean
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
 }
 
 model PensionScheme {
@@ -16690,201 +16846,201 @@ model PensionScheme {
 // ==========================================
 
 model Technician {
-  id                   String   @id @default(uuid())
-  technicianId         String   @unique
-  name                 String
-  email                String
-  phone                String
-  role                 String
-  status               String
-  certifications       Json
-  skills               Json
-  hireDate             DateTime
-  hourlyRate           Float
-  availability         Json
-  performance          Json
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  id             String   @id @default(uuid())
+  technicianId   String   @unique
+  name           String
+  email          String
+  phone          String
+  role           String
+  status         String
+  certifications Json
+  skills         Json
+  hireDate       DateTime
+  hourlyRate     Float
+  availability   Json
+  performance    Json
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 model TechnicianShift {
-  id                   String   @id @default(uuid())
-  shiftId              String   @unique
-  technicianId         String
-  technicianName       String
-  date                 DateTime
-  startTime            String
-  endTime              String
-  type                 String
-  status               String
-  notes                String?
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  id             String   @id @default(uuid())
+  shiftId        String   @unique
+  technicianId   String
+  technicianName String
+  date           DateTime
+  startTime      String
+  endTime        String
+  type           String
+  status         String
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 model RosterTemplate {
-  id                   String   @id @default(uuid())
-  templateId           String   @unique
-  name                 String
-  description          String
-  department           String
-  weeks                Json
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  id          String   @id @default(uuid())
+  templateId  String   @unique
+  name        String
+  description String
+  department  String
+  weeks       Json
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model AutoShiftSwapRequest {
-  id                   String   @id @default(uuid())
-  requestId            String   @unique
-  requestingTechId     String
-  requestingTechName   String
-  targetTechId         String
-  targetTechName       String
-  originalShiftId      String
-  targetShiftId        String
-  date                 DateTime
-  reason               String
-  status               String
-  approvedBy           String?
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  id                 String   @id @default(uuid())
+  requestId          String   @unique
+  requestingTechId   String
+  requestingTechName String
+  targetTechId       String
+  targetTechName     String
+  originalShiftId    String
+  targetShiftId      String
+  date               DateTime
+  reason             String
+  status             String
+  approvedBy         String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 }
 
 model TimeOffRequest {
-  id                   String   @id @default(uuid())
-  requestId            String   @unique
-  technicianId         String
-  technicianName       String
-  type                 String
-  startDate            DateTime
-  endDate              DateTime
-  status               String
-  reason               String
-  approvedBy           String?
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  id             String   @id @default(uuid())
+  requestId      String   @unique
+  technicianId   String
+  technicianName String
+  type           String
+  startDate      DateTime
+  endDate        DateTime
+  status         String
+  reason         String
+  approvedBy     String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 model SalesPerson {
-  id                   String   @id @default(uuid())
-  salesPersonId        String   @unique
-  name                 String
-  email                String
-  department           String
-  baseSalary           Float
-  commissionRate       Float
-  status               String
-  performance          Json
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  id             String   @id @default(uuid())
+  salesPersonId  String   @unique
+  name           String
+  email          String
+  department     String
+  baseSalary     Float
+  commissionRate Float
+  status         String
+  performance    Json
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 model SalesCommission {
-  id                   String   @id @default(uuid())
-  commissionId         String   @unique
-  salesPersonId        String
-  salesPersonName      String
-  period               String
-  totalSales           Float
-  commissionAmount     Float
-  bonusAmount          Float
-  deductions           Float
-  netCommission        Float
-  status               String
-  salesDetails         Json
-  bonuses              Json
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  id               String   @id @default(uuid())
+  commissionId     String   @unique
+  salesPersonId    String
+  salesPersonName  String
+  period           String
+  totalSales       Float
+  commissionAmount Float
+  bonusAmount      Float
+  deductions       Float
+  netCommission    Float
+  status           String
+  salesDetails     Json
+  bonuses          Json
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }
 
 model VehicleSale {
-  id                   String   @id @default(uuid())
-  saleId               String   @unique
-  salesPersonId        String
-  vin                  String
-  make                 String
-  model                String
-  year                 Int
-  salePrice            Float
-  costPrice            Float
-  grossProfit          Float
-  saleDate             DateTime
-  customerName         String
-  status               String
-  commissionAmount     Float?
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  id               String   @id @default(uuid())
+  saleId           String   @unique
+  salesPersonId    String
+  vin              String
+  make             String
+  model            String
+  year             Int
+  salePrice        Float
+  costPrice        Float
+  grossProfit      Float
+  saleDate         DateTime
+  customerName     String
+  status           String
+  commissionAmount Float?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }
 
 model ServiceSale {
-  id                   String   @id @default(uuid())
-  saleId               String   @unique
-  advisorId            String
-  technicianId         String
-  repairOrderId        String
-  serviceType          String
-  laborAmount          Float
-  partsAmount          Float
-  totalAmount          Float
-  saleDate             DateTime
-  status               String
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  id            String   @id @default(uuid())
+  saleId        String   @unique
+  advisorId     String
+  technicianId  String
+  repairOrderId String
+  serviceType   String
+  laborAmount   Float
+  partsAmount   Float
+  totalAmount   Float
+  saleDate      DateTime
+  status        String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model CommissionStructure {
-  id                   String   @id @default(uuid())
-  structureId          String   @unique
-  name                 String
-  department           String
-  type                 String
-  tiers                Json
-  rules                Json
-  effectiveDate        DateTime
-  status               String
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  id            String   @id @default(uuid())
+  structureId   String   @unique
+  name          String
+  department    String
+  type          String
+  tiers         Json
+  rules         Json
+  effectiveDate DateTime
+  status        String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }
 
 model Part {
-  id                   String   @id @default(uuid())
-  partId               String   @unique
-  partNumber           String
-  name                 String
-  description          String
-  category             String
-  manufacturer         String
-  costPrice            Float
-  retailPrice          Float
-  quantityOnHand       Int
-  reorderPoint         Int
-  reorderQuantity      Int
-  location             Json
-  applicableVehicles   Json
-  suppliers            Json
-  status               String
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  id                 String   @id @default(uuid())
+  partId             String   @unique
+  partNumber         String
+  name               String
+  description        String
+  category           String
+  manufacturer       String
+  costPrice          Float
+  retailPrice        Float
+  quantityOnHand     Int
+  reorderPoint       Int
+  reorderQuantity    Int
+  location           Json
+  applicableVehicles Json
+  suppliers          Json
+  status             String
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 }
 
 model InventoryMovement {
-  id                   String   @id @default(uuid())
-  movementId           String   @unique
-  partId               String
-  partNumber           String
-  type                 String
-  quantity             Int
-  date                 DateTime
-  reference            String
-  notes                String?
-  performedBy          String
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  id          String   @id @default(uuid())
+  movementId  String   @unique
+  partId      String
+  partNumber  String
+  type        String
+  quantity    Int
+  date        DateTime
+  reference   String
+  notes       String?
+  performedBy String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 }
 
 model PurchaseOrder {
-  id                   String   @id @default(uuid())
-  orderId              String   @unique
+  id                   String    @id @default(uuid())
+  orderId              String    @unique
   supplierId           String
   supplierName         String
   date                 DateTime
@@ -16893,21 +17049,21 @@ model PurchaseOrder {
   totalAmount          Float
   items                Json
   notes                String?
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
 }
 
 model StockAdjustment {
-  id                   String   @id @default(uuid())
-  adjustmentId         String   @unique
-  date                 DateTime
-  type                 String
-  reason               String
-  items                Json
-  status               String
-  approvedBy           String?
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  id           String   @id @default(uuid())
+  adjustmentId String   @unique
+  date         DateTime
+  type         String
+  reason       String
+  items        Json
+  status       String
+  approvedBy   String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 // ==========================================
@@ -16915,46 +17071,46 @@ model StockAdjustment {
 // ==========================================
 
 model SmartMeter {
-  id                String   @id @default(uuid())
-  meterId           String   @unique
-  location          Json
-  type              String
-  status            String
-  installationDate  DateTime
-  lastCalibration   DateTime
-  firmwareVersion   String
-  readings          Json
-  alerts            Json
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id               String   @id @default(uuid())
+  meterId          String   @unique
+  location         Json
+  type             String
+  status           String
+  installationDate DateTime
+  lastCalibration  DateTime
+  firmwareVersion  String
+  readings         Json
+  alerts           Json
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }
 
 model EnergyConsumption {
-  id                String   @id @default(uuid())
-  consumptionId     String   @unique
-  facilityId        String
-  period            Json
-  totalConsumption  Float
-  peakDemand        Float
-  breakdown         Json
+  id                    String   @id @default(uuid())
+  consumptionId         String   @unique
+  facilityId            String
+  period                Json
+  totalConsumption      Float
+  peakDemand            Float
+  breakdown             Json
   departmentConsumption Json
-  equipmentConsumption Json
-  comparison        Json
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  equipmentConsumption  Json
+  comparison            Json
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
 }
 
 model LoadManagement {
-  id                String   @id @default(uuid())
-  programId         String   @unique
-  name              String
-  type              String
-  status            String
-  targetReduction   Float
-  actualReduction   Float
-  events            Json
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id              String   @id @default(uuid())
+  programId       String   @unique
+  name            String
+  type            String
+  status          String
+  targetReduction Float
+  actualReduction Float
+  events          Json
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
 
 model GridEvent {
@@ -16973,136 +17129,136 @@ model GridEvent {
 }
 
 model WaterMeter {
-  id                String   @id @default(uuid())
-  meterId           String   @unique
-  location          Json
-  type              String
-  status            String
-  installationDate  DateTime
-  lastCalibration   DateTime
-  readings          Json
-  alerts            Json
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id               String   @id @default(uuid())
+  meterId          String   @unique
+  location         Json
+  type             String
+  status           String
+  installationDate DateTime
+  lastCalibration  DateTime
+  readings         Json
+  alerts           Json
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
 }
 
 model WaterUsage {
-  id                String   @id @default(uuid())
-  usageId           String   @unique
-  facilityId        String
-  period            Json
-  totalUsage        Float
-  breakdown         Json
-  departmentUsage   Json
-  fixtureUsage      Json
-  comparison        Json
-  efficiency        Json
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id              String   @id @default(uuid())
+  usageId         String   @unique
+  facilityId      String
+  period          Json
+  totalUsage      Float
+  breakdown       Json
+  departmentUsage Json
+  fixtureUsage    Json
+  comparison      Json
+  efficiency      Json
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 }
 
 model LeakDetection {
-  id                String   @id @default(uuid())
-  leakId            String   @unique
-  location          Json
-  severity          String
-  status            String
-  detectedAt        DateTime
-  estimatedLoss     Float
-  repairedAt        DateTime?
-  repairCost        Float?
-  notes             String?
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id            String    @id @default(uuid())
+  leakId        String    @unique
+  location      Json
+  severity      String
+  status        String
+  detectedAt    DateTime
+  estimatedLoss Float
+  repairedAt    DateTime?
+  repairCost    Float?
+  notes         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }
 
 model ConservationInitiative {
-  id                String   @id @default(uuid())
-  initiativeId      String   @unique
-  name              String
-  description       String
-  targetSavings     Float
-  actualSavings     Float
-  startDate         DateTime
-  endDate           DateTime?
-  status            String
-  budget            Float
-  spent             Float
-  metrics           Json
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id            String    @id @default(uuid())
+  initiativeId  String    @unique
+  name          String
+  description   String
+  targetSavings Float
+  actualSavings Float
+  startDate     DateTime
+  endDate       DateTime?
+  status        String
+  budget        Float
+  spent         Float
+  metrics       Json
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }
 
 model RenewableAsset {
-  id                String   @id @default(uuid())
-  assetId           String   @unique
-  name              String
-  type              String
-  status            String
-  location          Json
-  capacity          Json
-  installation      Json
-  performance       Json
-  maintenance       Json
-  financials        Json
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id           String   @id @default(uuid())
+  assetId      String   @unique
+  name         String
+  type         String
+  status       String
+  location     Json
+  capacity     Json
+  installation Json
+  performance  Json
+  maintenance  Json
+  financials   Json
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model EnergyProduction {
-  id                String   @id @default(uuid())
-  productionId      String   @unique
-  assetId           String
-  period            Json
-  totalProduced     Float
+  id                 String   @id @default(uuid())
+  productionId       String   @unique
+  assetId            String
+  period             Json
+  totalProduced      Float
   expectedProduction Float
-  efficiency        Float
-  weather           Json
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  efficiency         Float
+  weather            Json
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 }
 
 model UtilityAccount {
-  id                String   @id @default(uuid())
-  accountId         String   @unique
-  provider          Json
-  accountNumber     String
-  serviceAddress    Json
-  rateSchedule      Json
-  status            String
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id             String   @id @default(uuid())
+  accountId      String   @unique
+  provider       Json
+  accountNumber  String
+  serviceAddress Json
+  rateSchedule   Json
+  status         String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 model UtilityBill {
-  id                String   @id @default(uuid())
-  billId            String   @unique
-  accountId         String
-  billingCycle      Json
-  consumption       Json
-  charges           Json
-  total             Json
-  dueDate           DateTime
-  status            String
-  paymentInfo       Json
-  documents         Json
-  alerts            Json
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id           String   @id @default(uuid())
+  billId       String   @unique
+  accountId    String
+  billingCycle Json
+  consumption  Json
+  charges      Json
+  total        Json
+  dueDate      DateTime
+  status       String
+  paymentInfo  Json
+  documents    Json
+  alerts       Json
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
 }
 
 model EnergyPayment {
-  id                String   @id @default(uuid())
-  paymentId         String   @unique
-  billId            String
-  accountId         String
-  amount            Float
-  date              DateTime
-  method            Json
-  status            String
-  reference         String
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  id        String   @id @default(uuid())
+  paymentId String   @unique
+  billId    String
+  accountId String
+  amount    Float
+  date      DateTime
+  method    Json
+  status    String
+  reference String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 }
 
 // ==========================================
@@ -17110,55 +17266,296 @@ model EnergyPayment {
 // ==========================================
 
 model TipPool {
-  id                   String   @id @default(uuid())
-  poolId               String   @unique
-  poolName             String
-  date                 DateTime
-  totalAmount          Float
-  distributionMethod   String
-  participants         Json
-  distributions        Json
-  status               String
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  id                 String   @id @default(uuid())
+  poolId             String   @unique
+  poolName           String
+  date               DateTime
+  totalAmount        Float
+  distributionMethod String
+  participants       Json
+  distributions      Json
+  status             String
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 }
 
 model HospitalityEvent {
-  id                   String   @id @default(uuid())
-  eventId              String   @unique
-  eventName            String
-  eventType            String
-  eventDate            DateTime
-  startTime            String
-  endTime              String
-  venue                String
-  expectedGuests       Int
-  actualGuests         Int?
-  staffingPlan         Json
-  budget               Float
-  actualCost           Float?
-  status               String
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  id             String   @id @default(uuid())
+  eventId        String   @unique
+  eventName      String
+  eventType      String
+  eventDate      DateTime
+  startTime      String
+  endTime        String
+  venue          String
+  expectedGuests Int
+  actualGuests   Int?
+  staffingPlan   Json
+  budget         Float
+  actualCost     Float?
+  status         String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }
 
 model HousekeepingTask {
-  id                   String   @id @default(uuid())
-  taskId               String   @unique
-  roomNumber           String
-  roomType             String
-  taskType             String
-  assignedTo           String?
-  priority             String
-  status               String
-  scheduledTime        DateTime
-  startTime            DateTime?
-  completionTime       DateTime?
-  duration             Int?
-  inspectionScore      Float?
+  id              String    @id @default(uuid())
+  taskId          String    @unique
+  roomNumber      String
+  roomType        String
+  taskType        String
+  assignedTo      String?
+  priority        String
+  status          String
+  scheduledTime   DateTime
+  startTime       DateTime?
+  completionTime  DateTime?
+  duration        Int?
+  inspectionScore Float?
+  notes           String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model ComplianceAuditChecklistItem {
+  id                  String    @id @default(uuid())
+  tenantId            String
+  domainCode          String
+  categoryCode        String
+  itemCode            String
+  label               String
+  expectedBehavior    String?
+  evidenceRequirement String?
+  ownerRole           String?
+  isMandatory         Boolean   @default(false)
+  status              String    @default("OPEN")
+  owner               String?
+  dueDate             DateTime?
+  evidenceUrl         String?
+  notes               String?
+  completedAt         DateTime?
+  completedBy         String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  createdBy           String?
+  updatedBy           String?
+  deletedAt           DateTime?
+  isDeleted           Boolean   @default(false)
+
+  @@unique([tenantId, domainCode, itemCode], map: "aura_compliance_audit_checklist_item_unique")
+  @@index([tenantId])
+  @@index([status])
+  @@map("aura_compliance_audit_checklist_item")
+}
+
+model ComplianceRiskRegisterEntry {
+  id             String    @id @default(uuid())
+  tenantId       String
+  domainCode     String
+  riskCode       String
+  title          String
+  description    String?
+  category       String?
+  likelihood     Int
+  impact         Int
+  score          Int
+  band           String
+  ownerRole      String?
+  controlRef     String?
+  mitigationPlan String?
+  status         String    @default("OPEN")
+  reviewedAt     DateTime?
+  reviewedBy     String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  createdBy      String?
+  updatedBy      String?
+  deletedAt      DateTime?
+  isDeleted      Boolean   @default(false)
+
+  @@unique([tenantId, domainCode, riskCode], map: "aura_compliance_risk_register_entry_unique")
+  @@index([tenantId])
+  @@index([band])
+  @@index([status])
+  @@map("aura_compliance_risk_register_entry")
+}
+
+model ComplianceRegisterEvidence {
+  id             String    @id @default(uuid())
+  tenantId       String
+  targetType     String // CHECKLIST | RISK | CAPA
+  targetId       String // itemCode / riskCode / capaId
+  fileName       String
+  fileUrl        String
+  mimeType       String
+  fileSize       Int
+  uploadedBy     String?
+  uploadedAt     DateTime  @default(now())
+  verifiedBy     String?
+  verifiedAt     DateTime?
+  acceptedStatus String    @default("PENDING") // PENDING | ACCEPTED | REJECTED
+  checksum       String?
+  version        Int       @default(1)
+  expiresAt      DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  isDeleted      Boolean   @default(false)
+
+  @@index([tenantId])
+  @@index([targetType, targetId])
+  @@map("aura_compliance_register_evidence")
+}
+
+model ComplianceRegisterTimelineEvent {
+  id          String   @id @default(uuid())
+  tenantId    String
+  targetType  String // CHECKLIST | RISK | CAPA
+  targetId    String // itemCode / riskCode / capaId
+  eventType   String // CREATED | EVIDENCE_UPLOADED | CONTROL_REVIEWED | RISK_ACCEPTED | RISK_MITIGATED | CAPA_CREATED | CAPA_CLOSED | APPROVED | REJECTED
+  title       String
+  description String?
+  userId      String?
+  userName    String?
+  timestamp   DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([targetType, targetId])
+  @@map("aura_compliance_register_timeline")
+}
+
+model RecordsDocumentMatrix {
+  id                   String  @id @default(cuid())
+  tenantId             String
+  country              String
+  documentCode         String
+  label                String
+  category             String
+  isMandatory          Boolean @default(true)
+  appliesWhen          String?
+  retentionYears       Int     @default(7)
+  renewalCadenceMonths Int?
+  sensitivity          String  @default("CONFIDENTIAL")
+  regulatorRef         String?
   notes                String?
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  status               String  @default("ACTIVE")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, country, documentCode], name: "aura_records_document_matrix_unique")
+  @@index([tenantId])
+  @@map("records_document_matrix")
+}
+
+model RecordsCompletenessSnapshot {
+  id         String  @id @default(cuid())
+  tenantId   String
+  period     String
+  employeeId String
+  country    String?
+
+  mandatoryTotal   Int
+  mandatoryPresent Int
+  mandatoryMissing Int
+  expiringWithin30 Int @default(0)
+  expired          Int @default(0)
+
+  score        Float
+  band         String
+  missingCodes Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, period, employeeId], name: "aura_records_completeness_snapshot_unique")
+  @@index([tenantId, period])
+  @@map("records_completeness_snapshot")
+}
+
+model RecordsAuditChecklistItem {
+  id          String  @id @default(cuid())
+  tenantId    String
+  itemCode    String
+  label       String
+  category    String
+  country     String?
+  expectation String?
+  severity    String  @default("MEDIUM")
+
+  lastReviewedAt DateTime?
+  lastReviewedBy String?
+  lastResult     String?
+  notes          String?
+
+  status String @default("ACTIVE")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, itemCode], name: "aura_records_audit_checklist_item_unique")
+  @@index([tenantId])
+  @@map("records_audit_checklist_item")
+}
+
+model RecordsRiskEntry {
+  id         String  @id @default(cuid())
+  tenantId   String
+  riskCode   String
+  title      String
+  category   String
+  country    String?
+  likelihood Int
+  impact     Int
+  score      Int
+  band       String
+  ownerId    String?
+  mitigation String?
+  status     String  @default("OPEN")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, riskCode], name: "aura_records_risk_entry_unique")
+  @@index([tenantId])
+  @@map("records_risk_entry")
+}
+
+model RecordsComplianceCertificate {
+  id       String @id @default(cuid())
+  tenantId String
+  period   String
+
+  status String @default("DRAFT")
+
+  employeesEvaluated Int
+  averageScore       Float
+  greenEmployees     Int
+  amberEmployees     Int
+  redEmployees       Int
+
+  mandatoryMissingTotal Int
+  expiredDocsTotal      Int
+
+  checklistFailing  Int
+  checklistOverdue  Int
+  criticalRisksOpen Int
+
+  gatingReason String?
+
+  metricsJson      Json?
+  attestationsJson Json?
+
+  generatedAt DateTime
+  signedAt    DateTime?
+  signedBy    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, period], name: "aura_records_compliance_certificate_unique")
+  @@index([tenantId])
+  @@map("records_compliance_certificate")
 }
 
 

@@ -1,7 +1,17 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { Plug, Search, Key, Copy, Loader2, X, CheckCircle2, AlertCircle } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import {
+  Plug,
+  Search,
+  Key,
+  Copy,
+  Loader2,
+  X,
+  CheckCircle2,
+  AlertCircle,
+  ExternalLink,
+} from 'lucide-react';
 
 interface ApiKey {
   id: string;
@@ -17,13 +27,19 @@ interface ApiKey {
 interface MarketplaceApi {
   id: string;
   name: string;
+  nameAr?: string;
   description?: string;
+  descriptionAr?: string;
   category?: string;
   provider?: string;
+  vendor?: string;
   version?: string;
   status?: string;
   installed?: boolean;
   connectionId?: string;
+  documentationUrl?: string;
+  rating?: number;
+  pricing?: { type: string; monthlyPrice?: number; currency?: string };
 }
 
 interface Toast {
@@ -47,6 +63,7 @@ export default function ApiMarketplacePage() {
   const [apis, setApis] = useState<MarketplaceApi[]>([]);
   const [apiKeys, setApiKeys] = useState<ApiKey[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [categoryFilter, setCategoryFilter] = useState('All');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<Toast | null>(null);
@@ -71,7 +88,29 @@ export default function ApiMarketplacePage() {
       const result = await res.json();
       if (result.success && result.data) {
         const listings = result.data.listings || result.data.integrations || result.data || [];
-        setApis(Array.isArray(listings) ? listings : []);
+        const raw = Array.isArray(listings) ? listings : [];
+        setApis(
+          raw.map((item: any) => {
+            const integration = item.integration || item;
+            return {
+              id: integration.id || item.id,
+              name: integration.name || item.name || '',
+              nameAr: integration.nameAr,
+              description: integration.description || item.description,
+              descriptionAr: integration.descriptionAr,
+              category: integration.category || item.category,
+              provider: integration.vendor || integration.provider || item.provider,
+              vendor: integration.vendor,
+              version: integration.version,
+              status: integration.status,
+              installed: item.isInstalled ?? integration.isInstalled ?? false,
+              documentationUrl: integration.documentationUrl,
+              rating: item.rating,
+              pricing: item.pricing,
+              connectionId: item.connectionId,
+            };
+          })
+        );
       } else {
         setApis([]);
       }
@@ -105,6 +144,19 @@ export default function ApiMarketplacePage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchQuery]);
+
+  const categories = useMemo(() => {
+    const cats = new Set<string>();
+    apis.forEach((a) => {
+      if (a.category) cats.add(a.category);
+    });
+    return ['All', ...Array.from(cats).sort()];
+  }, [apis]);
+
+  const filteredApis = useMemo(() => {
+    if (categoryFilter === 'All') return apis;
+    return apis.filter((a) => a.category === categoryFilter);
+  }, [apis, categoryFilter]);
 
   const openKeyModal = () => {
     setKeyName('');
@@ -301,6 +353,25 @@ export default function ApiMarketplacePage() {
         )}
       </div>
 
+      {/* Category filter */}
+      {categories.length > 1 && !loading && !error && (
+        <div className="flex items-center gap-2 overflow-x-auto pb-1">
+          {categories.map((cat) => (
+            <button
+              key={cat}
+              onClick={() => setCategoryFilter(cat)}
+              className={`px-3 py-1 rounded-full text-xs font-medium whitespace-nowrap transition-colors ${
+                categoryFilter === cat
+                  ? 'bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300'
+                  : 'bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700'
+              }`}
+            >
+              {cat}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* API catalog */}
       {loading ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
@@ -324,6 +395,12 @@ export default function ApiMarketplacePage() {
             Retry
           </button>
         </div>
+      ) : filteredApis.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-slate-400">
+          <Plug className="w-12 h-12 mb-3 text-slate-300" />
+          <p className="text-lg font-medium">No APIs match your filters</p>
+          <p className="text-sm mt-1">Try a different search or category.</p>
+        </div>
       ) : apis.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-slate-400">
           <Plug className="w-12 h-12 mb-3 text-slate-300" />
@@ -332,7 +409,7 @@ export default function ApiMarketplacePage() {
         </div>
       ) : (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
-          {apis.map((api) => {
+          {filteredApis.map((api) => {
             const isConnected = api.installed || api.status === 'connected';
             const busy = actionLoading === api.id;
             return (
@@ -373,14 +450,18 @@ export default function ApiMarketplacePage() {
                     {api.provider || api.category || 'Integration'}
                   </span>
                   <div className="flex gap-3">
-                    <a
-                      href="https://docs.auraos.io"
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm font-bold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200"
-                    >
-                      Docs
-                    </a>
+                    {api.documentationUrl ? (
+                      <a
+                        href={api.documentationUrl}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm font-bold text-slate-500 hover:text-slate-800 dark:hover:text-slate-200 flex items-center gap-1"
+                      >
+                        Docs <ExternalLink className="w-3 h-3" />
+                      </a>
+                    ) : (
+                      <span className="text-sm text-slate-400">—</span>
+                    )}
                     {isConnected ? (
                       <a
                         href="/dashboard/integration-hub"

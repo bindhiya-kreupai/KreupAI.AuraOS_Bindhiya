@@ -107,11 +107,33 @@ export async function authenticate(
         };
       }
 
-      // Update session last active timestamp
-      await prisma.userSession.update({
-        where: { id: decoded.sessionId },
-        data: { lastActive: new Date() },
-      });
+      // Update session last active — use Redis caching to avoid DB write on every request.
+      // Most requests only touch Redis; DB is flushed at most once per 5 minutes per session.
+      try {
+        const { redis } = await import('@/lib/cache/redis');
+        const now = Date.now();
+        const lastActiveKey = `session:lastActive:${decoded.sessionId}`;
+        const lastActiveDbKey = `session:lastActiveDb:${decoded.sessionId}`;
+
+        // Always update the hot cache
+        await redis.set(lastActiveKey, now, 3600);
+
+        // Check if we need to flush to DB (only once per 5 minutes)
+        const lastDbFlush = await redis.get<number>(lastActiveDbKey);
+        if (!lastDbFlush || now - lastDbFlush > 300_000) {
+          await prisma.userSession.update({
+            where: { id: decoded.sessionId },
+            data: { lastActive: new Date(now) },
+          });
+          await redis.set(lastActiveDbKey, now, 3600);
+        }
+      } catch (_) {
+        // Redis unavailable — fall back to direct DB write
+        await prisma.userSession.update({
+          where: { id: decoded.sessionId },
+          data: { lastActive: new Date() },
+        });
+      }
     }
 
     return { user: decoded, error: null };

@@ -57,7 +57,9 @@ export function isEmailConfigured(): boolean {
  */
 export async function sendEmail(options: EmailOptions): Promise<EmailResult> {
   if (!isEmailConfigured()) {
-    logger.warn('Email service not configured. Set SMTP_HOST, SMTP_USER, SMTP_PASSWORD environment variables.');
+    logger.warn(
+      'Email service not configured. Set SMTP_HOST, SMTP_USER, SMTP_PASSWORD environment variables.'
+    );
 
     // In development, log the email instead of failing
     if (process.env.NODE_ENV === 'development') {
@@ -317,7 +319,10 @@ export async function sendMFASetupEmail(email: string, userName: string): Promis
 /**
  * Send password changed notification
  */
-export async function sendPasswordChangedEmail(email: string, userName: string): Promise<EmailResult> {
+export async function sendPasswordChangedEmail(
+  email: string,
+  userName: string
+): Promise<EmailResult> {
   const html = `
     <!DOCTYPE html>
     <html>
@@ -363,11 +368,79 @@ export async function sendPasswordChangedEmail(email: string, userName: string):
   });
 }
 
+/**
+ * Send new device login notification email
+ */
+export async function sendNewDeviceLoginEmail(
+  email: string,
+  userName: string,
+  device: string,
+  ipAddress: string,
+  location: string,
+  timestamp: string
+): Promise<EmailResult> {
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8">
+      <title>New Sign-In to Your Account</title>
+      <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #f59e0b; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+        .content { background: #f9fafb; padding: 30px; border-radius: 0 0 8px 8px; }
+        .details { background: #f3f4f6; padding: 15px; border-radius: 6px; margin: 20px 0; font-size: 14px; }
+        .details th { text-align: left; padding: 4px 8px; color: #666; }
+        .details td { padding: 4px 8px; }
+        .warning { background: #fef3c7; border: 1px solid #f59e0b; padding: 15px; border-radius: 6px; margin: 20px 0; }
+        .footer { text-align: center; margin-top: 20px; color: #666; font-size: 14px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>New Sign-In</h1>
+        </div>
+        <div class="content">
+          <p>Hello ${userName},</p>
+          <p>We detected a new sign-in to your AuraOS account from a device we haven't seen before.</p>
+
+          <div class="details">
+            <table>
+              <tr><th>Device:</th><td>${device}</td></tr>
+              <tr><th>IP Address:</th><td>${ipAddress}</td></tr>
+              <tr><th>Location:</th><td>${location}</td></tr>
+              <tr><th>Time:</th><td>${timestamp}</td></tr>
+            </table>
+          </div>
+
+          <div class="warning">
+            <strong>Was this you?</strong>
+            <p style="margin: 10px 0 0 0;">If yes, you can ignore this email. If not, please change your password immediately and contact your administrator.</p>
+          </div>
+        </div>
+        <div class="footer">
+          <p>This is an automated security notification from AuraOS</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  return sendEmail({
+    to: email,
+    subject: 'New Sign-In to Your AuraOS Account',
+    html,
+  });
+}
+
 export default {
   sendEmail,
   sendPasswordResetEmail,
   sendWelcomeEmail,
   sendMFASetupEmail,
   sendPasswordChangedEmail,
+  sendNewDeviceLoginEmail,
   isEmailConfigured,
 };

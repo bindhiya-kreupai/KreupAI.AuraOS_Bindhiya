@@ -17,9 +17,16 @@ export const GET = withEnhancedAuth(
 
       const delegationId = params.id;
 
-      // Fetch delegation
-      const delegation = await prisma.userDelegation.findUnique({
-        where: { id: delegationId },
+      // Fetch delegation — scoped to tenant, exclude soft-deleted
+      const delegation = await prisma.userDelegation.findFirst({
+        where: {
+          id: delegationId,
+          isDeleted: false,
+          OR: [
+            { delegator: { tenantId: user.tenantId } },
+            { delegatee: { tenantId: user.tenantId } },
+          ],
+        },
         include: {
           delegator: {
             select: {
@@ -71,9 +78,16 @@ export const PUT = withEnhancedAuth(
       const body = await request.json();
       const validatedData = UpdateUserDelegationSchema.parse(body);
 
-      // Fetch existing delegation
-      const existingDelegation = await prisma.userDelegation.findUnique({
-        where: { id: delegationId },
+      // Fetch existing delegation — scoped to tenant, exclude soft-deleted
+      const existingDelegation = await prisma.userDelegation.findFirst({
+        where: {
+          id: delegationId,
+          isDeleted: false,
+          OR: [
+            { delegator: { tenantId: user.tenantId } },
+            { delegatee: { tenantId: user.tenantId } },
+          ],
+        },
         include: {
           delegator: {
             select: {
@@ -194,9 +208,16 @@ export const DELETE = withEnhancedAuth(
 
       const delegationId = params.id;
 
-      // Fetch existing delegation
-      const existingDelegation = await prisma.userDelegation.findUnique({
-        where: { id: delegationId },
+      // Fetch existing delegation — scoped to tenant, exclude soft-deleted
+      const existingDelegation = await prisma.userDelegation.findFirst({
+        where: {
+          id: delegationId,
+          isDeleted: false,
+          OR: [
+            { delegator: { tenantId: user.tenantId } },
+            { delegatee: { tenantId: user.tenantId } },
+          ],
+        },
         include: {
           delegator: {
             select: {
@@ -218,9 +239,15 @@ export const DELETE = withEnhancedAuth(
         );
       }
 
-      // Delete delegation (hard delete is acceptable for delegations)
-      await prisma.userDelegation.delete({
+      // Soft-delete delegation (consistent with manager API)
+      await prisma.userDelegation.update({
         where: { id: delegationId },
+        data: {
+          status: 'Revoked',
+          isDeleted: true,
+          deletedAt: new Date(),
+          updatedBy: user.userId,
+        },
       });
 
       // Create audit log

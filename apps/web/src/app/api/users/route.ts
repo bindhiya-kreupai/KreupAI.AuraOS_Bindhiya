@@ -1,4 +1,4 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
@@ -39,10 +39,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
     );
 
     if (!result.success) {
-      return NextResponse.json(
-        { success: false, error: result.error },
-        { status: 500 }
-      );
+      return NextResponse.json({ success: false, error: result.error }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -56,10 +53,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
     }
 
     logger.error('Error fetching users:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch users' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: 'Failed to fetch users' }, { status: 500 });
   }
 });
 
@@ -75,9 +69,8 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
     const validatedData = CreateUserSchema.parse(body);
 
     // Extract IP address
-    const ipAddress = request.headers.get('x-forwarded-for') ||
-                     request.headers.get('x-real-ip') ||
-                     'unknown';
+    const ipAddress =
+      request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
 
     // Use service layer
     const result = await userService.createUser(
@@ -85,6 +78,8 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
         email: validatedData.email,
         password: validatedData.password,
         tenantId: validatedData.tenantId,
+        firstName: validatedData.firstName,
+        lastName: validatedData.lastName,
         status: validatedData.status,
         mfaEnabled: validatedData.mfaEnabled,
       },
@@ -93,10 +88,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
     );
 
     if (!result.success) {
-      return NextResponse.json(
-        { success: false, error: result.error },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: result.error }, { status: 400 });
     }
 
     return NextResponse.json(
@@ -113,9 +105,6 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
     }
 
     logger.error('Error creating user:', error);
-    return NextResponse.json(
-      { success: false, error: 'Failed to create user' },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: false, error: 'Failed to create user' }, { status: 500 });
   }
 });

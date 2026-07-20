@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
  * Run with: npx ts-node prisma/seed-roles.ts
  */
 
-// System-wide roles (no tenantId)
+// System-wide roles (no tenantId — uses findFirst + create/update to bypass Prisma upsert null limitation)
 const SYSTEM_ROLES = [
   {
     code: 'SUPER_ADMIN',
@@ -102,6 +102,52 @@ const PERMISSIONS = [
   { resource: 'master_data', action: 'update', description: 'Update master data' },
   { resource: 'master_data', action: 'delete', description: 'Delete master data' },
   { resource: 'master_data', action: 'manage', description: 'Full master data management' },
+
+  // API Keys
+  { resource: 'admin/api-keys', action: 'read', description: 'View API keys' },
+  { resource: 'admin/api-keys', action: 'create', description: 'Create API keys' },
+  { resource: 'admin/api-keys', action: 'delete', description: 'Revoke API keys' },
+
+  // Webhooks
+  { resource: 'webhooks', action: 'read', description: 'View webhooks and delivery logs' },
+  { resource: 'webhooks', action: 'create', description: 'Create webhooks' },
+  { resource: 'webhooks', action: 'update', description: 'Update webhook configuration' },
+  { resource: 'webhooks', action: 'delete', description: 'Delete webhooks' },
+  { resource: 'webhooks', action: 'test', description: 'Test webhook delivery' },
+
+  // SSO Configuration
+  { resource: 'sso_config', action: 'create', description: 'Create SSO configuration' },
+  { resource: 'sso_config', action: 'read', description: 'View SSO configuration' },
+  { resource: 'sso_config', action: 'update', description: 'Update SSO configuration' },
+  { resource: 'sso_config', action: 'delete', description: 'Delete SSO configuration' },
+  { resource: 'sso_config', action: 'manage', description: 'Full SSO configuration management' },
+
+  // MFA Configuration
+  { resource: 'mfa_config', action: 'create', description: 'Create MFA configuration' },
+  { resource: 'mfa_config', action: 'read', description: 'View MFA configuration' },
+  { resource: 'mfa_config', action: 'update', description: 'Update MFA configuration' },
+  { resource: 'mfa_config', action: 'delete', description: 'Delete MFA configuration' },
+  { resource: 'mfa_config', action: 'manage', description: 'Full MFA configuration management' },
+
+  // User Delegation
+  { resource: 'user_delegation', action: 'create', description: 'Delegate user access' },
+  { resource: 'user_delegation', action: 'read', description: 'View delegations' },
+  { resource: 'user_delegation', action: 'update', description: 'Update delegations' },
+  { resource: 'user_delegation', action: 'delete', description: 'Revoke delegations' },
+  { resource: 'user_delegation', action: 'manage', description: 'Full delegation management' },
+
+  // User Deactivation
+  { resource: 'user_deactivation', action: 'create', description: 'Deactivate users' },
+  { resource: 'user_deactivation', action: 'read', description: 'View deactivated users' },
+  { resource: 'user_deactivation', action: 'update', description: 'Restore users' },
+  { resource: 'user_deactivation', action: 'manage', description: 'Full deactivation management' },
+
+  // Licenses
+  { resource: 'licenses', action: 'read', description: 'View licenses' },
+  { resource: 'licenses', action: 'create', description: 'Assign licenses' },
+  { resource: 'licenses', action: 'update', description: 'Update licenses' },
+  { resource: 'licenses', action: 'delete', description: 'Revoke licenses' },
+  { resource: 'licenses', action: 'manage', description: 'Full license management' },
 ];
 
 // Role-Permission mappings
@@ -117,6 +163,19 @@ const ROLE_PERMISSIONS: Record<string, string[]> = {
     'audit_logs:read',
     'audit_logs:export',
     'master_data:manage',
+    'admin/api-keys:read',
+    'admin/api-keys:create',
+    'admin/api-keys:delete',
+    'webhooks:read',
+    'webhooks:create',
+    'webhooks:update',
+    'webhooks:delete',
+    'webhooks:test',
+    'sso_config:manage',
+    'mfa_config:manage',
+    'user_delegation:manage',
+    'user_deactivation:manage',
+    'licenses:manage',
   ],
   ADMIN: [
     'users:create', 'users:read', 'users:update', 'users:delete',
@@ -127,6 +186,22 @@ const ROLE_PERMISSIONS: Record<string, string[]> = {
     'competencies:manage',
     'audit_logs:read',
     'master_data:read', 'master_data:create', 'master_data:update',
+    'admin/api-keys:read',
+    'admin/api-keys:create',
+    'admin/api-keys:delete',
+    'webhooks:read',
+    'webhooks:create',
+    'webhooks:update',
+    'webhooks:delete',
+    'webhooks:test',
+    'sso_config:manage',
+    'licenses:read', 'licenses:create', 'licenses:update', 'licenses:delete',
+    'user_delegation:read', 'user_delegation:create', 'user_delegation:update', 'user_delegation:delete',
+    'user_deactivation:read', 'user_deactivation:create', 'user_deactivation:update',
+    'password_policies:manage',
+    'mfa_config:manage',
+    'access_control:manage',
+    'system_settings:read', 'system_settings:update',
   ],
   HR_MANAGER: [
     'users:read',
@@ -170,23 +245,23 @@ async function main() {
   // 2. Create system-wide roles (no tenant)
   console.log('\n👑 Creating system-wide roles...');
   for (const roleData of SYSTEM_ROLES) {
-    const role = await prisma.role.upsert({
-      where: {
-        tenantId_code: {
-          tenantId: null,
-          code: roleData.code,
-        },
-      },
-      update: {
-        name: roleData.name,
-        description: roleData.description,
-        isSystem: roleData.isSystem,
-      },
-      create: {
-        ...roleData,
-        tenantId: null,
-      },
+    let role = await prisma.role.findFirst({
+      where: { tenantId: null, code: roleData.code },
     });
+    if (role) {
+      role = await prisma.role.update({
+        where: { id: role.id },
+        data: {
+          name: roleData.name,
+          description: roleData.description,
+          isSystem: roleData.isSystem,
+        },
+      });
+    } else {
+      role = await prisma.role.create({
+        data: { ...roleData, tenantId: null },
+      });
+    }
 
     // Assign permissions to role
     const permissionCodes = ROLE_PERMISSIONS[roleData.code] || [];
