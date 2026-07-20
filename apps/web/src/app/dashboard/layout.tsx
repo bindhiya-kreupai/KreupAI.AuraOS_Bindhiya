@@ -14,8 +14,8 @@ import { useCurrentUser } from '@/lib/auth/AuthProvider';
 // instead of wondering why nothing happens when they click.
 const PREVIEW_MODULES = new Set<string>([
   'agriculture',
-  'ai',
-  'ai-automation',
+  // 'ai-automation' removed — live APIs wired for attrition, coaching, resume, workflows
+  'alumni-network',
   'automotive',
   'aviation',
   'career',

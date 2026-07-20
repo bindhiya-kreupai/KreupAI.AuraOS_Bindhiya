@@ -111,7 +111,8 @@ const MOCK_AUDIT: FlagAuditEntry[] = [
   },
 ];
 
-const MOCK_FLAGS: FeatureFlag[] = [
+/** Default flags served when DB-backed feature-flag storage is unavailable */
+export const MOCK_FLAGS: FeatureFlag[] = [
   {
     key: 'ai_performance_insights',
     name: 'AI Performance Insights',
@@ -339,8 +340,9 @@ export class FeatureFlagService {
    */
   static async getFlags(): Promise<FeatureFlag[]> {
     try {
-      const response = await APIClient.get<FeatureFlag[]>('/v1/feature-flags');
-      return APIClient.unwrapList<FeatureFlag>(response);
+      const response = await APIClient.get<unknown>('/v1/feature-flags');
+      const list = APIClient.unwrapList<FeatureFlag>(response);
+      return list.map((f) => ({ ...f, status: computeStatus(f) }));
     } catch {
       return MOCK_FLAGS.map((f) => ({ ...f, status: computeStatus(f) }));
     }
