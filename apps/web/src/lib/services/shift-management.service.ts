@@ -1,5 +1,6 @@
 import { prisma } from '@aura/database';
 import { z } from 'zod';
+import { notificationService } from './notification.service';
 
 const timeRegex = /^([01]\d|2[0-3]):[0-5]\d$/;
 
@@ -55,6 +56,7 @@ export const createShiftRosterSchema = z.object({
   customEndTime: z.string().optional(),
   isWeekOff: z.boolean().default(false),
   isHoliday: z.boolean().default(false),
+  createdBy: z.string().optional(),
 });
 
 export const createShiftSwapSchema = z.object({
@@ -66,13 +68,23 @@ export const createShiftSwapSchema = z.object({
   swapWithDate: z.string().or(z.date()),
   swapWithShiftId: z.string(),
   reason: z.string(),
+  createdBy: z.string().optional(),
 });
 
 export class ShiftManagementService {
   // ==================== SHIFTS ====================
 
   static async findAllShifts(filter: any) {
-    const { tenantId, isActive, page = 1, limit = 20, sortBy = 'name', sortOrder = 'asc' } = filter;
+    const {
+      tenantId,
+      isActive,
+      startDate,
+      endDate,
+      page = 1,
+      limit = 20,
+      sortBy = 'name',
+      sortOrder = 'asc',
+    } = filter;
 
     const ALLOWED_SORT_FIELDS = [
       'name',
@@ -88,6 +100,11 @@ export class ShiftManagementService {
 
     const where: any = { tenantId, isDeleted: false };
     if (isActive !== undefined) where.isActive = isActive;
+    if (startDate || endDate) {
+      where.createdAt = {};
+      if (startDate) where.createdAt.gte = new Date(startDate);
+      if (endDate) where.createdAt.lte = new Date(endDate);
+    }
 
     const [data, total] = await Promise.all([
       prisma.shift.findMany({
@@ -199,19 +216,19 @@ export class ShiftManagementService {
     });
   }
 
-  static async setDefaultShift(id: string, tenantId: string) {
+  static async setDefaultShift(id: string, tenantId: string, updatedBy?: string) {
     return prisma.$transaction(async (tx) => {
       const shift = await tx.shift.findFirst({ where: { id, tenantId } });
       if (!shift) throw new Error('Shift not found');
 
       await tx.shift.updateMany({
         where: { tenantId, isDefault: true },
-        data: { isDefault: false },
+        data: { isDefault: false, updatedBy: updatedBy || null },
       });
 
       return tx.shift.update({
         where: { id },
-        data: { isDefault: true },
+        data: { isDefault: true, updatedBy: updatedBy || null },
       });
     });
   }
@@ -219,13 +236,30 @@ export class ShiftManagementService {
   // ==================== SHIFT ASSIGNMENTS ====================
 
   static async findAllAssignments(filter: any) {
-    const { tenantId, employeeId, shiftId, isActive, page = 1, limit = 50 } = filter;
+    const {
+      tenantId,
+      employeeId,
+      shiftId,
+      isActive,
+      startDate,
+      endDate,
+      page = 1,
+      limit = 50,
+    } = filter;
     const safeLimit = Math.min(Math.max(Number(limit) || 50, 1), 200);
 
     const where: any = { tenantId, isDeleted: false };
     if (employeeId) where.employeeId = employeeId;
     if (shiftId) where.shiftId = shiftId;
     if (isActive !== undefined) where.isActive = isActive;
+    if (startDate && endDate) {
+      where.effectiveFrom = { lte: new Date(endDate) };
+      where.OR = [{ effectiveTo: null }, { effectiveTo: { gte: new Date(startDate) } }];
+    } else if (startDate) {
+      where.effectiveFrom = { gte: new Date(startDate) };
+    } else if (endDate) {
+      where.effectiveFrom = { lte: new Date(endDate) };
+    }
 
     const [data, total] = await Promise.all([
       prisma.shiftAssignment.findMany({
@@ -263,7 +297,20 @@ export class ShiftManagementService {
   ) {
     const validated = createShiftAssignmentSchema.parse(data);
 
-    return prisma.$transaction(async (tx) => {
+    const conflicts = await this.checkConflicts({
+      employeeId: validated.employeeId,
+      date:
+        typeof validated.effectiveFrom === 'string'
+          ? validated.effectiveFrom
+          : validated.effectiveFrom.toISOString().slice(0, 10),
+      tenantId: validated.tenantId,
+    });
+    const errors = conflicts.filter((c) => c.severity === 'error');
+    if (errors.length > 0) {
+      throw new Error(errors.map((e) => e.message).join(' '));
+    }
+
+    const assignment = await prisma.$transaction(async (tx) => {
       await tx.shiftAssignment.updateMany({
         where: {
           tenantId: validated.tenantId,
@@ -284,6 +331,22 @@ export class ShiftManagementService {
         include: { shift: true },
       });
     });
+
+    // Fire notification to assigned employee
+    const shift = assignment as any;
+    if (shift.shift) {
+      notificationService
+        .notifyShiftAssigned(validated.employeeId, {
+          shiftId: validated.shiftId,
+          shiftName: shift.shift.name,
+          shiftCode: shift.shift.code,
+          effectiveFrom: validated.effectiveFrom.toString(),
+          effectiveTo: validated.effectiveTo?.toString() || null,
+        })
+        .catch(() => {});
+    }
+
+    return assignment;
   }
 
   static async updateAssignment(
@@ -315,23 +378,119 @@ export class ShiftManagementService {
   }
 
   static async deleteAssignment(id: string, tenantId: string) {
-    const existing = await prisma.shiftAssignment.findFirst({ where: { id, tenantId } });
+    const existing = await prisma.shiftAssignment.findFirst({
+      where: { id, tenantId },
+      include: { shift: { select: { name: true } } },
+    });
     if (!existing) return null;
-    return prisma.shiftAssignment.update({
+
+    const result = await prisma.shiftAssignment.update({
       where: { id },
       data: { isDeleted: true, deletedAt: new Date(), isActive: false },
     });
+
+    // Fire notification
+    notificationService
+      .notifyShiftAssignmentRemoved(existing.employeeId, {
+        shiftId: existing.shiftId,
+        shiftName: (existing.shift as any)?.name || 'Unknown',
+        effectiveFrom: existing.effectiveFrom.toISOString().slice(0, 10),
+      })
+      .catch(() => {});
+
+    return result;
+  }
+
+  // ==================== CONFLICT DETECTION ====================
+
+  static async checkConflicts(params: {
+    employeeId: string;
+    date: string;
+    tenantId: string;
+    excludeRosterId?: string;
+  }): Promise<{ type: string; severity: 'error' | 'warning'; message: string }[]> {
+    const { employeeId, date, tenantId, excludeRosterId } = params;
+    const targetDate = new Date(date);
+    const conflicts: { type: string; severity: 'error' | 'warning'; message: string }[] = [];
+
+    // 1. Double-booking check — same employee, same date
+    const existingRoster = await prisma.shiftRoster.findFirst({
+      where: {
+        tenantId,
+        employeeId,
+        rosterDate: targetDate,
+        isDeleted: false,
+        ...(excludeRosterId ? { id: { not: excludeRosterId } } : {}),
+      },
+    });
+    if (existingRoster) {
+      conflicts.push({
+        type: 'DOUBLE_BOOKING',
+        severity: 'error',
+        message: `Employee already has a roster entry for ${targetDate.toISOString().slice(0, 10)}.`,
+      });
+    }
+
+    // 2. Leave overlap check — APPROVED or PENDING leave covering this date
+    const overlappingLeave = await prisma.leaveRequest.findFirst({
+      where: {
+        tenantId,
+        employeeId,
+        startDate: { lte: targetDate },
+        endDate: { gte: targetDate },
+        status: { in: ['APPROVED', 'PENDING'] },
+        isDeleted: false,
+      },
+    });
+    if (overlappingLeave) {
+      conflicts.push({
+        type: 'LEAVE_OVERLAP',
+        severity: 'error',
+        message: `Employee has ${overlappingLeave.status.toLowerCase()} leave (${overlappingLeave.startDate.toISOString().slice(0, 10)} - ${overlappingLeave.endDate.toISOString().slice(0, 10)}).`,
+      });
+    }
+
+    // 3. Assignment consistency check — no active shift assignment
+    const activeAssignment = await prisma.shiftAssignment.findFirst({
+      where: {
+        tenantId,
+        employeeId,
+        isActive: true,
+        isDeleted: false,
+        effectiveFrom: { lte: targetDate },
+        OR: [{ effectiveTo: null }, { effectiveTo: { gte: targetDate } }],
+      },
+    });
+    if (!activeAssignment) {
+      conflicts.push({
+        type: 'NO_ACTIVE_ASSIGNMENT',
+        severity: 'warning',
+        message: `Employee does not have an active shift assignment covering ${targetDate.toISOString().slice(0, 10)}.`,
+      });
+    }
+
+    return conflicts;
   }
 
   // ==================== SHIFT ROSTER ====================
 
   static async findAllRosters(filter: any) {
-    const { tenantId, employeeId, shiftId, startDate, endDate, page = 1, limit = 100 } = filter;
+    const {
+      tenantId,
+      employeeId,
+      shiftId,
+      startDate,
+      endDate,
+      excludeDrafts,
+      page = 1,
+      limit = 100,
+    } = filter;
     const safeLimit = Math.min(Math.max(Number(limit) || 100, 1), 500);
 
     const where: any = { tenantId, isDeleted: false };
     if (employeeId) where.employeeId = employeeId;
     if (shiftId) where.shiftId = shiftId;
+    if (excludeDrafts) where.publishedAt = { not: null };
     if (startDate && endDate) {
       where.rosterDate = {
         gte: new Date(startDate),
@@ -373,26 +532,41 @@ export class ShiftManagementService {
     const validated = createShiftRosterSchema.parse(data);
     const rosterDate = new Date(validated.rosterDate);
 
-    const existing = await prisma.shiftRoster.findFirst({
-      where: {
-        tenantId: validated.tenantId,
-        employeeId: validated.employeeId,
-        rosterDate,
-      },
+    const conflicts = await this.checkConflicts({
+      employeeId: validated.employeeId,
+      date: validated.rosterDate,
+      tenantId: validated.tenantId,
     });
-    if (existing) {
-      throw new Error(
-        `Employee ${validated.employeeId} already has a roster entry for ${rosterDate.toISOString().slice(0, 10)}. Update or delete the existing entry first.`
-      );
+    const errors = conflicts.filter((c) => c.severity === 'error');
+    if (errors.length > 0) {
+      throw new Error(errors.map((e) => e.message).join(' '));
     }
 
-    return prisma.shiftRoster.create({
+    const roster = await prisma.shiftRoster.create({
       data: {
         ...validated,
         rosterDate,
       },
       include: { shift: true },
     });
+
+    // Fire notification
+    const shiftData = roster as any;
+    if (shiftData.shift) {
+      notificationService
+        .notifyShiftRosterAssigned(validated.employeeId, {
+          shiftId: validated.shiftId,
+          shiftName: shiftData.shift.name,
+          rosterDate: rosterDate.toISOString().slice(0, 10),
+          customStartTime: validated.customStartTime,
+          customEndTime: validated.customEndTime,
+          isWeekOff: validated.isWeekOff,
+          isHoliday: validated.isHoliday,
+        })
+        .catch(() => {});
+    }
+
+    return roster;
   }
 
   static async bulkCreateRosters(rosters: z.infer<typeof createShiftRosterSchema>[]) {
@@ -400,6 +574,26 @@ export class ShiftManagementService {
       ...createShiftRosterSchema.parse(r),
       rosterDate: new Date(r.rosterDate),
     }));
+
+    const allConflicts: { index: number; message: string }[] = [];
+    for (let i = 0; i < validated.length; i++) {
+      const r = validated[i];
+      const conflicts = await this.checkConflicts({
+        employeeId: r.employeeId,
+        date: r.rosterDate.toISOString().slice(0, 10),
+        tenantId: r.tenantId,
+      });
+      const errors = conflicts.filter((c) => c.severity === 'error');
+      if (errors.length > 0) {
+        allConflicts.push({
+          index: i,
+          message: `Entry ${i + 1} (employee ${r.employeeId}, ${r.rosterDate.toISOString().slice(0, 10)}): ${errors.map((e) => e.message).join(' ')}`,
+        });
+      }
+    }
+    if (allConflicts.length > 0) {
+      throw new Error(allConflicts.map((c) => c.message).join(' | '));
+    }
 
     return prisma.shiftRoster.createMany({
       data: validated,
@@ -453,7 +647,34 @@ export class ShiftManagementService {
 
     updateData.updatedBy = updatedBy || null;
 
-    return prisma.shiftRoster.update({ where: { id }, data: updateData as any });
+    const result = await prisma.shiftRoster.update({ where: { id }, data: updateData as any });
+
+    // Fire notification on status transitions
+    if (updateData.status && existing.employeeId) {
+      const shiftInfo = await prisma.shift.findFirst({
+        where: { id: existing.shiftId, tenantId },
+        select: { name: true },
+      });
+      if (updateData.status === 'CONFIRMED') {
+        notificationService
+          .notifyShiftRosterConfirmed(existing.employeeId, {
+            shiftId: existing.shiftId,
+            shiftName: shiftInfo?.name || 'Unknown',
+            rosterDate: existing.rosterDate.toISOString().slice(0, 10),
+          })
+          .catch(() => {});
+      } else if (updateData.status === 'CANCELLED') {
+        notificationService
+          .notifyShiftRosterCancelled(existing.employeeId, {
+            shiftId: existing.shiftId,
+            shiftName: shiftInfo?.name || 'Unknown',
+            rosterDate: existing.rosterDate.toISOString().slice(0, 10),
+          })
+          .catch(() => {});
+      }
+    }
+
+    return result;
   }
 
   static async deleteRoster(id: string, tenantId: string) {
@@ -467,22 +688,137 @@ export class ShiftManagementService {
       throw new Error(`Cannot delete roster entry in "${existing.status}" status.`);
     }
 
-    return prisma.shiftRoster.update({
+    const result = await prisma.shiftRoster.update({
       where: { id },
       data: { isDeleted: true, deletedAt: new Date(), status: 'CANCELLED' },
     });
+
+    // Fire notification
+    const shiftInfo = await prisma.shift.findFirst({
+      where: { id: existing.shiftId, tenantId },
+      select: { name: true },
+    });
+    notificationService
+      .notifyShiftRosterCancelled(existing.employeeId, {
+        shiftId: existing.shiftId,
+        shiftName: shiftInfo?.name || 'Unknown',
+        rosterDate: existing.rosterDate.toISOString().slice(0, 10),
+      })
+      .catch(() => {});
+
+    return result;
+  }
+
+  // ==================== ROSTER PUBLISHING ====================
+
+  /**
+   * Publish all unpublished (draft) roster entries within a date range.
+   * Sets publishedAt and publishedBy, transitioning entries from draft to active.
+   */
+  static async publishRoster(
+    tenantId: string,
+    dateFrom: string,
+    dateTo: string,
+    publishedBy: string
+  ): Promise<{ count: number; employeeIds: string[] }> {
+    const from = new Date(dateFrom);
+    const to = new Date(dateTo);
+
+    if (isNaN(from.getTime()) || isNaN(to.getTime())) {
+      throw new Error('Invalid date format. Use YYYY-MM-DD.');
+    }
+    if (from > to) {
+      throw new Error('dateFrom must be before or equal to dateTo.');
+    }
+
+    // Find all unpublished roster entries in the date range
+    const entries = await prisma.shiftRoster.findMany({
+      where: {
+        tenantId,
+        rosterDate: { gte: from, lte: to },
+        publishedAt: null,
+        isDeleted: false,
+      },
+      select: { employeeId: true },
+    });
+
+    if (entries.length === 0) {
+      return { count: 0, employeeIds: [] };
+    }
+
+    await prisma.shiftRoster.updateMany({
+      where: {
+        tenantId,
+        rosterDate: { gte: from, lte: to },
+        publishedAt: null,
+        isDeleted: false,
+      },
+      data: {
+        publishedAt: new Date(),
+        publishedBy,
+      },
+    });
+
+    // Fire notification to affected employees
+    const uniqueEmployeeIds = [...new Set(entries.map((e) => e.employeeId))];
+    for (const empId of uniqueEmployeeIds) {
+      notificationService
+        .notifyShiftRosterPublished(empId, {
+          dateFrom,
+          dateTo,
+        })
+        .catch(() => {});
+    }
+
+    return { count: entries.length, employeeIds: uniqueEmployeeIds };
   }
 
   // ==================== SHIFT SWAP ====================
 
+  static readonly SWAP_STATUS_TRANSITIONS: Record<string, string[]> = {
+    PENDING: ['APPROVED_BY_PEER', 'REJECTED', 'CANCELLED'],
+    APPROVED_BY_PEER: ['APPROVED_BY_MANAGER', 'REJECTED'],
+    APPROVED_BY_MANAGER: ['COMPLETED'],
+    COMPLETED: [],
+    REJECTED: [],
+    CANCELLED: [],
+  };
+
+  static validateSwapTransition(currentStatus: string, newStatus: string): void {
+    const allowed = this.SWAP_STATUS_TRANSITIONS[currentStatus];
+    if (!allowed) {
+      throw new Error(`Unknown swap status "${currentStatus}".`);
+    }
+    if (!allowed.includes(newStatus)) {
+      throw new Error(
+        `Invalid swap status transition from "${currentStatus}" to "${newStatus}". ` +
+          `Allowed transitions from "${currentStatus}": ${allowed.length > 0 ? allowed.join(', ') : 'none'}`
+      );
+    }
+  }
+
   static async findAllSwaps(filter: any) {
-    const { tenantId, requestorId, swapWithId, status, page = 1, limit = 20 } = filter;
+    const {
+      tenantId,
+      requestorId,
+      swapWithId,
+      status,
+      startDate,
+      endDate,
+      page = 1,
+      limit = 20,
+    } = filter;
     const safeLimit = Math.min(Math.max(Number(limit) || 20, 1), 200);
 
     const where: any = { tenantId, isDeleted: false };
     if (requestorId) where.requestorId = requestorId;
     if (swapWithId) where.swapWithId = swapWithId;
     if (status) where.status = status;
+    if (startDate || endDate) {
+      where.createdAt = {};
+      if (startDate) where.createdAt.gte = new Date(startDate);
+      if (endDate) where.createdAt.lte = new Date(endDate);
+    }
 
     const [data, total] = await Promise.all([
       prisma.shiftSwapRequest.findMany({
@@ -588,14 +924,34 @@ export class ShiftManagementService {
       }
     }
 
-    return prisma.shiftSwapRequest.create({
+    const swap = await prisma.shiftSwapRequest.create({
       data: {
         ...validated,
         requestorDate: new Date(validated.requestorDate),
         swapWithDate: new Date(validated.swapWithDate),
-        createdBy: validated.requestorId,
+        createdBy: validated.createdBy || validated.requestorId,
       },
     });
+
+    // Fire notification to swapWith employee
+    const requestor = await prisma.employee.findFirst({
+      where: { id: validated.requestorId, tenantId: validated.tenantId },
+      select: { firstName: true, lastName: true },
+    });
+    if (requestor) {
+      notificationService
+        .notifyShiftSwapRequested(validated.swapWithId, {
+          requestorId: validated.requestorId,
+          requestorName: `${requestor.firstName} ${requestor.lastName}`,
+          requestorDate: swap.requestorDate.toISOString().slice(0, 10),
+          swapWithDate: swap.swapWithDate.toISOString().slice(0, 10),
+          reason: validated.reason,
+          swapId: swap.id,
+        })
+        .catch(() => {});
+    }
+
+    return swap;
   }
 
   static async findSwapById(id: string, tenantId: string) {
@@ -604,7 +960,12 @@ export class ShiftManagementService {
     });
   }
 
-  static async updateSwap(id: string, tenantId: string, data: Record<string, unknown>) {
+  static async updateSwap(
+    id: string,
+    tenantId: string,
+    data: Record<string, unknown>,
+    updatedBy?: string
+  ) {
     const existing = await prisma.shiftSwapRequest.findFirst({ where: { id, tenantId } });
     if (!existing) return null;
 
@@ -625,6 +986,7 @@ export class ShiftManagementService {
       updateData.requestorDate = new Date(updateData.requestorDate as string);
     if (updateData.swapWithDate)
       updateData.swapWithDate = new Date(updateData.swapWithDate as string);
+    if (updatedBy) updateData.updatedBy = updatedBy;
 
     return prisma.shiftSwapRequest.update({ where: { id }, data: updateData as any });
   }
@@ -634,14 +996,9 @@ export class ShiftManagementService {
     if (!swap) throw new Error('Swap request not found');
     if (swap.swapWithId !== swapWithId) throw new Error('Unauthorized');
 
-    // BUG-3: Validate state machine — peer can only approve from PENDING status
-    if (swap.status !== 'PENDING') {
-      throw new Error(
-        `Cannot approve swap in "${swap.status}" status. Must be in "PENDING" status.`
-      );
-    }
+    ShiftManagementService.validateSwapTransition(swap.status, 'APPROVED_BY_PEER');
 
-    return prisma.shiftSwapRequest.update({
+    const updated = await prisma.shiftSwapRequest.update({
       where: { id },
       data: {
         swapWithApproval: 'APPROVED',
@@ -649,6 +1006,25 @@ export class ShiftManagementService {
         updatedBy: swapWithId,
       },
     });
+
+    // Fire notification to requestor
+    const peerEmployee = await prisma.employee.findFirst({
+      where: { id: swapWithId, tenantId },
+      select: { firstName: true, lastName: true },
+    });
+    if (peerEmployee) {
+      notificationService
+        .notifyShiftSwapPeerApproved(swap.requestorId, {
+          swapWithId,
+          swapWithName: `${peerEmployee.firstName} ${peerEmployee.lastName}`,
+          requestorDate: swap.requestorDate.toISOString().slice(0, 10),
+          swapWithDate: swap.swapWithDate.toISOString().slice(0, 10),
+          swapId: id,
+        })
+        .catch(() => {});
+    }
+
+    return updated;
   }
 
   static async managerApproveSwap(id: string, tenantId: string, approvedBy: string) {
@@ -656,15 +1032,10 @@ export class ShiftManagementService {
     if (!swap) throw new Error('Swap request not found');
     if (swap.swapWithApproval !== 'APPROVED') throw new Error('Peer approval required first');
 
-    // BUG-3: Validate state machine — manager can only approve from APPROVED_BY_PEER status
-    if (swap.status !== 'APPROVED_BY_PEER') {
-      throw new Error(
-        `Cannot manager-approve swap in "${swap.status}" status. Must be in "APPROVED_BY_PEER" status.`
-      );
-    }
+    ShiftManagementService.validateSwapTransition(swap.status, 'APPROVED_BY_MANAGER');
 
     // Transactional roster swap — atomic success or failure
-    return prisma.$transaction(async (tx) => {
+    const result = await prisma.$transaction(async (tx) => {
       // Mark manager approval
       await tx.shiftSwapRequest.update({
         where: { id },
@@ -673,6 +1044,7 @@ export class ShiftManagementService {
           status: 'APPROVED_BY_MANAGER',
           approvedBy,
           approvedAt: new Date(),
+          updatedBy: approvedBy,
         },
       });
 
@@ -739,9 +1111,50 @@ export class ShiftManagementService {
       // Mark swap as completed
       return tx.shiftSwapRequest.update({
         where: { id },
-        data: { status: 'COMPLETED' },
+        data: { status: 'COMPLETED', updatedBy: approvedBy },
       });
     });
+
+    // Fire notifications to both parties
+    const [requestorEmp, swapWithEmp] = await Promise.all([
+      prisma.employee.findFirst({
+        where: { id: swap.requestorId, tenantId },
+        select: { firstName: true, lastName: true },
+      }),
+      prisma.employee.findFirst({
+        where: { id: swap.swapWithId, tenantId },
+        select: { firstName: true, lastName: true },
+      }),
+    ]);
+
+    const rName = requestorEmp
+      ? `${requestorEmp.firstName} ${requestorEmp.lastName}`
+      : swap.requestorId;
+    const sName = swapWithEmp
+      ? `${swapWithEmp.firstName} ${swapWithEmp.lastName}`
+      : swap.swapWithId;
+
+    notificationService
+      .notifyShiftSwapCompleted(swap.requestorId, {
+        otherPartyId: swap.swapWithId,
+        otherPartyName: sName,
+        requestorDate: swap.requestorDate.toISOString().slice(0, 10),
+        swapWithDate: swap.swapWithDate.toISOString().slice(0, 10),
+        swapId: id,
+      })
+      .catch(() => {});
+
+    notificationService
+      .notifyShiftSwapCompleted(swap.swapWithId, {
+        otherPartyId: swap.requestorId,
+        otherPartyName: rName,
+        requestorDate: swap.requestorDate.toISOString().slice(0, 10),
+        swapWithDate: swap.swapWithDate.toISOString().slice(0, 10),
+        swapId: id,
+      })
+      .catch(() => {});
+
+    return result;
   }
 
   static async rejectSwap(id: string, tenantId: string, rejectedBy: string, reason: string) {
@@ -766,14 +1179,9 @@ export class ShiftManagementService {
       // Allow managers/admins — the route layer already verified shift-swaps:update permission
     }
 
-    // BUG-3: Validate state machine — can only reject from PENDING or APPROVED_BY_PEER
-    if (swap.status !== 'PENDING' && swap.status !== 'APPROVED_BY_PEER') {
-      throw new Error(
-        `Cannot reject swap in "${swap.status}" status. Must be in "PENDING" or "APPROVED_BY_PEER" status.`
-      );
-    }
+    ShiftManagementService.validateSwapTransition(swap.status, 'REJECTED');
 
-    return prisma.shiftSwapRequest.update({
+    const result = await prisma.shiftSwapRequest.update({
       where: { id },
       data: {
         status: 'REJECTED',
@@ -784,6 +1192,63 @@ export class ShiftManagementService {
         updatedBy: rejectedBy,
       },
     });
+
+    // Fire notification to the other party
+    const notifyUserId = rejectedBy === swap.requestorId ? swap.swapWithId : swap.requestorId;
+    const rejector = await prisma.employee.findFirst({
+      where: { id: rejectedBy, tenantId },
+      select: { firstName: true, lastName: true },
+    });
+    if (rejector) {
+      notificationService
+        .notifyShiftSwapRejected(notifyUserId, {
+          rejectedBy,
+          rejectedByName: `${rejector.firstName} ${rejector.lastName}`,
+          reason,
+          swapId: id,
+        })
+        .catch(() => {});
+    }
+
+    return result;
+  }
+
+  static async cancelSwap(id: string, tenantId: string, cancelledBy: string) {
+    const swap = await prisma.shiftSwapRequest.findFirst({
+      where: { id, tenantId, isDeleted: false },
+    });
+    if (!swap) throw new Error('Swap request not found');
+
+    const isRequestor = swap.requestorId === cancelledBy;
+    if (!isRequestor) {
+      throw new Error('Only the requestor can cancel their own swap request.');
+    }
+
+    ShiftManagementService.validateSwapTransition(swap.status, 'CANCELLED');
+
+    const result = await prisma.shiftSwapRequest.update({
+      where: { id },
+      data: {
+        status: 'CANCELLED',
+        updatedBy: cancelledBy,
+      },
+    });
+
+    const cancelor = await prisma.employee.findFirst({
+      where: { id: cancelledBy, tenantId },
+      select: { firstName: true, lastName: true },
+    });
+    if (cancelor) {
+      notificationService
+        .notifyShiftSwapCancelled(swap.swapWithId, {
+          cancelledBy,
+          cancelledByName: `${cancelor.firstName} ${cancelor.lastName}`,
+          swapId: id,
+        })
+        .catch(() => {});
+    }
+
+    return result;
   }
 
   // ==================== STATISTICS ====================
