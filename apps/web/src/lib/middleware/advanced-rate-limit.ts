@@ -1,4 +1,4 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { Redis } from 'ioredis';
 import { logger } from '@/lib/logger';
@@ -13,17 +13,30 @@ import { logger } from '@/lib/logger';
 // Redis client singleton
 let redisClient: Redis | null = null;
 
-function getRedisClient(): Redis {
+function getRedisClient(): Redis | null {
+  if (process.env.REDIS_ENABLED === 'false') {
+    return null;
+  }
+
   if (!redisClient) {
     const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
+    let loggedError = false;
     redisClient = new Redis(redisUrl, {
-      maxRetriesPerRequest: 3,
+      maxRetriesPerRequest: 1,
       enableReadyCheck: true,
+      enableOfflineQueue: false,
       lazyConnect: true,
+      retryStrategy: (times) => (times > 5 ? null : Math.min(times * 200, 2000)),
     });
 
     redisClient.on('error', (error) => {
-      logger.error({ error }, 'Redis connection error');
+      if (!loggedError) {
+        loggedError = true;
+        logger.error(
+          { error },
+          'Redis connection error — rate limiting will use in-memory fallback. Set REDIS_ENABLED=false to silence.'
+        );
+      }
     });
 
     redisClient.on('connect', () => {
@@ -88,11 +101,7 @@ interface RateLimitResult {
 /**
  * Get rate limit key for a request
  */
-function getRateLimitKey(
-  config: RateLimitConfig,
-  request: NextRequest,
-  userId?: string
-): string {
+function getRateLimitKey(config: RateLimitConfig, request: NextRequest, userId?: string): string {
   let identifier: string;
 
   if (config.keyGenerator) {
@@ -112,12 +121,18 @@ function getRateLimitKey(
 /**
  * Check rate limit using sliding window algorithm
  */
-async function checkRateLimit(
-  key: string,
-  config: RateLimitConfig
-): Promise<RateLimitResult> {
+async function checkRateLimit(key: string, config: RateLimitConfig): Promise<RateLimitResult> {
   try {
     const redis = getRedisClient();
+    if (!redis) {
+      return {
+        allowed: true,
+        remaining: config.maxRequests,
+        resetTime: Date.now() + config.windowSeconds * 1000,
+        total: config.maxRequests,
+      };
+    }
+
     await redis.connect().catch(() => {
       // Already connected or connection in progress
     });
@@ -209,8 +224,7 @@ export function createRateLimit(config: RateLimitConfig) {
       );
 
       const message =
-        config.message ||
-        `Too many requests. Please try again in ${retryAfter} seconds.`;
+        config.message || `Too many requests. Please try again in ${retryAfter} seconds.`;
 
       return new NextResponse(
         JSON.stringify({
@@ -360,12 +374,11 @@ export async function getRateLimitStatus(
 /**
  * Helper function to reset rate limit for a key (admin use)
  */
-export async function resetRateLimit(
-  config: RateLimitConfig,
-  identifier: string
-): Promise<void> {
+export async function resetRateLimit(config: RateLimitConfig, identifier: string): Promise<void> {
   try {
     const redis = getRedisClient();
+    if (!redis) return;
+
     await redis.connect().catch(() => {});
 
     const key = `ratelimit:${config.identifier}:${identifier}`;

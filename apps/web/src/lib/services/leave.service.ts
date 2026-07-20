@@ -332,10 +332,7 @@ export class LeaveService {
       select: { totalDays: true },
     });
 
-    const totalDaysTaken = requests.reduce(
-      (sum, r) => sum + Number(r.totalDays),
-      0
-    );
+    const totalDaysTaken = requests.reduce((sum, r) => sum + Number(r.totalDays), 0);
 
     return {
       total,
@@ -457,21 +454,29 @@ export class LeaveService {
     });
   }
 
-  static async getBalanceByEmployee(
-    tenantId: string,
-    employeeId: string,
-    leaveYear?: number
-  ) {
+  static async getBalanceByEmployee(tenantId: string, employeeId: string, leaveYear?: number) {
     const year = leaveYear || new Date().getFullYear();
 
-    return prisma.leaveBalance.findMany({
+    const forYear = await prisma.leaveBalance.findMany({
       where: {
         tenantId,
         employeeId,
         leaveYear: year,
+        isDeleted: false,
       },
       include: { policy: true },
     });
+    if (forYear.length || leaveYear !== undefined) return forYear;
+
+    // Fall back to most recent leave year when current year has no rows
+    const latest = await prisma.leaveBalance.findMany({
+      where: { tenantId, employeeId, isDeleted: false },
+      include: { policy: true },
+      orderBy: { leaveYear: 'desc' },
+    });
+    if (!latest.length) return [];
+    const latestYear = latest[0].leaveYear;
+    return latest.filter((row) => row.leaveYear === latestYear);
   }
 
   static async createBalance(data: z.infer<typeof createLeaveBalanceSchema>) {
@@ -491,12 +496,7 @@ export class LeaveService {
     });
   }
 
-  static async adjustBalance(
-    id: string,
-    tenantId: string,
-    adjustment: number,
-    reason: string
-  ) {
+  static async adjustBalance(id: string, tenantId: string, adjustment: number, reason: string) {
     const balance = await prisma.leaveBalance.findFirst({
       where: { id, tenantId },
     });

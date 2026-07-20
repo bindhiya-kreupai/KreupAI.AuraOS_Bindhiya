@@ -13,8 +13,8 @@ export const GET = withEnhancedAuth(async (request, context) => {
     switch (type) {
       case 'definitions': {
         const definitions = await prisma.workflowDefinition.findMany({
-          where: { tenantId },
-          orderBy: { createdAt: 'desc' },
+          where: { tenantId, isDeleted: false },
+          orderBy: { updatedAt: 'desc' },
         });
 
         return NextResponse.json({
@@ -74,9 +74,7 @@ export const GET = withEnhancedAuth(async (request, context) => {
           prisma.workflowInstance.count({ where: { tenantId, status: 'CANCELLED' } }),
         ]);
 
-        const successRate = totalInstances > 0
-          ? (completedInstances / totalInstances) * 100
-          : 0;
+        const successRate = totalInstances > 0 ? (completedInstances / totalInstances) * 100 : 0;
 
         return NextResponse.json({
           success: true,
@@ -138,10 +136,13 @@ export const POST = withEnhancedAuth(async (request, context) => {
           },
         });
 
-        return NextResponse.json({
-          success: true,
-          data: workflow,
-        }, { status: 201 });
+        return NextResponse.json(
+          {
+            success: true,
+            data: workflow,
+          },
+          { status: 201 }
+        );
       }
 
       case 'start': {
@@ -158,7 +159,10 @@ export const POST = withEnhancedAuth(async (request, context) => {
 
         if (!definition) {
           return NextResponse.json(
-            { error: 'Workflow definition not found', errorAr: 'لم يتم العثور على تعريف سير العمل' },
+            {
+              error: 'Workflow definition not found',
+              errorAr: 'لم يتم العثور على تعريف سير العمل',
+            },
             { status: 404 }
           );
         }
@@ -178,10 +182,13 @@ export const POST = withEnhancedAuth(async (request, context) => {
           include: { definition: true },
         });
 
-        return NextResponse.json({
-          success: true,
-          data: instance,
-        }, { status: 201 });
+        return NextResponse.json(
+          {
+            success: true,
+            data: instance,
+          },
+          { status: 201 }
+        );
       }
 
       case 'process': {
@@ -209,7 +216,11 @@ export const POST = withEnhancedAuth(async (request, context) => {
           context: body.context || existing.context,
         };
 
-        if (body.status === 'COMPLETED' || body.status === 'FAILED' || body.status === 'CANCELLED') {
+        if (
+          body.status === 'COMPLETED' ||
+          body.status === 'FAILED' ||
+          body.status === 'CANCELLED'
+        ) {
           updateData.completedAt = new Date();
         }
 

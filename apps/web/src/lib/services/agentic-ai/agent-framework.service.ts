@@ -18,13 +18,9 @@ import type {
   AgentEvent,
   AgentMetrics,
   TaskStatus,
-  ActionType} from './types';
-import {
-  ExecutionPlan,
-  ExecutionStep,
-  ExecutionContext,
-  ActionStatus
+  ActionType,
 } from './types';
+import { ExecutionPlan, ExecutionStep, ExecutionContext, ActionStatus } from './types';
 
 /**
  * Agent Registry - Stores agent definitions
@@ -139,10 +135,7 @@ export class AgentFrameworkService {
   /**
    * Process user message
    */
-  static async processMessage(
-    sessionId: string,
-    userMessage: string
-  ): Promise<AgentResponse> {
+  static async processMessage(sessionId: string, userMessage: string): Promise<AgentResponse> {
     const context = activeSessions.get(sessionId);
     if (!context) {
       throw new Error('Session not found');
@@ -195,9 +188,12 @@ export class AgentFrameworkService {
    */
   private static getWelcomeMessage(agentType: AgentType): string {
     const messages: Record<AgentType, string> = {
-      HR_AGENT: "Hello! I'm your HR Assistant. I can help you with leave requests, attendance queries, payslip information, and HR policies. How can I assist you today?",
-      RECRUITMENT_AGENT: "Welcome! I'm your Recruitment Assistant. I can help with candidate screening, interview scheduling, and recruitment analytics. What would you like to do?",
-      ANALYTICS_AGENT: "Hi! I'm your Analytics Assistant. I can generate insights, create reports, and answer questions about your workforce data. What insights are you looking for?",
+      HR_AGENT:
+        "Hello! I'm your HR Assistant. I can help you with leave requests, attendance queries, payslip information, and HR policies. How can I assist you today?",
+      RECRUITMENT_AGENT:
+        "Welcome! I'm your Recruitment Assistant. I can help with candidate screening, interview scheduling, and recruitment analytics. What would you like to do?",
+      ANALYTICS_AGENT:
+        "Hi! I'm your Analytics Assistant. I can generate insights, create reports, and answer questions about your workforce data. What insights are you looking for?",
     };
     return messages[agentType];
   }
@@ -346,18 +342,13 @@ export class AgentFrameworkService {
   /**
    * Calculate intent confidence
    */
-  private static calculateConfidence(
-    message: string,
-    pattern: IntentPattern
-  ): number {
+  private static calculateConfidence(message: string, pattern: IntentPattern): number {
     const baseConfidence = pattern.weight;
     const messageWords = message.toLowerCase().split(/\s+/);
     const keywordWords = pattern.keyword.split(/\s+/);
 
     // Check if all keyword words are present
-    const allPresent = keywordWords.every(kw =>
-      messageWords.some(mw => mw.includes(kw))
-    );
+    const allPresent = keywordWords.every((kw) => messageWords.some((mw) => mw.includes(kw)));
 
     // Bonus for exact match
     if (message.toLowerCase().includes(pattern.keyword)) {
@@ -413,7 +404,16 @@ export class AgentFrameworkService {
     }
 
     // Leave type extraction
-    const leaveTypes = ['sick', 'casual', 'earned', 'annual', 'maternity', 'paternity', 'comp off', 'wfh'];
+    const leaveTypes = [
+      'sick',
+      'casual',
+      'earned',
+      'annual',
+      'maternity',
+      'paternity',
+      'comp off',
+      'wfh',
+    ];
     for (const type of leaveTypes) {
       const index = message.toLowerCase().indexOf(type);
       if (index !== -1) {
@@ -506,63 +506,188 @@ export class AgentFrameworkService {
     const mappings: Record<AgentType, Record<string, ActionDefinition[]>> = {
       HR_AGENT: {
         LEAVE_BALANCE: [
-          { type: 'QUERY_DATA', name: 'Query Leave Balance', description: 'Retrieve employee leave balance', requiresApproval: false },
+          {
+            type: 'QUERY_DATA',
+            name: 'Query Leave Balance',
+            description: 'Retrieve employee leave balance',
+            requiresApproval: false,
+          },
         ],
         LEAVE_APPLY: [
-          { type: 'CREATE_RECORD', name: 'Create Leave Request', description: 'Submit leave application', requiresApproval: true },
-          { type: 'SEND_NOTIFICATION', name: 'Notify Manager', description: 'Send approval request to manager', requiresApproval: false },
+          {
+            type: 'CREATE_RECORD',
+            name: 'Create Leave Request',
+            description: 'Submit leave application',
+            requiresApproval: true,
+          },
+          {
+            type: 'SEND_NOTIFICATION',
+            name: 'Notify Manager',
+            description: 'Send approval request to manager',
+            requiresApproval: false,
+          },
         ],
         LEAVE_STATUS: [
-          { type: 'QUERY_DATA', name: 'Query Leave Status', description: 'Check status of leave requests', requiresApproval: false },
+          {
+            type: 'QUERY_DATA',
+            name: 'Query Leave Status',
+            description: 'Check status of leave requests',
+            requiresApproval: false,
+          },
         ],
         ATTENDANCE: [
-          { type: 'QUERY_DATA', name: 'Query Attendance', description: 'Retrieve attendance records', requiresApproval: false },
+          {
+            type: 'QUERY_DATA',
+            name: 'Query Attendance',
+            description: 'Retrieve attendance records',
+            requiresApproval: false,
+          },
         ],
         PAYSLIP: [
-          { type: 'QUERY_DATA', name: 'Query Payslip', description: 'Retrieve payslip data', requiresApproval: false },
-          { type: 'GENERATE_REPORT', name: 'Generate Payslip PDF', description: 'Create downloadable payslip', requiresApproval: false },
+          {
+            type: 'QUERY_DATA',
+            name: 'Query Payslip',
+            description: 'Retrieve payslip data',
+            requiresApproval: false,
+          },
+          {
+            type: 'GENERATE_REPORT',
+            name: 'Generate Payslip PDF',
+            description: 'Create downloadable payslip',
+            requiresApproval: false,
+          },
         ],
         POLICY: [
-          { type: 'QUERY_DATA', name: 'Search Policies', description: 'Search HR policies', requiresApproval: false },
+          {
+            type: 'QUERY_DATA',
+            name: 'Search Policies',
+            description: 'Search HR policies',
+            requiresApproval: false,
+          },
         ],
       },
       RECRUITMENT_AGENT: {
         SCREEN_CANDIDATES: [
-          { type: 'QUERY_DATA', name: 'Fetch Candidates', description: 'Retrieve candidate list', requiresApproval: false },
-          { type: 'QUERY_DATA', name: 'Screen Resumes', description: 'AI-based resume screening', requiresApproval: false },
+          {
+            type: 'QUERY_DATA',
+            name: 'Fetch Candidates',
+            description: 'Retrieve candidate list',
+            requiresApproval: false,
+          },
+          {
+            type: 'QUERY_DATA',
+            name: 'Screen Resumes',
+            description: 'AI-based resume screening',
+            requiresApproval: false,
+          },
         ],
         RANK_CANDIDATES: [
-          { type: 'QUERY_DATA', name: 'Analyze Candidates', description: 'Calculate candidate scores', requiresApproval: false },
-          { type: 'GENERATE_REPORT', name: 'Generate Ranking', description: 'Create ranked candidate list', requiresApproval: false },
+          {
+            type: 'QUERY_DATA',
+            name: 'Analyze Candidates',
+            description: 'Calculate candidate scores',
+            requiresApproval: false,
+          },
+          {
+            type: 'GENERATE_REPORT',
+            name: 'Generate Ranking',
+            description: 'Create ranked candidate list',
+            requiresApproval: false,
+          },
         ],
         SCHEDULE_INTERVIEW: [
-          { type: 'QUERY_DATA', name: 'Check Availability', description: 'Find available interview slots', requiresApproval: false },
-          { type: 'SCHEDULE_MEETING', name: 'Schedule Interview', description: 'Book interview slot', requiresApproval: true },
-          { type: 'SEND_NOTIFICATION', name: 'Send Invites', description: 'Send calendar invites', requiresApproval: false },
+          {
+            type: 'QUERY_DATA',
+            name: 'Check Availability',
+            description: 'Find available interview slots',
+            requiresApproval: false,
+          },
+          {
+            type: 'SCHEDULE_MEETING',
+            name: 'Schedule Interview',
+            description: 'Book interview slot',
+            requiresApproval: true,
+          },
+          {
+            type: 'SEND_NOTIFICATION',
+            name: 'Send Invites',
+            description: 'Send calendar invites',
+            requiresApproval: false,
+          },
         ],
         PIPELINE_STATUS: [
-          { type: 'QUERY_DATA', name: 'Query Pipeline', description: 'Retrieve pipeline metrics', requiresApproval: false },
+          {
+            type: 'QUERY_DATA',
+            name: 'Query Pipeline',
+            description: 'Retrieve pipeline metrics',
+            requiresApproval: false,
+          },
         ],
       },
       ANALYTICS_AGENT: {
         GENERATE_REPORT: [
-          { type: 'QUERY_DATA', name: 'Gather Data', description: 'Collect report data', requiresApproval: false },
-          { type: 'GENERATE_REPORT', name: 'Generate Report', description: 'Create analytics report', requiresApproval: false },
+          {
+            type: 'QUERY_DATA',
+            name: 'Gather Data',
+            description: 'Collect report data',
+            requiresApproval: false,
+          },
+          {
+            type: 'GENERATE_REPORT',
+            name: 'Generate Report',
+            description: 'Create analytics report',
+            requiresApproval: false,
+          },
         ],
         SHOW_METRICS: [
-          { type: 'QUERY_DATA', name: 'Query Metrics', description: 'Retrieve KPI data', requiresApproval: false },
+          {
+            type: 'QUERY_DATA',
+            name: 'Query Metrics',
+            description: 'Retrieve KPI data',
+            requiresApproval: false,
+          },
         ],
         TREND_ANALYSIS: [
-          { type: 'QUERY_DATA', name: 'Query Historical Data', description: 'Retrieve time-series data', requiresApproval: false },
-          { type: 'GENERATE_REPORT', name: 'Analyze Trends', description: 'Perform trend analysis', requiresApproval: false },
+          {
+            type: 'QUERY_DATA',
+            name: 'Query Historical Data',
+            description: 'Retrieve time-series data',
+            requiresApproval: false,
+          },
+          {
+            type: 'GENERATE_REPORT',
+            name: 'Analyze Trends',
+            description: 'Perform trend analysis',
+            requiresApproval: false,
+          },
         ],
         PREDICT: [
-          { type: 'QUERY_DATA', name: 'Gather Prediction Data', description: 'Collect data for prediction', requiresApproval: false },
-          { type: 'GENERATE_REPORT', name: 'Generate Forecast', description: 'Create prediction report', requiresApproval: false },
+          {
+            type: 'QUERY_DATA',
+            name: 'Gather Prediction Data',
+            description: 'Collect data for prediction',
+            requiresApproval: false,
+          },
+          {
+            type: 'GENERATE_REPORT',
+            name: 'Generate Forecast',
+            description: 'Create prediction report',
+            requiresApproval: false,
+          },
         ],
         ANOMALY: [
-          { type: 'QUERY_DATA', name: 'Scan Data', description: 'Scan for anomalies', requiresApproval: false },
-          { type: 'GENERATE_REPORT', name: 'Report Anomalies', description: 'Generate anomaly report', requiresApproval: false },
+          {
+            type: 'QUERY_DATA',
+            name: 'Scan Data',
+            description: 'Scan for anomalies',
+            requiresApproval: false,
+          },
+          {
+            type: 'GENERATE_REPORT',
+            name: 'Report Anomalies',
+            description: 'Generate anomaly report',
+            requiresApproval: false,
+          },
         ],
       },
     };
@@ -640,7 +765,6 @@ export class AgentFrameworkService {
           details: { input: action.input, output: action.output },
           outcome: 'SUCCESS',
         });
-
       } catch (error: any) {
         action.status = 'FAILED';
         action.error = {
@@ -670,131 +794,83 @@ export class AgentFrameworkService {
     action: AgentAction,
     context: ConversationContext
   ): Promise<Record<string, unknown>> {
-    // In production, this would call actual services
-    // For now, return mock results based on action type
+    const { HRAgentService } = await import('./hr-agent.service');
+    const { RecruitmentAgentService } = await import('./recruitment-agent.service');
+    const { AnalyticsAgentService } = await import('./analytics-agent.service');
 
-    switch (action.type) {
-      case 'QUERY_DATA':
-        return this.mockQueryData(action, context);
-      case 'CREATE_RECORD':
-        return this.mockCreateRecord(action, context);
-      case 'GENERATE_REPORT':
-        return this.mockGenerateReport(action, context);
-      case 'SEND_NOTIFICATION':
-        return { sent: true, recipients: 1 };
-      case 'SCHEDULE_MEETING':
-        return { scheduled: true, meetingId: `meet_${Date.now()}` };
-      default:
-        return { executed: true };
-    }
-  }
-
-  /**
-   * Mock query data results
-   */
-  private static mockQueryData(
-    action: AgentAction,
-    context: ConversationContext
-  ): Record<string, unknown> {
     const name = action.name.toLowerCase();
+    const tenantId = context.tenantId;
+    const userId = context.userId;
 
-    if (name.includes('leave balance')) {
+    try {
+      if (action.type === 'QUERY_DATA') {
+        if (name.includes('leave balance')) {
+          return { balances: await HRAgentService.getLeaveBalance(userId, tenantId) };
+        }
+        if (name.includes('attendance')) {
+          return { today: await HRAgentService.getTodayAttendance(userId, tenantId) };
+        }
+        if (name.includes('payslip')) {
+          const now = new Date();
+          return {
+            payslip: await HRAgentService.getPayslip(
+              userId,
+              tenantId,
+              now.getMonth() + 1,
+              now.getFullYear()
+            ),
+          };
+        }
+        if (name.includes('pipeline') || name.includes('candidates') || name.includes('resumes')) {
+          return { stats: await RecruitmentAgentService.getPipelineStats(tenantId) };
+        }
+        if (name.includes('metrics') || name.includes('kpi') || name.includes('insight')) {
+          return {
+            insight: await AnalyticsAgentService.generateInsight(
+              { domain: 'WORKFORCE', question: action.name },
+              tenantId
+            ),
+          };
+        }
+        return { success: true, message: 'No matching query handler' };
+      }
+
+      if (action.type === 'CREATE_RECORD') {
+        return {
+          status: 'PENDING_APPROVAL',
+          message: 'Write actions require explicit agent chat with agents:write permission',
+          createdAt: new Date().toISOString(),
+        };
+      }
+
+      if (action.type === 'GENERATE_REPORT') {
+        return {
+          report: await AnalyticsAgentService.generateReport('WORKFORCE_REVIEW', tenantId),
+        };
+      }
+
+      if (action.type === 'SEND_NOTIFICATION') {
+        return {
+          sent: false,
+          draft: true,
+          message: 'Notifications are draft-only from agent framework',
+        };
+      }
+
+      if (action.type === 'SCHEDULE_MEETING') {
+        return {
+          scheduled: false,
+          message: 'Use Recruitment Agent to schedule interviews against live calendar data',
+        };
+      }
+
+      return { executed: true };
+    } catch (err) {
       return {
-        annual: { entitled: 20, used: 8, balance: 12 },
-        sick: { entitled: 10, used: 2, balance: 8 },
-        casual: { entitled: 8, used: 3, balance: 5 },
-        compOff: { entitled: 0, used: 0, balance: 2 },
+        success: false,
+        error: err instanceof Error ? err.message : 'Action failed',
       };
     }
-
-    if (name.includes('attendance')) {
-      return {
-        today: { checkIn: '09:00', checkOut: null, status: 'PRESENT' },
-        month: { present: 18, absent: 0, leaves: 2, late: 1 },
-      };
-    }
-
-    if (name.includes('payslip')) {
-      return {
-        month: 'December 2024',
-        gross: 85000,
-        deductions: 15000,
-        net: 70000,
-        breakdown: {
-          basic: 42500,
-          hra: 17000,
-          special: 25500,
-        },
-      };
-    }
-
-    if (name.includes('candidates') || name.includes('resumes')) {
-      return {
-        total: 45,
-        screened: 32,
-        shortlisted: 12,
-        candidates: [
-          { name: 'John Smith', score: 92, status: 'Shortlisted' },
-          { name: 'Sarah Johnson', score: 88, status: 'Shortlisted' },
-          { name: 'Mike Wilson', score: 85, status: 'Under Review' },
-        ],
-      };
-    }
-
-    if (name.includes('pipeline')) {
-      return {
-        openPositions: 8,
-        totalCandidates: 156,
-        stages: {
-          new: 45,
-          screening: 32,
-          interview: 18,
-          offer: 5,
-          hired: 3,
-        },
-      };
-    }
-
-    if (name.includes('metrics') || name.includes('kpi')) {
-      return {
-        headcount: { total: 1250, change: '+12' },
-        attrition: { rate: '8.5%', trend: 'down' },
-        avgTenure: '3.2 years',
-        openPositions: 45,
-        timeToHire: '28 days',
-      };
-    }
-
-    return { success: true };
-  }
-
-  /**
-   * Mock create record results
-   */
-  private static mockCreateRecord(
-    action: AgentAction,
-    context: ConversationContext
-  ): Record<string, unknown> {
-    return {
-      id: `rec_${Date.now()}`,
-      status: 'PENDING_APPROVAL',
-      createdAt: new Date().toISOString(),
-    };
-  }
-
-  /**
-   * Mock generate report results
-   */
-  private static mockGenerateReport(
-    action: AgentAction,
-    context: ConversationContext
-  ): Record<string, unknown> {
-    return {
-      reportId: `rpt_${Date.now()}`,
-      format: 'PDF',
-      downloadUrl: `/api/reports/download/rpt_${Date.now()}`,
-      generatedAt: new Date().toISOString(),
-    };
   }
 
   /**
@@ -819,9 +895,9 @@ export class AgentFrameworkService {
     actions: AgentAction[],
     context: ConversationContext
   ): Promise<AgentResponse> {
-    const completedActions = actions.filter(a => a.status === 'COMPLETED');
-    const pendingActions = actions.filter(a => a.status === 'PENDING');
-    const failedActions = actions.filter(a => a.status === 'FAILED');
+    const completedActions = actions.filter((a) => a.status === 'COMPLETED');
+    const pendingActions = actions.filter((a) => a.status === 'PENDING');
+    const failedActions = actions.filter((a) => a.status === 'FAILED');
 
     let content = '';
     const suggestions: AgentResponse['suggestions'] = [];
@@ -835,7 +911,8 @@ export class AgentFrameworkService {
     } else if (failedActions.length > 0) {
       content = this.formatFailedActions(failedActions);
     } else if (intent.confidence < 0.5) {
-      content = "I'm not sure I understood your request. Could you please rephrase or provide more details?";
+      content =
+        "I'm not sure I understood your request. Could you please rephrase or provide more details?";
       suggestions.push(
         { id: '1', type: 'quick_reply', label: 'Show help', value: 'help' },
         { id: '2', type: 'quick_reply', label: 'Talk to human', value: 'escalate' }
@@ -886,9 +963,7 @@ export class AgentFrameworkService {
 - Sick Leave: ${balances.sick?.balance || 0} days
 - Casual Leave: ${balances.casual?.balance || 0} days
 - Comp Off: ${balances.compOff?.balance || 0} days`);
-      }
-
-      else if (action.name.toLowerCase().includes('attendance')) {
+      } else if (action.name.toLowerCase().includes('attendance')) {
         const att = output as {
           today: { checkIn: string; status: string };
           month: { present: number; absent: number; leaves: number; late: number };
@@ -896,51 +971,57 @@ export class AgentFrameworkService {
         results.push(`**Your Attendance:**
 - Today: Check-in at ${att.today?.checkIn || 'N/A'} | Status: ${att.today?.status || 'N/A'}
 - This Month: ${att.month?.present || 0} Present, ${att.month?.leaves || 0} Leaves, ${att.month?.late || 0} Late`);
-      }
-
-      else if (action.name.toLowerCase().includes('payslip')) {
+      } else if (action.name.toLowerCase().includes('payslip')) {
         const pay = output as { month: string; gross: number; deductions: number; net: number };
         results.push(`**Payslip for ${pay.month || 'Current Month'}:**
 - Gross Salary: ₹${(pay.gross || 0).toLocaleString()}
 - Deductions: ₹${(pay.deductions || 0).toLocaleString()}
 - Net Pay: ₹${(pay.net || 0).toLocaleString()}`);
-      }
-
-      else if (action.name.toLowerCase().includes('candidates')) {
-        const data = output as { total: number; shortlisted: number; candidates: { name: string; score: number; status: string }[] };
-        const candidateList = (data.candidates || []).map(c => `  - ${c.name}: Score ${c.score} (${c.status})`).join('\n');
+      } else if (action.name.toLowerCase().includes('candidates')) {
+        const data = output as {
+          total: number;
+          shortlisted: number;
+          candidates: { name: string; score: number; status: string }[];
+        };
+        const candidateList = (data.candidates || [])
+          .map((c) => `  - ${c.name}: Score ${c.score} (${c.status})`)
+          .join('\n');
         results.push(`**Candidate Screening Results:**
 - Total Candidates: ${data.total || 0}
 - Shortlisted: ${data.shortlisted || 0}
 - Top Candidates:
 ${candidateList}`);
-      }
-
-      else if (action.name.toLowerCase().includes('pipeline')) {
-        const pipe = output as { openPositions: number; totalCandidates: number; stages: Record<string, number> };
+      } else if (action.name.toLowerCase().includes('pipeline')) {
+        const pipe = output as {
+          openPositions: number;
+          totalCandidates: number;
+          stages: Record<string, number>;
+        };
         results.push(`**Recruitment Pipeline:**
 - Open Positions: ${pipe.openPositions || 0}
 - Total Candidates: ${pipe.totalCandidates || 0}
 - By Stage: New (${pipe.stages?.new || 0}), Screening (${pipe.stages?.screening || 0}), Interview (${pipe.stages?.interview || 0}), Offer (${pipe.stages?.offer || 0})`);
-      }
-
-      else if (action.name.toLowerCase().includes('metrics') || action.name.toLowerCase().includes('kpi')) {
-        const metrics = output as { headcount: { total: number; change: string }; attrition: { rate: string }; openPositions: number; timeToHire: string };
+      } else if (
+        action.name.toLowerCase().includes('metrics') ||
+        action.name.toLowerCase().includes('kpi')
+      ) {
+        const metrics = output as {
+          headcount: { total: number; change: string };
+          attrition: { rate: string };
+          openPositions: number;
+          timeToHire: string;
+        };
         results.push(`**Key HR Metrics:**
 - Total Headcount: ${metrics.headcount?.total || 0} (${metrics.headcount?.change || 'N/A'})
 - Attrition Rate: ${metrics.attrition?.rate || 'N/A'}
 - Open Positions: ${metrics.openPositions || 0}
 - Avg Time to Hire: ${metrics.timeToHire || 'N/A'}`);
-      }
-
-      else if (action.name.toLowerCase().includes('create')) {
+      } else if (action.name.toLowerCase().includes('create')) {
         const rec = output as { id: string; status: string };
         results.push(`✅ Your request has been submitted successfully!
 - Reference ID: ${rec.id || 'N/A'}
 - Status: ${rec.status || 'Pending'}`);
-      }
-
-      else if (action.name.toLowerCase().includes('report')) {
+      } else if (action.name.toLowerCase().includes('report')) {
         const rpt = output as { reportId: string; downloadUrl: string };
         results.push(`📊 Your report has been generated.
 - Report ID: ${rpt.reportId || 'N/A'}
@@ -955,7 +1036,7 @@ ${candidateList}`);
    * Format pending actions message
    */
   private static formatPendingActions(actions: AgentAction[]): string {
-    const actionNames = actions.map(a => a.name).join(', ');
+    const actionNames = actions.map((a) => a.name).join(', ');
     return `⏳ The following actions require approval: ${actionNames}. I've sent an approval request to the appropriate person.`;
   }
 
@@ -1034,7 +1115,10 @@ ${candidateList}`);
    * Create a new task
    */
   static async createTask(
-    task: Omit<AgentTask, 'id' | 'status' | 'actions' | 'progress' | 'retryCount' | 'createdAt' | 'updatedAt'>
+    task: Omit<
+      AgentTask,
+      'id' | 'status' | 'actions' | 'progress' | 'retryCount' | 'createdAt' | 'updatedAt'
+    >
   ): Promise<AgentTask> {
     const newTask: AgentTask = {
       id: `task_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
@@ -1111,15 +1195,15 @@ ${candidateList}`);
     filters?: { status?: TaskStatus; agentType?: AgentType }
   ): Promise<AgentTask[]> {
     const tasks = Array.from(taskQueue.values()).filter(
-      t => t.userId === userId && t.tenantId === tenantId
+      (t) => t.userId === userId && t.tenantId === tenantId
     );
 
     if (filters?.status) {
-      return tasks.filter(t => t.status === filters.status);
+      return tasks.filter((t) => t.status === filters.status);
     }
 
     if (filters?.agentType) {
-      return tasks.filter(t => t.agentType === filters.agentType);
+      return tasks.filter((t) => t.agentType === filters.agentType);
     }
 
     return tasks;
@@ -1134,7 +1218,7 @@ ${candidateList}`);
    */
   static emitEvent(event: AgentEvent): void {
     // In production, publish to event bus
-      }
+  }
 
   /**
    * Get agent metrics
@@ -1144,27 +1228,39 @@ ${candidateList}`);
     tenantId: string,
     period: { start: Date; end: Date }
   ): Promise<AgentMetrics> {
+    const { getAgentMetricsByType } = await import('@/lib/ai/agent-session');
+    const days = Math.max(1, Math.ceil((period.end.getTime() - period.start.getTime()) / 86400000));
+    const live = await getAgentMetricsByType(tenantId, agentType as never, days).catch(() => null);
+
     const tasks = Array.from(taskQueue.values()).filter(
-      t => t.agentType === agentType &&
-           t.tenantId === tenantId &&
-           t.createdAt >= period.start &&
-           t.createdAt <= period.end
+      (t) =>
+        t.agentType === agentType &&
+        t.tenantId === tenantId &&
+        t.createdAt >= period.start &&
+        t.createdAt <= period.end
     );
 
-    const successful = tasks.filter(t => t.status === 'COMPLETED');
-    const failed = tasks.filter(t => t.status === 'FAILED');
+    const successful = tasks.filter((t) => t.status === 'COMPLETED');
+    const failed = tasks.filter((t) => t.status === 'FAILED');
+
+    const durations = successful
+      .filter((t) => t.startedAt && t.completedAt)
+      .map((t) => t.completedAt!.getTime() - t.startedAt!.getTime());
+    const averageTaskDuration = durations.length
+      ? durations.reduce((a, b) => a + b, 0) / durations.length
+      : 0;
 
     return {
       agentType,
       period,
-      tasksProcessed: tasks.length,
-      tasksSuccessful: successful.length,
-      tasksFailed: failed.length,
-      averageResponseTime: 250, // Mock value
-      averageTaskDuration: 1500, // Mock value
-      autonomousExecutions: successful.length,
+      tasksProcessed: live?.totalRequests ?? tasks.length,
+      tasksSuccessful: live?.successful ?? successful.length,
+      tasksFailed: live?.failed ?? failed.length,
+      averageResponseTime: live ? live.avgResponseTime * 1000 : 0,
+      averageTaskDuration,
+      autonomousExecutions: live?.successful ?? successful.length,
       escalations: 0,
-      topIntents: [],
+      topIntents: (live?.topActions || []).map((a) => ({ intent: a.action, count: a.count })),
       errorsByType: [],
     };
   }
