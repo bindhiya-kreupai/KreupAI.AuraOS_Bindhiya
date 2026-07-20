@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import Link from 'next/link';
 import { DataPage, type Column } from '@aura/ui/components/ui';
 import { toast } from 'sonner';
@@ -13,6 +13,7 @@ import {
   RefreshCw,
   CheckCircle,
   XCircle,
+  X,
   Star,
   LayoutTemplate,
   Moon,
@@ -20,7 +21,9 @@ import {
   AlertCircle,
   Loader2,
   Search,
+  Filter,
 } from 'lucide-react';
+import { ExportMenu } from '@aura/ui/components/ui';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 
 type Stats = {
@@ -103,6 +106,9 @@ export default function ShiftManagementPage() {
   );
 
   const [shifts, setShifts] = useState<Shift[]>([]);
+  const [employees, setEmployees] = useState<
+    { id: string; firstName: string; lastName: string; employeeCode: string }[]
+  >([]);
   const [assignments, setAssignments] = useState<Assignment[]>([]);
   const [rosters, setRosters] = useState<Roster[]>([]);
   const [swaps, setSwaps] = useState<Swap[]>([]);
@@ -122,6 +128,12 @@ export default function ShiftManagementPage() {
   const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null);
   const [fetchError, setFetchError] = useState<string | null>(null);
 
+  // Date range filter state (assignments, rosters, swaps)
+  const defaultStart = new Date();
+  defaultStart.setMonth(defaultStart.getMonth() - 1);
+  const [filterStartDate, setFilterStartDate] = useState(defaultStart.toISOString().slice(0, 10));
+  const [filterEndDate, setFilterEndDate] = useState(new Date().toISOString().slice(0, 10));
+
   const { t, isRTL } = useI18n();
 
   const fetchStats = useCallback(async () => {
@@ -140,25 +152,41 @@ export default function ShiftManagementPage() {
     setShiftsLoading(false);
   }, []);
 
-  const fetchAssignments = useCallback(async () => {
+  const fetchAssignments = useCallback(async (startDate?: string, endDate?: string) => {
     setAssignmentsLoading(true);
-    const r = await apiJson<Assignment[]>('/api/v1/shift-assignments?limit=200');
+    const params = new URLSearchParams({ limit: '200' });
+    if (startDate) params.set('startDate', startDate);
+    if (endDate) params.set('endDate', endDate);
+    const r = await apiJson<Assignment[]>(`/api/v1/shift-assignments?${params}`);
     if (r.ok && r.data) setAssignments(r.data);
     else if (!r.ok) setFetchError(r.error?.message || 'Failed to load assignments');
     setAssignmentsLoading(false);
   }, []);
 
-  const fetchRosters = useCallback(async () => {
+  const fetchRosters = useCallback(async (startDate?: string, endDate?: string) => {
     setRostersLoading(true);
-    const r = await apiJson<Roster[]>('/api/v1/shift-rosters?limit=200');
+    const params = new URLSearchParams({ limit: '200' });
+    if (startDate) params.set('startDate', startDate);
+    if (endDate) params.set('endDate', endDate);
+    const r = await apiJson<Roster[]>(`/api/v1/shift-rosters?${params}`);
     if (r.ok && r.data) setRosters(r.data);
     else if (!r.ok) setFetchError(r.error?.message || 'Failed to load rosters');
     setRostersLoading(false);
   }, []);
 
-  const fetchSwaps = useCallback(async () => {
+  const fetchEmployees = useCallback(async () => {
+    const r = await apiJson<
+      { id: string; firstName: string; lastName: string; employeeCode: string }[]
+    >('/api/v1/employees?limit=200');
+    if (r.ok && r.data) setEmployees(r.data);
+  }, []);
+
+  const fetchSwaps = useCallback(async (startDate?: string, endDate?: string) => {
     setSwapsLoading(true);
-    const r = await apiJson<Swap[]>('/api/v1/shift-swaps?limit=200');
+    const params = new URLSearchParams({ limit: '200' });
+    if (startDate) params.set('startDate', startDate);
+    if (endDate) params.set('endDate', endDate);
+    const r = await apiJson<Swap[]>(`/api/v1/shift-swaps?${params}`);
     if (r.ok && r.data) setSwaps(r.data);
     else if (!r.ok) setFetchError(r.error?.message || 'Failed to load swaps');
     setSwapsLoading(false);
@@ -167,14 +195,18 @@ export default function ShiftManagementPage() {
   useEffect(() => {
     fetchStats();
     fetchShifts();
-  }, [fetchStats, fetchShifts]);
+    fetchEmployees();
+  }, [fetchStats, fetchShifts, fetchEmployees]);
 
   useEffect(() => {
-    if (activeTab === 'assignments' && assignmentsLoading) fetchAssignments();
-    if (activeTab === 'rosters' && rostersLoading) fetchRosters();
-    if (activeTab === 'swaps' && swapsLoading) fetchSwaps();
+    if (activeTab === 'assignments' && assignmentsLoading)
+      fetchAssignments(filterStartDate, filterEndDate);
+    if (activeTab === 'rosters' && rostersLoading) fetchRosters(filterStartDate, filterEndDate);
+    if (activeTab === 'swaps' && swapsLoading) fetchSwaps(filterStartDate, filterEndDate);
   }, [
     activeTab,
+    filterStartDate,
+    filterEndDate,
     fetchAssignments,
     fetchRosters,
     fetchSwaps,
@@ -282,6 +314,33 @@ export default function ShiftManagementPage() {
     await fetchShifts();
   };
 
+  const saveAsTemplate = async (row: Shift) => {
+    const payload = {
+      name: `${row.name} template`,
+      description: `Template from "${row.name}" shift`,
+      shiftCode: row.code,
+      shiftName: row.name,
+      shiftDescription: row.description || '',
+      startTime: row.startTime,
+      endTime: row.endTime,
+      workHours: row.workHours,
+      graceInMinutes: row.graceInMinutes,
+      graceOutMinutes: row.graceOutMinutes,
+      breakDuration: row.breakDuration,
+      overtimeAllowed: row.overtimeAllowed,
+      maxOvertimeHours: row.maxOvertimeHours || 0,
+    };
+    const r = await apiJson('/api/v1/shift-templates', {
+      method: 'POST',
+      body: JSON.stringify(payload),
+    });
+    if (!r.ok) {
+      toast.error(r.error?.message || 'Failed to save template');
+      return;
+    }
+    toast.success(`"${row.name}" saved as template`);
+  };
+
   // ---------------------------------------------------------------------------
   // Assignments tab
   // ---------------------------------------------------------------------------
@@ -338,21 +397,47 @@ export default function ShiftManagementPage() {
   ];
 
   const saveAssignment = async (record: Partial<Assignment>) => {
-    const payload = {
-      employeeId: record.employeeId,
-      shiftId: record.shiftId,
-      effectiveFrom: record.effectiveFrom,
-      effectiveTo: record.effectiveTo || undefined,
-      reason: record.reason,
-    };
-    const url = record.id ? `/api/v1/shift-assignments/${record.id}` : '/api/v1/shift-assignments';
-    const method = record.id ? 'PUT' : 'POST';
-    const r = await apiJson(url, { method, body: JSON.stringify(payload) });
-    if (!r.ok) {
-      toast.error(r.error?.message || 'Failed to save assignment');
-      return;
+    const ext = record as Record<string, any>;
+    if (record.id) {
+      const payload = {
+        employeeId: record.employeeId,
+        shiftId: record.shiftId,
+        effectiveFrom: record.effectiveFrom,
+        effectiveTo: record.effectiveTo || undefined,
+        reason: record.reason,
+      };
+      const res = await apiJson(`/api/v1/shift-assignments/${record.id}`, {
+        method: 'PUT',
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        toast.error(res.error?.message || 'Failed to update assignment');
+        return;
+      }
+      toast.success('Assignment updated');
+    } else {
+      const employeeIds = ext.employeeIds || (record.employeeId ? [record.employeeId] : []);
+      if (!employeeIds.length) {
+        toast.error('Select at least one employee');
+        return;
+      }
+      const payload = {
+        employeeIds,
+        shiftId: record.shiftId,
+        effectiveFrom: record.effectiveFrom,
+        effectiveTo: record.effectiveTo || undefined,
+        notes: record.reason,
+      };
+      const res = await apiJson('/api/v1/shifts/assign', {
+        method: 'POST',
+        body: JSON.stringify(payload),
+      });
+      if (!res.ok) {
+        toast.error(res.error?.message || 'Failed to assign shift');
+        return;
+      }
+      toast.success(`Shift assigned to ${employeeIds.length} employee(s)`);
     }
-    toast.success(record.id ? 'Assignment updated' : 'Assignment created');
     await Promise.all([fetchAssignments(), fetchStats()]);
   };
 
@@ -575,6 +660,16 @@ export default function ShiftManagementPage() {
     setRejectReason('');
   };
 
+  const handleExport = (entity: string) => async (format: 'csv' | 'xlsx' | 'pdf') => {
+    const params = new URLSearchParams({ entity, format });
+    const res = await fetch(`/api/v1/shifts/export?${params}`);
+    if (!res.ok) {
+      toast.error('Export failed');
+      return;
+    }
+    return res.blob();
+  };
+
   const swapRowActions = (row: Swap) => {
     const actions: Array<{
       label: string;
@@ -664,6 +759,12 @@ export default function ShiftManagementPage() {
           >
             <CalendarDays className="w-4 h-4" /> Roster planner
           </Link>
+          <Link
+            href="/dashboard/attendance/roster-calendar"
+            className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg border border-cloud dark:border-nebula-purple/50 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors"
+          >
+            <CalendarDays className="w-4 h-4" /> Calendar view
+          </Link>
         </div>
       </div>
 
@@ -716,7 +817,36 @@ export default function ShiftManagementPage() {
         </div>
       )}
 
-      {/* Tabs */}
+      {/* Date range filter for assignments / rosters / swaps */}
+      <div className="flex flex-wrap items-center gap-3 p-3 bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
+        <Filter className="w-4 h-4 text-silver-mist shrink-0" />
+        <label className="text-sm text-silver-mist">From:</label>
+        <input
+          type="date"
+          value={filterStartDate}
+          onChange={(e) => setFilterStartDate(e.target.value)}
+          className="px-2 py-1.5 text-sm border border-cloud dark:border-nebula-purple/50 rounded-lg bg-white dark:bg-slate-800 text-ink-black dark:text-pearl"
+        />
+        <label className="text-sm text-silver-mist">To:</label>
+        <input
+          type="date"
+          value={filterEndDate}
+          onChange={(e) => setFilterEndDate(e.target.value)}
+          className="px-2 py-1.5 text-sm border border-cloud dark:border-nebula-purple/50 rounded-lg bg-white dark:bg-slate-800 text-ink-black dark:text-pearl"
+        />
+        {(activeTab === 'assignments' || activeTab === 'rosters' || activeTab === 'swaps') && (
+          <button
+            onClick={() => {
+              setAssignmentsLoading(true);
+              setRostersLoading(true);
+              setSwapsLoading(true);
+            }}
+            className="px-3 py-1.5 text-sm font-medium bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-300 rounded-lg hover:bg-indigo-100 dark:hover:bg-indigo-900/50 transition-colors"
+          >
+            Apply
+          </button>
+        )}
+      </div>
       <div className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
         <div className="border-b border-cloud dark:border-nebula-purple/40">
           <nav className="flex gap-6 px-4 overflow-x-auto" aria-label="Tabs">
@@ -766,18 +896,31 @@ export default function ShiftManagementPage() {
                 description: 'Create your first shift to get started with shift management.',
                 icon: Clock,
               }}
-              rowActions={(row) =>
-                row.isDefault
-                  ? []
-                  : [
-                      {
-                        label: 'Set as default',
-                        icon: Star,
-                        variant: 'warning',
-                        onClick: () => setShiftDefault(row),
-                      },
-                    ]
+              toolbarSlot={
+                <ExportMenu
+                  onExport={handleExport('shifts')}
+                  filename={`shifts_${new Date().toISOString().slice(0, 10)}`}
+                  rowCount={shifts.length}
+                />
               }
+              rowActions={(row) => {
+                const actions: any[] = [];
+                if (!row.isDefault) {
+                  actions.push({
+                    label: 'Set as default',
+                    icon: Star,
+                    variant: 'warning',
+                    onClick: () => setShiftDefault(row),
+                  });
+                }
+                actions.push({
+                  label: 'Save as template',
+                  icon: LayoutTemplate,
+                  variant: 'default',
+                  onClick: () => saveAsTemplate(row),
+                });
+                return actions;
+              }}
               formFields={[
                 {
                   name: 'code',
@@ -830,20 +973,33 @@ export default function ShiftManagementPage() {
               onSave={saveAssignment}
               onDelete={deleteAssignment}
               addButtonText="Assign shift"
-              searchKeys={['employeeId', 'shift.name']}
+              searchKeys={[
+                'employee.firstName',
+                'employee.lastName',
+                'employee.employeeCode',
+                'shift.name',
+              ]}
               searchPlaceholder="Search by employee or shift..."
+              toolbarSlot={
+                <ExportMenu
+                  onExport={handleExport('assignments')}
+                  filename={`assignments_${new Date().toISOString().slice(0, 10)}`}
+                  rowCount={assignments.length}
+                />
+              }
               emptyState={{
                 title: 'No shift assignments',
                 description: 'Assign shifts to employees to define their work schedule.',
                 icon: Users,
               }}
-              formFields={[
-                { name: 'employeeId', label: 'Employee ID', type: 'text', required: true },
-                { name: 'shiftId', label: 'Shift ID', type: 'text', required: true },
-                { name: 'effectiveFrom', label: 'Effective from', type: 'date', required: true },
-                { name: 'effectiveTo', label: 'Effective to', type: 'date' },
-                { name: 'reason', label: 'Reason', type: 'textarea' },
-              ]}
+              renderForm={(data, onChange) => (
+                <BulkAssignForm
+                  data={data}
+                  onChange={onChange}
+                  employees={employees}
+                  shifts={shifts}
+                />
+              )}
             />
           )}
 
@@ -855,22 +1011,29 @@ export default function ShiftManagementPage() {
               onSave={saveRoster}
               onDelete={deleteRoster}
               addButtonText="Add roster entry"
-              searchKeys={['employeeId', 'shift.name', 'status']}
-              searchPlaceholder="Search by employee, shift, or status..."
+              searchKeys={[
+                'employee.firstName',
+                'employee.lastName',
+                'employee.employeeCode',
+                'shift.name',
+                'status',
+              ]}
+              searchPlaceholder="Search by employee name, shift, or status..."
+              toolbarSlot={
+                <ExportMenu
+                  onExport={handleExport('rosters')}
+                  filename={`rosters_${new Date().toISOString().slice(0, 10)}`}
+                  rowCount={rosters.length}
+                />
+              }
               emptyState={{
                 title: 'No roster entries',
                 description: 'Plan daily shift rosters for your employees.',
                 icon: Calendar,
               }}
-              formFields={[
-                { name: 'employeeId', label: 'Employee ID', type: 'text', required: true },
-                { name: 'shiftId', label: 'Shift ID', type: 'text', required: true },
-                { name: 'rosterDate', label: 'Date', type: 'date', required: true },
-                { name: 'customStartTime', label: 'Custom start (HH:MM)', type: 'text' },
-                { name: 'customEndTime', label: 'Custom end (HH:MM)', type: 'text' },
-                { name: 'isWeekOff', label: 'Week off', type: 'checkbox' },
-                { name: 'isHoliday', label: 'Holiday', type: 'checkbox' },
-              ]}
+              renderForm={(data, onChange) => (
+                <RosterForm data={data} onChange={onChange} employees={employees} shifts={shifts} />
+              )}
             />
           )}
 
@@ -883,27 +1046,30 @@ export default function ShiftManagementPage() {
               rowActions={swapRowActions}
               addButtonText="New swap request"
               enableDelete={false}
-              searchKeys={['requestorId', 'swapWithId', 'reason', 'status']}
-              searchPlaceholder="Search by requestor, swap partner, or status..."
+              searchKeys={[
+                'requestor.firstName',
+                'requestor.lastName',
+                'swapWith.firstName',
+                'swapWith.lastName',
+                'reason',
+                'status',
+              ]}
+              searchPlaceholder="Search by employee name, reason, or status..."
+              toolbarSlot={
+                <ExportMenu
+                  onExport={handleExport('swap-requests')}
+                  filename={`swap_requests_${new Date().toISOString().slice(0, 10)}`}
+                  rowCount={swaps.length}
+                />
+              }
               emptyState={{
                 title: 'No swap requests',
                 description: 'Shift swap requests from employees will appear here.',
                 icon: RefreshCw,
               }}
-              formFields={[
-                { name: 'requestorId', label: 'Your employee ID', type: 'text', required: true },
-                { name: 'requestorShiftId', label: 'Your shift ID', type: 'text', required: true },
-                { name: 'requestorDate', label: 'Your shift date', type: 'date', required: true },
-                {
-                  name: 'swapWithId',
-                  label: 'Swap with (employee ID)',
-                  type: 'text',
-                  required: true,
-                },
-                { name: 'swapWithShiftId', label: 'Their shift ID', type: 'text', required: true },
-                { name: 'swapWithDate', label: 'Their shift date', type: 'date', required: true },
-                { name: 'reason', label: 'Reason', type: 'textarea', required: true },
-              ]}
+              renderForm={(data, onChange) => (
+                <SwapForm data={data} onChange={onChange} employees={employees} shifts={shifts} />
+              )}
             />
           )}
         </div>
@@ -976,6 +1142,219 @@ export default function ShiftManagementPage() {
   );
 }
 
+function BulkAssignForm({
+  data,
+  onChange,
+  employees,
+  shifts,
+}: {
+  data: Partial<any>;
+  onChange: (field: string, value: any) => void;
+  employees: { id: string; firstName: string; lastName: string; employeeCode: string }[];
+  shifts: Shift[];
+}) {
+  const [search, setSearch] = useState('');
+  const [open, setOpen] = useState(false);
+  const selectedIds: string[] = data.employeeIds || [];
+  const wrapperRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!open) return;
+    function onDocClick(e: MouseEvent) {
+      if (!wrapperRef.current?.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener('mousedown', onDocClick);
+    return () => document.removeEventListener('mousedown', onDocClick);
+  }, [open]);
+
+  const filtered = useMemo(
+    () =>
+      employees.filter((e) =>
+        `${e.firstName} ${e.lastName} ${e.employeeCode}`
+          .toLowerCase()
+          .includes(search.toLowerCase())
+      ),
+    [employees, search]
+  );
+
+  function toggle(id: string) {
+    const next = selectedIds.includes(id)
+      ? selectedIds.filter((x) => x !== id)
+      : [...selectedIds, id];
+    onChange('employeeIds', next);
+  }
+
+  function selectAll() {
+    onChange(
+      'employeeIds',
+      filtered.map((e) => e.id)
+    );
+  }
+
+  function selectNone() {
+    onChange('employeeIds', []);
+  }
+
+  const selectedEmployees = useMemo(
+    () => employees.filter((e) => selectedIds.includes(e.id)),
+    [employees, selectedIds]
+  );
+
+  return (
+    <div className="space-y-4">
+      {/* Employee multi-select picker */}
+      <div className="space-y-1">
+        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+          Employees <span className="text-red-500">*</span>
+        </label>
+        <div ref={wrapperRef} className="relative">
+          <div
+            className="flex flex-wrap gap-1.5 min-h-[2.25rem] p-1.5 border rounded-md bg-white dark:bg-slate-800 dark:border-slate-700 cursor-text"
+            onClick={() => wrapperRef.current?.querySelector<HTMLInputElement>('input')?.focus()}
+          >
+            {selectedEmployees.map((emp) => (
+              <span
+                key={emp.id}
+                className="inline-flex items-center gap-1 pl-2 pr-1 py-0.5 rounded-full text-xs bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-200"
+              >
+                {emp.firstName} {emp.lastName}
+                <button
+                  type="button"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggle(emp.id);
+                  }}
+                  className="rounded-full hover:bg-blue-200 dark:hover:bg-blue-800 p-0.5"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </span>
+            ))}
+            <input
+              type="text"
+              placeholder={selectedIds.length ? 'Search more…' : 'Search employees…'}
+              value={search}
+              onChange={(e) => {
+                setSearch(e.target.value);
+                setOpen(true);
+              }}
+              onFocus={() => setOpen(true)}
+              className="flex-1 min-w-[120px] text-sm bg-transparent border-none outline-none text-ink-black dark:text-pearl placeholder:text-slate-400"
+            />
+          </div>
+          {open && (
+            <div className="absolute z-30 left-0 right-0 mt-1 bg-white dark:bg-stellar-blue rounded-lg shadow-lg ring-1 ring-slate-200 dark:ring-slate-700 max-h-60 overflow-y-auto">
+              {filtered.length === 0 && search.trim() ? (
+                <div className="px-3 py-4 text-sm text-slate-400 text-center">
+                  No employees found
+                </div>
+              ) : (
+                <>
+                  {search.trim() && filtered.length > 0 && (
+                    <div className="flex gap-2 px-2 pt-1.5 pb-1 border-b border-slate-100 dark:border-slate-800">
+                      <button
+                        type="button"
+                        onClick={selectAll}
+                        className="text-[11px] font-medium text-blue-600 hover:text-blue-800 dark:text-blue-400"
+                      >
+                        Select all
+                      </button>
+                      <button
+                        type="button"
+                        onClick={selectNone}
+                        className="text-[11px] font-medium text-slate-500 hover:text-slate-700 dark:text-slate-400"
+                      >
+                        Clear
+                      </button>
+                    </div>
+                  )}
+                  {filtered.map((emp) => (
+                    <label
+                      key={emp.id}
+                      className="flex items-center gap-2.5 px-3 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-800/50 cursor-pointer"
+                    >
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.includes(emp.id)}
+                        onChange={() => toggle(emp.id)}
+                        className="rounded border-slate-300 dark:border-slate-600"
+                      />
+                      <span className="font-medium text-ink-black dark:text-pearl">
+                        {emp.firstName} {emp.lastName}
+                      </span>
+                      <span className="text-xs text-slate-400">{emp.employeeCode}</span>
+                    </label>
+                  ))}
+                </>
+              )}
+            </div>
+          )}
+        </div>
+        {selectedIds.length > 0 && (
+          <p className="text-xs text-slate-500">{selectedIds.length} employee(s) selected</p>
+        )}
+      </div>
+
+      {/* Shift select */}
+      <div className="space-y-1">
+        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+          Shift <span className="text-red-500">*</span>
+        </label>
+        <select
+          value={data.shiftId || ''}
+          onChange={(e) => onChange('shiftId', e.target.value)}
+          className="w-full p-2 border rounded-md bg-white dark:bg-slate-800 dark:border-slate-700 text-ink-black dark:text-pearl"
+        >
+          <option value="">Select shift...</option>
+          {shifts.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.name} ({s.code})
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Effective from */}
+      <div className="space-y-1">
+        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+          Effective from <span className="text-red-500">*</span>
+        </label>
+        <input
+          type="date"
+          value={data.effectiveFrom || ''}
+          onChange={(e) => onChange('effectiveFrom', e.target.value)}
+          className="w-full p-2 border rounded-md bg-white dark:bg-slate-800 dark:border-slate-700 text-ink-black dark:text-pearl"
+        />
+      </div>
+
+      {/* Effective to */}
+      <div className="space-y-1">
+        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+          Effective to
+        </label>
+        <input
+          type="date"
+          value={data.effectiveTo || ''}
+          onChange={(e) => onChange('effectiveTo', e.target.value)}
+          className="w-full p-2 border rounded-md bg-white dark:bg-slate-800 dark:border-slate-700 text-ink-black dark:text-pearl"
+        />
+      </div>
+
+      {/* Reason / Notes */}
+      <div className="space-y-1">
+        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">Notes</label>
+        <textarea
+          value={data.reason || ''}
+          onChange={(e) => onChange('reason', e.target.value)}
+          rows={3}
+          className="w-full p-2 border rounded-md bg-white dark:bg-slate-800 dark:border-slate-700 text-ink-black dark:text-pearl resize-none"
+          placeholder="Optional notes about this assignment..."
+        />
+      </div>
+    </div>
+  );
+}
+
 function StatCard({
   icon,
   label,
@@ -1012,6 +1391,353 @@ function StatCard({
           )}
         </div>
         {icon}
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// F-26: Roster form with employee and shift dropdowns
+// ---------------------------------------------------------------------------
+function RosterForm({
+  data,
+  onChange,
+  employees,
+  shifts,
+}: {
+  data: Partial<Roster>;
+  onChange: (field: string, value: any) => void;
+  employees: { id: string; firstName: string; lastName: string; employeeCode: string }[];
+  shifts: Shift[];
+}) {
+  const [empSearch, setEmpSearch] = useState('');
+  const [empOpen, setEmpOpen] = useState(false);
+  const empWrapperRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!empOpen) return;
+    function onDocClick(e: MouseEvent) {
+      if (!empWrapperRef.current?.contains(e.target as Node)) setEmpOpen(false);
+    }
+    document.addEventListener('mousedown', onDocClick);
+    return () => document.removeEventListener('mousedown', onDocClick);
+  }, [empOpen]);
+
+  const filteredEmployees = useMemo(
+    () =>
+      employees.filter((e) =>
+        `${e.firstName} ${e.lastName} ${e.employeeCode}`
+          .toLowerCase()
+          .includes(empSearch.toLowerCase())
+      ),
+    [employees, empSearch]
+  );
+
+  const selectedEmployee = employees.find((e) => e.id === data.employeeId);
+
+  return (
+    <div className="space-y-4">
+      {/* Employee dropdown */}
+      <div className="space-y-1">
+        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+          Employee <span className="text-red-500">*</span>
+        </label>
+        <div ref={empWrapperRef} className="relative">
+          <div
+            className="flex items-center gap-2 px-3 py-2 border rounded-md bg-white dark:bg-slate-800 dark:border-slate-700 cursor-pointer min-h-[38px]"
+            onClick={() => setEmpOpen((o) => !o)}
+          >
+            {selectedEmployee ? (
+              <span className="text-sm text-ink-black dark:text-pearl flex-1">
+                {selectedEmployee.firstName} {selectedEmployee.lastName}
+                <span className="ml-1 text-xs text-slate-400">
+                  ({selectedEmployee.employeeCode})
+                </span>
+              </span>
+            ) : (
+              <span className="text-sm text-slate-400 flex-1">Select employee...</span>
+            )}
+            <Search className="w-4 h-4 text-slate-400 shrink-0" />
+          </div>
+          {empOpen && (
+            <div className="absolute z-30 left-0 right-0 mt-1 bg-white dark:bg-stellar-blue rounded-lg shadow-lg ring-1 ring-slate-200 dark:ring-slate-700 max-h-60 overflow-hidden flex flex-col">
+              <div className="p-2 border-b border-slate-100 dark:border-slate-800">
+                <input
+                  type="text"
+                  placeholder="Search by name or code..."
+                  value={empSearch}
+                  onChange={(e) => setEmpSearch(e.target.value)}
+                  className="w-full px-2 py-1 text-sm border border-slate-200 dark:border-slate-700 rounded bg-white dark:bg-slate-900 text-ink-black dark:text-pearl outline-none"
+                  autoFocus
+                />
+              </div>
+              <div className="overflow-y-auto max-h-48">
+                {filteredEmployees.length === 0 ? (
+                  <div className="px-3 py-4 text-sm text-slate-400 text-center">
+                    No employees found
+                  </div>
+                ) : (
+                  filteredEmployees.map((emp) => (
+                    <button
+                      key={emp.id}
+                      type="button"
+                      onClick={() => {
+                        onChange('employeeId', emp.id);
+                        setEmpOpen(false);
+                        setEmpSearch('');
+                      }}
+                      className={`w-full text-left flex items-center gap-2.5 px-3 py-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-800/50 ${
+                        data.employeeId === emp.id ? 'bg-indigo-50 dark:bg-indigo-900/20' : ''
+                      }`}
+                    >
+                      <span className="font-medium text-ink-black dark:text-pearl">
+                        {emp.firstName} {emp.lastName}
+                      </span>
+                      <span className="text-xs text-slate-400">{emp.employeeCode}</span>
+                    </button>
+                  ))
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Shift dropdown */}
+      <div className="space-y-1">
+        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+          Shift <span className="text-red-500">*</span>
+        </label>
+        <select
+          value={data.shiftId || ''}
+          onChange={(e) => onChange('shiftId', e.target.value)}
+          className="w-full p-2 border rounded-md bg-white dark:bg-slate-800 dark:border-slate-700 text-ink-black dark:text-pearl text-sm"
+        >
+          <option value="">Select shift...</option>
+          {shifts.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.name} ({s.code}) · {s.startTime}–{s.endTime}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Roster date */}
+      <div className="space-y-1">
+        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+          Date <span className="text-red-500">*</span>
+        </label>
+        <input
+          type="date"
+          value={
+            data.rosterDate
+              ? typeof data.rosterDate === 'string'
+                ? data.rosterDate.slice(0, 10)
+                : new Date(data.rosterDate).toISOString().slice(0, 10)
+              : ''
+          }
+          onChange={(e) => onChange('rosterDate', e.target.value)}
+          className="w-full p-2 border rounded-md bg-white dark:bg-slate-800 dark:border-slate-700 text-ink-black dark:text-pearl text-sm"
+        />
+      </div>
+
+      {/* Custom times */}
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-1">
+          <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+            Custom start (HH:MM)
+          </label>
+          <input
+            type="time"
+            value={data.customStartTime || ''}
+            onChange={(e) => onChange('customStartTime', e.target.value || undefined)}
+            className="w-full p-2 border rounded-md bg-white dark:bg-slate-800 dark:border-slate-700 text-ink-black dark:text-pearl text-sm"
+          />
+        </div>
+        <div className="space-y-1">
+          <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+            Custom end (HH:MM)
+          </label>
+          <input
+            type="time"
+            value={data.customEndTime || ''}
+            onChange={(e) => onChange('customEndTime', e.target.value || undefined)}
+            className="w-full p-2 border rounded-md bg-white dark:bg-slate-800 dark:border-slate-700 text-ink-black dark:text-pearl text-sm"
+          />
+        </div>
+      </div>
+
+      {/* Flags */}
+      <div className="flex gap-6">
+        <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={!!data.isWeekOff}
+            onChange={(e) => onChange('isWeekOff', e.target.checked)}
+            className="rounded border-slate-300 dark:border-slate-600"
+          />
+          Week off
+        </label>
+        <label className="flex items-center gap-2 text-sm text-slate-700 dark:text-slate-300 cursor-pointer">
+          <input
+            type="checkbox"
+            checked={!!data.isHoliday}
+            onChange={(e) => onChange('isHoliday', e.target.checked)}
+            className="rounded border-slate-300 dark:border-slate-600"
+          />
+          Holiday
+        </label>
+      </div>
+    </div>
+  );
+}
+
+// ---------------------------------------------------------------------------
+// F-26: Swap request form with employee and shift dropdowns
+// ---------------------------------------------------------------------------
+function SwapForm({
+  data,
+  onChange,
+  employees,
+  shifts,
+}: {
+  data: Partial<Swap>;
+  onChange: (field: string, value: any) => void;
+  employees: { id: string; firstName: string; lastName: string; employeeCode: string }[];
+  shifts: Shift[];
+}) {
+  return (
+    <div className="space-y-4">
+      {/* Requestor (you) */}
+      <div className="space-y-1">
+        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+          Requestor (you) <span className="text-red-500">*</span>
+        </label>
+        <select
+          value={data.requestorId || ''}
+          onChange={(e) => onChange('requestorId', e.target.value)}
+          className="w-full p-2 border rounded-md bg-white dark:bg-slate-800 dark:border-slate-700 text-ink-black dark:text-pearl text-sm"
+        >
+          <option value="">Select your employee record...</option>
+          {employees.map((emp) => (
+            <option key={emp.id} value={emp.id}>
+              {emp.firstName} {emp.lastName} ({emp.employeeCode})
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Requestor shift */}
+      <div className="space-y-1">
+        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+          Your shift <span className="text-red-500">*</span>
+        </label>
+        <select
+          value={data.requestorShiftId || ''}
+          onChange={(e) => onChange('requestorShiftId', e.target.value)}
+          className="w-full p-2 border rounded-md bg-white dark:bg-slate-800 dark:border-slate-700 text-ink-black dark:text-pearl text-sm"
+        >
+          <option value="">Select your shift...</option>
+          {shifts.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.name} ({s.code}) · {s.startTime}–{s.endTime}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Requestor date */}
+      <div className="space-y-1">
+        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+          Your shift date <span className="text-red-500">*</span>
+        </label>
+        <input
+          type="date"
+          value={
+            data.requestorDate
+              ? typeof data.requestorDate === 'string'
+                ? data.requestorDate.slice(0, 10)
+                : new Date(data.requestorDate).toISOString().slice(0, 10)
+              : ''
+          }
+          onChange={(e) => onChange('requestorDate', e.target.value)}
+          className="w-full p-2 border rounded-md bg-white dark:bg-slate-800 dark:border-slate-700 text-ink-black dark:text-pearl text-sm"
+        />
+      </div>
+
+      <hr className="border-slate-100 dark:border-slate-800" />
+
+      {/* Swap with employee */}
+      <div className="space-y-1">
+        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+          Swap with (colleague) <span className="text-red-500">*</span>
+        </label>
+        <select
+          value={data.swapWithId || ''}
+          onChange={(e) => onChange('swapWithId', e.target.value)}
+          className="w-full p-2 border rounded-md bg-white dark:bg-slate-800 dark:border-slate-700 text-ink-black dark:text-pearl text-sm"
+        >
+          <option value="">Select colleague...</option>
+          {employees
+            .filter((emp) => emp.id !== data.requestorId)
+            .map((emp) => (
+              <option key={emp.id} value={emp.id}>
+                {emp.firstName} {emp.lastName} ({emp.employeeCode})
+              </option>
+            ))}
+        </select>
+      </div>
+
+      {/* Their shift */}
+      <div className="space-y-1">
+        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+          Their shift <span className="text-red-500">*</span>
+        </label>
+        <select
+          value={data.swapWithShiftId || ''}
+          onChange={(e) => onChange('swapWithShiftId', e.target.value)}
+          className="w-full p-2 border rounded-md bg-white dark:bg-slate-800 dark:border-slate-700 text-ink-black dark:text-pearl text-sm"
+        >
+          <option value="">Select their shift...</option>
+          {shifts.map((s) => (
+            <option key={s.id} value={s.id}>
+              {s.name} ({s.code}) · {s.startTime}–{s.endTime}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Their date */}
+      <div className="space-y-1">
+        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+          Their shift date <span className="text-red-500">*</span>
+        </label>
+        <input
+          type="date"
+          value={
+            data.swapWithDate
+              ? typeof data.swapWithDate === 'string'
+                ? data.swapWithDate.slice(0, 10)
+                : new Date(data.swapWithDate).toISOString().slice(0, 10)
+              : ''
+          }
+          onChange={(e) => onChange('swapWithDate', e.target.value)}
+          className="w-full p-2 border rounded-md bg-white dark:bg-slate-800 dark:border-slate-700 text-ink-black dark:text-pearl text-sm"
+        />
+      </div>
+
+      {/* Reason */}
+      <div className="space-y-1">
+        <label className="text-sm font-medium text-slate-700 dark:text-slate-300">
+          Reason <span className="text-red-500">*</span>
+        </label>
+        <textarea
+          value={data.reason || ''}
+          onChange={(e) => onChange('reason', e.target.value)}
+          rows={3}
+          placeholder="Why are you requesting this swap?"
+          className="w-full p-2 border rounded-md bg-white dark:bg-slate-800 dark:border-slate-700 text-ink-black dark:text-pearl text-sm resize-none"
+        />
       </div>
     </div>
   );
