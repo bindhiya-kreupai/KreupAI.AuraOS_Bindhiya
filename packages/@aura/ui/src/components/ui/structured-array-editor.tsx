@@ -277,13 +277,8 @@ export function StructuredArrayEditor<T extends Record<string, unknown> = Record
                                                 <SearchableSelect
                                                     apiUrl={col.apiUrl ?? ''}
                                                     value={(cellValue as string) ?? ''}
-                                                    onSelect={(id, label, extra) => {
+                                                    onSelect={(id) => {
                                                         update(rowIdx, col.key, id);
-                                                        // If there's a linked role column, auto-fill it.
-                                                        const roleCol = columns.find((c) => c.key === 'role');
-                                                        if (roleCol && extra?.role) {
-                                                            update(rowIdx, 'role', extra.role);
-                                                        }
                                                     }}
                                                     placeholder={col.placeholder ?? 'Search...'}
                                                 />
