@@ -127,7 +127,7 @@ export default function CertificatePage() {
                         Sign
                       </button>
                     ) : (
-                      '—'
+                      <span className="text-green-600 font-medium">Signed</span>
                     )}
                   </td>
                 </tr>
