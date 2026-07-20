@@ -50,6 +50,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     }
     const { searchParams } = new URL(request.url);
 
+    const rawLimit = Math.min(Math.max(Number(searchParams.get('limit')) || 20, 1), 200);
     const filter = {
       tenantId: user.tenantId,
       isActive:
@@ -58,8 +59,8 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
           : searchParams.get('isActive') === 'false'
             ? false
             : undefined,
-      page: Number(searchParams.get('page')) || 1,
-      limit: Math.min(Number(searchParams.get('limit')) || 20, 200),
+      page: Math.max(Number(searchParams.get('page')) || 1, 1),
+      limit: rawLimit,
       sortBy: searchParams.get('sortBy') || 'name',
       sortOrder: (searchParams.get('sortOrder') || 'asc') as 'asc' | 'desc',
     };
@@ -136,7 +137,7 @@ export const POST = withAudit(
 
       body.tenantId = user.tenantId;
 
-      const shift = await ShiftManagementService.createShift(body);
+      const shift = await ShiftManagementService.createShift(body, user.userId || user.id);
 
       const responseData = {
         id: shift.id,
@@ -168,6 +169,9 @@ export const POST = withAudit(
     }
   }),
   {
+    // TODO: Add shift-specific AuditActions (SHIFT_CREATED, SHIFT_UPDATED, etc.)
+    // to the AuditAction enum. Currently using EMPLOYEE_UPDATED as a placeholder
+    // which makes shift audit entries indistinguishable from employee updates.
     action: AuditAction.EMPLOYEE_UPDATED,
     resourceType: 'shift',
     captureRequestBody: true,

@@ -25,7 +25,12 @@ export const PUT = withAudit(
       const { id } = params;
       const body = await request.json();
 
-      const roster = await ShiftManagementService.updateRoster(id, user.tenantId, body);
+      const roster = await ShiftManagementService.updateRoster(
+        id,
+        user.tenantId,
+        body,
+        user.userId || user.id
+      );
       if (!roster) {
         return NextResponse.json(
           {

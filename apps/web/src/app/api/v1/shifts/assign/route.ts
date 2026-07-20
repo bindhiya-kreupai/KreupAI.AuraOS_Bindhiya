@@ -284,6 +284,7 @@ export const POST = withAudit(
     }
   }),
   {
+    // TODO: Add shift-specific AuditAction (SHIFT_ASSIGNED)
     action: AuditAction.EMPLOYEE_UPDATED,
     resourceType: 'shift_assignment',
     captureRequestBody: true,

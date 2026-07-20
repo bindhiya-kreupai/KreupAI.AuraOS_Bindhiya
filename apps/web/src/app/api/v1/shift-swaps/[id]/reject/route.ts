@@ -27,6 +27,20 @@ export const POST = withAudit(
       const { reason } = body;
       const employeeId = context.employeeId || user.userId;
 
+      if (!reason || typeof reason !== 'string' || reason.trim().length === 0) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'E2001',
+              message: 'Rejection reason is required',
+              messageAr: 'سبب الرفض مطلوب',
+            },
+          },
+          { status: 400 }
+        );
+      }
+
       const swap = await ShiftManagementService.rejectSwap(id, user.tenantId, employeeId, reason);
       return NextResponse.json({ success: true, data: swap });
     } catch (error: any) {
@@ -44,6 +58,7 @@ export const POST = withAudit(
     }
   }),
   {
+    // TODO: Add shift-specific AuditAction (SHIFT_SWAP_REJECTED)
     action: AuditAction.LEAVE_REQUEST_REJECTED,
     resourceType: 'shiftSwap',
     captureRequestBody: true,

@@ -42,6 +42,7 @@ export const POST = withAudit(
     }
   }),
   {
+    // TODO: Add shift-specific AuditAction (SHIFT_SWAP_PEER_APPROVED)
     action: AuditAction.LEAVE_REQUEST_APPROVED,
     resourceType: 'shiftSwap',
     extractResourceId: (req, ctx) => ctx?.params?.id,

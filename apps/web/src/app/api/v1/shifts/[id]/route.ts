@@ -60,7 +60,12 @@ export const PUT = withAudit(
       const { id } = params;
       const body = await request.json();
 
-      const shift = await ShiftManagementService.updateShift(id, user.tenantId, body);
+      const shift = await ShiftManagementService.updateShift(
+        id,
+        user.tenantId,
+        body,
+        user.userId || user.id
+      );
       if (!shift) {
         return NextResponse.json(
           { success: false, error: { code: 'E2001', message: 'Shift not found' } },
@@ -86,6 +91,7 @@ export const PUT = withAudit(
     }
   }),
   {
+    // TODO: Add shift-specific AuditAction (SHIFT_UPDATED)
     action: AuditAction.EMPLOYEE_UPDATED,
     resourceType: 'shift',
     captureRequestBody: true,
@@ -129,7 +135,8 @@ export const DELETE = withAudit(
     }
   }),
   {
-    action: AuditAction.EMPLOYEE_UPDATED,
+    // TODO: Add shift-specific AuditAction (SHIFT_DELETED)
+    action: AuditAction.EMPLOYEE_DELETED,
     resourceType: 'shift',
     extractResourceId: (req, ctx) => ctx?.params?.id,
   }

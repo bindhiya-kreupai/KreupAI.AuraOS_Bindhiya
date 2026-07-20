@@ -34,6 +34,7 @@ export const POST = withAudit(
     }
   }),
   {
+    // TODO: Add shift-specific AuditAction (SHIFT_DEFAULT_UPDATED)
     action: AuditAction.EMPLOYEE_UPDATED,
     resourceType: 'shift',
     extractResourceId: (req, ctx) => ctx?.params?.id,

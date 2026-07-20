@@ -8,6 +8,7 @@ import { prisma } from '@aura/database';
 /**
  * POST /api/v1/shifts/open/[id]/claim
  * Claim an open shift roster slot by assigning the requesting employee.
+ * Uses an atomic update with a WHERE condition to prevent race conditions (TOCTOU).
  */
 export const POST = withAudit(
   withEnhancedAuth(async (request: NextRequest, context: any) => {
@@ -45,29 +46,44 @@ export const POST = withAudit(
         );
       }
 
-      // Find the open shift roster entry
-      // Cast: the `shift` relation is not declared on ShiftRoster in schema.prisma
-      const roster = await (prisma as any).shiftRoster.findFirst({
-        where: { id, tenantId: user.tenantId },
-        include: { shift: true },
+      // Atomic claim: only update if status is OPEN. This prevents race conditions
+      // where two concurrent requests both read OPEN and both succeed.
+      const result = await prisma.shiftRoster.updateMany({
+        where: {
+          id,
+          tenantId: user.tenantId,
+          status: 'OPEN',
+          isDeleted: false,
+        },
+        data: {
+          employeeId,
+          status: 'CLAIMED',
+          updatedBy: user.userId || user.id,
+        },
       });
 
-      if (!roster) {
-        return NextResponse.json(
-          {
-            success: false,
-            error: { code: 'E4001', message: `Open shift with id '${id}' not found` },
-            meta: {
-              timestamp: new Date().toISOString(),
-              requestId: crypto.randomUUID(),
-              apiVersion: 'v1',
-            },
-          },
-          { status: 404 }
-        );
-      }
+      if (result.count === 0) {
+        // Either the roster doesn't exist or it's no longer OPEN
+        const roster = await prisma.shiftRoster.findFirst({
+          where: { id, tenantId: user.tenantId, isDeleted: false },
+          include: { shift: true },
+        });
 
-      if (roster.status !== 'OPEN') {
+        if (!roster) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: { code: 'E4001', message: `Open shift with id '${id}' not found` },
+              meta: {
+                timestamp: new Date().toISOString(),
+                requestId: crypto.randomUUID(),
+                apiVersion: 'v1',
+              },
+            },
+            { status: 404 }
+          );
+        }
+
         return NextResponse.json(
           {
             success: false,
@@ -82,27 +98,22 @@ export const POST = withAudit(
         );
       }
 
-      // Claim the shift by updating the roster entry
-      // Cast: the `shift` relation is not declared on ShiftRoster in schema.prisma
-      const updated = await (prisma as any).shiftRoster.update({
-        where: { id },
-        data: {
-          employeeId,
-          status: 'CLAIMED',
-        },
+      // Fetch the updated roster for the response
+      const updated = await prisma.shiftRoster.findFirst({
+        where: { id, tenantId: user.tenantId },
         include: { shift: true },
       });
 
       return NextResponse.json({
         success: true,
         data: {
-          id: updated.id,
-          tenantId: updated.tenantId,
-          employeeId: updated.employeeId,
-          shiftId: updated.shiftId,
-          shiftName: updated.shift.name,
-          rosterDate: updated.rosterDate,
-          status: updated.status,
+          id: updated!.id,
+          tenantId: updated!.tenantId,
+          employeeId: updated!.employeeId,
+          shiftId: updated!.shiftId,
+          shiftName: (updated!.shift as any)?.name,
+          rosterDate: updated!.rosterDate,
+          status: updated!.status,
           claimedAt: new Date().toISOString(),
         },
         meta: {

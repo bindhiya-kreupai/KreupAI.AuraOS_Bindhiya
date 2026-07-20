@@ -25,7 +25,12 @@ export const PUT = withAudit(
       const { id } = params;
       const body = await request.json();
 
-      const assignment = await ShiftManagementService.updateAssignment(id, user.tenantId, body);
+      const assignment = await ShiftManagementService.updateAssignment(
+        id,
+        user.tenantId,
+        body,
+        user.userId || user.id
+      );
       if (!assignment) {
         return NextResponse.json(
           {
