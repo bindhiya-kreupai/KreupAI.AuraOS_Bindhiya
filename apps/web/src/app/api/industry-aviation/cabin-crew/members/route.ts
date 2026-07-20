@@ -28,6 +28,8 @@ export const POST = createProtectedRoute(
       const data = await prisma.aviationCabinCrewMember.create({
         data: {
           ...body,
+          crewId: body.crewId || crypto.randomUUID(),
+          employeeId: body.employeeId || `EMP-${Date.now()}`,
           tenantId,
           createdBy: context.auth!.userId,
         },

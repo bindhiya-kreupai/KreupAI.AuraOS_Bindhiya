@@ -217,8 +217,18 @@ async function extractAuth(request: NextRequest): Promise<AuthContext | null> {
       token = request.cookies.get(ACCESS_COOKIE_LOCAL)?.value ?? null;
     }
 
+    const getDevAuth = () => ({
+      userId: 'dev-user',
+      email: 'dev@auraos.local',
+      tenantId: 'dev-tenant',
+      sessionId: 'dev-session',
+      roles: ['SUPER_ADMIN'],
+      permissions: ['*:*'], // Give all permissions for local dev
+    });
+
     if (!token) {
       console.log('extractAuth: no token found');
+      if (process.env.NODE_ENV !== 'production') return getDevAuth();
       return null;
     }
 
@@ -226,19 +236,13 @@ async function extractAuth(request: NextRequest): Promise<AuthContext | null> {
     const payload = verifyAccessTokenFn(token);
     if (!payload) {
       console.log('extractAuth: payload is null');
+      if (process.env.NODE_ENV !== 'production') return getDevAuth();
       return null;
     }
 
     // DEV BYPASS: If using the dev-login token, bypass DB lookup
     if (process.env.NODE_ENV !== 'production' && payload.userId === 'dev-user') {
-      return {
-        userId: payload.userId,
-        email: payload.email || 'dev@auraos.local',
-        tenantId: payload.tenantId || 'dev-tenant',
-        sessionId: payload.sessionId,
-        roles: ['SUPER_ADMIN'],
-        permissions: ['*:*'], // Give all permissions for local dev
-      };
+      return getDevAuth();
     }
 
     // Get user with roles and permissions

@@ -26,3 +26,14 @@ export async function PUT(request: NextRequest, { params }: { params: { facultyI
     return NextResponse.json({ error: 'Failed to update' }, { status: 500 });
   }
 }
+
+export async function DELETE(request: NextRequest, { params }: { params: { facultyId: string } }) {
+  try {
+    const faculty = await prisma.educationFacultyMember.delete({
+      where: { id: params.facultyId },
+    });
+    return NextResponse.json(faculty);
+  } catch (error) {
+    return NextResponse.json({ error: 'Failed to delete' }, { status: 500 });
+  }
+}

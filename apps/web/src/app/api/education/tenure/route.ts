@@ -4,7 +4,22 @@ import { prisma } from '@aura/database';
 
 export async function GET(request: NextRequest) {
   try {
-    const applications = await prisma.educationTenureApplication.findMany();
+    const searchParams = request.nextUrl.searchParams;
+    const search = searchParams.get('search');
+
+    let whereClause = {};
+    if (search) {
+      whereClause = {
+        OR: [
+          { facultyId: { contains: search, mode: 'insensitive' } },
+          { status: { contains: search, mode: 'insensitive' } },
+        ],
+      };
+    }
+
+    const applications = await prisma.educationTenureApplication.findMany({
+      where: whereClause,
+    });
     return NextResponse.json(applications);
   } catch (error) {
     return NextResponse.json({ error: 'Failed to fetch tenure applications' }, { status: 500 });
