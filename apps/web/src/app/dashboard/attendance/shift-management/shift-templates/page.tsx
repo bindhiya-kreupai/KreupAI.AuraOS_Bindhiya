@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import Link from 'next/link';
 import {
   ArrowLeft,
@@ -190,6 +190,7 @@ export default function ShiftTemplatesPage() {
   const [created, setCreated] = useState<Record<string, boolean>>({});
   const [error, setError] = useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const seedingRef = useRef(false);
   const [newTemplate, setNewTemplate] = useState({
     name: '',
     description: '',
@@ -227,15 +228,21 @@ export default function ShiftTemplatesPage() {
   }, []);
 
   const seedDefaults = async () => {
+    if (seedingRef.current) return;
+    seedingRef.current = true;
     setSeeding(true);
     try {
-      await Promise.all(
+      await Promise.allSettled(
         SEED_TEMPLATES.map((tpl) =>
           fetch('/api/v1/shift-templates', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(tpl),
-          }).then((r) => r.json())
+          }).then((r) => {
+            // 409 = already seeded, ignore
+            if (r.status === 409) return null;
+            return r.json();
+          })
         )
       );
       await fetchTemplates();
