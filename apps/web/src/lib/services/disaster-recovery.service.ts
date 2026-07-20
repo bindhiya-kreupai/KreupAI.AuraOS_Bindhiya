@@ -81,7 +81,7 @@ export class DisasterRecoveryService extends BaseService {
     notes?: string;
     actorId: string;
   }) {
-    return prisma.dRDrill.create({
+    return (prisma as any).dRDrill.create({
       data: {
         tenantId: input.tenantId ?? null,
         name: input.name,
@@ -99,10 +99,10 @@ export class DisasterRecoveryService extends BaseService {
   }
 
   async startDrill(id: string, actorId: string) {
-    const drill = await prisma.dRDrill.findFirst({ where: { id } });
+    const drill = await (prisma as any).dRDrill.findFirst({ where: { id } });
     if (!drill) return null;
     this.assertTransition(drill.outcome as DROutcome, 'IN_PROGRESS');
-    return prisma.dRDrill.update({
+    return (prisma as any).dRDrill.update({
       where: { id },
       data: { outcome: 'IN_PROGRESS', updatedBy: actorId },
     });
@@ -115,7 +115,7 @@ export class DisasterRecoveryService extends BaseService {
     actualRtoMin: number;
     notes?: string;
   }) {
-    const drill = await prisma.dRDrill.findFirst({ where: { id: input.id } });
+    const drill = await (prisma as any).dRDrill.findFirst({ where: { id: input.id } });
     if (!drill) return null;
     const eval_ = this.evaluateDrill({
       rpoTargetMin: drill.rpoTargetMin,
@@ -124,7 +124,7 @@ export class DisasterRecoveryService extends BaseService {
       actualRtoMin: input.actualRtoMin,
     });
     this.assertTransition(drill.outcome as DROutcome, eval_.verdict);
-    return prisma.dRDrill.update({
+    return (prisma as any).dRDrill.update({
       where: { id: input.id },
       data: {
         outcome: eval_.verdict,
@@ -148,7 +148,7 @@ export class DisasterRecoveryService extends BaseService {
     recoveryPoint: Date;
   }) {
     const now = new Date();
-    return prisma.backupRun.findFirst({
+    return (prisma as any).backupRun.findFirst({
       where: {
         tenantId: input.tenantId ?? undefined,
         jobName: input.jobName,
@@ -173,8 +173,13 @@ export class DisasterRecoveryService extends BaseService {
     if (params.tenantId !== undefined) where.tenantId = params.tenantId;
     if (params.outcome) where.outcome = params.outcome;
     const [items, total] = await Promise.all([
-      prisma.dRDrill.findMany({ where, orderBy: { startedAt: 'desc' }, skip, take: limit }),
-      prisma.dRDrill.count({ where }),
+      (prisma as any).dRDrill.findMany({
+        where,
+        orderBy: { startedAt: 'desc' },
+        skip,
+        take: limit,
+      }),
+      (prisma as any).dRDrill.count({ where }),
     ]);
     return { items, total, page, pageSize: limit, hasNextPage: skip + items.length < total };
   }

@@ -1,14 +1,22 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { CreditCard, Printer, Check, Loader2 } from 'lucide-react';
-import { IDCardService } from '../services';
+import { CreditCard, Printer, Check, Loader2, Plus, Ban, X } from 'lucide-react';
+import { IDCardService, EmployeeService } from '../services';
 
 export default function IDCardsPage() {
   const [printing, setPrinting] = useState(false);
   const [idCards, setIdCards] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [printedCards, setPrintedCards] = useState<Set<string>>(new Set());
+  const [error, setError] = useState('');
+
+  // Issue-card modal
+  const [showIssue, setShowIssue] = useState(false);
+  const [issuing, setIssuing] = useState(false);
+  const [employees, setEmployees] = useState<any[]>([]);
+  const [issueForm, setIssueForm] = useState({ employeeId: '', cardType: 'employee' });
+  const [revoking, setRevoking] = useState<string | null>(null);
 
   useEffect(() => {
     fetchIDCards();
@@ -16,10 +24,12 @@ export default function IDCardsPage() {
 
   const fetchIDCards = async () => {
     try {
+      setLoading(true);
       const data = await IDCardService.getAllIDCards();
       setIdCards(data);
-    } catch (error: any) {
-      console.error('Error:', error);
+    } catch (err: any) {
+      console.error('Error:', err);
+      setError('Failed to load ID cards.');
     } finally {
       setLoading(false);
     }
@@ -34,6 +44,56 @@ export default function IDCardsPage() {
     setPrinting(false);
   };
 
+  const openIssue = async () => {
+    setError('');
+    setIssueForm({ employeeId: '', cardType: 'employee' });
+    setShowIssue(true);
+    if (employees.length === 0) {
+      const list = await EmployeeService.getAllEmployees();
+      setEmployees(list);
+    }
+  };
+
+  const handleIssueCard = async () => {
+    if (!issueForm.employeeId) {
+      setError('Please select an employee.');
+      return;
+    }
+    try {
+      setIssuing(true);
+      setError('');
+      await IDCardService.generateCard(issueForm.employeeId, issueForm.cardType as any);
+      setShowIssue(false);
+      await fetchIDCards();
+    } catch (err: any) {
+      console.error('Issue failed:', err);
+      setError(err?.message || 'Failed to issue ID card.');
+    } finally {
+      setIssuing(false);
+    }
+  };
+
+  const handleRevoke = async (cardId: string) => {
+    if (!confirm('Revoke this ID card? It will no longer be valid.')) return;
+    try {
+      setRevoking(cardId);
+      setError('');
+      await IDCardService.deactivateCard(cardId);
+      await fetchIDCards();
+    } catch (err: any) {
+      console.error('Revoke failed:', err);
+      setError('Failed to revoke the ID card.');
+    } finally {
+      setRevoking(null);
+    }
+  };
+
+  const employeeLabel = (emp: any) =>
+    `${emp.firstName || ''} ${emp.lastName || ''}`.trim() ||
+    emp.employeeName ||
+    emp.employeeCode ||
+    emp.id;
+
   const previewCard = idCards.length > 0 ? idCards[0] : null;
 
   return (
@@ -46,7 +106,19 @@ export default function IDCardsPage() {
           </h1>
           <p className="text-slate-500 text-sm">Design, generate, and print physical ID cards.</p>
         </div>
+        <button
+          onClick={openIssue}
+          className="flex items-center gap-2 bg-indigo-600 text-white px-4 py-2 rounded-xl text-sm font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 active:scale-95 transition-all"
+        >
+          <Plus className="w-4 h-4" /> Issue Card
+        </button>
       </div>
+
+      {error && (
+        <div className="rounded-lg border border-rose-200 bg-rose-50 dark:bg-rose-900/20 dark:border-rose-800 px-4 py-2 text-sm text-rose-700 dark:text-rose-300 shrink-0">
+          {error}
+        </div>
+      )}
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
         {/* Preview */}
@@ -173,13 +245,26 @@ export default function IDCardsPage() {
                         </div>
                         <div className="font-bold text-sm">{card.employeeName}</div>
                       </div>
-                      <div
-                        className={`text-xs font-bold px-2 py-1 rounded flex items-center gap-1
+                      <div className="flex items-center gap-2">
+                        <div
+                          className={`text-xs font-bold px-2 py-1 rounded flex items-center gap-1
                                                 ${isPrinted ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-200 text-slate-500'}
                                             `}
-                      >
-                        {isPrinted ? <Check className="w-3 h-3" /> : ''}
-                        {isPrinted ? 'Printed' : 'Ready to Print'}
+                        >
+                          {isPrinted ? <Check className="w-3 h-3" /> : ''}
+                          {isPrinted ? 'Printed' : 'Ready to Print'}
+                        </div>
+                        {card.isActive !== false && (
+                          <button
+                            onClick={() => handleRevoke(card.cardId)}
+                            disabled={revoking === card.cardId}
+                            className="text-xs font-bold text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20 px-2 py-1 rounded flex items-center gap-1 disabled:opacity-50"
+                            title="Revoke card"
+                          >
+                            <Ban className="w-3 h-3" />
+                            {revoking === card.cardId ? 'Revoking…' : 'Revoke'}
+                          </button>
+                        )}
                       </div>
                     </div>
                   );
@@ -189,6 +274,68 @@ export default function IDCardsPage() {
           </div>
         </div>
       </div>
+
+      {/* Issue Card Modal */}
+      {showIssue && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-md">
+            <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+              <h2 className="text-xl font-bold">Issue Employee ID Card</h2>
+              <button
+                onClick={() => setShowIssue(false)}
+                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5 text-slate-500" />
+              </button>
+            </div>
+            <div className="p-6 space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-slate-500 mb-1">Employee</label>
+                <select
+                  value={issueForm.employeeId}
+                  onChange={(e) => setIssueForm((p) => ({ ...p, employeeId: e.target.value }))}
+                  className="w-full p-2 bg-slate-50 dark:bg-slate-800 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="">Select Employee…</option>
+                  {employees.map((emp) => (
+                    <option key={emp.id} value={emp.id}>
+                      {employeeLabel(emp)}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-slate-500 mb-1">Card Type</label>
+                <select
+                  value={issueForm.cardType}
+                  onChange={(e) => setIssueForm((p) => ({ ...p, cardType: e.target.value }))}
+                  className="w-full p-2 bg-slate-50 dark:bg-slate-800 rounded-lg outline-none focus:ring-2 focus:ring-indigo-500"
+                >
+                  <option value="employee">Employee</option>
+                  <option value="contractor">Contractor</option>
+                  <option value="visitor">Visitor</option>
+                  <option value="temporary">Temporary</option>
+                </select>
+              </div>
+            </div>
+            <div className="p-6 border-t border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 flex justify-end gap-3">
+              <button
+                onClick={() => setShowIssue(false)}
+                className="px-4 py-2 font-bold text-slate-500 hover:text-slate-700"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleIssueCard}
+                disabled={issuing}
+                className="px-6 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 active:scale-95 transition-all disabled:opacity-60"
+              >
+                {issuing ? 'Issuing…' : 'Issue Card'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

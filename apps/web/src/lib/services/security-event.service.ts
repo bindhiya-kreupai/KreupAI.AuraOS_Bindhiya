@@ -102,7 +102,7 @@ export class SecurityEventService extends BaseService {
   }
 
   async ingest(input: SecurityEventInput) {
-    return prisma.securityEvent.create({
+    return (prisma as any).securityEvent.create({
       data: {
         tenantId: input.tenantId ?? null,
         source: input.source,
@@ -122,7 +122,7 @@ export class SecurityEventService extends BaseService {
 
   async ingestBatch(events: SecurityEventInput[]) {
     if (events.length === 0) return { count: 0 };
-    return prisma.securityEvent.createMany({
+    return (prisma as any).securityEvent.createMany({
       data: events.map((e) => ({
         tenantId: e.tenantId ?? null,
         source: e.source,
@@ -141,7 +141,7 @@ export class SecurityEventService extends BaseService {
   }
 
   async linkToIncident(eventId: string, tenantId: string | null, incidentId: string) {
-    return prisma.securityEvent.update({
+    return (prisma as any).securityEvent.update({
       where: { id: eventId },
       data: { incidentId },
     });
@@ -153,7 +153,7 @@ export class SecurityEventService extends BaseService {
   async recentHotspots(tenantId: string | null, withinHours = 24, limit = 10) {
     const since = new Date();
     since.setHours(since.getHours() - withinHours);
-    const events = await prisma.securityEvent.findMany({
+    const events = await (prisma as any).securityEvent.findMany({
       where: {
         tenantId: tenantId ?? null,
         detectedAt: { gte: since },
@@ -197,13 +197,13 @@ export class SecurityEventService extends BaseService {
       where.detectedAt = detectedAt;
     }
     const [items, total] = await Promise.all([
-      prisma.securityEvent.findMany({
+      (prisma as any).securityEvent.findMany({
         where,
         orderBy: { detectedAt: 'desc' },
         skip,
         take: limit,
       }),
-      prisma.securityEvent.count({ where }),
+      (prisma as any).securityEvent.count({ where }),
     ]);
     return { items, total, page, pageSize: limit, hasNextPage: skip + items.length < total };
   }

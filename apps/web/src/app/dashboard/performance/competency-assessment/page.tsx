@@ -1,217 +1,190 @@
-"use client";
+'use client';
 
-import React, { useState, useEffect } from 'react';
-import { CompetencyService } from '../core/services';
+import React, { useEffect, useState } from 'react';
+import Link from 'next/link';
 import {
-    Book,
-    Search,
-    Filter,
-    Plus,
-    ChevronDown,
-    ChevronUp,
-    BrainCircuit,
-    Users,
-    Briefcase,
-    Star,
-    LayoutGrid,
-    Loader2
+  BookMarked,
+  Layers,
+  Briefcase,
+  ClipboardCheck,
+  TrendingUp,
+  ChevronRight,
+  Loader2,
 } from 'lucide-react';
+import {
+  CompetencyService,
+  FrameworkService,
+  JobRoleService,
+  AssessmentService,
+  GapAnalysisService,
+} from '@/services/competency-library.service';
 
-type Category = 'Technical' | 'Behavioral' | 'Leadership' | string;
+const BASE = '/dashboard/performance/competency-assessment';
 
-interface CompetencyItem {
-    id: string;
-    code?: string;
-    name: string;
-    description?: string;
-    status?: string;
-    category?: Category;
-    levels?: {
-        beginner: string;
-        intermediate: string;
-        advanced: string;
-        expert: string;
-    };
+interface HubCard {
+  key: string;
+  title: string;
+  description: string;
+  href: string;
+  icon: React.ReactNode;
+  accent: string;
+  count: number | null;
 }
 
-export default function CompetencyLibraryPage() {
-    const [expandedIds, setExpandedIds] = useState<string[]>([]);
-    const [filter, setFilter] = useState<Category | 'All'>('All');
-    const [loading, setLoading] = useState(true);
-    const [competencies, setCompetencies] = useState<CompetencyItem[]>([]);
+/**
+ * Competency Library / Assessment hub. Links to every sub-module and surfaces
+ * live counts from the unified /api/competency-library/* data model
+ * (prisma.competencyCatalog et al) rather than the legacy
+ * /api/performance/competencies endpoint.
+ */
+export default function CompetencyAssessmentHubPage() {
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [counts, setCounts] = useState<Record<string, number>>({});
 
-    useEffect(() => {
-        async function loadCompetencies() {
-            try {
-                const data = await CompetencyService.getCompetencies();
-                setCompetencies(data as CompetencyItem[]);
-            } catch (error: any) {
-                console.error('Failed to load competencies:', error);
-            } finally {
-                setLoading(false);
-            }
+  useEffect(() => {
+    let active = true;
+    async function load() {
+      setLoading(true);
+      setError(null);
+      try {
+        const [competencies, frameworks, jobRoles, assessments, gaps] = await Promise.all([
+          CompetencyService.getAll({ pageSize: 1 }),
+          FrameworkService.getAll(),
+          JobRoleService.getAll(),
+          AssessmentService.getAll(),
+          GapAnalysisService.getAll(),
+        ]);
+
+        if (!active) return;
+
+        const anyFailed =
+          !competencies.success ||
+          !frameworks.success ||
+          !jobRoles.success ||
+          !assessments.success ||
+          !gaps.success;
+
+        if (anyFailed) {
+          setError('Some competency data could not be loaded. Showing partial results.');
         }
-        loadCompetencies();
-    }, []);
 
-    const toggleExpand = (id: string) => {
-        setExpandedIds(prev =>
-            prev.includes(id) ? prev.filter(i => i !== id) : [...prev, id]
-        );
-    };
-
-    const categories = ['All', 'Technical', 'Behavioral', 'Leadership'];
-
-    const filteredCompetencies = filter === 'All'
-        ? competencies
-        : competencies.filter(c => c.category === filter || c.status === filter);
-
-    const getCategoryForComp = (comp: CompetencyItem): Category => {
-        return comp.category || 'Technical';
-    };
-
-    if (loading) {
-        return (
-            <div className="flex items-center justify-center h-96">
-                <Loader2 className="w-8 h-8 animate-spin text-celestial-indigo" />
-            </div>
-        );
+        setCounts({
+          catalog: competencies.total ?? competencies.data.length,
+          frameworks: frameworks.data?.length ?? 0,
+          jobRoles: jobRoles.data?.length ?? 0,
+          assessments: assessments.total ?? assessments.data.length,
+          gaps: gaps.data?.length ?? 0,
+        });
+      } catch (err: any) {
+        if (active) setError(err?.message || 'Failed to load competency data.');
+      } finally {
+        if (active) setLoading(false);
+      }
     }
+    load();
+    return () => {
+      active = false;
+    };
+  }, []);
 
-    return (
-        <div className="space-y-4 pb-6">
-            {/* Header */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-                <div>
-                    <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
-                        <Book className="w-6 h-6 text-celestial-indigo" />
-                        Competency Library
-                    </h1>
-                    <p className="text-silver-mist text-sm">Define and manage the skills framework for your organization.</p>
-                </div>
-                <button className="flex items-center gap-2 px-4 py-2 bg-celestial-indigo text-white rounded-lg text-sm font-medium hover:bg-celestial-indigo/90 transition-colors shadow-lg shadow-celestial-indigo/20">
-                    <Plus className="w-4 h-4" /> Add Competency
-                </button>
-            </div>
+  const cards: HubCard[] = [
+    {
+      key: 'catalog',
+      title: 'Competency Catalog',
+      description: 'Browse and manage the organizational competency library.',
+      href: `${BASE}/competency-catalog`,
+      icon: <BookMarked className="w-5 h-5" />,
+      accent: 'bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600',
+      count: counts.catalog ?? null,
+    },
+    {
+      key: 'frameworks',
+      title: 'Proficiency Levels',
+      description: 'Define proficiency frameworks and rating scales.',
+      href: `${BASE}/proficiency-levels`,
+      icon: <Layers className="w-5 h-5" />,
+      accent: 'bg-purple-100 dark:bg-purple-900/30 text-purple-600',
+      count: counts.frameworks ?? null,
+    },
+    {
+      key: 'jobRoles',
+      title: 'Job-Competency Map',
+      description: 'Map required competencies to job roles.',
+      href: `${BASE}/job-competency-map`,
+      icon: <Briefcase className="w-5 h-5" />,
+      accent: 'bg-amber-100 dark:bg-amber-900/30 text-amber-600',
+      count: counts.jobRoles ?? null,
+    },
+    {
+      key: 'assessments',
+      title: 'Skill Assessment',
+      description: 'Run assessment cycles and capture proficiency ratings.',
+      href: `${BASE}/skill-assessment`,
+      icon: <ClipboardCheck className="w-5 h-5" />,
+      accent: 'bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600',
+      count: counts.assessments ?? null,
+    },
+    {
+      key: 'gaps',
+      title: 'Gap Analysis',
+      description: 'Identify competency gaps and plan development.',
+      href: `${BASE}/gap-analysis`,
+      icon: <TrendingUp className="w-5 h-5" />,
+      accent: 'bg-rose-100 dark:bg-rose-900/30 text-rose-600',
+      count: counts.gaps ?? null,
+    },
+  ];
 
-            {/* Filters & Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex items-center gap-3">
-                    <div className="p-2 bg-purple-100 dark:bg-purple-900/20 text-purple-600 rounded-lg">
-                        <BrainCircuit className="w-5 h-5" />
-                    </div>
-                    <div>
-                        <div className="text-2xl font-bold text-ink-black dark:text-pearl">{competencies.length}</div>
-                        <div className="text-xs text-silver-mist uppercase font-bold">Total Skills</div>
-                    </div>
-                </div>
-                <div className="md:col-span-3 bg-white dark:bg-stellar-blue p-2 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm flex items-center gap-2">
-                    <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-silver-mist" />
-                        <input
-                            type="text"
-                            placeholder="Find a competency..."
-                            className="w-full pl-9 pr-4 py-2 bg-transparent text-sm focus:outline-none text-ink-black dark:text-pearl"
-                        />
-                    </div>
-                    <div className="h-8 w-px bg-slate-200 dark:bg-slate-700 mx-2"></div>
-                    <div className="flex gap-2 overflow-x-auto no-scrollbar">
-                        {categories.map(cat => (
-                            <button
-                                key={cat}
-                                onClick={() => setFilter(cat as Category | 'All')}
-                                className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-colors whitespace-nowrap ${filter === cat
-                                    ? 'bg-celestial-indigo text-white'
-                                    : 'bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200 dark:hover:bg-slate-700'
-                                    }`}
-                            >
-                                {cat}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            </div>
+  return (
+    <div className="space-y-6 pb-6">
+      <div>
+        <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
+          <BookMarked className="w-6 h-6 text-celestial-indigo" />
+          Competency Library
+        </h1>
+        <p className="text-silver-mist text-sm">
+          Define and manage the skills framework, assessments, and development plans for your
+          organization.
+        </p>
+      </div>
 
-            {/* Competency List */}
-            {filteredCompetencies.length === 0 ? (
-                <div className="flex flex-col items-center justify-center py-16 text-slate-400">
-                    <BrainCircuit className="w-12 h-12 mb-3 opacity-30" />
-                    <p className="font-bold text-lg">No competencies found</p>
-                    <p className="text-sm mt-1">Add competencies to build your skills framework</p>
-                </div>
-            ) : (
-                <div className="space-y-4">
-                    {filteredCompetencies.map(comp => {
-                        const isExpanded = expandedIds.includes(comp.id);
-                        const category = getCategoryForComp(comp);
-                        return (
-                            <div key={comp.id} className="bg-white dark:bg-stellar-blue rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm overflow-hidden transition-all duration-300">
-                                <div
-                                    className="p-6 flex flex-col md:flex-row md:items-center justify-between gap-3 cursor-pointer hover:bg-slate-50 dark:hover:bg-deep-cosmos/50"
-                                    onClick={() => toggleExpand(comp.id)}
-                                >
-                                    <div className="flex items-start gap-3">
-                                        <div className={`mt-1 p-2 rounded-lg shrink-0 ${category === 'Leadership' ? 'bg-amber-100 text-amber-600' :
-                                            category === 'Technical' ? 'bg-blue-100 text-blue-600' :
-                                                'bg-emerald-100 text-emerald-600'
-                                            }`}>
-                                            {category === 'Leadership' && <Users className="w-5 h-5" />}
-                                            {category === 'Technical' && <LayoutGrid className="w-5 h-5" />}
-                                            {category !== 'Leadership' && category !== 'Technical' && <Briefcase className="w-5 h-5" />}
-                                        </div>
-                                        <div>
-                                            <div className="flex items-center gap-3 mb-1">
-                                                <h3 className="text-lg font-bold text-ink-black dark:text-pearl">{comp.name}</h3>
-                                                <span className="text-[10px] font-bold uppercase px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-slate-500">
-                                                    {category}
-                                                </span>
-                                            </div>
-                                            <p className="text-sm text-silver-mist">{comp.description || 'No description available'}</p>
-                                        </div>
-                                    </div>
-                                    <div className="text-slate-400">
-                                        {isExpanded ? <ChevronUp className="w-5 h-5" /> : <ChevronDown className="w-5 h-5" />}
-                                    </div>
-                                </div>
-
-                                {/* Expanded Proficiency Matrix */}
-                                {isExpanded && (
-                                    <div className="border-t border-cloud dark:border-nebula-purple/20 bg-slate-50 dark:bg-deep-cosmos/30 p-6 animate-in slide-in-from-top-2 duration-200">
-                                        <h4 className="font-bold text-sm text-ink-black dark:text-pearl mb-4 flex items-center gap-2">
-                                            <Star className="w-4 h-4 text-amber-500" />
-                                            Proficiency Levels
-                                        </h4>
-                                        {comp.levels ? (
-                                            <div className="grid grid-cols-1 md:grid-cols-4 gap-3">
-                                                <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
-                                                    <div className="text-xs font-bold text-slate-400 uppercase mb-2">Level 1: Beginner</div>
-                                                    <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{comp.levels.beginner}</p>
-                                                </div>
-                                                <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
-                                                    <div className="text-xs font-bold text-celestial-indigo uppercase mb-2">Level 2: Intermediate</div>
-                                                    <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{comp.levels.intermediate}</p>
-                                                </div>
-                                                <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50">
-                                                    <div className="text-xs font-bold text-purple-500 uppercase mb-2">Level 3: Advanced</div>
-                                                    <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{comp.levels.advanced}</p>
-                                                </div>
-                                                <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 border-emerald-200 dark:border-emerald-900/50 relative overflow-hidden">
-                                                    <div className="absolute top-0 right-0 w-8 h-8 bg-emerald-500/10 rounded-bl-xl"></div>
-                                                    <div className="text-xs font-bold text-emerald-600 uppercase mb-2">Level 4: Expert</div>
-                                                    <p className="text-xs text-slate-600 dark:text-slate-300 leading-relaxed">{comp.levels.expert}</p>
-                                                </div>
-                                            </div>
-                                        ) : (
-                                            <p className="text-sm text-slate-400">No proficiency levels defined for this competency.</p>
-                                        )}
-                                    </div>
-                                )}
-                            </div>
-                        );
-                    })}
-                </div>
-            )}
+      {error && (
+        <div className="rounded-lg border border-amber-200 dark:border-amber-900/50 bg-amber-50 dark:bg-amber-900/20 px-4 py-3 text-sm text-amber-700 dark:text-amber-400">
+          {error}
         </div>
-    );
-}
+      )}
 
+      {loading ? (
+        <div className="flex items-center justify-center h-64">
+          <Loader2 className="w-8 h-8 animate-spin text-celestial-indigo" />
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {cards.map((card) => (
+            <Link
+              key={card.key}
+              href={card.href}
+              className="group bg-white dark:bg-stellar-blue rounded-2xl border border-cloud dark:border-nebula-purple/50 shadow-sm p-5 hover:border-celestial-indigo/50 hover:shadow-md transition-all"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className={`p-2.5 rounded-xl ${card.accent}`}>{card.icon}</div>
+                <div className="text-right">
+                  <div className="text-2xl font-bold text-ink-black dark:text-pearl">
+                    {card.count ?? '—'}
+                  </div>
+                  <div className="text-[10px] uppercase font-bold text-silver-mist">Items</div>
+                </div>
+              </div>
+              <h3 className="mt-4 text-lg font-bold text-ink-black dark:text-pearl flex items-center gap-1">
+                {card.title}
+                <ChevronRight className="w-4 h-4 text-slate-400 group-hover:translate-x-1 transition-transform" />
+              </h3>
+              <p className="text-sm text-silver-mist mt-1">{card.description}</p>
+            </Link>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}

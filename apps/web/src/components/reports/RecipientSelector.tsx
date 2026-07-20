@@ -1,6 +1,6 @@
-"use client";
+'use client';
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Users,
   Search,
@@ -11,13 +11,14 @@ import {
   User,
   Check,
   AtSign,
-} from "lucide-react";
+  Loader2,
+} from 'lucide-react';
 
 interface Recipient {
   id: string;
   name: string;
   email: string;
-  type: "employee" | "team";
+  type: 'employee' | 'team';
   department?: string;
   teamSize?: number;
   avatar?: string;
@@ -26,122 +27,76 @@ interface Recipient {
 interface RecipientSelectorProps {
   selectedRecipients?: string[];
   onChange?: (recipientIds: string[], externalEmails: string[]) => void;
+  /** Called with the flat list of resolved email addresses (selected employees + externals). */
+  onEmailsChange?: (emails: string[]) => void;
 }
-
-const mockRecipients: Recipient[] = [
-  {
-    id: "emp-001",
-    name: "Sarah Johnson",
-    email: "sarah.johnson@company.com",
-    type: "employee",
-    department: "Human Resources",
-  },
-  {
-    id: "emp-002",
-    name: "Michael Chen",
-    email: "michael.chen@company.com",
-    type: "employee",
-    department: "Engineering",
-  },
-  {
-    id: "emp-003",
-    name: "Emily Davis",
-    email: "emily.davis@company.com",
-    type: "employee",
-    department: "Marketing",
-  },
-  {
-    id: "emp-004",
-    name: "James Wilson",
-    email: "james.wilson@company.com",
-    type: "employee",
-    department: "Finance",
-  },
-  {
-    id: "emp-005",
-    name: "Lisa Anderson",
-    email: "lisa.anderson@company.com",
-    type: "employee",
-    department: "Operations",
-  },
-  {
-    id: "emp-006",
-    name: "David Martinez",
-    email: "david.martinez@company.com",
-    type: "employee",
-    department: "Engineering",
-  },
-  {
-    id: "team-001",
-    name: "Engineering Team",
-    email: "engineering@company.com",
-    type: "team",
-    department: "Engineering",
-    teamSize: 12,
-  },
-  {
-    id: "team-002",
-    name: "HR Department",
-    email: "hr@company.com",
-    type: "team",
-    department: "Human Resources",
-    teamSize: 5,
-  },
-  {
-    id: "team-003",
-    name: "Leadership Team",
-    email: "leadership@company.com",
-    type: "team",
-    department: "Executive",
-    teamSize: 4,
-  },
-  {
-    id: "team-004",
-    name: "Finance Team",
-    email: "finance@company.com",
-    type: "team",
-    department: "Finance",
-    teamSize: 6,
-  },
-];
 
 export function RecipientSelector({
   selectedRecipients: initialSelected,
   onChange,
+  onEmailsChange,
 }: RecipientSelectorProps) {
-  const [selectedIds, setSelectedIds] = useState<string[]>(
-    initialSelected || ["emp-001", "team-001"]
-  );
-  const [externalEmails, setExternalEmails] = useState<string[]>([
-    "partner@external.com",
-  ]);
-  const [searchQuery, setSearchQuery] = useState("");
-  const [externalInput, setExternalInput] = useState("");
-  const [activeTab, setActiveTab] = useState<"all" | "employees" | "teams">(
-    "all"
-  );
+  const [selectedIds, setSelectedIds] = useState<string[]>(initialSelected || []);
+  const [externalEmails, setExternalEmails] = useState<string[]>([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [externalInput, setExternalInput] = useState('');
+  const [activeTab, setActiveTab] = useState<'all' | 'employees' | 'teams'>('all');
+
+  const [recipients, setRecipients] = useState<Recipient[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  // Fetch real employees from the directory API (tenant-scoped server-side).
+  useEffect(() => {
+    let active = true;
+    setLoading(true);
+    setError(null);
+    const url = `/api/v1/employees?limit=100${
+      searchQuery.trim() ? `&search=${encodeURIComponent(searchQuery.trim())}` : ''
+    }`;
+    fetch(url)
+      .then((res) => res.json())
+      .then((json) => {
+        if (!active) return;
+        if (json.success && Array.isArray(json.data)) {
+          setRecipients(
+            json.data
+              .filter((e: any) => e.email)
+              .map((e: any) => ({
+                id: e.id,
+                name: e.name || `${e.firstName ?? ''} ${e.lastName ?? ''}`.trim() || e.email,
+                email: e.email,
+                type: 'employee' as const,
+                department: e.department?.name || e.dept || undefined,
+              }))
+          );
+        } else {
+          setError(json.error?.message || 'Failed to load recipients');
+        }
+      })
+      .catch(() => active && setError('Failed to load recipients'))
+      .finally(() => active && setLoading(false));
+    return () => {
+      active = false;
+    };
+  }, [searchQuery]);
 
   const filteredRecipients = useMemo(() => {
-    let filtered = mockRecipients;
-
-    if (activeTab === "employees") {
-      filtered = filtered.filter((r) => r.type === "employee");
-    } else if (activeTab === "teams") {
-      filtered = filtered.filter((r) => r.type === "team");
+    let filtered = recipients;
+    if (activeTab === 'teams') {
+      filtered = filtered.filter((r) => r.type === 'team');
+    } else if (activeTab === 'employees') {
+      filtered = filtered.filter((r) => r.type === 'employee');
     }
-
-    if (searchQuery.trim()) {
-      const query = searchQuery.toLowerCase();
-      filtered = filtered.filter(
-        (r) =>
-          r.name.toLowerCase().includes(query) ||
-          r.email.toLowerCase().includes(query) ||
-          r.department?.toLowerCase().includes(query)
-      );
-    }
-
     return filtered;
-  }, [searchQuery, activeTab]);
+  }, [recipients, activeTab]);
+
+  // Emit resolved email list (selected employees + external emails) whenever selection changes.
+  useEffect(() => {
+    if (!onEmailsChange) return;
+    const selectedEmails = recipients.filter((r) => selectedIds.includes(r.id)).map((r) => r.email);
+    onEmailsChange([...new Set([...selectedEmails, ...externalEmails])]);
+  }, [selectedIds, externalEmails, recipients, onEmailsChange]);
 
   const toggleRecipient = (id: string) => {
     const updated = selectedIds.includes(id)
@@ -159,10 +114,10 @@ export function RecipientSelector({
 
   const addExternalEmail = () => {
     const email = externalInput.trim();
-    if (email && email.includes("@") && !externalEmails.includes(email)) {
+    if (email && email.includes('@') && !externalEmails.includes(email)) {
       const updated = [...externalEmails, email];
       setExternalEmails(updated);
-      setExternalInput("");
+      setExternalInput('');
       onChange?.(selectedIds, updated);
     }
   };
@@ -173,9 +128,7 @@ export function RecipientSelector({
     onChange?.(selectedIds, updated);
   };
 
-  const selectedRecipientObjects = mockRecipients.filter((r) =>
-    selectedIds.includes(r.id)
-  );
+  const selectedRecipientObjects = recipients.filter((r) => selectedIds.includes(r.id));
 
   const totalRecipientCount = selectedIds.length + externalEmails.length;
 
@@ -188,12 +141,8 @@ export function RecipientSelector({
             <Users className="w-5 h-5 text-celestial-indigo" />
           </div>
           <div>
-            <h2 className="text-lg font-semibold text-ink-black dark:text-pearl">
-              Recipients
-            </h2>
-            <p className="text-sm text-silver-mist">
-              Select recipients for report delivery
-            </p>
+            <h2 className="text-lg font-semibold text-ink-black dark:text-pearl">Recipients</h2>
+            <p className="text-sm text-silver-mist">Select recipients for report delivery</p>
           </div>
         </div>
         <span className="text-xs font-medium text-celestial-indigo bg-celestial-indigo/10 px-2.5 py-1 rounded-full">
@@ -213,7 +162,7 @@ export function RecipientSelector({
                 key={recipient.id}
                 className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs bg-celestial-indigo/10 text-celestial-indigo rounded-full"
               >
-                {recipient.type === "team" ? (
+                {recipient.type === 'team' ? (
                   <Building2 className="w-3 h-3" />
                 ) : (
                   <User className="w-3 h-3" />
@@ -261,21 +210,17 @@ export function RecipientSelector({
 
         {/* Tabs */}
         <div className="flex items-center gap-1 bg-slate-50 dark:bg-deep-cosmos rounded-lg p-1">
-          {(["all", "employees", "teams"] as const).map((tab) => (
+          {(['all', 'employees', 'teams'] as const).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`flex-1 px-3 py-1.5 text-xs font-medium rounded-md transition-colors ${
                 activeTab === tab
-                  ? "bg-white dark:bg-stellar-blue text-celestial-indigo shadow-sm"
-                  : "text-silver-mist hover:text-ink-black dark:hover:text-pearl"
+                  ? 'bg-white dark:bg-stellar-blue text-celestial-indigo shadow-sm'
+                  : 'text-silver-mist hover:text-ink-black dark:hover:text-pearl'
               }`}
             >
-              {tab === "all"
-                ? "All"
-                : tab === "employees"
-                  ? "Employees"
-                  : "Teams"}
+              {tab === 'all' ? 'All' : tab === 'employees' ? 'Employees' : 'Teams'}
             </button>
           ))}
         </div>
@@ -283,7 +228,15 @@ export function RecipientSelector({
 
       {/* Recipient List */}
       <div className="max-h-60 overflow-y-auto border border-cloud dark:border-nebula-purple/50 rounded-lg divide-y divide-cloud dark:divide-nebula-purple/50 mb-5">
-        {filteredRecipients.length === 0 ? (
+        {loading ? (
+          <div className="text-center py-8">
+            <Loader2 className="w-5 h-5 text-celestial-indigo mx-auto animate-spin" />
+          </div>
+        ) : error ? (
+          <div className="text-center py-8">
+            <p className="text-sm text-red-600">{error}</p>
+          </div>
+        ) : filteredRecipients.length === 0 ? (
           <div className="text-center py-8">
             <Users className="w-6 h-6 text-silver-mist mx-auto mb-2" />
             <p className="text-sm text-silver-mist">No recipients found</p>
@@ -297,16 +250,16 @@ export function RecipientSelector({
                 onClick={() => toggleRecipient(recipient.id)}
                 className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors ${
                   isSelected
-                    ? "bg-celestial-indigo/5"
-                    : "hover:bg-slate-50 dark:hover:bg-deep-cosmos"
+                    ? 'bg-celestial-indigo/5'
+                    : 'hover:bg-slate-50 dark:hover:bg-deep-cosmos'
                 }`}
               >
                 {/* Checkbox */}
                 <div
                   className={`w-4.5 h-4.5 rounded flex items-center justify-center border transition-colors ${
                     isSelected
-                      ? "bg-celestial-indigo border-celestial-indigo"
-                      : "border-cloud dark:border-nebula-purple/50"
+                      ? 'bg-celestial-indigo border-celestial-indigo'
+                      : 'border-cloud dark:border-nebula-purple/50'
                   }`}
                 >
                   {isSelected && <Check className="w-3 h-3 text-white" />}
@@ -315,12 +268,12 @@ export function RecipientSelector({
                 {/* Avatar / Icon */}
                 <div
                   className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                    recipient.type === "team"
-                      ? "bg-celestial-indigo/10"
-                      : "bg-slate-50 dark:bg-deep-cosmos"
+                    recipient.type === 'team'
+                      ? 'bg-celestial-indigo/10'
+                      : 'bg-slate-50 dark:bg-deep-cosmos'
                   }`}
                 >
-                  {recipient.type === "team" ? (
+                  {recipient.type === 'team' ? (
                     <Building2 className="w-4 h-4 text-celestial-indigo" />
                   ) : (
                     <User className="w-4 h-4 text-silver-mist" />
@@ -332,22 +285,16 @@ export function RecipientSelector({
                   <p className="text-sm font-medium text-ink-black dark:text-pearl truncate">
                     {recipient.name}
                   </p>
-                  <p className="text-xs text-silver-mist truncate">
-                    {recipient.email}
-                  </p>
+                  <p className="text-xs text-silver-mist truncate">{recipient.email}</p>
                 </div>
 
                 {/* Meta */}
                 <div className="text-right flex-shrink-0">
-                  {recipient.type === "team" && recipient.teamSize && (
-                    <span className="text-xs text-silver-mist">
-                      {recipient.teamSize} members
-                    </span>
+                  {recipient.type === 'team' && recipient.teamSize && (
+                    <span className="text-xs text-silver-mist">{recipient.teamSize} members</span>
                   )}
                   {recipient.department && (
-                    <p className="text-[10px] text-silver-mist">
-                      {recipient.department}
-                    </p>
+                    <p className="text-[10px] text-silver-mist">{recipient.department}</p>
                   )}
                 </div>
               </button>
@@ -369,7 +316,7 @@ export function RecipientSelector({
               type="email"
               value={externalInput}
               onChange={(e) => setExternalInput(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && addExternalEmail()}
+              onKeyDown={(e) => e.key === 'Enter' && addExternalEmail()}
               placeholder="Enter external email address"
               className="flex-1 text-sm bg-transparent outline-none text-ink-black dark:text-pearl placeholder:text-silver-mist"
             />

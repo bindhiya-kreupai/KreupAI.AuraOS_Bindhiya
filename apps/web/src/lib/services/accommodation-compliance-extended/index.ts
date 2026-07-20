@@ -18,6 +18,13 @@
 
 import { prisma } from '@aura/database';
 
+// The extended accommodation models (accommodationRoom, accommodationBedAssignment,
+// accommodationHygieneCheck, accommodationSafetyCertificate, accommodationEvacuationDrill,
+// accommodationKitchenInspection, accommodationCost, accommodationRisk) exist in the
+// deployed db-push database but are not in schema.prisma, so they are absent from the
+// generated PrismaClient types.
+const db = prisma as any;
+
 export interface AuthContext {
   tenantId: string;
   userId: string;
@@ -41,7 +48,7 @@ export class RoomAllocationService {
     auth: AuthContext
   ) {
     if (input.totalBeds < 1) throw new Error('totalBeds must be ≥ 1');
-    return prisma.accommodationRoom.upsert({
+    return db.accommodationRoom.upsert({
       where: {
         aura_accommodation_room_unique: {
           tenantId: auth.tenantId,
@@ -87,7 +94,7 @@ export class RoomAllocationService {
     },
     auth: AuthContext
   ) {
-    const room = await prisma.accommodationRoom.findFirst({
+    const room = await db.accommodationRoom.findFirst({
       where: { id: input.roomId, tenantId: auth.tenantId },
     });
     if (!room) throw new Error('room not found');
@@ -117,7 +124,7 @@ export class RoomAllocationService {
     }
 
     // Within a tx so the bed assignment + room counter stay consistent.
-    return prisma.$transaction(async (tx) => {
+    return prisma.$transaction(async (tx: any) => {
       const assignment = await tx.accommodationBedAssignment.create({
         data: {
           tenantId: auth.tenantId,
@@ -138,11 +145,11 @@ export class RoomAllocationService {
   }
 
   async vacate(assignmentId: string, auth: AuthContext) {
-    const a = await prisma.accommodationBedAssignment.findFirst({
+    const a = await db.accommodationBedAssignment.findFirst({
       where: { id: assignmentId, tenantId: auth.tenantId, occupiedTo: null },
     });
     if (!a) throw new Error('active bed assignment not found');
-    return prisma.$transaction(async (tx) => {
+    return prisma.$transaction(async (tx: any) => {
       const updated = await tx.accommodationBedAssignment.update({
         where: { id: assignmentId },
         data: { occupiedTo: new Date() },
@@ -189,7 +196,7 @@ export class HygieneCheckService {
       input.toiletShowerRatio,
       input.cleanlinessScore
     );
-    return prisma.accommodationHygieneCheck.create({
+    return db.accommodationHygieneCheck.create({
       data: {
         tenantId: auth.tenantId,
         siteId: input.siteId,
@@ -228,7 +235,7 @@ export class SafetyCertificateService {
       throw new Error('expiryDate must be after issuedDate');
     }
     const status = input.expiryDate.getTime() < Date.now() ? 'EXPIRED' : 'ACTIVE';
-    return prisma.accommodationSafetyCertificate.upsert({
+    return db.accommodationSafetyCertificate.upsert({
       where: {
         aura_accommodation_safety_certificate_unique: {
           tenantId: auth.tenantId,
@@ -260,7 +267,7 @@ export class SafetyCertificateService {
   async expiring(tenantId: string, days: number = 60) {
     const horizon = new Date();
     horizon.setDate(horizon.getDate() + days);
-    return prisma.accommodationSafetyCertificate.findMany({
+    return db.accommodationSafetyCertificate.findMany({
       where: { tenantId, status: 'ACTIVE', expiryDate: { lte: horizon } },
       orderBy: { expiryDate: 'asc' },
     });
@@ -281,7 +288,7 @@ export class EvacuationDrillService {
     },
     auth: AuthContext
   ) {
-    return prisma.accommodationEvacuationDrill.create({
+    return db.accommodationEvacuationDrill.create({
       data: {
         tenantId: auth.tenantId,
         siteId: input.siteId,
@@ -317,7 +324,7 @@ export class KitchenInspectionService {
     const tempOk = input.tempLogOk ?? true;
     const pestEvidence = input.pestEvidence ?? false;
     const outcome = pestEvidence || !tempOk ? 'FAIL' : 'PASS';
-    return prisma.accommodationKitchenInspection.create({
+    return db.accommodationKitchenInspection.create({
       data: {
         tenantId: auth.tenantId,
         siteId: input.siteId,
@@ -360,7 +367,7 @@ export class AccommodationCostService {
     if (input.occupantNights <= 0) throw new Error('occupantNights must be > 0');
     const totalCost = input.rentAmount + input.utilitiesAmount + input.maintenanceAmount;
     const costPerNight = Number((totalCost / input.occupantNights).toFixed(4));
-    return prisma.accommodationCost.upsert({
+    return db.accommodationCost.upsert({
       where: {
         aura_accommodation_cost_unique: {
           tenantId: auth.tenantId,
@@ -424,7 +431,7 @@ export class AccommodationRiskRegisterService {
       throw new Error('likelihood and impact must be in 1..5');
     }
     const band = AccommodationRiskRegisterService.deriveBand(input.likelihood, input.impact);
-    return prisma.accommodationRisk.upsert({
+    return db.accommodationRisk.upsert({
       where: {
         aura_accommodation_risk_unique: { tenantId: auth.tenantId, code: input.code },
       } as any,
@@ -452,7 +459,7 @@ export class AccommodationRiskRegisterService {
   }
 
   async mitigate(riskId: string) {
-    return prisma.accommodationRisk.update({
+    return db.accommodationRisk.update({
       where: { id: riskId },
       data: { status: 'MITIGATED', mitigatedAt: new Date() },
     });

@@ -1,0 +1,79 @@
+[
+  {
+    "id": "AURA-223",
+    "title": "Payroll Run: Mount component and wire run lifecycle to v1 API",
+    "module": "Payroll Components Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "components/payroll/PayrollRunDashboard.tsx (orphan)",
+    "api": "/api/v1/payroll/runs; /calculate; /finalize; /approve; PayrollRunService",
+    "desc": "PayrollRunDashboard has zero page imports; full mock pipeline via setTimeout. payroll-processing page only calls createPayrollRun; no calculate/finalize/approve."
+  },
+  {
+    "id": "AURA-224",
+    "title": "GL Posting: Mount GL UI and wire Post/Reverse/Download",
+    "module": "Payroll Components Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "components/payroll/GLPostingDashboard.tsx (orphan)",
+    "api": "/api/v1/payroll/gl/generate; /gl/journals; /gl/journals/[id]/post; /export",
+    "desc": "GLPostingDashboard orphan; Post/Reverse are local mock. Download journal has empty onClick."
+  },
+  {
+    "id": "AURA-225",
+    "title": "Bank File: Merge with bank-file-generation page",
+    "module": "Payroll Components Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "components/payroll/BankFileManager.tsx (orphan)",
+    "api": "BankFileService \u2192 /api/payroll/bank-file/generate",
+    "desc": "BankFileManager orphan with richer multi-format UI unused. bank-file-generation page: Configure Formats unwired; download generates client-side sample CSV."
+  },
+  {
+    "id": "AURA-226",
+    "title": "Payslips: Mount or merge with payslip-generation page",
+    "module": "Payroll Components Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "components/payroll/PayslipGenerator.tsx (orphan)",
+    "api": "PayslipService; /api/v1/payroll/pay-stubs/[id]/download",
+    "desc": "PayslipGenerator orphan with mock employees. payslip-generation page: Publish All uses alert() stub; Bulk Email/Download PDF unwired."
+  },
+  {
+    "id": "AURA-227",
+    "title": "Variance Report: Mount on payroll-reports page",
+    "module": "Payroll Components Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "components/payroll/PayrollVarianceReport.tsx (orphan)",
+    "api": "/api/payroll/reports; /api/payroll/reports/stats",
+    "desc": "PayrollVarianceReport orphan with full MoM mock report. payroll-reports: PDF/Excel buttons have no handlers."
+  },
+  {
+    "id": "AURA-228",
+    "title": "Salary Structure: Mount in compensation salary-structure page",
+    "module": "Payroll Components Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "components/payroll/SalaryStructureBuilder.tsx (orphan)",
+    "api": "/api/v1/payroll/salary-structures; /simulate; SalaryStructureService",
+    "desc": "SalaryStructureBuilder orphan; jurisdiction-aware builder unused. compensation/salary-structure page read-only; Add/Edit unwired."
+  },
+  {
+    "id": "AURA-229",
+    "title": "Salary Revision: Mount in compensation increment-planning",
+    "module": "Payroll Components Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "components/payroll/SalaryRevision.tsx (orphan)",
+    "api": "/api/v1/payroll/retroactive; IncrementProposalService",
+    "desc": "SalaryRevision orphan; Submit for Approval shows success UI only with no API call."
+  }
+]

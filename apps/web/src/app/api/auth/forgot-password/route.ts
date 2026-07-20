@@ -1,4 +1,4 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
@@ -50,10 +50,13 @@ export async function POST(request: NextRequest) {
     // IMPORTANT: Always return success even if user not found (security best practice)
     // This prevents email enumeration attacks
     if (!user) {
-      logger.warn({
-        email: validatedData.email,
-        ipAddress,
-      }, 'Password reset requested for non-existent email');
+      logger.warn(
+        {
+          email: validatedData.email,
+          ipAddress,
+        },
+        'Password reset requested for non-existent email'
+      );
 
       // Still return success to prevent email enumeration
       return NextResponse.json({
@@ -64,12 +67,15 @@ export async function POST(request: NextRequest) {
 
     // Check if user account is active
     if (user.status !== 'Active') {
-      logger.warn({
-        userId: user.id,
-        email: user.email,
-        status: user.status,
-        ipAddress,
-      }, 'Password reset requested for inactive account');
+      logger.warn(
+        {
+          userId: user.id,
+          email: user.email,
+          status: user.status,
+          ipAddress,
+        },
+        'Password reset requested for inactive account'
+      );
 
       // Still return success to prevent account status enumeration
       return NextResponse.json({
@@ -116,18 +122,22 @@ export async function POST(request: NextRequest) {
         tenantId: user.tenantId,
         userId: user.id,
         action: 'PASSWORD_RESET_REQUESTED',
+        module: 'AUTH',
         entityType: 'Authentication',
         metadata: { description: `Password reset requested for ${user.email}` } as any,
         ipAddress,
       },
     });
 
-    logger.info({
-      userId: user.id,
-      email: user.email,
-      ipAddress,
-      expiresAt,
-    }, 'Password reset token generated successfully');
+    logger.info(
+      {
+        userId: user.id,
+        email: user.email,
+        ipAddress,
+        expiresAt,
+      },
+      'Password reset token generated successfully'
+    );
 
     // TODO: Send email with reset link
     // In production, this would send an email like:

@@ -26,7 +26,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
       );
     }
 
-    const preferences = await prisma.notificationPreference.findMany({
+    const preferences = await (prisma as any).notificationPreference.findMany({
       where: { userId: user.id },
       orderBy: { category: 'asc' },
     });
@@ -143,7 +143,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) =
     // Upsert each preference
     const results = await Promise.all(
       body.preferences.map((pref: any) =>
-        prisma.notificationPreference.upsert({
+        (prisma as any).notificationPreference.upsert({
           where: {
             userId_category: { userId: user.id, category: pref.category },
           },

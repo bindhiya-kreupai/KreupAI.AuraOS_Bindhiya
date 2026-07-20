@@ -46,7 +46,7 @@ export default function ControlTestsPage() {
               key: 'lastTestedAt',
               label: 'Last tested',
               labelAr: 'آخر اختبار',
-              type: 'date',
+              type: 'text',
               widthClass: 'w-40',
             },
             {

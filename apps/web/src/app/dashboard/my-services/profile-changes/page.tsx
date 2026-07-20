@@ -1,7 +1,6 @@
-// @ts-nocheck — Presentation-layer drift from service signatures / mock-data shapes. Tracked under #29 for proper realignment.
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   FileEdit,
   LayoutGrid,
@@ -11,13 +10,16 @@ import {
   Shield,
   Home,
   ChevronRight,
+  Loader2,
 } from 'lucide-react';
+import { useCurrentUser } from '@/lib/auth/AuthProvider';
 import { ProfileChangesDashboard } from '@/components/profile-changes/ProfileChangesDashboard';
 import { ChangeRequestForm } from '@/components/profile-changes/ChangeRequestForm';
 import { ChangeRequestList } from '@/components/profile-changes/ChangeRequestList';
 import { ChangeRequestDetail } from '@/components/profile-changes/ChangeRequestDetail';
 import { ChangeApprovalQueue } from '@/components/profile-changes/ChangeApprovalQueue';
 import { ChangeVerificationPanel } from '@/components/profile-changes/ChangeVerificationPanel';
+import { ProfileChangeService } from '@/services/profileChangeService';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
@@ -113,10 +115,34 @@ function Breadcrumb({
 // ── Page ──────────────────────────────────────────────────────────────────────
 
 export default function ProfileChangesPage() {
+  const { user, loading: authLoading } = useCurrentUser();
   const [activeTab, setActiveTab] = useState<ActiveTab>('dashboard');
   const [subView, setSubView] = useState<SubView>('list');
   const [selectedRequestId, setSelectedRequestId] = useState<string | null>(null);
   const [initialChangeType, setInitialChangeType] = useState<string | undefined>(undefined);
+  const [verificationIds, setVerificationIds] = useState<string[]>([]);
+  const [verificationLoading, setVerificationLoading] = useState(false);
+
+  const employeeId = user?.employeeId ?? '';
+
+  useEffect(() => {
+    if (activeTab !== 'verification' || !employeeId) return;
+    let active = true;
+    setVerificationLoading(true);
+    ProfileChangeService.getChangeRequests({ employeeId, status: 'pending_verification' })
+      .then((rows) => {
+        if (active) setVerificationIds((rows ?? []).map((r) => r.id));
+      })
+      .catch(() => {
+        if (active) setVerificationIds([]);
+      })
+      .finally(() => {
+        if (active) setVerificationLoading(false);
+      });
+    return () => {
+      active = false;
+    };
+  }, [activeTab, employeeId]);
 
   const handleTabChange = (tab: ActiveTab) => {
     setActiveTab(tab);
@@ -157,6 +183,14 @@ export default function ProfileChangesPage() {
   };
 
   const currentTab = TABS.find((t) => t.id === activeTab);
+
+  if (authLoading || !user) {
+    return (
+      <div className="flex items-center justify-center h-[calc(100vh-6rem)]">
+        <Loader2 className="w-8 h-8 animate-spin text-indigo-500" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6 pb-10 h-[calc(100vh-6rem)] flex flex-col overflow-y-auto">
@@ -203,7 +237,7 @@ export default function ProfileChangesPage() {
         {/* Dashboard tab */}
         {activeTab === 'dashboard' && subView === 'list' && (
           <ProfileChangesDashboard
-            employeeId="emp-001"
+            employeeId={employeeId}
             onNewRequest={handleNewRequest}
             onViewRequest={handleViewRequest}
             onViewAll={() => handleTabChange('my-requests')}
@@ -226,7 +260,7 @@ export default function ProfileChangesPage() {
               </button>
             </div>
             <ChangeRequestList
-              employeeId="emp-001"
+              employeeId={employeeId}
               onViewRequest={handleViewRequest}
               onNewRequest={() => setSubView('create')}
             />
@@ -236,7 +270,7 @@ export default function ProfileChangesPage() {
         {/* My Requests - create */}
         {activeTab === 'my-requests' && subView === 'create' && (
           <ChangeRequestForm
-            employeeId="emp-001"
+            employeeId={employeeId}
             initialChangeType={initialChangeType}
             onSuccess={() => {
               setSubView('list');
@@ -257,7 +291,7 @@ export default function ProfileChangesPage() {
 
         {/* Approvals tab */}
         {activeTab === 'approvals' && subView === 'list' && (
-          <ChangeApprovalQueue approverId="mgr-001" onViewDetail={handleViewRequest} />
+          <ChangeApprovalQueue approverId={employeeId} onViewDetail={handleViewRequest} />
         )}
 
         {activeTab === 'approvals' && subView === 'detail' && selectedRequestId && (
@@ -276,8 +310,19 @@ export default function ProfileChangesPage() {
             <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
               Document Verification
             </h2>
-            {/* Show verification panels for pending requests */}
-            <ChangeVerificationPanel changeRequestId="cr-001" isAdminView={false} />
+            {verificationLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <Loader2 className="w-6 h-6 animate-spin text-indigo-500" />
+              </div>
+            ) : verificationIds.length > 0 ? (
+              verificationIds.map((id) => (
+                <ChangeVerificationPanel key={id} changeRequestId={id} isAdminView={false} />
+              ))
+            ) : (
+              <div className="rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-8 text-center text-sm text-slate-400">
+                No change requests currently awaiting document verification.
+              </div>
+            )}
           </div>
         )}
       </div>

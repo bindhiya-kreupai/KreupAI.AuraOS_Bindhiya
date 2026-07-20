@@ -23,8 +23,55 @@ import {
   Target,
 } from 'lucide-react';
 import type { ResumeData, CandidateScore } from '@/lib/services/ai/types';
+import { APIClient } from '@/lib/api-client';
 import { ParsedResumeView } from './ParsedResumeView';
 import { ResumeMatchScore } from './ResumeMatchScore';
+
+// ── Parse API response shape ─────────────────────────────────────────────────────
+
+interface ParseApiResult {
+  emails: string[];
+  phones: string[];
+  totalExperienceYears: number;
+  skills: string[];
+}
+
+const TITLE_CASE = (value: string): string => value.replace(/\b\w/g, (c) => c.toUpperCase());
+
+/** Build a real ResumeData from the parse API response — no mock fallback. */
+function buildResumeData(fileName: string, api: ParseApiResult): ResumeData {
+  const email = api.emails[0] ?? '';
+  const nameFromEmail = email ? TITLE_CASE(email.split('@')[0].replace(/[._-]+/g, ' ')) : fileName;
+  return {
+    id: `resume-${Date.now()}`,
+    fileName,
+    contact: {
+      name: nameFromEmail,
+      email,
+      phone: api.phones[0] ?? '',
+      linkedin: '',
+      location: '',
+    },
+    summary: '',
+    skills: {
+      technical: api.skills.map((name) => ({
+        name: TITLE_CASE(name),
+        level: 'INTERMEDIATE' as const,
+      })),
+      soft: [],
+      domain: [],
+      languages: [],
+      tools: [],
+    },
+    experience: [],
+    education: [],
+    certifications: [],
+    languages: [],
+    totalExperienceMonths: Math.round((api.totalExperienceYears || 0) * 12),
+    parsedAt: new Date(),
+    confidence: api.skills.length > 0 || api.emails.length > 0 ? 0.75 : 0.4,
+  };
+}
 
 // ── Types ────────────────────────────────────────────────────────────────────────
 
@@ -37,167 +84,6 @@ interface UploadedFile {
   size: number;
   type: string;
 }
-
-// ── Mock Parsed Resume ───────────────────────────────────────────────────────────
-
-const MOCK_RESUME: ResumeData = {
-  id: 'resume-001',
-  fileName: 'sarah_johnson_resume.pdf',
-  contact: {
-    name: 'Sarah Johnson',
-    email: 'sarah.johnson@email.com',
-    phone: '+1 (555) 234-5678',
-    linkedin: 'linkedin.com/in/sarahjohnson',
-    location: 'San Francisco, CA',
-  },
-  summary:
-    'Experienced full-stack software engineer with 6+ years of expertise in building scalable web applications. Passionate about clean code, mentoring junior developers, and delivering high-impact products. Strong background in React, Node.js, and cloud infrastructure.',
-  skills: {
-    technical: [
-      { name: 'React', level: 'EXPERT', yearsOfExperience: 5 },
-      { name: 'TypeScript', level: 'ADVANCED', yearsOfExperience: 4 },
-      { name: 'Node.js', level: 'ADVANCED', yearsOfExperience: 5 },
-      { name: 'Python', level: 'INTERMEDIATE', yearsOfExperience: 2 },
-      { name: 'PostgreSQL', level: 'ADVANCED', yearsOfExperience: 4 },
-      { name: 'AWS', level: 'INTERMEDIATE', yearsOfExperience: 3 },
-      { name: 'Docker', level: 'INTERMEDIATE', yearsOfExperience: 3 },
-      { name: 'GraphQL', level: 'ADVANCED', yearsOfExperience: 3 },
-    ],
-    soft: [
-      { name: 'Leadership', level: 'ADVANCED' },
-      { name: 'Communication', level: 'EXPERT' },
-      { name: 'Problem Solving', level: 'EXPERT' },
-      { name: 'Mentoring', level: 'ADVANCED' },
-      { name: 'Agile/Scrum', level: 'ADVANCED' },
-    ],
-    domain: [
-      { name: 'SaaS', level: 'ADVANCED' },
-      { name: 'FinTech', level: 'INTERMEDIATE' },
-      { name: 'E-commerce', level: 'INTERMEDIATE' },
-    ],
-    languages: [],
-    tools: [
-      { name: 'Git', level: 'EXPERT' },
-      { name: 'Jira', level: 'ADVANCED' },
-      { name: 'Figma', level: 'INTERMEDIATE' },
-      { name: 'VS Code', level: 'EXPERT' },
-      { name: 'Webpack', level: 'ADVANCED' },
-    ],
-  },
-  experience: [
-    {
-      company: 'TechCorp Inc.',
-      title: 'Senior Software Engineer',
-      startDate: '2022-01',
-      endDate: undefined,
-      isCurrent: true,
-      location: 'San Francisco, CA',
-      description: 'Leading a team of 5 engineers building a real-time analytics platform.',
-      achievements: [
-        'Architected microservices migration reducing latency by 40%',
-        'Mentored 3 junior developers to mid-level promotions',
-        'Implemented CI/CD pipeline reducing deployment time by 60%',
-      ],
-      durationMonths: 38,
-    },
-    {
-      company: 'StartupXYZ',
-      title: 'Full-Stack Developer',
-      startDate: '2019-06',
-      endDate: '2021-12',
-      isCurrent: false,
-      location: 'Remote',
-      description: 'Built core product features for a B2B SaaS platform.',
-      achievements: [
-        'Developed customer portal handling 10k+ daily active users',
-        'Reduced page load times by 50% through performance optimizations',
-        'Introduced automated testing achieving 85% code coverage',
-      ],
-      durationMonths: 30,
-    },
-    {
-      company: 'WebAgency Co.',
-      title: 'Junior Developer',
-      startDate: '2018-01',
-      endDate: '2019-05',
-      isCurrent: false,
-      location: 'New York, NY',
-      description: 'Developed responsive web applications for diverse clients.',
-      achievements: ['Delivered 15+ client projects on time and within budget'],
-      durationMonths: 16,
-    },
-  ],
-  education: [
-    {
-      institution: 'University of California, Berkeley',
-      degree: 'Bachelor of Science',
-      field: 'Computer Science',
-      graduationYear: 2017,
-      gpa: 3.7,
-    },
-  ],
-  certifications: [
-    { name: 'AWS Solutions Architect Associate', issuer: 'Amazon Web Services', year: 2023 },
-    { name: 'Professional Scrum Master I', issuer: 'Scrum.org', year: 2022 },
-  ],
-  languages: [
-    { language: 'English', proficiency: 'NATIVE' },
-    { language: 'Spanish', proficiency: 'INTERMEDIATE' },
-  ],
-  totalExperienceMonths: 84,
-  parsedAt: new Date(),
-  confidence: 0.92,
-};
-
-const MOCK_SCORE: CandidateScore = {
-  candidateId: 'resume-001',
-  overallScore: 82,
-  breakdown: {
-    requiredSkills: {
-      weight: 0.25,
-      score: 0.9,
-      details: 'Matches 9 of 10 required skills including React, TypeScript, Node.js',
-    },
-    preferredSkills: {
-      weight: 0.15,
-      score: 0.7,
-      details: 'Has 5 of 7 preferred skills; missing Kubernetes and Terraform',
-    },
-    experience: {
-      weight: 0.3,
-      score: 0.85,
-      details: '6+ years matches Senior level requirement; leadership experience present',
-    },
-    education: {
-      weight: 0.15,
-      score: 0.8,
-      details: 'BS in Computer Science from top-tier university meets requirement',
-    },
-    certifications: {
-      weight: 0.1,
-      score: 0.6,
-      details: 'Has AWS cert; missing required GCP certification',
-    },
-    languages: {
-      weight: 0.05,
-      score: 1.0,
-      details: 'English native speaker meets language requirement',
-    },
-  },
-  recommendation: 'STRONG_FIT',
-  skillGaps: [
-    'Kubernetes — Required but not found in resume',
-    'Terraform — Preferred skill not present',
-    'GCP certification — Required certification missing',
-  ],
-  strengths: [
-    'Strong React/TypeScript expertise (5+ years)',
-    'Leadership and mentoring experience',
-    'Microservices architecture background',
-    'CI/CD and DevOps experience with AWS',
-    'Top-tier CS education with strong GPA',
-  ],
-};
 
 // ── File Type Icons ──────────────────────────────────────────────────────────────
 
@@ -297,7 +183,7 @@ export const AIResumeParser: React.FC = () => {
     setIsDragOver(false);
   }, []);
 
-  // ── Parse Resume (simulated) ───────────────────────────────────────────────
+  // ── Parse Resume (real API) ─────────────────────────────────────────────────
 
   const handleParse = useCallback(async () => {
     if (!uploadedFile) return;
@@ -306,21 +192,71 @@ export const AIResumeParser: React.FC = () => {
     setStatus('uploading');
     setActiveView('upload');
 
-    // Simulate upload
-    await new Promise((r) => setTimeout(r, 800));
-    setStatus('parsing');
+    try {
+      const text = await uploadedFile.file.text();
+      setStatus('parsing');
 
-    // Simulate AI parsing
-    await new Promise((r) => setTimeout(r, 1500));
+      const response = await APIClient.post<
+        { success?: boolean; data?: ParseApiResult } | ParseApiResult
+      >('/v1/recruitment/resume/parse', { text });
+      const api = ((response as { data?: ParseApiResult }).data ?? response) as ParseApiResult;
 
-    setParsedResume({ ...MOCK_RESUME, fileName: uploadedFile.name });
-    setStatus('scored');
+      const resume = buildResumeData(uploadedFile.name, api);
+      setParsedResume(resume);
+      setStatus('scored');
 
-    // Simulate scoring
-    await new Promise((r) => setTimeout(r, 600));
-    setMatchScore(MOCK_SCORE);
-    setStatus('done');
-    setActiveView('parsed');
+      // Derive a real, transparent match score from extracted skills/experience.
+      const skillScore = Math.min(1, api.skills.length / 8);
+      const experienceScore = Math.min(1, (api.totalExperienceYears || 0) / 6);
+      const contactScore = api.emails.length > 0 ? 1 : 0.3;
+      const overall = Math.round(
+        (skillScore * 0.5 + experienceScore * 0.35 + contactScore * 0.15) * 100
+      );
+      const recommendation: CandidateScore['recommendation'] =
+        overall >= 75
+          ? 'STRONG_FIT'
+          : overall >= 50
+            ? 'GOOD_FIT'
+            : overall >= 30
+              ? 'PARTIAL_FIT'
+              : 'NOT_RECOMMENDED';
+
+      setMatchScore({
+        candidateId: resume.id,
+        overallScore: overall,
+        breakdown: {
+          requiredSkills: {
+            weight: 0.5,
+            score: skillScore,
+            details: `Extracted ${api.skills.length} recognised skill${api.skills.length === 1 ? '' : 's'}${
+              api.skills.length ? `: ${api.skills.join(', ')}` : ''
+            }`,
+          },
+          preferredSkills: { weight: 0, score: 0, details: 'Not evaluated' },
+          experience: {
+            weight: 0.35,
+            score: experienceScore,
+            details: `${api.totalExperienceYears || 0} year(s) of experience detected`,
+          },
+          education: { weight: 0, score: 0, details: 'Not evaluated' },
+          certifications: { weight: 0, score: 0, details: 'Not evaluated' },
+          languages: {
+            weight: 0.15,
+            score: contactScore,
+            details: api.emails.length > 0 ? 'Contact details found' : 'No contact details found',
+          },
+        },
+        recommendation,
+        skillGaps:
+          api.skills.length === 0 ? ['No recognised skills extracted from the document text'] : [],
+        strengths: api.skills.map((s) => `${TITLE_CASE(s)} experience detected`),
+      });
+      setStatus('done');
+      setActiveView('parsed');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to parse resume. Please try again.');
+      setStatus('error');
+    }
   }, [uploadedFile]);
 
   // ── Reset ──────────────────────────────────────────────────────────────────

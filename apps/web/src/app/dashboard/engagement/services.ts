@@ -1,155 +1,301 @@
 /**
  * Employee Engagement Module - Services
- * API-integrated service layer using APIClient
+ * API-integrated service layer using APIClient.
+ *
+ * The engagement API surface returns the shared wrapped envelope
+ * `{ success, data, meta }`. All list/item reads go through
+ * `APIClient.unwrapList` / `APIClient.unwrapItem` so callers always
+ * receive plain arrays / objects regardless of envelope shape.
  */
 
 import { APIClient } from '@/lib/api-client';
-import type { PulseSurvey, SurveyResponse, Event, RSVP, SocialPost, Idea, CSRActivity, Newsletter, EngagementMetrics, EngagementSettings } from './types';
+import type {
+  PulseSurvey,
+  SurveyResponse,
+  Event,
+  RSVP,
+  SocialPost,
+  Idea,
+  CSRActivity,
+  Newsletter,
+  EngagementMetrics,
+  EngagementSettings,
+} from './types';
+
+export interface Classified {
+  id: string;
+  title: string;
+  description?: string;
+  category?: string;
+  price?: number;
+  currency?: string;
+  condition?: string;
+  status?: string;
+  sellerId?: string;
+  sellerName?: string;
+  imageUrl?: string;
+  createdAt?: string;
+}
+
+export interface Reward {
+  id: string;
+  title: string;
+  description?: string;
+  category?: string;
+  pointsCost?: number;
+  stock?: number;
+  imageUrl?: string;
+  isActive?: boolean;
+}
+
+export interface Referral {
+  id: string;
+  referrerId?: string;
+  candidateName: string;
+  candidateEmail?: string;
+  role?: string;
+  status?: string;
+  bonusAmount?: number;
+  currency?: string;
+  referralCode?: string;
+  createdAt?: string;
+}
 
 export class SurveyService {
   static async getSurveys(): Promise<PulseSurvey[]> {
-    return APIClient.get<PulseSurvey[]>('/engagement/surveys');
+    return APIClient.unwrapList<PulseSurvey>(await APIClient.get('/engagement/surveys'));
   }
 
   static async getSurveyById(id: string): Promise<PulseSurvey | null> {
-    return APIClient.get<PulseSurvey>(`/engagement/surveys/${id}`);
+    return APIClient.unwrapItem<PulseSurvey>(await APIClient.get(`/engagement/surveys/${id}`));
   }
 
-  static async createSurvey(data: PulseSurvey): Promise<PulseSurvey> {
-    return APIClient.post<PulseSurvey>('/engagement/surveys', data);
+  static async createSurvey(data: Partial<PulseSurvey>): Promise<PulseSurvey | null> {
+    return APIClient.unwrapItem<PulseSurvey>(await APIClient.post('/engagement/surveys', data));
   }
 
-  static async updateSurvey(id: string, updates: Partial<PulseSurvey>): Promise<PulseSurvey> {
-    return APIClient.put<PulseSurvey>(`/engagement/surveys/${id}`, updates);
+  static async updateSurvey(
+    id: string,
+    updates: Partial<PulseSurvey>
+  ): Promise<PulseSurvey | null> {
+    return APIClient.unwrapItem<PulseSurvey>(
+      await APIClient.put(`/engagement/surveys/${id}`, updates)
+    );
   }
 
   static async getResponses(surveyId?: string): Promise<SurveyResponse[]> {
-    return APIClient.get<SurveyResponse[]>('/engagement/survey-responses', surveyId ? { surveyId } : undefined);
+    return APIClient.unwrapList<SurveyResponse>(
+      await APIClient.get('/engagement/survey-responses', surveyId ? { surveyId } : undefined)
+    );
   }
 
-  static async submitResponse(data: SurveyResponse): Promise<SurveyResponse> {
-    return APIClient.post<SurveyResponse>('/engagement/survey-responses', data);
+  static async submitResponse(data: {
+    surveyId: string;
+    answers: unknown;
+    isAnonymous?: boolean;
+    sentiment?: number;
+  }): Promise<SurveyResponse | null> {
+    return APIClient.unwrapItem<SurveyResponse>(
+      await APIClient.post('/engagement/survey-responses', data)
+    );
   }
 }
 
 export class EventService {
   static async getEvents(): Promise<Event[]> {
-    return APIClient.get<Event[]>('/engagement/events');
+    return APIClient.unwrapList<Event>(await APIClient.get('/engagement/events'));
   }
 
   static async getEventById(id: string): Promise<Event | null> {
-    return APIClient.get<Event>(`/engagement/events/${id}`);
+    return APIClient.unwrapItem<Event>(await APIClient.get(`/engagement/events/${id}`));
   }
 
-  static async createEvent(data: Event): Promise<Event> {
-    return APIClient.post<Event>('/engagement/events', data);
+  static async createEvent(data: Partial<Event>): Promise<Event | null> {
+    return APIClient.unwrapItem<Event>(await APIClient.post('/engagement/events', data));
   }
 
-  static async updateEvent(id: string, updates: Partial<Event>): Promise<Event> {
-    return APIClient.put<Event>(`/engagement/events/${id}`, updates);
+  static async updateEvent(id: string, updates: Partial<Event>): Promise<Event | null> {
+    return APIClient.unwrapItem<Event>(await APIClient.put(`/engagement/events/${id}`, updates));
   }
 
   static async getRSVPs(eventId?: string): Promise<RSVP[]> {
-    return APIClient.get<RSVP[]>('/engagement/rsvps', eventId ? { eventId } : undefined);
+    return APIClient.unwrapList<RSVP>(
+      await APIClient.get('/engagement/rsvps', eventId ? { eventId } : undefined)
+    );
   }
 
-  static async createRSVP(data: RSVP): Promise<RSVP> {
-    return APIClient.post<RSVP>('/engagement/rsvps', data);
+  static async createRSVP(data: { eventId: string; status: string }): Promise<RSVP | null> {
+    return APIClient.unwrapItem<RSVP>(await APIClient.post('/engagement/rsvps', data));
   }
 }
 
 export class SocialFeedService {
   static async getPosts(): Promise<SocialPost[]> {
-    return APIClient.get<SocialPost[]>('/engagement/posts');
+    return APIClient.unwrapList<SocialPost>(await APIClient.get('/engagement/posts'));
   }
 
   static async getPostById(id: string): Promise<SocialPost | null> {
-    return APIClient.get<SocialPost>(`/engagement/posts/${id}`);
+    return APIClient.unwrapItem<SocialPost>(await APIClient.get(`/engagement/posts/${id}`));
   }
 
-  static async createPost(data: SocialPost): Promise<SocialPost> {
-    return APIClient.post<SocialPost>('/engagement/posts', data);
+  static async createPost(
+    data: Partial<SocialPost> & Record<string, unknown>
+  ): Promise<SocialPost | null> {
+    return APIClient.unwrapItem<SocialPost>(await APIClient.post('/engagement/posts', data));
   }
 
-  static async updatePost(id: string, updates: Partial<SocialPost>): Promise<SocialPost> {
-    return APIClient.put<SocialPost>(`/engagement/posts/${id}`, updates);
+  static async updatePost(id: string, updates: Partial<SocialPost>): Promise<SocialPost | null> {
+    return APIClient.unwrapItem<SocialPost>(
+      await APIClient.put(`/engagement/posts/${id}`, updates)
+    );
   }
 
-  static async likePost(postId: string, userId: string, userName: string): Promise<void> {
-    return APIClient.post<void>(`/engagement/posts/${postId}/like`, { userId, userName });
+  static async likePost(postId: string): Promise<void> {
+    await APIClient.post(`/engagement/posts/${postId}/like`, {});
   }
 }
 
 export class InnovationService {
   static async getIdeas(): Promise<Idea[]> {
-    return APIClient.get<Idea[]>('/engagement/ideas');
+    return APIClient.unwrapList<Idea>(await APIClient.get('/engagement/ideas'));
   }
 
   static async getIdeaById(id: string): Promise<Idea | null> {
-    return APIClient.get<Idea>(`/engagement/ideas/${id}`);
+    return APIClient.unwrapItem<Idea>(await APIClient.get(`/engagement/ideas/${id}`));
   }
 
-  static async createIdea(data: Idea): Promise<Idea> {
-    return APIClient.post<Idea>('/engagement/ideas', data);
+  static async createIdea(data: {
+    title: string;
+    description?: string;
+    category?: string;
+    department?: string;
+  }): Promise<Idea | null> {
+    return APIClient.unwrapItem<Idea>(await APIClient.post('/engagement/ideas', data));
   }
 
-  static async updateIdea(id: string, updates: Partial<Idea>): Promise<Idea> {
-    return APIClient.put<Idea>(`/engagement/ideas/${id}`, updates);
+  static async updateIdea(id: string, updates: Partial<Idea>): Promise<Idea | null> {
+    return APIClient.unwrapItem<Idea>(await APIClient.put(`/engagement/ideas/${id}`, updates));
   }
 
-  static async voteIdea(ideaId: string, voterId: string, voterName: string, voteType: 'up' | 'down'): Promise<void> {
-    return APIClient.post<void>(`/engagement/ideas/${ideaId}/vote`, { voterId, voterName, voteType });
+  static async voteIdea(ideaId: string, voteType: 'up' | 'down' = 'up'): Promise<Idea | null> {
+    return APIClient.unwrapItem<Idea>(
+      await APIClient.post(`/engagement/ideas/${ideaId}/vote`, { voteType })
+    );
   }
 }
 
 export class CSRService {
   static async getActivities(): Promise<CSRActivity[]> {
-    return APIClient.get<CSRActivity[]>('/engagement/csr-activities');
+    return APIClient.unwrapList<CSRActivity>(await APIClient.get('/engagement/csr-activities'));
   }
 
   static async getActivityById(id: string): Promise<CSRActivity | null> {
-    return APIClient.get<CSRActivity>(`/engagement/csr-activities/${id}`);
+    return APIClient.unwrapItem<CSRActivity>(
+      await APIClient.get(`/engagement/csr-activities/${id}`)
+    );
   }
 
-  static async createActivity(data: CSRActivity): Promise<CSRActivity> {
-    return APIClient.post<CSRActivity>('/engagement/csr-activities', data);
+  static async createActivity(data: Partial<CSRActivity>): Promise<CSRActivity | null> {
+    return APIClient.unwrapItem<CSRActivity>(
+      await APIClient.post('/engagement/csr-activities', data)
+    );
   }
 
-  static async updateActivity(id: string, updates: Partial<CSRActivity>): Promise<CSRActivity> {
-    return APIClient.put<CSRActivity>(`/engagement/csr-activities/${id}`, updates);
+  static async updateActivity(
+    id: string,
+    updates: Partial<CSRActivity>
+  ): Promise<CSRActivity | null> {
+    return APIClient.unwrapItem<CSRActivity>(
+      await APIClient.put(`/engagement/csr-activities/${id}`, updates)
+    );
+  }
+
+  static async volunteer(id: string): Promise<CSRActivity | null> {
+    return APIClient.unwrapItem<CSRActivity>(
+      await APIClient.post(`/engagement/csr-activities/${id}/volunteer`, {})
+    );
   }
 }
 
 export class NewsletterService {
   static async getNewsletters(): Promise<Newsletter[]> {
-    return APIClient.get<Newsletter[]>('/engagement/newsletters');
+    return APIClient.unwrapList<Newsletter>(await APIClient.get('/engagement/newsletters'));
   }
 
   static async getNewsletterById(id: string): Promise<Newsletter | null> {
-    return APIClient.get<Newsletter>(`/engagement/newsletters/${id}`);
+    return APIClient.unwrapItem<Newsletter>(await APIClient.get(`/engagement/newsletters/${id}`));
   }
 
-  static async createNewsletter(data: Newsletter): Promise<Newsletter> {
-    return APIClient.post<Newsletter>('/engagement/newsletters', data);
+  static async createNewsletter(data: Partial<Newsletter>): Promise<Newsletter | null> {
+    return APIClient.unwrapItem<Newsletter>(await APIClient.post('/engagement/newsletters', data));
   }
 
-  static async updateNewsletter(id: string, updates: Partial<Newsletter>): Promise<Newsletter> {
-    return APIClient.put<Newsletter>(`/engagement/newsletters/${id}`, updates);
+  static async updateNewsletter(
+    id: string,
+    updates: Partial<Newsletter>
+  ): Promise<Newsletter | null> {
+    return APIClient.unwrapItem<Newsletter>(
+      await APIClient.put(`/engagement/newsletters/${id}`, updates)
+    );
+  }
+}
+
+export class ClassifiedService {
+  static async getClassifieds(): Promise<Classified[]> {
+    return APIClient.unwrapList<Classified>(await APIClient.get('/engagement/classifieds'));
+  }
+
+  static async createClassified(data: Partial<Classified>): Promise<Classified | null> {
+    return APIClient.unwrapItem<Classified>(await APIClient.post('/engagement/classifieds', data));
+  }
+}
+
+export class RewardService {
+  static async getRewards(): Promise<Reward[]> {
+    return APIClient.unwrapList<Reward>(await APIClient.get('/engagement/rewards'));
+  }
+
+  static async getBalance(): Promise<{ balance: number }> {
+    const res = await APIClient.get('/engagement/rewards/balance');
+    const item = APIClient.unwrapItem<{ balance: number }>(res);
+    return item ?? { balance: 0 };
+  }
+
+  static async redeem(rewardId: string): Promise<{ balance: number } | null> {
+    return APIClient.unwrapItem<{ balance: number }>(
+      await APIClient.post(`/engagement/rewards/${rewardId}/redeem`, {})
+    );
+  }
+}
+
+export class ReferralService {
+  static async getReferrals(): Promise<Referral[]> {
+    return APIClient.unwrapList<Referral>(await APIClient.get('/engagement/referrals'));
+  }
+
+  static async createReferral(data: Partial<Referral>): Promise<Referral | null> {
+    return APIClient.unwrapItem<Referral>(await APIClient.post('/engagement/referrals', data));
   }
 }
 
 export class EngagementAnalyticsService {
-  static async getMetrics(): Promise<EngagementMetrics> {
-    return APIClient.get<EngagementMetrics>('/engagement/analytics');
+  static async getMetrics(timeRange?: string): Promise<EngagementMetrics | null> {
+    return APIClient.unwrapItem<EngagementMetrics>(
+      await APIClient.get('/engagement/analytics', timeRange ? { timeRange } : undefined)
+    );
   }
 }
 
 export class EngagementSettingsService {
-  static async getSettings(): Promise<EngagementSettings> {
-    return APIClient.get<EngagementSettings>('/engagement/settings');
+  static async getSettings(): Promise<EngagementSettings | null> {
+    return APIClient.unwrapItem<EngagementSettings>(await APIClient.get('/engagement/settings'));
   }
 
-  static async updateSettings(updates: Partial<EngagementSettings>): Promise<EngagementSettings> {
-    return APIClient.put<EngagementSettings>('/engagement/settings', updates);
+  static async updateSettings(
+    updates: Partial<EngagementSettings>
+  ): Promise<EngagementSettings | null> {
+    return APIClient.unwrapItem<EngagementSettings>(
+      await APIClient.put('/engagement/settings', updates)
+    );
   }
 }

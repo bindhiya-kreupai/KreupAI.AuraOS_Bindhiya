@@ -1,0 +1,156 @@
+[
+  {
+    "id": "AURA-504",
+    "title": "Audit Checklist: Complete API integration and remove mock/local fallbacks",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/records-compliance/audit-checklist",
+    "api": "/api/v1/records-compliance/audit-checklist",
+    "desc": "Page calls APIs (/api/v1/records-compliance/audit-checklist) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-505",
+    "title": "Completeness: Complete API integration and remove mock/local fallbacks",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/records-compliance/completeness",
+    "api": "/api/v1/records-compliance/completeness",
+    "desc": "Page calls APIs (/api/v1/records-compliance/completeness) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-506",
+    "title": "Document Matrix: Complete API integration and remove mock/local fallbacks",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/records-compliance/document-matrix",
+    "api": "/api/v1/records-compliance/document-matrix",
+    "desc": "Page calls APIs (/api/v1/records-compliance/document-matrix) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-507",
+    "title": "Mandatory Document Matrix (country \u00d7 code): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/records-compliance/mandatory-document-matrix-country-code",
+    "api": "Not specified",
+    "desc": "Menu feature 'Mandatory Document Matrix (country \u00d7 code)' resolves to /dashboard/records-compliance/mandatory-document-matrix-country-code but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-508",
+    "title": "Monthly Compliance Certificate: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/records-compliance/monthly-compliance-certificate",
+    "api": "Not specified",
+    "desc": "Menu feature 'Monthly Compliance Certificate' resolves to /dashboard/records-compliance/monthly-compliance-certificate but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-509",
+    "title": "Per-Employee Completeness Score (GREEN/AMBER/RED): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/records-compliance/per-employee-completeness-score-green-amber-red",
+    "api": "Not specified",
+    "desc": "Menu feature 'Per-Employee Completeness Score (GREEN/AMBER/RED)' resolves to /dashboard/records-compliance/per-employee-completeness-score-green-amber-red but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-510",
+    "title": "Records Audit Checklist: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/records-compliance/records-audit-checklist",
+    "api": "Not specified",
+    "desc": "Menu feature 'Records Audit Checklist' resolves to /dashboard/records-compliance/records-audit-checklist but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-511",
+    "title": "Records Risk Register (L\u00d7I): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/records-compliance/records-risk-register-l-i",
+    "api": "Not specified",
+    "desc": "Menu feature 'Records Risk Register (L\u00d7I)' resolves to /dashboard/records-compliance/records-risk-register-l-i but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-512",
+    "title": "Risk Register: Complete API integration and remove mock/local fallbacks",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/records-compliance/risk-register",
+    "api": "/api/v1/records-compliance/risk-register",
+    "desc": "Page calls APIs (/api/v1/records-compliance/risk-register) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-369",
+    "title": "HR Audit Cycles & Findings: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/document-retention-compliance/hr-audit-cycles-findings",
+    "api": "Not specified",
+    "desc": "Menu feature 'HR Audit Cycles & Findings' resolves to /dashboard/document-retention-compliance/hr-audit-cycles-findings but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-370",
+    "title": "HR Document Register (auto retentionUntil): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/document-retention-compliance/hr-document-register-auto-retentionuntil",
+    "api": "Not specified",
+    "desc": "Menu feature 'HR Document Register (auto retentionUntil)' resolves to /dashboard/document-retention-compliance/hr-document-register-auto-retentionuntil but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-371",
+    "title": "Monthly Compliance Certificate: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/document-retention-compliance/monthly-compliance-certificate",
+    "api": "Not specified",
+    "desc": "Menu feature 'Monthly Compliance Certificate' resolves to /dashboard/document-retention-compliance/monthly-compliance-certificate but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-372",
+    "title": "Retention Schedule (per record type \u00d7 country): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/document-retention-compliance/retention-schedule-per-record-type-country",
+    "api": "Not specified",
+    "desc": "Menu feature 'Retention Schedule (per record type \u00d7 country)' resolves to /dashboard/document-retention-compliance/retention-schedule-per-record-type-country but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-373",
+    "title": "Schedule: Complete API integration and remove mock/local fallbacks",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/document-retention-compliance/schedule",
+    "api": "/api/v1/document-retention-compliance/schedule",
+    "desc": "Page calls APIs (/api/v1/document-retention-compliance/schedule) but mock/hardcoded UI remains."
+  }
+]

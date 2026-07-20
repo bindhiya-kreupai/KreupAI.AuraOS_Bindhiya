@@ -1,0 +1,46 @@
+[
+  {
+    "id": "AURA-553",
+    "title": "HR Budgeting: Wire page to backend API",
+    "module": "HR Budgeting Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/finance/budget",
+    "api": "Not specified",
+    "desc": "Page renders inline static arrays with no fetch/service detected."
+  },
+  {
+    "id": "AURA-554",
+    "title": "Approvals: Complete API integration and remove mock/local fallbacks",
+    "module": "HR Budgeting Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/finance/budget/approvals",
+    "api": "Not specified",
+    "desc": "Page calls APIs (service layer) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-555",
+    "title": "Budget Templates: Complete API integration and remove mock/local fallbacks",
+    "module": "HR Budgeting Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/finance/budget/budget-templates",
+    "api": "Not specified",
+    "desc": "Page calls APIs (service layer) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-556",
+    "title": "Scenario Planning: Complete API integration and remove mock/local fallbacks",
+    "module": "HR Budgeting Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/finance/budget/scenario-planning",
+    "api": "Not specified",
+    "desc": "Page calls APIs (service layer) but mock/hardcoded UI remains."
+  }
+]

@@ -25,6 +25,12 @@
 
 import { prisma } from '@aura/database';
 
+// The offer-compliance models (offerApprovalRule, offerApproval, offerTemplate,
+// offerCondition, preEmploymentDocument, medicalFitness, employmentContract,
+// offerAcceptance) exist in the deployed db-push database but are not in
+// schema.prisma, so they are absent from the generated PrismaClient types.
+const db = prisma as any;
+
 export interface AuthContext {
   tenantId: string;
   userId: string;
@@ -46,7 +52,7 @@ export class OfferApprovalService {
     auth: AuthContext
   ) {
     if (input.approverRoles.length === 0) throw new Error('approverRoles must be non-empty');
-    return prisma.offerApprovalRule.create({
+    return db.offerApprovalRule.create({
       data: {
         tenantId: auth.tenantId,
         legalEntityId: input.legalEntityId,
@@ -63,7 +69,7 @@ export class OfferApprovalService {
    * the highest `ctcThreshold` that is ≤ ctc.
    */
   async resolveRule(tenantId: string, grade: string, ctc: number) {
-    const rules = await prisma.offerApprovalRule.findMany({
+    const rules = await db.offerApprovalRule.findMany({
       where: { tenantId, grade, ctcThreshold: { lte: ctc } },
       orderBy: { ctcThreshold: 'desc' },
       take: 1,
@@ -82,7 +88,7 @@ export class OfferApprovalService {
     if (!rule) throw new Error(`no OfferApprovalRule for grade=${input.grade}, ctc=${input.ctc}`);
     const created = [];
     for (const [i, role] of rule.approverRoles.entries()) {
-      const row = await prisma.offerApproval.create({
+      const row = await db.offerApproval.create({
         data: {
           tenantId: auth.tenantId,
           offerId: input.offerId,
@@ -101,14 +107,14 @@ export class OfferApprovalService {
     input: { approvalId: string; decision: 'APPROVED' | 'REJECTED'; comments?: string },
     auth: AuthContext
   ) {
-    const row = await prisma.offerApproval.findFirst({
+    const row = await db.offerApproval.findFirst({
       where: { id: input.approvalId, tenantId: auth.tenantId },
     });
     if (!row) throw new Error('offer approval row not found');
     if (row.initiatorId === auth.userId) {
       throw new Error('initiator cannot approve own offer (maker-checker)');
     }
-    return prisma.offerApproval.update({
+    return db.offerApproval.update({
       where: { id: input.approvalId },
       data: {
         approverId: auth.userId,
@@ -120,12 +126,12 @@ export class OfferApprovalService {
   }
 
   async statusFor(tenantId: string, offerId: string) {
-    const rows = await prisma.offerApproval.findMany({
+    const rows = await db.offerApproval.findMany({
       where: { tenantId, offerId },
       orderBy: { stepOrder: 'asc' },
     });
-    const anyRejected = rows.some((r) => r.status === 'REJECTED');
-    const allApproved = rows.length > 0 && rows.every((r) => r.status === 'APPROVED');
+    const anyRejected = rows.some((r: any) => r.status === 'REJECTED');
+    const allApproved = rows.length > 0 && rows.every((r: any) => r.status === 'APPROVED');
     const overall = anyRejected ? 'REJECTED' : allApproved ? 'APPROVED' : 'PENDING';
     return { rows, overall };
   }
@@ -150,7 +156,7 @@ export class OfferTemplateService {
     },
     auth: AuthContext
   ) {
-    return prisma.offerTemplate.create({
+    return db.offerTemplate.create({
       data: {
         tenantId: auth.tenantId,
         templateCode: input.templateCode,
@@ -165,7 +171,7 @@ export class OfferTemplateService {
   }
 
   async listActive(tenantId: string, countryCode?: string) {
-    return prisma.offerTemplate.findMany({
+    return db.offerTemplate.findMany({
       where: { tenantId, isActive: true, ...(countryCode ? { countryCode } : {}) },
       orderBy: [{ templateCode: 'asc' }, { version: 'desc' }],
     });
@@ -183,7 +189,7 @@ export class OfferConditionService {
     input: { offerId: string; conditionCode: string; description: string; dueAt?: Date },
     auth: AuthContext
   ) {
-    return prisma.offerCondition.upsert({
+    return db.offerCondition.upsert({
       where: {
         aura_offer_condition_unique: {
           tenantId: auth.tenantId,
@@ -210,11 +216,11 @@ export class OfferConditionService {
     },
     auth: AuthContext
   ) {
-    const row = await prisma.offerCondition.findFirst({
+    const row = await db.offerCondition.findFirst({
       where: { id: input.conditionId, tenantId: auth.tenantId },
     });
     if (!row) throw new Error('offer condition not found');
-    return prisma.offerCondition.update({
+    return db.offerCondition.update({
       where: { id: input.conditionId },
       data: {
         status: input.status,
@@ -226,9 +232,9 @@ export class OfferConditionService {
 
   /** True iff EVERY condition for the offer is MET or WAIVED. */
   async allMet(tenantId: string, offerId: string) {
-    const rows = await prisma.offerCondition.findMany({ where: { tenantId, offerId } });
+    const rows = await db.offerCondition.findMany({ where: { tenantId, offerId } });
     if (rows.length === 0) return true; // no conditions = trivially met
-    return rows.every((r) => r.status === 'MET' || r.status === 'WAIVED');
+    return rows.every((r: any) => r.status === 'MET' || r.status === 'WAIVED');
   }
 }
 
@@ -249,7 +255,7 @@ export class PreEmploymentDocumentService {
     },
     auth: AuthContext
   ) {
-    return prisma.preEmploymentDocument.upsert({
+    return db.preEmploymentDocument.upsert({
       where: {
         aura_pre_employment_document_unique: {
           tenantId: auth.tenantId,
@@ -282,7 +288,7 @@ export class PreEmploymentDocumentService {
     if (input.decision === 'REJECTED' && !input.rejectionReason) {
       throw new Error('rejectionReason required when decision = REJECTED');
     }
-    return prisma.preEmploymentDocument.update({
+    return db.preEmploymentDocument.update({
       where: { id: input.documentId },
       data: {
         status: input.decision,
@@ -295,11 +301,11 @@ export class PreEmploymentDocumentService {
 
   /** True iff every MANDATORY doc for the offer is VERIFIED. */
   async allMandatoryVerified(tenantId: string, offerId: string) {
-    const rows = await prisma.preEmploymentDocument.findMany({
+    const rows = await db.preEmploymentDocument.findMany({
       where: { tenantId, offerId, isMandatory: true },
     });
     if (rows.length === 0) return true;
-    return rows.every((r) => r.status === 'VERIFIED');
+    return rows.every((r: any) => r.status === 'VERIFIED');
   }
 }
 
@@ -323,7 +329,7 @@ export class MedicalFitnessService {
     },
     auth: AuthContext
   ) {
-    return prisma.medicalFitness.upsert({
+    return db.medicalFitness.upsert({
       where: {
         aura_medical_fitness_unique: {
           tenantId: auth.tenantId,
@@ -374,7 +380,7 @@ export class EmploymentContractService {
     },
     auth: AuthContext
   ) {
-    return prisma.employmentContract.upsert({
+    return db.employmentContract.upsert({
       where: {
         aura_employment_contract_unique: { tenantId: auth.tenantId, offerId: input.offerId },
       } as any,
@@ -401,14 +407,14 @@ export class EmploymentContractService {
   }
 
   async send(contractId: string) {
-    return prisma.employmentContract.update({
+    return db.employmentContract.update({
       where: { id: contractId },
       data: { status: 'SENT' },
     });
   }
 
   async sign(contractId: string, signatureRef: string) {
-    return prisma.employmentContract.update({
+    return db.employmentContract.update({
       where: { id: contractId },
       data: { status: 'SIGNED', signedAt: new Date(), signatureRef },
     });
@@ -426,7 +432,7 @@ export class OfferAcceptanceService {
     input: { offerId: string; candidateId: string; validUntil: Date; templateVersion?: number },
     auth: AuthContext
   ) {
-    return prisma.offerAcceptance.upsert({
+    return db.offerAcceptance.upsert({
       where: {
         aura_offer_acceptance_unique: { tenantId: auth.tenantId, offerId: input.offerId },
       } as any,
@@ -461,7 +467,7 @@ export class OfferAcceptanceService {
     },
     auth: AuthContext
   ) {
-    const row = await prisma.offerAcceptance.findFirst({
+    const row = await db.offerAcceptance.findFirst({
       where: { id: input.acceptanceId, tenantId: auth.tenantId },
     });
     if (!row) throw new Error('offer acceptance not found');
@@ -470,7 +476,7 @@ export class OfferAcceptanceService {
     }
     if (row.validUntil.getTime() < Date.now()) {
       // Auto-expire if past validity window
-      await prisma.offerAcceptance.update({
+      await db.offerAcceptance.update({
         where: { id: input.acceptanceId },
         data: { status: 'EXPIRED' },
       });
@@ -487,7 +493,7 @@ export class OfferAcceptanceService {
       if (!docsVerified) throw new Error('cannot accept: mandatory documents not VERIFIED');
     }
 
-    return prisma.offerAcceptance.update({
+    return db.offerAcceptance.update({
       where: { id: input.acceptanceId },
       data: {
         status: input.decision,
@@ -501,11 +507,11 @@ export class OfferAcceptanceService {
   }
 
   async expireOverdue(tenantId: string) {
-    const overdue = await prisma.offerAcceptance.findMany({
+    const overdue = await db.offerAcceptance.findMany({
       where: { tenantId, status: 'PENDING', validUntil: { lt: new Date() } },
     });
-    await prisma.offerAcceptance.updateMany({
-      where: { id: { in: overdue.map((o) => o.id) } },
+    await db.offerAcceptance.updateMany({
+      where: { id: { in: overdue.map((o: any) => o.id) } },
       data: { status: 'EXPIRED' },
     });
     return overdue.length;

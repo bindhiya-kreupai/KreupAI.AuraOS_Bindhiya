@@ -353,7 +353,8 @@ export class FeatureFlagService {
    */
   static async getFlag(key: string): Promise<FeatureFlag | null> {
     try {
-      return await APIClient.get<FeatureFlag>(`/v1/feature-flags/${key}`);
+      const response = await APIClient.get<FeatureFlag>(`/v1/feature-flags/${key}`);
+      return APIClient.unwrapItem<FeatureFlag>(response);
     } catch {
       const flag = MOCK_FLAGS.find((f) => f.key === key);
       return flag ? { ...flag, status: computeStatus(flag) } : null;
@@ -365,7 +366,10 @@ export class FeatureFlagService {
    */
   static async isEnabled(key: string, context?: FlagContext): Promise<boolean> {
     try {
-      return await APIClient.post<boolean>(`/v1/feature-flags/${key}/evaluate`, { context });
+      const response = await APIClient.post<boolean>(`/v1/feature-flags/${key}/evaluate`, {
+        context,
+      });
+      return APIClient.unwrapItem<boolean>(response) ?? false;
     } catch {
       const flag = MOCK_FLAGS.find((f) => f.key === key);
       if (!flag || !flag.isEnabled) return false;
@@ -406,7 +410,8 @@ export class FeatureFlagService {
    */
   static async createFlag(data: CreateFlagInput): Promise<FeatureFlag> {
     try {
-      return await APIClient.post<FeatureFlag>('/v1/feature-flags', data);
+      const response = await APIClient.post<FeatureFlag>('/v1/feature-flags', data);
+      return APIClient.unwrapItem<FeatureFlag>(response) ?? ({} as FeatureFlag);
     } catch {
       const newFlag: FeatureFlag = {
         key: data.key,
@@ -434,7 +439,8 @@ export class FeatureFlagService {
    */
   static async updateFlag(key: string, data: UpdateFlagInput): Promise<FeatureFlag> {
     try {
-      return await APIClient.patch<FeatureFlag>(`/v1/feature-flags/${key}`, data);
+      const response = await APIClient.patch<FeatureFlag>(`/v1/feature-flags/${key}`, data);
+      return APIClient.unwrapItem<FeatureFlag>(response) ?? ({} as FeatureFlag);
     } catch {
       const idx = MOCK_FLAGS.findIndex((f) => f.key === key);
       if (idx < 0) throw new Error('Flag not found');

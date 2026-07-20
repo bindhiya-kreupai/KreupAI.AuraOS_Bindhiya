@@ -2,7 +2,7 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { ImportDialog, type ImportPreview } from '@aura/ui/components/ui/import-dialog';
+import { ImportDialog, type ImportPreview } from '@aura/ui';
 
 function makePreview(overrides: Partial<ImportPreview> = {}): ImportPreview {
   return {
@@ -86,16 +86,14 @@ describe('ImportDialog', () => {
 
   it('disables Commit when every row is invalid', async () => {
     const user = userEvent.setup();
-    const dryRun = vi
-      .fn()
-      .mockResolvedValue(
-        makePreview({
-          validRows: 0,
-          totalRows: 1,
-          errors: [{ row: 1, message: 'bad' }],
-          sample: [],
-        })
-      );
+    const dryRun = vi.fn().mockResolvedValue(
+      makePreview({
+        validRows: 0,
+        totalRows: 1,
+        errors: [{ row: 1, message: 'bad' }],
+        sample: [],
+      })
+    );
 
     render(
       <ImportDialog

@@ -5,9 +5,18 @@
 // ENUMS & TYPES
 // ============================================================================
 
-export type AttendanceStatus = 'present' | 'absent' | 'half_day' | 'late' | 'early_departure' | 'on_leave' | 'holiday' | 'weekend';
+export type AttendanceStatus =
+  | 'present'
+  | 'absent'
+  | 'half_day'
+  | 'late'
+  | 'early_departure'
+  | 'on_leave'
+  | 'holiday'
+  | 'weekend';
 
-export type ShiftType = 'morning' | 'afternoon' | 'evening' | 'night' | 'general' | 'flexible' | 'rotational';
+export type ShiftType =
+  'morning' | 'afternoon' | 'evening' | 'night' | 'general' | 'flexible' | 'rotational';
 
 export type CheckType = 'check_in' | 'check_out' | 'break_start' | 'break_end';
 
@@ -15,9 +24,10 @@ export type OvertimeType = 'regular' | 'weekend' | 'holiday' | 'compensatory';
 
 export type OvertimeStatus = 'pending' | 'approved' | 'rejected' | 'paid' | 'comp_off_granted';
 
-export type RegularizationStatus = 'pending' | 'approved' | 'rejected';
+export type RegularizationStatus = 'pending' | 'approved' | 'rejected' | 'cancelled';
 
-export type RegularizationType = 'missed_punch' | 'late_arrival' | 'early_departure' | 'incorrect_punch';
+export type RegularizationType =
+  'missed_punch' | 'late_arrival' | 'early_departure' | 'incorrect_punch';
 
 export type BiometricDeviceType = 'fingerprint' | 'face_recognition' | 'card_reader' | 'iris_scan';
 
@@ -194,6 +204,9 @@ export interface OvertimeRequest {
   paidDate?: string;
   compOffGranted?: boolean;
   compOffDate?: string;
+  estimatedPayout?: number;
+  hourlyRate?: number;
+  multiplier?: number;
 }
 
 // ============================================================================
@@ -419,6 +432,8 @@ export interface AttendanceSettings {
   workingDaysPerWeek: number;
   weekendDays: number[];
   standardWorkingHours: number;
+  gracePeriodMinutes: number;
+  earlyExitBufferMinutes: number;
   enableBiometric: boolean;
   enableGeofencing: boolean;
   enableMobileCheckIn: boolean;

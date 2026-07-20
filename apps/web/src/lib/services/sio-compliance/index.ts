@@ -191,7 +191,7 @@ export class SioRegistrationService {
     return prisma.$transaction(async (tx) => {
       const row = await (tx as any).sioEmployeeRegistration.upsert({
         where: {
-          aura_sio_employee_registration_unique: {
+          tenantId_employeeId: {
             tenantId: auth.tenantId,
             employeeId: input.employeeId,
           },
@@ -234,7 +234,7 @@ export class SioRegistrationService {
     return prisma.$transaction(async (tx) => {
       const row = await (tx as any).sioEmployeeRegistration.update({
         where: {
-          aura_sio_employee_registration_unique: {
+          tenantId_employeeId: {
             tenantId: auth.tenantId,
             employeeId,
           },
@@ -276,7 +276,12 @@ export class SioRegistrationService {
   }
   async getActive(tenantId: string, employeeId: string) {
     return (prisma as any).sioEmployeeRegistration.findUnique({
-      where: { aura_sio_employee_registration_unique: { tenantId, employeeId } },
+      where: {
+        tenantId_employeeId: {
+          tenantId,
+          employeeId,
+        },
+      },
     });
   }
   async bahrainizationEvidenceCount(tenantId: string) {
@@ -308,7 +313,7 @@ export class SioCalculationService {
     return prisma.$transaction(async (tx) => {
       const row = await (tx as any).sioContributionWage.upsert({
         where: {
-          aura_sio_contribution_wage_unique: {
+          tenantId_employeeId_period: {
             tenantId: auth.tenantId,
             employeeId: input.employeeId,
             period: input.period,
@@ -361,7 +366,7 @@ export class SioCalculationService {
         ? { contributionWage: input.contributionWage }
         : await (prisma as any).sioContributionWage.findUnique({
             where: {
-              aura_sio_contribution_wage_unique: {
+              tenantId_employeeId_period: {
                 tenantId: auth.tenantId,
                 employeeId: input.employeeId,
                 period: input.period,
@@ -388,7 +393,7 @@ export class SioCalculationService {
     const unempR = apply(unemp);
     return (prisma as any).sioContribution.upsert({
       where: {
-        aura_sio_contribution_unique: {
+        tenantId_employeeId_period: {
           tenantId: auth.tenantId,
           employeeId: input.employeeId,
           period: input.period,
@@ -692,7 +697,12 @@ export class SioCertificateService {
     if (stats.late > 0) reasons.push(`${stats.late} late submission(s)`);
     const gatingReason = reasons.length ? `Blocked: ${reasons.join('; ')}` : null;
     return (prisma as any).sioCertificate.upsert({
-      where: { aura_sio_certificate_unique: { tenantId: auth.tenantId, period } },
+      where: {
+        tenantId_period: {
+          tenantId: auth.tenantId,
+          period,
+        },
+      },
       update: {
         submissionsCount: stats.submissions,
         openVariancesCount: stats.openVariances,
@@ -721,7 +731,12 @@ export class SioCertificateService {
     auth: AuthContext
   ) {
     const cert = await (prisma as any).sioCertificate.findUnique({
-      where: { aura_sio_certificate_unique: { tenantId: auth.tenantId, period } },
+      where: {
+        tenantId_period: {
+          tenantId: auth.tenantId,
+          period,
+        },
+      },
     });
     if (!cert) throw new Error('certificate not generated');
     if (cert.gatingReason) throw new Error(`cannot sign while gated: ${cert.gatingReason}`);

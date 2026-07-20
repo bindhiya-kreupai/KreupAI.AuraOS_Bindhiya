@@ -65,7 +65,7 @@ interface ThreadMessage {
   attachments?: MessageAttachment[];
 }
 
-interface CandidateThread {
+export interface CandidateThread {
   id: string;
   candidateId: string;
   candidateName: string;
@@ -83,7 +83,7 @@ interface CandidateThread {
   messages: ThreadMessage[];
 }
 
-interface MessageTemplate {
+export interface MessageTemplate {
   id: string;
   name: string;
   subject: string;
@@ -94,9 +94,17 @@ interface MessageTemplate {
   usageCount: number;
 }
 
+export interface SendMessagePayload {
+  candidateId: string;
+  channel: ChannelType;
+  subject?: string;
+  body: string;
+}
+
 interface CandidateCommunicationHubProps {
   threads: CandidateThread[];
   templates: MessageTemplate[];
+  onSendMessage?: (payload: SendMessagePayload) => Promise<void>;
 }
 
 // ── Config ───────────────────────────────────────────────────────────────────────
@@ -142,9 +150,9 @@ const STAGE_COLORS: Record<string, string> = {
   Rejected: 'bg-coral-alert/10 text-coral-alert',
 };
 
-// ── Mock Data ────────────────────────────────────────────────────────────────────
+// ── Message Templates (static presentation config) ──
 
-export const MOCK_TEMPLATES: MessageTemplate[] = [
+export const MESSAGE_TEMPLATES: MessageTemplate[] = [
   {
     id: 'tpl-1',
     name: 'Application Received',
@@ -153,7 +161,7 @@ export const MOCK_TEMPLATES: MessageTemplate[] = [
     category: 'application_received',
     channel: 'email',
     variables: ['candidateName', 'jobTitle'],
-    usageCount: 234,
+    usageCount: 0,
   },
   {
     id: 'tpl-2',
@@ -163,7 +171,7 @@ export const MOCK_TEMPLATES: MessageTemplate[] = [
     category: 'interview_scheduled',
     channel: 'email',
     variables: ['candidateName', 'jobTitle', 'interviewDate', 'interviewTime', 'interviewFormat'],
-    usageCount: 178,
+    usageCount: 0,
   },
   {
     id: 'tpl-3',
@@ -173,7 +181,7 @@ export const MOCK_TEMPLATES: MessageTemplate[] = [
     category: 'assessment',
     channel: 'email',
     variables: ['candidateName', 'jobTitle', 'assessmentLink', 'deadline', 'duration'],
-    usageCount: 89,
+    usageCount: 0,
   },
   {
     id: 'tpl-4',
@@ -183,7 +191,7 @@ export const MOCK_TEMPLATES: MessageTemplate[] = [
     category: 'offer_sent',
     channel: 'email',
     variables: ['candidateName', 'jobTitle', 'expiryDate'],
-    usageCount: 45,
+    usageCount: 0,
   },
   {
     id: 'tpl-5',
@@ -193,7 +201,7 @@ export const MOCK_TEMPLATES: MessageTemplate[] = [
     category: 'rejection',
     channel: 'email',
     variables: ['candidateName', 'jobTitle'],
-    usageCount: 312,
+    usageCount: 0,
   },
   {
     id: 'tpl-6',
@@ -203,7 +211,7 @@ export const MOCK_TEMPLATES: MessageTemplate[] = [
     category: 'interview_scheduled',
     channel: 'sms',
     variables: ['candidateName', 'jobTitle', 'interviewDate', 'interviewTime'],
-    usageCount: 156,
+    usageCount: 0,
   },
   {
     id: 'tpl-7',
@@ -213,7 +221,7 @@ export const MOCK_TEMPLATES: MessageTemplate[] = [
     category: 'follow_up',
     channel: 'sms',
     variables: ['candidateName', 'jobTitle'],
-    usageCount: 98,
+    usageCount: 0,
   },
   {
     id: 'tpl-8',
@@ -223,279 +231,7 @@ export const MOCK_TEMPLATES: MessageTemplate[] = [
     category: 'follow_up',
     channel: 'email',
     variables: ['candidateName', 'jobTitle', 'sentDate'],
-    usageCount: 67,
-  },
-];
-
-export const MOCK_THREADS: CandidateThread[] = [
-  {
-    id: 'thread-1',
-    candidateId: 'cand-1',
-    candidateName: 'Sarah Chen',
-    candidateEmail: 'sarah.chen@email.com',
-    candidatePhone: '+1 (415) 555-0192',
-    jobTitle: 'Senior Software Engineer',
-    stage: 'Interview',
-    isStarred: true,
-    isArchived: false,
-    unreadCount: 2,
-    lastMessage: 'Thank you! I can confirm the interview slot on Thursday at 2 PM.',
-    lastMessageTime: '2026-02-24T10:30:00Z',
-    lastChannel: 'email',
-    messages: [
-      {
-        id: 'msg-1-1',
-        channel: 'email',
-        direction: 'outbound',
-        status: 'read',
-        subject: 'We received your application for Senior Software Engineer',
-        body: 'Hi Sarah,\n\nThank you for applying for the Senior Software Engineer position at AURA Technologies. We have received your application and our team is currently reviewing it.\n\nWe will be in touch within 5-7 business days with an update.\n\nBest regards,\nAURA Talent Team',
-        timestamp: '2026-02-15T09:00:00Z',
-        sender: 'AURA Talent Team',
-        senderRole: 'Recruiter',
-      },
-      {
-        id: 'msg-1-2',
-        channel: 'email',
-        direction: 'inbound',
-        status: 'read',
-        body: 'Thank you for the quick response! Looking forward to hearing from you.',
-        timestamp: '2026-02-15T11:30:00Z',
-        sender: 'Sarah Chen',
-      },
-      {
-        id: 'msg-1-3',
-        channel: 'email',
-        direction: 'outbound',
-        status: 'read',
-        subject: 'Interview Invitation — Senior Software Engineer at AURA Technologies',
-        body: 'Hi Sarah,\n\nWe are pleased to invite you for an interview for the Senior Software Engineer position.\n\nDate: Thursday, February 27, 2026\nTime: 2:00 PM PST\nFormat: Video Call (link will be sent separately)\n\nPlease confirm your availability by replying to this email.\n\nBest regards,\nAURA Talent Team',
-        timestamp: '2026-02-20T14:00:00Z',
-        sender: 'AURA Talent Team',
-        senderRole: 'Recruiter',
-        attachments: [
-          { id: 'att-1', name: 'interview-prep-guide.pdf', size: '245 KB', type: 'pdf' },
-        ],
-      },
-      {
-        id: 'msg-1-4',
-        channel: 'sms',
-        direction: 'outbound',
-        status: 'delivered',
-        body: 'Hi Sarah, this is a reminder about your interview for Sr. Software Engineer at AURA on Feb 27 at 2PM PST. Reply CONFIRM to confirm.',
-        timestamp: '2026-02-23T10:00:00Z',
-        sender: 'AURA Talent',
-      },
-      {
-        id: 'msg-1-5',
-        channel: 'sms',
-        direction: 'inbound',
-        status: 'read',
-        body: 'CONFIRM',
-        timestamp: '2026-02-23T10:15:00Z',
-        sender: 'Sarah Chen',
-      },
-      {
-        id: 'msg-1-6',
-        channel: 'email',
-        direction: 'inbound',
-        status: 'read',
-        body: 'Thank you! I can confirm the interview slot on Thursday at 2 PM. Looking forward to it!\n\nBest,\nSarah',
-        timestamp: '2026-02-24T10:30:00Z',
-        sender: 'Sarah Chen',
-      },
-    ],
-  },
-  {
-    id: 'thread-2',
-    candidateId: 'cand-2',
-    candidateName: 'Marcus Johnson',
-    candidateEmail: 'marcus.j@outlook.com',
-    candidatePhone: '+1 (212) 555-0847',
-    jobTitle: 'Product Manager',
-    stage: 'Technical Test',
-    isStarred: false,
-    isArchived: false,
-    unreadCount: 0,
-    lastMessage: 'Your technical assessment link has been sent. Please complete by March 1.',
-    lastMessageTime: '2026-02-22T16:00:00Z',
-    lastChannel: 'email',
-    messages: [
-      {
-        id: 'msg-2-1',
-        channel: 'email',
-        direction: 'outbound',
-        status: 'read',
-        subject: 'We received your application for Product Manager',
-        body: 'Hi Marcus,\n\nThank you for applying for the Product Manager position. We will review your application shortly.\n\nBest regards,\nAURA Talent Team',
-        timestamp: '2026-02-10T09:00:00Z',
-        sender: 'AURA Talent Team',
-        senderRole: 'Recruiter',
-      },
-      {
-        id: 'msg-2-2',
-        channel: 'email',
-        direction: 'outbound',
-        status: 'read',
-        subject: 'Technical Assessment — Product Manager',
-        body: 'Hi Marcus,\n\nAs part of the Product Manager interview process, please complete the following assessment:\n\nLink: https://assess.aura.tech/pm-challenge-2026\nDeadline: March 1, 2026\n\nThe assessment should take approximately 90 minutes. Good luck!\n\nBest regards,\nAURA Talent Team',
-        timestamp: '2026-02-22T16:00:00Z',
-        sender: 'AURA Talent Team',
-        senderRole: 'Recruiter',
-      },
-    ],
-  },
-  {
-    id: 'thread-3',
-    candidateId: 'cand-3',
-    candidateName: 'Priya Patel',
-    candidateEmail: 'priya.patel@gmail.com',
-    candidatePhone: '+1 (650) 555-0391',
-    jobTitle: 'UX Designer',
-    stage: 'Offer',
-    isStarred: true,
-    isArchived: false,
-    unreadCount: 1,
-    lastMessage: 'I have a couple of questions about the benefits package before signing.',
-    lastMessageTime: '2026-02-24T08:45:00Z',
-    lastChannel: 'email',
-    messages: [
-      {
-        id: 'msg-3-1',
-        channel: 'email',
-        direction: 'outbound',
-        status: 'read',
-        subject: 'Offer of Employment — UX Designer at AURA Technologies',
-        body: 'Dear Priya,\n\nWe are thrilled to extend an offer for the UX Designer position at AURA Technologies.\n\nPlease find your offer details in the attached document. The offer is valid until March 10, 2026.\n\nWe look forward to having you on the team!\n\nBest regards,\nAURA Talent Team',
-        timestamp: '2026-02-21T11:00:00Z',
-        sender: 'AURA Talent Team',
-        senderRole: 'Hiring Manager',
-        attachments: [
-          { id: 'att-2', name: 'offer-letter-priya-patel.pdf', size: '320 KB', type: 'pdf' },
-          { id: 'att-3', name: 'benefits-overview.pdf', size: '1.2 MB', type: 'pdf' },
-        ],
-      },
-      {
-        id: 'msg-3-2',
-        channel: 'sms',
-        direction: 'outbound',
-        status: 'delivered',
-        body: 'Hi Priya, your offer letter for UX Designer at AURA has been sent to your email. Please review at your convenience. — AURA Talent',
-        timestamp: '2026-02-21T11:05:00Z',
-        sender: 'AURA Talent',
-      },
-      {
-        id: 'msg-3-3',
-        channel: 'email',
-        direction: 'inbound',
-        status: 'read',
-        body: 'I have a couple of questions about the benefits package before signing. Could we schedule a quick call to discuss?\n\nThanks,\nPriya',
-        timestamp: '2026-02-24T08:45:00Z',
-        sender: 'Priya Patel',
-      },
-    ],
-  },
-  {
-    id: 'thread-4',
-    candidateId: 'cand-4',
-    candidateName: 'James Wilson',
-    candidateEmail: 'jwilson@protonmail.com',
-    candidatePhone: '+1 (512) 555-0274',
-    jobTitle: 'Data Analyst',
-    stage: 'Screening',
-    isStarred: false,
-    isArchived: false,
-    unreadCount: 0,
-    lastMessage: 'Thank you for applying. We are reviewing your resume.',
-    lastMessageTime: '2026-02-23T09:00:00Z',
-    lastChannel: 'email',
-    messages: [
-      {
-        id: 'msg-4-1',
-        channel: 'email',
-        direction: 'outbound',
-        status: 'delivered',
-        subject: 'We received your application for Data Analyst',
-        body: 'Hi James,\n\nThank you for applying for the Data Analyst position at AURA Technologies. We are reviewing your resume and will get back to you shortly.\n\nBest regards,\nAURA Talent Team',
-        timestamp: '2026-02-23T09:00:00Z',
-        sender: 'AURA Talent Team',
-        senderRole: 'Recruiter',
-      },
-    ],
-  },
-  {
-    id: 'thread-5',
-    candidateId: 'cand-5',
-    candidateName: 'Elena Rodriguez',
-    candidateEmail: 'elena.r@yahoo.com',
-    candidatePhone: '+1 (310) 555-0618',
-    jobTitle: 'DevOps Engineer',
-    stage: 'Rejected',
-    isStarred: false,
-    isArchived: true,
-    unreadCount: 0,
-    lastMessage: 'Thank you for your time. I appreciate the feedback.',
-    lastMessageTime: '2026-02-19T14:20:00Z',
-    lastChannel: 'email',
-    messages: [
-      {
-        id: 'msg-5-1',
-        channel: 'email',
-        direction: 'outbound',
-        status: 'read',
-        subject: 'Update on your application — DevOps Engineer',
-        body: 'Hi Elena,\n\nThank you for taking the time to interview for the DevOps Engineer position. After careful consideration, we have decided to move forward with another candidate.\n\nWe appreciate your interest and encourage you to apply for future positions.\n\nBest regards,\nAURA Talent Team',
-        timestamp: '2026-02-18T16:00:00Z',
-        sender: 'AURA Talent Team',
-        senderRole: 'Recruiter',
-      },
-      {
-        id: 'msg-5-2',
-        channel: 'email',
-        direction: 'inbound',
-        status: 'read',
-        body: 'Thank you for your time. I appreciate the feedback and hope to apply again in the future.\n\nBest,\nElena',
-        timestamp: '2026-02-19T14:20:00Z',
-        sender: 'Elena Rodriguez',
-      },
-    ],
-  },
-  {
-    id: 'thread-6',
-    candidateId: 'cand-6',
-    candidateName: 'David Kim',
-    candidateEmail: 'dkim@tech.io',
-    candidatePhone: '+1 (408) 555-0935',
-    jobTitle: 'Senior Software Engineer',
-    stage: 'Interview',
-    isStarred: false,
-    isArchived: false,
-    unreadCount: 1,
-    lastMessage: 'Sounds great, I will be available for the panel interview.',
-    lastMessageTime: '2026-02-24T07:10:00Z',
-    lastChannel: 'sms',
-    messages: [
-      {
-        id: 'msg-6-1',
-        channel: 'email',
-        direction: 'outbound',
-        status: 'read',
-        subject: 'Interview Invitation — Senior Software Engineer',
-        body: 'Hi David,\n\nWe would like to invite you for a panel interview for the Senior Software Engineer role on Feb 28 at 10 AM PST.\n\nBest regards,\nAURA Talent Team',
-        timestamp: '2026-02-23T15:00:00Z',
-        sender: 'AURA Talent Team',
-        senderRole: 'Recruiter',
-      },
-      {
-        id: 'msg-6-2',
-        channel: 'sms',
-        direction: 'inbound',
-        status: 'read',
-        body: 'Sounds great, I will be available for the panel interview.',
-        timestamp: '2026-02-24T07:10:00Z',
-        sender: 'David Kim',
-      },
-    ],
+    usageCount: 0,
   },
 ];
 
@@ -540,8 +276,15 @@ function getInitials(name: string): string {
 export const CandidateCommunicationHub: React.FC<CandidateCommunicationHubProps> = ({
   threads: initialThreads,
   templates,
+  onSendMessage,
 }) => {
   const [threads, setThreads] = useState(initialThreads);
+  const [sendError, setSendError] = useState<string | null>(null);
+  const [sending, setSending] = useState(false);
+
+  useEffect(() => {
+    setThreads(initialThreads);
+  }, [initialThreads]);
   const [selectedThreadId, setSelectedThreadId] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [channelFilter, setChannelFilter] = useState<'all' | ChannelType>('all');
@@ -608,38 +351,56 @@ export const CandidateCommunicationHub: React.FC<CandidateCommunicationHubProps>
     );
   }, []);
 
-  const handleSendMessage = useCallback(() => {
-    if (!selectedThread || !composeBody.trim()) return;
+  const handleSendMessage = useCallback(async () => {
+    if (!selectedThread || !composeBody.trim() || sending) return;
+    setSendError(null);
+    setSending(true);
 
-    const newMsg: ThreadMessage = {
-      id: `msg-new-${Date.now()}`,
-      channel: composeChannel,
-      direction: 'outbound',
-      status: 'sent',
-      subject: composeChannel === 'email' ? composeSubject : undefined,
-      body: composeBody,
-      timestamp: new Date().toISOString(),
-      sender: 'AURA Talent Team',
-      senderRole: 'Recruiter',
-    };
+    const body = composeBody;
+    const subject = composeChannel === 'email' ? composeSubject : undefined;
 
-    setThreads((prev) =>
-      prev.map((t) =>
-        t.id === selectedThread.id
-          ? {
-              ...t,
-              messages: [...t.messages, newMsg],
-              lastMessage: composeBody.slice(0, 80),
-              lastMessageTime: newMsg.timestamp,
-              lastChannel: composeChannel,
-            }
-          : t
-      )
-    );
+    try {
+      await onSendMessage?.({
+        candidateId: selectedThread.candidateId,
+        channel: composeChannel,
+        subject,
+        body,
+      });
 
-    setComposeBody('');
-    setComposeSubject('');
-  }, [selectedThread, composeChannel, composeSubject, composeBody]);
+      const newMsg: ThreadMessage = {
+        id: `msg-new-${Date.now()}`,
+        channel: composeChannel,
+        direction: 'outbound',
+        status: 'sent',
+        subject,
+        body,
+        timestamp: new Date().toISOString(),
+        sender: 'AURA Talent Team',
+        senderRole: 'Recruiter',
+      };
+
+      setThreads((prev) =>
+        prev.map((t) =>
+          t.id === selectedThread.id
+            ? {
+                ...t,
+                messages: [...t.messages, newMsg],
+                lastMessage: body.slice(0, 80),
+                lastMessageTime: newMsg.timestamp,
+                lastChannel: composeChannel,
+              }
+            : t
+        )
+      );
+
+      setComposeBody('');
+      setComposeSubject('');
+    } catch (err) {
+      setSendError(err instanceof Error ? err.message : 'Failed to send message');
+    } finally {
+      setSending(false);
+    }
+  }, [selectedThread, composeChannel, composeSubject, composeBody, onSendMessage, sending]);
 
   const handleUseTemplate = useCallback((template: MessageTemplate) => {
     setComposeChannel(template.channel);
@@ -1030,6 +791,12 @@ export const CandidateCommunicationHub: React.FC<CandidateCommunicationHubProps>
             />
           )}
 
+          {sendError && (
+            <p className="text-[10px] font-medium text-coral-alert" role="alert">
+              {sendError}
+            </p>
+          )}
+
           {/* Body */}
           <div className="flex items-end gap-2">
             <textarea
@@ -1049,7 +816,7 @@ export const CandidateCommunicationHub: React.FC<CandidateCommunicationHubProps>
               )}
               <button
                 onClick={handleSendMessage}
-                disabled={!composeBody.trim()}
+                disabled={!composeBody.trim() || sending}
                 className="p-2 rounded-lg bg-celestial-indigo text-white hover:opacity-90 disabled:opacity-40 transition-opacity"
               >
                 <Send className="w-3.5 h-3.5" />

@@ -44,9 +44,7 @@ export class PositionService {
   /**
    * Find all positions with filtering and pagination
    */
-  async findAll(
-    filter: PositionFilterOptions
-  ): Promise<PaginatedResult<JobProfile>> {
+  async findAll(filter: PositionFilterOptions): Promise<PaginatedResult<JobProfile>> {
     const {
       familyId,
       gradeId,
@@ -75,10 +73,10 @@ export class PositionService {
     }
 
     // Count total records
-    const total = await prisma.jobProfile.count({ where });
+    const total = await (prisma as any).jobProfile.count({ where });
 
     // Fetch paginated data with relations
-    const positions = await prisma.jobProfile.findMany({
+    const positions = await (prisma as any).jobProfile.findMany({
       where,
       skip: (page - 1) * limit,
       take: limit,
@@ -116,7 +114,7 @@ export class PositionService {
    * Find position by ID
    */
   async findById(id: string): Promise<JobProfile | null> {
-    return prisma.jobProfile.findUnique({
+    return (prisma as any).jobProfile.findUnique({
       where: { id },
       include: {
         family: {
@@ -147,7 +145,7 @@ export class PositionService {
    * Find position by code
    */
   async findByCode(code: string): Promise<JobProfile | null> {
-    return prisma.jobProfile.findFirst({
+    return (prisma as any).jobProfile.findFirst({
       where: { code },
       include: {
         family: true,
@@ -186,7 +184,7 @@ export class PositionService {
       }
     }
 
-    return prisma.jobProfile.create({
+    return (prisma as any).jobProfile.create({
       data: {
         ...data,
         status: data.status || 'Active',
@@ -212,7 +210,7 @@ export class PositionService {
    */
   async update(id: string, data: UpdatePositionDTO): Promise<JobProfile> {
     // Get current position
-    const current = await prisma.jobProfile.findUnique({ where: { id } });
+    const current = await (prisma as any).jobProfile.findUnique({ where: { id } });
     if (!current) {
       throw new Error('Position not found');
     }
@@ -247,7 +245,7 @@ export class PositionService {
       }
     }
 
-    return prisma.jobProfile.update({
+    return (prisma as any).jobProfile.update({
       where: { id },
       data,
       include: {
@@ -271,7 +269,7 @@ export class PositionService {
    */
   async delete(id: string): Promise<void> {
     // Check if position has employees
-    const position = await prisma.jobProfile.findUnique({
+    const position = await (prisma as any).jobProfile.findUnique({
       where: { id },
       include: {
         _count: { select: { employees: true } },
@@ -287,7 +285,7 @@ export class PositionService {
     }
 
     // Soft delete by setting status to Inactive
-    await prisma.jobProfile.update({
+    await (prisma as any).jobProfile.update({
       where: { id },
       data: { status: 'Inactive' },
     });
@@ -297,7 +295,7 @@ export class PositionService {
    * Get positions grouped by function and family
    */
   async getGroupedPositions(): Promise<any[]> {
-    const functions = await prisma.jobFunction.findMany({
+    const functions = await (prisma as any).jobFunction.findMany({
       include: {
         jobFamilies: {
           include: {
@@ -316,15 +314,15 @@ export class PositionService {
       orderBy: { name: 'asc' },
     });
 
-    return functions.map((func) => ({
+    return (functions as any[]).map((func: any) => ({
       id: func.id,
       code: func.code,
       name: func.name,
-      families: func.jobFamilies.map((family) => ({
+      families: func.jobFamilies.map((family: any) => ({
         id: family.id,
         code: family.code,
         name: family.name,
-        positions: family.jobProfiles.map((profile) => ({
+        positions: family.jobProfiles.map((profile: any) => ({
           id: profile.id,
           code: profile.code,
           title: profile.title,

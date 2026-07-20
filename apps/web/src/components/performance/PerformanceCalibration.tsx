@@ -7,7 +7,7 @@
 
 'use client';
 
-import React, { useState, useMemo, useCallback } from 'react';
+import React, { useState, useMemo, useCallback, useEffect } from 'react';
 import type { LucideIcon } from 'lucide-react';
 import {
   Grid3x3,
@@ -18,7 +18,9 @@ import {
   CheckCircle2,
   AlertTriangle,
   ArrowRightLeft,
+  Loader2,
 } from 'lucide-react';
+import { APIClient } from '@/lib/api-client';
 import { CalibrationMatrix, NINE_BOX_CONFIG } from './CalibrationMatrix';
 import type {
   CalibrationEmployee,
@@ -59,220 +61,46 @@ const levelFromRating = (rating: number): 'low' | 'moderate' | 'high' => {
   return 'low';
 };
 
-const _computeBoxId = (perfRating: number, potRating: number): BoxId => {
+const computeBoxId = (perfRating: number, potRating: number): BoxId => {
   const perf = levelFromRating(perfRating) as PerformanceLevel;
   const pot = levelFromRating(potRating) as PotentialLevel;
   return `${pot}-${perf}` as BoxId;
 };
 
-// ── Mock Data ────────────────────────────────────────────────────────────────────
+// Reserved calibration session that stores this tool's box placements so every
+// HR reviewer shares the same view. `adjustments` holds { type, overrides }.
+const CALIBRATION_SESSION_NAME = 'performance-calibration-9box';
 
-const INITIAL_EMPLOYEES: CalibrationEmployee[] = [
-  {
-    id: 'CAL-001',
-    name: 'Alice Chen',
-    employeeCode: 'EMP-1001',
-    designation: 'Senior Developer',
-    department: 'Engineering',
-    avatar: 'AC',
-    performanceRating: 4.5,
-    potentialRating: 4.8,
-    performanceLevel: 'high',
-    potentialLevel: 'high',
-    boxId: 'high-high',
-    tenure: 5,
-    lastReviewDate: '2025-12-15',
-    overallScore: 4.6,
-    isCalibrated: true,
-  },
-  {
-    id: 'CAL-002',
-    name: 'Bob Patel',
-    employeeCode: 'EMP-1002',
-    designation: 'Product Lead',
-    department: 'Product',
-    avatar: 'BP',
-    performanceRating: 3.8,
-    potentialRating: 4.5,
-    performanceLevel: 'moderate',
-    potentialLevel: 'high',
-    boxId: 'high-moderate',
-    tenure: 3,
-    lastReviewDate: '2025-12-10',
-    overallScore: 4.1,
-    isCalibrated: false,
-  },
-  {
-    id: 'CAL-003',
-    name: 'Carol James',
-    employeeCode: 'EMP-1003',
-    designation: 'UX Designer',
-    department: 'Design',
-    avatar: 'CJ',
-    performanceRating: 4.2,
-    potentialRating: 3.5,
-    performanceLevel: 'high',
-    potentialLevel: 'moderate',
-    boxId: 'moderate-high',
-    tenure: 4,
-    lastReviewDate: '2025-12-12',
-    overallScore: 3.9,
-    isCalibrated: true,
-  },
-  {
-    id: 'CAL-004',
-    name: 'David Kim',
-    employeeCode: 'EMP-1004',
-    designation: 'QA Engineer',
-    department: 'Engineering',
-    avatar: 'DK',
-    performanceRating: 3.2,
-    potentialRating: 3.0,
-    performanceLevel: 'moderate',
-    potentialLevel: 'moderate',
-    boxId: 'moderate-moderate',
-    tenure: 2,
-    lastReviewDate: '2025-12-08',
-    overallScore: 3.1,
-    isCalibrated: false,
-  },
-  {
-    id: 'CAL-005',
-    name: 'Eva Martinez',
-    employeeCode: 'EMP-1005',
-    designation: 'Marketing Manager',
-    department: 'Marketing',
-    avatar: 'EM',
-    performanceRating: 2.0,
-    potentialRating: 4.0,
-    performanceLevel: 'low',
-    potentialLevel: 'high',
-    boxId: 'high-low',
-    tenure: 1,
-    lastReviewDate: '2025-12-05',
-    overallScore: 2.8,
-    isCalibrated: false,
-  },
-  {
-    id: 'CAL-006',
-    name: 'Frank Wu',
-    employeeCode: 'EMP-1006',
-    designation: 'DevOps Lead',
-    department: 'Engineering',
-    avatar: 'FW',
-    performanceRating: 4.7,
-    potentialRating: 2.5,
-    performanceLevel: 'high',
-    potentialLevel: 'moderate',
-    boxId: 'moderate-high',
-    tenure: 7,
-    lastReviewDate: '2025-12-14',
-    overallScore: 3.8,
-    isCalibrated: true,
-  },
-  {
-    id: 'CAL-007',
-    name: 'Grace Lee',
-    employeeCode: 'EMP-1007',
-    designation: 'Business Analyst',
-    department: 'Product',
-    avatar: 'GL',
-    performanceRating: 3.5,
-    potentialRating: 3.2,
-    performanceLevel: 'moderate',
-    potentialLevel: 'moderate',
-    boxId: 'moderate-moderate',
-    tenure: 3,
-    lastReviewDate: '2025-12-11',
-    overallScore: 3.4,
-    isCalibrated: false,
-  },
-  {
-    id: 'CAL-008',
-    name: 'Henry Adams',
-    employeeCode: 'EMP-1008',
-    designation: 'Support Specialist',
-    department: 'Support',
-    avatar: 'HA',
-    performanceRating: 2.2,
-    potentialRating: 2.0,
-    performanceLevel: 'low',
-    potentialLevel: 'low',
-    boxId: 'low-low',
-    tenure: 1,
-    lastReviewDate: '2025-12-03',
-    overallScore: 2.1,
-    isCalibrated: false,
-  },
-  {
-    id: 'CAL-009',
-    name: 'Iris Tanaka',
-    employeeCode: 'EMP-1009',
-    designation: 'Data Scientist',
-    department: 'Engineering',
-    avatar: 'IT',
-    performanceRating: 4.8,
-    potentialRating: 4.5,
-    performanceLevel: 'high',
-    potentialLevel: 'high',
-    boxId: 'high-high',
-    tenure: 2,
-    lastReviewDate: '2025-12-13',
-    overallScore: 4.7,
-    isCalibrated: true,
-  },
-  {
-    id: 'CAL-010',
-    name: 'Jake Wilson',
-    employeeCode: 'EMP-1010',
-    designation: 'Sales Executive',
-    department: 'Sales',
-    avatar: 'JW',
-    performanceRating: 3.0,
-    potentialRating: 2.0,
-    performanceLevel: 'moderate',
-    potentialLevel: 'low',
-    boxId: 'low-moderate',
-    tenure: 4,
-    lastReviewDate: '2025-12-06',
-    overallScore: 2.6,
-    isCalibrated: false,
-  },
-  {
-    id: 'CAL-011',
-    name: 'Karen Singh',
-    employeeCode: 'EMP-1011',
-    designation: 'HR Business Partner',
-    department: 'HR',
-    avatar: 'KS',
-    performanceRating: 4.0,
-    potentialRating: 3.8,
-    performanceLevel: 'high',
-    potentialLevel: 'moderate',
-    boxId: 'moderate-high',
-    tenure: 6,
-    lastReviewDate: '2025-12-09',
-    overallScore: 3.9,
-    isCalibrated: true,
-  },
-  {
-    id: 'CAL-012',
-    name: 'Leo Nguyen',
-    employeeCode: 'EMP-1012',
-    designation: 'Frontend Developer',
-    department: 'Engineering',
-    avatar: 'LN',
-    performanceRating: 3.6,
-    potentialRating: 4.2,
-    performanceLevel: 'moderate',
-    potentialLevel: 'high',
-    boxId: 'high-moderate',
-    tenure: 2,
-    lastReviewDate: '2025-12-07',
-    overallScore: 3.8,
-    isCalibrated: false,
-  },
-];
+// Map a raw performance review into a CalibrationEmployee for the 9-box grid.
+function reviewToCalibrationEmployee(r: any, override?: BoxId): CalibrationEmployee {
+  const perf = Number(r.finalRating ?? r.overallRating ?? r.rating ?? 3) || 3;
+  const pot = Number(r.potentialRating ?? perf) || perf;
+  const boxId = override ?? computeBoxId(perf, pot);
+  const [potLevel, perfLevel] = boxId.split('-') as [PotentialLevel, PerformanceLevel];
+  const name: string = r.employeeName || `Employee ${String(r.employeeId ?? r.id ?? '').slice(-4)}`;
+  return {
+    id: r.id,
+    name,
+    employeeCode: r.employeeCode || String(r.employeeId ?? '').slice(-6),
+    designation: r.designation || r.reviewType || 'Employee',
+    department: r.department || '—',
+    avatar: name
+      .split(' ')
+      .map((p: string) => p[0])
+      .join('')
+      .slice(0, 2)
+      .toUpperCase(),
+    performanceRating: perf,
+    potentialRating: pot,
+    performanceLevel: perfLevel,
+    potentialLevel: potLevel,
+    boxId,
+    tenure: Number(r.tenure ?? 0),
+    lastReviewDate: r.completedAt || r.updatedAt || r.createdAt || new Date().toISOString(),
+    overallScore: perf,
+    isCalibrated: override !== undefined,
+  };
+}
 
 // ── StatCard ─────────────────────────────────────────────────────────────────────
 
@@ -291,11 +119,82 @@ const StatCard: React.FC<StatCardProps> = ({ icon: Icon, label, value, color }) 
 // ── Main Component ───────────────────────────────────────────────────────────────
 
 export const PerformanceCalibration: React.FC = () => {
-  const [employees, setEmployees] = useState<CalibrationEmployee[]>(INITIAL_EMPLOYEES);
+  const [employees, setEmployees] = useState<CalibrationEmployee[]>([]);
   const [activeTab, setActiveTab] = useState<ActiveTab>('matrix');
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null);
   const [draggedEmployeeId, setDraggedEmployeeId] = useState<string | null>(null);
   const [changeLog, setChangeLog] = useState<{ empId: string; from: BoxId; to: BoxId }[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [sessionId, setSessionId] = useState<string | null>(null);
+  const [status, setStatus] = useState<{ kind: 'success' | 'error'; text: string } | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      const [reviewsRes, sessionsRes] = await Promise.all([
+        APIClient.get<any>('/performance/reviews'),
+        APIClient.get<any>('/performance/calibrations'),
+      ]);
+      const reviews: any[] = Array.isArray(reviewsRes)
+        ? reviewsRes
+        : reviewsRes?.reviews || reviewsRes?.data || reviewsRes?.items || [];
+      const sessions: any[] = Array.isArray(sessionsRes)
+        ? sessionsRes
+        : sessionsRes?.sessions || sessionsRes?.data || [];
+      const session = sessions.find((s) => s.sessionName === CALIBRATION_SESSION_NAME);
+      setSessionId(session?.id ?? null);
+      const overrides: Record<string, BoxId> =
+        (session?.adjustments && (session.adjustments as any).overrides) || {};
+      const rated = reviews.filter(
+        (r) => r.finalRating != null || r.overallRating != null || r.rating != null
+      );
+      setEmployees(rated.map((r) => reviewToCalibrationEmployee(r, overrides[r.id])));
+      setChangeLog([]);
+    } catch (e: any) {
+      setStatus({ kind: 'error', text: e?.message || 'Failed to load calibration data.' });
+      setEmployees([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    load();
+  }, [load]);
+
+  useEffect(() => {
+    if (!status) return;
+    const t = setTimeout(() => setStatus(null), 4000);
+    return () => clearTimeout(t);
+  }, [status]);
+
+  const handleSave = useCallback(async () => {
+    setSaving(true);
+    try {
+      const overrides: Record<string, BoxId> = {};
+      employees.forEach((e) => {
+        if (e.isCalibrated) overrides[e.id] = e.boxId;
+      });
+      const adjustments = { type: 'performance-calibration', overrides };
+      if (sessionId) {
+        await APIClient.put('/performance/calibrations', { id: sessionId, adjustments });
+      } else {
+        const created = await APIClient.post<{ session: any }>('/performance/calibrations', {
+          sessionName: CALIBRATION_SESSION_NAME,
+          status: 'in_progress',
+          adjustments,
+        });
+        setSessionId(created?.session?.id ?? null);
+      }
+      setChangeLog([]);
+      setStatus({ kind: 'success', text: 'Calibration saved.' });
+    } catch (e: any) {
+      setStatus({ kind: 'error', text: e?.message || 'Failed to save calibration.' });
+    } finally {
+      setSaving(false);
+    }
+  }, [employees, sessionId]);
 
   const selectedEmployee = useMemo(
     () => employees.find((e) => e.id === selectedEmployeeId) || null,
@@ -343,10 +242,9 @@ export const PerformanceCalibration: React.FC = () => {
   }, []);
 
   const handleReset = useCallback(() => {
-    setEmployees(INITIAL_EMPLOYEES);
-    setChangeLog([]);
     setSelectedEmployeeId(null);
-  }, []);
+    void load();
+  }, [load]);
 
   // ── Bell Curve Distribution ────────────────────────────────────────────────
 
@@ -428,8 +326,33 @@ export const PerformanceCalibration: React.FC = () => {
     return counts;
   }, [employees]);
 
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-96">
+        <Loader2 className="w-8 h-8 animate-spin text-celestial-indigo" />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-5">
+      {status && (
+        <div
+          className={`rounded-lg border px-4 py-2 text-[11px] font-semibold flex items-center gap-2 ${
+            status.kind === 'success'
+              ? 'border-neural-mint/40 bg-neural-mint/10 text-neural-mint'
+              : 'border-coral-alert/40 bg-coral-alert/10 text-coral-alert'
+          }`}
+        >
+          {status.kind === 'success' ? (
+            <CheckCircle2 className="w-4 h-4" />
+          ) : (
+            <AlertTriangle className="w-4 h-4" />
+          )}
+          {status.text}
+        </div>
+      )}
+
       {/* Stats */}
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
         <StatCard
@@ -508,8 +431,13 @@ export const PerformanceCalibration: React.FC = () => {
           >
             <RotateCcw className="w-3 h-3" /> Reset
           </button>
-          <button className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-bold bg-celestial-indigo text-white hover:opacity-90 transition-opacity">
-            <Save className="w-3 h-3" /> Save Calibration
+          <button
+            onClick={handleSave}
+            disabled={saving}
+            className="flex items-center gap-1 px-3 py-1.5 rounded-lg text-[11px] font-bold bg-celestial-indigo text-white hover:opacity-90 disabled:opacity-50 transition-opacity"
+          >
+            {saving ? <Loader2 className="w-3 h-3 animate-spin" /> : <Save className="w-3 h-3" />}
+            {saving ? 'Saving…' : 'Save Calibration'}
           </button>
         </div>
       </div>

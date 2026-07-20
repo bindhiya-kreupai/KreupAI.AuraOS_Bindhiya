@@ -1,104 +1,108 @@
 import axios from 'axios';
 
-const BASE_PATH = '/api/v1/integrations';
+/**
+ * Integration service layer.
+ *
+ * Canonical backend: `/api/integrations` (catalog / connections / connect /
+ * disconnect / sync) — the same DB-backed routes used by the Integration Hub
+ * UI at `/dashboard/integration-hub/*`. The older `/api/v1/integrations/*`
+ * per-resource CRUD endpoints referenced by an earlier draft of this file
+ * never existed (only OAuth callbacks live under that path), so all calls here
+ * now target the live contract.
+ */
+
+const BASE_PATH = '/api/integrations';
 
 // Types
 export interface Integration {
   id: string;
+  integrationId: string;
   name: string;
-  provider:
-    | 'slack'
-    | 'teams'
-    | 'google'
-    | 'outlook'
-    | 'docusign'
-    | 'zoom'
-    | 'jira'
-    | 'salesforce';
-  status: 'connected' | 'disconnected' | 'error';
-  lastSyncAt?: string;
-  config: Record<string, string>;
+  provider?: string;
+  category?: string;
+  status: string; // 'connected' | 'disconnected' | 'error' | 'ACTIVE' | ...
+  lastSyncAt?: string | null;
+  config?: Record<string, unknown>;
 }
 
 export interface IntegrationCatalogItem {
   id: string;
   name: string;
-  provider: string;
-  description: string;
-  category:
-    | 'communication'
-    | 'calendar'
-    | 'hr'
-    | 'productivity'
-    | 'finance';
-  icon: string;
-  setupRequired: string[];
+  provider?: string;
+  description?: string;
+  category?: string;
+  icon?: string;
 }
 
 export interface ConnectionResult {
   success: boolean;
-  integrationId?: string;
+  data?: unknown;
   error?: string;
 }
 
 export interface SyncResult {
   success: boolean;
-  recordsSynced: number;
-  errors: string[];
+  data?: unknown;
+  error?: string;
 }
 
-export interface SyncStatus {
-  lastSync: string;
-  nextSync: string;
-  status: 'idle' | 'syncing' | 'error';
-  progress?: number;
+interface ApiEnvelope<T> {
+  success: boolean;
+  data: T;
+  error?: string;
 }
 
 // Service functions
-export async function listIntegrations(): Promise<Integration[]> {
-  const response = await axios.get<Integration[]>(BASE_PATH);
-  return response.data;
+export async function listConnections(): Promise<Integration[]> {
+  const response = await axios.get<ApiEnvelope<Integration[] | { connections: Integration[] }>>(
+    `${BASE_PATH}?type=connections`
+  );
+  const data = response.data?.data;
+  if (Array.isArray(data)) return data;
+  return (data as { connections?: Integration[] })?.connections ?? [];
 }
 
-export async function getIntegration(id: string): Promise<Integration> {
-  const response = await axios.get<Integration>(`${BASE_PATH}/${id}`);
-  return response.data;
+export async function getAvailableIntegrations(): Promise<IntegrationCatalogItem[]> {
+  const response = await axios.get<
+    ApiEnvelope<{ integrations: IntegrationCatalogItem[] } | IntegrationCatalogItem[]>
+  >(`${BASE_PATH}?type=catalog`);
+  const data = response.data?.data;
+  if (Array.isArray(data)) return data;
+  return (data as { integrations?: IntegrationCatalogItem[] })?.integrations ?? [];
 }
 
 export async function connectIntegration(
-  id: string,
-  config: Record<string, string>
+  integrationId: string,
+  configuration: Record<string, unknown> = {},
+  credentials: Record<string, unknown> = {}
 ): Promise<ConnectionResult> {
-  const response = await axios.post<ConnectionResult>(
-    `${BASE_PATH}/${id}/connect`,
-    config
-  );
+  const response = await axios.post<ConnectionResult>(BASE_PATH, {
+    action: 'connect',
+    integrationId,
+    configuration,
+    credentials,
+  });
   return response.data;
 }
 
-export async function disconnectIntegration(id: string): Promise<void> {
-  await axios.post(`${BASE_PATH}/${id}/disconnect`);
-}
-
-export async function syncIntegration(id: string): Promise<SyncResult> {
-  const response = await axios.post<SyncResult>(
-    `${BASE_PATH}/${id}/sync`
-  );
+export async function disconnectIntegration(connectionId: string): Promise<ConnectionResult> {
+  const response = await axios.post<ConnectionResult>(BASE_PATH, {
+    action: 'disconnect',
+    connectionId,
+  });
   return response.data;
 }
 
-export async function getSyncStatus(id: string): Promise<SyncStatus> {
-  const response = await axios.get<SyncStatus>(
-    `${BASE_PATH}/${id}/sync-status`
-  );
-  return response.data;
-}
-
-export async function getAvailableIntegrations(): Promise<
-  IntegrationCatalogItem[]
-> {
-  const response = await axios.get<IntegrationCatalogItem[]>(
-    `${BASE_PATH}/catalog`
-  );
+export async function syncIntegration(
+  connectionId: string,
+  entity = 'all',
+  syncType: 'INCREMENTAL' | 'FULL' = 'INCREMENTAL'
+): Promise<SyncResult> {
+  const response = await axios.post<SyncResult>(BASE_PATH, {
+    action: 'sync',
+    connectionId,
+    entity,
+    syncType,
+  });
   return response.data;
 }

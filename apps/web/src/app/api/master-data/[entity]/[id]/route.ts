@@ -1,5 +1,5 @@
 // @ts-nocheck — Uses prisma.salaryStructure / prisma.statutory models not in current schema, or AuditLog 'module'/'details' fields. Tracked under #29.
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
@@ -16,14 +16,19 @@ import {
 } from '@/lib/validators';
 
 // Generic update schema for entities without specific schemas
-const GenericUpdateSchema = z.object({
-  code: z.string().optional(),
-  name: z.string().optional(),
-  description: z.string().optional(),
-  status: z.enum(['Active', 'Inactive']).optional(),
-}).passthrough();
+const GenericUpdateSchema = z
+  .object({
+    code: z.string().optional(),
+    name: z.string().optional(),
+    description: z.string().optional(),
+    status: z.enum(['Active', 'Inactive', 'Suspended']).optional(),
+  })
+  .passthrough();
 
-const ENTITIES: Record<string, { model: any; updateSchema: z.ZodType; include?: any }> = {
+const ENTITIES: Record<
+  string,
+  { model: any; updateSchema: z.ZodType; include?: any; tenantScoped?: boolean }
+> = {
   // Geographic
   countries: { model: prisma.country, updateSchema: UpdateCountrySchema },
   states: {
@@ -40,7 +45,7 @@ const ENTITIES: Record<string, { model: any; updateSchema: z.ZodType; include?: 
   languages: { model: prisma.language, updateSchema: UpdateLanguageSchema },
 
   // Organizational
-  companies: { model: prisma.company, updateSchema: GenericUpdateSchema },
+  companies: { model: prisma.company, updateSchema: GenericUpdateSchema, tenantScoped: true },
   departments: { model: prisma.department, updateSchema: GenericUpdateSchema },
   locations: { model: prisma.location, updateSchema: GenericUpdateSchema },
   'business-units': { model: prisma.businessUnit, updateSchema: GenericUpdateSchema },
@@ -85,12 +90,14 @@ const ENTITIES: Record<string, { model: any; updateSchema: z.ZodType; include?: 
   'roles-permissions': { model: prisma.role, updateSchema: GenericUpdateSchema },
   'system-settings': {
     model: prisma.systemSetting,
-    updateSchema: z.object({
-      key: z.string().optional(),
-      value: z.string().optional(),
-      group: z.string().optional(),
-      description: z.string().optional(),
-    }).passthrough(),
+    updateSchema: z
+      .object({
+        key: z.string().optional(),
+        value: z.string().optional(),
+        group: z.string().optional(),
+        description: z.string().optional(),
+      })
+      .passthrough(),
   },
   tenants: { model: prisma.tenant, updateSchema: GenericUpdateSchema },
 };
@@ -112,7 +119,7 @@ export const GET = withEnhancedAuth(
         include: config.include,
       });
 
-      if (!item) {
+      if (!item || (config.tenantScoped && item.tenantId !== user.tenantId)) {
         return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });
       }
 
@@ -137,7 +144,7 @@ export const PUT = withEnhancedAuth(
       }
 
       const existing = await config.model.findUnique({ where: { id: params.id } });
-      if (!existing) {
+      if (!existing || (config.tenantScoped && existing.tenantId !== user.tenantId)) {
         return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });
       }
 
@@ -154,9 +161,12 @@ export const PUT = withEnhancedAuth(
         data: {
           tenantId: user.tenantId,
           userId: user.userId,
+          module: params.entity,
           action: 'UPDATE',
           resourceType: 'Master Data',
-          metadata: { description: `Updated ${params.entity.slice(0, -1)}: ${updated.name || updated.code}` } as any,
+          metadata: {
+            description: `Updated ${params.entity.slice(0, -1)}: ${updated.name || updated.code}`,
+          } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });
@@ -183,7 +193,7 @@ export const DELETE = withEnhancedAuth(
       }
 
       const existing = await config.model.findUnique({ where: { id: params.id } });
-      if (!existing) {
+      if (!existing || (config.tenantScoped && existing.tenantId !== user.tenantId)) {
         return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });
       }
 
@@ -201,9 +211,12 @@ export const DELETE = withEnhancedAuth(
         data: {
           tenantId: user.tenantId,
           userId: user.userId,
+          module: params.entity,
           action: 'DELETE',
           resourceType: 'Master Data',
-          metadata: { description: `Deleted ${params.entity.slice(0, -1)}: ${existing.name || existing.code}` } as any,
+          metadata: {
+            description: `Deleted ${params.entity.slice(0, -1)}: ${existing.name || existing.code}`,
+          } as any,
           ipAddress: request.headers.get('x-forwarded-for') || 'unknown',
         },
       });

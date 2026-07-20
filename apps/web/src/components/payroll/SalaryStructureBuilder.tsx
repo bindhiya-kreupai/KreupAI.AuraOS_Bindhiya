@@ -13,7 +13,10 @@ import {
   Info,
   Save,
   Eye,
+  Loader2,
+  Calculator,
 } from 'lucide-react';
+import { APIClient } from '@/lib/api-client';
 
 // ---------------------------------------------------------------------------
 // Types
@@ -477,6 +480,86 @@ function validateStructure(
 }
 
 // ---------------------------------------------------------------------------
+// API Mapping — builder components -> simulate/persist contracts
+// ---------------------------------------------------------------------------
+
+type SimulateKind = 'earning' | 'deduction';
+type SimulateCalc = 'fixed' | 'percent_of_basic' | 'percent_of_gross';
+
+interface SimulateComponent {
+  code: string;
+  name: string;
+  kind: SimulateKind;
+  calc: SimulateCalc;
+  value: number;
+  taxable?: boolean;
+  statutory?: boolean;
+}
+
+interface SimulationLine {
+  code: string;
+  name: string;
+  kind: SimulateKind;
+  amount: number;
+  taxable: boolean;
+}
+
+interface SimulationResult {
+  basicSalary: number;
+  grossSalary: number;
+  totalEarnings: number;
+  totalDeductions: number;
+  netPay: number;
+  taxableIncome: number;
+  currency: string;
+  lines: SimulationLine[];
+}
+
+/**
+ * Map a builder SalaryComponent to the /simulate contract.
+ *
+ * kind: DEDUCTION category => 'deduction'; everything else (BASIC, ALLOWANCE,
+ *   BONUS, EMPLOYER_CONTRIBUTION) => 'earning'.
+ * calc: FIXED => 'fixed'; PERCENTAGE => percent_of_basic when its calculationBase
+ *   is the basic component (BASIC/BASE) else percent_of_gross (CTC/other base).
+ *   FORMULA is ambiguous (auto-balancing) so we treat it as 'fixed' using its
+ *   already-computed amount from the live breakdown. Documented inline per task.
+ */
+function mapToSimulateComponents(
+  components: SalaryComponent[],
+  breakdown: Record<string, number>
+): SimulateComponent[] {
+  return components.map((c) => {
+    const kind: SimulateKind = c.category === 'DEDUCTION' ? 'deduction' : 'earning';
+
+    let calc: SimulateCalc;
+    let value: number;
+    if (c.type === 'PERCENTAGE') {
+      const base = (c.calculationBase || '').toUpperCase();
+      calc = base === 'BASIC' || base === 'BASE' ? 'percent_of_basic' : 'percent_of_gross';
+      value = c.value;
+    } else if (c.type === 'FORMULA') {
+      // FORMULA = auto-balancing; resolve to its computed amount and treat as fixed.
+      calc = 'fixed';
+      value = breakdown[c.code] ?? 0;
+    } else {
+      calc = 'fixed';
+      value = c.value;
+    }
+
+    return {
+      code: c.code,
+      name: c.name,
+      kind,
+      calc,
+      value,
+      taxable: c.isTaxable,
+      statutory: c.isStatutory,
+    };
+  });
+}
+
+// ---------------------------------------------------------------------------
 // Component: Pie Chart (CSS-based)
 // ---------------------------------------------------------------------------
 
@@ -527,7 +610,12 @@ function PieChart({ data, total }: PieChartProps) {
 // Main Component
 // ---------------------------------------------------------------------------
 
-export default function SalaryStructureBuilder() {
+interface SalaryStructureBuilderProps {
+  /** Called after a structure is successfully persisted via the API. */
+  onSaved?: () => void;
+}
+
+export default function SalaryStructureBuilder({ onSaved }: SalaryStructureBuilderProps = {}) {
   const [countryCode, setCountryCode] = useState<CountryCode>('IN');
   const [structureName, setStructureName] = useState('India Standard CTC');
   const [annualCTC, setAnnualCTC] = useState(1200000);
@@ -537,6 +625,12 @@ export default function SalaryStructureBuilder() {
   const [expandedId, setExpandedId] = useState<string | null>(null);
   const [showRules, setShowRules] = useState(true);
   const [saved, setSaved] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [feedback, setFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(
+    null
+  );
+  const [simulating, setSimulating] = useState(false);
+  const [simulation, setSimulation] = useState<SimulationResult | null>(null);
 
   const config = COUNTRY_CONFIG[countryCode];
   const breakdown = calculateBreakdown(components, annualCTC);
@@ -575,9 +669,84 @@ export default function SalaryStructureBuilder() {
     setExpandedId(newComp.id);
   };
 
-  const handleSave = () => {
-    setSaved(true);
-    setTimeout(() => setSaved(false), 3000);
+  const deriveCode = (name: string): string =>
+    name
+      .trim()
+      .toUpperCase()
+      .replace(/[^A-Z0-9]+/g, '_')
+      .replace(/^_+|_+$/g, '') || `STRUCT_${Date.now()}`;
+
+  // Basic salary (annual) resolved from the live breakdown; gross = annual CTC.
+  const basicSalary = breakdown['BASIC'] ?? breakdown['BASE'] ?? 0;
+
+  const handleSimulate = async () => {
+    setSimulating(true);
+    setFeedback(null);
+    try {
+      const res = await APIClient.post<{ success: boolean; data: SimulationResult }>(
+        '/v1/payroll/salary-structures/simulate',
+        {
+          basicSalary,
+          grossSalary: annualCTC,
+          currency: config.currency,
+          components: mapToSimulateComponents(components, breakdown),
+        }
+      );
+      if (res?.success && res.data) {
+        setSimulation(res.data);
+      } else {
+        setFeedback({ type: 'error', message: 'Simulation returned no result.' });
+      }
+    } catch (err) {
+      setFeedback({
+        type: 'error',
+        message: err instanceof Error ? err.message : 'Simulation failed.',
+      });
+    } finally {
+      setSimulating(false);
+    }
+  };
+
+  const handleSave = async () => {
+    if (hasErrors) {
+      setFeedback({ type: 'error', message: 'Resolve compliance errors before saving.' });
+      return;
+    }
+    setSaving(true);
+    setFeedback(null);
+    try {
+      const res = await APIClient.post<{ success: boolean; data?: unknown; message?: string }>(
+        '/v1/payroll/salary-structures',
+        {
+          name: structureName,
+          code: deriveCode(structureName),
+          currency: config.currency,
+          basicSalary,
+          grossSalary: annualCTC,
+          // Persist the full builder component definitions as the components JSON.
+          components,
+          effectiveFrom: new Date().toISOString(),
+        }
+      );
+      if (res?.success) {
+        setSaved(true);
+        setFeedback({
+          type: 'success',
+          message: res.message || 'Salary structure created successfully.',
+        });
+        setTimeout(() => setSaved(false), 3000);
+        onSaved?.();
+      } else {
+        setFeedback({ type: 'error', message: 'Failed to create salary structure.' });
+      }
+    } catch (err) {
+      setFeedback({
+        type: 'error',
+        message: err instanceof Error ? err.message : 'Failed to create salary structure.',
+      });
+    } finally {
+      setSaving(false);
+    }
   };
 
   // Build pie chart data
@@ -608,16 +777,57 @@ export default function SalaryStructureBuilder() {
           </div>
           <div className="flex gap-2">
             <button
+              onClick={handleSimulate}
+              disabled={simulating}
+              className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors bg-white border border-indigo-200 text-indigo-700 hover:bg-indigo-50 disabled:opacity-60"
+            >
+              {simulating ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Calculator className="w-4 h-4" />
+              )}
+              {simulating ? 'Simulating…' : 'Simulate'}
+            </button>
+            <button
               onClick={handleSave}
-              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+              disabled={saving}
+              className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-colors disabled:opacity-60 ${
                 saved ? 'bg-green-600 text-white' : 'bg-indigo-600 hover:bg-indigo-700 text-white'
               }`}
             >
-              {saved ? <CheckCircle2 className="w-4 h-4" /> : <Save className="w-4 h-4" />}
-              {saved ? 'Saved!' : 'Save Template'}
+              {saving ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : saved ? (
+                <CheckCircle2 className="w-4 h-4" />
+              ) : (
+                <Save className="w-4 h-4" />
+              )}
+              {saving ? 'Saving…' : saved ? 'Saved!' : 'Save Structure'}
             </button>
           </div>
         </div>
+
+        {/* Feedback banner */}
+        {feedback && (
+          <div
+            className={`flex items-start gap-3 p-3 rounded-lg border ${
+              feedback.type === 'success'
+                ? 'bg-green-50 border-green-200'
+                : 'bg-red-50 border-red-200'
+            }`}
+          >
+            {feedback.type === 'success' ? (
+              <CheckCircle2 className="w-4 h-4 mt-0.5 flex-shrink-0 text-green-500" />
+            ) : (
+              <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0 text-red-500" />
+            )}
+            <p
+              className={`text-sm ${feedback.type === 'success' ? 'text-green-700' : 'text-red-700'}`}
+            >
+              {feedback.message}
+            </p>
+          </div>
+        )}
 
         {/* Top Configuration */}
         <div className="bg-white rounded-xl border border-gray-200 p-5 shadow-sm">
@@ -1029,6 +1239,60 @@ export default function SalaryStructureBuilder() {
                 </p>
               )}
             </div>
+
+            {/* Server-computed simulation */}
+            {simulation && (
+              <div className="bg-white border border-gray-200 rounded-xl shadow-sm p-5">
+                <div className="flex items-center gap-2 mb-3">
+                  <Calculator className="w-4 h-4 text-indigo-500" />
+                  <h3 className="text-sm font-semibold text-gray-800">
+                    Simulation (server-computed)
+                  </h3>
+                </div>
+                <div className="space-y-1 text-xs">
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Total Earnings</span>
+                    <span className="font-medium text-gray-800">
+                      {new Intl.NumberFormat('en-IN', {
+                        style: 'currency',
+                        currency: simulation.currency,
+                        maximumFractionDigits: 0,
+                      }).format(simulation.totalEarnings)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Total Deductions</span>
+                    <span className="font-medium text-red-600">
+                      {new Intl.NumberFormat('en-IN', {
+                        style: 'currency',
+                        currency: simulation.currency,
+                        maximumFractionDigits: 0,
+                      }).format(simulation.totalDeductions)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">Taxable Income</span>
+                    <span className="font-medium text-gray-800">
+                      {new Intl.NumberFormat('en-IN', {
+                        style: 'currency',
+                        currency: simulation.currency,
+                        maximumFractionDigits: 0,
+                      }).format(simulation.taxableIncome)}
+                    </span>
+                  </div>
+                  <div className="flex justify-between pt-2 mt-1 border-t border-gray-200 text-sm font-semibold">
+                    <span className="text-gray-700">Net Pay</span>
+                    <span className="text-indigo-700">
+                      {new Intl.NumberFormat('en-IN', {
+                        style: 'currency',
+                        currency: simulation.currency,
+                        maximumFractionDigits: 0,
+                      }).format(simulation.netPay)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>

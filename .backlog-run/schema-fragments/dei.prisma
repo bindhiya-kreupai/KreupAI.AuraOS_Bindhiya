@@ -1,0 +1,148 @@
+// DEI (Diversity, Equity & Inclusion) Module — new Prisma models
+// (merged into schema.prisma by orchestrator). Access in route code via
+// (prisma as any).<camelCaseModelName>. All tables are tenant-scoped.
+//
+// Diversity metrics and pay-equity analysis are DERIVED at query time from
+// existing Employee/Department data (no table needed). These models cover the
+// DEI-owned persisted entities: inclusion surveys, ERGs + memberships,
+// DEI goals, bias-training modules + enrollments, and accessibility requests.
+
+model DeiSurvey {
+  id            String    @id @default(uuid())
+  tenantId      String
+  title         String
+  titleAr       String?
+  description   String?
+  surveyType    String    @default("pulse_check") // annual_inclusion | pulse_check | belonging_index | psychological_safety | exit_survey
+  status        String    @default("draft") // draft | active | closed
+  isAnonymous   Boolean   @default(true)
+  startDate     DateTime?
+  endDate       DateTime?
+  targetCount   Int       @default(0)
+  responseCount Int       @default(0)
+  sentimentScore Decimal? @db.Decimal(4, 2)
+  questions     Json?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  createdBy     String?
+
+  @@index([tenantId], map: "DeiSurvey_tenantId_idx")
+  @@map("aura_dei_survey")
+}
+
+model DeiErg {
+  id           String    @id @default(uuid())
+  tenantId     String
+  name         String
+  nameAr       String?
+  category     String    @default("cultural") // gender | ethnicity | lgbtq | disability | veterans | parents | young_professionals | cultural | interfaith
+  description  String?
+  colorClass   String?
+  memberCount  Int       @default(0)
+  nextEvent    String?
+  nextEventAt  DateTime?
+  status       String    @default("active") // proposed | active | archived
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  createdBy    String?
+
+  memberships  DeiErgMembership[]
+
+  @@index([tenantId], map: "DeiErg_tenantId_idx")
+  @@map("aura_dei_erg")
+}
+
+model DeiErgMembership {
+  id          String   @id @default(uuid())
+  tenantId    String
+  ergId       String
+  employeeId  String
+  role        String   @default("member") // chair | co_chair | secretary | treasurer | member
+  joinedAt    DateTime @default(now())
+
+  erg         DeiErg   @relation(fields: [ergId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, ergId, employeeId], map: "DeiErgMembership_uq")
+  @@index([tenantId, ergId], map: "DeiErgMembership_tenant_erg_idx")
+  @@map("aura_dei_erg_membership")
+}
+
+model DeiGoal {
+  id           String    @id @default(uuid())
+  tenantId     String
+  title        String
+  titleAr      String?
+  description  String?
+  category     String    @default("representation") // representation | hiring | retention | promotion | pay_equity | inclusion_score | leadership | training
+  targetValue  Decimal   @db.Decimal(12, 2)
+  currentValue Decimal   @default(0) @db.Decimal(12, 2)
+  unit         String    @default("%")
+  status       String    @default("on_track") // not_started | on_track | at_risk | behind | completed
+  startDate    DateTime?
+  targetDate   DateTime?
+  owner        String?
+  keyResults   Json?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  createdBy    String?
+
+  @@index([tenantId], map: "DeiGoal_tenantId_idx")
+  @@map("aura_dei_goal")
+}
+
+model DeiBiasTraining {
+  id            String    @id @default(uuid())
+  tenantId      String
+  title         String
+  titleAr       String?
+  description   String?
+  category      String    @default("unconscious_bias") // unconscious_bias | inclusive_leadership | microaggressions | allyship | cultural_competence
+  durationMins  Int       @default(30)
+  isMandatory   Boolean   @default(false)
+  thumbClass    String?
+  status        String    @default("published") // draft | published | archived
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  createdBy     String?
+
+  enrollments   DeiTrainingEnrollment[]
+
+  @@index([tenantId], map: "DeiBiasTraining_tenantId_idx")
+  @@map("aura_dei_bias_training")
+}
+
+model DeiTrainingEnrollment {
+  id           String    @id @default(uuid())
+  tenantId     String
+  trainingId   String
+  employeeId   String
+  status       String    @default("not_started") // not_started | in_progress | completed
+  progress     Int       @default(0)
+  completedAt  DateTime?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  training     DeiBiasTraining @relation(fields: [trainingId], references: [id], onDelete: Cascade)
+
+  @@unique([tenantId, trainingId, employeeId], map: "DeiTrainingEnrollment_uq")
+  @@index([tenantId, employeeId], map: "DeiTrainingEnrollment_tenant_emp_idx")
+  @@map("aura_dei_training_enrollment")
+}
+
+model DeiAccessibilityRequest {
+  id            String    @id @default(uuid())
+  tenantId      String
+  employeeId    String
+  requestType   String    @default("physical") // visual | hearing | physical | cognitive | digital | other
+  title         String
+  description   String?
+  status        String    @default("pending") // pending | processing | approved | rejected | fulfilled
+  reviewedBy    String?
+  reviewedAt    DateTime?
+  reviewNote    String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  @@index([tenantId], map: "DeiAccessibilityRequest_tenantId_idx")
+  @@map("aura_dei_accessibility_request")
+}

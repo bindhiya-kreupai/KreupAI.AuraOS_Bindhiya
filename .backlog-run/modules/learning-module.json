@@ -1,0 +1,211 @@
+[
+  {
+    "id": "AURA-167",
+    "title": "API: Add missing legacy routes and align v1 paths",
+    "module": "Learning Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "Module-wide",
+    "api": "/api/learning/* (missing); /api/v1/learning/* (exists, unwired)",
+    "desc": "Services call endpoints with no route files: training-sessions, external-training, mentoring-programs, training-budgets, knowledge-articles, training-feedback, assessment-attempts. Rich v1 routes exist but services.ts uses /learning/* only."
+  },
+  {
+    "id": "AURA-168",
+    "title": "Catalog: Remove mock fallback",
+    "module": "Learning Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/learning/catalog",
+    "api": "CourseService \u2192 /api/learning/courses",
+    "desc": "Falls back to 8 hardcoded courses on empty/error."
+  },
+  {
+    "id": "AURA-169",
+    "title": "Catalog: Wire Enroll/Filter/Search",
+    "module": "Learning Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/learning/course-catalog, /library",
+    "api": "EnrollmentService \u2192 /api/learning/enrollments",
+    "desc": "Buttons and inputs mostly unwired."
+  },
+  {
+    "id": "AURA-170",
+    "title": "Paths: Use rich path components",
+    "module": "Learning Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/learning/learning-paths",
+    "api": "src/services/learningService.ts; components/learning/LearningPaths",
+    "desc": "Inline list UI; LearningPaths/PathBuilder live under (modules) not dashboard."
+  },
+  {
+    "id": "AURA-171",
+    "title": "AI: Wire real recommendations API",
+    "module": "Learning Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/learning/ai-recommendations",
+    "api": "/api/v1/learning/paths/recommend; /api/ai/learning",
+    "desc": "Shows all courses as recommendations; no AI/recommend API."
+  },
+  {
+    "id": "AURA-172",
+    "title": "Mentoring: Fix API path to v1 mentorship",
+    "module": "Learning Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/learning/mentoring",
+    "api": "MentoringService \u2192 /api/v1/learning/mentorship",
+    "desc": "Calls missing /learning/mentoring-programs; v1 route is /api/v1/learning/mentorship."
+  },
+  {
+    "id": "AURA-173",
+    "title": "Calendar: Add training session API",
+    "module": "Learning Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/learning/calendar, /training-calendar",
+    "api": "/api/learning/training-sessions (missing)",
+    "desc": "TrainingSessionService calls missing route."
+  },
+  {
+    "id": "AURA-174",
+    "title": "Attendance: Wire Mark All Present and session actions",
+    "module": "Learning Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/learning/attendance-tracking",
+    "api": "TrainingSessionService.markAttendance",
+    "desc": "Buttons unwired."
+  },
+  {
+    "id": "AURA-175",
+    "title": "External Training: Add API and wire Submit Certificate",
+    "module": "Learning Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/learning/external-training",
+    "api": "ExternalTrainingService (missing API)",
+    "desc": "Missing route; Submit Certificate button unwired."
+  },
+  {
+    "id": "AURA-176",
+    "title": "Budget: Add training budget API",
+    "module": "Learning Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/learning/training-budget",
+    "api": "TrainingBudgetService (missing API)",
+    "desc": "Missing route."
+  },
+  {
+    "id": "AURA-177",
+    "title": "Knowledge: Add knowledge API",
+    "module": "Learning Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/learning/knowledge-repository, /learning-community",
+    "api": "KnowledgeBaseService (missing API)",
+    "desc": "Missing route for both pages."
+  },
+  {
+    "id": "AURA-178",
+    "title": "Feedback: Add training feedback API",
+    "module": "Learning Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/learning/training-feedback",
+    "api": "TrainingFeedbackService (missing API)",
+    "desc": "Missing route."
+  },
+  {
+    "id": "AURA-179",
+    "title": "Quiz: Use QuizBuilder component",
+    "module": "Learning Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/learning/quiz-builder",
+    "api": "components/learning/QuizBuilder",
+    "desc": "Page is thin list; full builder is in (modules)/quiz-assessment."
+  },
+  {
+    "id": "AURA-180",
+    "title": "Compliance: Consolidate compliance stacks",
+    "module": "Learning Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/learning/compliance vs /compliance-training",
+    "api": "/api/v1/learning/compliance-training/*",
+    "desc": "Two compliance UIs: one uses compliance-training components + v1 API; other filters courses via CourseService."
+  },
+  {
+    "id": "AURA-181",
+    "title": "Enrollment: Wire Approve/Reject",
+    "module": "Learning Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/learning/enrollment",
+    "api": "EnrollmentService",
+    "desc": "Buttons unwired."
+  },
+  {
+    "id": "AURA-182",
+    "title": "Certifications: Wire Download/Share",
+    "module": "Learning Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/learning/certifications",
+    "api": "CertificationService \u2192 /api/learning/certifications",
+    "desc": "Buttons unwired."
+  },
+  {
+    "id": "AURA-183",
+    "title": "Components: Mount orphan components or delete",
+    "module": "Learning Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "components/learning/*.tsx",
+    "api": "Varies \u2014 components/learning/*",
+    "desc": "GamificationHub, ContentMarketplace, LearningDashboard, LearningAnalyticsDashboard, SCORMPlayer, etc. \u2014 10+ components unused by dashboard/learning."
+  },
+  {
+    "id": "AURA-184",
+    "title": "Duplication: Merge duplicate routes",
+    "module": "Learning Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "catalog vs course-catalog; calendar vs training-calendar",
+    "api": "N/A \u2014 routing consolidation",
+    "desc": "Two pages per feature with overlapping purpose."
+  },
+  {
+    "id": "AURA-185",
+    "title": "Architecture: Adopt or remove dead hook",
+    "module": "Learning Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "hooks/useLearning.ts",
+    "api": "hooks/useLearning.ts; data.ts",
+    "desc": "Hook with sample seeding never used by any dashboard page."
+  }
+]

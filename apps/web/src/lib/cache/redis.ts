@@ -8,6 +8,7 @@ import { logger } from '@/lib/logger';
 
 // Redis configuration from environment
 const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379';
+const REDIS_PASSWORD = process.env.REDIS_PASSWORD;
 const REDIS_ENABLED = process.env.REDIS_ENABLED !== 'false';
 
 // Default TTL (Time To Live) in seconds

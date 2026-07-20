@@ -135,11 +135,18 @@ export async function authenticateWithPermissions(
   }
 }
 
-// Reusable rate limiter for all withEnhancedAuth routes
-const apiRateLimiter = createRateLimit({
-  ...RateLimitPresets.API_USER,
-  useUserId: true,
-});
+// Reusable rate limiter for all withEnhancedAuth routes (lazy-loaded to avoid circular imports during startup)
+let apiRateLimiter: any = null;
+function getRateLimiter() {
+  if (!apiRateLimiter) {
+    const { createRateLimit, RateLimitPresets } = require('@/lib/middleware/advanced-rate-limit');
+    apiRateLimiter = createRateLimit({
+      ...RateLimitPresets.API_USER,
+      useUserId: true,
+    });
+  }
+  return apiRateLimiter;
+}
 
 /**
  * Higher-order function to wrap API routes with enhanced authentication,
@@ -169,7 +176,7 @@ export function withEnhancedAuth<T = any>(
     const isMutation = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method);
 
     // Apply rate limiting (100 req/min per user)
-    return apiRateLimiter(
+    return getRateLimiter()(
       request,
       async () => {
         try {
@@ -191,6 +198,7 @@ export function withEnhancedAuth<T = any>(
                   tenantId: context!.user.tenantId || 'system',
                   userId: context!.user.userId,
                   action,
+                  module: path.split('/').filter(Boolean).slice(1, 2).join('/') || 'api',
                   resourceType: path.split('/').filter(Boolean).slice(2, 4).join('/') || 'unknown',
                   ipAddress:
                     request.headers.get('x-forwarded-for') ||
@@ -248,6 +256,9 @@ export function withEnhancedAuth<T = any>(
                       : request.method === 'POST'
                         ? 'CREATE'
                         : 'UPDATE',
+                  module:
+                    request.nextUrl.pathname.split('/').filter(Boolean).slice(1, 2).join('/') ||
+                    'api',
                   resourceType:
                     request.nextUrl.pathname.split('/').filter(Boolean).slice(2, 4).join('/') ||
                     'unknown',

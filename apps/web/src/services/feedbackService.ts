@@ -123,12 +123,15 @@ export class FeedbackService {
     await APIClient.delete(`${this.endpoint}/${id}`);
   }
 
-  static async addReaction(feedbackId: string, reactionType: string): Promise<FeedbackItem> {
-    const response = await APIClient.post<{ feedback: FeedbackItem }>(
+  static async addReaction(
+    feedbackId: string,
+    reactionType: string
+  ): Promise<{ type: string; count: number; hasReacted: boolean }> {
+    const response = await APIClient.post<{ type: string; count: number; hasReacted: boolean }>(
       `${this.endpoint}/${feedbackId}/reactions`,
       { type: reactionType }
     );
-    return response.feedback;
+    return response;
   }
 
   static async addComment(feedbackId: string, body: string): Promise<FeedbackComment> {

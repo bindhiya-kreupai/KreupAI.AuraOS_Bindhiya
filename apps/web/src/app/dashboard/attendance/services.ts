@@ -102,17 +102,26 @@ type ScheduleApiResponse = {
 
 type WFHApiResponse = {
   id: string;
+  requestCode?: string;
   employeeId?: string;
   employeeName?: string;
   startDate?: string;
   endDate?: string;
+  numberOfDays?: number;
   reason?: string;
   isRecurring?: boolean;
   recurringDays?: number[];
   status?: string;
+  submittedDate?: string;
+  createdAt?: string;
   approvedBy?: string;
   approvedAt?: string;
+  approvedDate?: string;
   requestedAt?: string;
+  rejectionReason?: string;
+  requiresCheckIn?: boolean;
+  checkInRequired?: string;
+  checkOutRequired?: string;
 };
 
 type RosterApiResponse = {
@@ -149,6 +158,10 @@ type OvertimeApiResponse = {
   createdAt?: string | Date;
   paymentAmount?: number;
   compOffGranted?: boolean;
+  payout?: number;
+  estimatedPayout?: number;
+  hourlyRate?: number;
+  multiplier?: number;
 };
 
 type ExceptionApiResponse = {
@@ -238,6 +251,7 @@ const REGULARIZATION_STATUS_MAP: Record<string, AttendanceRegularization['status
   PENDING: 'pending',
   APPROVED: 'approved',
   REJECTED: 'rejected',
+  CANCELLED: 'cancelled',
 };
 
 function normalizeRegularizationType(
@@ -448,20 +462,24 @@ function differenceInDaysInclusive(startDate?: string, endDate?: string) {
 function mapWFHRequest(raw: WFHApiResponse): WFHRequest {
   return {
     id: raw.id,
-    requestCode: raw.id,
+    requestCode: raw.requestCode || raw.id,
     employeeId: raw.employeeId || '',
     employeeName: raw.employeeName || 'Unknown Employee',
     managerId: raw.approvedBy || '',
     managerName: '',
     startDate: raw.startDate || '',
     endDate: raw.endDate || raw.startDate || '',
-    numberOfDays: differenceInDaysInclusive(raw.startDate, raw.endDate || raw.startDate),
+    numberOfDays:
+      raw.numberOfDays ?? differenceInDaysInclusive(raw.startDate, raw.endDate || raw.startDate),
     reason: raw.reason || '',
     status: normalizeWFHStatus(raw.status),
-    requestDate: raw.requestedAt || '',
+    submittedDate: raw.submittedDate || raw.createdAt || '',
     approvedBy: raw.approvedBy || undefined,
-    approvedDate: raw.approvedAt || undefined,
-    rejectionReason: undefined,
+    approvedDate: raw.approvedAt || raw.approvedDate || undefined,
+    rejectionReason: raw.rejectionReason || undefined,
+    requiresCheckIn: raw.requiresCheckIn ?? false,
+    checkInRequired: raw.checkInRequired || undefined,
+    checkOutRequired: raw.checkOutRequired || undefined,
     workPlan: '',
     contactNumber: '',
     emergencyContact: '',
@@ -599,6 +617,9 @@ function mapOvertimeRequest(raw: OvertimeApiResponse): OvertimeRequest {
     rejectionReason: raw.rejectionReason || undefined,
     paymentAmount: raw.paymentAmount,
     compOffGranted: raw.compOffGranted,
+    estimatedPayout: raw.payout ?? raw.estimatedPayout,
+    hourlyRate: raw.hourlyRate,
+    multiplier: raw.multiplier,
   };
 }
 
@@ -1106,6 +1127,25 @@ export class RegularizationService {
       return [];
     }
   }
+
+  /**
+   * Cancel a pending regularization request. The server enforces that only the
+   * owning employee may cancel and only while the request is still PENDING.
+   */
+  static async cancelRegularization(
+    id: string,
+    comments?: string
+  ): Promise<AttendanceRegularization> {
+    const response = await APIClient.post<{ success: boolean; data?: RegularizationApiResponse }>(
+      this.endpoint,
+      {
+        action: 'cancel',
+        regularizationId: id,
+        comments,
+      }
+    );
+    return mapRegularization(response.data!);
+  }
 }
 
 // ============================================================================
@@ -1125,7 +1165,7 @@ export class OvertimeService {
       const normalizedEmployeeId = normalizePlaceholderEmployeeId(filters?.employeeId);
       const response = await APIClient.get<{
         success?: boolean;
-        data?: { overtime?: OvertimeApiResponse[]; summary?: unknown };
+        data?: { overtime?: OvertimeApiResponse[]; summary?: unknown; employeeId?: string };
       }>(this.endpoint, { ...filters, employeeId: normalizedEmployeeId });
       return (response.data?.overtime || []).map(mapOvertimeRequest);
     } catch (error: any) {
@@ -1291,9 +1331,12 @@ export class AttendanceSettingsService {
 
   static async getSettings(): Promise<AttendanceSettings> {
     try {
-      const response = await APIClient.get<{ settings?: AttendanceSettings }>(this.endpoint);
+      const response = await APIClient.get<{ success: boolean; data: AttendanceSettings }>(
+        this.endpoint
+      );
+      console.log('API RESPONSE =', response);
       return (
-        response.settings || {
+        response.data || {
           workingDaysPerWeek: 5,
           weekendDays: [0, 6],
           standardWorkingHours: 8,
@@ -1364,8 +1407,29 @@ export class AttendanceSettingsService {
 // COMP-OFF SERVICE
 // ============================================================================
 
+function mapMgmtCompOff(raw: Record<string, unknown>) {
+  return {
+    id: (raw.id as string) || '',
+    employeeId: (raw.employeeId as string) || '',
+    employeeName: (raw.employeeName as string) || '',
+    workDate: (raw.earnedDate as string) || '',
+    workHours: (raw.earnedHours as number) || 0,
+    reason: (raw.remarks as string) || '',
+    status: normalizeCompOffStatus(raw.status as string),
+    approvedBy: raw.approvedBy as string | undefined,
+    approvedAt: raw.approvedAt as string | undefined,
+    requestedAt: (raw.createdAt as string) || '',
+    earnedDate: raw.earnedDate as string | undefined,
+    expiryDate: raw.expiryDate as string | undefined,
+    balance: (raw.balance as number) ?? 0,
+    used: (raw.used as number) ?? 0,
+    usedOn: raw.usedOn as string | undefined,
+    remarks: raw.remarks as string | undefined,
+  } satisfies CompOffApiResponse;
+}
+
 export class CompOffService {
-  private static endpoint = '/attendance/comp-off';
+  private static endpoint = '/attendance/comp-off-management';
 
   static async getCompOffs(filters?: {
     employeeId?: string;
@@ -1376,9 +1440,9 @@ export class CompOffService {
     try {
       const response = await APIClient.get<{
         success?: boolean;
-        data?: { compOffs?: CompOffApiResponse[]; summary?: CompOffSummaryResponse };
+        data?: { compOffs?: Record<string, unknown>[] };
       }>(this.endpoint, filters);
-      return (response.data?.compOffs || []).map(mapCompOff);
+      return (response.data?.compOffs || []).map(mapMgmtCompOff).map(mapCompOff);
     } catch (error: any) {
       return [];
     }
@@ -1390,33 +1454,60 @@ export class CompOffService {
     hours: number;
     reason: string;
   }): Promise<any> {
+    const payload: Record<string, unknown> = {
+      action: 'request',
+      date: compOff.date,
+      hours: compOff.hours,
+      reason: compOff.reason,
+    };
+
+    const normalizedId = normalizePlaceholderEmployeeId(compOff.employeeId);
+    if (normalizedId) {
+      payload.employeeId = normalizedId;
+    }
+
     const response = await APIClient.post<{
       success?: boolean;
-      data?: CompOffApiResponse;
-      compOff?: CompOffApiResponse;
-    }>(this.endpoint, normalizeCompOffPayload(compOff));
-    return mapCompOff(response.data || response.compOff || { id: '' });
+      data?: Record<string, unknown>;
+    }>(this.endpoint, payload);
+
+    const d = (response.data || {}) as Record<string, unknown>;
+    return mapCompOff(mapMgmtCompOff(d));
   }
 
   static async getCompOffSummary(employeeId: string): Promise<any> {
     try {
-      const params = ['current-user', 'current-user-id'].includes(employeeId)
-        ? undefined
-        : { employeeId };
       const response = await APIClient.get<{
         success?: boolean;
-        data?: { compOffs?: CompOffApiResponse[]; summary?: CompOffSummaryResponse };
-      }>(this.endpoint, params);
-      const summary = response.data?.summary;
+        data?: { compOffs?: Record<string, unknown>[] };
+      }>(this.endpoint, { employeeId });
+
+      const records = (response.data?.compOffs || []).map(mapMgmtCompOff);
+      const now = new Date();
+      const thirtyDaysFromNow = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+
+      const earned = records.filter(
+        (r) => r.status === 'APPROVED' || r.status === 'AVAILED'
+      ).length;
+      const used = records.filter((r) => r.status === 'AVAILED').length;
+      const pending = records.filter(
+        (r) => r.status === 'PENDING' || r.status === 'APPLIED'
+      ).length;
+      const expiring = records.filter((r) => {
+        if (!r.expiryDate) return false;
+        const exp = new Date(r.expiryDate);
+        return exp >= now && exp <= thirtyDaysFromNow;
+      }).length;
+
       return {
-        total: summary?.total ?? summary?.balance ?? 0,
-        earned: summary?.earned ?? summary?.totalEarned ?? 0,
-        used: summary?.used ?? summary?.totalUsed ?? 0,
-        pending: summary?.pending ?? 0,
-        expiring: summary?.expiring ?? 0,
-        totalEarned: summary?.earned ?? summary?.totalEarned ?? 0,
-        totalUsed: summary?.used ?? summary?.totalUsed ?? 0,
-        balance: summary?.total ?? summary?.balance ?? 0,
+        total: earned - used,
+        earned,
+        used,
+        pending,
+        expiring,
+        totalEarned: earned,
+        totalUsed: used,
+        balance: earned - used,
       };
     } catch (error: any) {
       return {
@@ -1438,7 +1529,7 @@ export class CompOffService {
 // ============================================================================
 
 export class WFHService {
-  private static endpoint = '/attendance/work-from-home';
+  private static endpoint = '/attendance/wfh-requests';
 
   static async getWFHRequests(filters?: {
     employeeId?: string;
@@ -1836,40 +1927,29 @@ export class PunchRulesService {
 
   static async getPunchRules(): Promise<any> {
     try {
-      const response = await APIClient.get<{ rules?: any }>(this.endpoint);
-      return (
-        response.rules || {
-          allowEarlyCheckIn: true,
-          earlyCheckInMinutes: 30,
-          allowLateCheckOut: true,
-          lateCheckOutMinutes: 60,
-          requirePhoto: false,
-          requireGPS: false,
-          requireBiometric: false,
-          allowMultiplePunches: false,
-          autoCheckOutAfterHours: 12,
-          gracePeriodMinutes: 15,
-        }
-      );
-    } catch (error: any) {
-      return {
-        allowEarlyCheckIn: true,
-        earlyCheckInMinutes: 30,
-        allowLateCheckOut: true,
-        lateCheckOutMinutes: 60,
-        requirePhoto: false,
-        requireGPS: false,
-        requireBiometric: false,
-        allowMultiplePunches: false,
-        autoCheckOutAfterHours: 12,
-        gracePeriodMinutes: 15,
-      };
+      const response = await APIClient.get<{ data: any[] }>(this.endpoint);
+
+      if (!response.data || response.data.length === 0) {
+        return null;
+      }
+
+      return response.data[0];
+    } catch (error) {
+      return null;
     }
   }
+  static async createPunchRule(rule: any) {
+    const response = await APIClient.post<{ data: any }>(this.endpoint, rule);
+    return response.data;
+  }
+  static async updatePunchRules(id: string, version: number, patch: any): Promise<any> {
+    const response = await APIClient.put<{ data: any }>(this.endpoint, {
+      id,
+      version,
+      patch,
+    });
 
-  static async updatePunchRules(rules: any): Promise<any> {
-    const response = await APIClient.put<{ rules: any }>(this.endpoint, rules);
-    return response.rules;
+    return response.data;
   }
 }
 
@@ -1993,6 +2073,77 @@ export class FieldForceService {
   }): Promise<any> {
     const response = await APIClient.post<{ visit: any }>(`${this.endpoint}/visits`, visit);
     return response.visit;
+  }
+
+  /**
+   * Persist a beat plan for a field agent. The `/attendance/field-force` route
+   * is the config-CRUD endpoint backed by the FieldForceConfig model
+   * (tenant-scoped, name-unique). We store the plan payload in `config` and use
+   * `trackingMode: 'PERIODIC'` so the record validates against the route schema.
+   * Returns the created config record ({ id, ... }).
+   */
+  static async saveBeatPlan(plan: {
+    agentId: string;
+    agentName: string;
+    date: string;
+    stops: string[];
+    notes?: string;
+  }): Promise<{ id: string }> {
+    // Name must be unique per tenant → scope by agent + date.
+    const name = `Beat · ${plan.agentName} · ${plan.date}`;
+    const response = await APIClient.post<{ success?: boolean; data?: { id: string } }>(
+      this.endpoint,
+      {
+        name,
+        description: plan.notes || `Beat plan for ${plan.agentName} on ${plan.date}`,
+        isActive: true,
+        config: {
+          trackingMode: 'PERIODIC',
+          periodicIntervalMinutes: 60,
+          requirePhotoOnCheckIn: false,
+          allowOfflineMode: false,
+          // Beat-specific payload (accepted by the JSON config column):
+          beat: {
+            agentId: plan.agentId,
+            agentName: plan.agentName,
+            date: plan.date,
+            stops: plan.stops,
+            notes: plan.notes || '',
+          },
+        },
+      }
+    );
+    return response.data || { id: '' };
+  }
+
+  /**
+   * List persisted beat plans. Reads FieldForceConfig records from the
+   * config-CRUD endpoint and extracts those that carry a `config.beat` payload.
+   */
+  static async getBeatPlans(): Promise<
+    Array<{ id: string; agentName: string; date: string; stops: string[]; notes?: string }>
+  > {
+    try {
+      const response = await APIClient.get<{
+        success?: boolean;
+        data?: Array<{ id: string; config?: { beat?: Record<string, any> } }>;
+      }>(this.endpoint, { isActive: 'true' });
+
+      return (response.data || [])
+        .filter((record) => record?.config?.beat)
+        .map((record) => {
+          const beat = record.config!.beat as Record<string, any>;
+          return {
+            id: record.id,
+            agentName: String(beat.agentName || 'Unknown Agent'),
+            date: String(beat.date || ''),
+            stops: Array.isArray(beat.stops) ? beat.stops.map(String) : [],
+            notes: beat.notes ? String(beat.notes) : undefined,
+          };
+        });
+    } catch (error: any) {
+      return [];
+    }
   }
 }
 

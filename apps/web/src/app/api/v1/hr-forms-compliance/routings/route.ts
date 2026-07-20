@@ -31,6 +31,19 @@ export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext)
       }
       return ok(await hrFormRoutingService.upsertStage(body, auth), 'Saved');
     }
+    if (body.action === 'delete-stage') {
+      if (!body.id) return badRequest('id required');
+      return ok(await hrFormRoutingService.deleteStage(body.id, auth), 'Deleted');
+    }
+    if (body.action === 'reorder-stage') {
+      if (!body.id || (body.direction !== 'up' && body.direction !== 'down')) {
+        return badRequest('id and direction (up|down) required');
+      }
+      return ok(
+        await hrFormRoutingService.reorderStage(body.id, body.direction, auth),
+        'Reordered'
+      );
+    }
     return badRequest('unknown action');
   } catch (err) {
     return serverError('Failed to update routing', err);

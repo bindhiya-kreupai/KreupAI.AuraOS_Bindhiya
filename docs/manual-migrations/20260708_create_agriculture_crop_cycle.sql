@@ -1,0 +1,15 @@
+BEGIN;
+
+CREATE TABLE IF NOT EXISTS auraos.aura_agriculture_crop_cycle (
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  crop TEXT NOT NULL,
+  field TEXT NOT NULL,
+  stage TEXT NOT NULL,
+  harvest TEXT NOT NULL,
+  progress INTEGER NOT NULL,
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+COMMIT;

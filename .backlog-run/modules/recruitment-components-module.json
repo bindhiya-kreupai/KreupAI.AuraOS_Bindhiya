@@ -1,0 +1,178 @@
+[
+  {
+    "id": "AURA-238",
+    "title": "Dashboard: Mount or delete recruitment KPI dashboard",
+    "module": "Recruitment Components Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "components/recruitment/RecruitmentDashboard.tsx (orphan)",
+    "api": "RecruitmentService \u2192 /v1/recruitment/jobs, /candidates, /stats",
+    "desc": "Full KPI dashboard with service-backed jobs/candidates/stats never imported; duplicate vs scattered recruitment pages."
+  },
+  {
+    "id": "AURA-239",
+    "title": "Pipeline: Wire to application-tracking page",
+    "module": "Recruitment Components Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "components/recruitment/CandidatePipeline.tsx (orphan)",
+    "api": "/v1/recruitment/candidates; /candidates/[id]/stage",
+    "desc": "Kanban with drag-drop stage moves via moveCandidateStage; application-tracking reimplements pipeline inline."
+  },
+  {
+    "id": "AURA-240",
+    "title": "Job Distribution: Wire or remove job distribution UI",
+    "module": "Recruitment Components Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "components/recruitment/JobDistributionDashboard.tsx (orphan)",
+    "api": "JobDistributionService (mock); no distribution API",
+    "desc": "Job board publishing, source effectiveness, referral programs \u2014 entire JobDistributionService is mock."
+  },
+  {
+    "id": "AURA-241",
+    "title": "Interviews: Fix service contract and mount component",
+    "module": "Recruitment Components Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "components/recruitment/InterviewManagement.tsx (orphan)",
+    "api": "/v1/recruitment/interviews; /interviews/[id]/feedback",
+    "desc": "Calls non-existent RecruitmentService.getInterviews/getAnalytics; would fail at runtime. Superseded by interview-management page."
+  },
+  {
+    "id": "AURA-242",
+    "title": "Talent CRM: Wire to talent pool page",
+    "module": "Recruitment Components Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "components/recruitment/TalentCRMDashboard.tsx (orphan)",
+    "api": "/v1/recruitment/candidates; /stats",
+    "desc": "CRM tabs call missing getAnalytics(); campaigns are mock. talent-pool page uses separate inline UI."
+  },
+  {
+    "id": "AURA-243",
+    "title": "Internal Mobility: Replace career/internal-mobility inline UI",
+    "module": "Recruitment Components Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "components/recruitment/InternalMobilityPortal.tsx (orphan)",
+    "api": "InternalMobilityService (mock)",
+    "desc": "Career page uses hardcoded job cards; rich portal component orphaned; InternalMobilityService is mock."
+  },
+  {
+    "id": "AURA-244",
+    "title": "Assessments: Wire to assessment-tests page",
+    "module": "Recruitment Components Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "components/recruitment/AssessmentCenter.tsx (orphan)",
+    "api": "AssessmentService (mock); needs assessment API",
+    "desc": "Assessment page explicitly disabled; AssessmentCenter + AssessmentService mock-only."
+  },
+  {
+    "id": "AURA-245",
+    "title": "DEI Hiring: Consolidate with analytics/dei-dashboard",
+    "module": "Recruitment Components Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "components/recruitment/DEIDashboard.tsx (orphan)",
+    "api": "Page: /api/v1/analytics/diversity; Component: DEIHiringService (mock)",
+    "desc": "Two DEI implementations: live /api/v1/analytics/diversity on page vs mock DEIHiringService in component."
+  },
+  {
+    "id": "AURA-246",
+    "title": "Interview Scheduler: Wire schedule confirmation to API",
+    "module": "Recruitment Components Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/(modules)/interview-scheduler",
+    "api": "/api/v1/recruitment/interviews/schedule",
+    "desc": "Confirm/send only toggles UI state; MOCK_INTERVIEWERS. No POST to schedule endpoint."
+  },
+  {
+    "id": "AURA-247",
+    "title": "Background Check: Wire to live background-check API",
+    "module": "Recruitment Components Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/(modules)/background-check",
+    "api": "/api/v1/recruitment/background-check",
+    "desc": "Portal uses default mocks; no onInitiateCheck. Live flow exists at /dashboard/recruitment/background-verification."
+  },
+  {
+    "id": "AURA-248",
+    "title": "E-Signature: Wire envelope actions to offers API",
+    "module": "Recruitment Components Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/(modules)/e-signature",
+    "api": "/api/v1/recruitment/offers/e-sign",
+    "desc": "All envelopes mock; Send/Void/Resend/Download callbacks not provided. Live offers at offer-management via JobOfferService."
+  },
+  {
+    "id": "AURA-249",
+    "title": "Resume Parsing: Call parse API instead of mock",
+    "module": "Recruitment Components Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/(modules)/ai-resume-parser",
+    "api": "POST /api/v1/recruitment/resume/parse",
+    "desc": "Upload simulates with MOCK_RESUME. API exists at /api/v1/recruitment/resume/parse."
+  },
+  {
+    "id": "AURA-250",
+    "title": "AI Matching: Wire match API",
+    "module": "Recruitment Components Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/(modules)/ai-candidate-matching",
+    "api": "/api/v1/recruitment/candidates/match",
+    "desc": "Page injects mock candidates/job. No rank/shortlist API calls."
+  },
+  {
+    "id": "AURA-251",
+    "title": "Referrals: Wire referral submit and consolidate with live page",
+    "module": "Recruitment Components Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/(modules)/employee-referral",
+    "api": "/api/v1/recruitment/referrals",
+    "desc": "handleSubmitReferral is empty; all tabs use mocks. Live referrals page at /dashboard/recruitment/referrals."
+  },
+  {
+    "id": "AURA-252",
+    "title": "Communication: Wire messaging API",
+    "module": "Recruitment Components Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/(modules)/candidate-communication",
+    "api": "Missing candidate messaging API",
+    "desc": "Send message updates local threads only. No messaging route found."
+  },
+  {
+    "id": "AURA-253",
+    "title": "Video Interview: Wire interview session API",
+    "module": "Recruitment Components Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/(modules)/video-interview",
+    "api": "/api/v1/recruitment/interviews/[id]",
+    "desc": "Mock participants/chat; recording playback uses MOCK_RECORDING. No WebRTC or interview API."
+  }
+]

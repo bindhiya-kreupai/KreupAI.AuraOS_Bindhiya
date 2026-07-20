@@ -107,11 +107,7 @@ export const GET = createProtectedRoute(
     const url = new URL(request.url);
     const includeRelations = url.searchParams.get('includeRelations') === 'true';
 
-    const company = await companyService.getCompanyById(
-      id,
-      auth!.tenantId,
-      includeRelations
-    );
+    const company = await companyService.getCompanyById(id, auth!.tenantId, includeRelations);
 
     if (!company) {
       throw new NotFoundError('Company not found');
@@ -130,9 +126,8 @@ export const GET = createProtectedRoute(
  * Update company
  */
 export const PATCH = createProtectedRoute(
-  async (request: NextRequest, { params, auth }) => {
+  async (request: NextRequest, { params, auth, body }) => {
     const { id } = params;
-    const body = await request.json();
 
     const input = {
       id,
@@ -140,11 +135,7 @@ export const PATCH = createProtectedRoute(
       tenantId: auth!.tenantId,
     };
 
-    const result = await companyService.updateCompany(
-      input,
-      auth!.userId,
-      getIpAddress(request)
-    );
+    const result = await companyService.updateCompany(input, auth!.userId, getIpAddress(request));
 
     if (!result.success) {
       if (result.error?.includes('not found')) {

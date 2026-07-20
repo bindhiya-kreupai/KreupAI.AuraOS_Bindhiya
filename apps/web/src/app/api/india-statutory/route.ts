@@ -275,28 +275,19 @@ export const POST = createProtectedRoute(
         });
 
       case 'calculate-professional-tax':
-        if (body.grossSalary === undefined || !body.stateCode) {
-          return NextResponse.json(
-            {
-              error: 'grossSalary and stateCode are required',
-              errorHi: 'सकल वेतन और राज्य कोड आवश्यक हैं',
-            },
-            { status: 400 }
-          );
-        }
-
-        const ptResult = IndiaStatutoryService.calculateProfessionalTax(
-          body.grossSalary,
-          body.stateCode,
-          body.isFebruary || false
+        // DEPRECATED — Professional Tax now has a single canonical surface at
+        // POST /api/compliance/india-professional-tax (action=calculateMonthly),
+        // backed by the richer 17-state IndiaProfessionalTaxService. This basic
+        // action is retired to remove the duplicate PT surface (AURA-061).
+        return NextResponse.json(
+          {
+            error:
+              'Deprecated. Use POST /api/compliance/india-professional-tax (action=calculateMonthly).',
+            errorHi:
+              'यह अप्रचलित है। कृपया POST /api/compliance/india-professional-tax (action=calculateMonthly) का उपयोग करें।',
+          },
+          { status: 410 }
         );
-
-        return NextResponse.json({
-          success: true,
-          data: ptResult,
-          message: 'Professional tax calculated',
-          messageHi: 'व्यावसायिक कर की गणना की गई',
-        });
 
       case 'calculate-tds-detailed':
         if (body.annualGrossSalary === undefined) {

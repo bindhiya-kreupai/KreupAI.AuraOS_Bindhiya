@@ -1,0 +1,79 @@
+[
+  {
+    "id": "AURA-121",
+    "title": "Policies: Add create/edit policy and document viewer",
+    "module": "HR Policies Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-policies-compliance/policies",
+    "api": "POST /api/v1/hr-policies-compliance/policies (publish/archive only); hrPolicyService",
+    "desc": "UI only lists/publishes/archives; no create or edit policy form. Table shows metadata only; no document viewer or download."
+  },
+  {
+    "id": "AURA-122",
+    "title": "Acknowledgements: Add per-policy ack list and employee workflow",
+    "module": "HR Policies Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-policies-compliance/acknowledgements",
+    "api": "GET /api/v1/hr-policies-compliance/dashboard; PolicyAcknowledgement model",
+    "desc": "Page shows aggregate KPIs only; no per-employee or per-policy acknowledgement table. No employee self-acknowledge UI."
+  },
+  {
+    "id": "AURA-123",
+    "title": "Exceptions: Add policy picker UX",
+    "module": "HR Policies Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-policies-compliance/exceptions",
+    "api": "GET /api/v1/hr-policies-compliance/policies",
+    "desc": "Raise form requires raw policyId UUID; no dropdown/search against policies list."
+  },
+  {
+    "id": "AURA-124",
+    "title": "Reviews: Structured review form and policy context",
+    "module": "HR Policies Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-policies-compliance/reviews",
+    "api": "POST /api/v1/hr-policies-compliance/reviews",
+    "desc": "Complete Review uses window.prompt for outcome/notes. Table shows truncated policyId only; no policy title or link."
+  },
+  {
+    "id": "AURA-125",
+    "title": "Certificate: Attestation UI and certificate export",
+    "module": "HR Policies Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-policies-compliance/certificate",
+    "api": "POST /api/v1/hr-policies-compliance/certificate; hrPolicyCertificateService",
+    "desc": "Sign sends hardcoded attestations [{field:attest,value:OK}]. No PDF/download or signed certificate viewer after sign."
+  },
+  {
+    "id": "AURA-126",
+    "title": "Dashboard: Loading/error states and KPI drill-down",
+    "module": "HR Policies Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hr-policies-compliance",
+    "api": "GET /api/v1/hr-policies-compliance/dashboard",
+    "desc": "No loading spinner or error UI when dashboard fetch fails. KPI tiles not clickable links to filtered sub-pages."
+  },
+  {
+    "id": "AURA-127",
+    "title": "API: Add create-draft and dedicated acknowledgements API",
+    "module": "HR Policies Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/api/v1/hr-policies-compliance/policies",
+    "api": "hrPolicyService; hrPolicyCertificateService.dashboard",
+    "desc": "POST route supports publish/archive only; no create-draft. No /acknowledgements route; data only via dashboard aggregate."
+  }
+]

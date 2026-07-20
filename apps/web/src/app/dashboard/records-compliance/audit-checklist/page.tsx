@@ -42,6 +42,7 @@ const resColor: Record<string, string> = {
 export default function RecordsChecklistPage() {
   const [rows, setRows] = useState<Item[]>([]);
   const [message, setMessage] = useState('');
+  const [notesById, setNotesById] = useState<Record<string, string>>({});
   const [form, setForm] = useState({
     itemCode: '',
     label: '',
@@ -53,7 +54,7 @@ export default function RecordsChecklistPage() {
   async function load() {
     const r = await fetch('/api/v1/records-compliance/audit-checklist');
     const p = await r.json();
-    if (p.success) setRows(p.data ?? []);
+    if (p.success) setRows(Array.isArray(p.data?.items) ? p.data.items : []);
   }
   useEffect(() => {
     load();
@@ -70,7 +71,7 @@ export default function RecordsChecklistPage() {
     load();
   }
   async function record(id: string, result: string) {
-    const notes = prompt('Notes (optional)?') ?? '';
+    const notes = notesById[id] ?? '';
     const r = await fetch('/api/v1/records-compliance/audit-checklist', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -78,6 +79,7 @@ export default function RecordsChecklistPage() {
     });
     const p = await r.json();
     setMessage(p.success ? 'Recorded' : (p.error?.details?.error ?? p.error?.message ?? 'failed'));
+    if (p.success) setNotesById((prev) => ({ ...prev, [id]: '' }));
     load();
   }
 
@@ -169,28 +171,40 @@ export default function RecordsChecklistPage() {
                     {r.lastResult ?? '—'}
                   </td>
                   <td className="px-3 py-2 text-xs">{r.lastReviewedAt?.slice(0, 10) ?? '—'}</td>
-                  <td className="px-3 py-2 flex gap-1">
-                    <button
-                      type="button"
-                      onClick={() => record(r.id, 'PASS')}
-                      className="rounded-md bg-emerald-700 px-2 py-1 text-xs text-white"
-                    >
-                      PASS
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => record(r.id, 'FAIL')}
-                      className="rounded-md bg-rose-700 px-2 py-1 text-xs text-white"
-                    >
-                      FAIL
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => record(r.id, 'OBSERVATION')}
-                      className="rounded-md bg-amber-700 px-2 py-1 text-xs text-white"
-                    >
-                      OBS
-                    </button>
+                  <td className="px-3 py-2">
+                    <div className="flex flex-col gap-1">
+                      <input
+                        value={notesById[r.id] ?? ''}
+                        onChange={(e) =>
+                          setNotesById((prev) => ({ ...prev, [r.id]: e.target.value }))
+                        }
+                        placeholder="Notes (optional)"
+                        className="w-40 rounded-md border border-slate-300 px-2 py-1 text-xs"
+                      />
+                      <div className="flex gap-1">
+                        <button
+                          type="button"
+                          onClick={() => record(r.id, 'PASS')}
+                          className="rounded-md bg-emerald-700 px-2 py-1 text-xs text-white"
+                        >
+                          PASS
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => record(r.id, 'FAIL')}
+                          className="rounded-md bg-rose-700 px-2 py-1 text-xs text-white"
+                        >
+                          FAIL
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => record(r.id, 'OBSERVATION')}
+                          className="rounded-md bg-amber-700 px-2 py-1 text-xs text-white"
+                        >
+                          OBS
+                        </button>
+                      </div>
+                    </div>
                   </td>
                 </tr>
               ))}

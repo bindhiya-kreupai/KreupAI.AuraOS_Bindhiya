@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<testsuites name="vitest tests" tests="4" failures="4" errors="0" time="0">
+    <testsuite name="src/lib/observability/__tests__/with-correlation.integration.test.ts" timestamp="2026-06-22T02:27:08.387Z" hostname="Anuvab" tests="1" failures="1" errors="0" skipped="0" time="0">
+        <testcase classname="src/lib/observability/__tests__/with-correlation.integration.test.ts" name="src/lib/observability/__tests__/with-correlation.integration.test.ts" time="0">
+            <failure message="Integration test setup: REDIS_URL is not set. Bring up a test Postgres + Redis (docker-compose.ci.yml has one) and export the connection strings before running the integration suite. Tests will TRUNCATE tables in the connected DB — do NOT point this at dev or prod." type="Error">
+Error: Integration test setup: REDIS_URL is not set. Bring up a test Postgres + Redis (docker-compose.ci.yml has one) and export the connection strings before running the integration suite. Tests will TRUNCATE tables in the connected DB — do NOT point this at dev or prod.
+ ❯ src/__tests__/setup.integration.ts:33:11
+            </failure>
+        </testcase>
+    </testsuite>
+    <testsuite name="src/lib/services/__tests__/benefits-claim.integration.test.ts" timestamp="2026-06-22T02:27:08.389Z" hostname="Anuvab" tests="1" failures="1" errors="0" skipped="0" time="0">
+        <testcase classname="src/lib/services/__tests__/benefits-claim.integration.test.ts" name="src/lib/services/__tests__/benefits-claim.integration.test.ts" time="0">
+            <failure message="Integration test setup: REDIS_URL is not set. Bring up a test Postgres + Redis (docker-compose.ci.yml has one) and export the connection strings before running the integration suite. Tests will TRUNCATE tables in the connected DB — do NOT point this at dev or prod." type="Error">
+Error: Integration test setup: REDIS_URL is not set. Bring up a test Postgres + Redis (docker-compose.ci.yml has one) and export the connection strings before running the integration suite. Tests will TRUNCATE tables in the connected DB — do NOT point this at dev or prod.
+ ❯ src/__tests__/setup.integration.ts:33:11
+            </failure>
+        </testcase>
+    </testsuite>
+    <testsuite name="src/lib/services/__tests__/dsar.integration.test.ts" timestamp="2026-06-22T02:27:08.390Z" hostname="Anuvab" tests="1" failures="1" errors="0" skipped="0" time="0">
+        <testcase classname="src/lib/services/__tests__/dsar.integration.test.ts" name="src/lib/services/__tests__/dsar.integration.test.ts" time="0">
+            <failure message="Integration test setup: REDIS_URL is not set. Bring up a test Postgres + Redis (docker-compose.ci.yml has one) and export the connection strings before running the integration suite. Tests will TRUNCATE tables in the connected DB — do NOT point this at dev or prod." type="Error">
+Error: Integration test setup: REDIS_URL is not set. Bring up a test Postgres + Redis (docker-compose.ci.yml has one) and export the connection strings before running the integration suite. Tests will TRUNCATE tables in the connected DB — do NOT point this at dev or prod.
+ ❯ src/__tests__/setup.integration.ts:33:11
+            </failure>
+        </testcase>
+    </testsuite>
+    <testsuite name="src/lib/services/__tests__/incident.integration.test.ts" timestamp="2026-06-22T02:27:08.391Z" hostname="Anuvab" tests="1" failures="1" errors="0" skipped="0" time="0">
+        <testcase classname="src/lib/services/__tests__/incident.integration.test.ts" name="src/lib/services/__tests__/incident.integration.test.ts" time="0">
+            <failure message="Integration test setup: REDIS_URL is not set. Bring up a test Postgres + Redis (docker-compose.ci.yml has one) and export the connection strings before running the integration suite. Tests will TRUNCATE tables in the connected DB — do NOT point this at dev or prod." type="Error">
+Error: Integration test setup: REDIS_URL is not set. Bring up a test Postgres + Redis (docker-compose.ci.yml has one) and export the connection strings before running the integration suite. Tests will TRUNCATE tables in the connected DB — do NOT point this at dev or prod.
+ ❯ src/__tests__/setup.integration.ts:33:11
+            </failure>
+        </testcase>
+    </testsuite>
+</testsuites>

@@ -34,10 +34,7 @@ export interface TestRole {
 /**
  * Create a test tenant
  */
-export async function createTestTenant(
-  name?: string,
-  code?: string
-): Promise<TestTenant> {
+export async function createTestTenant(name?: string, code?: string): Promise<TestTenant> {
   const tenantCode = code || `TEST_${crypto.randomBytes(4).toString('hex').toUpperCase()}`;
   const tenantName = name || `Test Tenant ${tenantCode}`;
 
@@ -143,11 +140,7 @@ export async function createTestRole(
 /**
  * Create a test permission
  */
-export async function createTestPermission(
-  resource: string,
-  action: string,
-  description?: string
-) {
+export async function createTestPermission(resource: string, action: string, description?: string) {
   // Check if permission already exists
   const existing = await prisma.permission.findUnique({
     where: {
@@ -208,6 +201,10 @@ export async function createTestSession(
       ipAddress,
       device: 'Test Device',
       browser: 'Test Browser',
+      deviceFingerprint: crypto
+        .createHash('sha256')
+        .update(`test-device-${userId}-${ipAddress}`)
+        .digest('hex'),
       status,
     },
   });

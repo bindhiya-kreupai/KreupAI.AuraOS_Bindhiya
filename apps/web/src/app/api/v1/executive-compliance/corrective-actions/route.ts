@@ -36,9 +36,10 @@ export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext)
       for (const f of ['actionNumber', 'sourceDomain', 'title']) {
         if (!body[f]) return badRequest(`${f} required`);
       }
+      const { action, ...data } = body;
       return ok(
         await complianceCorrectiveActionService.raise(
-          { ...body, dueAt: body.dueAt ? new Date(body.dueAt) : undefined },
+          { ...data, dueAt: data.dueAt ? new Date(data.dueAt) : undefined },
           auth
         ),
         'Raised'

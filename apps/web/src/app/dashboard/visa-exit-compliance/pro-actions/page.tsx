@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 
 interface Action {
   id: string;
@@ -25,6 +25,11 @@ export default function ProActionsPage() {
   const [filter, setFilter] = useState('OPEN');
   const [caseFilter, setCaseFilter] = useState('');
   const [message, setMessage] = useState('');
+  const [busy, setBusy] = useState(false);
+  // Inline panels keyed by action id: 'assign' | 'complete' | null
+  const [panel, setPanel] = useState<{ id: string; mode: 'assign' | 'complete' } | null>(null);
+  const [assigneeInput, setAssigneeInput] = useState('');
+  const [notesInput, setNotesInput] = useState('');
 
   async function load() {
     const url = new URL('/api/v1/visa-exit-compliance/pro-actions', window.location.origin);
@@ -32,34 +37,66 @@ export default function ProActionsPage() {
     if (caseFilter) url.searchParams.set('caseId', caseFilter);
     const r = await fetch(url.toString());
     const p = await r.json();
-    if (p.success) setRows(p.data ?? []);
+    if (p.success) setRows(p.data?.items ?? []);
   }
   useEffect(() => {
     load();
   }, [filter, caseFilter]);
 
-  async function complete(id: string) {
-    const notes = window.prompt('Completion notes? (optional)') ?? '';
-    const r = await fetch('/api/v1/visa-exit-compliance/pro-actions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'complete', id, notes }),
-    });
-    const p = await r.json();
-    setMessage(p.success ? 'Completed' : p.error?.message);
-    load();
+  function openPanel(id: string, mode: 'assign' | 'complete') {
+    setPanel({ id, mode });
+    setAssigneeInput('');
+    setNotesInput('');
+    setMessage('');
   }
-  async function assign(id: string) {
-    const a = window.prompt('Assignee ID?') ?? '';
-    if (!a) return;
-    const r = await fetch('/api/v1/visa-exit-compliance/pro-actions', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'assign', id, assigneeId: a }),
-    });
-    const p = await r.json();
-    setMessage(p.success ? 'Assigned' : p.error?.message);
-    load();
+
+  async function submitComplete(id: string) {
+    setBusy(true);
+    setMessage('');
+    try {
+      const r = await fetch('/api/v1/visa-exit-compliance/pro-actions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'complete', id, notes: notesInput.trim() || undefined }),
+      });
+      const p = await r.json();
+      setMessage(
+        p.success ? 'Completed' : (p.error?.details?.error ?? p.error?.message ?? 'Failed')
+      );
+      if (p.success) {
+        setPanel(null);
+        await load();
+      }
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  async function submitAssign(id: string) {
+    const assigneeId = assigneeInput.trim();
+    if (!assigneeId) {
+      setMessage('Assignee ID is required');
+      return;
+    }
+    setBusy(true);
+    setMessage('');
+    try {
+      const r = await fetch('/api/v1/visa-exit-compliance/pro-actions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'assign', id, assigneeId }),
+      });
+      const p = await r.json();
+      setMessage(
+        p.success ? 'Assigned' : (p.error?.details?.error ?? p.error?.message ?? 'Failed')
+      );
+      if (p.success) {
+        setPanel(null);
+        await load();
+      }
+    } finally {
+      setBusy(false);
+    }
   }
 
   return (
@@ -107,48 +144,112 @@ export default function ProActionsPage() {
               {rows.map((a) => {
                 const overdue =
                   a.dueDate && new Date(a.dueDate) < new Date() && a.status !== 'COMPLETED';
+                const openHere = panel?.id === a.id;
                 return (
-                  <tr key={a.id} className="border-b border-slate-100">
-                    <td className="px-3 py-2 font-mono text-xs">{a.caseId.slice(0, 8)}</td>
-                    <td className="px-3 py-2">
-                      <div className="text-xs">{a.label}</div>
-                      <div className="font-mono text-xs text-slate-500">{a.actionCode}</div>
-                    </td>
-                    <td className="px-3 py-2 text-xs">{a.authority ?? '—'}</td>
-                    <td className="px-3 py-2 font-mono text-xs">{a.assigneeId ?? '—'}</td>
-                    <td
-                      className={`px-3 py-2 text-xs ${overdue ? 'font-semibold text-rose-700' : ''}`}
-                    >
-                      {a.dueDate?.slice(0, 10) ?? '—'}
-                    </td>
-                    <td className="px-3 py-2">
-                      <span
-                        className={`rounded-full px-2 py-0.5 text-xs font-semibold ${statusColor[a.status] ?? ''}`}
+                  <Fragment key={a.id}>
+                    <tr className="border-b border-slate-100">
+                      <td className="px-3 py-2 font-mono text-xs">{a.caseId.slice(0, 8)}</td>
+                      <td className="px-3 py-2">
+                        <div className="text-xs">{a.label}</div>
+                        <div className="font-mono text-xs text-slate-500">{a.actionCode}</div>
+                      </td>
+                      <td className="px-3 py-2 text-xs">{a.authority ?? '—'}</td>
+                      <td className="px-3 py-2 font-mono text-xs">{a.assigneeId ?? '—'}</td>
+                      <td
+                        className={`px-3 py-2 text-xs ${overdue ? 'font-semibold text-rose-700' : ''}`}
                       >
-                        {a.status}
-                      </span>
-                    </td>
-                    <td className="px-3 py-2">
-                      {a.status === 'OPEN' && (
-                        <div className="flex gap-1">
-                          <button
-                            type="button"
-                            onClick={() => assign(a.id)}
-                            className="rounded-md border border-slate-300 px-2 py-1 text-xs"
-                          >
-                            Assign
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => complete(a.id)}
-                            className="rounded-md bg-emerald-700 px-2 py-1 text-xs text-white"
-                          >
-                            Complete
-                          </button>
-                        </div>
-                      )}
-                    </td>
-                  </tr>
+                        {a.dueDate?.slice(0, 10) ?? '—'}
+                      </td>
+                      <td className="px-3 py-2">
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-xs font-semibold ${statusColor[a.status] ?? ''}`}
+                        >
+                          {a.status}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2">
+                        {a.status === 'OPEN' && (
+                          <div className="flex gap-1">
+                            <button
+                              type="button"
+                              onClick={() => openPanel(a.id, 'assign')}
+                              className="rounded-md border border-slate-300 px-2 py-1 text-xs"
+                            >
+                              Assign
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => openPanel(a.id, 'complete')}
+                              className="rounded-md bg-emerald-700 px-2 py-1 text-xs text-white"
+                            >
+                              Complete
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                    {openHere && (
+                      <tr className="border-b border-slate-100 bg-slate-50">
+                        <td colSpan={7} className="px-3 py-3">
+                          {panel?.mode === 'assign' ? (
+                            <div className="flex flex-wrap items-end gap-2">
+                              <label className="text-xs">
+                                Assignee ID
+                                <input
+                                  value={assigneeInput}
+                                  onChange={(e) => setAssigneeInput(e.target.value)}
+                                  placeholder="employee / PRO id"
+                                  className="mt-1 block w-64 rounded-md border border-slate-300 px-2 py-1.5 font-mono text-xs"
+                                />
+                              </label>
+                              <button
+                                type="button"
+                                disabled={busy}
+                                onClick={() => submitAssign(a.id)}
+                                className="rounded-md bg-slate-900 px-3 py-2 text-xs text-white disabled:opacity-50"
+                              >
+                                Save assignee
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setPanel(null)}
+                                className="rounded-md border border-slate-300 px-3 py-2 text-xs"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="flex flex-wrap items-end gap-2">
+                              <label className="text-xs">
+                                Completion notes (optional)
+                                <textarea
+                                  value={notesInput}
+                                  onChange={(e) => setNotesInput(e.target.value)}
+                                  rows={2}
+                                  className="mt-1 block w-96 rounded-md border border-slate-300 px-2 py-1.5 text-xs"
+                                />
+                              </label>
+                              <button
+                                type="button"
+                                disabled={busy}
+                                onClick={() => submitComplete(a.id)}
+                                className="rounded-md bg-emerald-700 px-3 py-2 text-xs text-white disabled:opacity-50"
+                              >
+                                Confirm complete
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setPanel(null)}
+                                className="rounded-md border border-slate-300 px-3 py-2 text-xs"
+                              >
+                                Cancel
+                              </button>
+                            </div>
+                          )}
+                        </td>
+                      </tr>
+                    )}
+                  </Fragment>
                 );
               })}
               {rows.length === 0 && (

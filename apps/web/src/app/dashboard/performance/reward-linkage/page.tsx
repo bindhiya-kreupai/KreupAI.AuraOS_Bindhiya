@@ -1,44 +1,62 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
-import { PerformanceReviewService } from '../core/services';
-import { Gift, ShoppingBag, Coins, Heart, Clock, Filter, ArrowRight, Loader2 } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { RewardService, type RewardCatalogItem } from '../core/services';
+import { Gift, Coins, Loader2, CheckCircle2, AlertCircle } from 'lucide-react';
 
-interface Reward {
-  id: string;
-  name: string;
-  cost: number;
-  category: string;
-  image: string;
-}
+const CATEGORIES = ['All', 'Vouchers', 'Perks', 'Merchandise', 'Experiences', 'Donations'];
+
+type Banner = { type: 'success' | 'error'; text: string } | null;
 
 export default function RewardsMarketplacePage() {
   const [loading, setLoading] = useState(true);
-  const [rewards, setRewards] = useState<Reward[]>([]);
+  const [rewards, setRewards] = useState<RewardCatalogItem[]>([]);
+  const [balance, setBalance] = useState(0);
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [redeemingId, setRedeemingId] = useState<string | null>(null);
+  const [banner, setBanner] = useState<Banner>(null);
 
-  useEffect(() => {
-    async function loadData() {
-      try {
-        // Rewards could come from a dedicated rewards API
-        // For now, derive from performance review data
-        const reviews = await PerformanceReviewService.getReviews();
-        // Calculate points from completed reviews
-        // The rewards catalog would typically come from a settings/config endpoint
-        // For now, show empty state until a rewards catalog is configured
-        setRewards([]);
-      } catch (error: any) {
-        console.error('Failed to load rewards data:', error);
-      } finally {
-        setLoading(false);
-      }
+  const loadData = useCallback(async (category: string) => {
+    setLoading(true);
+    try {
+      const { items, balance: bal } = await RewardService.getCatalog(
+        category === 'All' ? undefined : { category }
+      );
+      setRewards(items);
+      setBalance(bal);
+    } catch (error) {
+      setBanner({ type: 'error', text: 'Failed to load rewards. Please try again.' });
+    } finally {
+      setLoading(false);
     }
-    loadData();
   }, []);
 
-  const categories = ['All', 'Vouchers', 'Perks', 'Merchandise', 'Experiences', 'Donations'];
-  const filteredRewards =
-    selectedCategory === 'All' ? rewards : rewards.filter((r) => r.category === selectedCategory);
+  useEffect(() => {
+    loadData(selectedCategory);
+  }, [selectedCategory, loadData]);
+
+  const handleRedeem = async (item: RewardCatalogItem) => {
+    setRedeemingId(item.id);
+    setBanner(null);
+    try {
+      const { balance: newBalance } = await RewardService.redeem(item.id);
+      setBalance(newBalance);
+      setBanner({
+        type: 'success',
+        text: `Redemption request submitted for "${item.name}". ${newBalance} points remaining.`,
+      });
+    } catch (error: any) {
+      const msg =
+        error?.message ||
+        error?.error?.message ||
+        'Could not redeem this reward. You may not have enough points.';
+      setBanner({ type: 'error', text: msg });
+    } finally {
+      setRedeemingId(null);
+    }
+  };
+
+  const filteredRewards = rewards;
 
   if (loading) {
     return (
@@ -67,16 +85,33 @@ export default function RewardsMarketplacePage() {
             <div className="flex flex-col leading-none">
               <span className="text-xs font-bold text-amber-600 uppercase">Your Balance</span>
               <span className="font-black text-lg text-amber-700 dark:text-amber-500">
-                1,250 pts
+                {balance.toLocaleString()} pts
               </span>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Filter Terms */}
+      {banner && (
+        <div
+          className={`flex items-center gap-2 px-4 py-3 rounded-xl text-sm font-bold shrink-0 ${
+            banner.type === 'success'
+              ? 'bg-emerald-50 text-emerald-700 border border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-400 dark:border-emerald-800'
+              : 'bg-rose-50 text-rose-700 border border-rose-200 dark:bg-rose-900/20 dark:text-rose-400 dark:border-rose-800'
+          }`}
+        >
+          {banner.type === 'success' ? (
+            <CheckCircle2 className="w-4 h-4 shrink-0" />
+          ) : (
+            <AlertCircle className="w-4 h-4 shrink-0" />
+          )}
+          <span>{banner.text}</span>
+        </div>
+      )}
+
+      {/* Category Filters */}
       <div className="flex gap-2 shrink-0 overflow-x-auto pb-2">
-        {categories.map((cat) => (
+        {CATEGORIES.map((cat) => (
           <button
             key={cat}
             onClick={() => setSelectedCategory(cat)}
@@ -102,51 +137,45 @@ export default function RewardsMarketplacePage() {
             </p>
           </div>
         ) : (
-          filteredRewards.map((item) => (
-            <div
-              key={item.id}
-              className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 hover:shadow-lg transition-all group flex flex-col items-center text-center"
-            >
-              <div className="w-24 h-24 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center text-5xl mb-4 group-hover:scale-110 transition-transform">
-                {item.image}
-              </div>
-
-              <h3 className="font-bold text-lg mb-1">{item.name}</h3>
-              <div className="text-xs text-slate-500 mb-4">{item.category}</div>
-
-              <div className="mt-auto w-full">
-                <div className="flex items-center justify-center gap-1 font-bold text-amber-600 mb-4">
-                  <Coins className="w-4 h-4" /> {item.cost}
+          filteredRewards.map((item) => {
+            const affordable = balance >= item.cost;
+            const isRedeeming = redeemingId === item.id;
+            return (
+              <div
+                key={item.id}
+                className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 hover:shadow-lg transition-all group flex flex-col items-center text-center"
+              >
+                <div className="w-24 h-24 bg-slate-50 dark:bg-slate-800 rounded-full flex items-center justify-center text-5xl mb-4 group-hover:scale-110 transition-transform">
+                  {item.image || '🎁'}
                 </div>
 
-                <button
-                  onClick={() => {
-                    if (!confirm(`Redeem "${item.name}" for ${item.cost} points?`)) return;
-                    try {
-                      const key = 'auraos.performance.rewardRedemptions.v1';
-                      const existing = JSON.parse(localStorage.getItem(key) || '[]');
-                      existing.push({
-                        id: `red-${Date.now()}`,
-                        rewardId: item.id,
-                        name: item.name,
-                        cost: item.cost,
-                        redeemedAt: new Date().toISOString(),
-                      });
-                      localStorage.setItem(key, JSON.stringify(existing));
-                      alert(
-                        `Redemption request submitted for ${item.name}. Stored locally until a Rewards backend is added.`
-                      );
-                    } catch (e: any) {
-                      alert(`Could not redeem: ${e?.message || e}`);
-                    }
-                  }}
-                  className="w-full py-2 bg-indigo-500 text-white rounded-xl text-sm font-bold shadow-md hover:bg-indigo-600 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  Redeem
-                </button>
+                <h3 className="font-bold text-lg mb-1">{item.name}</h3>
+                <div className="text-xs text-slate-500 mb-4">{item.category}</div>
+
+                <div className="mt-auto w-full">
+                  <div className="flex items-center justify-center gap-1 font-bold text-amber-600 mb-4">
+                    <Coins className="w-4 h-4" /> {item.cost}
+                  </div>
+
+                  <button
+                    onClick={() => handleRedeem(item)}
+                    disabled={isRedeeming || !affordable}
+                    className="w-full py-2 bg-indigo-500 text-white rounded-xl text-sm font-bold shadow-md hover:bg-indigo-600 transition-all active:scale-95 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {isRedeeming ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" /> Redeeming…
+                      </>
+                    ) : affordable ? (
+                      'Redeem'
+                    ) : (
+                      'Not enough points'
+                    )}
+                  </button>
+                </div>
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
     </div>

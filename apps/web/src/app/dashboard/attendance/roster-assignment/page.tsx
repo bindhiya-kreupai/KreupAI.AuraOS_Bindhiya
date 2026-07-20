@@ -106,6 +106,10 @@ export default function RosterAssignmentPage() {
     null
   );
   const [status, setStatus] = useState<{ kind: 'success' | 'error'; text: string } | null>(null);
+  const [showFilters, setShowFilters] = useState(false);
+  const [filterRole, setFilterRole] = useState<string>('');
+  const [filterShiftId, setFilterShiftId] = useState<string>('');
+  const [filterCoverage, setFilterCoverage] = useState<'all' | 'assigned' | 'unassigned'>('all');
 
   const weekDates = useMemo(() => {
     return Array.from({ length: 7 }, (_, i) => {
@@ -164,19 +168,53 @@ export default function RosterAssignmentPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [weekStart]);
 
-  const filteredEmployees = useMemo(() => {
-    if (!search.trim()) return employees;
-    const q = search.toLowerCase();
-    return employees.filter(
-      (e) => e.name.toLowerCase().includes(q) || e.role.toLowerCase().includes(q)
-    );
-  }, [employees, search]);
-
   const rosterByKey = useMemo(() => {
     const map = new Map<string, Roster>();
     rosters.forEach((r) => map.set(`${r.employeeId}:${r.rosterDate.slice(0, 10)}`, r));
     return map;
   }, [rosters]);
+
+  // Distinct roles for the filter dropdown, derived from the loaded employees.
+  const roleOptions = useMemo(() => {
+    const set = new Set<string>();
+    employees.forEach((e) => e.role && set.add(e.role));
+    return Array.from(set).sort();
+  }, [employees]);
+
+  const activeFilterCount =
+    (filterRole ? 1 : 0) + (filterShiftId ? 1 : 0) + (filterCoverage !== 'all' ? 1 : 0);
+
+  const filteredEmployees = useMemo(() => {
+    const q = search.trim().toLowerCase();
+    return employees.filter((e) => {
+      // Text search across name + role
+      if (q && !(e.name.toLowerCase().includes(q) || e.role.toLowerCase().includes(q))) {
+        return false;
+      }
+      // Role / designation filter
+      if (filterRole && e.role !== filterRole) {
+        return false;
+      }
+      // Shift filter — keep employees assigned to the chosen shift in this week
+      if (filterShiftId) {
+        const hasShift = weekDates.some((d) => {
+          const r = rosterByKey.get(`${e.id}:${isoDate(d)}`);
+          return r && !r.isWeekOff && !r.isHoliday && r.shiftId === filterShiftId;
+        });
+        if (!hasShift) return false;
+      }
+      // Coverage filter — assigned vs unassigned for the visible week
+      if (filterCoverage !== 'all') {
+        const hasAnyWorkingDay = weekDates.some((d) => {
+          const r = rosterByKey.get(`${e.id}:${isoDate(d)}`);
+          return r && !r.isWeekOff && !r.isHoliday;
+        });
+        if (filterCoverage === 'assigned' && !hasAnyWorkingDay) return false;
+        if (filterCoverage === 'unassigned' && hasAnyWorkingDay) return false;
+      }
+      return true;
+    });
+  }, [employees, search, filterRole, filterShiftId, filterCoverage, weekDates, rosterByKey]);
 
   const hoursForEmployee = (empId: string) => {
     let total = 0;
@@ -320,13 +358,87 @@ export default function RosterAssignmentPage() {
             />
           </div>
           <button
-            title="Filter (coming soon)"
-            className="p-2 border border-cloud dark:border-nebula-purple/50 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 opacity-60 cursor-not-allowed"
+            type="button"
+            title="Filter roster"
+            onClick={() => setShowFilters((v) => !v)}
+            className={`relative p-2 border rounded-lg transition-colors ${
+              showFilters || activeFilterCount > 0
+                ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/20 text-indigo-600'
+                : 'border-cloud dark:border-nebula-purple/50 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-500'
+            }`}
           >
-            <Filter className="w-4 h-4 text-slate-500" />
+            <Filter className="w-4 h-4" />
+            {activeFilterCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 bg-indigo-600 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
+                {activeFilterCount}
+              </span>
+            )}
           </button>
         </div>
       </div>
+
+      {showFilters && (
+        <div className="bg-white dark:bg-stellar-blue p-4 rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 items-end">
+          <label className="block">
+            <span className="block text-xs font-bold text-silver-mist mb-1 uppercase">
+              Role / Designation
+            </span>
+            <select
+              value={filterRole}
+              onChange={(e) => setFilterRole(e.target.value)}
+              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900/50 border border-cloud dark:border-nebula-purple/50 rounded-lg text-sm focus:outline-none"
+            >
+              <option value="">All roles</option>
+              {roleOptions.map((r) => (
+                <option key={r} value={r}>
+                  {r}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="block">
+            <span className="block text-xs font-bold text-silver-mist mb-1 uppercase">Shift</span>
+            <select
+              value={filterShiftId}
+              onChange={(e) => setFilterShiftId(e.target.value)}
+              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900/50 border border-cloud dark:border-nebula-purple/50 rounded-lg text-sm focus:outline-none"
+            >
+              <option value="">All shifts</option>
+              {shifts.map((s) => (
+                <option key={s.id} value={s.id}>
+                  {s.name}
+                </option>
+              ))}
+            </select>
+          </label>
+          <label className="block">
+            <span className="block text-xs font-bold text-silver-mist mb-1 uppercase">
+              Coverage
+            </span>
+            <select
+              value={filterCoverage}
+              onChange={(e) => setFilterCoverage(e.target.value as typeof filterCoverage)}
+              className="w-full px-3 py-2 bg-slate-50 dark:bg-slate-900/50 border border-cloud dark:border-nebula-purple/50 rounded-lg text-sm focus:outline-none"
+            >
+              <option value="all">All employees</option>
+              <option value="assigned">Assigned this week</option>
+              <option value="unassigned">Unassigned this week</option>
+            </select>
+          </label>
+          <button
+            type="button"
+            onClick={() => {
+              setFilterRole('');
+              setFilterShiftId('');
+              setFilterCoverage('all');
+            }}
+            disabled={activeFilterCount === 0}
+            className="px-4 py-2 text-sm font-bold border border-cloud dark:border-nebula-purple/50 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed"
+          >
+            Clear filters
+          </button>
+        </div>
+      )}
 
       <div className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm overflow-hidden overflow-x-auto">
         <table className="w-full text-sm border-collapse">
@@ -372,7 +484,9 @@ export default function RosterAssignmentPage() {
             ) : filteredEmployees.length === 0 ? (
               <tr>
                 <td colSpan={9} className="p-8 text-center text-slate-400">
-                  {employees.length === 0 ? 'No employees found' : 'No matches for search'}
+                  {employees.length === 0
+                    ? 'No employees found'
+                    : 'No employees match the current search / filters'}
                 </td>
               </tr>
             ) : (

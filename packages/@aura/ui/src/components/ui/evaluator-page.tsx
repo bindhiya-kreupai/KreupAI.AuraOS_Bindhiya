@@ -13,41 +13,9 @@ function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
-/**
- * Generic evaluator page template.
- *
- * Single component that powers every "type input → call service → show
- * verdict" dashboard page across the 27 EPIC closures. Each adopter
- * page is a thin config wrapper around <EvaluatorPage>.
- *
- * Usage (per page):
- *
- *   <EvaluatorPage
- *     title="Benefits eligibility"
- *     titleAr="أهلية المزايا"
- *     description="Evaluate one benefit code against an employee context."
- *     fields={[
- *       { name: 'benefitCode', label: 'Benefit code', type: 'text', required: true },
- *       { name: 'tenureMonths', label: 'Tenure (months)', type: 'number', required: true },
- *       ...
- *     ]}
- *     endpoint={{ method: 'POST', url: '/api/v1/benefits-compliance/eligibility' }}
- *     buildPayload={(values) => ({
- *       action: 'evaluate',
- *       benefitCode: values.benefitCode,
- *       context: { employee: { id: values.employeeId, tenureMonths: values.tenureMonths } },
- *     })}
- *     buildVerdict={(data) => ({
- *       outcome: data.verdict?.eligible ? 'PASS' : 'FAIL',
- *       title: data.verdict?.reasonCode ?? 'Result',
- *       reason: data.verdict?.reason ?? '',
- *       reasonAr: data.verdict?.reasonAr,
- *     })}
- *   />
- */
-
 export type EvaluatorFieldType =
     | 'text'
+    | 'textarea'
     | 'number'
     | 'date'
     | 'datetime-local'
@@ -63,23 +31,17 @@ export interface EvaluatorField {
     required?: boolean;
     placeholder?: string;
     options?: Array<{ value: string; label: string }>;
-    /** Default value (string form for scalar fields). */
     defaultValue?: string;
-    /** Help text shown under the field. */
     helpText?: string;
     helpTextAr?: string;
-    /** Column definitions for 'structured-array' fields. */
     columns?: StructuredColumn[];
-    /** Default rows for 'structured-array' fields. */
     defaultRows?: Array<Record<string, unknown>>;
-    /** Minimum / maximum row counts for 'structured-array' fields. */
     minRows?: number;
     maxRows?: number;
 }
 
 export interface EvaluatorEndpoint {
     method: 'GET' | 'POST';
-    /** Absolute path under /api. */
     url: string;
 }
 
@@ -90,21 +52,14 @@ export interface EvaluatorPageProps {
     descriptionAr?: string;
     fields: EvaluatorField[];
     endpoint: EvaluatorEndpoint;
-    /**
-     * Transforms form values into the request body. For scalar fields the
-     * value is a string; for `structured-array` fields it is an array of
-     * row records.
-     */
     buildPayload: (values: Record<string, unknown>) => unknown;
-    /** Transforms the API response data into a VerdictPanelProps shape. */
     buildVerdict: (data: unknown) => VerdictPanelProps | null;
-    /** Optional GET-style URL builder for endpoints that take query params. */
     buildQuery?: (values: Record<string, unknown>) => string;
-    /** Optional submit-button label. */
     submitLabel?: string;
     submitLabelAr?: string;
     locale?: 'en' | 'ar';
     className?: string;
+    onSuccess?: (data: any, setValues: React.Dispatch<React.SetStateAction<Record<string, unknown>>>) => void;
 }
 
 export function EvaluatorPage({
@@ -121,6 +76,7 @@ export function EvaluatorPage({
     submitLabelAr,
     locale = 'en',
     className,
+    onSuccess,
 }: EvaluatorPageProps) {
     const [values, setValues] = useState<Record<string, unknown>>(() => {
         const out: Record<string, unknown> = {};
@@ -155,7 +111,6 @@ export function EvaluatorPage({
         setVerdict(null);
         setError(null);
         setErrorIssues(null);
-        // Light required validation.
         for (const f of fields) {
             if (!f.required) continue;
             const v = values[f.name];
@@ -196,7 +151,6 @@ export function EvaluatorPage({
                     json.error?.message ??
                         (locale === 'ar' ? 'فشل التقييم' : 'Evaluation failed'),
                 );
-                // Surface Zod-validation field issues when the API returned them.
                 const details = json.error?.details?.issues;
                 if (
                     details &&
@@ -210,6 +164,9 @@ export function EvaluatorPage({
             }
             const v = buildVerdict(json.data);
             setVerdict(v);
+            if (onSuccess) {
+                onSuccess(json.data, setValues);
+            }
         } catch (err) {
             setError(
                 err instanceof Error
@@ -225,18 +182,22 @@ export function EvaluatorPage({
 
     return (
         <div
-            className={cn('p-6 space-y-6 max-w-3xl', className)}
+            className={cn('p-8 space-y-6 w-full max-w-7xl mx-auto bg-[#f8fafc] dark:bg-slate-950 min-h-screen rounded-2xl transition-colors duration-200', className)}
             dir={locale === 'ar' ? 'rtl' : 'ltr'}
         >
-            <header>
-                <h1 className="text-2xl font-semibold text-gray-900">{displayTitle}</h1>
+            <header className="pb-2">
+                <p className="text-[11px] font-bold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-1">
+                    EVALUATOR WORKSPACE
+                </p>
+                <h1 className="text-3xl font-extrabold text-slate-900 dark:text-white tracking-tight">{displayTitle}</h1>
                 {displayDesc && (
-                    <p className="mt-1 text-sm text-gray-600">{displayDesc}</p>
+                    <p className="mt-2 text-sm text-slate-500 dark:text-slate-400 leading-relaxed max-w-2xl">{displayDesc}</p>
                 )}
             </header>
+            
             <form
                 onSubmit={onSubmit}
-                className="space-y-4 rounded-md border border-gray-200 bg-white p-4"
+                className="space-y-6 rounded-2xl border border-slate-200/80 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-[0_1px_3px_rgba(0,0,0,0.05)]"
             >
                 {fields.map((f) => {
                     const id = `evaluator-field-${f.name}`;
@@ -258,6 +219,7 @@ export function EvaluatorPage({
                                     minRows={f.minRows}
                                     maxRows={f.maxRows}
                                     locale={locale}
+                                    disabled={loading}
                                 />
                             </div>
                         );
@@ -266,14 +228,14 @@ export function EvaluatorPage({
                     const stringValue = (values[f.name] as string) ?? '';
 
                     return (
-                        <div key={f.name} className="space-y-1">
+                        <div key={f.name} className="space-y-2">
                             <label
                                 htmlFor={id}
-                                className="block text-sm font-medium text-gray-800"
+                                className="block text-sm font-semibold text-slate-700 dark:text-slate-300"
                             >
                                 {label}
                                 {f.required && (
-                                    <span className="text-rose-600" aria-hidden>
+                                    <span className="text-rose-605" aria-hidden>
                                         {' '}
                                         *
                                     </span>
@@ -282,10 +244,11 @@ export function EvaluatorPage({
                             {f.type === 'select' && f.options ? (
                                 <select
                                     id={id}
-                                    className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm bg-white"
+                                    className="w-full border border-slate-200 dark:border-slate-750 rounded-xl px-3.5 py-2.5 text-sm bg-slate-50/50 hover:bg-slate-50 dark:bg-slate-950 dark:text-white transition-all focus:outline-none focus:ring-2 focus:ring-slate-950 dark:focus:ring-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
                                     value={stringValue}
                                     onChange={(e) => onChange(f.name, e.target.value)}
                                     required={f.required}
+                                    disabled={loading}
                                 >
                                     <option value="">{locale === 'ar' ? 'اختر…' : 'Select…'}</option>
                                     {f.options.map((o) => (
@@ -297,26 +260,39 @@ export function EvaluatorPage({
                             ) : f.type === 'boolean' ? (
                                 <select
                                     id={id}
-                                    className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm bg-white"
+                                    className="w-full border border-slate-200 dark:border-slate-750 rounded-xl px-3.5 py-2.5 text-sm bg-slate-50/50 hover:bg-slate-50 dark:bg-slate-950 dark:text-white transition-all focus:outline-none focus:ring-2 focus:ring-slate-950 dark:focus:ring-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
                                     value={stringValue}
                                     onChange={(e) => onChange(f.name, e.target.value)}
+                                    disabled={loading}
                                 >
                                     <option value="">{locale === 'ar' ? 'اختر…' : 'Select…'}</option>
                                     <option value="true">{locale === 'ar' ? 'نعم' : 'Yes'}</option>
                                     <option value="false">{locale === 'ar' ? 'لا' : 'No'}</option>
                                 </select>
-                            ) : (
-                                <input
+                            ) : f.type === 'textarea' ? (
+                                <textarea
                                     id={id}
-                                    type={f.type}
-                                    className="w-full border border-gray-300 rounded-md px-2 py-1.5 text-sm"
+                                    rows={6}
+                                    className="w-full border border-slate-200 dark:border-slate-750 rounded-xl px-3.5 py-2.5 text-sm font-mono bg-slate-50/50 hover:bg-slate-50 dark:bg-slate-950 dark:text-white transition-all focus:outline-none focus:ring-2 focus:ring-slate-950 dark:focus:ring-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
                                     value={stringValue}
                                     onChange={(e) => onChange(f.name, e.target.value)}
                                     placeholder={f.placeholder}
                                     required={f.required}
+                                    disabled={loading}
+                                />
+                            ) : (
+                                <input
+                                    id={id}
+                                    type={f.type}
+                                    className="w-full border border-slate-200 dark:border-slate-750 rounded-xl px-3.5 py-2.5 text-sm bg-slate-50/50 hover:bg-slate-50 dark:bg-slate-950 dark:text-white transition-all focus:outline-none focus:ring-2 focus:ring-slate-950 dark:focus:ring-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    value={stringValue}
+                                    onChange={(e) => onChange(f.name, e.target.value)}
+                                    placeholder={f.placeholder}
+                                    required={f.required}
+                                    disabled={loading}
                                 />
                             )}
-                            {help && <p className="text-xs text-gray-500">{help}</p>}
+                            {help && <p className="text-xs text-slate-450 dark:text-slate-500 pt-0.5">{help}</p>}
                         </div>
                     );
                 })}
@@ -329,11 +305,11 @@ export function EvaluatorPage({
                         locale={locale}
                     />
                 )}
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 pt-2">
                     <button
                         type="submit"
                         disabled={loading}
-                        className="inline-flex items-center gap-2 rounded-md bg-blue-600 text-white px-4 py-2 text-sm font-medium hover:bg-blue-700 disabled:opacity-70"
+                        className="inline-flex items-center gap-2 rounded-xl bg-slate-950 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-100 text-white dark:text-slate-950 px-5 py-3 text-sm font-semibold transition-all shadow-sm disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
                     >
                         {loading && <Loader2 className="w-4 h-4 animate-spin" />}
                         {displaySubmit}

@@ -120,7 +120,7 @@ export const POST = withEnhancedAuth(
       let currency: string = body.currency ?? 'USD';
 
       if (body.structureId) {
-        const structure = await prisma.salaryStructure.findFirst({
+        const structure = await (prisma as any).salaryStructure.findFirst({
           where: { id: body.structureId, tenantId: user.tenantId, isDeleted: false },
         });
         if (!structure) {

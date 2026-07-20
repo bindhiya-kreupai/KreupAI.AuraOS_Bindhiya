@@ -35,10 +35,27 @@ export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext)
     const body = await req.json();
     const auth = { tenantId: ctx.user.tenantId, userId: ctx.user.id };
     if (body.action === 'raise') {
-      for (const f of ['caseNumber', 'channel', 'grievanceType', 'subject']) {
-        if (!body[f]) return badRequest(`${f} required`);
+      for (const field of ['caseNumber', 'channel', 'grievanceType', 'subject']) {
+        if (!body[field]) {
+          return badRequest(`${field} required`);
+        }
       }
-      return ok(await erGrievanceService.raise(body, auth), 'Raised');
+
+      const grievanceData = {
+        caseNumber: body.caseNumber,
+        channel: body.channel,
+        grievanceType: body.grievanceType,
+        severity: body.severity,
+        subject: body.subject,
+        description: body.description,
+        complainantId: body.complainantId,
+        respondentId: body.respondentId,
+        isWhistleblower: body.isWhistleblower,
+        country: body.country,
+        slaDays: body.slaDays,
+      };
+
+      return ok(await erGrievanceService.raise(grievanceData, auth), 'Raised');
     }
     if (body.action === 'assign') {
       if (!body.id || !body.assigneeId) return badRequest('id and assigneeId required');

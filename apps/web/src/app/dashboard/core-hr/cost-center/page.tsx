@@ -126,7 +126,51 @@ export default function CostCenterPage() {
   }, [chartData]);
 
   const handleExport = () => {
-    alert('Downloading CostCenter_Report_FY24.pdf...');
+    if (costCenters.length === 0) {
+      setStatus({ kind: 'error', text: 'No cost centers to export.' });
+      return;
+    }
+    const escape = (v: unknown) => {
+      const s = String(v ?? '');
+      return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s;
+    };
+    const header = [
+      'Code',
+      'Name',
+      'Department',
+      'Manager',
+      'Allocated Budget',
+      'Spent Budget',
+      'Remaining Budget',
+      'Utilized %',
+    ];
+    const rows = costCenters.map((cc) => {
+      const allocated = cc.budget?.totalBudget ?? cc.budget?.allocatedBudget ?? 0;
+      const spent = cc.budget?.spentBudget ?? 0;
+      const remaining = cc.budget?.remainingBudget ?? Math.max(allocated - spent, 0);
+      const utilized = allocated > 0 ? Math.round((spent / allocated) * 100) : 0;
+      return [
+        cc.costCenterCode || '',
+        cc.costCenterName || '',
+        cc.department || '',
+        cc.managerName || '',
+        allocated,
+        spent,
+        remaining,
+        `${utilized}%`,
+      ];
+    });
+    const csv = [header, ...rows].map((r) => r.map(escape).join(',')).join('\n');
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `cost-centers-${new Date().toISOString().slice(0, 10)}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+    setStatus({ kind: 'success', text: 'Cost center report downloaded.' });
   };
 
   return (
@@ -202,7 +246,7 @@ export default function CostCenterPage() {
                       ))}
                     </Pie>
                     <Tooltip
-                      formatter={(val: number) => `$${(val / 1000).toFixed(0)}k`}
+                      formatter={(val: any) => `$${(val / 1000).toFixed(0)}k`}
                       contentStyle={{ borderRadius: 8 }}
                     />
                     <Legend />

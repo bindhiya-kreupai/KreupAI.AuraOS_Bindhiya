@@ -32,6 +32,7 @@ export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext)
   if (!hasAny(ctx.permissions, 'tenant:manage', 'employee:manage')) return forbidden();
   try {
     const body = await req.json();
+    const { action, ...caseData } = body;
     const auth = { tenantId: ctx.user.tenantId, userId: ctx.user.id };
     if (body.action === 'open') {
       for (const f of ['employeeId', 'countryCode', 'scenario']) {
@@ -40,8 +41,10 @@ export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext)
       return ok(
         await visaExitCaseService.open(
           {
-            ...body,
-            lastWorkingDate: body.lastWorkingDate ? new Date(body.lastWorkingDate) : undefined,
+            ...caseData,
+            lastWorkingDate: caseData.lastWorkingDate
+              ? new Date(caseData.lastWorkingDate)
+              : undefined,
           },
           auth
         ),

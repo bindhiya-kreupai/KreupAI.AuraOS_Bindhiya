@@ -24,11 +24,22 @@ const periodNow = () => {
 export default function HseHome() {
   const [data, setData] = useState<Dashboard | null>(null);
   const [period, setPeriod] = useState(periodNow());
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
 
   async function load() {
-    const r = await fetch(`/api/v1/hse-compliance/dashboard?period=${period}`);
-    const p = await r.json();
-    if (p.success) setData(p.data);
+    setLoading(true);
+    setError('');
+    try {
+      const r = await fetch(`/api/v1/hse-compliance/dashboard?period=${period}`);
+      const p = await r.json();
+      if (p.success) setData(p.data);
+      else setError(p.error?.message ?? p.message ?? 'Failed to load dashboard');
+    } catch {
+      setError('Network error while loading dashboard');
+    } finally {
+      setLoading(false);
+    }
   }
   useEffect(() => {
     load();
@@ -51,7 +62,29 @@ export default function HseHome() {
           />
         </header>
 
-        {data ? (
+        {error ? (
+          <div className="flex items-center justify-between rounded-md border border-rose-200 bg-rose-50 px-4 py-3 text-sm text-rose-700">
+            <span>{error}</span>
+            <button
+              type="button"
+              onClick={load}
+              className="rounded-md border border-rose-300 px-3 py-1.5 text-xs"
+            >
+              Retry
+            </button>
+          </div>
+        ) : null}
+
+        {loading ? (
+          <section className="grid grid-cols-2 gap-4 md:grid-cols-5">
+            {Array.from({ length: 10 }).map((_, i) => (
+              <div
+                key={i}
+                className="h-24 animate-pulse rounded-lg border border-slate-200 bg-slate-100"
+              />
+            ))}
+          </section>
+        ) : data ? (
           <section className="grid grid-cols-2 gap-4 md:grid-cols-5">
             <Tile label="Open Risks" value={data.openRiskAssessments} />
             <Tile label="HIGH/CRIT" value={data.highRiskCount} colour="rose" />
@@ -64,7 +97,11 @@ export default function HseHome() {
             <Tile label="Training Expired" value={data.trainingExpired} colour="rose" />
             <Tile label="LTIFR" value={data.ltifr} />
           </section>
-        ) : null}
+        ) : (
+          <p className="text-sm text-slate-500">
+            No records yet for {period}. Data will appear here once HSE records are captured.
+          </p>
+        )}
 
         <section className="rounded-lg border border-slate-200 bg-white p-4">
           <p className="text-sm text-slate-700">

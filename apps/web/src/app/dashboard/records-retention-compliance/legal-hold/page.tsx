@@ -46,7 +46,7 @@ export default function LegalHoldPage() {
               key: 'releasedAt',
               label: 'Released',
               labelAr: 'رفع',
-              type: 'date',
+              type: 'text',
               widthClass: 'w-40',
             },
             {

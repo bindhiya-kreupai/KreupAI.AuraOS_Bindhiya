@@ -94,6 +94,88 @@ export class PayrollRunService {
 }
 
 // ============================================================================
+// PAYROLL RUN LIFECYCLE SERVICE (v1 API — real DB-backed pipeline)
+// ============================================================================
+
+export interface PayrollRunV1 {
+  id: string;
+  companyId: string;
+  payrollMonth: string;
+  payrollYear: number;
+  status: string;
+  runType?: string;
+  currency: string;
+  totalEmployees?: number;
+  totalGrossSalary?: number | string;
+  totalDeductions?: number | string;
+  totalNetSalary?: number | string;
+  totalEmployerCost?: number | string;
+  processedAt?: string | null;
+  approvedAt?: string | null;
+  paidAt?: string | null;
+  createdAt?: string;
+  notes?: string | null;
+  _count?: { payslips: number };
+}
+
+/**
+ * Lifecycle service for the real DB-backed payroll run pipeline exposed under
+ * `/api/v1/payroll`. Distinct from the legacy `PayrollRunService` which targets
+ * the older `/payroll` aggregate route.
+ */
+export class PayrollRunLifecycleService {
+  private static endpoint = '/v1/payroll/runs';
+
+  /** List runs (optionally filtered) — DRAFT → CALCULATED → APPROVED → PAID. */
+  static async list(params?: {
+    status?: string;
+    payrollMonth?: string;
+    companyId?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<PayrollRunV1[]> {
+    const response = await APIClient.get<unknown>(this.endpoint, params as Record<string, unknown>);
+    return APIClient.unwrapList<PayrollRunV1>(response);
+  }
+
+  /** Fetch a single run. */
+  static async get(id: string): Promise<PayrollRunV1 | null> {
+    const response = await APIClient.get<unknown>(`${this.endpoint}/${id}`);
+    return APIClient.unwrapItem<PayrollRunV1>(response);
+  }
+
+  /** Create a new DRAFT run for a company + month. */
+  static async create(input: {
+    companyId: string;
+    payrollMonth: string;
+    payrollYear?: number;
+    runType?: string;
+    currency?: string;
+    notes?: string;
+  }): Promise<PayrollRunV1> {
+    const response = await APIClient.post<unknown>(this.endpoint, input);
+    const run = APIClient.unwrapItem<PayrollRunV1>(response);
+    if (!run) throw new Error('Failed to create payroll run');
+    return run;
+  }
+
+  /** Trigger calculation: DRAFT → CALCULATED. */
+  static async calculate(id: string, opts?: { countryCode?: string }): Promise<unknown> {
+    return APIClient.post<unknown>(`${this.endpoint}/${id}/calculate`, opts ?? {});
+  }
+
+  /** Approve a calculated run: CALCULATED → APPROVED. */
+  static async approve(id: string, approverComments?: string): Promise<unknown> {
+    return APIClient.post<unknown>(`/v1/payroll/approve/${id}`, { approverComments });
+  }
+
+  /** Finalize an approved run: APPROVED → PAID (locks the run). */
+  static async finalize(id: string, notes?: string): Promise<unknown> {
+    return APIClient.post<unknown>(`${this.endpoint}/${id}/finalize`, { notes });
+  }
+}
+
+// ============================================================================
 // PAYSLIPS SERVICE
 // ============================================================================
 

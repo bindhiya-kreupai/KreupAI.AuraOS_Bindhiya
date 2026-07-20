@@ -4,11 +4,7 @@ import { BaseService } from './base.service';
 export type IncidentSeverity = 'SEV1' | 'SEV2' | 'SEV3' | 'SEV4';
 
 export type IncidentStatus =
-  | 'OPEN'
-  | 'INVESTIGATING'
-  | 'MITIGATED'
-  | 'RESOLVED'
-  | 'POSTMORTEM_PUBLISHED';
+  'OPEN' | 'INVESTIGATING' | 'MITIGATED' | 'RESOLVED' | 'POSTMORTEM_PUBLISHED';
 
 const STATUS_TRANSITIONS: Record<IncidentStatus, IncidentStatus[]> = {
   OPEN: ['INVESTIGATING', 'MITIGATED', 'RESOLVED'],
@@ -82,7 +78,7 @@ export class IncidentService extends BaseService {
     customerImpact?: string;
     actorId: string;
   }) {
-    return prisma.incident.create({
+    return (prisma as any).incident.create({
       data: {
         tenantId: input.tenantId ?? null,
         incidentNumber: input.incidentNumber,
@@ -102,7 +98,7 @@ export class IncidentService extends BaseService {
     const existing = await this.assertExists(id, tenantId);
     if (!existing) return null;
     this.assertTransition(existing.status as IncidentStatus, 'INVESTIGATING');
-    return prisma.incident.update({
+    return (prisma as any).incident.update({
       where: { id },
       data: {
         status: 'INVESTIGATING',
@@ -116,7 +112,7 @@ export class IncidentService extends BaseService {
     const existing = await this.assertExists(id, tenantId);
     if (!existing) return null;
     this.assertTransition(existing.status as IncidentStatus, 'MITIGATED');
-    return prisma.incident.update({
+    return (prisma as any).incident.update({
       where: { id },
       data: {
         status: 'MITIGATED',
@@ -131,7 +127,7 @@ export class IncidentService extends BaseService {
     const existing = await this.assertExists(id, tenantId);
     if (!existing) return null;
     this.assertTransition(existing.status as IncidentStatus, 'RESOLVED');
-    return prisma.incident.update({
+    return (prisma as any).incident.update({
       where: { id },
       data: {
         status: 'RESOLVED',
@@ -152,7 +148,7 @@ export class IncidentService extends BaseService {
     ) {
       throw new PostmortemRequiredError(existing.severity as IncidentSeverity);
     }
-    return prisma.incident.update({
+    return (prisma as any).incident.update({
       where: { id },
       data: { status: 'POSTMORTEM_PUBLISHED', postmortemUrl: url, updatedBy: actorId },
     });
@@ -177,19 +173,19 @@ export class IncidentService extends BaseService {
       where.status = { notIn: ['RESOLVED', 'POSTMORTEM_PUBLISHED'] };
     }
     const [items, total] = await Promise.all([
-      prisma.incident.findMany({
+      (prisma as any).incident.findMany({
         where,
         orderBy: { detectedAt: 'desc' },
         skip,
         take: limit,
       }),
-      prisma.incident.count({ where }),
+      (prisma as any).incident.count({ where }),
     ]);
     return { items, total, page, pageSize: limit, hasNextPage: skip + items.length < total };
   }
 
   private async assertExists(id: string, tenantId: string | null) {
-    return prisma.incident.findFirst({
+    return (prisma as any).incident.findFirst({
       where: { id, tenantId: tenantId ?? null },
     });
   }

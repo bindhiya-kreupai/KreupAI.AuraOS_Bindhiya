@@ -40,9 +40,16 @@ const resColor: Record<string, string> = {
   OBSERVATION: 'text-amber-700',
 };
 
+interface ListResponse<T> {
+  items?: T[];
+}
+
 export default function OrgChecklistPage() {
   const [rows, setRows] = useState<Item[]>([]);
   const [message, setMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+  const [recordFor, setRecordFor] = useState<{ id: string; result: string } | null>(null);
+  const [recordNotes, setRecordNotes] = useState('');
   const [form, setForm] = useState({
     itemCode: '',
     label: '',
@@ -52,15 +59,26 @@ export default function OrgChecklistPage() {
   });
 
   async function load() {
-    const r = await fetch('/api/v1/org-compliance/audit-checklist');
-    const p = await r.json();
-    if (p.success) setRows(p.data ?? []);
+    setLoading(true);
+    try {
+      const r = await fetch('/api/v1/org-compliance/audit-checklist');
+      const p = await r.json();
+      if (p.success) {
+        const data = p.data as ListResponse<Item> | Item[] | undefined;
+        setRows(Array.isArray(data) ? data : (data?.items ?? []));
+      } else {
+        setMessage(p.error?.message ?? 'Failed to load');
+      }
+    } finally {
+      setLoading(false);
+    }
   }
   useEffect(() => {
     load();
   }, []);
 
   async function save() {
+    setMessage('');
     const r = await fetch('/api/v1/org-compliance/audit-checklist', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -68,18 +86,37 @@ export default function OrgChecklistPage() {
     });
     const p = await r.json();
     setMessage(p.success ? 'Saved' : (p.error?.details?.error ?? p.error?.message ?? 'failed'));
-    load();
+    if (p.success) {
+      setForm({
+        itemCode: '',
+        label: '',
+        category: 'POSITION',
+        severity: 'MEDIUM',
+        expectation: '',
+      });
+      await load();
+    }
   }
-  async function record(id: string, result: string) {
-    const notes = prompt('Notes (optional)?') ?? '';
+  async function submitRecord() {
+    if (!recordFor) return;
+    setMessage('');
     const r = await fetch('/api/v1/org-compliance/audit-checklist', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'record', id, result, notes }),
+      body: JSON.stringify({
+        action: 'record',
+        id: recordFor.id,
+        result: recordFor.result,
+        notes: recordNotes || undefined,
+      }),
     });
     const p = await r.json();
     setMessage(p.success ? 'Recorded' : (p.error?.details?.error ?? p.error?.message ?? 'failed'));
-    load();
+    if (p.success) {
+      setRecordFor(null);
+      setRecordNotes('');
+      await load();
+    }
   }
 
   return (
@@ -179,21 +216,30 @@ export default function OrgChecklistPage() {
                   <td className="px-3 py-2 flex gap-1">
                     <button
                       type="button"
-                      onClick={() => record(r.id, 'PASS')}
+                      onClick={() => {
+                        setRecordFor({ id: r.id, result: 'PASS' });
+                        setRecordNotes('');
+                      }}
                       className="rounded-md bg-emerald-700 px-2 py-1 text-xs text-white"
                     >
                       PASS
                     </button>
                     <button
                       type="button"
-                      onClick={() => record(r.id, 'FAIL')}
+                      onClick={() => {
+                        setRecordFor({ id: r.id, result: 'FAIL' });
+                        setRecordNotes('');
+                      }}
                       className="rounded-md bg-rose-700 px-2 py-1 text-xs text-white"
                     >
                       FAIL
                     </button>
                     <button
                       type="button"
-                      onClick={() => record(r.id, 'OBSERVATION')}
+                      onClick={() => {
+                        setRecordFor({ id: r.id, result: 'OBSERVATION' });
+                        setRecordNotes('');
+                      }}
                       className="rounded-md bg-amber-700 px-2 py-1 text-xs text-white"
                     >
                       OBS
@@ -204,7 +250,7 @@ export default function OrgChecklistPage() {
               {rows.length === 0 && (
                 <tr>
                   <td colSpan={7} className="px-3 py-6 text-center text-slate-500">
-                    No items.
+                    {loading ? 'Loading…' : 'No items.'}
                   </td>
                 </tr>
               )}
@@ -212,6 +258,41 @@ export default function OrgChecklistPage() {
           </table>
         </section>
       </div>
+
+      {recordFor ? (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/40 p-4">
+          <div className="w-full max-w-md rounded-lg border border-slate-200 bg-white p-5 shadow-lg">
+            <h3 className="text-base font-semibold">Record {recordFor.result}</h3>
+            <p className="mt-1 text-sm text-slate-600">Add optional notes for this review.</p>
+            <textarea
+              value={recordNotes}
+              onChange={(e) => setRecordNotes(e.target.value)}
+              rows={3}
+              placeholder="Notes (optional)"
+              className="mt-3 w-full rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+            />
+            <div className="mt-4 flex justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => {
+                  setRecordFor(null);
+                  setRecordNotes('');
+                }}
+                className="rounded-md border border-slate-300 px-3 py-2 text-sm"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={submitRecord}
+                className="rounded-md bg-slate-900 px-3 py-2 text-sm text-white"
+              >
+                Save Result
+              </button>
+            </div>
+          </div>
+        </div>
+      ) : null}
     </main>
   );
 }

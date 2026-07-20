@@ -19,7 +19,7 @@ export const GET = withEnhancedAuth(
     const url = new URL(request.url);
     const status = url.searchParams.get('status') ?? undefined;
     const employeeId = url.searchParams.get('employeeId') ?? undefined;
-    const items = await prisma.cobraEnrollment.findMany({
+    const items = await (prisma as any).cobraEnrollment.findMany({
       where: { tenantId: context.user.tenantId, status, employeeId },
       orderBy: { createdAt: 'desc' },
       include: { qualifyingEvent: true },

@@ -1,0 +1,101 @@
+[
+  {
+    "id": "AURA-647",
+    "title": "Org Design: Replace hub with functional page or add child route",
+    "module": "Org Design Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/org-design",
+    "api": "Not specified",
+    "desc": "Page is a ModuleGrid navigation shell with no data/API integration."
+  },
+  {
+    "id": "AURA-648",
+    "title": "Change Management: Wire page to backend API",
+    "module": "Org Design Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/org-design/change-management",
+    "api": "Not specified",
+    "desc": "Page renders inline static arrays with no fetch/service detected."
+  },
+  {
+    "id": "AURA-649",
+    "title": "Matrix Structure: Replace mock/hardcoded data with live API",
+    "module": "Org Design Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/org-design/matrix-structure",
+    "api": "Not specified",
+    "desc": "Page uses hardcoded or mock data; no fetch/service calls detected."
+  },
+  {
+    "id": "AURA-650",
+    "title": "Org Analytics: Wire page to backend API",
+    "module": "Org Design Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/org-design/org-analytics",
+    "api": "Not specified",
+    "desc": "Page renders inline static arrays with no fetch/service detected."
+  },
+  {
+    "id": "AURA-651",
+    "title": "Org Chart Builder: Manual review required",
+    "module": "Org Design Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/org-design/org-chart-builder",
+    "api": "Not specified",
+    "desc": "Page exists; automated heuristics could not classify wiring."
+  },
+  {
+    "id": "AURA-652",
+    "title": "Position Hierarchy: Wire page to backend API",
+    "module": "Org Design Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/org-design/position-hierarchy",
+    "api": "Not specified",
+    "desc": "Page renders inline static arrays with no fetch/service detected."
+  },
+  {
+    "id": "AURA-653",
+    "title": "Scenario Planning: Replace mock/hardcoded data with live API",
+    "module": "Org Design Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/org-design/scenario-planning",
+    "api": "Not specified",
+    "desc": "Page uses hardcoded or mock data; no fetch/service calls detected."
+  },
+  {
+    "id": "AURA-654",
+    "title": "Span of Control: Wire page to backend API",
+    "module": "Org Design Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/org-design/span-of-control",
+    "api": "Not specified",
+    "desc": "Page renders inline static arrays with no fetch/service detected."
+  },
+  {
+    "id": "AURA-655",
+    "title": "Succession Pool: Wire page to backend API",
+    "module": "Org Design Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/org-design/succession-pool",
+    "api": "Not specified",
+    "desc": "Page renders inline static arrays with no fetch/service detected."
+  }
+]

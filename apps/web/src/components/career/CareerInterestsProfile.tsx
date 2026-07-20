@@ -6,7 +6,8 @@
 
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
+import { useCurrentUser } from '@/lib/auth/AuthProvider';
 import {
   Target,
   Briefcase,
@@ -21,8 +22,10 @@ import {
   ArrowUpRight,
   ArrowRight,
   ArrowLeftRight,
+  Loader2,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { toast } from 'sonner';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -133,21 +136,52 @@ const MOBILITY_OPTIONS: {
 
 // ── Component ─────────────────────────────────────────────────────────────────
 
-export const CareerInterestsProfile: React.FC<CareerInterestsProfileProps> = ({ onSave }) => {
-  const [interests, setInterests] = useState<CareerInterests>({
-    shortTermGoal: 'Transition to a senior technical leadership role within the next 12 months.',
-    longTermGoal: 'Become an engineering director overseeing cross-functional product teams.',
-    preferredRoles: ['Senior Software Engineer', 'Tech Lead', 'Engineering Manager'],
-    interestedDepartments: ['Engineering', 'Product'],
-    mobilityPreference: 'vertical',
-    willingToRelocate: true,
-    preferredLocations: ['San Francisco, CA', 'Remote'],
-    skills: ['Leadership', 'Technical Architecture', 'Agile/Scrum'],
-    certifications: ['AWS Solutions Architect', 'PMP'],
-    developmentAreas: ['Public Speaking', 'Strategic Planning'],
-  });
+const EMPTY_INTERESTS: CareerInterests = {
+  shortTermGoal: '',
+  longTermGoal: '',
+  preferredRoles: [],
+  interestedDepartments: [],
+  mobilityPreference: 'any',
+  willingToRelocate: false,
+  preferredLocations: [],
+  skills: [],
+  certifications: [],
+  developmentAreas: [],
+};
 
+export const CareerInterestsProfile: React.FC<CareerInterestsProfileProps> = ({ onSave }) => {
+  const { refresh } = useCurrentUser();
+  const [interests, setInterests] = useState<CareerInterests>(EMPTY_INTERESTS);
   const [saved, setSaved] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const res = await fetch('/api/my-services/profile', {
+          credentials: 'same-origin',
+          headers: { Accept: 'application/json' },
+          cache: 'no-store',
+        });
+        if (!res.ok) throw new Error(`Failed to load profile (${res.status})`);
+        const body = await res.json();
+        const stored = body?.data?.careerInterests as Partial<CareerInterests> | null | undefined;
+        if (active && stored && typeof stored === 'object') {
+          setInterests({ ...EMPTY_INTERESTS, ...stored });
+        }
+      } catch (error) {
+        console.error('Failed to load career interests', error);
+        if (active) toast.error('Failed to load career interests');
+      } finally {
+        if (active) setLoading(false);
+      }
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const updateField = useCallback(
     <K extends keyof CareerInterests>(field: K, value: CareerInterests[K]) => {
@@ -195,11 +229,36 @@ export const CareerInterestsProfile: React.FC<CareerInterestsProfileProps> = ({ 
     []
   );
 
-  const handleSave = useCallback(() => {
-    onSave?.(interests);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
+  const handleSave = useCallback(async () => {
+    setSaving(true);
+    try {
+      const res = await fetch('/api/my-services/profile', {
+        method: 'PUT',
+        credentials: 'same-origin',
+        headers: { 'Content-Type': 'application/json', Accept: 'application/json' },
+        body: JSON.stringify({ careerInterests: interests }),
+      });
+      if (!res.ok) throw new Error(`Failed to save (${res.status})`);
+      onSave?.(interests);
+      setSaved(true);
+      refresh();
+      toast.success('Career interests saved');
+      setTimeout(() => setSaved(false), 2000);
+    } catch (error) {
+      console.error('Failed to save career interests', error);
+      toast.error('Failed to save career interests');
+    } finally {
+      setSaving(false);
+    }
   }, [interests, onSave]);
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center py-16">
+        <Loader2 className="w-6 h-6 text-celestial-indigo animate-spin" />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5">
@@ -374,11 +433,16 @@ export const CareerInterestsProfile: React.FC<CareerInterestsProfileProps> = ({ 
       <div className="flex justify-end">
         <button
           onClick={handleSave}
-          className={`flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-bold transition-all ${
+          disabled={saving}
+          className={`flex items-center gap-1.5 px-5 py-2.5 rounded-xl text-sm font-bold transition-all disabled:opacity-60 ${
             saved ? 'bg-neural-mint text-white' : 'bg-celestial-indigo text-white hover:opacity-90'
           }`}
         >
-          {saved ? (
+          {saving ? (
+            <>
+              <Loader2 className="w-4 h-4 animate-spin" /> Saving
+            </>
+          ) : saved ? (
             <>
               <Check className="w-4 h-4" /> Saved
             </>

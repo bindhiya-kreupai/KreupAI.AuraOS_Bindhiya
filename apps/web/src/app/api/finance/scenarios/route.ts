@@ -1,110 +1,26 @@
 /**
- * Budget Scenarios API Routes
- * Finance Module - Scenario Planning
+ * Budget Scenario API — Finance Module (AURA-153, AURA-158)
+ * DB-backed, tenant-scoped.
  */
 
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { createProtectedRoute } from '@/lib/api/route-wrapper';
+import { ScenarioRepo } from '@/lib/services/finance/finance.service';
 
-/**
- * GET /api/finance/scenarios
- * Get all budget scenarios
- */
-export async function GET(request: NextRequest) {
-  try {
-    return NextResponse.json({
-      success: true,
-      scenarios: [],
-    });
-  } catch (error: any) {
-    return NextResponse.json({ error: 'Failed to fetch scenarios' }, { status: 500 });
+export const GET = createProtectedRoute(async (_request: NextRequest, { auth }) => {
+  const result = await ScenarioRepo.list((auth as any).tenantId, {});
+  return NextResponse.json({ success: true, scenarios: result.items, ...result });
+});
+
+export const POST = createProtectedRoute(async (request: NextRequest, { auth }) => {
+  const body = await request.json().catch(() => ({}));
+  if (!body.scenarioName) {
+    return NextResponse.json(
+      { success: false, message: 'scenarioName is required.', messageAr: 'اسم السيناريو مطلوب.' },
+      { status: 400 }
+    );
   }
-}
-
-/**
- * POST /api/finance/scenarios
- * Create new scenario or run scenario
- */
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const action = body.action || 'create';
-
-    if (action === 'run') {
-      const { scenarioId } = body;
-      if (!scenarioId) {
-        return NextResponse.json({ error: 'scenarioId is required' }, { status: 400 });
-      }
-
-      return NextResponse.json({
-        success: true,
-        scenario: {
-          id: scenarioId,
-          status: 'completed',
-          lastRun: new Date().toISOString(),
-        },
-      });
-    }
-
-    return NextResponse.json({
-      success: true,
-      scenario: {
-        id: `scenario-${Date.now()}`,
-        ...body,
-        createdDate: new Date().toISOString(),
-        lastModified: new Date().toISOString(),
-      },
-    });
-  } catch (error: any) {
-    return NextResponse.json({ error: 'Failed to process scenario' }, { status: 500 });
-  }
-}
-
-/**
- * PUT /api/finance/scenarios
- * Update scenario
- */
-export async function PUT(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-    const body = await request.json();
-
-    if (!id) {
-      return NextResponse.json({ error: 'Scenario ID is required' }, { status: 400 });
-    }
-
-    return NextResponse.json({
-      success: true,
-      scenario: {
-        id,
-        ...body,
-        lastModified: new Date().toISOString(),
-      },
-    });
-  } catch (error: any) {
-    return NextResponse.json({ error: 'Failed to update scenario' }, { status: 500 });
-  }
-}
-
-/**
- * DELETE /api/finance/scenarios
- * Delete scenario
- */
-export async function DELETE(request: NextRequest) {
-  try {
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-
-    if (!id) {
-      return NextResponse.json({ error: 'Scenario ID is required' }, { status: 400 });
-    }
-
-    return NextResponse.json({
-      success: true,
-      message: 'Scenario deleted successfully',
-    });
-  } catch (error: any) {
-    return NextResponse.json({ error: 'Failed to delete scenario' }, { status: 500 });
-  }
-}
+  const scenario = await ScenarioRepo.create((auth as any).tenantId, (auth as any).userId, body);
+  return NextResponse.json({ success: true, scenario }, { status: 201 });
+});

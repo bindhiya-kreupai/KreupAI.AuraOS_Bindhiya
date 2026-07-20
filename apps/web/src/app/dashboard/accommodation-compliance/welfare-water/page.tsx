@@ -40,7 +40,7 @@ export default function WelfareWaterPage() {
               key: 'testedAt',
               label: 'Tested at',
               labelAr: 'تاريخ الفحص',
-              type: 'date',
+              type: 'text',
               required: true,
               widthClass: 'w-40',
             },

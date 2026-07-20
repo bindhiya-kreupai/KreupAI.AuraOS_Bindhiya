@@ -1,28 +1,18 @@
 {
-    "$schema": "https://turbo.build/schema.json",
-    "globalEnv": [
-        "NODE_ENV"
-    ],
-    "globalDependencies": [
-        ".env"
-    ],
-    "ui": "tui",
-    "tasks": {
-        "build": {
-            "dependsOn": [
-                "^build"
-            ],
-            "outputs": [
-                ".next/**",
-                "!.next/cache/**",
-                "dist/**"
-            ]
-        },
-        "dev": {
-            "cache": false,
-            "persistent": true
-        },
-        "lint": {},
-        "test": {}
-    }
+  "$schema": "https://turbo.build/schema.json",
+  "globalEnv": ["NODE_ENV"],
+  "globalDependencies": [".env"],
+  "ui": "stream",
+  "tasks": {
+    "build": {
+      "dependsOn": ["^build"],
+      "outputs": [".next/**", "!.next/cache/**", "dist/**"]
+    },
+    "dev": {
+      "cache": false,
+      "persistent": true
+    },
+    "lint": {},
+    "test": {}
+  }
 }

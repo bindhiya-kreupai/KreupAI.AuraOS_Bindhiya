@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * @module MobileMenu
  * @description Mobile navigation drawer for AURA HCM
@@ -6,7 +8,6 @@
  * @reference docs/aura-uiux-design.md
  */
 
-'use client';
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
@@ -55,6 +56,14 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
 
   // Convert code to path
   const getModulePath = (code: string) => {
+    const matched = superAdminMenu.items.find(m => m.code === code);
+    if (matched && matched.path) return matched.path;
+    for (const parent of superAdminMenu.items) {
+      if (parent.items) {
+        const sub = parent.items.find(s => s.code === code);
+        if (sub && sub.path) return sub.path;
+      }
+    }
     return `/${code.toLowerCase().replace(/_/g, '-')}`;
   };
 
@@ -64,18 +73,26 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '');
+    const lastSegment = modulePath.split('/').pop();
+    if (featureSlug === lastSegment) {
+      return modulePath;
+    }
     return `${modulePath}/${featureSlug}`;
+  };
+
+  // Helper to recursively check if a module matches the search query
+  const matchModule = (module: typeof superAdminMenu.items[0], query: string): boolean => {
+    if (module.label.toLowerCase().includes(query)) return true;
+    if (module.code.toLowerCase().replace(/_/g, ' ').includes(query)) return true;
+    if (module.path?.toLowerCase().replace(/[-/]/g, ' ').includes(query)) return true;
+    if (module.features?.some(feature => feature.toLowerCase().includes(query))) return true;
+    if (module.items?.some(subModule => matchModule(subModule, query))) return true;
+    return false;
   };
 
   // Filter modules
   const filteredModules = searchQuery
-    ? superAdminMenu.items.filter(
-      (m) =>
-        m.label.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        m.features.some((f) =>
-          f.toLowerCase().includes(searchQuery.toLowerCase())
-        )
-    )
+    ? superAdminMenu.items.filter((m) => matchModule(m, searchQuery.toLowerCase()))
     : superAdminMenu.items;
 
   // Get selected module data
@@ -133,7 +150,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
             <span className="text-sm">Alerts</span>
           </Link>
           <Link
-            href="/profile"
+            href="/dashboard/my-services/personal-info-update"
             className="flex-1 flex items-center justify-center gap-2 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-colors"
           >
             <User className="w-4 h-4" />
@@ -213,7 +230,7 @@ export const MobileMenu: React.FC<MobileMenuProps> = ({ isOpen, onClose }) => {
 
                 return (
                   <button
-                    key={module.code}
+                    key={`${module.code}-${module.path || getModulePath(module.code)}`}
                     onClick={() => setSelectedModule(module.code)}
                     className={cn(
                       'w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all text-left relative overflow-hidden',

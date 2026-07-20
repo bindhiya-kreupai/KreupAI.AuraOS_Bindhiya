@@ -1,4 +1,4 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
@@ -22,10 +22,7 @@ export const DELETE = withEnhancedAuth(
       });
 
       if (!session) {
-        return NextResponse.json(
-          { success: false, error: 'Session not found' },
-          { status: 404 }
-        );
+        return NextResponse.json({ success: false, error: 'Session not found' }, { status: 404 });
       }
 
       // Check if user can revoke this session
@@ -37,6 +34,14 @@ export const DELETE = withEnhancedAuth(
         );
       }
 
+      // Prevent revoking your own current session
+      if (session.id === user.sessionId) {
+        return NextResponse.json(
+          { success: false, error: 'Cannot revoke your own current session. Use logout instead.' },
+          { status: 400 }
+        );
+      }
+
       // Revoke session
       await prisma.userSession.update({
         where: { id: sessionId },
@@ -45,15 +50,14 @@ export const DELETE = withEnhancedAuth(
 
       // Create audit log
       const ipAddress =
-        request.headers.get('x-forwarded-for') ||
-        request.headers.get('x-real-ip') ||
-        'unknown';
+        request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
 
       await prisma.auditLog.create({
         data: {
           tenantId: user.tenantId,
           userId: user.userId,
           action: 'DELETE',
+          module: 'Session Management',
           resourceType: 'Session Management',
           metadata: { description: `Revoked session: ${sessionId}` } as any,
           ipAddress,

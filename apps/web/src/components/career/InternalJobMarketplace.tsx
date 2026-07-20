@@ -6,7 +6,7 @@
 
 'use client';
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import {
   Search,
   MapPin,
@@ -21,8 +21,12 @@ import {
   Globe,
   Bookmark,
   BookmarkCheck,
+  Loader2,
 } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
+import { toast } from 'sonner';
+import { MobilityOpportunityService } from '@/app/dashboard/career/services';
+import type { MobilityOpportunity } from '@/app/dashboard/career/types';
 
 // ── Types ──────────────────────────────────────────────────────────────────────
 
@@ -50,122 +54,42 @@ interface InternalJobMarketplaceProps {
   onApply: (job: InternalJob) => void;
 }
 
-// ── Mock Data ─────────────────────────────────────────────────────────────────
+// ── Mapping ───────────────────────────────────────────────────────────────────
 
-const MOCK_JOBS: InternalJob[] = [
-  {
-    id: 'job-001',
-    title: 'Senior Software Engineer — Platform',
-    department: 'Engineering',
-    location: 'San Francisco, CA',
-    hiringManager: 'Sarah Chen',
-    type: 'vertical',
-    level: 'Senior (L5)',
-    salaryRange: { min: 160000, max: 200000, currency: 'USD' },
-    description:
-      'Lead platform infrastructure projects including microservices migration and developer tooling improvements.',
-    requirements: [
-      '5+ years software engineering',
-      'Distributed systems experience',
-      'BS in Computer Science or equivalent',
-    ],
-    preferredSkills: ['Kubernetes', 'Go', 'gRPC', 'Terraform'],
-    openings: 2,
-    postedDate: '2026-02-10',
-    deadline: '2026-03-15',
-    isRemote: true,
-    relocationAssistance: false,
-    matchScore: 92,
-  },
-  {
-    id: 'job-002',
-    title: 'Engineering Manager — Growth',
-    department: 'Engineering',
-    location: 'New York, NY',
-    hiringManager: 'Michael Torres',
-    type: 'vertical',
-    level: 'Manager (M1)',
-    salaryRange: { min: 180000, max: 230000, currency: 'USD' },
-    description:
-      'Manage a team of 6-8 engineers focused on user acquisition and retention features.',
-    requirements: [
-      '3+ years people management',
-      '6+ years software engineering',
-      'Track record of delivering growth features',
-    ],
-    preferredSkills: ['A/B Testing', 'React', 'Python', 'Team Leadership'],
-    openings: 1,
-    postedDate: '2026-02-05',
-    deadline: '2026-03-10',
-    isRemote: false,
-    relocationAssistance: true,
-    matchScore: 78,
-  },
-  {
-    id: 'job-003',
-    title: 'Product Manager — Analytics',
-    department: 'Product',
-    location: 'Austin, TX',
-    hiringManager: 'Lisa Park',
-    type: 'horizontal',
-    level: 'Mid-Senior (P4)',
-    description:
-      'Own the analytics product roadmap including dashboards, reporting, and data visualization.',
-    requirements: [
-      '3+ years product management',
-      'Strong analytical skills',
-      'Experience with data products',
-    ],
-    preferredSkills: ['SQL', 'Tableau', 'User Research', 'Agile'],
-    openings: 1,
-    postedDate: '2026-02-15',
-    deadline: '2026-03-20',
-    isRemote: true,
-    relocationAssistance: false,
-    matchScore: 65,
-  },
-  {
-    id: 'job-004',
-    title: 'Staff Engineer — Security',
-    department: 'Engineering',
-    location: 'Seattle, WA',
-    hiringManager: 'David Kim',
-    type: 'vertical',
-    level: 'Staff (L6)',
-    salaryRange: { min: 200000, max: 260000, currency: 'USD' },
-    description: 'Define and implement security architecture across all platform services.',
-    requirements: [
-      '8+ years engineering',
-      'Security domain expertise',
-      'Experience with SOC2/ISO compliance',
-    ],
-    preferredSkills: ['AppSec', 'Cloud Security', 'Zero Trust', 'Cryptography'],
-    openings: 1,
-    postedDate: '2026-02-18',
-    deadline: '2026-03-25',
-    isRemote: false,
-    relocationAssistance: true,
-    matchScore: 55,
-  },
-  {
-    id: 'job-005',
-    title: 'UX Designer — Mobile',
-    department: 'Design',
-    location: 'Remote',
-    hiringManager: 'Ana Garcia',
-    type: 'horizontal',
-    level: 'Senior (IC4)',
-    description:
-      'Lead mobile app design for iOS and Android platforms with focus on employee self-service.',
-    requirements: ['4+ years UX design', 'Mobile design expertise', 'Strong portfolio'],
-    preferredSkills: ['Figma', 'Prototyping', 'User Testing', 'Design Systems'],
-    openings: 1,
-    postedDate: '2026-02-20',
-    deadline: '2026-03-30',
-    isRemote: true,
-    relocationAssistance: false,
-  },
-];
+function mapType(t: MobilityOpportunity['opportunityType']): InternalJob['type'] {
+  if (t === 'vertical') return 'vertical';
+  if (t === 'lateral') return 'lateral';
+  return 'horizontal';
+}
+
+function mapOpportunity(opp: MobilityOpportunity): InternalJob {
+  return {
+    id: opp.opportunityId,
+    title: opp.jobTitle,
+    department: opp.department,
+    location: opp.location,
+    hiringManager: opp.hiringManager ?? '',
+    type: mapType(opp.opportunityType),
+    level: opp.positionId ?? '',
+    salaryRange: opp.salaryRange
+      ? {
+          min: opp.salaryRange.minimum,
+          max: opp.salaryRange.maximum,
+          currency: opp.salaryRange.currency,
+        }
+      : undefined,
+    description: opp.description ?? '',
+    requirements: (opp.qualifications ?? []).map((q) => q.requirement),
+    preferredSkills: opp.preferredSkills ?? [],
+    openings: opp.numberOfOpenings ?? 1,
+    postedDate: opp.postedDate ? new Date(opp.postedDate).toISOString() : new Date().toISOString(),
+    deadline: opp.applicationDeadline
+      ? new Date(opp.applicationDeadline).toISOString()
+      : new Date().toISOString(),
+    isRemote: /remote/i.test(opp.location ?? ''),
+    relocationAssistance: opp.relocationAssistance ?? false,
+  };
+}
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -199,14 +123,34 @@ export const InternalJobMarketplace: React.FC<InternalJobMarketplaceProps> = ({ 
   const [deptFilter, setDeptFilter] = useState<string>('all');
   const [typeFilter, setTypeFilter] = useState<string>('all');
   const [savedJobs, setSavedJobs] = useState<Set<string>>(new Set());
+  const [allJobs, setAllJobs] = useState<InternalJob[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  const departments = useMemo(() => {
-    const depts = new Set(MOCK_JOBS.map((j) => j.department));
-    return ['all', ...Array.from(depts)];
+  const loadJobs = useCallback(async () => {
+    setLoading(true);
+    try {
+      const opps = await MobilityOpportunityService.getOpenOpportunities();
+      setAllJobs((Array.isArray(opps) ? opps : []).map(mapOpportunity));
+    } catch (error) {
+      console.error('Failed to load internal opportunities', error);
+      toast.error('Failed to load internal opportunities');
+      setAllJobs([]);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
+  useEffect(() => {
+    void loadJobs();
+  }, [loadJobs]);
+
+  const departments = useMemo(() => {
+    const depts = new Set(allJobs.map((j) => j.department));
+    return ['all', ...Array.from(depts)];
+  }, [allJobs]);
+
   const filtered = useMemo(() => {
-    let jobs = MOCK_JOBS;
+    let jobs = allJobs;
     if (search) {
       const q = search.toLowerCase();
       jobs = jobs.filter(
@@ -219,8 +163,8 @@ export const InternalJobMarketplace: React.FC<InternalJobMarketplaceProps> = ({ 
     }
     if (deptFilter !== 'all') jobs = jobs.filter((j) => j.department === deptFilter);
     if (typeFilter !== 'all') jobs = jobs.filter((j) => j.type === typeFilter);
-    return jobs.sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
-  }, [search, deptFilter, typeFilter]);
+    return [...jobs].sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0));
+  }, [allJobs, search, deptFilter, typeFilter]);
 
   const toggleSave = (id: string) => {
     setSavedJobs((prev) => {
@@ -269,9 +213,15 @@ export const InternalJobMarketplace: React.FC<InternalJobMarketplaceProps> = ({ 
       </div>
 
       {/* Results count */}
-      <p className="text-[10px] text-silver-mist">
-        {filtered.length} open position{filtered.length !== 1 ? 's' : ''} found
-      </p>
+      {loading ? (
+        <div className="flex items-center gap-2 text-[10px] text-silver-mist">
+          <Loader2 className="w-3 h-3 animate-spin" /> Loading opportunities...
+        </div>
+      ) : (
+        <p className="text-[10px] text-silver-mist">
+          {filtered.length} open position{filtered.length !== 1 ? 's' : ''} found
+        </p>
+      )}
 
       {/* Job Cards */}
       <div className="space-y-3">

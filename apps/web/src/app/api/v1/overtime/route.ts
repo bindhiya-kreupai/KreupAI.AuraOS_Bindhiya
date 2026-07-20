@@ -7,7 +7,7 @@ import { AuditAction } from '@/lib/audit/audit.service';
 
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user, permissions } = context;
+    const { user, permissions, employeeId: contextEmployeeId } = context;
     if (!permissions.includes('overtime:read')) {
       return NextResponse.json(
         {
@@ -23,9 +23,10 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     }
     const { searchParams } = new URL(request.url);
 
+    const requestedEmployeeId = searchParams.get('employeeId');
     const filter = {
       tenantId: user.tenantId,
-      employeeId: searchParams.get('employeeId') || undefined,
+      employeeId: requestedEmployeeId || contextEmployeeId || undefined,
       status: searchParams.get('status') || undefined,
       overtimeType: searchParams.get('overtimeType') || undefined,
       startDate: searchParams.get('startDate') || undefined,

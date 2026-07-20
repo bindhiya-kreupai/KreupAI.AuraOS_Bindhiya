@@ -122,4 +122,78 @@ describe('attendance regularization API', () => {
       approvedBy: 'user-1',
     });
   });
+
+  it('cancels a pending request owned by the authenticated employee', async () => {
+    prismaMock.attendanceRegularization.findFirst.mockResolvedValue({
+      id: 'reg-3',
+      tenantId: 'tenant-1',
+      employeeId: 'emp-auth-1',
+      status: 'PENDING',
+    });
+    prismaMock.attendanceRegularization.update.mockResolvedValue({
+      id: 'reg-3',
+      status: 'CANCELLED',
+    });
+
+    const request = new NextRequest('http://localhost/api/attendance/regularization', {
+      method: 'POST',
+      body: JSON.stringify({ action: 'cancel', regularizationId: 'reg-3' }),
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    const response = await POST(request as any);
+    const payload = await response.json();
+
+    expect(response.status).toBe(200);
+    expect(prismaMock.attendanceRegularization.update).toHaveBeenCalledWith({
+      where: { id: 'reg-3' },
+      data: expect.objectContaining({ status: 'CANCELLED' }),
+    });
+    expect(payload.data).toMatchObject({ id: 'reg-3', status: 'CANCELLED' });
+  });
+
+  it('rejects cancelling a request owned by another employee (bilingual error)', async () => {
+    prismaMock.attendanceRegularization.findFirst.mockResolvedValue({
+      id: 'reg-4',
+      tenantId: 'tenant-1',
+      employeeId: 'someone-else',
+      status: 'PENDING',
+    });
+
+    const request = new NextRequest('http://localhost/api/attendance/regularization', {
+      method: 'POST',
+      body: JSON.stringify({ action: 'cancel', regularizationId: 'reg-4' }),
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    const response = await POST(request as any);
+    const payload = await response.json();
+
+    expect(response.status).toBe(403);
+    expect(prismaMock.attendanceRegularization.update).not.toHaveBeenCalled();
+    expect(payload.message).toBeTruthy();
+    expect(payload.messageAr).toBeTruthy();
+  });
+
+  it('rejects cancelling a non-pending request', async () => {
+    prismaMock.attendanceRegularization.findFirst.mockResolvedValue({
+      id: 'reg-5',
+      tenantId: 'tenant-1',
+      employeeId: 'emp-auth-1',
+      status: 'APPROVED',
+    });
+
+    const request = new NextRequest('http://localhost/api/attendance/regularization', {
+      method: 'POST',
+      body: JSON.stringify({ action: 'cancel', regularizationId: 'reg-5' }),
+      headers: { 'Content-Type': 'application/json' },
+    });
+
+    const response = await POST(request as any);
+    const payload = await response.json();
+
+    expect(response.status).toBe(409);
+    expect(prismaMock.attendanceRegularization.update).not.toHaveBeenCalled();
+    expect(payload.messageAr).toBeTruthy();
+  });
 });

@@ -109,7 +109,8 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
     const employeeMap = new Map(employees.map((e) => [e.id, `${e.firstName} ${e.lastName}`]));
 
     // Get shift info for break duration requirements
-    const shiftAssignments = await prisma.shiftAssignment.findMany({
+    // Cast: the `shift` relation is not declared on ShiftAssignment in schema.prisma
+    const shiftAssignments = await (prisma as any).shiftAssignment.findMany({
       where: {
         tenantId,
         employeeId: { in: allEmployeeIds },
@@ -117,7 +118,9 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
       },
       include: { shift: true },
     });
-    const shiftMap = new Map(shiftAssignments.map((sa) => [sa.employeeId, sa.shift]));
+    const shiftMap = new Map<string, any>(
+      shiftAssignments.map((sa: any) => [sa.employeeId, sa.shift] as [string, any])
+    );
 
     // Group break punches by employee and date
     const breaksByEmployeeDate = new Map<string, typeof breakPunches>();
@@ -148,7 +151,9 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
 
       // Calculate actual break duration
       let actualBreakMinutes = 0;
-      const sortedPunches = punches.sort((a: any, b: any) => a.punchTime.getTime() - b.punchTime.getTime());
+      const sortedPunches = punches.sort(
+        (a: any, b: any) => a.punchTime.getTime() - b.punchTime.getTime()
+      );
 
       for (let i = 0; i < sortedPunches.length - 1; i += 2) {
         if (

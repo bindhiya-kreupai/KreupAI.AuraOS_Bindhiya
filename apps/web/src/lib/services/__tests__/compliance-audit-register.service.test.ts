@@ -26,6 +26,10 @@ beforeEach(() => {
     update: vi.fn().mockImplementation(async ({ data }: any) => ({ id: 'rsk-1', ...data })),
     count: vi.fn().mockResolvedValue(0),
   };
+  prismaMock.complianceRegisterTimelineEvent = {
+    create: vi.fn().mockImplementation(async ({ data }: any) => ({ id: 'tml-1', ...data })),
+    findMany: vi.fn().mockResolvedValue([]),
+  };
 });
 
 describe('Seeds + supported domains', () => {

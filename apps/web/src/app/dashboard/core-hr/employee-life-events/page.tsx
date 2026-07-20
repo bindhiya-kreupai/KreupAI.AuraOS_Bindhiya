@@ -1,10 +1,8 @@
-// @ts-nocheck — Presentation-layer drift from service signatures / mock-data shapes. Tracked under #29 for proper realignment.
 'use client';
 
 import React, { useState, useEffect } from 'react';
 import {
   Heart,
-  Cake,
   Baby,
   Home,
   Calendar,
@@ -14,6 +12,7 @@ import {
   AlertCircle,
 } from 'lucide-react';
 import { LifeEventService } from '../services';
+import type { LifeEvent } from '../types';
 
 const eventTypeConfig: Record<
   string,
@@ -23,14 +22,19 @@ const eventTypeConfig: Record<
   birth: { icon: Baby, color: 'text-blue-500 bg-blue-50', label: 'Child Birth' },
   adoption: { icon: Baby, color: 'text-purple-500 bg-purple-50', label: 'Adoption' },
   death: { icon: Heart, color: 'text-slate-500 bg-slate-50', label: 'Bereavement' },
+  divorce: { icon: Heart, color: 'text-slate-500 bg-slate-50', label: 'Divorce' },
   relocation: { icon: Home, color: 'text-emerald-500 bg-emerald-50', label: 'Relocation' },
   education: { icon: GraduationCap, color: 'text-amber-500 bg-amber-50', label: 'Education' },
   other: { icon: AlertCircle, color: 'text-slate-500 bg-slate-50', label: 'Other' },
 };
 
-export default function LifeEventsPage() {
-  const [employeeLifeEvents, setEmployeeLifeEvents] = useState<any[]>([]);
+const normalizeStatus = (status: string): string => (status || '').toLowerCase();
+
+export default function EmployeeLifeEventsPage() {
+  const [employeeLifeEvents, setEmployeeLifeEvents] = useState<LifeEvent[]>([]);
   const [loading, setLoading] = useState(true);
+  const [actionState, setActionState] = useState<Record<string, string>>({});
+  const [error, setError] = useState('');
 
   useEffect(() => {
     fetchEmployeeLifeEvents();
@@ -38,44 +42,32 @@ export default function LifeEventsPage() {
 
   const fetchEmployeeLifeEvents = async () => {
     try {
+      setLoading(true);
       const data = await LifeEventService.getAllLifeEvents();
       setEmployeeLifeEvents(data);
-    } catch (error: any) {
-      console.error('Error:', error);
+    } catch (err: any) {
+      console.error('Error:', err);
+      setError('Failed to load life events. Please try again.');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleAction = (id: string, action: 'Approve' | 'Reject') => {
-    setEmployeeLifeEvents((prev) =>
-      prev.map((evt) =>
-        evt.eventId === id
-          ? { ...evt, status: action === 'Approve' ? 'completed' : 'reported' }
-          : evt
-      )
-    );
-  };
-
-  const [wishStatus, setWishStatus] = useState<Record<string, string>>({});
-
-  const handleWish = async (name: string) => {
+  const handleAction = async (id: string, action: 'approve' | 'reject') => {
     try {
-      setWishStatus((prev) => ({ ...prev, [name]: 'sending' }));
-      await LifeEventService.processEvent(name, 'current-user');
-      setWishStatus((prev) => ({ ...prev, [name]: 'Wish sent!' }));
-      setTimeout(
-        () =>
-          setWishStatus((prev) => {
-            const next = { ...prev };
-            delete next[name];
-            return next;
-          }),
-        3000
-      );
-    } catch (error: any) {
-      console.error('Error sending wish:', error);
-      setWishStatus((prev) => ({ ...prev, [name]: 'Failed' }));
+      setError('');
+      setActionState((prev) => ({ ...prev, [id]: action }));
+      await LifeEventService.processEvent(id, action);
+      await fetchEmployeeLifeEvents();
+    } catch (err: any) {
+      console.error(`${action} failed:`, err);
+      setError(`Failed to ${action} the event. Please try again.`);
+    } finally {
+      setActionState((prev) => {
+        const next = { ...prev };
+        delete next[id];
+        return next;
+      });
     }
   };
 
@@ -93,116 +85,97 @@ export default function LifeEventsPage() {
             Employee Life Events
           </h1>
           <p className="text-slate-500 text-sm">
-            Celebrate milestones and manage personal updates.
+            Review and approve reported milestones and personal updates.
           </p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
-        {/* Upcoming Birthdays */}
-        <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
-          <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-            <Cake className="w-5 h-5 text-indigo-500" /> Birthdays (This Month)
-          </h3>
-          <div className="space-y-4">
-            {[
-              { name: 'Alice Cooper', date: 'Dec 12', turn: '32' },
-              { name: 'John Doe', date: 'Dec 15', turn: '29' },
-              { name: 'Emily White', date: 'Dec 24', turn: '41' },
-            ].map((item, i) => (
-              <div key={i} className="flex items-center gap-3 group">
-                <div className="w-10 h-10 rounded-full bg-slate-100 overflow-hidden border border-slate-100 group-hover:border-indigo-400 transition-colors">
-                  <img src={`https://i.pravatar.cc/150?u=${item.name}`} alt={item.name} />
-                </div>
-                <div className="flex-1">
-                  <div className="font-bold text-sm">{item.name}</div>
-                  <div className="text-xs text-slate-500">{item.date}</div>
-                </div>
-                <button
-                  onClick={() => handleWish(item.name)}
-                  disabled={wishStatus[item.name] === 'sending'}
-                  className="text-xs font-bold text-indigo-600 bg-indigo-50 dark:bg-indigo-900/20 px-3 py-1 rounded-full hover:bg-indigo-100 active:scale-95 transition-all disabled:opacity-50"
-                >
-                  {wishStatus[item.name] === 'sending'
-                    ? 'Sending...'
-                    : wishStatus[item.name] === 'Wish sent!'
-                      ? 'Sent!'
-                      : 'Send Wish'}
-                </button>
-              </div>
-            ))}
-          </div>
+      {error && (
+        <div className="rounded-lg border border-rose-200 bg-rose-50 dark:bg-rose-900/20 dark:border-rose-800 px-4 py-2 text-sm text-rose-700 dark:text-rose-300 flex items-center gap-2 shrink-0">
+          <AlertCircle className="w-4 h-4" /> {error}
         </div>
+      )}
 
-        {/* Approvals */}
-        <div className="lg:col-span-2 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
-          <h3 className="font-bold text-lg mb-4">Pending Event Declarations</h3>
-          {loading && (
-            <div className="flex items-center justify-center h-64">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
-            </div>
-          )}
-          {!loading && employeeLifeEvents.length === 0 && (
-            <div className="flex flex-col items-center justify-center h-64 text-slate-400">
-              <Heart className="w-12 h-12 mb-4 opacity-50" />
-              <p className="text-lg font-medium">No life events found</p>
-              <p className="text-sm">Events will appear here once employees report them.</p>
-            </div>
-          )}
-          {!loading && employeeLifeEvents.length > 0 && (
-            <div className="space-y-4">
-              {employeeLifeEvents.map((evt) => {
-                const config = eventTypeConfig[evt.eventType] || eventTypeConfig.other;
-                const IconComponent = config.icon;
-                const isPending = evt.status === 'reported' || evt.status === 'in_progress';
-                return (
-                  <div
-                    key={evt.eventId}
-                    className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-slate-100 dark:border-slate-800 rounded-xl hover:shadow-md transition-shadow gap-3"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className={`p-3 rounded-full ${config.color}`}>
-                        <IconComponent className="w-6 h-6" />
-                      </div>
-                      <div>
-                        <div className="font-bold">{evt.employeeName}</div>
-                        <div className="text-xs text-slate-500 flex items-center gap-1">
-                          {config.label} {evt.description ? `- ${evt.description}` : ''}{' '}
-                          <Calendar className="w-3 h-3" /> {formatDate(evt.eventDate)}
-                        </div>
+      <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6 shadow-sm">
+        <h3 className="font-bold text-lg mb-4">Event Declarations</h3>
+        {loading && (
+          <div className="flex items-center justify-center h-64">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-500"></div>
+          </div>
+        )}
+        {!loading && employeeLifeEvents.length === 0 && (
+          <div className="flex flex-col items-center justify-center h-64 text-slate-400">
+            <Heart className="w-12 h-12 mb-4 opacity-50" />
+            <p className="text-lg font-medium">No life events found</p>
+            <p className="text-sm">Events will appear here once employees report them.</p>
+          </div>
+        )}
+        {!loading && employeeLifeEvents.length > 0 && (
+          <div className="space-y-4">
+            {employeeLifeEvents.map((evt) => {
+              const eventType = normalizeStatus(evt.eventType);
+              const config = eventTypeConfig[eventType] || eventTypeConfig.other;
+              const IconComponent = config.icon;
+              const status = normalizeStatus(evt.status);
+              const isPending =
+                status === 'reported' || status === 'in_progress' || status === 'pending';
+              const busy = actionState[evt.eventId];
+              return (
+                <div
+                  key={evt.eventId}
+                  className="flex flex-col sm:flex-row sm:items-center justify-between p-4 border border-slate-100 dark:border-slate-800 rounded-xl hover:shadow-md transition-shadow gap-3"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className={`p-3 rounded-full ${config.color}`}>
+                      <IconComponent className="w-6 h-6" />
+                    </div>
+                    <div>
+                      <div className="font-bold">{evt.employeeName}</div>
+                      <div className="text-xs text-slate-500 flex items-center gap-1">
+                        {config.label} {evt.description ? `- ${evt.description}` : ''}{' '}
+                        <Calendar className="w-3 h-3" /> {formatDate(evt.eventDate)}
                       </div>
                     </div>
-
-                    {isPending ? (
-                      <div className="flex gap-2">
-                        <button
-                          onClick={() => handleAction(evt.eventId, 'Approve')}
-                          className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold shadow-sm hover:bg-indigo-700 active:scale-95 transition-all flex items-center gap-1"
-                        >
-                          <Check className="w-4 h-4" /> Approve
-                        </button>
-                        <button
-                          onClick={() => handleAction(evt.eventId, 'Reject')}
-                          className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-lg text-sm font-bold hover:bg-slate-200 active:scale-95 transition-all flex items-center gap-1"
-                        >
-                          <XIcon className="w-4 h-4" /> Reject
-                        </button>
-                      </div>
-                    ) : (
-                      <div
-                        className={`px-4 py-2 rounded-lg text-sm font-bold
-                                                ${evt.status === 'completed' ? 'bg-emerald-100 text-emerald-700' : 'bg-rose-100 text-rose-700'}
-                                            `}
-                      >
-                        {evt.status === 'completed' ? 'Approved' : evt.status}
-                      </div>
-                    )}
                   </div>
-                );
-              })}
-            </div>
-          )}
-        </div>
+
+                  {isPending ? (
+                    <div className="flex gap-2">
+                      <button
+                        onClick={() => handleAction(evt.eventId, 'approve')}
+                        disabled={!!busy}
+                        className="px-4 py-2 bg-indigo-600 text-white rounded-lg text-sm font-bold shadow-sm hover:bg-indigo-700 active:scale-95 transition-all flex items-center gap-1 disabled:opacity-50"
+                      >
+                        <Check className="w-4 h-4" />{' '}
+                        {busy === 'approve' ? 'Approving…' : 'Approve'}
+                      </button>
+                      <button
+                        onClick={() => handleAction(evt.eventId, 'reject')}
+                        disabled={!!busy}
+                        className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-lg text-sm font-bold hover:bg-slate-200 active:scale-95 transition-all flex items-center gap-1 disabled:opacity-50"
+                      >
+                        <XIcon className="w-4 h-4" /> {busy === 'reject' ? 'Rejecting…' : 'Reject'}
+                      </button>
+                    </div>
+                  ) : (
+                    <div
+                      className={`px-4 py-2 rounded-lg text-sm font-bold ${
+                        status === 'completed'
+                          ? 'bg-emerald-100 text-emerald-700'
+                          : status === 'rejected'
+                            ? 'bg-rose-100 text-rose-700'
+                            : 'bg-slate-100 text-slate-600'
+                      }`}
+                    >
+                      {status === 'completed'
+                        ? 'Approved'
+                        : status.charAt(0).toUpperCase() + status.slice(1)}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -1,0 +1,200 @@
+[
+  {
+    "id": "AURA-264",
+    "title": "Audit Logs: Wire Export CSV, filters, pagination, and log detail view",
+    "module": "Audit & Security Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/security/audit-logs",
+    "api": "AuditLogService / GET /api/security/audit-logs",
+    "desc": "Connect Export CSV, Apply Filters, Load More Logs, and filter inputs to AuditLogService. Replace inline hardcoded fallback array with proper empty-state handling. Add log detail modal/panel on row click."
+  },
+  {
+    "id": "AURA-265",
+    "title": "Role-based Access: Wire Create Custom Role, Edit, and permission toggles",
+    "module": "Audit & Security Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/security/role-based-access",
+    "api": "RoleService / GET/POST/PUT/DELETE /api/security/roles",
+    "desc": "Connect Create Custom Role and Edit (Edit3 icon) to RoleService create/update. Replace hardcoded PERMISSIONS matrix with API-driven data. Make permission toggles functional via PUT /api/security/roles/:id."
+  },
+  {
+    "id": "AURA-266",
+    "title": "Alert Rules: Replace inline mock with SecurityAlertService and wire CRUD",
+    "module": "Audit & Security Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/security/alert-rules",
+    "api": "SecurityAlertService / GET/POST/PUT /api/security/alerts",
+    "desc": "Page uses inline hardcoded rules array (5 items). Replace with SecurityAlertService.getAll/create/update/delete. Wire Add Rule, Edit, Delete, and status toggle buttons."
+  },
+  {
+    "id": "AURA-267",
+    "title": "Compliance Framework: Implement /api/v1/compliance/* backend routes",
+    "module": "Audit & Security Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/security/compliance",
+    "api": "/api/v1/compliance/frameworks, controls, timeline (missing)",
+    "desc": "ComplianceFrameworkService calls /api/v1/compliance/* but no matching routes exist in repo \u2014 all calls fall back to mock SOC2/ISO controls. Implement frameworks, controls, evidence upload, and test endpoints with Prisma persistence."
+  },
+  {
+    "id": "AURA-268",
+    "title": "Access Governance: Implement /api/v1/access-governance/* backend and wire New Campaign",
+    "module": "Audit & Security Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/security/access-governance",
+    "api": "/api/v1/access-governance/* (missing)",
+    "desc": "AccessGovernanceService calls endpoints that do not exist \u2014 all fall back to in-service mocks. Implement SoD rules, violations, reviews, and matrix APIs. Wire New Campaign and Review buttons."
+  },
+  {
+    "id": "AURA-269",
+    "title": "Policy Acknowledgement: Wire Send Reminders, View Report, and Download per policy",
+    "module": "Audit & Security Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/security/policy-acknowledgement",
+    "api": "None currently \u2014 needs new API",
+    "desc": "Page uses hardcoded stats (92%, 45, 6) and inline policy list. Build API for policy acknowledgement tracking. Wire Send Reminders, View Report, and Download buttons."
+  },
+  {
+    "id": "AURA-270",
+    "title": "Dual Authentication: Wire Save Policies, MFA method selection, and enforcement toggles",
+    "module": "Audit & Security Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/security/dual-authentication",
+    "api": "None currently \u2014 needs MFA policy API",
+    "desc": "Page uses hardcoded MFA stats and static toggle states. Build MFA policy API. Wire Save Policies, MFA method cards, enforcement rule toggles, and View All Users."
+  },
+  {
+    "id": "AURA-271",
+    "title": "Field-level Security: Wire role selection and mask toggles to API",
+    "module": "Audit & Security Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/security/field-level-security",
+    "api": "None currently \u2014 needs new API",
+    "desc": "Role selection buttons are static (HR Manager always 'Editing'). Mask toggles are display-only. Build field-level security config API and wire role switching and mask persistence."
+  },
+  {
+    "id": "AURA-272",
+    "title": "GDPR Tools: Wire New DSAR Request, View, Anonymize, and consent toggles",
+    "module": "Audit & Security Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/security/gdpr-tools",
+    "api": "None currently \u2014 needs DSAR/consent API",
+    "desc": "Page uses hardcoded DSAR list and static consent manager. Build DSAR/consent APIs. Wire New DSAR Request, View per request, consent toggles, and Anonymize User Data."
+  },
+  {
+    "id": "AURA-273",
+    "title": "Data Retention: Wire Update Policies and Reset per policy",
+    "module": "Audit & Security Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/security/data-retention",
+    "api": "None currently \u2014 needs retention policy API",
+    "desc": "Page uses inline retention policy array and hardcoded storage stats. Build data retention policy API. Wire Update Policies and Reset (RotateCcw) per policy."
+  },
+  {
+    "id": "AURA-274",
+    "title": "Compliance Tracker: Wire View Evidence, Manage Compliance, and Certificate Details",
+    "module": "Audit & Security Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/security/compliance-tracker",
+    "api": "None currently \u2014 static mock cards",
+    "desc": "Page uses hardcoded SOC2/GDPR/ISO cards separate from /security/compliance enterprise page. Wire action buttons or consolidate with compliance framework page."
+  },
+  {
+    "id": "AURA-275",
+    "title": "Document Access Logs: Implement search and action filter functionality",
+    "module": "Audit & Security Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/security/document-access-logs",
+    "api": "None currently \u2014 needs document access log API",
+    "desc": "Search input is uncontrolled with no filter logic. All Actions / Viewed / Downloaded / Printed filter buttons have no handlers. Build document access log API and wire filters."
+  },
+  {
+    "id": "AURA-276",
+    "title": "Login Logs: Build login logs API and replace hardcoded session table",
+    "module": "Audit & Security Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/security/login-logs",
+    "api": "None currently \u2014 needs login logs API",
+    "desc": "Page uses hardcoded summary stats and inline session table (5 rows). Implement login/session audit API and wire live data."
+  },
+  {
+    "id": "AURA-277",
+    "title": "Approval Logs: Build approval logs API and replace hardcoded table",
+    "module": "Audit & Security Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/security/approval-logs",
+    "api": "None currently \u2014 needs approval logs API",
+    "desc": "Page uses inline hardcoded table rows (6 items). Implement approval audit log API backed by workflow/approval engine data."
+  },
+  {
+    "id": "AURA-278",
+    "title": "Security Settings: Build settings admin page using SecuritySettingsService",
+    "module": "Audit & Security Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/security",
+    "api": "SecuritySettingsService / GET/PUT /api/security/settings",
+    "desc": "SecuritySettingsService (GET/PUT /api/security/settings) exists but no page imports it. Build security settings admin UI and wire to existing API."
+  },
+  {
+    "id": "AURA-279",
+    "title": "Orphaned Hook: Wire useSecurity hook to pages or remove dead code",
+    "module": "Audit & Security Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "apps/web/src/app/dashboard/security/hooks/useSecurity.ts",
+    "api": "useSecurity hook + data.ts sample seeds",
+    "desc": "useSecurity loads all four services and seeds data.ts samples when API returns empty, but is never imported by any page. Either wire into a security dashboard or remove."
+  },
+  {
+    "id": "AURA-280",
+    "title": "Module Route: Replace module placeholder with dashboard hub link or embed",
+    "module": "Audit & Security Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/audit-security",
+    "api": "N/A \u2014 routing/IA fix",
+    "desc": "(modules)/audit-security renders ModulePage with isImplemented=false while full dashboard hub exists at /dashboard/security. Replace placeholder with redirect or embed of /dashboard/security."
+  },
+  {
+    "id": "AURA-281",
+    "title": "Duplicate Pages: Deduplicate compliance, GDPR, audit-trail, and policy-ack pages",
+    "module": "Audit & Security Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "Multiple (/security/* vs /dashboard/compliance/*)",
+    "api": "N/A \u2014 IA/consolidation",
+    "desc": "Overlapping pages exist across security and compliance modules (GDPR tools, policy acknowledgement, audit trail, compliance tracker). Consolidate or clearly differentiate scope."
+  }
+]

@@ -6,11 +6,7 @@ export type RecommendationStatus = 'OPEN' | 'ACCEPTED' | 'DISMISSED' | 'EXPIRED'
 export type RecommendationPriority = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 
 export type RecommendationCategory =
-  | 'ATTRITION_INTERVENTION'
-  | 'LEARNING_PATH'
-  | 'INTERNAL_MOBILITY'
-  | 'TASK_AUTOMATION'
-  | 'INSIGHT';
+  'ATTRITION_INTERVENTION' | 'LEARNING_PATH' | 'INTERNAL_MOBILITY' | 'TASK_AUTOMATION' | 'INSIGHT';
 
 const STATUS_TRANSITIONS: Record<RecommendationStatus, RecommendationStatus[]> = {
   OPEN: ['ACCEPTED', 'DISMISSED', 'EXPIRED'],
@@ -51,7 +47,7 @@ export class AIRecommendationService extends BaseService {
     generatingModelCardId?: string;
     expiresAt?: Date;
   }) {
-    return prisma.aIRecommendation.create({
+    return (prisma as any).aIRecommendation.create({
       data: {
         tenantId: input.tenantId,
         category: input.category,
@@ -72,7 +68,7 @@ export class AIRecommendationService extends BaseService {
     const existing = await this.assertExists(id, tenantId);
     if (!existing) return null;
     this.assertTransition(existing.status as RecommendationStatus, 'ACCEPTED');
-    return prisma.aIRecommendation.update({
+    return (prisma as any).aIRecommendation.update({
       where: { id },
       data: { status: 'ACCEPTED', acceptedAt: new Date(), acceptedById },
     });
@@ -82,7 +78,7 @@ export class AIRecommendationService extends BaseService {
     const existing = await this.assertExists(id, tenantId);
     if (!existing) return null;
     this.assertTransition(existing.status as RecommendationStatus, 'DISMISSED');
-    return prisma.aIRecommendation.update({
+    return (prisma as any).aIRecommendation.update({
       where: { id },
       data: {
         status: 'DISMISSED',
@@ -98,7 +94,7 @@ export class AIRecommendationService extends BaseService {
    * Returns the count of updated rows for the job log.
    */
   async expireDue(tenantId: string): Promise<number> {
-    const result = await prisma.aIRecommendation.updateMany({
+    const result = await (prisma as any).aIRecommendation.updateMany({
       where: {
         tenantId,
         status: 'OPEN',
@@ -132,19 +128,19 @@ export class AIRecommendationService extends BaseService {
     if (params.status) where.status = params.status;
     if (params.priority) where.priority = params.priority;
     const [items, total] = await Promise.all([
-      prisma.aIRecommendation.findMany({
+      (prisma as any).aIRecommendation.findMany({
         where,
         orderBy: [{ priority: 'desc' }, { createdAt: 'desc' }],
         skip,
         take: limit,
       }),
-      prisma.aIRecommendation.count({ where }),
+      (prisma as any).aIRecommendation.count({ where }),
     ]);
     return { items, total, page, pageSize: limit, hasNextPage: skip + items.length < total };
   }
 
   private async assertExists(id: string, tenantId: string) {
-    return prisma.aIRecommendation.findFirst({
+    return (prisma as any).aIRecommendation.findFirst({
       where: { id, tenantId, isDeleted: false },
     });
   }

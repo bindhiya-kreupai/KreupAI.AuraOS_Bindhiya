@@ -1,0 +1,145 @@
+[
+  {
+    "id": "AURA-425",
+    "title": "Approval Templates: Complete API integration and remove mock/local fallbacks",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hrms-config/approval-templates",
+    "api": "/api/v1/hrms-config/approval-templates",
+    "desc": "Page calls APIs (/api/v1/hrms-config/approval-templates) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-426",
+    "title": "Approval Workflow Templates: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hrms-config/approval-workflow-templates",
+    "api": "Not specified",
+    "desc": "Menu feature 'Approval Workflow Templates' resolves to /dashboard/hrms-config/approval-workflow-templates but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-427",
+    "title": "Audit Settings: Complete API integration and remove mock/local fallbacks",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hrms-config/audit-settings",
+    "api": "/api/v1/hrms-config/audit-settings",
+    "desc": "Page calls APIs (/api/v1/hrms-config/audit-settings) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-428",
+    "title": "Audit Trail Capture Policy per Domain: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hrms-config/audit-trail-capture-policy-per-domain",
+    "api": "Not specified",
+    "desc": "Menu feature 'Audit Trail Capture Policy per Domain' resolves to /dashboard/hrms-config/audit-trail-capture-policy-per-domain but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-429",
+    "title": "Config Objects: Complete API integration and remove mock/local fallbacks",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hrms-config/config-objects",
+    "api": "/api/v1/hrms-config/config-objects, /api/v1/hrms-config/workspaces",
+    "desc": "Page calls APIs (/api/v1/hrms-config/config-objects, /api/v1/hrms-config/workspaces) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-430",
+    "title": "Config Objects Registry \u00b7 Maker-Checker (21 domains): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hrms-config/config-objects-registry-maker-checker-21-domains",
+    "api": "Not specified",
+    "desc": "Menu feature 'Config Objects Registry \u00b7 Maker-Checker (21 domains)' resolves to /dashboard/hrms-config/config-objects-registry-maker-checker-21-domains but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-431",
+    "title": "Data Migration Plans \u00b7 Run Validation: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hrms-config/data-migration-plans-run-validation",
+    "api": "Not specified",
+    "desc": "Menu feature 'Data Migration Plans \u00b7 Run Validation' resolves to /dashboard/hrms-config/data-migration-plans-run-validation but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-432",
+    "title": "Integration Connectors \u00b7 Health + Secret Rotation: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hrms-config/integration-connectors-health-secret-rotation",
+    "api": "Not specified",
+    "desc": "Menu feature 'Integration Connectors \u00b7 Health + Secret Rotation' resolves to /dashboard/hrms-config/integration-connectors-health-secret-rotation but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-433",
+    "title": "Monthly + Go-Live Certificate (with gating): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hrms-config/monthly-go-live-certificate-with-gating",
+    "api": "Not specified",
+    "desc": "Menu feature 'Monthly + Go-Live Certificate (with gating)' resolves to /dashboard/hrms-config/monthly-go-live-certificate-with-gating but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-434",
+    "title": "Notification Rules: Complete API integration and remove mock/local fallbacks",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hrms-config/notification-rules",
+    "api": "/api/v1/hrms-config/notification-rules",
+    "desc": "Page calls APIs (/api/v1/hrms-config/notification-rules) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-435",
+    "title": "Notification Rules (multi-channel, bilingual): Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hrms-config/notification-rules-multi-channel-bilingual",
+    "api": "Not specified",
+    "desc": "Menu feature 'Notification Rules (multi-channel, bilingual)' resolves to /dashboard/hrms-config/notification-rules-multi-channel-bilingual but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  },
+  {
+    "id": "AURA-436",
+    "title": "Rule Sets: Complete API integration and remove mock/local fallbacks",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hrms-config/rule-sets",
+    "api": "/api/v1/hrms-config/rule-sets",
+    "desc": "Page calls APIs (/api/v1/hrms-config/rule-sets) but mock/hardcoded UI remains."
+  },
+  {
+    "id": "AURA-437",
+    "title": "Versioned Country Rule Sets: Create feature page or link from module hub",
+    "module": "GCC Compliance Module",
+    "status": "Not Started",
+    "assignee": "Unassigned",
+    "due": "Not specified",
+    "route": "/dashboard/hrms-config/versioned-country-rule-sets",
+    "api": "Not specified",
+    "desc": "Menu feature 'Versioned Country Rule Sets' resolves to /dashboard/hrms-config/versioned-country-rule-sets but no page.tsx exists. Module hub exists at /dashboard/gcc-landscape; add route or ModuleGrid tile."
+  }
+]

@@ -182,581 +182,6 @@ const buildFrameworkPayload = (
   };
 };
 
-// --- MOCK DATA ---
-
-const _PROFICIENCY_FRAMEWORKS: ProficiencyFramework[] = [
-  {
-    id: 'FW-001',
-    name: 'Standard 5-Level Framework',
-    description:
-      'The default organizational proficiency framework applicable to most competencies. Provides a clear progression path from foundational knowledge to expert mastery.',
-    type: 'Standard',
-    applicableCategories: ['Behavioral', 'Core', 'Functional'],
-    createdDate: '2024-01-15',
-    lastModified: '2025-10-22',
-    owner: 'People & Culture',
-    usageCount: 156,
-    isLocked: true,
-    levels: [
-      {
-        id: 'LVL-001',
-        levelNumber: 1,
-        name: 'Foundational',
-        shortName: 'L1',
-        description:
-          'Entry-level understanding with basic awareness of concepts. Requires guidance and supervision for most tasks. Learning and developing fundamental skills.',
-        color: 'text-slate-600',
-        bgColor: 'bg-slate-100 dark:bg-slate-800',
-        borderColor: 'border-slate-300 dark:border-slate-600',
-        icon: <GraduationCap className="w-5 h-5" />,
-        status: 'Active',
-        isDefault: true,
-        expectedTimeToAchieve: '0-6 months',
-        behavioralIndicators: [
-          {
-            id: 'BI-001',
-            description: 'Demonstrates basic understanding of concepts and terminology',
-            category: 'Knowledge',
-          },
-          {
-            id: 'BI-002',
-            description: 'Follows established procedures with guidance',
-            category: 'Skills',
-          },
-          {
-            id: 'BI-003',
-            description: 'Asks questions to clarify understanding',
-            category: 'Behavior',
-          },
-          {
-            id: 'BI-004',
-            description: 'Completes routine tasks with supervision',
-            category: 'Output',
-          },
-        ],
-        assessmentCriteria: [
-          'Can explain basic concepts in own words',
-          'Successfully completes guided exercises',
-          'Demonstrates eagerness to learn',
-          'Seeks help appropriately',
-        ],
-        developmentFocus: [
-          'Foundational training courses',
-          'Job shadowing',
-          'Mentorship pairing',
-          'Basic certification programs',
-        ],
-        typicalRoles: ['Intern', 'Graduate', 'Junior Associate', 'Entry-Level'],
-        nextLevelTransition:
-          'Demonstrate ability to work independently on routine tasks with minimal errors.',
-      },
-      {
-        id: 'LVL-002',
-        levelNumber: 2,
-        name: 'Developing',
-        shortName: 'L2',
-        description:
-          'Growing competence with ability to handle routine situations independently. Developing deeper understanding and beginning to apply knowledge in practical contexts.',
-        color: 'text-blue-600',
-        bgColor: 'bg-blue-100 dark:bg-blue-900/30',
-        borderColor: 'border-blue-300 dark:border-blue-700',
-        icon: <TrendingUp className="w-5 h-5" />,
-        status: 'Active',
-        isDefault: true,
-        expectedTimeToAchieve: '6-18 months',
-        behavioralIndicators: [
-          {
-            id: 'BI-005',
-            description: 'Applies knowledge independently in familiar situations',
-            category: 'Knowledge',
-          },
-          {
-            id: 'BI-006',
-            description: 'Handles routine tasks with consistent quality',
-            category: 'Skills',
-          },
-          {
-            id: 'BI-007',
-            description: 'Takes initiative to solve problems within scope',
-            category: 'Behavior',
-          },
-          {
-            id: 'BI-008',
-            description: 'Delivers work that meets quality standards',
-            category: 'Output',
-          },
-        ],
-        assessmentCriteria: [
-          'Completes assignments independently',
-          'Identifies issues and proposes solutions',
-          'Meets deadlines consistently',
-          'Receives positive peer feedback',
-        ],
-        developmentFocus: [
-          'Intermediate skill workshops',
-          'Project-based learning',
-          'Cross-functional exposure',
-          'Professional certifications',
-        ],
-        typicalRoles: ['Associate', 'Analyst', 'Specialist I', 'Coordinator'],
-        nextLevelTransition:
-          'Show consistent excellence in independent work and begin mentoring others.',
-      },
-      {
-        id: 'LVL-003',
-        levelNumber: 3,
-        name: 'Proficient',
-        shortName: 'L3',
-        description:
-          'Solid expertise with ability to handle complex situations. Acts as a reliable resource for others and consistently delivers high-quality outcomes.',
-        color: 'text-indigo-600',
-        bgColor: 'bg-indigo-100 dark:bg-indigo-900/30',
-        borderColor: 'border-indigo-300 dark:border-indigo-700',
-        icon: <Target className="w-5 h-5" />,
-        status: 'Active',
-        isDefault: true,
-        expectedTimeToAchieve: '18-36 months',
-        behavioralIndicators: [
-          {
-            id: 'BI-009',
-            description: 'Deep understanding across the full domain',
-            category: 'Knowledge',
-          },
-          {
-            id: 'BI-010',
-            description: 'Handles complex challenges with confidence',
-            category: 'Skills',
-          },
-          {
-            id: 'BI-011',
-            description: 'Mentors and guides less experienced colleagues',
-            category: 'Behavior',
-          },
-          {
-            id: 'BI-012',
-            description: 'Consistently exceeds quality expectations',
-            category: 'Output',
-          },
-        ],
-        assessmentCriteria: [
-          'Manages complex projects successfully',
-          'Recognized as go-to person in area',
-          'Provides guidance to team members',
-          'Drives process improvements',
-        ],
-        developmentFocus: [
-          'Advanced training programs',
-          'Leadership development',
-          'Strategic project assignments',
-          'Industry conferences',
-        ],
-        typicalRoles: ['Senior Analyst', 'Specialist II', 'Team Lead', 'Senior Associate'],
-        nextLevelTransition:
-          'Lead strategic initiatives and influence practices beyond immediate team.',
-      },
-      {
-        id: 'LVL-004',
-        levelNumber: 4,
-        name: 'Advanced',
-        shortName: 'L4',
-        description:
-          'Expert-level mastery with strategic impact. Shapes practices, leads significant initiatives, and influences direction within the organization.',
-        color: 'text-purple-600',
-        bgColor: 'bg-purple-100 dark:bg-purple-900/30',
-        borderColor: 'border-purple-300 dark:border-purple-700',
-        icon: <Award className="w-5 h-5" />,
-        status: 'Active',
-        isDefault: true,
-        expectedTimeToAchieve: '3-5 years',
-        behavioralIndicators: [
-          {
-            id: 'BI-013',
-            description: 'Recognized subject matter expert internally',
-            category: 'Knowledge',
-          },
-          { id: 'BI-014', description: 'Solves novel, ambiguous challenges', category: 'Skills' },
-          {
-            id: 'BI-015',
-            description: 'Drives organizational change initiatives',
-            category: 'Behavior',
-          },
-          {
-            id: 'BI-016',
-            description: 'Delivers strategic impact and innovation',
-            category: 'Output',
-          },
-        ],
-        assessmentCriteria: [
-          'Leads cross-functional initiatives',
-          'Influences organizational practices',
-          'Develops other high performers',
-          'Achieves measurable strategic outcomes',
-        ],
-        developmentFocus: [
-          'Executive education programs',
-          'External thought leadership',
-          'Strategic mentoring',
-          'Board/committee participation',
-        ],
-        typicalRoles: ['Manager', 'Principal', 'Senior Specialist', 'Director'],
-        nextLevelTransition: 'Achieve external recognition and shape industry practices.',
-      },
-      {
-        id: 'LVL-005',
-        levelNumber: 5,
-        name: 'Expert',
-        shortName: 'L5',
-        description:
-          'World-class mastery with industry-wide influence. Sets standards, drives innovation, and is recognized as a thought leader in the field.',
-        color: 'text-emerald-600',
-        bgColor: 'bg-emerald-100 dark:bg-emerald-900/30',
-        borderColor: 'border-emerald-300 dark:border-emerald-700',
-        icon: <Sparkles className="w-5 h-5" />,
-        status: 'Active',
-        isDefault: true,
-        expectedTimeToAchieve: '5+ years',
-        behavioralIndicators: [
-          {
-            id: 'BI-017',
-            description: 'Recognized thought leader externally',
-            category: 'Knowledge',
-          },
-          { id: 'BI-018', description: 'Pioneers innovative approaches', category: 'Skills' },
-          {
-            id: 'BI-019',
-            description: 'Shapes industry standards and practices',
-            category: 'Behavior',
-          },
-          {
-            id: 'BI-020',
-            description: 'Creates lasting organizational transformation',
-            category: 'Output',
-          },
-        ],
-        assessmentCriteria: [
-          'Published thought leadership content',
-          'Invited speaker at industry events',
-          'Mentors senior leaders',
-          'Drives industry-wide change',
-        ],
-        developmentFocus: [
-          'External advisory roles',
-          'Publishing and speaking',
-          'Executive coaching',
-          'Board positions',
-        ],
-        typicalRoles: ['VP', 'Fellow', 'Chief Officer', 'Distinguished Expert'],
-        nextLevelTransition:
-          'Continue expanding influence and developing next generation of experts.',
-      },
-    ],
-  },
-  {
-    id: 'FW-002',
-    name: 'Technical Proficiency Scale',
-    description:
-      'Specialized framework for technical and engineering competencies with emphasis on hands-on skills, code quality, and system design capabilities.',
-    type: 'Technical',
-    applicableCategories: ['Technical', 'Engineering'],
-    createdDate: '2024-03-10',
-    lastModified: '2025-11-15',
-    owner: 'Engineering Excellence',
-    usageCount: 89,
-    isLocked: false,
-    levels: [
-      {
-        id: 'TECH-LVL-001',
-        levelNumber: 1,
-        name: 'Beginner',
-        shortName: 'T1',
-        description:
-          'Learning fundamentals with close supervision. Can complete simple tasks following detailed instructions.',
-        color: 'text-slate-600',
-        bgColor: 'bg-slate-100 dark:bg-slate-800',
-        borderColor: 'border-slate-300 dark:border-slate-600',
-        icon: <BookOpen className="w-5 h-5" />,
-        status: 'Active',
-        isDefault: true,
-        expectedTimeToAchieve: '0-6 months',
-        behavioralIndicators: [
-          {
-            id: 'TBI-001',
-            description: 'Understands basic syntax and concepts',
-            category: 'Knowledge',
-          },
-          { id: 'TBI-002', description: 'Writes simple code with guidance', category: 'Skills' },
-          { id: 'TBI-003', description: 'Follows coding standards', category: 'Behavior' },
-          { id: 'TBI-004', description: 'Completes assigned learning modules', category: 'Output' },
-        ],
-        assessmentCriteria: [
-          'Passes technical fundamentals assessment',
-          'Completes onboarding projects',
-        ],
-        developmentFocus: ['Bootcamps', 'Pair programming', 'Code reviews'],
-        typicalRoles: ['Intern', 'Graduate Engineer'],
-        nextLevelTransition: 'Independently complete feature development with code review.',
-      },
-      {
-        id: 'TECH-LVL-002',
-        levelNumber: 2,
-        name: 'Intermediate',
-        shortName: 'T2',
-        description:
-          'Works independently on medium complexity tasks. Understands best practices and contributes to code reviews.',
-        color: 'text-blue-600',
-        bgColor: 'bg-blue-100 dark:bg-blue-900/30',
-        borderColor: 'border-blue-300 dark:border-blue-700',
-        icon: <Zap className="w-5 h-5" />,
-        status: 'Active',
-        isDefault: true,
-        expectedTimeToAchieve: '6-24 months',
-        behavioralIndicators: [
-          { id: 'TBI-005', description: 'Solid grasp of design patterns', category: 'Knowledge' },
-          { id: 'TBI-006', description: 'Debugs complex issues', category: 'Skills' },
-          {
-            id: 'TBI-007',
-            description: 'Participates actively in code reviews',
-            category: 'Behavior',
-          },
-          { id: 'TBI-008', description: 'Delivers features end-to-end', category: 'Output' },
-        ],
-        assessmentCriteria: [
-          'Completes features independently',
-          'Provides valuable code review feedback',
-        ],
-        developmentFocus: ['System design courses', 'Open source contribution'],
-        typicalRoles: ['Software Engineer', 'Engineer I'],
-        nextLevelTransition: 'Lead technical design of complex features.',
-      },
-      {
-        id: 'TECH-LVL-003',
-        levelNumber: 3,
-        name: 'Senior',
-        shortName: 'T3',
-        description:
-          'Technical leader who designs solutions, mentors others, and drives quality across the team.',
-        color: 'text-indigo-600',
-        bgColor: 'bg-indigo-100 dark:bg-indigo-900/30',
-        borderColor: 'border-indigo-300 dark:border-indigo-700',
-        icon: <Shield className="w-5 h-5" />,
-        status: 'Active',
-        isDefault: true,
-        expectedTimeToAchieve: '2-4 years',
-        behavioralIndicators: [
-          {
-            id: 'TBI-009',
-            description: 'Expert in multiple technical domains',
-            category: 'Knowledge',
-          },
-          { id: 'TBI-010', description: 'Designs scalable systems', category: 'Skills' },
-          { id: 'TBI-011', description: 'Mentors junior engineers', category: 'Behavior' },
-          { id: 'TBI-012', description: 'Owns critical system components', category: 'Output' },
-        ],
-        assessmentCriteria: ['Designs and implements major features', 'Improves team productivity'],
-        developmentFocus: ['Architecture workshops', 'Tech talks'],
-        typicalRoles: ['Senior Engineer', 'Engineer II'],
-        nextLevelTransition: 'Drive technical strategy across multiple teams.',
-      },
-      {
-        id: 'TECH-LVL-004',
-        levelNumber: 4,
-        name: 'Staff',
-        shortName: 'T4',
-        description:
-          'Sets technical direction for multiple teams. Solves the hardest problems and influences engineering culture.',
-        color: 'text-purple-600',
-        bgColor: 'bg-purple-100 dark:bg-purple-900/30',
-        borderColor: 'border-purple-300 dark:border-purple-700',
-        icon: <Star className="w-5 h-5" />,
-        status: 'Active',
-        isDefault: true,
-        expectedTimeToAchieve: '4-7 years',
-        behavioralIndicators: [
-          {
-            id: 'TBI-013',
-            description: 'Deep expertise across entire tech stack',
-            category: 'Knowledge',
-          },
-          { id: 'TBI-014', description: 'Solves ambiguous, critical problems', category: 'Skills' },
-          { id: 'TBI-015', description: 'Defines engineering standards', category: 'Behavior' },
-          {
-            id: 'TBI-016',
-            description: 'Delivers high-impact technical initiatives',
-            category: 'Output',
-          },
-        ],
-        assessmentCriteria: ['Leads architecture decisions', 'Impacts multiple team roadmaps'],
-        developmentFocus: ['External conferences', 'Technical writing'],
-        typicalRoles: ['Staff Engineer', 'Tech Lead'],
-        nextLevelTransition: 'Shape company-wide technical vision.',
-      },
-      {
-        id: 'TECH-LVL-005',
-        levelNumber: 5,
-        name: 'Principal',
-        shortName: 'T5',
-        description:
-          'Industry-recognized expert who shapes company-wide technical vision and influences the broader tech community.',
-        color: 'text-emerald-600',
-        bgColor: 'bg-emerald-100 dark:bg-emerald-900/30',
-        borderColor: 'border-emerald-300 dark:border-emerald-700',
-        icon: <Sparkles className="w-5 h-5" />,
-        status: 'Active',
-        isDefault: true,
-        expectedTimeToAchieve: '7+ years',
-        behavioralIndicators: [
-          { id: 'TBI-017', description: 'Industry thought leader', category: 'Knowledge' },
-          { id: 'TBI-018', description: 'Pioneers new technologies', category: 'Skills' },
-          { id: 'TBI-019', description: 'Represents company externally', category: 'Behavior' },
-          {
-            id: 'TBI-020',
-            description: 'Drives strategic technical decisions',
-            category: 'Output',
-          },
-        ],
-        assessmentCriteria: ['External recognition', 'Company-wide technical impact'],
-        developmentFocus: ['Advisory boards', 'Patent development'],
-        typicalRoles: ['Principal Engineer', 'Distinguished Engineer', 'Fellow'],
-        nextLevelTransition: 'Continue expanding industry influence.',
-      },
-    ],
-  },
-  {
-    id: 'FW-003',
-    name: 'Leadership Competency Scale',
-    description:
-      'Framework designed for leadership and people management competencies, focusing on team development, strategic thinking, and organizational impact.',
-    type: 'Leadership',
-    applicableCategories: ['Leadership', 'Management'],
-    createdDate: '2024-02-20',
-    lastModified: '2025-09-30',
-    owner: 'Leadership Development',
-    usageCount: 67,
-    isLocked: false,
-    levels: [
-      {
-        id: 'LEAD-LVL-001',
-        levelNumber: 1,
-        name: 'Emerging Leader',
-        shortName: 'M1',
-        description:
-          'Developing leadership potential. Beginning to influence peers and demonstrate leadership behaviors.',
-        color: 'text-slate-600',
-        bgColor: 'bg-slate-100 dark:bg-slate-800',
-        borderColor: 'border-slate-300 dark:border-slate-600',
-        icon: <GraduationCap className="w-5 h-5" />,
-        status: 'Active',
-        isDefault: true,
-        expectedTimeToAchieve: '0-12 months',
-        behavioralIndicators: [
-          { id: 'LBI-001', description: 'Shows initiative in team settings', category: 'Behavior' },
-          { id: 'LBI-002', description: 'Supports team collaboration', category: 'Skills' },
-        ],
-        assessmentCriteria: ['Positive peer feedback', 'Takes on stretch assignments'],
-        developmentFocus: ['First-time leader workshops', 'Coaching skills'],
-        typicalRoles: ['Individual Contributor', 'Project Lead'],
-        nextLevelTransition: 'Successfully lead a small team or project.',
-      },
-      {
-        id: 'LEAD-LVL-002',
-        levelNumber: 2,
-        name: 'Team Leader',
-        shortName: 'M2',
-        description:
-          'Manages a small team directly. Focuses on execution, team development, and achieving operational goals.',
-        color: 'text-blue-600',
-        bgColor: 'bg-blue-100 dark:bg-blue-900/30',
-        borderColor: 'border-blue-300 dark:border-blue-700',
-        icon: <Users className="w-5 h-5" />,
-        status: 'Active',
-        isDefault: true,
-        expectedTimeToAchieve: '1-2 years',
-        behavioralIndicators: [
-          { id: 'LBI-003', description: 'Effectively delegates work', category: 'Skills' },
-          { id: 'LBI-004', description: 'Provides regular feedback', category: 'Behavior' },
-        ],
-        assessmentCriteria: ['Team engagement scores', 'Goal achievement'],
-        developmentFocus: ['People management training', 'Performance coaching'],
-        typicalRoles: ['Team Lead', 'Supervisor', 'Manager'],
-        nextLevelTransition: 'Develop other leaders and manage larger scope.',
-      },
-      {
-        id: 'LEAD-LVL-003',
-        levelNumber: 3,
-        name: 'Department Leader',
-        shortName: 'M3',
-        description:
-          'Manages managers or a large team. Balances operational excellence with strategic thinking.',
-        color: 'text-indigo-600',
-        bgColor: 'bg-indigo-100 dark:bg-indigo-900/30',
-        borderColor: 'border-indigo-300 dark:border-indigo-700',
-        icon: <Target className="w-5 h-5" />,
-        status: 'Active',
-        isDefault: true,
-        expectedTimeToAchieve: '2-4 years',
-        behavioralIndicators: [
-          { id: 'LBI-005', description: 'Develops leadership pipeline', category: 'Behavior' },
-          { id: 'LBI-006', description: 'Drives departmental strategy', category: 'Skills' },
-        ],
-        assessmentCriteria: ['Manager effectiveness', 'Department performance'],
-        developmentFocus: ['Strategic leadership', 'Change management'],
-        typicalRoles: ['Senior Manager', 'Director'],
-        nextLevelTransition: 'Lead cross-functional initiatives with organizational impact.',
-      },
-      {
-        id: 'LEAD-LVL-004',
-        levelNumber: 4,
-        name: 'Organizational Leader',
-        shortName: 'M4',
-        description:
-          'Leads across functions with significant organizational impact. Shapes culture and drives transformation.',
-        color: 'text-purple-600',
-        bgColor: 'bg-purple-100 dark:bg-purple-900/30',
-        borderColor: 'border-purple-300 dark:border-purple-700',
-        icon: <Award className="w-5 h-5" />,
-        status: 'Active',
-        isDefault: true,
-        expectedTimeToAchieve: '4-7 years',
-        behavioralIndicators: [
-          { id: 'LBI-007', description: 'Drives organizational change', category: 'Behavior' },
-          {
-            id: 'LBI-008',
-            description: 'Builds high-performing organizations',
-            category: 'Output',
-          },
-        ],
-        assessmentCriteria: ['Organizational health metrics', 'Strategic initiative success'],
-        developmentFocus: ['Executive education', 'Board exposure'],
-        typicalRoles: ['VP', 'Senior Director'],
-        nextLevelTransition: 'Shape enterprise strategy and external partnerships.',
-      },
-      {
-        id: 'LEAD-LVL-005',
-        levelNumber: 5,
-        name: 'Enterprise Leader',
-        shortName: 'M5',
-        description:
-          'C-suite executive who sets enterprise direction, represents the organization externally, and drives long-term success.',
-        color: 'text-emerald-600',
-        bgColor: 'bg-emerald-100 dark:bg-emerald-900/30',
-        borderColor: 'border-emerald-300 dark:border-emerald-700',
-        icon: <Sparkles className="w-5 h-5" />,
-        status: 'Active',
-        isDefault: true,
-        expectedTimeToAchieve: '7+ years',
-        behavioralIndicators: [
-          { id: 'LBI-009', description: 'Sets enterprise vision', category: 'Behavior' },
-          { id: 'LBI-010', description: 'Shapes industry direction', category: 'Output' },
-        ],
-        assessmentCriteria: ['Business performance', 'Stakeholder confidence'],
-        developmentFocus: ['CEO peer networks', 'Governance training'],
-        typicalRoles: ['C-Suite', 'President', 'General Manager'],
-        nextLevelTransition: 'Legacy building and succession planning.',
-      },
-    ],
-  },
-];
-
 const getFrameworkType = (
   framework: Pick<ApiProficiencyFramework, 'type' | 'name' | 'description'>
 ): ProficiencyFramework['type'] => {
@@ -1084,6 +509,8 @@ export default function ProficiencyLevelsPage() {
   );
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   // Fetch frameworks from API on mount
   const fetchFrameworks = useCallback(async () => {
@@ -1269,22 +696,24 @@ export default function ProficiencyLevelsPage() {
     }
   };
 
-  const handleDeleteFramework = async (id: string) => {
+  const requestDeleteFramework = (id: string) => {
     const framework = frameworks.find((f) => f.id === id);
     if (framework?.isLocked) {
-      alert('This framework is locked and cannot be deleted.');
+      setNotice('This framework is locked and cannot be deleted.');
       return;
     }
-    if (confirm('Are you sure you want to delete this framework?')) {
-      try {
-        const result = await FrameworkService.delete(id);
-        if (result.success) {
-          setFrameworks((prev) => prev.filter((f) => f.id !== id));
-        }
-      } catch (error: any) {
-        console.error('Error:', error);
-        console.error('Failed to delete framework:', error);
+    setConfirmDeleteId(id);
+  };
+
+  const handleDeleteFramework = async (id: string) => {
+    setConfirmDeleteId(null);
+    try {
+      const result = await FrameworkService.delete(id);
+      if (result.success) {
+        setFrameworks((prev) => prev.filter((f) => f.id !== id));
       }
+    } catch (error: any) {
+      setNotice('Failed to delete framework. Please try again.');
     }
   };
 
@@ -1321,6 +750,38 @@ export default function ProficiencyLevelsPage() {
 
   return (
     <div className="space-y-4 pb-6">
+      {notice && (
+        <div className="flex items-center justify-between gap-2 px-4 py-3 rounded-xl text-sm font-bold bg-amber-50 text-amber-700 border border-amber-200 dark:bg-amber-900/20 dark:text-amber-400 dark:border-amber-800">
+          <span>{notice}</span>
+          <button onClick={() => setNotice(null)} className="text-xs underline">
+            Dismiss
+          </button>
+        </div>
+      )}
+      {confirmDeleteId && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl max-w-sm w-full p-6 border border-slate-200 dark:border-slate-800">
+            <h2 className="text-lg font-bold mb-2">Delete framework?</h2>
+            <p className="text-sm text-slate-500 mb-6">
+              This will permanently remove the proficiency framework. This action cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setConfirmDeleteId(null)}
+                className="flex-1 px-4 py-2 border border-slate-200 dark:border-slate-700 rounded-lg text-sm font-bold hover:bg-slate-50 dark:hover:bg-slate-800"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => handleDeleteFramework(confirmDeleteId)}
+                className="flex-1 px-4 py-2 bg-rose-600 hover:bg-rose-700 text-white rounded-lg text-sm font-bold"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
@@ -1540,7 +1001,7 @@ export default function ProficiencyLevelsPage() {
                         <button
                           onClick={(e) => {
                             e.stopPropagation();
-                            handleDeleteFramework(framework.id);
+                            requestDeleteFramework(framework.id);
                           }}
                           className="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-100 dark:hover:bg-rose-900/20 rounded-lg transition-colors"
                           title="Delete"

@@ -1,12 +1,14 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
-import { FileCheck, Send, Download, Eye } from 'lucide-react';
+import { FileCheck, Send, Download, Eye, X } from 'lucide-react';
 import { ConfirmationLetterService } from '../services';
 
 export default function ConfirmationLettersPage() {
   const [confirmationLetters, setConfirmationLetters] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const [previewLetter, setPreviewLetter] = useState<any | null>(null);
 
   useEffect(() => {
     fetchConfirmationLetters();
@@ -14,10 +16,12 @@ export default function ConfirmationLettersPage() {
 
   const fetchConfirmationLetters = async () => {
     try {
+      setLoading(true);
       const data = await ConfirmationLetterService.getAllConfirmationLetters();
       setConfirmationLetters(data);
-    } catch (error: any) {
-      console.error('Error:', error);
+    } catch (err: any) {
+      console.error('Error:', err);
+      setError('Failed to load confirmation letters.');
     } finally {
       setLoading(false);
     }
@@ -31,21 +35,33 @@ export default function ConfirmationLettersPage() {
   const handleIssue = async (id: string) => {
     try {
       setIssuing(id);
-      await ConfirmationLetterService.generateConfirmationLetter({
-        letterId: id,
-        status: 'issued',
-        issuedDate: new Date(),
-      } as any);
-      setConfirmationLetters((prev) =>
-        prev.map((l) =>
-          l.letterId === id ? { ...l, status: 'issued', issuedDate: new Date() } : l
-        )
-      );
-    } catch (error: any) {
-      console.error('Failed to issue letter:', error);
+      setError('');
+      await ConfirmationLetterService.issueLetter(id);
+      await fetchConfirmationLetters();
+    } catch (err: any) {
+      console.error('Failed to issue letter:', err);
+      setError('Failed to issue the letter.');
     } finally {
       setIssuing(null);
     }
+  };
+
+  const getPdfUrl = (letter: any): string | undefined =>
+    letter?.documentUrl || letter?.generatedPdfUrl;
+
+  const handleDownloadPdf = (letter: any) => {
+    const url = getPdfUrl(letter);
+    if (!url) {
+      setError('No generated PDF is available for this letter yet.');
+      return;
+    }
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `confirmation-${letter.employeeName || 'letter'}.pdf`;
+    link.rel = 'noopener';
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
   };
 
   const formatDate = (date: Date | string | undefined) => {
@@ -67,6 +83,12 @@ export default function ConfirmationLettersPage() {
           </p>
         </div>
       </div>
+
+      {error && (
+        <div className="rounded-lg border border-rose-200 bg-rose-50 dark:bg-rose-900/20 dark:border-rose-800 px-4 py-2 text-sm text-rose-700 dark:text-rose-300 shrink-0">
+          {error}
+        </div>
+      )}
 
       {loading && (
         <div className="flex items-center justify-center h-64">
@@ -99,6 +121,7 @@ export default function ConfirmationLettersPage() {
                     </div>
                     <div className="flex gap-2">
                       <button
+                        onClick={() => setPreviewLetter(item)}
                         className="p-2 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg text-slate-500"
                         title="Preview"
                       >
@@ -152,13 +175,68 @@ export default function ConfirmationLettersPage() {
                         </div>
                       </div>
                     </div>
-                    <button className="text-indigo-600 text-xs font-bold hover:underline flex items-center gap-1">
-                      <Download className="w-3 h-3" /> PDF
-                    </button>
+                    <div className="flex items-center gap-3">
+                      <button
+                        onClick={() => setPreviewLetter(row)}
+                        className="text-slate-500 text-xs font-bold hover:text-indigo-600 flex items-center gap-1"
+                      >
+                        <Eye className="w-3 h-3" /> View
+                      </button>
+                      <button
+                        onClick={() => handleDownloadPdf(row)}
+                        className="text-indigo-600 text-xs font-bold hover:underline flex items-center gap-1"
+                      >
+                        <Download className="w-3 h-3" /> PDF
+                      </button>
+                    </div>
                   </div>
                 ))}
               </div>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* Preview Modal */}
+      {previewLetter && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-slate-900 rounded-2xl shadow-2xl w-full max-w-2xl">
+            <div className="p-6 border-b border-slate-100 dark:border-slate-800 flex justify-between items-center">
+              <h2 className="text-xl font-bold">Confirmation Letter</h2>
+              <button
+                onClick={() => setPreviewLetter(null)}
+                className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-full transition-colors"
+              >
+                <X className="w-5 h-5 text-slate-500" />
+              </button>
+            </div>
+            <div className="p-6 max-h-[65vh] overflow-y-auto">
+              <div className="text-sm text-slate-500 mb-3">
+                <strong className="text-slate-800 dark:text-slate-200">
+                  {previewLetter.employeeName}
+                </strong>{' '}
+                &bull; Confirmed {formatDate(previewLetter.confirmationDate)}
+              </div>
+              {getPdfUrl(previewLetter) ? (
+                <iframe
+                  src={getPdfUrl(previewLetter)}
+                  title="Confirmation Letter PDF"
+                  className="w-full h-[50vh] rounded-lg border border-slate-200 dark:border-slate-800"
+                />
+              ) : (
+                <pre className="whitespace-pre-wrap font-sans text-sm text-slate-700 dark:text-slate-300">
+                  {previewLetter.content || 'No content available for this letter yet.'}
+                </pre>
+              )}
+            </div>
+            <div className="p-6 border-t border-slate-100 dark:border-slate-800 flex justify-end gap-3">
+              <button
+                onClick={() => handleDownloadPdf(previewLetter)}
+                className="px-4 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 flex items-center gap-2"
+              >
+                <Download className="w-4 h-4" /> Download PDF
+              </button>
+            </div>
           </div>
         </div>
       )}
