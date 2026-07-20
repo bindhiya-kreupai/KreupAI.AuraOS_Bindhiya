@@ -33,6 +33,7 @@ model Tenant {
   ssoConfigs        SSOConfig[]
   licenses          License[]
   shiftTypes        ShiftType[]
+  shiftTemplates    ShiftTemplate[]
 
   @@map("aura_tenant")
 }
@@ -993,6 +994,40 @@ model Shift {
   @@map("aura_shift")
 }
 
+model ShiftTemplate {
+  id               String    @id @default(uuid())
+  tenantId         String
+  name             String
+  description      String?
+  icon             String    @default("Briefcase")
+  accent           String    @default("from-blue-500/15 to-blue-500/5 border-blue-500/30")
+  shiftCode        String
+  shiftName        String
+  shiftDescription String?
+  startTime        String
+  endTime          String
+  workHours        Float
+  graceInMinutes   Int       @default(15)
+  graceOutMinutes  Int       @default(15)
+  breakDuration    Int       @default(60)
+  overtimeAllowed  Boolean   @default(true)
+  maxOvertimeHours Float     @default(4)
+  isActive         Boolean   @default(true)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  createdBy        String?
+  updatedBy        String?
+  deletedAt        DateTime?
+  isDeleted        Boolean   @default(false)
+
+  tenant           Tenant    @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, name], map: "ShiftTemplate_tenantId_name_key")
+  @@index([tenantId], map: "ShiftTemplate_tenantId_idx")
+  @@index([tenantId, isActive], map: "ShiftTemplate_tenantId_isActive_idx")
+  @@map("aura_shift_template")
+}
+
 model ShiftAssignment {
   id            String    @id(map: "ShiftAssignment_pkey") @default(uuid())
   tenantId      String
@@ -1030,6 +1065,8 @@ model ShiftRoster {
   isWeekOff       Boolean   @default(false)
   isHoliday       Boolean   @default(false)
   status          String    @default("SCHEDULED")
+  publishedAt     DateTime?
+  publishedBy     String?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   createdBy       String?
@@ -13100,6 +13137,7 @@ enum AuditAction {
   APPROVE_LEAVE_REQUEST
   APPROVE_OVERTIME_REQUEST
   APPROVE_SHIFT_SWAP_REQUEST
+  PUBLISH_SHIFT_ROSTER
   REJECT_ATTENDANCE_REGULARIZATION
   REJECT_COMP_OFF_REQUEST
   REJECT_CONFIRMATION_REQUEST
