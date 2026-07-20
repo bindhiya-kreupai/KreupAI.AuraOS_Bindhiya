@@ -52,6 +52,7 @@ type Assignment = {
   employeeId: string;
   shiftId: string;
   shift?: { id: string; name: string };
+  employee?: { id: string; firstName: string; lastName: string; employeeCode: string } | null;
   effectiveFrom: string;
   effectiveTo?: string | null;
   reason?: string;
@@ -63,6 +64,7 @@ type Roster = {
   employeeId: string;
   shiftId: string;
   shift?: { id: string; name: string };
+  employee?: { id: string; firstName: string; lastName: string; employeeCode: string } | null;
   rosterDate: string;
   customStartTime?: string | null;
   customEndTime?: string | null;
@@ -81,6 +83,8 @@ type Swap = {
   swapWithDate: string;
   reason: string;
   status: 'PENDING' | 'APPROVED_BY_PEER' | 'APPROVED_BY_MANAGER' | 'COMPLETED' | 'REJECTED';
+  requestor?: { id: string; firstName: string; lastName: string; employeeCode: string } | null;
+  swapWith?: { id: string; firstName: string; lastName: string; employeeCode: string } | null;
 };
 
 const swapStatusColors: Record<Swap['status'], string> = {
@@ -116,6 +120,7 @@ export default function ShiftManagementPage() {
   const [confirmTitle, setConfirmTitle] = useState('');
   const [confirmMessage, setConfirmMessage] = useState('');
   const [confirmAction, setConfirmAction] = useState<(() => void) | null>(null);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   const { t, isRTL } = useI18n();
 
@@ -123,6 +128,7 @@ export default function ShiftManagementPage() {
     setStatsLoading(true);
     const r = await apiJson<Stats>('/api/v1/shifts/stats');
     if (r.ok && r.data) setStats(r.data);
+    else if (!r.ok) setFetchError(r.error?.message || 'Failed to load statistics');
     setStatsLoading(false);
   }, []);
 
@@ -130,6 +136,7 @@ export default function ShiftManagementPage() {
     setShiftsLoading(true);
     const r = await apiJson<Shift[]>('/api/v1/shifts?limit=200');
     if (r.ok && r.data) setShifts(r.data);
+    else if (!r.ok) setFetchError(r.error?.message || 'Failed to load shifts');
     setShiftsLoading(false);
   }, []);
 
@@ -137,6 +144,7 @@ export default function ShiftManagementPage() {
     setAssignmentsLoading(true);
     const r = await apiJson<Assignment[]>('/api/v1/shift-assignments?limit=200');
     if (r.ok && r.data) setAssignments(r.data);
+    else if (!r.ok) setFetchError(r.error?.message || 'Failed to load assignments');
     setAssignmentsLoading(false);
   }, []);
 
@@ -144,6 +152,7 @@ export default function ShiftManagementPage() {
     setRostersLoading(true);
     const r = await apiJson<Roster[]>('/api/v1/shift-rosters?limit=200');
     if (r.ok && r.data) setRosters(r.data);
+    else if (!r.ok) setFetchError(r.error?.message || 'Failed to load rosters');
     setRostersLoading(false);
   }, []);
 
@@ -151,6 +160,7 @@ export default function ShiftManagementPage() {
     setSwapsLoading(true);
     const r = await apiJson<Swap[]>('/api/v1/shift-swaps?limit=200');
     if (r.ok && r.data) setSwaps(r.data);
+    else if (!r.ok) setFetchError(r.error?.message || 'Failed to load swaps');
     setSwapsLoading(false);
   }, []);
 
@@ -278,8 +288,21 @@ export default function ShiftManagementPage() {
   const assignmentColumns: Column<Assignment>[] = [
     {
       key: 'employeeId',
-      header: 'Employee ID',
-      render: (r) => <span className="font-mono text-xs">{r.employeeId}</span>,
+      header: 'Employee',
+      render: (r) => {
+        const emp = r.employee;
+        if (emp) {
+          return (
+            <span className="font-medium">
+              {emp.firstName} {emp.lastName}
+              {emp.employeeCode && (
+                <span className="ml-1 text-xs text-slate-400">({emp.employeeCode})</span>
+              )}
+            </span>
+          );
+        }
+        return <span className="font-mono text-xs text-slate-400">{r.employeeId}</span>;
+      },
     },
     { key: 'shift.name', header: 'Shift', render: (r) => r.shift?.name || '—' },
     {
@@ -354,8 +377,21 @@ export default function ShiftManagementPage() {
   const rosterColumns: Column<Roster>[] = [
     {
       key: 'employeeId',
-      header: 'Employee ID',
-      render: (r) => <span className="font-mono text-xs">{r.employeeId}</span>,
+      header: 'Employee',
+      render: (r) => {
+        const emp = r.employee;
+        if (emp) {
+          return (
+            <span className="font-medium">
+              {emp.firstName} {emp.lastName}
+              {emp.employeeCode && (
+                <span className="ml-1 text-xs text-slate-400">({emp.employeeCode})</span>
+              )}
+            </span>
+          );
+        }
+        return <span className="font-mono text-xs text-slate-400">{r.employeeId}</span>;
+      },
     },
     {
       key: 'rosterDate',
@@ -419,12 +455,32 @@ export default function ShiftManagementPage() {
     {
       key: 'requestorId',
       header: 'Requestor',
-      render: (r) => <span className="font-mono text-xs">{r.requestorId}</span>,
+      render: (r) => {
+        const emp = r.requestor;
+        if (emp) {
+          return (
+            <span className="font-medium">
+              {emp.firstName} {emp.lastName}
+            </span>
+          );
+        }
+        return <span className="font-mono text-xs text-slate-400">{r.requestorId}</span>;
+      },
     },
     {
       key: 'swapWithId',
       header: 'Swap With',
-      render: (r) => <span className="font-mono text-xs">{r.swapWithId}</span>,
+      render: (r) => {
+        const emp = r.swapWith;
+        if (emp) {
+          return (
+            <span className="font-medium">
+              {emp.firstName} {emp.lastName}
+            </span>
+          );
+        }
+        return <span className="font-mono text-xs text-slate-400">{r.swapWithId}</span>;
+      },
     },
     {
       key: 'requestorDate',
@@ -442,7 +498,8 @@ export default function ShiftManagementPage() {
       render: (r) => (
         <span
           className={`px-2 py-0.5 text-xs font-semibold rounded-full ${
-            swapStatusColors[r.status] || 'bg-gray-100 text-gray-700'
+            swapStatusColors[r.status] ||
+            'bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300'
           }`}
         >
           {r.status.replace(/_/g, ' ')}
@@ -641,6 +698,23 @@ export default function ShiftManagementPage() {
           loading={statsLoading}
         />
       </div>
+
+      {fetchError && (
+        <div className="rounded-lg border px-4 py-2 text-sm flex items-center gap-2 bg-rose-50 border-rose-200 text-rose-800 dark:bg-rose-900/20 dark:border-rose-800 dark:text-rose-200">
+          <AlertCircle className="w-4 h-4 shrink-0" />
+          <span>{fetchError}</span>
+          <button
+            onClick={() => {
+              setFetchError(null);
+              fetchStats();
+              fetchShifts();
+            }}
+            className="ml-auto text-xs font-medium underline hover:no-underline"
+          >
+            Retry
+          </button>
+        </div>
+      )}
 
       {/* Tabs */}
       <div className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">

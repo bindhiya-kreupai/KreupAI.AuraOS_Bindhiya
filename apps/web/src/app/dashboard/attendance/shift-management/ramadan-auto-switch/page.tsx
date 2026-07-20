@@ -119,8 +119,11 @@ function DailyHoursCalc({ country }: { country: string }) {
   return (
     <WhCard title="Daily working hours">
       <form onSubmit={run} className="space-y-2">
-        <label className="block text-xs text-silver-mist">Date (Ramadan-aware)</label>
+        <label htmlFor="wh-date" className="block text-xs text-silver-mist">
+          Date (Ramadan-aware)
+        </label>
         <input
+          id="wh-date"
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
@@ -183,8 +186,11 @@ function OvertimeCalc({ country }: { country: string }) {
       <form onSubmit={run} className="space-y-2">
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="block text-xs text-silver-mist">Actual hours</label>
+            <label htmlFor="ot-actual" className="block text-xs text-silver-mist">
+              Actual hours
+            </label>
             <input
+              id="ot-actual"
               type="number"
               min="0"
               step="0.5"
@@ -194,8 +200,11 @@ function OvertimeCalc({ country }: { country: string }) {
             />
           </div>
           <div>
-            <label className="block text-xs text-silver-mist">Shift hours</label>
+            <label htmlFor="ot-shift" className="block text-xs text-silver-mist">
+              Shift hours
+            </label>
             <input
+              id="ot-shift"
               type="number"
               min="0"
               step="0.5"
@@ -205,8 +214,11 @@ function OvertimeCalc({ country }: { country: string }) {
             />
           </div>
         </div>
-        <label className="block text-xs text-silver-mist">Hourly rate (for amount)</label>
+        <label htmlFor="ot-rate" className="block text-xs text-silver-mist">
+          Hourly rate (for amount)
+        </label>
         <input
+          id="ot-rate"
           type="number"
           min="0"
           step="0.01"
@@ -292,8 +304,11 @@ function ValidateDailyCalc({ country }: { country: string }) {
       <form onSubmit={run} className="space-y-2">
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="block text-xs text-silver-mist">Hours worked</label>
+            <label htmlFor="dc-hours" className="block text-xs text-silver-mist">
+              Hours worked
+            </label>
             <input
+              id="dc-hours"
               type="number"
               min="0"
               step="0.5"
@@ -303,8 +318,11 @@ function ValidateDailyCalc({ country }: { country: string }) {
             />
           </div>
           <div>
-            <label className="block text-xs text-silver-mist">Overtime hours</label>
+            <label htmlFor="dc-ot" className="block text-xs text-silver-mist">
+              Overtime hours
+            </label>
             <input
+              id="dc-ot"
               type="number"
               min="0"
               step="0.5"
@@ -394,8 +412,11 @@ function FridayCompCalc({ country }: { country: string }) {
       <form onSubmit={run} className="space-y-2">
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="block text-xs text-silver-mist">Hours worked</label>
+            <label htmlFor="fc-hours" className="block text-xs text-silver-mist">
+              Hours worked
+            </label>
             <input
+              id="fc-hours"
               type="number"
               min="0"
               step="0.5"
@@ -405,8 +426,11 @@ function FridayCompCalc({ country }: { country: string }) {
             />
           </div>
           <div>
-            <label className="block text-xs text-silver-mist">Monthly base salary</label>
+            <label htmlFor="fc-salary" className="block text-xs text-silver-mist">
+              Monthly base salary
+            </label>
             <input
+              id="fc-salary"
               type="number"
               min="0"
               step="1"

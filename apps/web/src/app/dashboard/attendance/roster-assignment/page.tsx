@@ -140,8 +140,13 @@ export default function RosterAssignmentPage() {
     if (shiftRes.ok && shiftRes.data) setShifts(shiftRes.data);
     if (rosterRes.ok && rosterRes.data) setRosters(rosterRes.data);
 
-    if (!empRes.ok)
-      setStatus({ kind: 'error', text: empRes.error?.message || 'Failed to load employees' });
+    const errors: string[] = [];
+    if (!empRes.ok) errors.push(empRes.error?.message || 'Failed to load employees');
+    if (!shiftRes.ok) errors.push(shiftRes.error?.message || 'Failed to load shifts');
+    if (!rosterRes.ok) errors.push(rosterRes.error?.message || 'Failed to load rosters');
+    if (errors.length > 0) {
+      setStatus({ kind: 'error', text: errors.join('; ') });
+    }
     setLoading(false);
   };
 
@@ -227,11 +232,32 @@ export default function RosterAssignmentPage() {
   ) => {
     setStatus(null);
     const existing = rosterByKey.get(`${empId}:${date}`);
+
     if (existing) {
-      // Delete existing then create new (simpler than partial update with version)
-      await apiJson(`/api/v1/shift-rosters/${existing.id}`, { method: 'DELETE' });
-    }
-    if (choice.shiftId || choice.isWeekOff || choice.isHoliday) {
+      // Use PUT to update existing roster entry (avoids DELETE+POST data loss risk)
+      if (choice.shiftId || choice.isWeekOff || choice.isHoliday) {
+        const r = await apiJson(`/api/v1/shift-rosters/${existing.id}`, {
+          method: 'PUT',
+          body: JSON.stringify({
+            shiftId: choice.shiftId || existing.shiftId,
+            isWeekOff: !!choice.isWeekOff,
+            isHoliday: !!choice.isHoliday,
+          }),
+        });
+        if (!r.ok) {
+          setStatus({ kind: 'error', text: r.error?.message || 'Failed to save roster' });
+          return;
+        }
+      } else {
+        // Clear mode: soft-delete the existing entry
+        const r = await apiJson(`/api/v1/shift-rosters/${existing.id}`, { method: 'DELETE' });
+        if (!r.ok) {
+          setStatus({ kind: 'error', text: r.error?.message || 'Failed to clear roster entry' });
+          return;
+        }
+      }
+    } else if (choice.shiftId || choice.isWeekOff || choice.isHoliday) {
+      // No existing entry — create new
       const r = await apiJson<Roster>('/api/v1/shift-rosters', {
         method: 'POST',
         body: JSON.stringify({
@@ -568,6 +594,7 @@ export default function RosterAssignmentPage() {
           date={editing.date}
           existing={editing.existing}
           shifts={shifts}
+          employees={employees}
           onClose={() => setEditing(null)}
           onSave={(choice) => saveRoster(editing.empId, editing.date, choice)}
         />
@@ -581,6 +608,7 @@ function RosterCellModal({
   date,
   existing,
   shifts,
+  employees,
   onClose,
   onSave,
 }: {
@@ -588,6 +616,7 @@ function RosterCellModal({
   date: string;
   existing?: Roster;
   shifts: Shift[];
+  employees: Employee[];
   onClose: () => void;
   onSave: (c: { shiftId?: string; isWeekOff?: boolean; isHoliday?: boolean }) => void;
 }) {
@@ -633,7 +662,10 @@ function RosterCellModal({
         </div>
         <div className="px-5 py-4 space-y-3 text-sm">
           <div className="text-xs text-silver-mist">
-            {t('shiftManagement.roster.employee')}: <span className="font-mono">{empId}</span>
+            {t('shiftManagement.roster.employee')}:{' '}
+            <span className="font-medium text-ink-black dark:text-pearl">
+              {employees.find((e) => e.id === empId)?.name || empId}
+            </span>
           </div>
           <div className="flex gap-2 flex-wrap">
             {(['shift', 'week-off', 'holiday', 'clear'] as const).map((m) => (
