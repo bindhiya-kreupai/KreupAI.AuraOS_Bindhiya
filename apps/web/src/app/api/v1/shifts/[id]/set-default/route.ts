@@ -24,7 +24,7 @@ export const POST = withAudit(
       }
       const { id } = params;
 
-      const shift = await ShiftManagementService.setDefaultShift(id, user.tenantId);
+      const shift = await ShiftManagementService.setDefaultShift(id, user.tenantId, user.userId);
       return NextResponse.json({ success: true, data: shift });
     } catch (error: any) {
       return NextResponse.json(

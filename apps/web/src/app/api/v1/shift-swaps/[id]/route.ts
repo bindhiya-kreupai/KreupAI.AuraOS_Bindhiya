@@ -70,7 +70,7 @@ export const PUT = withAudit(
       const { id } = params;
       const body = await request.json();
 
-      const swap = await ShiftManagementService.updateSwap(id, user.tenantId, body);
+      const swap = await ShiftManagementService.updateSwap(id, user.tenantId, body, user.userId);
       if (!swap) {
         return NextResponse.json(
           {

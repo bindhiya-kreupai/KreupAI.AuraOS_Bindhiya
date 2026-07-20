@@ -135,6 +135,7 @@ export const POST = withAudit(
         swapWithDate,
         swapWithShiftId,
         reason,
+        createdBy: user.userId,
       });
 
       return NextResponse.json(

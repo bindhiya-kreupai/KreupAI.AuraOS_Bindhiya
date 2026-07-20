@@ -47,6 +47,14 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
       isHoliday: roster.isHoliday,
       status: roster.status,
       shift: roster.shift ? { id: roster.shift.id, name: roster.shift.name } : null,
+      employee: roster.employee
+        ? {
+            id: roster.employee.id,
+            firstName: roster.employee.firstName,
+            lastName: roster.employee.lastName,
+            employeeCode: roster.employee.employeeCode,
+          }
+        : null,
     }));
 
     return NextResponse.json({
@@ -89,11 +97,16 @@ export const POST = withAudit(
       const body = await request.json();
 
       if (Array.isArray(body)) {
-        const rosters = body.map((r) => ({ ...r, tenantId: user.tenantId }));
+        const rosters = body.map((r) => ({
+          ...r,
+          tenantId: user.tenantId,
+          createdBy: user.userId,
+        }));
         const result = await ShiftManagementService.bulkCreateRosters(rosters);
         return NextResponse.json({ success: true, data: result }, { status: 201 });
       } else {
         body.tenantId = user.tenantId;
+        body.createdBy = user.userId;
         const roster = await ShiftManagementService.createRoster(body);
         return NextResponse.json({ success: true, data: roster }, { status: 201 });
       }

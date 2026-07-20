@@ -49,7 +49,7 @@ export interface DataPageProps<T> {
     onExport?: () => void;
     onImport?: () => void;
     onFilter?: () => void;
-    renderForm?: (data: Partial<T>, onChange: (field: keyof T, value: any) => void) => React.ReactNode;
+    renderForm?: (data: Partial<T>, onChange: (field: string, value: any) => void) => React.ReactNode;
     formFields?: FormField[];
     rowActions?: (row: T) => RowAction<T>[];
     onDataChange?: () => void;
@@ -185,7 +185,7 @@ export function DataPage<T extends { id: string | number }>({
         }
     };
 
-    const handleFieldChange = (field: keyof T, value: any) => {
+    const handleFieldChange = (field: string, value: any) => {
         setCurrentRecord(prev => ({ ...prev, [field]: value }));
     };
 

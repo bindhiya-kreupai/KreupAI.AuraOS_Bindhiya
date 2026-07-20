@@ -33,6 +33,8 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
           : searchParams.get('isActive') === 'false'
             ? false
             : undefined,
+      startDate: searchParams.get('startDate') || undefined,
+      endDate: searchParams.get('endDate') || undefined,
       page: Number(searchParams.get('page')) || 1,
       limit: Number(searchParams.get('limit')) || 50,
     };

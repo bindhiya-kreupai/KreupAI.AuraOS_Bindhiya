@@ -5,6 +5,7 @@ import { withAudit } from '@/lib/middleware/audit.middleware';
 import { AuditAction } from '@/lib/audit/audit.service';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
+import { notificationService } from '@/lib/services/notification.service';
 
 export const dynamic = 'force-dynamic';
 
@@ -234,6 +235,19 @@ export const POST = withAudit(
         assignedAt: new Date().toISOString(),
         assignedBy: user.userId,
       };
+
+      // Fire notifications to all assigned employees
+      for (const a of assignments) {
+        notificationService
+          .notifyShiftAssigned(a.employeeId, {
+            shiftId: data.shiftId,
+            shiftName: shift.name,
+            shiftCode: shift.code,
+            effectiveFrom: data.effectiveFrom,
+            effectiveTo: data.effectiveTo || null,
+          })
+          .catch(() => {});
+      }
 
       return NextResponse.json(
         {

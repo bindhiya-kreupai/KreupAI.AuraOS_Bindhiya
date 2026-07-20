@@ -4,6 +4,8 @@ import { withEnhancedAuth } from '@/lib/auth';
 import { withAudit } from '@/lib/middleware/audit.middleware';
 import { AuditAction } from '@/lib/audit/audit.service';
 import { prisma } from '@aura/database';
+import { notificationService } from '@/lib/services/notification.service';
+import { ShiftManagementService } from '@/lib/services/shift-management.service';
 
 /**
  * POST /api/v1/shifts/open/[id]/claim
@@ -44,6 +46,33 @@ export const POST = withAudit(
           },
           { status: 400 }
         );
+      }
+
+      // Fetch the roster to get the date for conflict checking
+      const targetRoster = await prisma.shiftRoster.findFirst({
+        where: { id, tenantId: user.tenantId, isDeleted: false },
+        select: { rosterDate: true },
+      });
+      if (targetRoster) {
+        const conflicts = await ShiftManagementService.checkConflicts({
+          employeeId,
+          date: targetRoster.rosterDate.toISOString().slice(0, 10),
+          tenantId: user.tenantId,
+        });
+        const errors = conflicts.filter((c) => c.severity === 'error');
+        if (errors.length > 0) {
+          return NextResponse.json(
+            {
+              success: false,
+              error: {
+                code: 'E3001',
+                message: errors.map((e) => e.message).join(' '),
+                messageAr: 'تعارض في الجدول',
+              },
+            },
+            { status: 409 }
+          );
+        }
       }
 
       // Atomic claim: only update if status is OPEN. This prevents race conditions
@@ -103,6 +132,18 @@ export const POST = withAudit(
         where: { id, tenantId: user.tenantId },
         include: { shift: true },
       });
+
+      // Fire notification to claiming employee
+      if (updated && employeeId) {
+        notificationService
+          .notifyShiftOpenClaimed(employeeId, {
+            rosterId: updated.id,
+            shiftId: updated.shiftId,
+            shiftName: (updated.shift as any)?.name || 'Unknown',
+            rosterDate: updated.rosterDate.toISOString().slice(0, 10),
+          })
+          .catch(() => {});
+      }
 
       return NextResponse.json({
         success: true,

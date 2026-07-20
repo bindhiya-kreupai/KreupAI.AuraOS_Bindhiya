@@ -28,6 +28,8 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
       requestorId: searchParams.get('requestorId') || undefined,
       swapWithId: searchParams.get('swapWithId') || undefined,
       status: searchParams.get('status') || undefined,
+      startDate: searchParams.get('startDate') || undefined,
+      endDate: searchParams.get('endDate') || undefined,
       page: Number(searchParams.get('page')) || 1,
       limit: Number(searchParams.get('limit')) || 20,
     };
@@ -37,7 +39,23 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     const data = result.data.map((swap: any) => ({
       id: swap.id,
       requestorId: swap.requestorId,
+      requestor: swap.requestor
+        ? {
+            id: swap.requestor.id,
+            firstName: swap.requestor.firstName,
+            lastName: swap.requestor.lastName,
+            employeeCode: swap.requestor.employeeCode,
+          }
+        : null,
       swapWithId: swap.swapWithId,
+      swapWith: swap.swapWith
+        ? {
+            id: swap.swapWith.id,
+            firstName: swap.swapWith.firstName,
+            lastName: swap.swapWith.lastName,
+            employeeCode: swap.swapWith.employeeCode,
+          }
+        : null,
       requestorDate:
         swap.requestorDate instanceof Date ? swap.requestorDate.toISOString() : swap.requestorDate,
       requestorShiftId: swap.requestorShiftId,
@@ -93,6 +111,7 @@ export const POST = withAudit(
       }
       const body = await request.json();
       body.tenantId = user.tenantId;
+      body.createdBy = user.userId;
 
       const swap = await ShiftManagementService.createSwap(body);
       return NextResponse.json({ success: true, data: swap }, { status: 201 });

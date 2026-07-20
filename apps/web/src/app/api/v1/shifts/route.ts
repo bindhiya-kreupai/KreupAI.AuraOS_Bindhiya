@@ -59,6 +59,8 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
           : searchParams.get('isActive') === 'false'
             ? false
             : undefined,
+      startDate: searchParams.get('startDate') || undefined,
+      endDate: searchParams.get('endDate') || undefined,
       page: Math.max(Number(searchParams.get('page')) || 1, 1),
       limit: rawLimit,
       sortBy: searchParams.get('sortBy') || 'name',
