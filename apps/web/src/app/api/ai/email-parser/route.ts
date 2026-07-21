@@ -5,142 +5,88 @@
 
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import {
+  canReadAiAutomation,
+  canWriteAiAutomation,
+  resolveAiAutomationAuth,
+} from '@/lib/ai/ai-automation-auth';
+import { commitEmailParse, parseEmail } from '@/lib/ai/email-parsing-ai';
+import { getEmailParsingSummary } from '@/lib/ai/email-parsing-retrieval';
 
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
-    const action = body.action || 'parse';
-
-    switch (action) {
-      case 'parse':
-        if (!body.email && !body.emailId) {
-          return NextResponse.json(
-            { error: 'email content or emailId is required' },
-            { status: 400 }
-          );
-        }
-
-        return NextResponse.json({
-          success: true,
-          data: {
-            parsed: {
-              type: 'LEAVE_REQUEST',
-              confidence: 0.94,
-              intent: 'Apply for leave',
-              entities: {
-                leaveType: 'Annual',
-                startDate: '2025-01-15',
-                endDate: '2025-01-20',
-                duration: 6,
-                reason: 'Family vacation',
-                employee: {
-                  name: 'John Doe',
-                  email: 'john.doe@company.com',
-                  employeeId: 'EMP001',
-                },
-              },
-              suggestedActions: [
-                {
-                  action: 'CREATE_LEAVE_REQUEST',
-                  params: {
-                    employeeId: 'EMP001',
-                    type: 'ANNUAL',
-                    startDate: '2025-01-15',
-                    endDate: '2025-01-20',
-                    reason: 'Family vacation',
-                  },
-                  confidence: 0.94,
-                },
-                {
-                  action: 'SEND_CONFIRMATION',
-                  params: {
-                    to: 'john.doe@company.com',
-                    template: 'leave_request_received',
-                  },
-                  confidence: 0.98,
-                },
-              ],
-            },
-          },
-        });
-
-      case 'classify':
-        return NextResponse.json({
-          success: true,
-          data: {
-            category: 'HR_REQUEST',
-            subcategory: 'LEAVE',
-            priority: 'NORMAL',
-            sentiment: 'NEUTRAL',
-            urgency: 0.45,
-            categories: [
-              { category: 'LEAVE_REQUEST', confidence: 0.94 },
-              { category: 'TIME_OFF', confidence: 0.88 },
-              { category: 'VACATION', confidence: 0.75 },
-            ],
-          },
-        });
-
-      case 'extract':
-        return NextResponse.json({
-          success: true,
-          data: {
-            entities: [
-              { type: 'DATE', value: '2025-01-15', confidence: 0.98 },
-              { type: 'DATE', value: '2025-01-20', confidence: 0.97 },
-              { type: 'PERSON', value: 'John Doe', confidence: 0.95 },
-              { type: 'EMAIL', value: 'john.doe@company.com', confidence: 0.99 },
-              { type: 'DURATION', value: '6 days', confidence: 0.92 },
-            ],
-            summary: 'Leave request for 6 days from January 15-20, 2025',
-          },
-        });
-
-      case 'respond':
-        return NextResponse.json({
-          success: true,
-          data: {
-            response: {
-              subject: 'Re: Leave Request - Annual Leave',
-              body: 'Dear John,\n\nYour leave request has been received and is being processed. You have requested annual leave from January 15-20, 2025 (6 days).\n\nYour current leave balance is 15 days. After this request, your balance will be 9 days.\n\nYou will receive a notification once your request is reviewed by your manager.\n\nBest regards,\nHR Team',
-              template: 'leave_acknowledgment',
-              confidence: 0.91,
-            },
-          },
-        });
-
-      default:
-        return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
+    const auth = await resolveAiAutomationAuth(request);
+    if (!auth)
+      return NextResponse.json({ error: 'Unauthorized', errorAr: 'غير مصرح' }, { status: 401 });
+    if (!canWriteAiAutomation(auth.permissions, auth.roles))
+      return NextResponse.json({ error: 'Forbidden', errorAr: 'محظور' }, { status: 403 });
+    const body = await request.json().catch(() => ({}));
+    if (body.action === 'commit') {
+      if (!body.parseId)
+        return NextResponse.json(
+          { error: 'parseId is required', errorAr: 'معرف التحليل مطلوب' },
+          { status: 400 }
+        );
+      const run = await commitEmailParse(auth.tenantId, auth.userId, body.parseId);
+      if (!run)
+        return NextResponse.json(
+          { error: 'Parse run not found', errorAr: 'لم يتم العثور على عملية التحليل' },
+          { status: 404 }
+        );
+      return NextResponse.json({
+        success: true,
+        data: { runId: run.id, status: 'PENDING_HUMAN_CONFIRMATION' },
+      });
     }
-  } catch (error: any) {
-    return NextResponse.json({ error: 'Failed to parse email' }, { status: 500 });
+    if (body.action !== 'parse' && body.action !== 'extract')
+      return NextResponse.json(
+        { error: 'Invalid action', errorAr: 'إجراء غير صالح' },
+        { status: 400 }
+      );
+    const content = String(body.rawEmail || body.email || '');
+    if (!content)
+      return NextResponse.json(
+        { error: 'Email content is required', errorAr: 'محتوى البريد الإلكتروني مطلوب' },
+        { status: 400 }
+      );
+    return NextResponse.json({
+      success: true,
+      data: await parseEmail(auth.tenantId, auth.userId, content),
+    });
+  } catch (error) {
+    console.error('[email-parser POST]', error);
+    return NextResponse.json(
+      { error: 'Failed to parse email', errorAr: 'فشل تحليل البريد الإلكتروني' },
+      { status: 500 }
+    );
   }
 }
 
 export async function GET(request: NextRequest) {
   try {
-    const { searchParams } = new URL(request.url);
-    const period = searchParams.get('period') || 'today';
-
+    const auth = await resolveAiAutomationAuth(request);
+    if (!auth)
+      return NextResponse.json({ error: 'Unauthorized', errorAr: 'غير مصرح' }, { status: 401 });
+    if (!canReadAiAutomation(auth.permissions, auth.roles))
+      return NextResponse.json({ error: 'Forbidden', errorAr: 'محظور' }, { status: 403 });
+    const summary = await getEmailParsingSummary(auth.tenantId);
+    const emails = summary.runs.map((run) => ({
+      id: run.id,
+      parsedAt: run.createdAt,
+      ...(run.output as Record<string, unknown>),
+    }));
     return NextResponse.json({
       success: true,
-      data: {
-        processed: 145,
-        leaveRequests: 23,
-        expenseReports: 34,
-        generalInquiries: 56,
-        complaints: 8,
-        others: 24,
-        accuracy: 0.92,
-        avgProcessingTime: '0.8 seconds',
-        topCategories: [
-          { category: 'LEAVE_REQUEST', count: 23, avgConfidence: 0.94 },
-          { category: 'EXPENSE_REPORT', count: 34, avgConfidence: 0.91 },
-          { category: 'PAYROLL_QUERY', count: 18, avgConfidence: 0.89 },
-        ],
-      },
+      data: { processed: summary.runs.length, categories: summary.categories, emails },
     });
-  } catch (error: any) {
-    return NextResponse.json({ error: 'Failed to fetch email parser stats' }, { status: 500 });
+  } catch (error) {
+    console.error('[email-parser GET]', error);
+    return NextResponse.json(
+      {
+        error: 'Failed to fetch email parser stats',
+        errorAr: 'فشل جلب إحصاءات تحليل البريد الإلكتروني',
+      },
+      { status: 500 }
+    );
   }
 }

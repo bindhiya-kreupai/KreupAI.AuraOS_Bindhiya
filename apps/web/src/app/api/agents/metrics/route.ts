@@ -1,55 +1,45 @@
 /**
  * Agent Metrics API Routes
- * Phase 4 Sprint 31-32: Agent Performance Metrics
  */
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import type { AgentType } from '@/lib/services/agentic-ai';
-import { AgentFrameworkService } from '@/lib/services/agentic-ai';
+import { resolveAgentAuth } from '@/lib/ai/agent-auth';
+import { agentError, AGENT_TYPES, type AgentTypeValue } from '@/lib/ai/agent-types';
+import { getAgentMetricsByType } from '@/lib/ai/agent-session';
 
-/**
- * GET /api/agents/metrics
- * Get agent performance metrics
- */
+const VALID_TYPES: AgentTypeValue[] = [
+  AGENT_TYPES.HR,
+  AGENT_TYPES.RECRUITMENT,
+  AGENT_TYPES.ANALYTICS,
+];
+
 export async function GET(request: NextRequest) {
+  const auth = await resolveAgentAuth(request);
+  if (!auth) {
+    return NextResponse.json(agentError('Unauthorized', 'غير مصرح'), { status: 401 });
+  }
+
   try {
     const { searchParams } = new URL(request.url);
-    const tenantId = searchParams.get('tenantId');
-    const agentType = searchParams.get('agentType') as AgentType;
-    const startDate = searchParams.get('startDate');
-    const endDate = searchParams.get('endDate');
+    const agentType = searchParams.get('agentType') as AgentTypeValue;
+    const days = Number(searchParams.get('days') || 30);
 
-    if (!tenantId || !agentType) {
+    if (!agentType || !VALID_TYPES.includes(agentType)) {
       return NextResponse.json(
-        { success: false, error: 'Missing required query params: tenantId, agentType' },
+        agentError(
+          `Invalid agent type. Must be one of: ${VALID_TYPES.join(', ')}`,
+          'نوع وكيل غير صالح'
+        ),
         { status: 400 }
       );
     }
 
-    const validTypes: AgentType[] = ['HR_AGENT', 'RECRUITMENT_AGENT', 'ANALYTICS_AGENT'];
-    if (!validTypes.includes(agentType)) {
-      return NextResponse.json(
-        { success: false, error: `Invalid agent type. Must be one of: ${validTypes.join(', ')}` },
-        { status: 400 }
-      );
-    }
-
-    const period = {
-      start: startDate ? new Date(startDate) : new Date(Date.now() - 30 * 24 * 60 * 60 * 1000),
-      end: endDate ? new Date(endDate) : new Date(),
-    };
-
-    const metrics = await AgentFrameworkService.getMetrics(agentType, tenantId, period);
-
-    return NextResponse.json({
-      success: true,
-      data: metrics,
+    const metrics = await getAgentMetricsByType(auth.tenantId, agentType, days);
+    return NextResponse.json({ success: true, data: metrics });
+  } catch {
+    return NextResponse.json(agentError('Failed to fetch metrics', 'فشل تحميل المقاييس'), {
+      status: 500,
     });
-  } catch (error: any) {
-        return NextResponse.json(
-      { success: false, error: 'Failed to fetch metrics' },
-      { status: 500 }
-    );
   }
 }

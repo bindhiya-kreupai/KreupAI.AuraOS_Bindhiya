@@ -17,21 +17,18 @@ import { AgentFrameworkService } from '@/lib/services/agentic-ai';
 export const GET = createProtectedRoute(
   async (_request: NextRequest, _ctx) => {
     const agents = AgentFrameworkService.getAllAgents();
-    return {
-      success: true,
-      data: agents.map((agent) => ({
-        id: agent.id,
-        type: agent.type,
-        name: agent.name,
-        description: agent.description,
-        capabilities: agent.capabilities.map((c) => ({
-          id: c.id,
-          name: c.name,
-          description: c.description,
-        })),
-        isActive: agent.isActive,
+    return agents.map((agent) => ({
+      id: agent.id,
+      type: agent.type,
+      name: agent.name,
+      description: agent.description,
+      capabilities: agent.capabilities.map((c) => ({
+        id: c.id,
+        name: c.name,
+        description: c.description,
       })),
-    };
+      isActive: agent.isActive,
+    }));
   },
   {
     requiredPermissions: ['agents:read'],

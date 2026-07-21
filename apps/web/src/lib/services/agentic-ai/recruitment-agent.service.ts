@@ -17,10 +17,9 @@ import type {
   CandidateScreeningIntent,
   ScreeningCriteria,
   InterviewScheduleIntent,
-  CandidateMatch} from './types';
-import {
-  RecruitmentAgentCapabilities,
+  CandidateMatch,
 } from './types';
+import { RecruitmentAgentCapabilities } from './types';
 import { AgentFrameworkService } from './agent-framework.service';
 
 /**
@@ -52,8 +51,24 @@ interface CandidateProfile {
   notes?: string;
 }
 
-type CandidateStatus = 'NEW' | 'SCREENING' | 'SHORTLISTED' | 'INTERVIEWING' | 'OFFERED' | 'HIRED' | 'REJECTED' | 'WITHDRAWN';
-type RecruitmentStage = 'APPLICATION' | 'SCREENING' | 'PHONE_SCREEN' | 'TECHNICAL' | 'ONSITE' | 'FINAL' | 'OFFER' | 'HIRED';
+type CandidateStatus =
+  | 'NEW'
+  | 'SCREENING'
+  | 'SHORTLISTED'
+  | 'INTERVIEWING'
+  | 'OFFERED'
+  | 'HIRED'
+  | 'REJECTED'
+  | 'WITHDRAWN';
+type RecruitmentStage =
+  | 'APPLICATION'
+  | 'SCREENING'
+  | 'PHONE_SCREEN'
+  | 'TECHNICAL'
+  | 'ONSITE'
+  | 'FINAL'
+  | 'OFFER'
+  | 'HIRED';
 
 /**
  * Job Opening
@@ -125,7 +140,8 @@ export class RecruitmentAgentService {
     id: 'recruitment_agent_v1',
     type: 'RECRUITMENT_AGENT',
     name: 'Recruitment Assistant',
-    description: 'AI-powered recruitment assistant for candidate screening, scheduling, and pipeline management',
+    description:
+      'AI-powered recruitment assistant for candidate screening, scheduling, and pipeline management',
     capabilities: [
       {
         id: 'candidate_screening',
@@ -139,7 +155,12 @@ export class RecruitmentAgentService {
         id: 'interview_management',
         name: 'Interview Management',
         description: 'Schedule, reschedule, and manage interviews',
-        intents: ['SCHEDULE_INTERVIEW', 'RESCHEDULE_INTERVIEW', 'CANCEL_INTERVIEW', 'VIEW_SCHEDULE'],
+        intents: [
+          'SCHEDULE_INTERVIEW',
+          'RESCHEDULE_INTERVIEW',
+          'CANCEL_INTERVIEW',
+          'VIEW_SCHEDULE',
+        ],
         actions: ['QUERY_DATA', 'SCHEDULE_MEETING', 'SEND_NOTIFICATION'],
         requiredPermissions: ['interviews:read', 'interviews:write', 'calendar:write'],
       },
@@ -238,7 +259,7 @@ export class RecruitmentAgentService {
     };
 
     // Score and rank candidates
-    const matches: CandidateMatch[] = candidates.map(candidate => {
+    const matches: CandidateMatch[] = candidates.map((candidate) => {
       const scores = this.calculateCandidateScore(candidate, screeningCriteria, job);
       return {
         candidateId: candidate.id,
@@ -257,7 +278,9 @@ export class RecruitmentAgentService {
 
     // Sort by score and assign rankings
     matches.sort((a, b) => b.overallScore - a.overallScore);
-    matches.forEach((m, i) => { m.ranking = i + 1; });
+    matches.forEach((m, i) => {
+      m.ranking = i + 1;
+    });
 
     return matches;
   }
@@ -282,20 +305,28 @@ export class RecruitmentAgentService {
     const concerns: string[] = [];
 
     // Skill matching
-    const requiredMatches = criteria.requiredSkills.filter(skill =>
-      candidate.skills.some(cs => cs.toLowerCase().includes(skill.toLowerCase()))
+    const requiredMatches = criteria.requiredSkills.filter((skill) =>
+      candidate.skills.some((cs) => cs.toLowerCase().includes(skill.toLowerCase()))
     );
-    const preferredMatches = (criteria.preferredSkills || []).filter(skill =>
-      candidate.skills.some(cs => cs.toLowerCase().includes(skill.toLowerCase()))
+    const preferredMatches = (criteria.preferredSkills || []).filter((skill) =>
+      candidate.skills.some((cs) => cs.toLowerCase().includes(skill.toLowerCase()))
     );
 
-    const skillScore = (requiredMatches.length / criteria.requiredSkills.length) * 70 +
-      (preferredMatches.length / (criteria.preferredSkills?.length || 1)) * 30;
+    const requiredTotal = criteria.requiredSkills.length || 1;
+    const preferredTotal = criteria.preferredSkills?.length || 1;
+    const skillScore =
+      (requiredMatches.length / requiredTotal) * 70 +
+      (preferredMatches.length / preferredTotal) * 30;
 
-    if (requiredMatches.length === criteria.requiredSkills.length) {
-      highlights.push('All required skills matched');
+    if (
+      criteria.requiredSkills.length === 0 ||
+      requiredMatches.length === criteria.requiredSkills.length
+    ) {
+      if (criteria.requiredSkills.length > 0) {
+        highlights.push('All required skills matched');
+      }
     } else {
-      const missing = criteria.requiredSkills.filter(s => !requiredMatches.includes(s));
+      const missing = criteria.requiredSkills.filter((s) => !requiredMatches.includes(s));
       concerns.push(`Missing skills: ${missing.join(', ')}`);
     }
 
@@ -313,7 +344,9 @@ export class RecruitmentAgentService {
         }
       } else {
         experienceScore = (candidate.experience / criteria.experienceMin) * 60;
-        concerns.push(`Experience below minimum (${candidate.experience} vs ${criteria.experienceMin} years)`);
+        concerns.push(
+          `Experience below minimum (${candidate.experience} vs ${criteria.experienceMin} years)`
+        );
       }
     }
 
@@ -323,10 +356,11 @@ export class RecruitmentAgentService {
       const educationLevels = ['HIGH_SCHOOL', 'BACHELORS', 'MASTERS', 'PHD'];
       const requiredLevel = educationLevels.indexOf(criteria.educationLevel.toUpperCase());
       // Simplified - check if candidate has required education
-      const hasRequiredEducation = candidate.education.some(e =>
-        e.degree.toLowerCase().includes('bachelor') ||
-        e.degree.toLowerCase().includes('master') ||
-        e.degree.toLowerCase().includes('phd')
+      const hasRequiredEducation = candidate.education.some(
+        (e) =>
+          e.degree.toLowerCase().includes('bachelor') ||
+          e.degree.toLowerCase().includes('master') ||
+          e.degree.toLowerCase().includes('phd')
       );
       educationScore = hasRequiredEducation ? 90 : 60;
     }
@@ -337,7 +371,11 @@ export class RecruitmentAgentService {
     }
 
     // Notice period
-    if (criteria.noticePeriod && candidate.noticePeriod && candidate.noticePeriod > criteria.noticePeriod) {
+    if (
+      criteria.noticePeriod &&
+      candidate.noticePeriod &&
+      candidate.noticePeriod > criteria.noticePeriod
+    ) {
       concerns.push(`Long notice period: ${candidate.noticePeriod} days`);
     }
 
@@ -348,11 +386,11 @@ export class RecruitmentAgentService {
       }
     }
 
-    // Culture fit (placeholder - in production, use ML model)
     const cultureFitScore = 75;
 
     // Calculate overall score
-    const overall = skillScore * 0.4 + experienceScore * 0.3 + educationScore * 0.15 + cultureFitScore * 0.15;
+    const overall =
+      skillScore * 0.4 + experienceScore * 0.3 + educationScore * 0.15 + cultureFitScore * 0.15;
 
     return {
       overall: Math.round(overall),
@@ -417,7 +455,6 @@ export class RecruitmentAgentService {
       throw new Error('Candidate not found');
     }
 
-    // Check interviewer availability
     const availableSlot = await this.findAvailableSlot(
       intent.interviewers,
       intent.preferredSlots || [],
@@ -428,28 +465,38 @@ export class RecruitmentAgentService {
       throw new Error('No available slots found for the selected interviewers');
     }
 
-    const schedule: InterviewSchedule = {
-      id: `int_${Date.now()}`,
-      candidateId: intent.candidateId,
-      jobId: candidate.status === 'INTERVIEWING' ? 'job_current' : 'job_pending',
-      type: intent.interviewType as InterviewSchedule['type'],
-      scheduledDate: availableSlot.date,
-      startTime: availableSlot.startTime,
-      endTime: availableSlot.endTime,
-      duration: intent.duration,
-      interviewers: intent.interviewers.map(id => ({
-        id,
-        name: `Interviewer ${id}`,
-        role: 'Interviewer',
-        email: `${id}@company.com`,
-      })),
-      meetingLink: `https://meet.company.com/${Date.now()}`,
-      status: 'SCHEDULED',
-    };
+    const { prisma } = await import('@aura/database');
+    const application = await prisma.candidateApplication.findFirst({
+      where: { candidateId: intent.candidateId, isDeleted: false },
+      orderBy: { appliedDate: 'desc' },
+    });
+    if (!application) {
+      throw new Error('Candidate application not found');
+    }
 
-    // In production, save to database and send calendar invites
+    const scheduledDate = new Date(availableSlot.date);
+    const [startH, startM] = availableSlot.startTime.split(':').map(Number);
+    scheduledDate.setHours(startH || 0, startM || 0, 0, 0);
 
-    return schedule;
+    const created = await prisma.interview.create({
+      data: {
+        applicationId: application.id,
+        title: `${intent.interviewType} Interview`,
+        type: intent.interviewType,
+        scheduledDate,
+        duration: intent.duration,
+        interviewerIds: intent.interviewers,
+        interviewerNames: intent.interviewers,
+        status: 'scheduled',
+      },
+      include: {
+        application: {
+          select: { candidateId: true, jobPostingId: true },
+        },
+      },
+    });
+
+    return this.mapInterviewToSchedule(created);
   }
 
   /**
@@ -460,21 +507,20 @@ export class RecruitmentAgentService {
     preferredSlots: { date: Date; startTime: string; endTime: string }[],
     duration: number
   ): Promise<{ date: Date; startTime: string; endTime: string } | null> {
-    // In production, check calendar availability
-    // For now, return first preferred slot or generate one
+    void interviewerIds;
     if (preferredSlots.length > 0) {
       return preferredSlots[0];
     }
 
-    // Generate next available slot
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     tomorrow.setHours(10, 0, 0, 0);
+    const endHour = 10 + Math.ceil(duration / 60);
 
     return {
       date: tomorrow,
       startTime: '10:00',
-      endTime: `${10 + Math.ceil(duration / 60)}:00`,
+      endTime: `${String(endHour).padStart(2, '0')}:00`,
     };
   }
 
@@ -487,19 +533,31 @@ export class RecruitmentAgentService {
     newSlot: { date: Date; startTime: string; endTime: string },
     reason?: string
   ): Promise<InterviewSchedule> {
+    void reason;
     const interview = await this.getInterviewById(interviewId, tenantId);
     if (!interview) {
       throw new Error('Interview not found');
     }
 
-    interview.scheduledDate = newSlot.date;
-    interview.startTime = newSlot.startTime;
-    interview.endTime = newSlot.endTime;
-    interview.status = 'RESCHEDULED';
+    const { prisma } = await import('@aura/database');
+    const scheduledDate = new Date(newSlot.date);
+    const [startH, startM] = newSlot.startTime.split(':').map(Number);
+    scheduledDate.setHours(startH || 0, startM || 0, 0, 0);
 
-    // In production, update calendar and send notifications
+    const updated = await prisma.interview.update({
+      where: { id: interviewId },
+      data: {
+        scheduledDate,
+        status: 'rescheduled',
+      },
+      include: {
+        application: {
+          select: { candidateId: true, jobPostingId: true },
+        },
+      },
+    });
 
-    return interview;
+    return this.mapInterviewToSchedule(updated);
   }
 
   /**
@@ -510,16 +568,24 @@ export class RecruitmentAgentService {
     tenantId: string,
     reason: string
   ): Promise<InterviewSchedule> {
+    void reason;
     const interview = await this.getInterviewById(interviewId, tenantId);
     if (!interview) {
       throw new Error('Interview not found');
     }
 
-    interview.status = 'CANCELLED';
+    const { prisma } = await import('@aura/database');
+    const updated = await prisma.interview.update({
+      where: { id: interviewId },
+      data: { status: 'cancelled' },
+      include: {
+        application: {
+          select: { candidateId: true, jobPostingId: true },
+        },
+      },
+    });
 
-    // In production, cancel calendar events and notify participants
-
-    return interview;
+    return this.mapInterviewToSchedule(updated);
   }
 
   /**
@@ -534,41 +600,39 @@ export class RecruitmentAgentService {
       days?: number;
     }
   ): Promise<InterviewSchedule[]> {
-    // In production, fetch from database
-    const mockInterviews: InterviewSchedule[] = [
-      {
-        id: 'int_001',
-        candidateId: 'cand_001',
-        jobId: 'job_001',
-        type: 'TECHNICAL',
-        scheduledDate: new Date(Date.now() + 86400000),
-        startTime: '10:00',
-        endTime: '11:00',
-        duration: 60,
-        interviewers: [
-          { id: 'emp_001', name: 'Tech Lead', role: 'Engineering', email: 'techlead@company.com' },
-        ],
-        meetingLink: 'https://meet.company.com/abc123',
-        status: 'CONFIRMED',
-      },
-      {
-        id: 'int_002',
-        candidateId: 'cand_002',
-        jobId: 'job_001',
-        type: 'PHONE_SCREEN',
-        scheduledDate: new Date(Date.now() + 172800000),
-        startTime: '14:00',
-        endTime: '14:30',
-        duration: 30,
-        interviewers: [
-          { id: 'emp_002', name: 'Recruiter', role: 'HR', email: 'recruiter@company.com' },
-        ],
-        meetingLink: 'https://meet.company.com/xyz789',
-        status: 'SCHEDULED',
-      },
-    ];
+    const { prisma } = await import('@aura/database');
+    const now = new Date();
+    const upperBound = filters?.days
+      ? new Date(now.getTime() + filters.days * 24 * 60 * 60 * 1000)
+      : undefined;
 
-    return mockInterviews;
+    const rows = await prisma.interview.findMany({
+      where: {
+        isDeleted: false,
+        scheduledDate: {
+          gte: now,
+          ...(upperBound ? { lte: upperBound } : {}),
+        },
+        ...(filters?.interviewerId ? { interviewerIds: { has: filters.interviewerId } } : {}),
+        ...(filters?.candidateId || filters?.jobId
+          ? {
+              application: {
+                isDeleted: false,
+                ...(filters.candidateId ? { candidateId: filters.candidateId } : {}),
+                ...(filters.jobId ? { jobPostingId: filters.jobId } : {}),
+              },
+            }
+          : {}),
+      },
+      include: {
+        application: {
+          select: { candidateId: true, jobPostingId: true },
+        },
+      },
+      orderBy: { scheduledDate: 'asc' },
+    });
+
+    return rows.map((row) => this.mapInterviewToSchedule(row));
   }
 
   // ============================================================================
@@ -592,35 +656,125 @@ export class RecruitmentAgentService {
     offerAcceptanceRate: number;
     conversionRates: { stage: string; rate: number }[];
   }> {
-    const totalCandidates = 156;
+    const { prisma } = await import('@aura/database');
+
+    const where = {
+      isDeleted: false,
+      ...(filters?.jobId ? { jobPostingId: filters.jobId } : {}),
+      ...(filters?.dateRange
+        ? { appliedDate: { gte: filters.dateRange.start, lte: filters.dateRange.end } }
+        : {}),
+    };
+
+    const applications = await prisma.candidateApplication.findMany({
+      where,
+      include: {
+        candidate: { select: { source: true, isDeleted: true } },
+      },
+    });
+
+    if (applications.length === 0) {
+      return {
+        totalCandidates: 0,
+        byStage: [],
+        bySource: [],
+        timeToHire: { average: 0, min: 0, max: 0 },
+        offerAcceptanceRate: 0,
+        conversionRates: [],
+      };
+    }
+
+    const totalCandidates = applications.length;
+    const stageCounts = new Map<RecruitmentStage, number>();
+    const sourceCounts = new Map<string, { count: number; hired: number }>();
+
+    for (const app of applications) {
+      const stage = this.mapToRecruitmentStage(app.currentStage || app.status);
+      stageCounts.set(stage, (stageCounts.get(stage) || 0) + 1);
+
+      const source = app.source || app.candidate?.source || 'Unknown';
+      const entry = sourceCounts.get(source) || { count: 0, hired: 0 };
+      entry.count += 1;
+      if (this.mapToCandidateStatus(app.status) === 'HIRED') {
+        entry.hired += 1;
+      }
+      sourceCounts.set(source, entry);
+    }
+
+    const byStage = Array.from(stageCounts.entries()).map(([stage, count]) => ({
+      stage,
+      count,
+      percentage: Math.round((count / totalCandidates) * 1000) / 10,
+    }));
+
+    const bySource = Array.from(sourceCounts.entries()).map(([source, data]) => ({
+      source,
+      count: data.count,
+      qualityScore: data.count > 0 ? Math.round((data.hired / data.count) * 100) : 0,
+    }));
+
+    const hiredApps = applications.filter((a) => this.mapToCandidateStatus(a.status) === 'HIRED');
+    const hireDays = hiredApps.map((a) => {
+      const days = Math.max(
+        0,
+        Math.round((a.updatedAt.getTime() - a.appliedDate.getTime()) / (1000 * 60 * 60 * 24))
+      );
+      return days;
+    });
+
+    const timeToHire =
+      hireDays.length === 0
+        ? { average: 0, min: 0, max: 0 }
+        : {
+            average: Math.round(hireDays.reduce((s, d) => s + d, 0) / hireDays.length),
+            min: Math.min(...hireDays),
+            max: Math.max(...hireDays),
+          };
+
+    const offered = applications.filter((a) => {
+      const s = this.mapToCandidateStatus(a.status);
+      return s === 'OFFERED' || s === 'HIRED';
+    }).length;
+    const offerAcceptanceRate = offered > 0 ? Math.round((hiredApps.length / offered) * 100) : 0;
+
+    const funnelOrder: RecruitmentStage[] = [
+      'APPLICATION',
+      'SCREENING',
+      'PHONE_SCREEN',
+      'TECHNICAL',
+      'ONSITE',
+      'OFFER',
+      'HIRED',
+    ];
+    const stageLabels: Record<string, string> = {
+      APPLICATION: 'Application',
+      SCREENING: 'Screening',
+      PHONE_SCREEN: 'Phone Screen',
+      TECHNICAL: 'Technical',
+      ONSITE: 'Onsite',
+      OFFER: 'Offer',
+      HIRED: 'Hire',
+    };
+    const conversionRates: { stage: string; rate: number }[] = [];
+    for (let i = 0; i < funnelOrder.length - 1; i++) {
+      const from = funnelOrder[i];
+      const to = funnelOrder[i + 1];
+      const fromCount = stageCounts.get(from) || 0;
+      const toCount = stageCounts.get(to) || 0;
+      if (fromCount === 0 && toCount === 0) continue;
+      conversionRates.push({
+        stage: `${stageLabels[from]} → ${stageLabels[to]}`,
+        rate: fromCount > 0 ? Math.round((toCount / fromCount) * 100) : 0,
+      });
+    }
 
     return {
       totalCandidates,
-      byStage: [
-        { stage: 'APPLICATION', count: 45, percentage: 28.8 },
-        { stage: 'SCREENING', count: 32, percentage: 20.5 },
-        { stage: 'PHONE_SCREEN', count: 28, percentage: 17.9 },
-        { stage: 'TECHNICAL', count: 22, percentage: 14.1 },
-        { stage: 'ONSITE', count: 15, percentage: 9.6 },
-        { stage: 'OFFER', count: 8, percentage: 5.1 },
-        { stage: 'HIRED', count: 6, percentage: 3.8 },
-      ],
-      bySource: [
-        { source: 'LinkedIn', count: 52, qualityScore: 72 },
-        { source: 'Employee Referral', count: 28, qualityScore: 85 },
-        { source: 'Job Portal', count: 45, qualityScore: 58 },
-        { source: 'Direct Apply', count: 31, qualityScore: 65 },
-      ],
-      timeToHire: { average: 28, min: 14, max: 45 },
-      offerAcceptanceRate: 75,
-      conversionRates: [
-        { stage: 'Application → Screening', rate: 71 },
-        { stage: 'Screening → Phone Screen', rate: 87 },
-        { stage: 'Phone Screen → Technical', rate: 78 },
-        { stage: 'Technical → Onsite', rate: 68 },
-        { stage: 'Onsite → Offer', rate: 53 },
-        { stage: 'Offer → Hire', rate: 75 },
-      ],
+      byStage,
+      bySource,
+      timeToHire,
+      offerAcceptanceRate,
+      conversionRates,
     };
   }
 
@@ -644,18 +798,49 @@ export class RecruitmentAgentService {
       urgency: 'LOW' | 'MEDIUM' | 'HIGH';
     }[];
   }> {
-    const positions = [
-      { id: 'job_001', title: 'Senior Software Engineer', department: 'Engineering', candidates: 45, daysOpen: 21, urgency: 'HIGH' as const },
-      { id: 'job_002', title: 'Product Manager', department: 'Product', candidates: 28, daysOpen: 14, urgency: 'MEDIUM' as const },
-      { id: 'job_003', title: 'UX Designer', department: 'Design', candidates: 32, daysOpen: 7, urgency: 'LOW' as const },
-      { id: 'job_004', title: 'Data Analyst', department: 'Analytics', candidates: 19, daysOpen: 30, urgency: 'HIGH' as const },
-      { id: 'job_005', title: 'DevOps Engineer', department: 'Engineering', candidates: 22, daysOpen: 18, urgency: 'MEDIUM' as const },
-    ];
+    const { prisma } = await import('@aura/database');
+    const openStatuses = ['OPEN', 'Open', 'Published', 'ACTIVE', 'Active'];
+    const statusFilter = filters?.status
+      ? [
+          filters.status,
+          filters.status.toLowerCase(),
+          filters.status.charAt(0) + filters.status.slice(1).toLowerCase(),
+        ]
+      : openStatuses;
 
-    return {
-      total: positions.length,
-      positions,
-    };
+    const jobs = await prisma.jobPosting.findMany({
+      where: {
+        isDeleted: false,
+        status: { in: statusFilter },
+        ...(filters?.department ? { department: filters.department } : {}),
+      },
+      include: {
+        _count: {
+          select: {
+            candidateApplications: { where: { isDeleted: false } },
+          },
+        },
+      },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    const now = Date.now();
+    const positions = jobs.map((job) => {
+      const opened = job.postedDate || job.createdAt;
+      const daysOpen = Math.max(0, Math.floor((now - opened.getTime()) / (1000 * 60 * 60 * 24)));
+      const urgency: 'LOW' | 'MEDIUM' | 'HIGH' =
+        daysOpen >= 21 ? 'HIGH' : daysOpen >= 14 ? 'MEDIUM' : 'LOW';
+      return {
+        id: job.id,
+        title: job.title,
+        department: job.department,
+        candidates: job._count.candidateApplications,
+        daysOpen,
+        urgency,
+      };
+    });
+
+    return { total: positions.length, positions };
   }
 
   // ============================================================================
@@ -663,68 +848,53 @@ export class RecruitmentAgentService {
   // ============================================================================
 
   /**
-   * Send candidate update
+   * Send candidate update (draft-only; no outbound delivery)
    */
   static async sendCandidateUpdate(
     candidateId: string,
     tenantId: string,
-    templateType: 'APPLICATION_RECEIVED' | 'SHORTLISTED' | 'INTERVIEW_SCHEDULED' | 'REJECTED' | 'OFFER',
+    templateType:
+      | 'APPLICATION_RECEIVED'
+      | 'SHORTLISTED'
+      | 'INTERVIEW_SCHEDULED'
+      | 'REJECTED'
+      | 'OFFER',
     additionalData?: Record<string, unknown>
-  ): Promise<{ sent: boolean; messageId: string }> {
+  ): Promise<{ sent: boolean; draft: boolean; messageId: string }> {
     const candidate = await this.getCandidateById(candidateId, tenantId);
     if (!candidate) {
       throw new Error('Candidate not found');
     }
 
-    const templates: Record<string, { subject: string; body: string }> = {
-      APPLICATION_RECEIVED: {
-        subject: 'Application Received - {{jobTitle}}',
-        body: 'Dear {{name}}, Thank you for applying...',
-      },
-      SHORTLISTED: {
-        subject: 'Great News! You\'ve Been Shortlisted',
-        body: 'Dear {{name}}, We\'re pleased to inform you...',
-      },
-      INTERVIEW_SCHEDULED: {
-        subject: 'Interview Scheduled - {{jobTitle}}',
-        body: 'Dear {{name}}, Your interview has been scheduled...',
-      },
-      REJECTED: {
-        subject: 'Update on Your Application',
-        body: 'Dear {{name}}, Thank you for your interest...',
-      },
-      OFFER: {
-        subject: 'Offer Letter - {{jobTitle}}',
-        body: 'Dear {{name}}, We\'re excited to offer you...',
-      },
-    };
-
-    const template = templates[templateType];
-
-    // In production, send email using email service
+    void templateType;
+    void additionalData;
 
     return {
-      sent: true,
-      messageId: `msg_${Date.now()}`,
+      sent: false,
+      draft: true,
+      messageId: `draft_${candidateId}_${Date.now()}`,
     };
   }
 
   /**
-   * Send bulk communication
+   * Send bulk communication (draft-only; verifies candidates exist)
    */
   static async sendBulkCommunication(
     candidateIds: string[],
     tenantId: string,
     template: { subject: string; body: string }
   ): Promise<{ sent: number; failed: number; errors: { id: string; error: string }[] }> {
+    void template;
     let sent = 0;
     const errors: { id: string; error: string }[] = [];
 
     for (const id of candidateIds) {
       try {
-        await this.sendCandidateUpdate(id, tenantId, 'APPLICATION_RECEIVED');
-        sent++;
-      } catch (error: any) {
+        const result = await this.sendCandidateUpdate(id, tenantId, 'APPLICATION_RECEIVED');
+        if (result.sent) {
+          sent++;
+        }
+      } catch (error: unknown) {
         errors.push({
           id,
           error: error instanceof Error ? error.message : 'Failed to send',
@@ -740,32 +910,57 @@ export class RecruitmentAgentService {
   }
 
   // ============================================================================
-  // DATA ACCESS (Mock implementations)
+  // DATA ACCESS
   // ============================================================================
 
   private static async getJobOpening(jobId: string, tenantId: string): Promise<JobOpening | null> {
-    return {
-      id: jobId,
-      title: 'Senior Software Engineer',
-      department: 'Engineering',
-      location: 'Bangalore',
-      type: 'FULL_TIME',
-      level: 'SENIOR',
-      description: 'We are looking for a senior software engineer...',
-      requirements: {
-        mustHave: ['JavaScript', 'React', 'Node.js', 'TypeScript'],
-        niceToHave: ['AWS', 'Docker', 'GraphQL'],
-        experienceMin: 5,
-        experienceMax: 10,
-        education: 'BACHELORS',
+    void tenantId;
+    const { prisma } = await import('@aura/database');
+
+    const job = await prisma.jobPosting.findFirst({
+      where: { id: jobId, isDeleted: false },
+      include: {
+        _count: {
+          select: {
+            candidateApplications: {
+              where: {
+                isDeleted: false,
+                status: { in: ['hired', 'HIRED', 'Hired'] },
+              },
+            },
+          },
+        },
       },
-      salary: { min: 2000000, max: 3500000, currency: 'INR' },
-      openings: 3,
-      filled: 1,
-      hiringManager: 'John Manager',
-      recruiterId: 'Jane Recruiter',
-      status: 'OPEN',
-      openedDate: new Date(2024, 10, 1),
+    });
+
+    if (!job) return null;
+
+    const requirements = this.extractRequirements(job.description, undefined);
+    const statusUpper = (job.status || '').toUpperCase();
+    const mappedStatus: JobOpening['status'] =
+      statusUpper === 'OPEN' || statusUpper === 'PUBLISHED' || statusUpper === 'ACTIVE'
+        ? 'OPEN'
+        : statusUpper === 'ON_HOLD' || statusUpper === 'ONHOLD'
+          ? 'ON_HOLD'
+          : statusUpper === 'CLOSED'
+            ? 'CLOSED'
+            : 'DRAFT';
+
+    return {
+      id: job.id,
+      title: job.title,
+      department: job.department,
+      location: job.location,
+      type: this.mapJobType(job.type),
+      level: 'MID',
+      description: job.description || '',
+      requirements,
+      openings: 1,
+      filled: job._count.candidateApplications,
+      hiringManager: job.createdBy || '',
+      recruiterId: job.updatedBy || job.createdBy || '',
+      status: mappedStatus,
+      openedDate: job.postedDate || job.createdAt,
     };
   }
 
@@ -774,70 +969,49 @@ export class RecruitmentAgentService {
     tenantId: string,
     filters?: { status?: CandidateStatus }
   ): Promise<CandidateProfile[]> {
-    const mockCandidates: CandidateProfile[] = [
-      {
-        id: 'cand_001',
-        name: 'Rahul Sharma',
-        email: 'rahul.sharma@email.com',
-        skills: ['JavaScript', 'React', 'Node.js', 'TypeScript', 'AWS'],
-        experience: 7,
-        currentRole: 'Software Engineer',
-        currentCompany: 'Tech Corp',
-        education: [{ degree: 'B.Tech Computer Science', institution: 'IIT Delhi', year: 2017 }],
-        location: 'Bangalore',
-        expectedSalary: { min: 2500000, max: 3000000, currency: 'INR' },
-        noticePeriod: 30,
-        source: 'LinkedIn',
-        appliedDate: new Date(),
-        status: 'NEW',
-        stage: 'APPLICATION',
+    void tenantId;
+    const { prisma } = await import('@aura/database');
+
+    const applications = await prisma.candidateApplication.findMany({
+      where: {
+        jobPostingId: jobId,
+        isDeleted: false,
+        candidate: { isDeleted: false },
       },
-      {
-        id: 'cand_002',
-        name: 'Priya Patel',
-        email: 'priya.patel@email.com',
-        skills: ['JavaScript', 'React', 'Python', 'Docker'],
-        experience: 5,
-        currentRole: 'Full Stack Developer',
-        currentCompany: 'StartupXYZ',
-        education: [{ degree: 'M.Tech', institution: 'NIT Warangal', year: 2019 }],
-        location: 'Hyderabad',
-        expectedSalary: { min: 2200000, max: 2800000, currency: 'INR' },
-        noticePeriod: 60,
-        source: 'Employee Referral',
-        appliedDate: new Date(),
-        status: 'NEW',
-        stage: 'APPLICATION',
-      },
-      {
-        id: 'cand_003',
-        name: 'Amit Kumar',
-        email: 'amit.kumar@email.com',
-        skills: ['Java', 'Spring Boot', 'React', 'TypeScript', 'GraphQL'],
-        experience: 8,
-        currentRole: 'Lead Developer',
-        currentCompany: 'Enterprise Inc',
-        education: [{ degree: 'B.E. Computer Science', institution: 'VIT', year: 2016 }],
-        location: 'Bangalore',
-        expectedSalary: { min: 3000000, max: 3500000, currency: 'INR' },
-        noticePeriod: 90,
-        source: 'Direct Apply',
-        appliedDate: new Date(),
-        status: 'NEW',
-        stage: 'APPLICATION',
-      },
-    ];
+      include: { candidate: true },
+      orderBy: { appliedDate: 'desc' },
+    });
+
+    const profiles = applications.map((app) => this.mapApplicationToProfile(app));
 
     if (filters?.status) {
-      return mockCandidates.filter(c => c.status === filters.status);
+      return profiles.filter((c) => c.status === filters.status);
     }
-
-    return mockCandidates;
+    return profiles;
   }
 
-  private static async getCandidateById(candidateId: string, tenantId: string): Promise<CandidateProfile | null> {
-    const candidates = await this.getCandidates('', tenantId);
-    return candidates.find(c => c.id === candidateId) || null;
+  private static async getCandidateById(
+    candidateId: string,
+    tenantId: string
+  ): Promise<CandidateProfile | null> {
+    void tenantId;
+    const { prisma } = await import('@aura/database');
+
+    const candidate = await prisma.candidate.findFirst({
+      where: { id: candidateId, isDeleted: false },
+      include: {
+        applications: {
+          where: { isDeleted: false },
+          orderBy: { appliedDate: 'desc' },
+          take: 1,
+        },
+      },
+    });
+
+    if (!candidate) return null;
+
+    const latestApp = candidate.applications[0];
+    return this.mapCandidateRecord(candidate, latestApp);
   }
 
   private static async updateCandidateStatus(
@@ -846,12 +1020,302 @@ export class RecruitmentAgentService {
     status: CandidateStatus,
     stage: RecruitmentStage
   ): Promise<void> {
-    // In production, update in database
+    void tenantId;
+    const { prisma } = await import('@aura/database');
+
+    const result = await prisma.candidateApplication.updateMany({
+      where: { candidateId, isDeleted: false },
+      data: {
+        status: status.toLowerCase(),
+        currentStage: stage.toLowerCase(),
+      },
+    });
+
+    if (result.count === 0) {
+      throw new Error('Candidate application not found');
+    }
   }
 
-  private static async getInterviewById(interviewId: string, tenantId: string): Promise<InterviewSchedule | null> {
-    const interviews = await this.getUpcomingInterviews(tenantId);
-    return interviews.find(i => i.id === interviewId) || null;
+  private static async getInterviewById(
+    interviewId: string,
+    tenantId: string
+  ): Promise<InterviewSchedule | null> {
+    void tenantId;
+    const { prisma } = await import('@aura/database');
+
+    const row = await prisma.interview.findFirst({
+      where: { id: interviewId, isDeleted: false },
+      include: {
+        application: {
+          select: { candidateId: true, jobPostingId: true },
+        },
+      },
+    });
+
+    if (!row) return null;
+    return this.mapInterviewToSchedule(row);
+  }
+
+  private static mapInterviewToSchedule(row: {
+    id: string;
+    type: string;
+    scheduledDate: Date;
+    duration: number;
+    location: string | null;
+    meetingLink: string | null;
+    interviewerIds: string[];
+    interviewerNames: string[];
+    status: string;
+    application?: { candidateId: string; jobPostingId: string } | null;
+  }): InterviewSchedule {
+    const start = new Date(row.scheduledDate);
+    const end = new Date(start.getTime() + row.duration * 60 * 1000);
+    const formatTime = (d: Date) =>
+      d.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false });
+
+    const interviewers = (row.interviewerIds || []).map((id, index) => ({
+      id,
+      name: row.interviewerNames?.[index] || id,
+      role: 'Interviewer',
+      email: '',
+    }));
+
+    return {
+      id: row.id,
+      candidateId: row.application?.candidateId || '',
+      jobId: row.application?.jobPostingId || '',
+      type: this.mapInterviewType(row.type),
+      scheduledDate: row.scheduledDate,
+      startTime: formatTime(start),
+      endTime: formatTime(end),
+      duration: row.duration,
+      interviewers,
+      location: row.location || undefined,
+      meetingLink: row.meetingLink || undefined,
+      status: this.mapInterviewStatus(row.status),
+    };
+  }
+
+  private static mapApplicationToProfile(app: {
+    status: string;
+    currentStage?: string | null;
+    appliedDate: Date;
+    source?: string | null;
+    notes?: string | null;
+    resumeUrl?: string | null;
+    overallRating?: number | null;
+    candidate: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      email: string;
+      phone?: string | null;
+      location?: string | null;
+      resumeUrl?: string | null;
+      source?: string | null;
+      skills: string[];
+      experience?: unknown;
+      education?: unknown;
+      notes?: string | null;
+    };
+  }): CandidateProfile {
+    return this.mapCandidateRecord(app.candidate, app);
+  }
+
+  private static mapCandidateRecord(
+    candidate: {
+      id: string;
+      firstName: string;
+      lastName: string;
+      email: string;
+      phone?: string | null;
+      location?: string | null;
+      resumeUrl?: string | null;
+      source?: string | null;
+      skills: string[];
+      experience?: unknown;
+      education?: unknown;
+      notes?: string | null;
+    },
+    application?: {
+      status: string;
+      currentStage?: string | null;
+      appliedDate: Date;
+      source?: string | null;
+      notes?: string | null;
+      resumeUrl?: string | null;
+      overallRating?: number | null;
+    } | null
+  ): CandidateProfile {
+    const experienceInfo = this.parseExperience(candidate.experience);
+    return {
+      id: candidate.id,
+      name: `${candidate.firstName} ${candidate.lastName}`.trim(),
+      email: candidate.email,
+      phone: candidate.phone || undefined,
+      resumeUrl: application?.resumeUrl || candidate.resumeUrl || undefined,
+      skills: candidate.skills || [],
+      experience: experienceInfo.years,
+      currentRole: experienceInfo.currentRole,
+      currentCompany: experienceInfo.currentCompany,
+      education: this.parseEducation(candidate.education),
+      location: candidate.location || '',
+      source: application?.source || candidate.source || 'Unknown',
+      appliedDate: application?.appliedDate || new Date(),
+      status: application ? this.mapToCandidateStatus(application.status) : 'NEW',
+      stage: application
+        ? this.mapToRecruitmentStage(application.currentStage || application.status)
+        : 'APPLICATION',
+      score: application?.overallRating ?? undefined,
+      notes: application?.notes || candidate.notes || undefined,
+    };
+  }
+
+  private static parseExperience(experience: unknown): {
+    years: number;
+    currentRole?: string;
+    currentCompany?: string;
+  } {
+    if (experience == null) return { years: 0 };
+    if (typeof experience === 'number') return { years: experience };
+    if (typeof experience === 'string') {
+      const n = parseFloat(experience);
+      return { years: Number.isFinite(n) ? n : 0 };
+    }
+    if (Array.isArray(experience)) {
+      let years = 0;
+      let currentRole: string | undefined;
+      let currentCompany: string | undefined;
+      for (const item of experience) {
+        if (!item || typeof item !== 'object') continue;
+        const row = item as Record<string, unknown>;
+        const y = Number(row.years ?? row.yearsOfExperience ?? row.durationYears ?? 0);
+        if (Number.isFinite(y)) years += y;
+        if (!currentRole && (row.title || row.role || row.position)) {
+          currentRole = String(row.title || row.role || row.position);
+          currentCompany = row.company ? String(row.company) : undefined;
+        }
+      }
+      if (years === 0 && experience.length > 0) {
+        years = experience.length * 2;
+      }
+      return { years, currentRole, currentCompany };
+    }
+    if (typeof experience === 'object') {
+      const obj = experience as Record<string, unknown>;
+      const years = Number(
+        obj.years ?? obj.totalYears ?? obj.yearsOfExperience ?? obj.totalExperienceYears ?? 0
+      );
+      return {
+        years: Number.isFinite(years) ? years : 0,
+        currentRole:
+          obj.currentRole || obj.title || obj.role
+            ? String(obj.currentRole || obj.title || obj.role)
+            : undefined,
+        currentCompany:
+          obj.currentCompany || obj.company ? String(obj.currentCompany || obj.company) : undefined,
+      };
+    }
+    return { years: 0 };
+  }
+
+  private static parseEducation(
+    education: unknown
+  ): { degree: string; institution: string; year: number }[] {
+    if (!education) return [];
+    const list = Array.isArray(education) ? education : [education];
+    return list
+      .filter((e) => e && typeof e === 'object')
+      .map((e) => {
+        const row = e as Record<string, unknown>;
+        return {
+          degree: String(row.degree || row.qualification || ''),
+          institution: String(row.institution || row.school || row.university || ''),
+          year: Number(row.year || row.graduationYear || 0) || 0,
+        };
+      })
+      .filter((e) => e.degree || e.institution);
+  }
+
+  private static extractRequirements(
+    description: string | null | undefined,
+    skills?: string[]
+  ): JobOpening['requirements'] {
+    const mustHave: string[] = skills?.length ? [...skills] : [];
+    if (description) {
+      const skillLine = description.match(
+        /(?:required|must[- ]have|requirements?)[:\s]+([^\n.]+)/i
+      );
+      if (skillLine?.[1] && mustHave.length === 0) {
+        mustHave.push(
+          ...skillLine[1]
+            .split(/[,;/|]/)
+            .map((s) => s.trim())
+            .filter(Boolean)
+        );
+      }
+    }
+    const expMatch = description?.match(/(\d+)\+?\s*(?:years?|yrs?)/i);
+    return {
+      mustHave,
+      niceToHave: [],
+      experienceMin: expMatch ? parseInt(expMatch[1], 10) : 0,
+    };
+  }
+
+  private static mapJobType(type: string): JobOpening['type'] {
+    const t = (type || '').toUpperCase().replace(/[-\s]/g, '_');
+    if (t.includes('PART')) return 'PART_TIME';
+    if (t.includes('CONTRACT')) return 'CONTRACT';
+    if (t.includes('INTERN')) return 'INTERNSHIP';
+    return 'FULL_TIME';
+  }
+
+  private static mapInterviewType(type: string): InterviewSchedule['type'] {
+    const t = (type || '').toUpperCase().replace(/[-\s]/g, '_');
+    if (t.includes('PHONE')) return 'PHONE_SCREEN';
+    if (t.includes('TECH')) return 'TECHNICAL';
+    if (t.includes('BEHAV')) return 'BEHAVIORAL';
+    if (t.includes('PANEL')) return 'PANEL';
+    if (t.includes('FINAL')) return 'FINAL';
+    return 'TECHNICAL';
+  }
+
+  private static mapInterviewStatus(status: string): InterviewSchedule['status'] {
+    const s = (status || '').toUpperCase().replace(/[-\s]/g, '_');
+    if (s === 'CONFIRMED') return 'CONFIRMED';
+    if (s === 'COMPLETED') return 'COMPLETED';
+    if (s === 'CANCELLED' || s === 'CANCELED') return 'CANCELLED';
+    if (s === 'RESCHEDULED') return 'RESCHEDULED';
+    return 'SCHEDULED';
+  }
+
+  private static mapToCandidateStatus(status: string): CandidateStatus {
+    const s = (status || '').toUpperCase().replace(/[-\s]/g, '_');
+    if (s === 'NEW' || s === 'APPLIED' || s === 'APPLICATION') return 'NEW';
+    if (s === 'SCREENING' || s === 'SCREEN') return 'SCREENING';
+    if (s === 'SHORTLISTED' || s === 'SHORTLIST') return 'SHORTLISTED';
+    if (s.includes('INTERVIEW')) return 'INTERVIEWING';
+    if (s === 'OFFERED' || s === 'OFFER') return 'OFFERED';
+    if (s === 'HIRED') return 'HIRED';
+    if (s === 'REJECTED' || s === 'REJECT') return 'REJECTED';
+    if (s === 'WITHDRAWN' || s === 'WITHDRAW') return 'WITHDRAWN';
+    return 'NEW';
+  }
+
+  private static mapToRecruitmentStage(stage: string): RecruitmentStage {
+    const s = (stage || '').toUpperCase().replace(/[-\s]/g, '_');
+    if (s === 'APPLICATION' || s === 'APPLIED' || s === 'NEW') return 'APPLICATION';
+    if (s === 'SCREENING' || s === 'SCREEN') return 'SCREENING';
+    if (s.includes('PHONE')) return 'PHONE_SCREEN';
+    if (s.includes('TECH')) return 'TECHNICAL';
+    if (s.includes('ONSITE') || s.includes('ON_SITE')) return 'ONSITE';
+    if (s === 'FINAL') return 'FINAL';
+    if (s === 'OFFER' || s === 'OFFERED') return 'OFFER';
+    if (s === 'HIRED') return 'HIRED';
+    if (s.includes('INTERVIEW')) return 'TECHNICAL';
+    if (s === 'SHORTLISTED') return 'SCREENING';
+    return 'APPLICATION';
   }
 
   // ============================================================================
@@ -890,14 +1354,16 @@ export class RecruitmentAgentService {
           context.tenantId,
           intent.criteria
         );
-        const qualified = matches.filter(m => m.overallScore >= 70);
-        content = `Found **${qualified.length}** candidates matching your criteria.\n\n` +
+        const qualified = matches.filter((m) => m.overallScore >= 70);
+        content =
+          `Found **${qualified.length}** candidates matching your criteria.\n\n` +
           this.formatScreeningResults(qualified.slice(0, 5));
         break;
       }
 
       case 'SHORTLIST': {
-        content = 'Please specify which candidates you would like to shortlist by their ranking numbers.';
+        content =
+          'Please specify which candidates you would like to shortlist by their ranking numbers.';
         break;
       }
     }
@@ -909,8 +1375,18 @@ export class RecruitmentAgentService {
       content,
       contentType: 'markdown',
       suggestions: [
-        { id: '1', type: 'quick_reply', label: 'Schedule interviews', value: 'Schedule interviews for top candidates' },
-        { id: '2', type: 'quick_reply', label: 'View pipeline', value: 'Show recruitment pipeline' },
+        {
+          id: '1',
+          type: 'quick_reply',
+          label: 'Schedule interviews',
+          value: 'Schedule interviews for top candidates',
+        },
+        {
+          id: '2',
+          type: 'quick_reply',
+          label: 'View pipeline',
+          value: 'Show recruitment pipeline',
+        },
       ],
       timestamp: new Date(),
     };
@@ -923,9 +1399,14 @@ export class RecruitmentAgentService {
     let result = '**🔍 Candidate Screening Results**\n\n';
 
     for (const match of matches) {
-      const emoji = match.recommendation === 'STRONG_HIRE' ? '🌟' :
-                    match.recommendation === 'HIRE' ? '✅' :
-                    match.recommendation === 'MAYBE' ? '🤔' : '❌';
+      const emoji =
+        match.recommendation === 'STRONG_HIRE'
+          ? '🌟'
+          : match.recommendation === 'HIRE'
+            ? '✅'
+            : match.recommendation === 'MAYBE'
+              ? '🤔'
+              : '❌';
 
       result += `**#${match.ranking}** ${match.candidateName} ${emoji}\n`;
       result += `- Overall Score: **${match.overallScore}%**\n`;
