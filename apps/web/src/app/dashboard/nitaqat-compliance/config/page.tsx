@@ -29,7 +29,7 @@ export default function NitaqatConfigPage() {
   async function load() {
     const r = await fetch('/api/v1/nitaqat-compliance/config');
     const p = await r.json();
-    if (p.success) setConfigs(p.data ?? []);
+    if (p.success) setConfigs(Array.isArray(p.data) ? p.data : (p.data?.items ?? []));
   }
   useEffect(() => {
     load();

@@ -104,7 +104,7 @@ export class NitaqatConfigService {
   ) {
     return (prisma as any).nitaqatConfig.upsert({
       where: {
-        aura_nitaqat_config_unique: {
+        tenantId_legalEntityId: {
           tenantId: auth.tenantId,
           legalEntityId: input.legalEntityId ?? null,
         },
@@ -307,7 +307,7 @@ export class NitaqatSnapshotService {
   async takeSnapshot(input: { legalEntityId?: string; snapshotDate: Date }, auth: AuthContext) {
     const config = await (prisma as any).nitaqatConfig.findUnique({
       where: {
-        aura_nitaqat_config_unique: {
+        tenantId_legalEntityId: {
           tenantId: auth.tenantId,
           legalEntityId: input.legalEntityId ?? null,
         },
@@ -339,7 +339,7 @@ export class NitaqatSnapshotService {
 
     return (prisma as any).nitaqatBandSnapshot.upsert({
       where: {
-        aura_nitaqat_band_snapshot_unique: {
+        tenantId_legalEntityId_snapshotDate: {
           tenantId: auth.tenantId,
           legalEntityId: input.legalEntityId ?? null,
           snapshotDate: input.snapshotDate,
@@ -399,7 +399,7 @@ export class NitaqatHireService {
   ) {
     return (prisma as any).nitaqatHire.upsert({
       where: {
-        aura_nitaqat_hire_unique: { tenantId: auth.tenantId, employeeId: input.employeeId },
+        tenantId_employeeId: { tenantId: auth.tenantId, employeeId: input.employeeId },
       },
       update: {
         legalEntityId: input.legalEntityId ?? null,
@@ -424,7 +424,7 @@ export class NitaqatHireService {
     auth: AuthContext
   ) {
     return (prisma as any).nitaqatHire.update({
-      where: { aura_nitaqat_hire_unique: { tenantId: auth.tenantId, employeeId } },
+      where: { tenantId_employeeId: { tenantId: auth.tenantId, employeeId } },
       data: {
         gosiRegistered: input.gosiRegistered ?? undefined,
         mudadCovered: input.mudadCovered ?? undefined,
@@ -543,7 +543,7 @@ export class NitaqatCertificateService {
     if (stats.red > 0) reasons.push(`${stats.red} RED-band entity(ies)`);
     const gatingReason = reasons.length ? `Blocked: ${reasons.join('; ')}` : null;
     return (prisma as any).nitaqatCertificate.upsert({
-      where: { aura_nitaqat_certificate_unique: { tenantId: auth.tenantId, period } },
+      where: { tenantId_period: { tenantId: auth.tenantId, period } },
       update: {
         entitiesInScope: stats.entitiesInScope,
         platinumCount: stats.platinum,
@@ -575,7 +575,7 @@ export class NitaqatCertificateService {
     auth: AuthContext
   ) {
     const cert = await (prisma as any).nitaqatCertificate.findUnique({
-      where: { aura_nitaqat_certificate_unique: { tenantId: auth.tenantId, period } },
+      where: { tenantId_period: { tenantId: auth.tenantId, period } },
     });
     if (!cert) throw new Error('certificate not generated');
     if (cert.gatingReason) throw new Error(`cannot sign while gated: ${cert.gatingReason}`);
