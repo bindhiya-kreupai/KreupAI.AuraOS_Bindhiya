@@ -319,8 +319,13 @@ export class LeaveEntitlementService {
           data: { tenantId: auth.tenantId, ...r, effectiveFrom, status: 'ACTIVE' },
         });
         created.push(`${r.country}/${r.leaveCode}`);
-      } catch (err) {
-        if (!String(err).includes('Unique')) throw err;
+      } catch (err: any) {
+        if (
+          !String(err).includes('Unique') &&
+          err?.code !== 'P2002' &&
+          !err?.message?.includes('Unique')
+        )
+          throw err;
       }
     }
     return { created };
