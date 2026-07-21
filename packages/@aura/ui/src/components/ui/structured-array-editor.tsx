@@ -1,7 +1,7 @@
 'use client';
 
-import React from 'react';
-import { Plus, Trash2 } from 'lucide-react';
+import React, { useState, useMemo, useEffect } from 'react';
+import { Plus, Trash2, ChevronLeft, ChevronRight, Search, Edit2, X, Check, Lock, Unlock, ShieldCheck } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 
@@ -10,13 +10,15 @@ function cn(...inputs: ClassValue[]) {
 }
 
 /**
- * Structured array editor — replaces "paste a JSON array" textareas.
+ * Structured array editor — Enterprise Data Table Component.
  *
- * Renders an array of typed records as a small editable table:
- *   - one row per record
- *   - one column per field (typed: text / number / select / boolean)
- *   - Add row / Remove row buttons
- *   - bilingual column headers
+ * Supports Dual Mode:
+ *   - Read-only Enterprise Data Table (default for imported compliance records)
+ *   - Editable Mode (toggled on demand via "Unlock Editing")
+ *   - Clean Modal dialog for adding & editing individual records
+ *   - Dynamic Pagination (10, 20, 50, 100, All)
+ *   - Instant dataset search & filtering
+ *   - Bilingual headers & jurisdiction flag chips
  */
 
 export type StructuredFieldType = 'text' | 'number' | 'boolean' | 'select'| 'date';
@@ -54,6 +56,8 @@ export interface StructuredArrayEditorProps<T extends Record<string, unknown> = 
     addLabel?: string;
     addLabelAr?: string;
     disabled?: boolean;
+    /** Default page size for pagination (default 10). */
+    defaultPageSize?: number;
 }
 
 function emptyRowFor(columns: StructuredColumn[]): Record<string, unknown> {
@@ -77,49 +81,175 @@ export function StructuredArrayEditor<T extends Record<string, unknown> = Record
         helpText,
         helpTextAr,
         minRows = 0,
-        maxRows = 100,
+        maxRows = 500,
         locale = 'en',
         className,
         addLabel,
         addLabelAr,
         disabled = false,
+        defaultPageSize = 10,
     } = props;
+
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState<number>(defaultPageSize);
+    const [filterQuery, setFilterQuery] = useState('');
+
+    // Dual Mode: Default to Read-Only view for imported enterprise records
+    const [isEditingDataset, setIsEditingDataset] = useState(false);
+
+    // Modal State for adding/editing records cleanly
+    const [showModal, setShowModal] = useState(false);
+    const [editingIndex, setEditingIndex] = useState<number | null>(null);
+    const [modalData, setModalData] = useState<Record<string, unknown>>({});
 
     const headerLabel = locale === 'ar' && labelAr ? labelAr : label;
     const headerHelp = locale === 'ar' && helpTextAr ? helpTextAr : helpText;
     const headerAdd =
         locale === 'ar' && addLabelAr
             ? addLabelAr
-            : (addLabel ?? (locale === 'ar' ? 'إضافة صف' : 'Add row'));
+            : (addLabel ?? (locale === 'ar' ? 'إضافة صف' : 'Add record'));
 
-    function update(idx: number, key: string, raw: unknown) {
+    // Instant filter matching across all row field values
+    const filteredRows = useMemo(() => {
+        if (!filterQuery.trim()) return value.map((row, originalIndex) => ({ row, originalIndex }));
+        const q = filterQuery.toLowerCase().trim();
+        return value
+            .map((row, originalIndex) => ({ row, originalIndex }))
+            .filter(({ row }) => {
+                return Object.values(row).some((val) =>
+                    String(val ?? '').toLowerCase().includes(q)
+                );
+            });
+    }, [value, filterQuery]);
+
+    const totalPages = pageSize === -1 ? 1 : Math.ceil(filteredRows.length / pageSize) || 1;
+
+    // Reset current page when filtering or changing total rows
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [filterQuery, pageSize]);
+
+    const paginatedRows = useMemo(() => {
+        if (pageSize === -1) return filteredRows;
+        const start = (currentPage - 1) * pageSize;
+        return filteredRows.slice(start, start + pageSize);
+    }, [filteredRows, currentPage, pageSize]);
+
+    function update(originalIdx: number, key: string, raw: unknown) {
         if (disabled) return;
         const next = value.map((row, i) =>
-            i === idx ? { ...row, [key]: raw } : row,
+            i === originalIdx ? { ...row, [key]: raw } : row,
         ) as T[];
         onChange(next);
     }
 
-    function removeRow(idx: number) {
+    function removeRow(originalIdx: number) {
         if (disabled || value.length <= minRows) return;
-        const next = value.filter((_, i) => i !== idx) as T[];
+        const next = value.filter((_, i) => i !== originalIdx) as T[];
         onChange(next);
     }
 
-    function addRow() {
+    // Modal open handlers
+    function openAddModal() {
         if (disabled || value.length >= maxRows) return;
-        const next = [...value, emptyRowFor(columns) as T];
-        onChange(next);
+        setModalData(emptyRowFor(columns));
+        setEditingIndex(null);
+        setShowModal(true);
+    }
+
+    function openEditModal(originalIdx: number) {
+        if (disabled) return;
+        setModalData({ ...value[originalIdx] });
+        setEditingIndex(originalIdx);
+        setShowModal(true);
+    }
+
+    function saveModalRecord() {
+        if (disabled) return;
+        if (editingIndex === null) {
+            // Adding new row
+            const next = [...value, modalData as T];
+            onChange(next);
+            if (pageSize !== -1) {
+                const nextTotalPages = Math.ceil((value.length + 1) / pageSize);
+                setCurrentPage(nextTotalPages);
+            }
+        } else {
+            // Editing existing row
+            const next = value.map((row, i) =>
+                i === editingIndex ? { ...row, ...modalData } : row
+            ) as T[];
+            onChange(next);
+        }
+        setShowModal(false);
+        setModalData({});
+        setEditingIndex(null);
     }
 
     return (
         <div className={cn('space-y-2', className)} dir={locale === 'ar' ? 'rtl' : 'ltr'}>
-            {headerLabel && (
-                <div className="flex items-center justify-between">
-                    <label className="text-sm font-semibold text-slate-700 dark:text-slate-300">{headerLabel}</label>
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                {headerLabel && (
+                    <div>
+                        <div className="flex items-center gap-2">
+                            <label className="text-sm font-bold text-slate-800 dark:text-slate-200">{headerLabel}</label>
+                            <span className="px-2 py-0.5 rounded-full bg-slate-100 dark:bg-slate-800 text-[10px] font-bold text-slate-500 dark:text-slate-400">
+                                {value.length} {locale === 'ar' ? 'سجل' : 'records'}
+                            </span>
+
+                            {/* Mode Indicator Badge */}
+                            {!isEditingDataset ? (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/50 text-[10px] font-bold text-emerald-700 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-900">
+                                    <ShieldCheck className="w-3 h-3" />
+                                    {locale === 'ar' ? 'بيانات السجل موثقة (عرض فقط)' : 'Authoritative Register Data (Read-only)'}
+                                </span>
+                            ) : (
+                                <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/50 text-[10px] font-bold text-amber-700 dark:text-amber-400 border border-amber-200 dark:border-amber-900">
+                                    <Unlock className="w-3 h-3" />
+                                    {locale === 'ar' ? 'وضع التعديل المباشر' : 'Bulk Edit Mode Enabled'}
+                                </span>
+                            )}
+                        </div>
+                        {headerHelp && <p className="text-xs text-slate-450 dark:text-slate-500 pt-0.5">{headerHelp}</p>}
+                    </div>
+                )}
+
+                <div className="flex flex-wrap items-center gap-2 self-start sm:self-auto">
+                    {/* Instant Search Bar for Dataset if dataset length > 3 */}
+                    {value.length > 3 && (
+                        <div className="relative">
+                            <Search className="w-3.5 h-3.5 absolute left-2.5 top-2 text-slate-400" />
+                            <input
+                                type="text"
+                                value={filterQuery}
+                                onChange={(e) => setFilterQuery(e.target.value)}
+                                placeholder={locale === 'ar' ? 'تصفية الجدول...' : 'Search dataset...'}
+                                className="pl-7 pr-2.5 py-1 text-xs border border-slate-200 dark:border-slate-750 rounded-lg bg-slate-50 dark:bg-slate-950 text-slate-800 dark:text-white focus:outline-none focus:ring-1 focus:ring-slate-950 dark:focus:ring-white w-36 sm:w-44"
+                            />
+                        </div>
+                    )}
+
+                    {/* Unlock / Lock Inline Editing Mode Button */}
                     <button
                         type="button"
-                        onClick={addRow}
+                        onClick={() => setIsEditingDataset(!isEditingDataset)}
+                        className={cn(
+                            "inline-flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-semibold border transition-all cursor-pointer shadow-sm",
+                            isEditingDataset
+                                ? "bg-amber-500 text-white border-amber-600 hover:bg-amber-600"
+                                : "bg-white dark:bg-slate-900 text-slate-700 dark:text-slate-200 border-slate-200 dark:border-slate-800 hover:bg-slate-50 dark:hover:bg-slate-800"
+                        )}
+                    >
+                        {isEditingDataset ? <Lock className="w-3.5 h-3.5" /> : <Unlock className="w-3.5 h-3.5 text-slate-400" />}
+                        {isEditingDataset
+                            ? (locale === 'ar' ? 'قفل الجدول (عرض فقط)' : 'Lock Table (Read-only)')
+                            : (locale === 'ar' ? 'تمكين التعديل المباشر' : 'Unlock Editing')}
+                    </button>
+
+                    {/* Add Record Modal Button */}
+                    <button
+                        type="button"
+                        onClick={openAddModal}
                         disabled={disabled || value.length >= maxRows}
                         className="inline-flex items-center gap-1 rounded-xl bg-slate-950 dark:bg-white text-white dark:text-slate-950 px-3 py-1.5 text-xs font-semibold hover:bg-slate-800 dark:hover:bg-slate-100 disabled:opacity-50 transition-all cursor-pointer shadow-sm"
                     >
@@ -127,18 +257,19 @@ export function StructuredArrayEditor<T extends Record<string, unknown> = Record
                         {headerAdd}
                     </button>
                 </div>
-            )}
-            {headerHelp && <p className="text-xs text-slate-455 dark:text-slate-500">{headerHelp}</p>}
+            </div>
+
             <div className="overflow-x-auto border border-slate-200 dark:border-slate-800 rounded-xl bg-white dark:bg-slate-900 shadow-[0_1px_3px_rgba(0,0,0,0.05)]">
                 <table className="min-w-full text-sm">
                     <thead className="bg-slate-50/75 dark:bg-slate-950/40 border-b border-slate-200 dark:border-slate-800">
                         <tr>
+                            <th scope="col" className="w-8 px-3 py-2.5 text-center text-xs font-bold text-slate-400">#</th>
                             {columns.map((col) => (
                                 <th
                                     key={col.key}
                                     scope="col"
                                     className={cn(
-                                        'px-3 py-2.5 text-left text-xs font-semibold text-slate-655 dark:text-slate-400 whitespace-nowrap',
+                                        'px-3.5 py-2.5 text-left text-xs font-bold text-slate-655 dark:text-slate-400 whitespace-nowrap',
                                         col.widthClass,
                                     )}
                                 >
@@ -150,40 +281,90 @@ export function StructuredArrayEditor<T extends Record<string, unknown> = Record
                                     )}
                                 </th>
                             ))}
-                            <th scope="col" className="w-10 px-3 py-2.5">
-                                <span className="sr-only">
-                                    {locale === 'ar' ? 'حذف' : 'Remove'}
-                                </span>
+                            <th scope="col" className="w-16 px-3.5 py-2.5 text-right">
+                                <span className="sr-only">Actions</span>
                             </th>
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60">
-                        {value.length === 0 && (
+                        {paginatedRows.length === 0 && (
                             <tr>
                                 <td
-                                    colSpan={columns.length + 1}
-                                    className="px-3 py-6 text-center text-xs text-slate-400 dark:text-slate-500"
+                                    colSpan={columns.length + 2}
+                                    className="px-3.5 py-6 text-center text-xs text-slate-400 dark:text-slate-500"
                                 >
-                                    {locale === 'ar'
-                                        ? 'لا توجد صفوف. اضغط "إضافة صف" للبدء.'
-                                        : 'No rows. Click "Add row" to start.'}
+                                    {filterQuery.trim()
+                                        ? (locale === 'ar' ? 'لا توجد صفوف تطابق البحث.' : 'No rows match filter criteria.')
+                                        : (locale === 'ar' ? 'لا توجد صفوف. اضغط "إضافة سجل" للبدء.' : 'No rows in register. Click "Add record" to start.')}
                                 </td>
                             </tr>
                         )}
-                        {value.map((row, rowIdx) => (
-                            <tr key={rowIdx} className="hover:bg-slate-50/30 dark:hover:bg-slate-950/10 transition-colors">
+                        {paginatedRows.map(({ row, originalIndex }) => (
+                            <tr key={originalIndex} className="hover:bg-slate-50/60 dark:hover:bg-slate-800/30 transition-colors">
+                                <td className="px-3 py-3 text-center text-[11px] font-mono font-medium text-slate-400">
+                                    {originalIndex + 1}
+                                </td>
+
                                 {columns.map((col) => {
                                     const cellValue = (row as Record<string, unknown>)[col.key];
-                                    const cellId = `editor-${rowIdx}-${col.key}`;
+                                    const cellId = `editor-${originalIndex}-${col.key}`;
+
+                                    // READ-ONLY ENTERPRISE DISPLAY MODE (DEFAULT)
+                                    if (!isEditingDataset) {
+                                        if (col.key === 'jurisdiction') {
+                                            const code = String(cellValue ?? 'SAU').toUpperCase();
+                                            return (
+                                                <td key={col.key} className="px-3.5 py-3 text-xs">
+                                                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-slate-100 dark:bg-slate-800 font-bold text-slate-700 dark:text-slate-300">
+                                                        {code === 'SAU' ? '🇸🇦 SAU' : code === 'ARE' ? '🇦🇪 ARE' : code === 'BHR' ? '🇧🇭 BHR' : code === 'KWT' ? '🇰🇼 KWT' : code === 'QAT' ? '🇶🇦 QAT' : code === 'EU' ? '🇪🇺 EU' : code}
+                                                    </span>
+                                                </td>
+                                            );
+                                        }
+
+                                        if (col.key === 'requestTitle') {
+                                            return (
+                                                <td key={col.key} className="px-3.5 py-3 text-xs font-bold text-slate-900 dark:text-white max-w-xs truncate">
+                                                    {String(cellValue || 'Employee Data Access Request')}
+                                                </td>
+                                            );
+                                        }
+
+                                        if (col.key === 'requestId') {
+                                            return (
+                                                <td key={col.key} className="px-3.5 py-3 text-[11px] font-mono text-slate-400 dark:text-slate-500">
+                                                    {String(cellValue || '—')}
+                                                </td>
+                                            );
+                                        }
+
+                                        if (col.type === 'boolean') {
+                                            return (
+                                                <td key={col.key} className="px-3.5 py-3 text-xs">
+                                                    <span className={cn("px-2 py-0.5 rounded font-bold text-[10px]", cellValue ? "bg-emerald-100 text-emerald-800" : "bg-slate-100 text-slate-600")}>
+                                                        {cellValue ? 'Yes' : 'No'}
+                                                    </span>
+                                                </td>
+                                            );
+                                        }
+
+                                        return (
+                                            <td key={col.key} className="px-3.5 py-3 text-xs text-slate-700 dark:text-slate-300 font-medium">
+                                                {cellValue !== undefined && cellValue !== null && cellValue !== '' ? String(cellValue) : '—'}
+                                            </td>
+                                        );
+                                    }
+
+                                    // EDITABLE INLINE MODE (WHEN UNLOCKED)
                                     if (col.type === 'select' && col.options) {
                                         return (
                                             <td key={col.key} className="px-2.5 py-2">
                                                 <select
                                                     id={cellId}
-                                                    aria-label={`${col.label} row ${rowIdx + 1}`}
+                                                    aria-label={`${col.label} row ${originalIndex + 1}`}
                                                     value={(cellValue as string) ?? ''}
                                                     onChange={(e) =>
-                                                        update(rowIdx, col.key, e.target.value)
+                                                        update(originalIndex, col.key, e.target.value)
                                                     }
                                                     disabled={disabled}
                                                     className={cn(
@@ -210,10 +391,10 @@ export function StructuredArrayEditor<T extends Record<string, unknown> = Record
                                                     <input
                                                         id={cellId}
                                                         type="checkbox"
-                                                        aria-label={`${col.label} row ${rowIdx + 1}`}
+                                                        aria-label={`${col.label} row ${originalIndex + 1}`}
                                                         checked={!!cellValue}
                                                         onChange={(e) =>
-                                                            update(rowIdx, col.key, e.target.checked)
+                                                            update(originalIndex, col.key, e.target.checked)
                                                         }
                                                         disabled={disabled}
                                                         className="rounded border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 text-slate-900 dark:text-white focus:ring-0 w-4 h-4 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
@@ -228,12 +409,12 @@ export function StructuredArrayEditor<T extends Record<string, unknown> = Record
                                                 <input
                                                     id={cellId}
                                                     type="number"
-                                                    aria-label={`${col.label} row ${rowIdx + 1}`}
+                                                    aria-label={`${col.label} row ${originalIndex + 1}`}
                                                     value={Number.isFinite(cellValue as number) ? String(cellValue) : ''}
                                                     placeholder={col.placeholder}
                                                     onChange={(e) =>
                                                         update(
-                                                            rowIdx,
+                                                            originalIndex,
                                                             col.key,
                                                             e.target.value === ''
                                                                 ? 0
@@ -256,10 +437,10 @@ export function StructuredArrayEditor<T extends Record<string, unknown> = Record
                                                 <input
                                                     id={cellId}
                                                     type="date"
-                                                    aria-label={`${col.label} row ${rowIdx + 1}`}
+                                                    aria-label={`${col.label} row ${originalIndex + 1}`}
                                                     value={(cellValue as string) ?? ''}
                                                     onChange={(e) =>
-                                                        update(rowIdx, col.key, e.target.value)
+                                                        update(originalIndex, col.key, e.target.value)
                                                     }
                                                     disabled={disabled}
                                                     className={cn(
@@ -275,11 +456,11 @@ export function StructuredArrayEditor<T extends Record<string, unknown> = Record
                                             <input
                                                 id={cellId}
                                                 type="text"
-                                                aria-label={`${col.label} row ${rowIdx + 1}`}
+                                                aria-label={`${col.label} row ${originalIndex + 1}`}
                                                 value={(cellValue as string) ?? ''}
                                                 placeholder={col.placeholder}
                                                 onChange={(e) =>
-                                                    update(rowIdx, col.key, e.target.value)
+                                                    update(originalIndex, col.key, e.target.value)
                                                 }
                                                 disabled={disabled}
                                                 className={cn(
@@ -290,26 +471,201 @@ export function StructuredArrayEditor<T extends Record<string, unknown> = Record
                                         </td>
                                     );
                                 })}
-                                <td className="px-2.5 py-2 text-right">
-                                    <button
-                                        type="button"
-                                        onClick={() => removeRow(rowIdx)}
-                                        disabled={disabled || value.length <= minRows}
-                                        aria-label={
-                                            locale === 'ar'
-                                                ? `حذف الصف ${rowIdx + 1}`
-                                                : `Remove row ${rowIdx + 1}`
-                                        }
-                                        className="inline-flex items-center justify-center p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 hover:text-rose-700 disabled:opacity-30 disabled:hover:bg-transparent transition-all cursor-pointer"
-                                    >
-                                        <Trash2 className="w-4 h-4" />
-                                    </button>
+
+                                <td className="px-3.5 py-3 text-right whitespace-nowrap">
+                                    <div className="flex items-center justify-end gap-1">
+                                        <button
+                                            type="button"
+                                            onClick={() => openEditModal(originalIndex)}
+                                            disabled={disabled}
+                                            aria-label={locale === 'ar' ? `تعديل الصف ${originalIndex + 1}` : `Edit row ${originalIndex + 1}`}
+                                            className="inline-flex items-center justify-center p-1.5 rounded-lg text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-800 dark:hover:text-slate-200 transition-all cursor-pointer"
+                                            title="Edit in modal"
+                                        >
+                                            <Edit2 className="w-3.5 h-3.5" />
+                                        </button>
+                                        <button
+                                            type="button"
+                                            onClick={() => removeRow(originalIndex)}
+                                            disabled={disabled || value.length <= minRows}
+                                            aria-label={
+                                                locale === 'ar'
+                                                    ? `حذف الصف ${originalIndex + 1}`
+                                                    : `Remove row ${originalIndex + 1}`
+                                            }
+                                            className="inline-flex items-center justify-center p-1.5 rounded-lg text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-950/30 hover:text-rose-700 disabled:opacity-30 disabled:hover:bg-transparent transition-all cursor-pointer"
+                                        >
+                                            <Trash2 className="w-3.5 h-3.5" />
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
             </div>
+
+            {/* Dynamic Pagination Bar for Evaluation Dataset */}
+            {value.length > 5 && (
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs pt-2 px-1 text-slate-500 font-medium">
+                    <div>
+                        Showing <span className="font-bold text-slate-800 dark:text-slate-200">{filteredRows.length > 0 ? (pageSize === -1 ? 1 : (currentPage - 1) * pageSize + 1) : 0}</span> to <span className="font-bold text-slate-800 dark:text-slate-200">{pageSize === -1 ? filteredRows.length : Math.min(currentPage * pageSize, filteredRows.length)}</span> of <span className="font-bold text-slate-800 dark:text-slate-200">{filteredRows.length}</span> records
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-3">
+                        <div className="flex items-center gap-1.5">
+                            <span className="text-slate-400 text-[11px]">Rows/page:</span>
+                            <select
+                                value={pageSize}
+                                onChange={(e) => setPageSize(Number(e.target.value))}
+                                className="border border-slate-200 dark:border-slate-750 bg-white dark:bg-slate-950 rounded px-1.5 py-0.5 text-xs focus:outline-none"
+                            >
+                                <option value={10}>10</option>
+                                <option value={20}>20</option>
+                                <option value={50}>50</option>
+                                <option value={100}>100</option>
+                                <option value={-1}>All</option>
+                            </select>
+                        </div>
+
+                        {pageSize !== -1 && (
+                            <div className="flex items-center gap-1">
+                                <button
+                                    type="button"
+                                    disabled={currentPage === 1}
+                                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                                    className="p-1 rounded border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50"
+                                >
+                                    <ChevronLeft className="w-4 h-4" />
+                                </button>
+                                <span className="px-2 font-semibold text-slate-700 dark:text-slate-300">
+                                    {currentPage} / {totalPages}
+                                </span>
+                                <button
+                                    type="button"
+                                    disabled={currentPage >= totalPages}
+                                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                                    className="p-1 rounded border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 text-slate-600 dark:text-slate-300 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-slate-50"
+                                >
+                                    <ChevronRight className="w-4 h-4" />
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            )}
+
+            {/* ── Add / Edit Record Form Modal ── */}
+            {showModal && (
+                <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center backdrop-blur-sm p-4">
+                    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl w-[520px] max-w-full p-6 space-y-5 shadow-2xl animate-in fade-in zoom-in-95">
+                        <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                            <h3 className="text-base font-extrabold text-slate-900 dark:text-white flex items-center gap-2">
+                                {editingIndex === null ? <Plus className="w-4 h-4 text-emerald-500" /> : <Edit2 className="w-4 h-4 text-amber-500" />}
+                                {editingIndex === null
+                                    ? (locale === 'ar' ? 'إضافة سجل جديد' : 'Add New Record')
+                                    : (locale === 'ar' ? `تعديل السجل #${editingIndex + 1}` : `Edit Record #${editingIndex + 1}`)}
+                            </h3>
+                            <button
+                                type="button"
+                                onClick={() => setShowModal(false)}
+                                className="p-1.5 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        </div>
+
+                        {/* Modal Field Inputs */}
+                        <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
+                            {columns.map((col) => {
+                                const val = modalData[col.key];
+                                const label = locale === 'ar' && col.labelAr ? col.labelAr : col.label;
+                                const fieldId = `modal-field-${col.key}`;
+
+                                return (
+                                    <div key={col.key} className="space-y-1.5">
+                                        <label htmlFor={fieldId} className="block text-xs font-bold text-slate-700 dark:text-slate-300">
+                                            {label}
+                                            {col.required && <span className="text-rose-600 ml-0.5">*</span>}
+                                        </label>
+
+                                        {col.type === 'select' && col.options ? (
+                                            <select
+                                                id={fieldId}
+                                                value={(val as string) ?? ''}
+                                                onChange={(e) => setModalData({ ...modalData, [col.key]: e.target.value })}
+                                                className="w-full border border-slate-200 dark:border-slate-750 rounded-xl px-3 py-2 text-xs bg-slate-50 dark:bg-slate-950 dark:text-white focus:outline-none focus:ring-1 focus:ring-slate-950 dark:focus:ring-white"
+                                            >
+                                                <option value="">{locale === 'ar' ? 'اختر…' : 'Select option…'}</option>
+                                                {col.options.map((o) => (
+                                                    <option key={o.value} value={o.value}>{o.label}</option>
+                                                ))}
+                                            </select>
+                                        ) : col.type === 'boolean' ? (
+                                            <select
+                                                id={fieldId}
+                                                value={val ? 'true' : 'false'}
+                                                onChange={(e) => setModalData({ ...modalData, [col.key]: e.target.value === 'true' })}
+                                                className="w-full border border-slate-200 dark:border-slate-750 rounded-xl px-3 py-2 text-xs bg-slate-50 dark:bg-slate-950 dark:text-white focus:outline-none focus:ring-1 focus:ring-slate-950 dark:focus:ring-white"
+                                            >
+                                                <option value="false">{locale === 'ar' ? 'لا (False)' : 'No (False)'}</option>
+                                                <option value="true">{locale === 'ar' ? 'نعم (True)' : 'Yes (True)'}</option>
+                                            </select>
+                                        ) : col.type === 'number' ? (
+                                            <input
+                                                id={fieldId}
+                                                type="number"
+                                                value={Number.isFinite(val as number) ? String(val) : ''}
+                                                placeholder={col.placeholder}
+                                                onChange={(e) => setModalData({ ...modalData, [col.key]: e.target.value === '' ? 0 : Number(e.target.value) })}
+                                                className="w-full border border-slate-200 dark:border-slate-750 rounded-xl px-3 py-2 text-xs bg-slate-50 dark:bg-slate-950 dark:text-white focus:outline-none focus:ring-1 focus:ring-slate-950 dark:focus:ring-white font-mono"
+                                            />
+                                        ) : col.type === 'date' ? (
+                                            <input
+                                                id={fieldId}
+                                                type="date"
+                                                value={(val as string) ?? ''}
+                                                onChange={(e) => setModalData({ ...modalData, [col.key]: e.target.value })}
+                                                className="w-full border border-slate-200 dark:border-slate-750 rounded-xl px-3 py-2 text-xs bg-slate-50 dark:bg-slate-950 dark:text-white focus:outline-none focus:ring-1 focus:ring-slate-950 dark:focus:ring-white font-mono"
+                                            />
+                                        ) : (
+                                            <input
+                                                id={fieldId}
+                                                type="text"
+                                                value={(val as string) ?? ''}
+                                                placeholder={col.placeholder}
+                                                onChange={(e) => setModalData({ ...modalData, [col.key]: e.target.value })}
+                                                className="w-full border border-slate-200 dark:border-slate-750 rounded-xl px-3 py-2 text-xs bg-slate-50 dark:bg-slate-950 dark:text-white focus:outline-none focus:ring-1 focus:ring-slate-950 dark:focus:ring-white"
+                                            />
+                                        )}
+                                    </div>
+                                );
+                            })}
+                        </div>
+
+                        {/* Modal Action Buttons */}
+                        <div className="flex justify-end gap-2 pt-3 border-t border-slate-100 dark:border-slate-800">
+                            <button
+                                type="button"
+                                onClick={() => setShowModal(false)}
+                                className="px-4 py-2 rounded-xl border border-slate-200 dark:border-slate-800 text-xs font-bold text-slate-600 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800"
+                            >
+                                {locale === 'ar' ? 'إلغاء' : 'Cancel'}
+                            </button>
+                            <button
+                                type="button"
+                                onClick={saveModalRecord}
+                                className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-slate-950 dark:bg-white text-white dark:text-slate-950 text-xs font-bold hover:bg-slate-800 dark:hover:bg-slate-100 shadow-sm"
+                            >
+                                <Check className="w-3.5 h-3.5" />
+                                {editingIndex === null
+                                    ? (locale === 'ar' ? 'حفظ السجل' : 'Save Record')
+                                    : (locale === 'ar' ? 'تحديث السجل' : 'Update Record')}
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

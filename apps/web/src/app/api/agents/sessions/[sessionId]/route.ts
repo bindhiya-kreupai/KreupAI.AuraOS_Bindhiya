@@ -1,81 +1,55 @@
 /**
  * Agent Session Detail API Routes
- * Phase 4 Sprint 31-32: Session Management
  */
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { AgentFrameworkService } from '@/lib/services/agentic-ai';
+import { resolveAgentAuth } from '@/lib/ai/agent-auth';
+import { agentError } from '@/lib/ai/agent-types';
+import { deleteSession, getSessionById } from '@/lib/ai/agent-session';
 
-/**
- * GET /api/agents/sessions/[sessionId]
- * Get session details and conversation history
- */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ sessionId: string }> }
-) {
+type RouteContext = { params: Promise<{ sessionId: string }> };
+
+export async function GET(request: NextRequest, context: RouteContext) {
+  const auth = await resolveAgentAuth(request);
+  if (!auth) {
+    return NextResponse.json(agentError('Unauthorized', 'غير مصرح'), { status: 401 });
+  }
+
   try {
-    const { sessionId } = await params;
-    const session = AgentFrameworkService.getSession(sessionId);
-
+    const { sessionId } = await context.params;
+    const session = await getSessionById(auth.tenantId, auth.userId, sessionId);
     if (!session) {
-      return NextResponse.json(
-        { success: false, error: 'Session not found' },
-        { status: 404 }
-      );
+      return NextResponse.json(agentError('Session not found', 'الجلسة غير موجودة'), {
+        status: 404,
+      });
     }
-
-    return NextResponse.json({
-      success: true,
-      data: {
-        sessionId: session.sessionId,
-        agentType: session.agentType,
-        userId: session.userId,
-        startedAt: session.startedAt,
-        lastActivityAt: session.lastActivityAt,
-        messages: session.messages,
-        currentIntent: session.currentIntent,
-        state: session.state,
-      },
+    return NextResponse.json({ success: true, data: session });
+  } catch {
+    return NextResponse.json(agentError('Failed to fetch session', 'فشل تحميل الجلسة'), {
+      status: 500,
     });
-  } catch (error: any) {
-        return NextResponse.json(
-      { success: false, error: 'Failed to fetch session' },
-      { status: 500 }
-    );
   }
 }
 
-/**
- * DELETE /api/agents/sessions/[sessionId]
- * End a conversation session
- */
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ sessionId: string }> }
-) {
+export async function DELETE(request: NextRequest, context: RouteContext) {
+  const auth = await resolveAgentAuth(request);
+  if (!auth) {
+    return NextResponse.json(agentError('Unauthorized', 'غير مصرح'), { status: 401 });
+  }
+
   try {
-    const { sessionId } = await params;
-    const session = AgentFrameworkService.getSession(sessionId);
-
-    if (!session) {
-      return NextResponse.json(
-        { success: false, error: 'Session not found' },
-        { status: 404 }
-      );
+    const { sessionId } = await context.params;
+    const deleted = await deleteSession(auth.tenantId, auth.userId, sessionId);
+    if (!deleted) {
+      return NextResponse.json(agentError('Session not found', 'الجلسة غير موجودة'), {
+        status: 404,
+      });
     }
-
-    AgentFrameworkService.endSession(sessionId);
-
-    return NextResponse.json({
-      success: true,
-      message: 'Session ended successfully',
+    return NextResponse.json({ success: true, data: { deleted: true } });
+  } catch {
+    return NextResponse.json(agentError('Failed to delete session', 'فشل حذف الجلسة'), {
+      status: 500,
     });
-  } catch (error: any) {
-        return NextResponse.json(
-      { success: false, error: 'Failed to end session' },
-      { status: 500 }
-    );
   }
 }

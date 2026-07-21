@@ -1,128 +1,210 @@
 /**
- * Workflow Generator API Routes
- * Phase 3: Intelligence Layer - Process Automation
+ * AI Workflow Generator API
+ * GET — list saved workflow definitions (tenant-scoped)
+ * POST — save or activate workflow (persists to WorkflowDefinition; execution delegated to Workflow Engine)
  */
 
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { prisma } from '@aura/database';
+import { authenticateWithPermissions } from '@/lib/auth/enhanced-middleware';
+import {
+  canActivateWorkflow,
+  canReadAiAutomation,
+  canWriteAiAutomation,
+} from '@/lib/ai/ai-automation-auth';
+import { getWorkflowAIConfig } from '@/lib/ai/workflow-generator-ai';
+import { stepsToEngineDefinition } from '@/lib/ai/workflow-generator-layout';
+import type { WorkflowGeneratedStep } from '@/lib/ai/workflow-generator-types';
 
-export async function POST(request: NextRequest) {
-  try {
-    const body = await request.json();
-    const action = body.action || 'generate';
-
-    switch (action) {
-      case 'generate':
-        const workflowType = body.workflowType || 'approval';
-
-        return NextResponse.json({
-          success: true,
-          data: {
-            workflowId: `wf_${Date.now()}`,
-            workflow: {
-              name: body.name || 'Auto-generated Workflow',
-              type: workflowType,
-              steps: [
-                { id: 1, type: 'trigger', name: 'Request submitted', config: {} },
-                {
-                  id: 2,
-                  type: 'condition',
-                  name: 'Check amount > $1000',
-                  config: { field: 'amount', operator: '>', value: 1000 },
-                },
-                { id: 3, type: 'approval', name: 'Manager approval', config: { role: 'MANAGER' } },
-                {
-                  id: 4,
-                  type: 'approval',
-                  name: 'Director approval',
-                  config: { role: 'DIRECTOR' },
-                },
-                {
-                  id: 5,
-                  type: 'notification',
-                  name: 'Notify requester',
-                  config: { template: 'approval_complete' },
-                },
-                { id: 6, type: 'action', name: 'Process payment', config: { system: 'payroll' } },
-              ],
-              estimatedTime: '2-3 business days',
-              complexity: 'MEDIUM',
-            },
-          },
-        });
-
-      case 'optimize':
-        return NextResponse.json({
-          success: true,
-          data: {
-            optimizations: [
-              {
-                type: 'PARALLEL',
-                suggestion: 'Run steps 3 and 4 in parallel',
-                timeSaving: '1 day',
-              },
-              {
-                type: 'AUTOMATION',
-                suggestion: 'Auto-approve amounts < $500',
-                timeSaving: '4 hours',
-              },
-              {
-                type: 'SIMPLIFY',
-                suggestion: 'Remove redundant approval step',
-                timeSaving: '2 hours',
-              },
-            ],
-            optimizedWorkflow: {
-              steps: 4,
-              estimatedTime: '1 business day',
-              improvement: '50% faster',
-            },
-          },
-        });
-
-      case 'validate':
-        return NextResponse.json({
-          success: true,
-          data: {
-            valid: true,
-            issues: [],
-            warnings: [
-              {
-                type: 'PERFORMANCE',
-                message: 'Workflow may be slow with >100 concurrent requests',
-              },
-            ],
-            score: 85,
-          },
-        });
-
-      default:
-        return NextResponse.json({ error: 'Invalid action' }, { status: 400 });
-    }
-  } catch (error: any) {
-    return NextResponse.json({ error: 'Failed to process workflow request' }, { status: 500 });
-  }
+async function resolveAuth(request: NextRequest) {
+  const { context, error } = await authenticateWithPermissions(request);
+  if (error || !context?.user?.tenantId) return null;
+  return {
+    tenantId: context.user.tenantId as string,
+    userId: context.user.userId as string,
+    permissions: context.permissions as string[],
+    roles: context.roles as string[],
+  };
 }
 
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
-    const category = searchParams.get('category');
+    const type = searchParams.get('type');
+
+    if (type === 'config') {
+      return NextResponse.json({
+        success: true,
+        data: getWorkflowAIConfig(),
+      });
+    }
+
+    const auth = await resolveAuth(request);
+    if (!auth) {
+      return NextResponse.json({
+        success: true,
+        data: { workflows: [], total: 0 },
+      });
+    }
+
+    if (!canReadAiAutomation(auth.permissions, auth.roles)) {
+      return NextResponse.json({
+        success: true,
+        data: { workflows: [], total: 0 },
+      });
+    }
+
+    const workflows = await prisma.workflowDefinition.findMany({
+      where: { tenantId: auth.tenantId, isDeleted: false },
+      orderBy: { updatedAt: 'desc' },
+      take: 20,
+      include: { _count: { select: { instances: true } } },
+    });
 
     return NextResponse.json({
       success: true,
       data: {
-        templates: [
-          { id: 1, name: 'Leave Approval', category: 'HR', steps: 3, usage: 450 },
-          { id: 2, name: 'Expense Approval', category: 'Finance', steps: 4, usage: 320 },
-          { id: 3, name: 'Onboarding', category: 'HR', steps: 8, usage: 180 },
-          { id: 4, name: 'Purchase Request', category: 'Procurement', steps: 5, usage: 210 },
-        ],
-        totalWorkflows: 42,
-        activeWorkflows: 38,
+        workflows: workflows.map((w) => ({
+          id: w.id,
+          name: w.name,
+          description: w.description,
+          trigger: w.trigger,
+          triggerEvent: w.triggerEvent,
+          nodes: w.nodes,
+          edges: w.edges,
+          isActive: w.isActive,
+          version: w.version,
+          executionCount: w._count.instances,
+          updatedAt: w.updatedAt.toISOString(),
+        })),
+        total: workflows.length,
       },
     });
-  } catch (error: any) {
-    return NextResponse.json({ error: 'Failed to fetch workflows' }, { status: 500 });
+  } catch (error) {
+    console.error('[workflow] GET error:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to fetch workflows' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const auth = await resolveAuth(request);
+    if (!auth) {
+      return NextResponse.json(
+        { success: false, error: 'Sign in to save workflows', errorAr: 'يرجى تسجيل الدخول' },
+        { status: 401 }
+      );
+    }
+
+    const body = await request.json();
+    const activate = body.activate === true;
+
+    if (activate && !canActivateWorkflow(auth.permissions, auth.roles)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'You do not have permission to activate workflows',
+          errorAr: 'ليس لديك صلاحية تفعيل سير العمل',
+        },
+        { status: 403 }
+      );
+    }
+
+    if (!canWriteAiAutomation(auth.permissions, auth.roles)) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: 'You do not have permission to save workflows',
+          errorAr: 'ليس لديك صلاحية حفظ سير العمل',
+        },
+        { status: 403 }
+      );
+    }
+
+    const prompt = body.prompt ? String(body.prompt) : undefined;
+
+    let nodes = body.nodes;
+    let edges = body.edges;
+    const trigger = body.trigger ? String(body.trigger) : 'HR_REQUEST';
+    let triggerEvent = body.triggerEvent ? String(body.triggerEvent) : null;
+    const name = String(body.name || 'AI Generated Workflow').trim();
+    const description = body.description ? String(body.description) : prompt || null;
+
+    if (Array.isArray(body.steps) && body.steps.length > 0) {
+      const engine = stepsToEngineDefinition(body.steps as WorkflowGeneratedStep[]);
+      nodes = engine.nodes;
+      edges = engine.edges;
+      const first = (body.steps as WorkflowGeneratedStep[])[0];
+      if (first?.type === 'trigger' && !body.trigger) {
+        triggerEvent = first.label;
+      }
+    }
+
+    if (!nodes || !edges) {
+      return NextResponse.json(
+        { success: false, error: 'nodes and edges are required' },
+        { status: 400 }
+      );
+    }
+
+    const workflow = await prisma.workflowDefinition.create({
+      data: {
+        tenantId: auth.tenantId,
+        name,
+        description,
+        trigger,
+        triggerEvent,
+        nodes: nodes as object,
+        edges: edges as object,
+        isActive: activate,
+        version: 1,
+        createdBy: auth.userId,
+      },
+    });
+
+    await prisma.aIRunRecord.create({
+      data: {
+        tenantId: auth.tenantId,
+        runType: 'workflow',
+        inputContext: {
+          prompt,
+          name,
+          activate,
+          source: 'ai-workflow-generator',
+        } as object,
+        output: {
+          workflowId: workflow.id,
+          status: activate ? 'ACTIVATED' : 'SAVED_DRAFT',
+        } as object,
+        completedAt: new Date(),
+        createdBy: auth.userId,
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      data: {
+        workflow: {
+          id: workflow.id,
+          name: workflow.name,
+          description: workflow.description,
+          trigger: workflow.trigger,
+          nodes: workflow.nodes,
+          edges: workflow.edges,
+          isActive: workflow.isActive,
+        },
+        message: activate
+          ? 'Workflow activated and registered with the Workflow Engine.'
+          : 'Workflow saved as draft.',
+        workflowEnginePath: '/dashboard/workflow-engine/workflow-designer',
+      },
+    });
+  } catch (error) {
+    console.error('[workflow] POST error:', error);
+    return NextResponse.json({ success: false, error: 'Failed to save workflow' }, { status: 500 });
   }
 }

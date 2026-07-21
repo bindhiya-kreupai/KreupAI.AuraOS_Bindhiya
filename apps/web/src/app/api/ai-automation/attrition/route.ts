@@ -1,70 +1,63 @@
+/**
+ * Legacy attrition route — proxies to the unified attrition engine.
+ * Prefer `/api/ai/attrition` for new clients.
+ */
+
 import type { NextRequest } from 'next/server';
 import { prisma } from '@aura/database';
 import { withEnhancedAuth } from '@/lib/auth';
 import { forbidden, parsePagination, serverError, successList } from '@/lib/api/crud-helpers';
+import { canReadAiAutomation } from '@/lib/ai/ai-automation-auth';
+import { getAtRiskEmployees } from '@/lib/ai/attrition-ai';
+import { AT_RISK_THRESHOLD } from '@/lib/ai/attrition-rules';
 
-// Heuristic attrition risk: combines tenure, recent leave usage, missed
-// punches, and recent recognition count. Higher score = higher risk.
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user, permissions } = context;
-    if (!permissions.includes('ai-automation:read')) return forbidden('ai-automation:read');
+    const { user, permissions, roles } = context;
+    if (!canReadAiAutomation(permissions || [], roles || [])) {
+      return forbidden('ai-automation:read');
+    }
+
     const { page, limit, skip } = parsePagination(new URL(request.url).searchParams);
-    const employees: any[] = await (prisma as any).employee.findMany({
-      // Employee has no tenantId scalar (schema.prisma:284). Filter through Company relation.
-      // Employee.status is a relation, not a scalar — use isDeleted:false as the "active" proxy.
-      where: { company: { tenantId: user.tenantId }, isDeleted: false },
-      select: {
-        id: true,
-        joiningDate: true,
-      },
-      take: 500,
+
+    const atRisk = await getAtRiskEmployees(user.tenantId, {
+      minScore: 0,
+      limit: 5000,
+      offset: 0,
+      autoRecompute: true,
     });
-    const since = new Date(Date.now() - 90 * 24 * 60 * 60 * 1000);
-    const [recognitionByEmp, leaveByEmp] = await Promise.all([
-      prisma.recognition.groupBy({
-        by: ['receiverId'],
-        where: { tenantId: user.tenantId, createdAt: { gte: since } },
-        _count: { _all: true },
-      }),
-      prisma.leaveRequest.groupBy({
-        by: ['employeeId'],
-        where: { tenantId: user.tenantId, createdAt: { gte: since } } as any,
-        _count: { _all: true },
-      }),
-    ]);
-    const recMap = new Map(recognitionByEmp.map((r) => [r.receiverId, r._count._all]));
-    const leaveMap = new Map(leaveByEmp.map((r) => [r.employeeId, r._count._all]));
-    const scored = employees.map((e) => {
-      const tenureYears = e.joiningDate
-        ? (Date.now() - new Date(e.joiningDate).getTime()) / (365 * 24 * 3600 * 1000)
-        : 0;
-      const recCount = recMap.get(e.id) || 0;
-      const leaveCount = leaveMap.get(e.id) || 0;
-      // simple model: short tenure + few recognitions + many leaves → high risk
-      const score = Math.min(
-        100,
-        Math.round((tenureYears < 1 ? 30 : 0) + (recCount === 0 ? 25 : 0) + leaveCount * 5)
-      );
-      return {
-        employeeId: e.id,
-        tenureYears,
-        recentRecognitions: recCount,
-        recentLeaveRequests: leaveCount,
-        riskScore: score,
-        riskLevel: score > 60 ? 'HIGH' : score > 30 ? 'MEDIUM' : 'LOW',
-      };
-    });
+
+    const all = atRisk.employees;
+    const scored = all.map((e) => ({
+      employeeId: e.employeeId,
+      employeeName: e.employeeName,
+      department: e.department,
+      riskScore: e.riskScore,
+      riskLevel: e.riskLevel,
+      primaryFactor: e.primaryFactor,
+      tenureYears: undefined,
+      recentRecognitions: undefined,
+      recentLeaveRequests: undefined,
+    }));
+
+    // Prefer high-risk first in legacy listing
     scored.sort((a, b) => b.riskScore - a.riskScore);
+
     await prisma.aIRunRecord.create({
       data: {
         tenantId: user.tenantId,
         runType: 'attrition_prediction',
-        output: { scoredCount: scored.length } as any,
+        output: {
+          scoredCount: scored.length,
+          atRiskCount: scored.filter((s) => s.riskScore >= AT_RISK_THRESHOLD).length,
+          source: 'legacy-ai-automation-attrition',
+        } as any,
         completedAt: new Date(),
         durationMs: 0,
+        createdBy: user.userId || user.id,
       },
     });
+
     return successList(scored.slice(skip, skip + limit), page, limit, scored.length);
   } catch (error: any) {
     return serverError(error, 'compute attrition risk');

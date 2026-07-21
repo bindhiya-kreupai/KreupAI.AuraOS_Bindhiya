@@ -1,21 +1,22 @@
 /**
  * Analytics Agent API Routes
- * Phase 4 Sprint 31-32: Analytics Agent Endpoints
  */
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { resolveAgentAuth } from '@/lib/ai/agent-auth';
+import { agentError } from '@/lib/ai/agent-types';
+import { chatWithAnalyticsAgent } from '@/lib/ai/analytics-agent-ai';
 import { AnalyticsAgentService } from '@/lib/services/agentic-ai';
-import type { InsightRequest } from '@/lib/services/agentic-ai';
 
-/**
- * GET /api/agents/analytics
- * Get Analytics Agent capabilities and status
- */
 export async function GET(request: NextRequest) {
+  const auth = await resolveAgentAuth(request);
+  if (!auth) {
+    return NextResponse.json(agentError('Unauthorized', 'غير مصرح'), { status: 401 });
+  }
+
   try {
     const definition = AnalyticsAgentService.getDefinition();
-
     return NextResponse.json({
       success: true,
       data: {
@@ -27,120 +28,72 @@ export async function GET(request: NextRequest) {
         isActive: definition.isActive,
       },
     });
-  } catch (error: any) {
-        return NextResponse.json(
-      { success: false, error: 'Failed to fetch Analytics agent' },
+  } catch {
+    return NextResponse.json(
+      agentError('Failed to fetch analytics agent', 'فشل تحميل وكيل التحليلات'),
       { status: 500 }
     );
   }
 }
 
-/**
- * POST /api/agents/analytics
- * Execute Analytics Agent action
- */
 export async function POST(request: NextRequest) {
+  const auth = await resolveAgentAuth(request);
+  if (!auth) {
+    return NextResponse.json(agentError('Unauthorized', 'غير مصرح'), { status: 401 });
+  }
+
   try {
     const body = await request.json();
-    const { action, tenantId, params } = body;
+    const { action, message, sessionId, params } = body;
 
-    if (!action || !tenantId) {
-      return NextResponse.json(
-        { success: false, error: 'Missing required fields: action, tenantId' },
-        { status: 400 }
-      );
+    if (action === 'chat') {
+      if (!message?.trim()) {
+        return NextResponse.json(agentError('Message is required', 'الرسالة مطلوبة'), {
+          status: 400,
+        });
+      }
+      const result = await chatWithAnalyticsAgent(auth, String(message), sessionId);
+      return NextResponse.json({ success: true, data: result });
     }
 
-    let result;
-
+    let result: unknown;
     switch (action) {
       case 'GENERATE_INSIGHT':
-        if (!params?.domain) {
-          return NextResponse.json(
-            { success: false, error: 'Domain required for insight generation' },
-            { status: 400 }
-          );
-        }
-        const insightRequest: InsightRequest = {
-          domain: params.domain,
-          question: params.question || '',
-          context: params.context,
-          format: params.format,
-        };
         result = await AnalyticsAgentService.generateInsight(
-          insightRequest,
-          tenantId
+          { domain: params?.domain || 'WORKFORCE', question: params?.question || '' },
+          auth.tenantId
         );
         break;
-
       case 'ANALYZE_TREND':
-        if (!params?.metricId) {
-          return NextResponse.json(
-            { success: false, error: 'Metric ID required for trend analysis' },
-            { status: 400 }
-          );
-        }
-        const defaultPeriod = {
-          start: new Date(Date.now() - 90 * 24 * 60 * 60 * 1000),
-          end: new Date(),
-        };
         result = await AnalyticsAgentService.analyzeTrend(
-          params.metricId,
-          tenantId,
-          params.period ? {
-            start: new Date(params.period.start),
-            end: new Date(params.period.end),
-          } : defaultPeriod,
-          params.granularity || 'MONTH'
+          params?.metricId || 'headcount',
+          auth.tenantId,
+          params?.period || { start: new Date(Date.now() - 90 * 86400000), end: new Date() },
+          params?.granularity || 'MONTH'
         );
         break;
-
       case 'DETECT_ANOMALIES':
         result = await AnalyticsAgentService.detectAnomalies(
-          tenantId,
+          auth.tenantId,
           params?.domain || 'WORKFORCE'
         );
         break;
-
       case 'GENERATE_REPORT':
-        if (!params?.reportType) {
-          return NextResponse.json(
-            { success: false, error: 'Report type required' },
-            { status: 400 }
-          );
-        }
         result = await AnalyticsAgentService.generateReport(
-          params.reportType,
-          tenantId,
-          {
-            period: params.period ? {
-              start: new Date(params.period.start),
-              end: new Date(params.period.end),
-            } : undefined,
-            departments: params.departments,
-            format: params.format,
-          }
+          params?.reportType || 'WORKFORCE_REVIEW',
+          auth.tenantId,
+          params?.options
         );
         break;
-
       default:
-        return NextResponse.json(
-          { success: false, error: `Unknown action: ${action}` },
-          { status: 400 }
-        );
+        return NextResponse.json(agentError(`Unknown action: ${action}`, 'إجراء غير معروف'), {
+          status: 400,
+        });
     }
 
-    return NextResponse.json({
-      success: true,
-      data: result,
-    });
-  } catch (error: any) {
-        return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to execute action'
-      },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: true, data: result });
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : 'Failed to execute action';
+    return NextResponse.json(agentError(msg, 'فشل تنفيذ الإجراء'), { status: 500 });
   }
 }
