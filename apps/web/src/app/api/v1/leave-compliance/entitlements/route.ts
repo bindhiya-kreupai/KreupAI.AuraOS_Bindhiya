@@ -20,6 +20,7 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
 });
 
 export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) => {
+  console.log('[DEBUG ENTITLEMENTS POST] ctx.permissions:', ctx.permissions, 'ctx.user:', ctx.user);
   if (
     !hasAny(
       ctx.permissions,

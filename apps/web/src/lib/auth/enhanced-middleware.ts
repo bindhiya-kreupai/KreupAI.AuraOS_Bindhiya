@@ -75,7 +75,7 @@ export async function authenticateWithPermissions(
     if (!userWithRoles) {
       if (process.env.NODE_ENV !== 'production' || user!.userId === 'dev-user') {
         const context: EnhancedAuthContext = {
-          user: user!,
+          user: { id: user!.userId, ...user! },
           permissions: ['*'] as any,
           roles: ['SUPER_ADMIN', 'ADMIN'],
           employeeId: 'dev-emp',
@@ -128,7 +128,7 @@ export async function authenticateWithPermissions(
     );
 
     const context: EnhancedAuthContext = {
-      user: user!,
+      user: { id: user!.userId, ...user! },
       permissions,
       roles,
       employeeId: userWithRoles.employee?.id,
