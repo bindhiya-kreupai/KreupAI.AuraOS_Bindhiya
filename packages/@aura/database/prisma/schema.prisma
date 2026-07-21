@@ -17147,3 +17147,144 @@ model TaComplianceCertificate {
   @@index([tenantId, status], map: "aura_ta_compliance_certificate_status_idx")
   @@map("aura_ta_compliance_certificate")
 }
+
+// ============================================================================
+// Workforce Extensions Models (Themes E, F, I — EPIC-19, EPIC-21, EPIC-22, EPIC-23, EPIC-24)
+// ============================================================================
+
+model ContractorAssignment {
+  id          String    @id @default(uuid())
+  tenantId    String
+  subjectId   String
+  subjectName String
+  domain      String
+  vendorId    String?
+  vendorName  String?
+  contractRef String?
+  siteId      String?
+  startDate   DateTime
+  endDate     DateTime?
+  status      String    @default("ACTIVE")
+  notes       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([tenantId, subjectId, domain, startDate], name: "aura_contractor_assignment_unique")
+  @@index([tenantId, status])
+  @@index([tenantId, domain])
+  @@index([tenantId, siteId])
+  @@map("aura_contractor_assignment")
+}
+
+model EmployeeLoanSchedule {
+  id             String   @id @default(uuid())
+  tenantId       String
+  employeeId     String
+  loanCode       String
+  principal      Float
+  annualRatePct  Float    @default(0)
+  installments   Int
+  monthlyPayment Float
+  balance        Float
+  startDate      DateTime
+  status         String   @default("ACTIVE")
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([tenantId, loanCode], name: "aura_employee_loan_schedule_unique")
+  @@index([tenantId, employeeId])
+  @@index([tenantId, status])
+  @@map("aura_employee_loan_schedule")
+}
+
+model UniformPpeIssuance {
+  id         String    @id @default(uuid())
+  tenantId   String
+  employeeId String
+  itemCode   String
+  itemLabel  String
+  category   String    @default("UNIFORM")
+  quantity   Int       @default(1)
+  issuedAt   DateTime  @default(now())
+  issuedBy   String?
+  returnedAt DateTime?
+  returnedBy String?
+  condition  String?
+  notes      String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([tenantId, employeeId])
+  @@index([tenantId, category])
+  @@map("aura_uniform_ppe_issuance")
+}
+
+model AccommodationTransportRoute {
+  id                String   @id @default(uuid())
+  tenantId          String
+  siteId            String
+  routeCode         String
+  label             String
+  vehicleType       String   @default("BUS")
+  capacity          Int      @default(0)
+  departureFromSite String?
+  arrivalAtSite     String?
+  worksiteAddress   String?
+  distanceKm        Float?
+  isActive          Boolean  @default(true)
+  notes             String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([tenantId, siteId, routeCode], name: "aura_accommodation_transport_route_unique")
+  @@index([tenantId, siteId])
+  @@map("aura_accommodation_transport_route")
+}
+
+model AccommodationClinic {
+  id                        String    @id @default(uuid())
+  tenantId                  String
+  siteId                    String
+  clinicCode                String
+  label                     String
+  isOnSite                  Boolean   @default(true)
+  nearestHospital           String?
+  nearestHospitalDistanceKm Float?
+  operatingHours            String?
+  doctorOnCall              Boolean   @default(false)
+  lastInspectionAt          DateTime?
+  lastInspectionResult      String?
+  isActive                  Boolean   @default(true)
+  notes                     String?
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
+
+  @@unique([tenantId, siteId, clinicCode], name: "aura_accommodation_clinic_unique")
+  @@index([tenantId, siteId])
+  @@map("aura_accommodation_clinic")
+}
+
+model AccommodationMaintenanceTicket {
+  id              String    @id @default(uuid())
+  tenantId        String
+  siteId          String
+  ticketCode      String
+  category        String
+  severity        String    @default("MEDIUM")
+  status          String    @default("OPEN")
+  description     String
+  reportedBy      String?
+  assignedTo      String?
+  reportedAt      DateTime  @default(now())
+  slaDueAt        DateTime?
+  resolvedAt      DateTime?
+  resolutionNotes String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([tenantId, siteId])
+  @@index([tenantId, status, severity])
+  @@map("aura_accommodation_maintenance_ticket")
+}
+
