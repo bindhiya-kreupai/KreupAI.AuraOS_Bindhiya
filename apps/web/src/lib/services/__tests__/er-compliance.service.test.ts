@@ -15,6 +15,10 @@ const m = prisma as any;
 const auth = { tenantId: 'tenant-1', userId: 'user-1' };
 
 beforeEach(() => {
+  m.employee = {
+    findFirst: vi.fn().mockResolvedValue({ id: 'e-1', company: { tenantId: 'tenant-1' } }),
+    findMany: vi.fn().mockResolvedValue([{ id: 'e-1', firstName: 'John', lastName: 'Doe' }]),
+  };
   m.erGrievanceCase = {
     findMany: vi.fn().mockResolvedValue([]),
     count: vi.fn().mockResolvedValue(0),
@@ -29,6 +33,7 @@ beforeEach(() => {
     update: vi.fn().mockImplementation(async ({ data }: any) => ({ id: 'd-1', ...data })),
   };
   m.erInvestigation = {
+    findUnique: vi.fn().mockResolvedValue({ id: 'i-1', interviewCount: 0, evidenceCount: 0 }),
     findMany: vi.fn().mockResolvedValue([]),
     upsert: vi.fn().mockImplementation(async ({ create }: any) => ({ id: 'i-1', ...create })),
     update: vi.fn().mockImplementation(async ({ data }: any) => ({ id: 'i-1', ...data })),
@@ -132,7 +137,7 @@ describe('erInvestigationService', () => {
   it('increments interview count', async () => {
     await erInvestigationService.addInterview('i-1', auth);
     const call = m.erInvestigation.update.mock.calls[0][0];
-    expect(call.data.interviewCount).toEqual({ increment: 1 });
+    expect(call.data.interviewCount).toEqual(1);
   });
   it('completes with findings + recommendation', async () => {
     await erInvestigationService.complete('i-1', 'breach found', 'final warning', auth);

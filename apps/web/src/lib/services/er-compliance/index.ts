@@ -34,7 +34,12 @@ export interface AuthContext {
 }
 
 export type GrievanceChannel =
-  'EMAIL' | 'PORTAL' | 'HOTLINE' | 'IN_PERSON' | 'ANONYMOUS' | 'WHISTLEBLOWER';
+  | 'EMAIL'
+  | 'PORTAL'
+  | 'HOTLINE'
+  | 'IN_PERSON'
+  | 'ANONYMOUS'
+  | 'WHISTLEBLOWER';
 
 export type GrievanceType =
   | 'HARASSMENT'
@@ -357,7 +362,7 @@ export class ErDisciplinaryService {
       new Set(items.map((item: any) => item.employeeId).filter(Boolean))
     );
     const employees = await prisma.employee.findMany({
-      where: { id: { in: employeeIds } },
+      where: { id: { in: employeeIds as string[] } },
       select: { id: true, firstName: true, lastName: true },
     });
     const employeeMap = new Map(employees.map((e) => [e.id, `${e.firstName} ${e.lastName}`]));
@@ -421,16 +426,24 @@ export class ErInvestigationService {
   }
 
   async addInterview(id: string, _auth: AuthContext) {
+    const existing = await (prisma as any).erInvestigation.findUnique({
+      where: { id },
+    });
+    const current = existing?.interviewCount ?? 0;
     return (prisma as any).erInvestigation.update({
       where: { id },
-      data: { interviewCount: { increment: 1 } },
+      data: { interviewCount: current + 1 },
     });
   }
 
   async addEvidence(id: string, _auth: AuthContext) {
+    const existing = await (prisma as any).erInvestigation.findUnique({
+      where: { id },
+    });
+    const current = existing?.evidenceCount ?? 0;
     return (prisma as any).erInvestigation.update({
       where: { id },
-      data: { evidenceCount: { increment: 1 } },
+      data: { evidenceCount: current + 1 },
     });
   }
 
@@ -553,7 +566,7 @@ export class ErAppealService {
       new Set(items.map((item: any) => item.appellantId).filter(Boolean))
     );
     const employees = await prisma.employee.findMany({
-      where: { id: { in: employeeIds } },
+      where: { id: { in: employeeIds as string[] } },
       select: { id: true, firstName: true, lastName: true },
     });
     const employeeMap = new Map(employees.map((e) => [e.id, `${e.firstName} ${e.lastName}`]));
