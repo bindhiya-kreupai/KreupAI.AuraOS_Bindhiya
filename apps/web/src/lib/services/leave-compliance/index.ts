@@ -539,9 +539,9 @@ export class LeaveMedicalEvidenceService {
     },
     auth: AuthContext
   ) {
-    const { action: _action, ...dataFields } = input as any;
-    const retentionUntil = input.retentionYears
-      ? new Date(Date.now() + input.retentionYears * 365 * 24 * 3600 * 1000)
+    const { action: _action, retentionYears, ...dataFields } = input as any;
+    const retentionUntil = retentionYears
+      ? new Date(Date.now() + Number(retentionYears) * 365 * 24 * 3600 * 1000)
       : null;
     return (prisma as any).leaveMedicalEvidence.create({
       data: {
