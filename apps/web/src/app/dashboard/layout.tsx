@@ -19,8 +19,6 @@ const PREVIEW_MODULES = new Set<string>([
   'collaboration',
   'community',
   'construction',
-  'education',
-  'energy',
   'esg',
   'expenses',
   'facilities',

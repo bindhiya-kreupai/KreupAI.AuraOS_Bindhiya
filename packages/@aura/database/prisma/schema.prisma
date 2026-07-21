@@ -17072,17 +17072,25 @@ model StockAdjustment {
 
 model SmartMeter {
   id               String   @id @default(uuid())
-  meterId          String   @unique
+  facilityId       String?
+  meterId          String
   location         Json
   type             String
   status           String
   installationDate DateTime
-  lastCalibration  DateTime
+  manufacturer     String?
+  model            String?
   firmwareVersion  String
+  connectivity     String?
+  interval         Int?
+  lastCalibration  DateTime
+  lastReading      Json?
   readings         Json
   alerts           Json
   createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
+  createdBy        String?
+  isDeleted        Boolean  @default(false)
 }
 
 model EnergyConsumption {

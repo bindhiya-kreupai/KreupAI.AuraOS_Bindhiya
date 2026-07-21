@@ -13,8 +13,8 @@ export async function GET(request: Request, { params }: { params: { billId: stri
 
     return NextResponse.json(bill);
   } catch (error) {
-    console.error('Failed to fetch bill:', error);
-    return NextResponse.json({ error: 'Failed to fetch bill' }, { status: 500 });
+    console.error('Failed to fetch utility bill:', error);
+    return NextResponse.json({ error: 'Failed to fetch utility bill' }, { status: 500 });
   }
 }
 
@@ -28,7 +28,20 @@ export async function PUT(request: Request, { params }: { params: { billId: stri
 
     return NextResponse.json(bill);
   } catch (error) {
-    console.error('Failed to update bill:', error);
-    return NextResponse.json({ error: 'Failed to update bill' }, { status: 500 });
+    console.error('Failed to update utility bill:', error);
+    return NextResponse.json({ error: 'Failed to update utility bill' }, { status: 500 });
+  }
+}
+
+export async function DELETE(request: Request, { params }: { params: { billId: string } }) {
+  try {
+    const bill = await db.utilityBill.deleteMany({
+      where: { billId: params.billId },
+    });
+
+    return NextResponse.json(bill);
+  } catch (error) {
+    console.error('Failed to delete utility bill:', error);
+    return NextResponse.json({ error: 'Failed to delete utility bill' }, { status: 500 });
   }
 }

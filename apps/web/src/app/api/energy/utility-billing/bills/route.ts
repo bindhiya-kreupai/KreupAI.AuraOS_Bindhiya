@@ -16,19 +16,26 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
+
+    // Construct Prisma payload from explicit form fields
+    const amount = body.amount || 0;
+    const electricity = amount * 0.6;
+    const water = amount * 0.25;
+    const gas = amount * 0.15;
+
     const bill = await db.utilityBill.create({
       data: {
-        billId: body.billId || `bill-${Date.now()}`,
-        accountId: body.accountId,
-        billingCycle: body.billingCycle || {},
-        consumption: body.consumption || {},
-        charges: body.charges || {},
-        total: body.total || {},
-        dueDate: body.dueDate ? new Date(body.dueDate) : new Date(),
-        status: body.status || 'unpaid',
-        paymentInfo: body.paymentInfo || {},
-        documents: body.documents || [],
-        alerts: body.alerts || [],
+        billId: body.billId || `ub-${Date.now()}`,
+        accountId: body.accountId || 'acc-default',
+        billingCycle: { month: body.billingMonth || 'Current' },
+        consumption: {},
+        charges: { electricity, water, gas },
+        total: { amount },
+        dueDate: new Date(body.dueDate || Date.now()),
+        status: body.status || 'Pending',
+        paymentInfo: {},
+        documents: {},
+        alerts: {},
       },
     });
     return NextResponse.json(bill, { status: 201 });

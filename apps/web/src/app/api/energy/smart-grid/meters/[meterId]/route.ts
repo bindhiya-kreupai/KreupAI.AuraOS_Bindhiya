@@ -32,3 +32,16 @@ export async function PUT(request: Request, { params }: { params: { meterId: str
     return NextResponse.json({ error: 'Failed to update smart meter' }, { status: 500 });
   }
 }
+
+export async function DELETE(request: Request, { params }: { params: { meterId: string } }) {
+  try {
+    const meter = await db.smartMeter.deleteMany({
+      where: { meterId: params.meterId },
+    });
+
+    return NextResponse.json(meter);
+  } catch (error) {
+    console.error('Failed to delete smart meter:', error);
+    return NextResponse.json({ error: 'Failed to delete smart meter' }, { status: 500 });
+  }
+}

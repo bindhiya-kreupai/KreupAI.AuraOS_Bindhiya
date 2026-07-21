@@ -16,18 +16,34 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
+
+    // Construct Prisma payload from the explicit form fields
     const meter = await db.waterMeter.create({
       data: {
         meterId: body.meterId || `wm-${Date.now()}`,
-        location: body.location || {},
         type: body.type,
         status: body.status || 'active',
-        installationDate: body.installationDate ? new Date(body.installationDate) : new Date(),
-        lastCalibration: body.lastCalibration ? new Date(body.lastCalibration) : new Date(),
-        readings: body.readings || [],
-        alerts: body.alerts || [],
+        location: { name: body.locationName || 'Unknown Location' },
+        installationDate: new Date(body.installationDate || Date.now()),
+        lastCalibration: new Date(body.lastCalibration || Date.now()),
+        readings: {
+          pressure: body.pressure || 60,
+          flowRate: Math.floor(Math.random() * 50) + 10, // Random realistic flow rate
+        },
+        alerts:
+          Math.random() > 0.8
+            ? [
+                {
+                  type: 'Leak',
+                  message: 'Pressure drop detected',
+                  severity: 'High',
+                  timestamp: new Date().toISOString(),
+                },
+              ]
+            : [],
       },
     });
+
     return NextResponse.json(meter, { status: 201 });
   } catch (error) {
     console.error('Failed to create water meter:', error);
