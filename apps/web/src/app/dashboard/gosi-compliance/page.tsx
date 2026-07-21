@@ -12,6 +12,7 @@ import {
   Sparkles,
   ShieldCheck,
   AlertCircle,
+  Loader2,
 } from 'lucide-react';
 
 interface Dashboard {
@@ -43,12 +44,22 @@ const periodNow = () => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 };
 
+const minPeriod = () => {
+  return '2010-01';
+};
+
+const maxPeriod = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+};
+
 export default function GosiComplianceHomePage() {
   const { isDark } = useTheme();
   const [data, setData] = useState<Dashboard | null>(null);
   const [period, setPeriod] = useState(periodNow());
   const [inputPeriod, setInputPeriod] = useState(period);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSeeding, setIsSeeding] = useState(false);
   const [message, setMessage] = useState('');
 
   async function load() {
@@ -67,19 +78,24 @@ export default function GosiComplianceHomePage() {
   }, [period]);
 
   async function seed() {
+    setIsSeeding(true);
     setMessage('');
-    await fetch('/api/v1/gosi-compliance/config', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'seed-branches' }),
-    });
-    await fetch('/api/v1/gosi-compliance/config', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'seed-rates' }),
-    });
-    setMessage('Branches + rates seeded');
-    load();
+    try {
+      await fetch('/api/v1/gosi-compliance/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'seed-branches' }),
+      });
+      await fetch('/api/v1/gosi-compliance/config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'seed-rates' }),
+      });
+      setMessage('Branches + rates seeded');
+      await load();
+    } finally {
+      setIsSeeding(false);
+    }
   }
 
   const features = [
@@ -90,6 +106,9 @@ export default function GosiComplianceHomePage() {
   ];
 
   const regStats = data?.registrationStats;
+  const inputYear = parseInt(inputPeriod.slice(0, 4), 10);
+  const isInvalidYear =
+    isNaN(inputYear) || inputYear < 2010 || inputYear > new Date().getFullYear();
 
   return (
     <main
@@ -113,30 +132,37 @@ export default function GosiComplianceHomePage() {
             </p>
           </div>
           <div className="flex flex-col sm:flex-row items-center gap-3 bg-white/10 p-4 rounded-xl backdrop-blur-sm self-start lg:self-auto border border-white/10 shrink-0">
-            <span className="text-sm font-semibold text-slate-350">Period</span>
+            <span className="text-sm font-semibold text-slate-350">Year</span>
             <input
-              value={inputPeriod}
-              onChange={(e) => setInputPeriod(e.target.value)}
-              placeholder="YYYY-MM"
-              disabled={isLoading}
-              className="w-28 rounded-lg border border-slate-700 bg-slate-900 text-white placeholder-slate-500 px-3 py-2 text-sm text-center font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
+              type="number"
+              value={isNaN(inputYear) ? '' : inputYear}
+              onChange={(e) => {
+                const val = e.target.value;
+                setInputPeriod(val + (inputPeriod.slice(4) || '-07'));
+              }}
+              disabled={isLoading || isSeeding}
+              min="2010"
+              max={new Date().getFullYear()}
+              className="w-24 rounded-lg border border-slate-700 bg-slate-900 text-white placeholder-slate-500 px-3 py-2 text-sm text-center font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
             />
             <div className="flex gap-2 w-full sm:w-auto">
               <button
                 type="button"
                 onClick={() => setPeriod(inputPeriod)}
-                disabled={isLoading || period === inputPeriod}
-                className="flex-1 sm:flex-initial rounded-lg bg-white text-slate-955 hover:bg-slate-100 px-4 py-2 text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm shrink-0"
+                disabled={isLoading || isSeeding || period === inputPeriod || isInvalidYear}
+                className="flex-1 sm:flex-initial rounded-lg bg-white text-slate-950 hover:bg-slate-100 px-4 py-2 text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm shrink-0 flex items-center justify-center gap-1.5"
               >
-                Apply
+                {isLoading && <Loader2 className="w-4 h-4 animate-spin text-slate-950" />}
+                {isLoading ? 'Applying...' : 'Apply'}
               </button>
               <button
                 type="button"
                 onClick={seed}
-                disabled={isLoading}
-                className="rounded-lg bg-slate-800 hover:bg-slate-700 px-3 py-2 text-sm font-bold transition-all border border-slate-700 shadow-sm whitespace-nowrap text-white disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+                disabled={isLoading || isSeeding}
+                className="rounded-lg bg-slate-800 hover:bg-slate-700 px-3 py-2 text-sm font-bold transition-all border border-slate-700 shadow-sm whitespace-nowrap text-white disabled:opacity-50 disabled:cursor-not-allowed shrink-0 flex items-center justify-center gap-1.5"
               >
-                Seed Rates
+                {isSeeding && <Loader2 className="w-4 h-4 animate-spin text-white" />}
+                {isSeeding ? 'Seeding...' : 'Seed Rates'}
               </button>
             </div>
           </div>

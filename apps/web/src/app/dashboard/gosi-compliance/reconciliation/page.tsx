@@ -42,6 +42,9 @@ export default function ReconciliationPage() {
   const [message, setMessage] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoading, setIsLoading] = useState(true);
+  const [tolerance, setTolerance] = useState(0.01);
+  const [inputTolerance, setInputTolerance] = useState('0.01');
+  const [isSavingTolerance, setIsSavingTolerance] = useState(false);
 
   async function load() {
     setIsLoading(true);
@@ -50,6 +53,10 @@ export default function ReconciliationPage() {
       const p = await r.json();
       if (p.success) {
         setVariances(Array.isArray(p.data) ? p.data : (p.data?.items ?? []));
+        if (p.data?.tolerance != null) {
+          setTolerance(p.data.tolerance);
+          setInputTolerance(p.data.tolerance.toString());
+        }
       }
     } finally {
       setIsLoading(false);
@@ -69,6 +76,29 @@ export default function ReconciliationPage() {
     const p = await r.json();
     setMessage(p.success ? 'Variance resolved successfully' : p.error?.message);
     load();
+  }
+
+  async function updateTolerance() {
+    setIsSavingTolerance(true);
+    setMessage('');
+    try {
+      const r = await fetch('/api/v1/gosi-compliance/reconciliation', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'update-tolerance', tolerance: parseFloat(inputTolerance) }),
+      });
+      const p = await r.json();
+      if (p.success) {
+        setMessage('Tolerance updated successfully');
+        load();
+      } else {
+        setMessage(p.error?.message ?? 'Failed to update tolerance');
+      }
+    } catch (err: any) {
+      setMessage(err?.message ?? 'Failed to update tolerance');
+    } finally {
+      setIsSavingTolerance(false);
+    }
   }
 
   const filteredVariances = variances.filter((v) => {
@@ -94,6 +124,49 @@ export default function ReconciliationPage() {
             </h1>
           </div>
         </header>
+
+        {/* Settings Panel */}
+        <section className="bg-white dark:bg-slate-900 border border-slate-200/80 dark:border-slate-800 rounded-2xl p-5 shadow-[0_1px_3px_rgba(0,0,0,0.05)] flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex flex-col gap-1">
+            <h3 className="text-sm font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+              <Sliders className="h-4 w-4 text-indigo-500" /> Reconciliation Settings
+            </h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              Set the maximum allowed difference (SAR) between GOSI and payroll deductions before
+              raising a variance.
+            </p>
+          </div>
+          <div className="flex items-center gap-3 self-start sm:self-auto">
+            <div className="flex items-center gap-2">
+              <span className="text-xs font-semibold text-slate-500 dark:text-slate-400">
+                Tolerance (SAR):
+              </span>
+              <input
+                type="number"
+                step="0.01"
+                min="0"
+                value={inputTolerance}
+                onChange={(e) => setInputTolerance(e.target.value)}
+                disabled={isSavingTolerance || isLoading}
+                className="w-24 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 px-3 py-2 text-xs font-mono text-center focus:outline-none focus:ring-2 focus:ring-indigo-500"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={updateTolerance}
+              disabled={
+                isSavingTolerance ||
+                isLoading ||
+                parseFloat(inputTolerance) === tolerance ||
+                isNaN(parseFloat(inputTolerance))
+              }
+              className="rounded-xl bg-slate-950 dark:bg-white text-white dark:text-slate-950 hover:bg-slate-800 dark:hover:bg-slate-100 disabled:opacity-50 disabled:cursor-not-allowed px-4 py-2 text-xs font-bold transition-all shadow-sm flex items-center justify-center gap-1.5"
+            >
+              {isSavingTolerance && <Loader2 className="h-3.5 w-3.5 animate-spin" />}
+              Save
+            </button>
+          </div>
+        </section>
 
         {message ? (
           <div className="p-4 rounded-xl bg-indigo-50 dark:bg-indigo-950/20 border border-indigo-200/50 dark:border-indigo-900/50 text-sm text-indigo-750 dark:text-indigo-300 flex items-center gap-2 shadow-sm animate-in fade-in duration-200">

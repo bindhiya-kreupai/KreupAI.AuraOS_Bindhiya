@@ -985,11 +985,7 @@ export class AnalyticsAgentService {
    */
   static async generateReport(
     reportType:
-      | 'HR_DASHBOARD'
-      | 'RECRUITMENT_SUMMARY'
-      | 'PAYROLL_ANALYSIS'
-      | 'WORKFORCE_REVIEW'
-      | 'CUSTOM',
+      'HR_DASHBOARD' | 'RECRUITMENT_SUMMARY' | 'PAYROLL_ANALYSIS' | 'WORKFORCE_REVIEW' | 'CUSTOM',
     tenantId: string,
     options?: {
       period?: { start: Date; end: Date };

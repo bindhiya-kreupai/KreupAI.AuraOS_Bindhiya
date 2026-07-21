@@ -1,15 +1,33 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuites name="vitest tests" tests="5" failures="0" errors="0" time="0.010415667">
-    <testsuite name="src/__tests__/api/attendance-regularization-route.test.ts" timestamp="2026-07-01T18:41:04.708Z" hostname="MacBookPro.lan" tests="5" failures="0" errors="0" skipped="0" time="0.010415667">
-        <testcase classname="src/__tests__/api/attendance-regularization-route.test.ts" name="attendance regularization API &gt; uses the authenticated employee when the submitted employee id is a placeholder" time="0.005250666">
+<testsuites name="vitest tests" tests="14" failures="0" errors="0" time="0.0082906">
+    <testsuite name="src/lib/services/esg-compliance/__tests__/esg-compliance.test.ts" timestamp="2026-07-17T04:45:59.656Z" hostname="Anuvab" tests="14" failures="0" errors="0" skipped="0" time="0.0082906">
+        <testcase classname="src/lib/services/esg-compliance/__tests__/esg-compliance.test.ts" name="EPIC-30 ESG — evaluateDiversityMetrics &gt; computes overall percentages" time="0.0014828">
         </testcase>
-        <testcase classname="src/__tests__/api/attendance-regularization-route.test.ts" name="attendance regularization API &gt; falls back to the authenticated approver and scopes approve actions by tenant" time="0.001275125">
+        <testcase classname="src/lib/services/esg-compliance/__tests__/esg-compliance.test.ts" name="EPIC-30 ESG — evaluateDiversityMetrics &gt; flags female% below target" time="0.0002778">
         </testcase>
-        <testcase classname="src/__tests__/api/attendance-regularization-route.test.ts" name="attendance regularization API &gt; cancels a pending request owned by the authenticated employee" time="0.000882709">
+        <testcase classname="src/lib/services/esg-compliance/__tests__/esg-compliance.test.ts" name="EPIC-30 ESG — evaluateDiversityMetrics &gt; flags nationals% below target with custom country" time="0.0002319">
         </testcase>
-        <testcase classname="src/__tests__/api/attendance-regularization-route.test.ts" name="attendance regularization API &gt; rejects cancelling a request owned by another employee (bilingual error)" time="0.000759959">
+        <testcase classname="src/lib/services/esg-compliance/__tests__/esg-compliance.test.ts" name="EPIC-30 ESG — evaluateDiversityMetrics &gt; does not flag when targets are met" time="0.0007374">
         </testcase>
-        <testcase classname="src/__tests__/api/attendance-regularization-route.test.ts" name="attendance regularization API &gt; rejects cancelling a non-pending request" time="0.000841708">
+        <testcase classname="src/lib/services/esg-compliance/__tests__/esg-compliance.test.ts" name="EPIC-30 ESG — evaluateDiversityMetrics &gt; handles empty employee list" time="0.0002711">
+        </testcase>
+        <testcase classname="src/lib/services/esg-compliance/__tests__/esg-compliance.test.ts" name="EPIC-30 ESG — evaluateDiversityMetrics &gt; handles zero leadership headcount cleanly" time="0.0001506">
+        </testcase>
+        <testcase classname="src/lib/services/esg-compliance/__tests__/esg-compliance.test.ts" name="EPIC-30 ESG — evaluateCarbonPerEmployee &gt; computes per-FTE intensity and scope %" time="0.000331">
+        </testcase>
+        <testcase classname="src/lib/services/esg-compliance/__tests__/esg-compliance.test.ts" name="EPIC-30 ESG — evaluateCarbonPerEmployee &gt; classifies LOW when below 80% of benchmark" time="0.0001697">
+        </testcase>
+        <testcase classname="src/lib/services/esg-compliance/__tests__/esg-compliance.test.ts" name="EPIC-30 ESG — evaluateCarbonPerEmployee &gt; classifies HIGH when above 120% of benchmark" time="0.0003752">
+        </testcase>
+        <testcase classname="src/lib/services/esg-compliance/__tests__/esg-compliance.test.ts" name="EPIC-30 ESG — evaluateCarbonPerEmployee &gt; floors headcount to 1 to avoid divide-by-zero" time="0.0001567">
+        </testcase>
+        <testcase classname="src/lib/services/esg-compliance/__tests__/esg-compliance.test.ts" name="EPIC-30 ESG — evaluateDisclosureChecklist &gt; marks every mandatory disclosure as MISSING when nothing filed" time="0.000298">
+        </testcase>
+        <testcase classname="src/lib/services/esg-compliance/__tests__/esg-compliance.test.ts" name="EPIC-30 ESG — evaluateDisclosureChecklist &gt; marks STALE if last filing exceeds cadence" time="0.0001446">
+        </testcase>
+        <testcase classname="src/lib/services/esg-compliance/__tests__/esg-compliance.test.ts" name="EPIC-30 ESG — evaluateDisclosureChecklist &gt; marks OK when filed within cadence" time="0.000104">
+        </testcase>
+        <testcase classname="src/lib/services/esg-compliance/__tests__/esg-compliance.test.ts" name="EPIC-30 ESG — evaluateDisclosureChecklist &gt; skips non-mandatory disclosures from coverage denominator" time="0.0000805">
         </testcase>
     </testsuite>
 </testsuites>

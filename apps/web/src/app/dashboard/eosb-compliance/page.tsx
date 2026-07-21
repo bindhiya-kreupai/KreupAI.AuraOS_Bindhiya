@@ -3,7 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import { ModuleGrid } from '@/components/dashboard/module-grid';
 import { useTheme } from '@/stores/theme-store';
-import { Sparkles, Calendar, Layers, ShieldCheck, DollarSign, AlertCircle } from 'lucide-react';
+import { Sparkles, Calendar, Layers, ShieldCheck, Coins, AlertCircle, Loader2 } from 'lucide-react';
 
 interface Dashboard {
   period: string;
@@ -16,6 +16,15 @@ interface Dashboard {
 }
 
 const periodNow = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+};
+
+const minPeriod = () => {
+  return '2010-01';
+};
+
+const maxPeriod = () => {
   const d = new Date();
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 };
@@ -51,6 +60,10 @@ export default function EosbHome() {
     { label: 'Monthly Certificate', slug: 'certificate' },
   ];
 
+  const inputYear = parseInt(inputPeriod.slice(0, 4), 10);
+  const isInvalidYear =
+    isNaN(inputYear) || inputYear < 2010 || inputYear > new Date().getFullYear();
+
   return (
     <main
       className="min-h-screen bg-[#f8fafc] dark:bg-slate-950 p-8 text-slate-950 dark:text-slate-50 transition-colors duration-200"
@@ -73,21 +86,27 @@ export default function EosbHome() {
             </p>
           </div>
           <div className="flex flex-col sm:flex-row items-center gap-3 bg-white/10 p-4 rounded-xl backdrop-blur-sm self-start lg:self-auto border border-white/10 shrink-0">
-            <span className="text-sm font-medium text-slate-350">Period</span>
+            <span className="text-sm font-medium text-slate-350">Year</span>
             <input
-              value={inputPeriod}
-              onChange={(e) => setInputPeriod(e.target.value)}
-              placeholder="YYYY-MM"
+              type="number"
+              value={isNaN(inputYear) ? '' : inputYear}
+              onChange={(e) => {
+                const val = e.target.value;
+                setInputPeriod(val + (inputPeriod.slice(4) || '-07'));
+              }}
               disabled={isLoading}
-              className="w-28 rounded-lg border border-slate-700 bg-slate-900 text-white placeholder-slate-500 px-3 py-2 text-sm text-center font-mono focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:opacity-50"
+              min="2010"
+              max={new Date().getFullYear()}
+              className="w-24 rounded-lg border border-slate-700 bg-slate-900 text-white placeholder-slate-500 px-3 py-2 text-sm text-center font-mono focus:outline-none focus:ring-2 focus:ring-amber-500 disabled:opacity-50"
             />
             <button
               type="button"
               onClick={() => setPeriod(inputPeriod)}
-              disabled={isLoading || period === inputPeriod}
-              className="rounded-lg bg-white text-slate-950 hover:bg-slate-100 px-4 py-2 text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm shrink-0"
+              disabled={isLoading || period === inputPeriod || isInvalidYear}
+              className="rounded-lg bg-white text-slate-950 hover:bg-slate-100 px-4 py-2 text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm shrink-0 flex items-center justify-center gap-1.5"
             >
-              Apply
+              {isLoading && <Loader2 className="w-4 h-4 animate-spin text-slate-950" />}
+              {isLoading ? 'Applying...' : 'Apply'}
             </button>
           </div>
         </div>
@@ -110,7 +129,7 @@ export default function EosbHome() {
               <Tile
                 label="Settlement Total"
                 value={`AED ${data.calcsTotalAmount.toLocaleString()}`}
-                icon={DollarSign}
+                icon={Coins}
                 type="info"
               />
               <Tile
@@ -122,7 +141,7 @@ export default function EosbHome() {
               <Tile
                 label="Accrual Liability"
                 value={`AED ${data.accrualsTotalAmount.toLocaleString()}`}
-                icon={DollarSign}
+                icon={Coins}
                 type="success"
               />
               <Tile
@@ -195,7 +214,7 @@ function Tile({ label, value, icon: Icon, type }: TileProps) {
       className={`rounded-2xl border p-5 shadow-sm transition-all duration-200 hover:shadow-md flex flex-col justify-between gap-3 ${styles.bg}`}
     >
       <div className="flex items-center justify-between">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500 truncate">
+        <span className="text-[10px] font-bold uppercase tracking-wider text-slate-400 dark:text-slate-500">
           {label}
         </span>
         <div
@@ -204,7 +223,9 @@ function Tile({ label, value, icon: Icon, type }: TileProps) {
           <Icon className="h-4.5 w-4.5" />
         </div>
       </div>
-      <span className={`text-2xl font-black tracking-tight truncate ${styles.text}`}>{value}</span>
+      <span className={`text-lg font-black tracking-tight whitespace-nowrap ${styles.text}`}>
+        {value}
+      </span>
     </div>
   );
 }

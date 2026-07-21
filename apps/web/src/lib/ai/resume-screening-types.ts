@@ -3,11 +3,7 @@
  */
 
 export type ScreeningRecommendation =
-  | 'strong_match'
-  | 'good_match'
-  | 'moderate_match'
-  | 'weak_match'
-  | 'no_match';
+  'strong_match' | 'good_match' | 'moderate_match' | 'weak_match' | 'no_match';
 
 export type JobRequirementsInput = {
   jobId?: string;

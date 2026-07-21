@@ -238,7 +238,7 @@ export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext)
     if (!parsed.success) return badRequest('Invalid input', { issues: parsed.error.flatten() });
     const body = parsed.data;
     const tenantId = ctx.user.tenantId;
-    const userId = ctx.user.id;
+    const userId = ctx.user.userId;
 
     if (body.action === 'diversity') {
       const verdict = evaluateDiversityMetrics(body.input.employees, body.input.thresholds ?? {});
