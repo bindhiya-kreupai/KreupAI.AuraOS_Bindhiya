@@ -1,6 +1,13 @@
 export type AccessLevel = 'read' | 'write' | 'admin';
 export type AuditAction =
-  'create' | 'read' | 'update' | 'delete' | 'login' | 'logout' | 'export' | 'approve';
+  | 'create'
+  | 'read'
+  | 'update'
+  | 'delete'
+  | 'login'
+  | 'logout'
+  | 'export'
+  | 'approve';
 export interface AuditLog {
   logId: string;
   timestamp: string;

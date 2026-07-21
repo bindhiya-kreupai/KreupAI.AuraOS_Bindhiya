@@ -1,138 +1,81 @@
 'use client';
 
-import React, { useState, useMemo, useCallback, useEffect } from 'react';
-import { Wrench, Clock, Download, Plus, Search, AlertCircle } from 'lucide-react';
-import { TechnicianModal } from '../components/TechnicianModal';
-import { toast } from 'sonner';
-import { useSearchParams, useRouter, usePathname } from 'next/navigation';
-import {
-  useTechnicians,
-  useShifts,
-  useCreateTechnician,
-  useUpdateTechnician,
-  useDeleteTechnician,
-} from '../hooks/queries';
-import type { Technician } from '../types';
+import React, { useEffect, useState } from 'react';
+import { Wrench, Clock, Plus, X } from 'lucide-react';
+
+type Roster = {
+  id: string;
+  bay: string;
+  tech: string;
+  job: string;
+  time: string;
+  status: string;
+  skill?: string | null;
+};
 
 export default function TechnicianRosteringPage() {
-  const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
-  const initialQuery = searchParams.get('q') || '';
+  const [rosters, setRosters] = useState<Roster[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [showModal, setShowModal] = useState(false);
+  const [saving, setSaving] = useState(false);
 
-  const [searchQuery, setSearchQuery] = useState(initialQuery);
-  const [debouncedQuery, setDebouncedQuery] = useState(initialQuery);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingTechnician, setEditingTechnician] = useState<Technician | null>(null);
+  const [form, setForm] = useState({
+    bay: '',
+    tech: '',
+    job: '',
+    time: '',
+    status: 'Pending',
+    skill: '',
+  });
 
-  const { data: technicians = [], isLoading, isError, refetch } = useTechnicians();
-  const { data: shifts = [], isLoading: isLoadingShifts } = useShifts();
-
-  const createMutation = useCreateTechnician();
-  const updateMutation = useUpdateTechnician();
-  const deleteMutation = useDeleteTechnician();
+  const loadRosters = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch('/api/industry-automotive/technician-rostering');
+      const data = await res.json();
+      setRosters(data.rosters || []);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedQuery(searchQuery);
-      const params = new URLSearchParams(searchParams.toString());
-      if (searchQuery) {
-        params.set('q', searchQuery);
-      } else {
-        params.delete('q');
-      }
-      router.push(`${pathname}?${params.toString()}`);
-    }, 300);
-    return () => clearTimeout(timer);
-  }, [searchQuery, router, pathname, searchParams]);
+    loadRosters();
+  }, []);
 
-  const visibleTechnicians = useMemo(() => {
-    if (!debouncedQuery.trim()) return technicians;
-    const lowerQuery = debouncedQuery.toLowerCase();
-    return technicians.filter(
-      (t) =>
-        t.firstName.toLowerCase().includes(lowerQuery) ||
-        t.lastName.toLowerCase().includes(lowerQuery) ||
-        t.department.toLowerCase().includes(lowerQuery)
-    );
-  }, [technicians, debouncedQuery]);
-
-  const handleExportCSV = useCallback(() => {
-    if (visibleTechnicians.length === 0) {
-      toast.warning('No technicians to export');
+  const saveRoster = async () => {
+    if (!form.bay || !form.tech || !form.job || !form.time || !form.status) {
+      alert('Please fill all required fields.');
       return;
     }
 
-    const headers = ['Technician ID', 'Name', 'Email', 'Phone', 'Role', 'Status'];
+    setSaving(true);
 
-    const csvRows = [headers.join(',')];
-    for (const tech of visibleTechnicians) {
-      const row = [
-        tech.technicianId,
-        `${tech.firstName} ${tech.lastName}`,
-        `"${tech.email}"`,
-        `"${tech.phone}"`,
-        tech.department,
-        tech.status,
-      ];
-      csvRows.push(row.join(','));
+    const res = await fetch('/api/industry-automotive/technician-rostering', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(form),
+    });
+
+    setSaving(false);
+
+    if (!res.ok) {
+      alert('Failed to save technician roster.');
+      return;
     }
 
-    const csvString = csvRows.join('\n');
-    const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `technicians_${new Date().toISOString().split('T')[0]}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-    toast.success('Exported technicians successfully');
-  }, [visibleTechnicians]);
+    setShowModal(false);
+    setForm({
+      bay: '',
+      tech: '',
+      job: '',
+      time: '',
+      status: 'Pending',
+      skill: '',
+    });
 
-  const handleSaveTechnician = async (data: Partial<Technician>) => {
-    try {
-      if (editingTechnician) {
-        await updateMutation.mutateAsync({ id: editingTechnician.technicianId, updates: data });
-        toast.success('Technician updated successfully');
-      } else {
-        await createMutation.mutateAsync({
-          ...data,
-          technicianId: `tech-${Date.now()}`,
-          certifications: [],
-          specializations: [],
-          skillLevel: 'apprentice',
-          hourlyRate: 35,
-          availability: [],
-          performanceMetrics: {
-            averageJobTime: 0,
-            jobsCompleted: 0,
-            customerSatisfactionScore: 100,
-            qualityScore: 100,
-            efficiency: 100,
-            comebackRate: 0,
-            lastReviewDate: new Date(),
-          },
-          hireDate: new Date(),
-        });
-        toast.success('Technician created successfully');
-      }
-      setIsModalOpen(false);
-    } catch (e) {
-      toast.error('Operation failed. Please try again.');
-    }
+    await loadRosters();
   };
-
-  const openAddModal = () => {
-    setEditingTechnician(null);
-    setIsModalOpen(true);
-  };
-
-  const openEditModal = (tech: Technician) => {
-    setEditingTechnician(tech);
-    setIsModalOpen(true);
-  };
-
-  const activeShifts = shifts.slice(0, 5);
 
   return (
     <div className="space-y-4 pb-6 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100">
@@ -142,177 +85,188 @@ export default function TechnicianRosteringPage() {
             <Wrench className="w-6 h-6 text-indigo-500" />
             Technician Rostering
           </h1>
-          <p className="text-slate-500 text-sm">Schedule service shifts and manage technicians.</p>
+          <p className="text-slate-500 text-sm">
+            Schedule service shifts and manage bay assignments.
+          </p>
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <button
-            onClick={handleExportCSV}
-            className="px-4 py-2 bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 rounded-xl font-bold hover:bg-slate-200 dark:hover:bg-slate-700 flex items-center gap-2"
-          >
-            <Download className="w-4 h-4" /> Export CSV
-          </button>
-          <button
-            onClick={openAddModal}
-            className="px-6 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 flex items-center gap-2"
-          >
-            <Plus className="w-4 h-4" /> Add Technician
-          </button>
-        </div>
+
+        <button
+          onClick={() => setShowModal(true)}
+          className="px-6 py-2 bg-indigo-600 text-white rounded-xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-500/20 flex items-center gap-2"
+        >
+          <Plus className="w-4 h-4" />
+          Add Roster
+        </button>
       </div>
 
-      <div className="flex items-center gap-3 shrink-0">
-        <div className="relative flex-grow max-w-md">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            type="text"
-            placeholder="Search technicians..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-          />
-        </div>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 h-full overflow-y-auto pb-10">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-3">
         <div className="lg:col-span-2 space-y-4">
           <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
-            <h3 className="font-bold text-lg mb-4">Technician Roster</h3>
+            <h3 className="font-bold text-lg mb-4">Bay Schedule</h3>
 
-            {isLoading ? (
-              <div className="space-y-4">
-                {[1, 2, 3].map((i) => (
+            <div className="space-y-4">
+              {loading && (
+                <div className="text-sm text-slate-500">Loading technician roster...</div>
+              )}
+
+              {!loading && rosters.length === 0 && (
+                <div className="text-center text-slate-500 py-8">No technician rosters found.</div>
+              )}
+
+              {!loading &&
+                rosters.map((slot) => (
                   <div
-                    key={i}
-                    className="animate-pulse flex p-4 bg-slate-50 dark:bg-slate-800 rounded-xl"
+                    key={slot.id}
+                    className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800"
                   >
-                    <div className="w-10 h-10 rounded-full bg-slate-200 dark:bg-slate-700"></div>
-                    <div className="ml-4 space-y-2 flex-1">
-                      <div className="h-4 bg-slate-200 dark:bg-slate-700 rounded w-1/4"></div>
-                      <div className="h-3 bg-slate-200 dark:bg-slate-700 rounded w-1/3"></div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : isError ? (
-              <div className="p-4 bg-red-50 dark:bg-red-900/20 text-red-600 rounded-xl flex items-center gap-3">
-                <AlertCircle className="w-5 h-5" />
-                <span>
-                  Failed to load technicians.{' '}
-                  <button onClick={() => refetch()} className="underline font-medium">
-                    Retry
-                  </button>
-                </span>
-              </div>
-            ) : visibleTechnicians.length === 0 ? (
-              <div className="text-sm text-slate-500 text-center py-4">No technicians found.</div>
-            ) : (
-              <div className="space-y-4">
-                {visibleTechnicians.map((tech) => (
-                  <div
-                    key={tech.technicianId}
-                    className="flex flex-col md:flex-row md:items-center justify-between p-4 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800 hover:shadow-md transition-all"
-                  >
-                    <div className="flex items-center gap-4">
-                      <div className="w-10 h-10 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 flex items-center justify-center font-bold text-sm">
-                        {tech.firstName.substring(0, 1).toUpperCase()}
-                        {tech.lastName.substring(0, 1).toUpperCase()}
-                      </div>
-                      <div>
+                    <div>
+                      <div className="flex items-center gap-2">
                         <div className="font-bold text-slate-800 dark:text-slate-100">
-                          {tech.firstName} {tech.lastName}
+                          {slot.bay}
                         </div>
-                        <div className="text-sm text-slate-500 capitalize">
-                          {tech.department.replace('_', ' ')}
-                        </div>
+                        <span className="text-slate-400">•</span>
+                        <div className="text-sm font-bold text-indigo-600">{slot.tech}</div>
                       </div>
+                      <div className="text-sm text-slate-500 mt-1">{slot.job}</div>
                     </div>
-                    <div className="flex items-center gap-4 mt-3 md:mt-0">
-                      <span
-                        className={`px-2 py-1 rounded text-[10px] font-bold uppercase ${tech.status === 'active' ? 'bg-emerald-100 text-emerald-600' : 'bg-slate-200 text-slate-600'}`}
-                      >
-                        {tech.status}
-                      </span>
-                      <div className="flex gap-2 border-l border-slate-200 dark:border-slate-700 pl-4">
-                        <button
-                          onClick={() => openEditModal(tech)}
-                          className="text-xs font-bold text-indigo-500 hover:underline"
-                        >
-                          Edit
-                        </button>
-                        <button
-                          disabled={deleteMutation.isPending}
-                          onClick={async () => {
-                            if (
-                              confirm(
-                                `Are you sure you want to delete ${tech.firstName} ${tech.lastName}?`
-                              )
-                            ) {
-                              try {
-                                await deleteMutation.mutateAsync(tech.technicianId);
-                                toast.success('Technician deleted');
-                              } catch (e) {
-                                toast.error('Failed to delete');
-                              }
-                            }
-                          }}
-                          className="text-xs font-bold text-rose-500 hover:underline disabled:opacity-50"
-                        >
-                          Delete
-                        </button>
+
+                    <div className="flex items-center gap-3 mt-2 md:mt-0">
+                      <div className="flex items-center gap-1 text-xs font-bold text-slate-500 bg-slate-200 dark:bg-slate-700 px-2 py-1 rounded">
+                        <Clock className="w-3 h-3" /> {slot.time}
                       </div>
+                      <span
+                        className={`px-2 py-1 rounded text-xs font-bold ${
+                          slot.status === 'Completed'
+                            ? 'bg-emerald-100 text-emerald-600'
+                            : slot.status === 'In Progress'
+                              ? 'bg-indigo-100 text-indigo-600'
+                              : 'bg-amber-100 text-amber-600'
+                        }`}
+                      >
+                        {slot.status}
+                      </span>
                     </div>
                   </div>
                 ))}
-              </div>
-            )}
+            </div>
           </div>
         </div>
 
         <div className="space-y-4">
           <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
-            <h3 className="font-bold text-lg mb-4">Current Shifts</h3>
+            <h3 className="font-bold text-lg mb-4">Technician Availability</h3>
+
+            {rosters.length === 0 && (
+              <div className="text-sm text-slate-500">No technician data found.</div>
+            )}
+
             <div className="space-y-3">
-              {isLoadingShifts ? (
-                <div className="animate-pulse space-y-3">
-                  {[1, 2].map((i) => (
-                    <div key={i} className="h-16 bg-slate-100 dark:bg-slate-800 rounded-xl"></div>
-                  ))}
-                </div>
-              ) : activeShifts.length > 0 ? (
-                activeShifts.map((shift, i) => (
-                  <div
-                    key={shift.shiftId || i}
-                    className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl border border-slate-100 dark:border-slate-800"
-                  >
-                    <div className="flex justify-between items-start mb-1">
-                      <h4 className="font-bold text-sm text-slate-700 dark:text-slate-300">
-                        {shift.technicianName}
-                      </h4>
-                      <span
-                        className={`px-1.5 py-0.5 rounded text-[10px] font-bold uppercase ${shift.status === 'in_progress' ? 'bg-indigo-100 text-indigo-600' : 'bg-slate-100 text-slate-500'}`}
-                      >
-                        {shift.status.replace('_', ' ')}
-                      </span>
+              {rosters.map((tech) => {
+                const names = tech.tech.split(' ');
+                const initials = `${names[0]?.[0] || ''}${names[1]?.[0] || ''}`;
+
+                return (
+                  <div key={tech.id} className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs font-bold">
+                        {initials}
+                      </div>
+                      <div>
+                        <div className="text-sm font-bold">{tech.tech}</div>
+                        <div className="text-xs text-slate-500">{tech.skill || 'Technician'}</div>
+                      </div>
                     </div>
-                    <p className="text-xs text-slate-500 flex items-center gap-1 mt-2">
-                      <Clock className="w-3 h-3" /> {shift.startTime} - {shift.endTime}
-                    </p>
+
+                    <div
+                      className={`w-2 h-2 rounded-full ${
+                        tech.status === 'Completed' || tech.status === 'Pending'
+                          ? 'bg-emerald-500'
+                          : 'bg-rose-500'
+                      }`}
+                    />
                   </div>
-                ))
-              ) : (
-                <div className="text-sm text-slate-500">No active shifts right now.</div>
-              )}
+                );
+              })}
             </div>
           </div>
         </div>
       </div>
 
-      <TechnicianModal
-        isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        onSave={handleSaveTechnician}
-        technician={editingTechnician}
-      />
+      {showModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+          <div className="w-full max-w-lg rounded-2xl bg-white dark:bg-slate-900 p-6 border border-slate-200 dark:border-slate-800 shadow-xl">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-xl font-bold">Add Technician Roster</h2>
+              <button onClick={() => setShowModal(false)}>
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              <input
+                className="w-full rounded-xl border px-4 py-2 bg-transparent"
+                placeholder="Bay"
+                value={form.bay}
+                onChange={(e) => setForm({ ...form, bay: e.target.value })}
+              />
+
+              <input
+                className="w-full rounded-xl border px-4 py-2 bg-transparent"
+                placeholder="Technician name"
+                value={form.tech}
+                onChange={(e) => setForm({ ...form, tech: e.target.value })}
+              />
+
+              <input
+                className="w-full rounded-xl border px-4 py-2 bg-transparent"
+                placeholder="Job"
+                value={form.job}
+                onChange={(e) => setForm({ ...form, job: e.target.value })}
+              />
+
+              <input
+                className="w-full rounded-xl border px-4 py-2 bg-transparent"
+                placeholder="Time"
+                value={form.time}
+                onChange={(e) => setForm({ ...form, time: e.target.value })}
+              />
+
+              <input
+                className="w-full rounded-xl border px-4 py-2 bg-transparent"
+                placeholder="Skill"
+                value={form.skill}
+                onChange={(e) => setForm({ ...form, skill: e.target.value })}
+              />
+
+              <select
+                className="w-full rounded-xl border px-4 py-2 bg-transparent"
+                value={form.status}
+                onChange={(e) => setForm({ ...form, status: e.target.value })}
+              >
+                <option value="Pending">Pending</option>
+                <option value="In Progress">In Progress</option>
+                <option value="Completed">Completed</option>
+              </select>
+            </div>
+
+            <div className="mt-5 flex justify-end gap-3">
+              <button
+                onClick={() => setShowModal(false)}
+                className="px-4 py-2 rounded-xl border font-bold"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={saveRoster}
+                disabled={saving}
+                className="px-4 py-2 rounded-xl bg-indigo-600 text-white font-bold disabled:opacity-50"
+              >
+                {saving ? 'Saving...' : 'Save Roster'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -30,7 +30,22 @@ export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext)
       for (const f of ['countryCode', 'establishmentId', 'period', 'type', 'description']) {
         if (!body[f]) return badRequest(`${f} required`);
       }
-      return ok(await wpsPenaltyService.raise(body, auth), 'Raised');
+      return ok(
+        await wpsPenaltyService.raise(
+          {
+            countryCode: body.countryCode,
+            establishmentId: body.establishmentId,
+            period: body.period,
+            type: body.type,
+            amount: body.amount,
+            currency: body.currency,
+            description: body.description,
+            businessImpact: body.businessImpact,
+          },
+          auth
+        ),
+        'Raised'
+      );
     }
     if (body.action === 'resolve') {
       if (!body.penaltyId) return badRequest('penaltyId required');

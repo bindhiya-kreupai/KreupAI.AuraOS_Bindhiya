@@ -1,20 +1,22 @@
 /**
  * Recruitment Agent API Routes
- * Phase 4 Sprint 31-32: Recruitment Agent Endpoints
  */
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
+import { resolveAgentAuth } from '@/lib/ai/agent-auth';
+import { agentError } from '@/lib/ai/agent-types';
+import { chatWithRecruitmentAgent } from '@/lib/ai/recruitment-agent-ai';
 import { RecruitmentAgentService } from '@/lib/services/agentic-ai';
 
-/**
- * GET /api/agents/recruitment
- * Get Recruitment Agent capabilities and status
- */
 export async function GET(request: NextRequest) {
+  const auth = await resolveAgentAuth(request);
+  if (!auth) {
+    return NextResponse.json(agentError('Unauthorized', 'غير مصرح'), { status: 401 });
+  }
+
   try {
     const definition = RecruitmentAgentService.getDefinition();
-
     return NextResponse.json({
       success: true,
       data: {
@@ -26,186 +28,68 @@ export async function GET(request: NextRequest) {
         isActive: definition.isActive,
       },
     });
-  } catch (error: any) {
-        return NextResponse.json(
-      { success: false, error: 'Failed to fetch Recruitment agent' },
+  } catch {
+    return NextResponse.json(
+      agentError('Failed to fetch recruitment agent', 'فشل تحميل وكيل التوظيف'),
       { status: 500 }
     );
   }
 }
 
-/**
- * POST /api/agents/recruitment
- * Execute Recruitment Agent action
- */
 export async function POST(request: NextRequest) {
+  const auth = await resolveAgentAuth(request);
+  if (!auth) {
+    return NextResponse.json(agentError('Unauthorized', 'غير مصرح'), { status: 401 });
+  }
+
   try {
     const body = await request.json();
-    const { action, tenantId, params } = body;
+    const { action, message, sessionId, params } = body;
 
-    if (!action || !tenantId) {
-      return NextResponse.json(
-        { success: false, error: 'Missing required fields: action, tenantId' },
-        { status: 400 }
-      );
+    if (action === 'chat') {
+      if (!message?.trim()) {
+        return NextResponse.json(agentError('Message is required', 'الرسالة مطلوبة'), {
+          status: 400,
+        });
+      }
+      const result = await chatWithRecruitmentAgent(auth, String(message), sessionId);
+      return NextResponse.json({ success: true, data: result });
     }
 
-    let result;
-
+    let result: unknown;
     switch (action) {
-      case 'SCREEN_CANDIDATES':
-        if (!params?.jobId) {
-          return NextResponse.json(
-            { success: false, error: 'Job ID required for screening' },
-            { status: 400 }
-          );
+      case 'SCREEN_CANDIDATES': {
+        const jobId = String(params?.jobId || '');
+        if (!jobId) {
+          return NextResponse.json(agentError('jobId is required', 'معرف الوظيفة مطلوب'), {
+            status: 400,
+          });
         }
         result = await RecruitmentAgentService.screenCandidates(
-          params.jobId,
-          tenantId,
-          params.criteria
+          jobId,
+          auth.tenantId,
+          params?.criteria
         );
         break;
-
-      case 'SHORTLIST_CANDIDATES':
-        if (!params?.jobId || !params?.candidateIds) {
-          return NextResponse.json(
-            { success: false, error: 'Job ID and candidate IDs required' },
-            { status: 400 }
-          );
-        }
-        result = await RecruitmentAgentService.shortlistCandidates(
-          params.jobId,
-          tenantId,
-          params.candidateIds
-        );
-        break;
-
-      case 'SCHEDULE_INTERVIEW':
-        if (!params?.candidateId || !params?.interviewers || !params?.duration) {
-          return NextResponse.json(
-            { success: false, error: 'Missing interview scheduling params' },
-            { status: 400 }
-          );
-        }
-        result = await RecruitmentAgentService.scheduleInterview(
-          {
-            type: 'SCHEDULE',
-            candidateId: params.candidateId,
-            interviewType: params.interviewType || 'TECHNICAL',
-            interviewers: params.interviewers,
-            preferredSlots: params.preferredSlots?.map((s: { date: string; startTime: string; endTime: string }) => ({
-              date: new Date(s.date),
-              startTime: s.startTime,
-              endTime: s.endTime,
-            })),
-            duration: params.duration,
-          },
-          tenantId
-        );
-        break;
-
-      case 'RESCHEDULE_INTERVIEW':
-        if (!params?.interviewId || !params?.newSlot) {
-          return NextResponse.json(
-            { success: false, error: 'Interview ID and new slot required' },
-            { status: 400 }
-          );
-        }
-        result = await RecruitmentAgentService.rescheduleInterview(
-          params.interviewId,
-          tenantId,
-          {
-            date: new Date(params.newSlot.date),
-            startTime: params.newSlot.startTime,
-            endTime: params.newSlot.endTime,
-          },
-          params.reason
-        );
-        break;
-
-      case 'CANCEL_INTERVIEW':
-        if (!params?.interviewId || !params?.reason) {
-          return NextResponse.json(
-            { success: false, error: 'Interview ID and reason required' },
-            { status: 400 }
-          );
-        }
-        result = await RecruitmentAgentService.cancelInterview(
-          params.interviewId,
-          tenantId,
-          params.reason
-        );
-        break;
-
+      }
       case 'GET_UPCOMING_INTERVIEWS':
-        result = await RecruitmentAgentService.getUpcomingInterviews(
-          tenantId,
-          params
-        );
+        result = await RecruitmentAgentService.getUpcomingInterviews(auth.tenantId, params);
         break;
-
       case 'GET_PIPELINE_STATS':
-        result = await RecruitmentAgentService.getPipelineStats(
-          tenantId,
-          params
-        );
+        result = await RecruitmentAgentService.getPipelineStats(auth.tenantId);
         break;
-
       case 'GET_OPEN_POSITIONS':
-        result = await RecruitmentAgentService.getOpenPositions(
-          tenantId,
-          params
-        );
+        result = await RecruitmentAgentService.getOpenPositions(auth.tenantId);
         break;
-
-      case 'SEND_CANDIDATE_UPDATE':
-        if (!params?.candidateId || !params?.templateType) {
-          return NextResponse.json(
-            { success: false, error: 'Candidate ID and template type required' },
-            { status: 400 }
-          );
-        }
-        result = await RecruitmentAgentService.sendCandidateUpdate(
-          params.candidateId,
-          tenantId,
-          params.templateType,
-          params.additionalData
-        );
-        break;
-
-      case 'SEND_BULK_COMMUNICATION':
-        if (!params?.candidateIds || !params?.template) {
-          return NextResponse.json(
-            { success: false, error: 'Candidate IDs and template required' },
-            { status: 400 }
-          );
-        }
-        result = await RecruitmentAgentService.sendBulkCommunication(
-          params.candidateIds,
-          tenantId,
-          params.template
-        );
-        break;
-
       default:
-        return NextResponse.json(
-          { success: false, error: `Unknown action: ${action}` },
-          { status: 400 }
-        );
+        return NextResponse.json(agentError(`Unknown action: ${action}`, 'إجراء غير معروف'), {
+          status: 400,
+        });
     }
 
-    return NextResponse.json({
-      success: true,
-      data: result,
-    });
-  } catch (error: any) {
-        return NextResponse.json(
-      {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to execute action'
-      },
-      { status: 500 }
-    );
+    return NextResponse.json({ success: true, data: result });
+  } catch (error) {
+    const msg = error instanceof Error ? error.message : 'Failed to execute action';
+    return NextResponse.json(agentError(msg, 'فشل تنفيذ الإجراء'), { status: 500 });
   }
 }

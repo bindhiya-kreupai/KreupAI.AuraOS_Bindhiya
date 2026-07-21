@@ -37,7 +37,7 @@ export class GosiProcessService {
 
     return (prisma as any).gosiPeriodSubmission.upsert({
       where: {
-        aura_gosi_period_submission_unique: {
+        tenantId_establishmentId_period: {
           tenantId: auth.tenantId,
           establishmentId: input.establishmentId,
           period: input.period,

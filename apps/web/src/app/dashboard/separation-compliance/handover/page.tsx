@@ -75,6 +75,7 @@ export default function HandoverPage() {
 
   async function addItem() {
     setMessage('');
+    console.log('handoverForm:', handoverForm);
     const r = await fetch('/api/v1/separation-compliance/handover', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

@@ -2,6 +2,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   GitBranch,
   Activity,
@@ -22,8 +23,6 @@ import {
   Bot,
   Share2,
   History,
-  Trash2,
-  Download,
 } from 'lucide-react';
 import { cn } from '@aura/ui/utils';
 import {
@@ -32,6 +31,7 @@ import {
 } from '@/app/dashboard/workflow-engine/services';
 
 export default function WorkflowEnginePage() {
+  const router = useRouter();
   const [activeExecutions, setActiveExecutions] = useState<any[]>([]);
   const [stats, setStats] = useState({
     total: 0,
@@ -41,47 +41,9 @@ export default function WorkflowEnginePage() {
     anomalies: 0,
   });
   const [isLoading, setIsLoading] = useState(true);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [formData, setFormData] = useState({ name: '', trigger: 'Manual' });
   const [searchQuery, setSearchQuery] = useState('');
-  const [statusFilter, setStatusFilter] = useState('All');
-
-  const filteredExecutions = activeExecutions.filter((e) => {
-    const nameMatch = (e.workflowName || 'Employee Onboarding')
-      .toLowerCase()
-      .includes(searchQuery.toLowerCase());
-    const statusMatch = statusFilter === 'All' || e.status === statusFilter;
-    return nameMatch && statusMatch;
-  });
-
-  const handleCreateWorkflow = () => {
-    setIsModalOpen(false);
-  };
-
-  const handleExport = () => {
-    const csvContent =
-      'data:text/csv;charset=utf-8,Name,Code,Status,Initiator\n' +
-      activeExecutions
-        .map(
-          (e) =>
-            `${e.workflowName || 'Employee Onboarding'},${e.executionCode || 'EXEC-8902'},${e.status},${e.initiatorName || 'System'}`
-        )
-        .join('\n');
-    const encodedUri = encodeURI(csvContent);
-    const link = document.createElement('a');
-    link.setAttribute('href', encodedUri);
-    link.setAttribute('download', 'executions.csv');
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-  };
-
-  const handleDelete = (index: number) => {
-    if (confirm('Delete this execution?')) {
-      const updated = activeExecutions.filter((_, i) => i !== index);
-      setActiveExecutions(updated);
-    }
-  };
+  const [showSearch, setShowSearch] = useState(false);
+  const [statusFilter, setStatusFilter] = useState<string | null>(null);
 
   useEffect(() => {
     loadDashboardData();
@@ -95,28 +57,44 @@ export default function WorkflowEnginePage() {
         WorkflowService.getWorkflows(),
       ]);
 
+      const completed = executions.filter(
+        (e) => e.status === 'completed' || e.status === 'approved'
+      ).length;
+      const failed = executions.filter(
+        (e) => e.status === 'failed' || e.status === 'rejected'
+      ).length;
+      const total = executions.length;
+      const durations = executions
+        .filter((e) => e.startDate && e.endDate)
+        .map((e) => (new Date(e.endDate).getTime() - new Date(e.startDate).getTime()) / 1000);
+      const avgDuration =
+        durations.length > 0
+          ? Math.round(durations.reduce((a, b) => a + b, 0) / durations.length)
+          : 0;
+
       setActiveExecutions(executions.slice(0, 5));
       setStats({
         total: workflows.length,
-        active: executions.filter((e) => e.status === 'RUNNING').length,
-        successRate: 98.4, // Industry benchmark for 5-star
-        avgDuration: 124, // seconds
-        anomalies: 2, // Mock AI detection
+        active: executions.filter((e) => e.status === 'running' || e.status === 'in_progress')
+          .length,
+        successRate: total > 0 ? Math.round((completed / total) * 1000) / 10 : 0,
+        avgDuration,
+        anomalies: failed,
       });
     } catch (error: any) {
       console.error('Failed to load workflow data:', error);
-      // Fallback for demo/dev
-      setStats({
-        total: 12,
-        active: 4,
-        successRate: 96.5,
-        avgDuration: 145,
-        anomalies: 1,
-      });
     } finally {
       setIsLoading(false);
     }
   };
+
+  const filteredExecutions = activeExecutions.filter((exec) => {
+    const matchesSearch =
+      searchQuery === '' ||
+      (exec.workflowName || '')?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = statusFilter === null || exec.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
 
   return (
     <div className="p-6 max-w-[1600px] mx-auto space-y-8 animate-in fade-in duration-500">
@@ -136,14 +114,14 @@ export default function WorkflowEnginePage() {
         </div>
 
         <div className="flex items-center gap-3">
-          <button className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-stellar-blue border border-cloud dark:border-nebula-purple/30 rounded-xl text-xs font-bold text-ink-black dark:text-pearl hover:bg-slate-50 transition-all">
+          <button
+            onClick={() => router.push('/workflow-engine/audit-log')}
+            className="flex items-center gap-2 px-4 py-2 bg-white dark:bg-stellar-blue border border-cloud dark:border-nebula-purple/30 rounded-xl text-xs font-bold text-ink-black dark:text-pearl hover:bg-slate-50 transition-all"
+          >
             <History className="w-3.5 h-3.5" /> Audit Logs
           </button>
           <button
-            onClick={() => {
-              setFormData({ name: '', trigger: 'Manual' });
-              setIsModalOpen(true);
-            }}
+            onClick={() => router.push('/workflow-engine/workflow-designer')}
             className="flex items-center gap-2 px-6 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-lg shadow-indigo-600/20 transition-all"
           >
             <Plus className="w-3.5 h-3.5" /> New workflow
@@ -183,32 +161,44 @@ export default function WorkflowEnginePage() {
             <h2 className="text-lg font-bold text-ink-black dark:text-pearl flex items-center gap-2">
               <Activity className="w-5 h-5 text-indigo-500" /> Active Executions
             </h2>
-            <div className="flex gap-3">
-              <div className="relative">
-                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-silver-mist" />
+            <div className="flex gap-2 items-center">
+              {showSearch && (
                 <input
                   type="text"
-                  placeholder="Search workflows..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="pl-9 pr-4 py-2 w-48 bg-slate-50 dark:bg-slate-900 border border-cloud dark:border-nebula-purple/30 rounded-xl text-xs focus:outline-none focus:border-indigo-500"
+                  placeholder="Search by name..."
+                  className="px-3 py-1.5 text-xs border border-cloud dark:border-nebula-purple/30 rounded-lg bg-white dark:bg-stellar-blue text-ink-black dark:text-pearl focus:outline-none focus:ring-2 focus:ring-indigo-500/40 w-48"
                 />
-              </div>
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-cloud dark:border-nebula-purple/30 rounded-xl text-xs focus:outline-none focus:border-indigo-500"
-              >
-                <option value="All">All Status</option>
-                <option value="RUNNING">Running</option>
-                <option value="COMPLETED">Completed</option>
-                <option value="FAILED">Failed</option>
-              </select>
+              )}
               <button
-                onClick={handleExport}
-                className="p-2.5 bg-slate-50 dark:bg-slate-900 border border-cloud dark:border-nebula-purple/30 rounded-xl text-silver-mist hover:text-indigo-600 transition-colors"
+                onClick={() => {
+                  setShowSearch(!showSearch);
+                  if (showSearch) setSearchQuery('');
+                }}
+                className={cn(
+                  'p-1.5 rounded-lg transition-colors',
+                  showSearch
+                    ? 'bg-indigo-100 dark:bg-indigo-900/30'
+                    : 'hover:bg-slate-100 dark:hover:bg-slate-800'
+                )}
               >
-                <Download className="w-4 h-4" />
+                <Search
+                  className={cn('w-4 h-4', showSearch ? 'text-indigo-600' : 'text-silver-mist')}
+                />
+              </button>
+              <button
+                onClick={() => setStatusFilter(statusFilter === null ? 'running' : null)}
+                className={cn(
+                  'p-1.5 rounded-lg transition-colors',
+                  statusFilter
+                    ? 'bg-indigo-100 dark:bg-indigo-900/30'
+                    : 'hover:bg-slate-100 dark:hover:bg-slate-800'
+                )}
+              >
+                <Filter
+                  className={cn('w-4 h-4', statusFilter ? 'text-indigo-600' : 'text-silver-mist')}
+                />
               </button>
             </div>
           </div>
@@ -237,42 +227,84 @@ export default function WorkflowEnginePage() {
                 </thead>
                 <tbody className="divide-y divide-cloud dark:divide-nebula-purple/10">
                   {filteredExecutions.length > 0 ? (
-                    filteredExecutions.map((exec, i) => (
+                    filteredExecutions.map((exec) => (
                       <tr
-                        key={exec.id || i}
+                        key={exec.id}
                         className="hover:bg-slate-50/50 dark:hover:bg-indigo-900/5 transition-colors group"
                       >
                         <td className="px-6 py-4">
                           <div className="font-bold text-ink-black dark:text-pearl text-sm">
-                            {exec.workflowName}
+                            {exec.workflowName || 'Unnamed'}
                           </div>
                           <div className="text-[10px] text-silver-mist font-mono">
-                            {exec.executionCode || 'EXEC-8902'}
+                            {exec.executionCode || exec.id?.slice(0, 8) || ''}
                           </div>
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
-                            <StepNode icon={Clock} label="Initiation" status="done" active />
+                            <StepNode
+                              icon={Clock}
+                              label="Initiated"
+                              status={exec.status === 'initiated' ? 'active' : 'done'}
+                              active
+                            />
                             <div className="w-12 h-px bg-slate-200 dark:bg-slate-800" />
-                            <StepNode icon={Settings2} label="Logic Parse" status="done" active />
+                            <StepNode
+                              icon={Settings2}
+                              label="In Progress"
+                              status={
+                                exec.status === 'in_progress'
+                                  ? 'active'
+                                  : exec.status === 'initiated'
+                                    ? 'pending'
+                                    : 'done'
+                              }
+                              active
+                            />
                             <div className="w-12 h-px bg-slate-200 dark:bg-slate-800" />
-                            <StepNode icon={Zap} label="Validation" status="active" />
-                            <div className="w-12 h-px bg-slate-200 dark:bg-slate-800 animate-pulse" />
-                            <StepNode icon={Layers} label="Approvals" status="pending" />
+                            <StepNode
+                              icon={Zap}
+                              label="Approval"
+                              status={
+                                exec.status === 'pending_approval'
+                                  ? 'active'
+                                  : ['approved', 'rejected', 'cancelled', 'failed'].includes(
+                                        exec.status
+                                      )
+                                    ? 'done'
+                                    : 'pending'
+                              }
+                            />
                             <div className="w-12 h-px bg-slate-200 dark:bg-slate-800" />
-                            <StepNode icon={BarChart3} label="Write-Back" status="pending" />
+                            <StepNode
+                              icon={Layers}
+                              label={
+                                exec.status === 'approved'
+                                  ? 'Approved'
+                                  : exec.status === 'rejected'
+                                    ? 'Rejected'
+                                    : 'Complete'
+                              }
+                              status={
+                                ['approved', 'rejected', 'cancelled', 'failed'].includes(
+                                  exec.status
+                                )
+                                  ? 'done'
+                                  : 'pending'
+                              }
+                            />
                           </div>
                           <div className="text-[10px] text-silver-mist mt-1 italic">
-                            Currently at: {exec.currentNodeName || 'Approval Layer'}
+                            Currently at: {exec.currentNodeName || exec.status || '-'}
                           </div>
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-2">
                             <div className="w-6 h-6 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-[10px] font-bold">
-                              {exec.initiatorName?.charAt(0) || 'U'}
+                              {exec.initiatorId?.charAt(0) || 'U'}
                             </div>
                             <span className="text-xs font-medium text-ink-black dark:text-pearl">
-                              {exec.initiatorName || 'System'}
+                              {exec.initiatorId || 'System'}
                             </span>
                           </div>
                         </td>
@@ -280,7 +312,7 @@ export default function WorkflowEnginePage() {
                           <span
                             className={cn(
                               'inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold',
-                              exec.status === 'RUNNING'
+                              exec.status === 'running'
                                 ? 'bg-emerald-50 text-emerald-600 border border-emerald-100'
                                 : 'bg-slate-50 text-slate-600 border border-slate-100'
                             )}
@@ -291,64 +323,20 @@ export default function WorkflowEnginePage() {
                         </td>
                         <td className="px-6 py-4 text-right">
                           <button
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              handleDelete(i);
-                            }}
+                            onClick={() =>
+                              router.push(`/workflow-engine/testing-mode?executionId=${exec.id}`)
+                            }
                             className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors"
                           >
-                            <Trash2 className="w-4 h-4 text-silver-mist hover:text-red-500 transition-all" />
-                          </button>
-                          <button className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors">
                             <ChevronRight className="w-4 h-4 text-silver-mist group-hover:text-indigo-600 group-hover:translate-x-0.5 transition-all" />
                           </button>
                         </td>
                       </tr>
                     ))
                   ) : (
-                    <tr className="hover:bg-slate-50/50 dark:hover:bg-indigo-900/5 transition-colors group">
-                      <td className="px-6 py-4">
-                        <div className="font-bold text-ink-black dark:text-pearl text-sm">
-                          Employee Onboarding
-                        </div>
-                        <div className="text-[10px] text-silver-mist font-mono">EXEC-PW-9901</div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <div className="flex-1 h-1.5 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden min-w-[100px]">
-                            <div
-                              className="h-full bg-indigo-600 rounded-full"
-                              style={{ width: '85%' }}
-                            />
-                          </div>
-                          <span className="text-[10px] font-bold text-ink-black dark:text-pearl">
-                            Step 5/6
-                          </span>
-                        </div>
-                        <div className="text-[10px] text-silver-mist mt-1 italic">
-                          Currently at: IT Asset Provisioning
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 rounded-full bg-indigo-100 text-indigo-600 flex items-center justify-center text-[10px] font-bold">
-                            SM
-                          </div>
-                          <span className="text-xs font-medium text-ink-black dark:text-pearl">
-                            Sarah Miller (HR)
-                          </span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-50 text-emerald-600 border border-emerald-100">
-                          <span className="w-1.5 h-1.5 rounded-full bg-current animate-pulse" />
-                          RUNNING
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-right">
-                        <button className="p-2 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-xl transition-colors">
-                          <ChevronRight className="w-4 h-4 text-silver-mist group-hover:text-indigo-600" />
-                        </button>
+                    <tr>
+                      <td colSpan={5} className="px-6 py-12 text-center text-silver-mist text-sm">
+                        {isLoading ? 'Loading executions...' : 'No active executions'}
                       </td>
                     </tr>
                   )}
@@ -369,12 +357,16 @@ export default function WorkflowEnginePage() {
                 <ShieldAlert className="w-4 h-4 text-indigo-200" /> Agentic Sentinel
               </div>
               <h3 className="text-xl font-extrabold mb-2 text-white">Process Health Score</h3>
-              <div className="text-4xl font-black text-indigo-100 mb-4">94.8%</div>
+              <div className="text-4xl font-black text-indigo-100 mb-4">{stats.successRate}%</div>
               <p className="text-indigo-100/70 text-xs leading-relaxed mb-6">
-                AI detected 2 path anomalies in the "Hiring Orchestration" workflow. Resolution
-                speed has increased by 14% this week.
+                {stats.anomalies > 0
+                  ? `${stats.anomalies} failed execution${stats.anomalies !== 1 ? 's' : ''} detected across all workflows.`
+                  : 'All workflows are running smoothly with no anomalies detected.'}
               </p>
-              <button className="w-full py-3 bg-white text-indigo-600 rounded-xl text-xs font-black shadow-lg hover:bg-indigo-50 transition-colors uppercase tracking-widest">
+              <button
+                onClick={() => router.push('/workflow-engine/ai-path-prediction')}
+                className="w-full py-3 bg-white text-indigo-600 rounded-xl text-xs font-black shadow-lg hover:bg-indigo-50 transition-colors uppercase tracking-widest"
+              >
                 Optimize Paths
               </button>
             </div>
@@ -385,7 +377,10 @@ export default function WorkflowEnginePage() {
               <span className="flex items-center gap-2">
                 <Settings2 className="w-4 h-4 text-indigo-500" /> Rapid Designer
               </span>
-              <button className="text-[9px] font-black uppercase text-indigo-500 px-2 py-1 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg">
+              <button
+                onClick={() => router.push('/workflow-engine/workflow-designer')}
+                className="text-[9px] font-black uppercase text-indigo-500 px-2 py-1 bg-indigo-50 dark:bg-indigo-900/20 rounded-lg"
+              >
                 New Canvas
               </button>
             </h3>
@@ -394,21 +389,25 @@ export default function WorkflowEnginePage() {
                 label="Approval Chain Builder"
                 icon={GitBranch}
                 description="Multi-layer hierarchy"
+                onClick={() => router.push('/workflow-engine/approval-chains')}
               />
               <QuickTool
                 label="Dynamic Form Architect"
                 icon={Layers}
                 description="Schema mapping"
+                onClick={() => router.push('/workflow-engine/form-builder')}
               />
               <QuickTool
                 label="Integration Webhooks"
                 icon={Share2}
                 description="3rd party bridge"
+                onClick={() => router.push('/workflow-engine/integration-points')}
               />
               <QuickTool
                 label="Performance Analytics"
                 icon={BarChart3}
                 description="SLA optimization"
+                onClick={() => router.push('/workflow-engine/workflow-analytics')}
               />
             </div>
           </div>
@@ -558,9 +557,12 @@ function StatCard({ title, value, icon: Icon, color, alert }: any) {
   );
 }
 
-function QuickTool({ label, icon: Icon, description }: any) {
+function QuickTool({ label, icon: Icon, description, onClick }: any) {
   return (
-    <button className="w-full flex items-center justify-between p-4 rounded-3xl border border-cloud dark:border-nebula-purple/10 hover:border-indigo-500/50 hover:bg-slate-50 dark:hover:bg-indigo-900/5 transition-all group">
+    <button
+      onClick={onClick}
+      className="w-full flex items-center justify-between p-4 rounded-3xl border border-cloud dark:border-nebula-purple/10 hover:border-indigo-500/50 hover:bg-slate-50 dark:hover:bg-indigo-900/5 transition-all group"
+    >
       <div className="flex items-center gap-4">
         <div className="p-2.5 bg-slate-50 dark:bg-slate-800 rounded-xl group-hover:bg-white dark:group-hover:bg-slate-700 transition-colors">
           <Icon className="w-4 h-4 text-silver-mist group-hover:text-indigo-600" />

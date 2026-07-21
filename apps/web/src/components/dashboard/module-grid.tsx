@@ -6,7 +6,9 @@ import { ArrowRight, LayoutGrid } from 'lucide-react';
 import Link from 'next/link';
 
 interface FeatureItem {
+  /** Display label shown on the card. */
   label: string;
+  /** Route slug appended to basePath. Falls back to kebab-cased label. */
   slug?: string;
 }
 
@@ -18,7 +20,6 @@ interface ModuleGridProps {
   icon?: LucideIcon;
   features: Feature[];
   basePath?: string;
-  showControls?: boolean;
 }
 
 export function ModuleGrid({
@@ -27,44 +28,16 @@ export function ModuleGrid({
   icon: Icon,
   features,
   basePath,
-  showControls = false,
 }: ModuleGridProps) {
-  const [search, setSearch] = React.useState('');
-
   const toKebabCase = (str: string) =>
     str
       .toLowerCase()
       .replace(/\s+/g, '-')
       .replace(/[^\w-]+/g, '');
 
-  const filteredFeatures = features.filter((feature) => {
-    const label = typeof feature === 'string' ? feature : feature.label;
-    return label.toLowerCase().includes(search.toLowerCase());
-  });
-
-  const exportCsv = () => {
-    const rows = [
-      ['Feature'],
-      ...filteredFeatures.map((feature) => {
-        const label = typeof feature === 'string' ? feature : feature.label;
-        return [label];
-      }),
-    ];
-
-    const csv = rows.map((row) => row.map((cell) => `"${cell}"`).join(',')).join('\n');
-    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
-    const url = URL.createObjectURL(blob);
-
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `${title.toLowerCase().replace(/\s+/g, '-')}-features.csv`;
-    link.click();
-
-    URL.revokeObjectURL(url);
-  };
-
   return (
     <div className="space-y-8 pb-10 h-[calc(100vh-6rem)] flex flex-col relative text-slate-900 dark:text-slate-100 overflow-y-auto">
+      {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
         <div>
           <h1 className="text-3xl font-bold flex items-center gap-3">
@@ -79,28 +52,12 @@ export function ModuleGrid({
         </div>
       </div>
 
-      {showControls && (
-        <div className="flex flex-col md:flex-row gap-3 md:items-center md:justify-between">
-          <input
-            type="text"
-            placeholder={`Search ${title.toLowerCase()} modules...`}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className="w-full md:max-w-md rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 py-2 text-sm outline-none focus:border-indigo-500"
-          />
-
-          <button
-            type="button"
-            onClick={exportCsv}
-            className="rounded-xl bg-indigo-600 px-4 py-2 text-sm font-semibold text-white hover:bg-indigo-700"
-          >
-            Export CSV
-          </button>
-        </div>
-      )}
-
+      {/* Feature Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-        {filteredFeatures.map((feature, i) => {
+        {features.map((feature, i) => {
+          // Features may be a plain label (kebab-cased into a slug) or an
+          // object with an explicit label + slug so a card can point at a
+          // route that does not match its display text.
           const label = typeof feature === 'string' ? feature : feature.label;
           const slug =
             typeof feature === 'string'

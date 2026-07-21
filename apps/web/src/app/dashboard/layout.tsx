@@ -13,8 +13,11 @@ import { useCurrentUser } from '@/lib/auth/AuthProvider';
 // any /api/ endpoint. Listed here so users see a clear "preview" banner
 // instead of wondering why nothing happens when they click.
 const PREVIEW_MODULES = new Set<string>([
-  'ai',
-  'ai-automation',
+  'agriculture',
+  // 'ai-automation' removed — live APIs wired for attrition, coaching, resume, workflows
+  'alumni-network',
+  'automotive',
+  'aviation',
   'career',
   'collaboration',
   'community',
@@ -44,7 +47,6 @@ const PREVIEW_MODULES = new Set<string>([
   'projects',
   'remote-work',
   'retail',
-  'reveal',
 ]);
 
 interface FavoriteItem {
@@ -57,11 +59,11 @@ interface FavoriteItem {
 function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
+  const router = useRouter();
   const pathname = usePathname() || '';
   const moduleSegment = pathname.split('/').filter(Boolean)[1];
   const isPreviewModule = !!moduleSegment && PREVIEW_MODULES.has(moduleSegment);
 
-  const router = useRouter();
   const { isDark, toggleTheme } = useTheme();
   const { setIsOpen: setSearchOpen } = useSearch();
   const { user: currentUser } = useCurrentUser();
@@ -122,12 +124,12 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top Navigation */}
         <TopNav
+          isDark={isDark}
+          onThemeToggle={toggleTheme}
           onSearchClick={() => setSearchOpen(true)}
           onAIAssistantClick={handleAIAssistantClick}
           onHelpClick={handleHelpClick}
           onSignOut={handleSignOut}
-          isDark={isDark}
-          onThemeToggle={toggleTheme}
           user={currentUser}
         />
 

@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * @module SidebarMenu
  * @description Main sidebar navigation component for AURA HCM
@@ -6,11 +8,10 @@
  * @reference docs/aura-uiux-design.md
  */
 
-'use client';
 
 import React, { useState, useMemo, useCallback } from 'react';
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { ChevronDown, ChevronRight, Search, X, PanelLeftClose, PanelLeft, Star } from 'lucide-react';
 import { cn } from '../../utils';
@@ -43,6 +44,7 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
   onNavigate,
 }) => {
   const pathname = usePathname();
+  const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedModule, setExpandedModule] = useState<string | null>(null);
   const [expandedSubModule, setExpandedSubModule] = useState<string | null>(null);
@@ -59,6 +61,16 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
     return `/${module.code.toLowerCase().replace(/_/g, '-')}`;
   };
 
+  // Helper to recursively check if a module matches the search query
+  const matchModule = useCallback((module: typeof superAdminMenu.items[0], query: string): boolean => {
+    if (module.label.toLowerCase().includes(query)) return true;
+    if (module.code.toLowerCase().replace(/_/g, ' ').includes(query)) return true;
+    if (module.path?.toLowerCase().replace(/[-/]/g, ' ').includes(query)) return true;
+    if (module.features?.some(feature => feature.toLowerCase().includes(query))) return true;
+    if (module.items?.some(subModule => matchModule(subModule, query))) return true;
+    return false;
+  }, []);
+
   // Filter modules based on search
   const filteredModules = useMemo(() => {
     if (!searchQuery.trim()) {
@@ -66,12 +78,8 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
     }
 
     const query = searchQuery.toLowerCase();
-    return superAdminMenu.items.filter(
-      (module) =>
-        module.label.toLowerCase().includes(query) ||
-        module.features.some((feature) => feature.toLowerCase().includes(query))
-    );
-  }, [searchQuery]);
+    return superAdminMenu.items.filter((module) => matchModule(module, query));
+  }, [searchQuery, matchModule]);
 
   // Toggle parent module expansion (accordion - only one open at a time)
   const toggleModule = useCallback((code: string) => {
@@ -93,21 +101,6 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
 
 
 
-  // Check if module or any of its sub-modules is active.
-  // Guards against overly-broad paths (e.g. '/dashboard') causing cross-module matches.
-  const isModuleActive = (mod: typeof superAdminMenu.items[0]): boolean => {
-    const modPath = getModulePath(mod);
-    const segments = modPath.split('/').filter(Boolean);
-    // Only do a direct startsWith check when the path has ≥2 segments (not just '/dashboard')
-    if (segments.length >= 2) {
-      if (pathname === modPath || pathname.startsWith(modPath + '/')) return true;
-    }
-    if (mod.items) {
-      return mod.items.some(sub => isModuleActive(sub));
-    }
-    return false;
-  };
-
   // Check if feature is active
   const getFeaturePath = (module: typeof superAdminMenu.items[0], featureName: string) => {
     const modulePath = getModulePath(module);
@@ -115,6 +108,10 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '');
+    const lastSegment = modulePath.split('/').pop();
+    if (featureSlug === lastSegment) {
+      return modulePath;
+    }
     return `${modulePath}/${featureSlug}`;
   };
 
@@ -197,55 +194,64 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
           const Icon = getMenuIcon(module.icon as MenuIconName);
           const hasSubModules = module.items && module.items.length > 0;
 
+          // Check if module or any of its sub-modules is active
+          const isModuleActive = (mod: typeof superAdminMenu.items[0]): boolean => {
+            const modPath = getModulePath(mod);
+            if (pathname.startsWith(modPath)) return true;
+            if (mod.items) {
+              return mod.items.some(sub => isModuleActive(sub));
+            }
+            return false;
+          };
+
           const isActive = isModuleActive(module);
-          const isExpanded = expandedModule === module.code;
+          const isExpanded = searchQuery.trim() ? true : expandedModule === module.code;
 
           return (
-            <div key={module.code}>
+            <div key={`${module.code}-${module.path || getModulePath(module)}`}>
               {/* Module Item */}
               <div
                 className={cn(
-                  'group flex items-center gap-2 px-2 py-1.5 rounded-lg transition-all duration-200 relative overflow-hidden',
+                  'group flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-pointer transition-all duration-200 relative overflow-hidden',
                   isActive
                     ? 'bg-brand-red text-white shadow-lg font-bold scale-[1.02] z-10'
                     : 'text-white hover:bg-white/10'
                 )}
+                onClick={() => {
+                  const path = getModulePath(module);
+                  if (path) {
+                    router.push(path);
+                    onNavigate?.({ path, title: module.label, module: module.label });
+                  }
+                  if (!collapsed) {
+                    toggleModule(module.code);
+                  }
+                }}
               >
-                {/* Icon + Label → navigate */}
-                <Link
-                  href={getModulePath(module)}
-                  onClick={() => onNavigate?.({ path: getModulePath(module), title: module.label, module: module.label })}
-                  className="flex flex-1 items-center gap-2 min-w-0"
+                <div
+                  className={cn(
+                    'flex-shrink-0 p-1.5 rounded-lg transition-colors',
+                    isActive
+                      ? 'bg-white/20'
+                      : 'text-white group-hover:bg-white/5'
+                  )}
                 >
-                  <div
-                    className={cn(
-                      'flex-shrink-0 p-1.5 rounded-lg transition-colors',
-                      isActive ? 'bg-white/20' : 'text-white group-hover:bg-white/5'
-                    )}
-                  >
-                    <Icon className="w-5 h-5" />
-                  </div>
-                  {!collapsed && (
+                  <Icon className="w-5 h-5" />
+                </div>
+
+                {!collapsed && (
+                  <>
                     <span className="flex-1 text-sm font-medium truncate">
                       {module.label}
                     </span>
-                  )}
-                </Link>
-
-                {/* Chevron → expand/collapse only */}
-                {!collapsed && hasSubModules && (
-                  <button
-                    onClick={(e) => { e.stopPropagation(); toggleModule(module.code); }}
-                    className="p-1 rounded hover:bg-white/10 transition-colors flex-shrink-0"
-                    aria-label={isExpanded ? 'Collapse' : 'Expand'}
-                  >
+                    {/* Show item count or chevron */}
                     <ChevronDown
                       className={cn(
                         'w-4 h-4 transition-transform duration-200 text-silver-mist',
                         isExpanded ? 'rotate-180' : ''
                       )}
                     />
-                  </button>
+                  </>
                 )}
               </div>
 
@@ -255,47 +261,43 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
 
                   {/* Scenario A: Module has sub-modules (e.g. Vertical Solutions) */}
                   {hasSubModules ? (
-                    module.items?.map((subModule) => {
-                      const SubIcon = getMenuIcon(subModule.icon as MenuIconName);
-                      const isSubActive = isModuleActive(subModule);
-                      const isSubExpanded = expandedSubModule === subModule.code;
+                    module.items
+                      ?.filter(sub => !searchQuery.trim() || matchModule(sub, searchQuery.toLowerCase()))
+                      ?.map((subModule) => {
+                        const SubIcon = getMenuIcon(subModule.icon as MenuIconName);
+                        const isSubActive = isModuleActive(subModule);
+                        const isSubExpanded = searchQuery.trim() ? true : expandedSubModule === subModule.code;
 
                       return (
-                        <div key={subModule.code} className="mb-2">
+                        <div key={`${subModule.code}-${subModule.path || getModulePath(subModule)}`} className="mb-2">
                           <div
                             className={cn(
-                              "flex items-center gap-2 px-2 py-1.5 rounded-lg transition-colors text-sm",
+                              "flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-pointer transition-colors text-sm",
                               isSubActive
                                 ? "bg-brand-red text-white font-bold shadow-md"
                                 : "text-white hover:bg-white/10"
                             )}
+                            onClick={() => {
+                              const path = getModulePath(subModule);
+                              if (path) {
+                                router.push(path);
+                                onNavigate?.({ path, title: subModule.label, module: module.label });
+                              }
+                              toggleSubModule(subModule.code);
+                            }}
                           >
-                            {/* Icon + Label → navigate */}
-                            <Link
-                              href={getModulePath(subModule)}
-                              onClick={() => onNavigate?.({ path: getModulePath(subModule), title: subModule.label, module: subModule.label })}
-                              className="flex flex-1 items-center gap-2 min-w-0"
-                            >
-                              <SubIcon className="w-4 h-4 opacity-70 flex-shrink-0" />
-                              <span className="flex-1 truncate">{subModule.label}</span>
-                            </Link>
-                            {/* Chevron → expand/collapse only */}
-                            {subModule.items && subModule.items.length > 0 && (
-                              <button
-                                onClick={(e) => { e.stopPropagation(); toggleSubModule(subModule.code); }}
-                                className="p-0.5 rounded hover:bg-white/10 transition-colors flex-shrink-0"
-                                aria-label={isSubExpanded ? 'Collapse' : 'Expand'}
-                              >
-                                <ChevronDown className={cn("w-3 h-3 transition-transform", isSubExpanded ? "rotate-180" : "")} />
-                              </button>
-                            )}
+                            <SubIcon className="w-4 h-4 opacity-70" />
+                            <span className="flex-1 truncate">{subModule.label}</span>
+                            <ChevronDown className={cn("w-3 h-3 transition-transform", isSubExpanded ? "rotate-180" : "")} />
                           </div>
 
                           {/* Sub-Module Features */}
                           {isSubExpanded && (
                             <div className="ml-3 mt-0.5 space-y-0.5 border-l border-slate-200 dark:border-slate-700 pl-3">
-                              {subModule.features.map(feature => {
-                                const featurePath = getFeaturePath(subModule, feature);
+                              {subModule.features
+                                .filter(feature => !searchQuery.trim() || feature.toLowerCase().includes(searchQuery.toLowerCase()))
+                                .map(feature => {
+                                  const featurePath = getFeaturePath(subModule, feature);
                                 const isFeatureActive = pathname === featurePath;
                                 const featureIsFavorite = isFavorite(featurePath);
                                 return (
@@ -343,8 +345,10 @@ export const SidebarMenu: React.FC<SidebarMenuProps> = ({
                     })
                   ) : (
                     /* Scenario B: Standard Module with just features */
-                    module.features.map((feature) => {
-                      const featurePath = getFeaturePath(module, feature);
+                    module.features
+                      .filter(feature => !searchQuery.trim() || feature.toLowerCase().includes(searchQuery.toLowerCase()))
+                      .map((feature) => {
+                        const featurePath = getFeaturePath(module, feature);
                       const isFeatureActive = pathname === featurePath;
                       const featureIsFavorite = isFavorite(featurePath);
 

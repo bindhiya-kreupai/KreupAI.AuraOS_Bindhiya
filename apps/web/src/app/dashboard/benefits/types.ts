@@ -29,7 +29,13 @@ export type PlanTier = 'basic' | 'bronze' | 'silver' | 'gold' | 'platinum';
 export type CoverageLevel = 'employee_only' | 'employee_spouse' | 'employee_children' | 'family';
 
 export type EnrollmentStatus =
-  'not_started' | 'in_progress' | 'submitted' | 'confirmed' | 'active' | 'cancelled' | 'expired';
+  | 'not_started'
+  | 'in_progress'
+  | 'submitted'
+  | 'confirmed'
+  | 'active'
+  | 'cancelled'
+  | 'expired';
 
 export type EnrollmentType = 'new_hire' | 'annual' | 'qualifying_event' | 'rehire';
 
@@ -52,7 +58,11 @@ export type DependentRelationship =
   | 'legal_guardian';
 
 export type DependentStatus =
-  'active' | 'pending_verification' | 'verified' | 'inactive' | 'aged_out';
+  | 'active'
+  | 'pending_verification'
+  | 'verified'
+  | 'inactive'
+  | 'aged_out';
 
 export type ProviderType = 'in_network' | 'out_of_network' | 'preferred';
 
@@ -504,7 +514,14 @@ export interface HealthcareProvider {
   // Provider Info
   name: string;
   type:
-    'hospital' | 'clinic' | 'physician' | 'specialist' | 'pharmacy' | 'dental' | 'vision' | 'other';
+    | 'hospital'
+    | 'clinic'
+    | 'physician'
+    | 'specialist'
+    | 'pharmacy'
+    | 'dental'
+    | 'vision'
+    | 'other';
   specialty?: string;
 
   // Network
