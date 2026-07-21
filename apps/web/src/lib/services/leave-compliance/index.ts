@@ -539,13 +539,14 @@ export class LeaveMedicalEvidenceService {
     },
     auth: AuthContext
   ) {
+    const { action: _action, ...dataFields } = input as any;
     const retentionUntil = input.retentionYears
       ? new Date(Date.now() + input.retentionYears * 365 * 24 * 3600 * 1000)
       : null;
     return (prisma as any).leaveMedicalEvidence.create({
       data: {
         tenantId: auth.tenantId,
-        ...input,
+        ...dataFields,
         classification: input.classification ?? 'RESTRICTED',
         retentionUntil,
       },
@@ -639,7 +640,6 @@ export class LeaveCertificateService {
       where: {
         tenantId,
         status: 'APPROVED',
-        leaveCode: 'UNPAID',
         createdAt: { gte: start, lte: end },
       },
     });
