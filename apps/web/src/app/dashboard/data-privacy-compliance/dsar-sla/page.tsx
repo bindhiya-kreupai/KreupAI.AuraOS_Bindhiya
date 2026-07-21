@@ -9,6 +9,11 @@ export default function DsarSlaPage() {
       titleAr="متابعة الموعد لطلبات الوصول لبيانات صاحب البيانات"
       description="Score Subject Access Requests against the local PDPL / GDPR SLA window."
       descriptionAr="تقييم طلبات الوصول مقابل الموعد القانوني."
+      moduleContext="Compliance"
+      moduleContextAr="الامتثال الموحد"
+      subContext="Data Privacy Compliance"
+      subContextAr="امتثال خصوصية البيانات"
+      importEndpoint="/api/v1/data-privacy-compliance/privacy"
       fields={[
         {
           name: 'requests',
@@ -19,34 +24,29 @@ export default function DsarSlaPage() {
           minRows: 1,
           columns: [
             {
-              key: 'requestId',
-              label: 'ID',
-              labelAr: 'المعرف',
+              key: 'requestTitle',
+              label: 'Request Name',
+              labelAr: 'اسم الطلب',
               type: 'text',
               required: true,
-              widthClass: 'w-32',
+              placeholder: 'e.g. Employee Personal Data Access Request',
+              widthClass: 'w-60',
             },
             {
-              key: 'receivedAt',
-              label: 'Received',
-              labelAr: 'استلام',
+              key: 'subjectName',
+              label: 'Subject Name',
+              labelAr: 'اسم صاحب البيانات',
               type: 'text',
-              required: true,
-              widthClass: 'w-40',
+              placeholder: 'e.g. Amina Al-Mansoor',
+              widthClass: 'w-44',
             },
             {
-              key: 'acknowledgedAt',
-              label: 'Acknowledged',
-              labelAr: 'تأكيد',
+              key: 'subjectEmail',
+              label: 'Email',
+              labelAr: 'البريد الإلكتروني',
               type: 'text',
-              widthClass: 'w-40',
-            },
-            {
-              key: 'fulfilledAt',
-              label: 'Fulfilled',
-              labelAr: 'تنفيذ',
-              type: 'text',
-              widthClass: 'w-40',
+              placeholder: 'e.g. amina@example.ae',
+              widthClass: 'w-44',
             },
             {
               key: 'jurisdiction',
@@ -67,6 +67,36 @@ export default function DsarSlaPage() {
               widthClass: 'w-28',
             },
             {
+              key: 'receivedAt',
+              label: 'Received',
+              labelAr: 'استلام',
+              type: 'date',
+              required: true,
+              widthClass: 'w-36',
+            },
+            {
+              key: 'acknowledgedAt',
+              label: 'Acknowledged',
+              labelAr: 'تأكيد',
+              type: 'date',
+              widthClass: 'w-36',
+            },
+            {
+              key: 'fulfilledAt',
+              label: 'Fulfilled',
+              labelAr: 'تنفيذ',
+              type: 'date',
+              widthClass: 'w-36',
+            },
+            {
+              key: 'requestId',
+              label: 'Request ID',
+              labelAr: 'معرف الطلب',
+              type: 'text',
+              placeholder: 'REQ-001',
+              widthClass: 'w-28',
+            },
+            {
               key: 'overrideSlaDays',
               label: 'SLA override',
               labelAr: 'تجاوز الموعد',
@@ -80,8 +110,8 @@ export default function DsarSlaPage() {
       buildPayload={(v) => ({
         action: 'dsar',
         input: {
-          requests: ((v.requests as Array<Record<string, unknown>>) ?? []).map((r) => ({
-            requestId: String(r.requestId ?? ''),
+          requests: ((v.requests as Array<Record<string, unknown>>) ?? []).map((r, idx) => ({
+            requestId: String(r.requestId || `REQ-DSAR-${String(idx + 1).padStart(3, '0')}`),
             receivedAt: new Date(String(r.receivedAt)).toISOString(),
             acknowledgedAt: r.acknowledgedAt
               ? new Date(String(r.acknowledgedAt)).toISOString()
