@@ -91,7 +91,7 @@ export class OtPolicyService {
   ) {
     return (prisma as any).otPolicy.upsert({
       where: {
-        aura_ot_policy_unique: {
+        tenantId_country_grade_effectiveFrom: {
           tenantId: auth.tenantId,
           country: input.country,
           grade: input.grade ?? null,
@@ -372,7 +372,7 @@ export class OtActualService {
 
     const existing = await (prisma as any).otActual.findUnique({
       where: {
-        aura_ot_actual_unique: {
+        tenantId_employeeId_otDate_otType: {
           tenantId: auth.tenantId,
           employeeId: input.employeeId,
           otDate: input.otDate,
@@ -392,7 +392,7 @@ export class OtActualService {
 
     return (prisma as any).otActual.upsert({
       where: {
-        aura_ot_actual_unique: {
+        tenantId_employeeId_otDate_otType: {
           tenantId: auth.tenantId,
           employeeId: input.employeeId,
           otDate: input.otDate,
@@ -487,7 +487,7 @@ export class OtBudgetService {
   ) {
     return (prisma as any).otBudget.upsert({
       where: {
-        aura_ot_budget_unique: {
+        tenantId_period_costCenterId: {
           tenantId: auth.tenantId,
           period: input.period,
           costCenterId: input.costCenterId ?? null,
@@ -594,7 +594,7 @@ export class OtCertificateService {
     if (stats.budgetBreachCount > 0) reasons.push(`${stats.budgetBreachCount} budget breach(es)`);
     const gatingReason = reasons.length ? `Blocked: ${reasons.join('; ')}` : null;
     return (prisma as any).otCertificate.upsert({
-      where: { aura_ot_certificate_unique: { tenantId: auth.tenantId, period } },
+      where: { tenantId_period: { tenantId: auth.tenantId, period } },
       update: {
         totalHours: stats.totalHours,
         totalAmount: stats.totalAmount,
@@ -626,7 +626,7 @@ export class OtCertificateService {
     auth: AuthContext
   ) {
     const cert = await (prisma as any).otCertificate.findUnique({
-      where: { aura_ot_certificate_unique: { tenantId: auth.tenantId, period } },
+      where: { tenantId_period: { tenantId: auth.tenantId, period } },
     });
     if (!cert) throw new Error('certificate not generated');
     if (cert.gatingReason) throw new Error(`cannot sign while gated: ${cert.gatingReason}`);

@@ -17,17 +17,30 @@ import { badRequest, forbidden, hasAny, ok, serverError, type RouteContext } fro
 
 export const dynamic = 'force-dynamic';
 
+const flexDate = z
+  .string()
+  .refine((val) => !isNaN(new Date(val).getTime()), { message: 'Invalid date' });
+
 const inputSchema = z.object({
   employeeId: z.string().min(1),
-  proposedStart: z.string().datetime(),
-  proposedEnd: z.string().datetime(),
+  proposedStart: flexDate,
+  proposedEnd: flexDate,
   country: z.string().optional(),
   appliesTo: z.string().optional(),
   actorRole: z.string().optional(),
 });
 
 export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) => {
-  if (!hasAny(ctx.permissions, 'attendance:manage', 'attendance:read', 'dashboard:read')) {
+  if (
+    !hasAny(
+      ctx.permissions,
+      'attendance:manage',
+      'attendance:read',
+      'dashboard:read',
+      'tenant:read',
+      'employee:read'
+    )
+  ) {
     return forbidden();
   }
   try {
