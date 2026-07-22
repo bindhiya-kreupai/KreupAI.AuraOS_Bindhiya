@@ -25,7 +25,7 @@ const controlsInputSchema = z.object({
     z.object({
       controlId: z.string().min(1),
       name: z.string().min(1),
-      testCadenceDays: z.number().int().positive(),
+      testCadenceDays: z.number().int().nonnegative(),
       lastTestedAt: flexDate.optional(),
       inScope: z.boolean(),
     })
