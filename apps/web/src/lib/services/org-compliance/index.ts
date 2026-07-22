@@ -107,7 +107,7 @@ class OrgAuditChecklistService {
   ) {
     return (prisma as any).orgAuditChecklistItem.upsert({
       where: {
-        aura_org_audit_checklist_item_unique: {
+        tenantId_itemCode: {
           tenantId: auth.tenantId,
           itemCode: input.itemCode,
         },
@@ -217,7 +217,7 @@ class OrgPositionControlService {
     });
     return (prisma as any).orgPositionControl.upsert({
       where: {
-        aura_org_position_control_unique: {
+        tenantId_period_departmentId_positionId: {
           tenantId: auth.tenantId,
           period: input.period,
           departmentId: input.departmentId ?? null,
@@ -308,7 +308,7 @@ class OrgVacancyService {
   ) {
     return (prisma as any).orgVacancy.upsert({
       where: {
-        aura_org_vacancy_unique: {
+        tenantId_vacancyNumber: {
           tenantId: auth.tenantId,
           vacancyNumber: input.vacancyNumber,
         },
@@ -421,7 +421,7 @@ class OrgComplianceCertificateService {
     });
 
     return (prisma as any).orgComplianceCertificate.upsert({
-      where: { aura_org_compliance_certificate_unique: { tenantId, period } },
+      where: { tenantId_period: { tenantId, period } },
       update: {
         checklistTotal,
         checklistFailing: checklistFailingHighOrCritical,
@@ -462,12 +462,12 @@ class OrgComplianceCertificateService {
     auth: AuthContext
   ) {
     const cert = await (prisma as any).orgComplianceCertificate.findUnique({
-      where: { aura_org_compliance_certificate_unique: { tenantId: auth.tenantId, period } },
+      where: { tenantId_period: { tenantId: auth.tenantId, period } },
     });
     if (!cert) throw new Error('certificate not found');
     if (cert.gatingReason) throw new Error('cannot sign while gated');
     return (prisma as any).orgComplianceCertificate.update({
-      where: { aura_org_compliance_certificate_unique: { tenantId: auth.tenantId, period } },
+      where: { tenantId_period: { tenantId: auth.tenantId, period } },
       data: {
         status: 'SIGNED',
         attestationsJson: attestations as any,
