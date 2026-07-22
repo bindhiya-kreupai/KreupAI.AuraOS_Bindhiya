@@ -40,7 +40,7 @@ interface WPSAgent {
 
 export default function WPSPage() {
   const [activeTab, setActiveTab] = useState<'generate' | 'validate' | 'agents'>('generate');
-  const [payrollMonth, setPayrollMonth] = useState('');
+  const [payrollMonth, setPayrollMonth] = useState(new Date().toISOString().slice(0, 7));
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [validating, setValidating] = useState(false);
@@ -73,13 +73,13 @@ export default function WPSPage() {
       if (result.success) {
         setWpsAgents(result.data.agents || []);
         setValidationRules(result.data.validationRules || null);
-        // Set default sample records if none returned from API
+        // Set default sample records if none returned from API (account number 10-23 chars)
         const sampleRecords: WPSRecord[] = [
           {
             id: 'EMP001',
             name: 'Asik Ahmed',
             labourCard: '100234567890',
-            account: 'AE0380000000608010167519',
+            account: 'AE03800001016751',
             netSalary: 12500,
             status: 'valid',
           },
@@ -87,7 +87,7 @@ export default function WPSPage() {
             id: 'EMP002',
             name: 'Fatima Al-Zahra',
             labourCard: '100234567891',
-            account: 'AE0380000000608010167520',
+            account: 'AE03800001016752',
             netSalary: 18000,
             status: 'valid',
           },
@@ -95,7 +95,7 @@ export default function WPSPage() {
             id: 'EMP003',
             name: 'Mohammed Rashid',
             labourCard: '100234567892',
-            account: 'AE0380000000608010167521',
+            account: 'AE03800001016753',
             netSalary: 15500,
             status: 'valid',
           },
