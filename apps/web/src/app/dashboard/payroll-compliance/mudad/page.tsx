@@ -53,7 +53,7 @@ interface BankInfo {
 
 export default function MudadPage() {
   const [activeTab, setActiveTab] = useState<'generate' | 'records' | 'banks'>('generate');
-  const [paymentMonth, setPaymentMonth] = useState('');
+  const [paymentMonth, setPaymentMonth] = useState(new Date().toISOString().slice(0, 7));
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [generating, setGenerating] = useState(false);

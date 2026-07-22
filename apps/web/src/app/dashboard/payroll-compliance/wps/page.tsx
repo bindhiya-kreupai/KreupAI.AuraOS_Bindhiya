@@ -78,7 +78,7 @@ export default function WPSPage() {
           {
             id: 'EMP001',
             name: 'Asik Ahmed',
-            labourCard: '10023456',
+            labourCard: '100234567890',
             account: 'AE0380000000608010167519',
             netSalary: 12500,
             status: 'valid',
@@ -86,7 +86,7 @@ export default function WPSPage() {
           {
             id: 'EMP002',
             name: 'Fatima Al-Zahra',
-            labourCard: '10023457',
+            labourCard: '100234567891',
             account: 'AE0380000000608010167520',
             netSalary: 18000,
             status: 'valid',
@@ -94,7 +94,7 @@ export default function WPSPage() {
           {
             id: 'EMP003',
             name: 'Mohammed Rashid',
-            labourCard: '10023458',
+            labourCard: '100234567892',
             account: 'AE0380000000608010167521',
             netSalary: 15500,
             status: 'valid',
@@ -136,10 +136,10 @@ export default function WPSPage() {
         employeeId: r.id,
         employeeName: r.name,
         labourCardNumber: r.labourCard,
-        bankAccountNumber: r.account,
+        accountNumber: r.account,
+        bankRoutingCode: wpsConfig.bankCode,
         netSalary: r.netSalary,
         basicSalary: r.netSalary,
-        routingCode: wpsConfig.bankCode,
       }));
 
       const response = await fetch('/api/compliance/wps', {
@@ -201,10 +201,10 @@ export default function WPSPage() {
         employeeId: r.id,
         employeeName: r.name,
         labourCardNumber: r.labourCard,
-        bankAccountNumber: r.account,
+        accountNumber: r.account,
+        bankRoutingCode: wpsConfig.bankCode,
         netSalary: r.netSalary,
         basicSalary: r.netSalary,
-        routingCode: wpsConfig.bankCode,
       }));
 
       const response = await fetch('/api/compliance/wps', {

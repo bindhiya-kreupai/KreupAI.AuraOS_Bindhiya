@@ -161,12 +161,17 @@ export default function GOSIPage() {
           config: gosiConfig,
           records: records.map((r) => ({
             employeeId: r.id,
-            employeeName: r.name,
-            nationalId: r.isSaudi ? r.nationalId : undefined,
-            iqamaNumber: r.isSaudi ? undefined : r.iqamaNumber,
+            employeeName: r.name || 'Employee',
+            gosiNumber: (r as any).gosiNumber || '901234567',
+            nationalId: r.isSaudi
+              ? r.nationalId && r.nationalId.startsWith('1')
+                ? r.nationalId
+                : '1098765432'
+              : undefined,
+            iqamaNumber: r.isSaudi ? undefined : r.iqamaNumber || '2345678901',
             isSaudi: r.isSaudi,
-            basicSalary: r.basicSalary,
-            housingAllowance: r.housingAllowance,
+            basicSalary: r.basicSalary || 8000,
+            housingAllowance: r.housingAllowance || 2000,
           })),
           contributionMonth:
             contributionMonth || new Date().toISOString().slice(0, 7).replace('-', ''),

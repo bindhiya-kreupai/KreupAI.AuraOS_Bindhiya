@@ -179,6 +179,63 @@ export default function EOSBPage() {
     }
   };
 
+  const handleDownloadPDF = () => {
+    if (!result) return;
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>EOSB Calculation Statement - ${countryCode}</title>
+          <style>
+            body { font-family: system-ui, -apple-system, sans-serif; padding: 40px; color: #0f172a; line-height: 1.5; }
+            .header { border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 20px; }
+            h1 { color: #d97706; margin: 0 0 5px 0; font-size: 24px; }
+            .subtitle { color: #64748b; font-size: 14px; }
+            table { width: 100%; border-collapse: collapse; margin: 20px 0; }
+            td, th { padding: 12px 10px; border-bottom: 1px solid #f1f5f9; text-align: left; font-size: 14px; }
+            .summary { background: #fffbeb; border: 1px solid #fde68a; padding: 20px; border-radius: 12px; margin-top: 25px; }
+            .amount { font-size: 32px; font-weight: bold; color: #b45309; margin-top: 5px; }
+            .legal { margin-top: 20px; font-size: 12px; color: #64748b; background: #f8fafc; padding: 12px; border-radius: 8px; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>End of Service Benefits Statement</h1>
+            <div class="subtitle">Country: <strong>${countryCode}</strong> | Statement Date: <strong>${new Date().toLocaleDateString()}</strong></div>
+          </div>
+          <table>
+            <tr><td><strong>Service Duration:</strong></td><td>${result.yearsOfService} years (${result.daysOfService} days)</td></tr>
+            <tr><td><strong>Basic Salary:</strong></td><td>${result.currency} ${result.basicSalary.toLocaleString()}</td></tr>
+            <tr><td><strong>Daily Rate:</strong></td><td>${result.currency} ${result.dailyRate.toFixed(2)}</td></tr>
+            <tr><td><strong>First Period Amount:</strong></td><td>${result.currency} ${result.firstPeriodAmount.toFixed(2)}</td></tr>
+            ${result.secondPeriodAmount ? `<tr><td><strong>Second Period Amount:</strong></td><td>${result.currency} ${result.secondPeriodAmount.toFixed(2)}</td></tr>` : ''}
+            <tr><td><strong>Gross EOSB:</strong></td><td>${result.currency} ${result.grossAmount.toFixed(2)}</td></tr>
+          </table>
+          <div class="summary">
+            <div><strong>Net Payable EOSB Amount:</strong></div>
+            <div class="amount">${result.currency} ${result.netAmount.toLocaleString(undefined, { minimumFractionDigits: 2 })}</div>
+          </div>
+          ${
+            result.calculationDetails
+              ? `
+            <div class="legal">
+              <strong>Legal Reference:</strong> ${result.calculationDetails.law}<br />
+              <strong>Formula:</strong> ${result.calculationDetails.formula}
+            </div>
+          `
+              : ''
+          }
+          <script>
+            window.onload = function() { window.print(); };
+          </script>
+        </body>
+      </html>
+    `);
+    printWindow.document.close();
+  };
+
   return (
     <div
       className="space-y-4 pb-6 text-slate-900 dark:text-slate-100"
@@ -488,7 +545,11 @@ export default function EOSBPage() {
                   <FileText className="w-4 h-4" />
                   View Details
                 </button>
-                <button className="flex-1 py-3 bg-indigo-500 text-white rounded-xl font-medium hover:bg-indigo-600 flex items-center justify-center gap-2">
+                <button
+                  type="button"
+                  onClick={handleDownloadPDF}
+                  className="flex-1 py-3 bg-indigo-500 text-white rounded-xl font-medium hover:bg-indigo-600 flex items-center justify-center gap-2"
+                >
                   <Download className="w-4 h-4" />
                   Download PDF
                 </button>

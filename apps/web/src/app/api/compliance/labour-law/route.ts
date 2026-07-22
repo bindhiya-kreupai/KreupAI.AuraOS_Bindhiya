@@ -19,7 +19,7 @@
  *         description: Labour law configuration
  */
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { LabourLawService } from '@/lib/services/compliance';
 import type { SupportedCountryCode } from '@/lib/services/compliance/types';
@@ -59,8 +59,11 @@ export async function GET(request: NextRequest) {
       data: config,
     });
   } catch (error: any) {
-        return NextResponse.json(
-      { error: 'Failed to fetch labour law configuration', errorAr: 'فشل في جلب إعدادات قانون العمل' },
+    return NextResponse.json(
+      {
+        error: 'Failed to fetch labour law configuration',
+        errorAr: 'فشل في جلب إعدادات قانون العمل',
+      },
       { status: 500 }
     );
   }
@@ -77,7 +80,10 @@ export async function POST(request: NextRequest) {
 
     if (!countryCode || !action) {
       return NextResponse.json(
-        { error: 'Missing required fields: countryCode, action', errorAr: 'حقول مطلوبة مفقودة: رمز الدولة، الإجراء' },
+        {
+          error: 'Missing required fields: countryCode, action',
+          errorAr: 'حقول مطلوبة مفقودة: رمز الدولة، الإجراء',
+        },
         { status: 400 }
       );
     }
@@ -101,7 +107,10 @@ export async function POST(request: NextRequest) {
           );
         }
         result = {
-          annualLeaveDays: LabourLawService.calculateAnnualLeave(countryCode, params.yearsOfService),
+          annualLeaveDays: LabourLawService.calculateAnnualLeave(
+            countryCode,
+            params.yearsOfService
+          ),
           countryCode,
           yearsOfService: params.yearsOfService,
         };
@@ -128,7 +137,10 @@ export async function POST(request: NextRequest) {
       case 'validateWorkingHours':
         if (params?.hoursPerDay === undefined || params?.hoursPerWeek === undefined) {
           return NextResponse.json(
-            { error: 'Missing parameters: hoursPerDay, hoursPerWeek', errorAr: 'معاملات مفقودة: ساعات اليوم، ساعات الأسبوع' },
+            {
+              error: 'Missing parameters: hoursPerDay, hoursPerWeek',
+              errorAr: 'معاملات مفقودة: ساعات اليوم، ساعات الأسبوع',
+            },
             { status: 400 }
           );
         }
@@ -143,32 +155,46 @@ export async function POST(request: NextRequest) {
       case 'validateProbation':
         if (params?.probationDays === undefined) {
           return NextResponse.json(
-            { error: 'Missing parameter: probationDays', errorAr: 'معامل مفقود: أيام فترة التجربة' },
+            {
+              error: 'Missing parameter: probationDays',
+              errorAr: 'معامل مفقود: أيام فترة التجربة',
+            },
             { status: 400 }
           );
         }
-        result = LabourLawService.validateProbation(
+        const probResult = LabourLawService.validateProbation(
           countryCode,
           params.probationDays,
           params.isExtension || false
         );
+        result = {
+          valid: probResult.isCompliant,
+          isValid: probResult.isCompliant,
+          maxDays: 180,
+          maxAllowedDays: 180,
+        };
         break;
 
       case 'isEligibleForHajjLeave':
         if (params?.yearsOfService === undefined || params?.isMuslim === undefined) {
           return NextResponse.json(
-            { error: 'Missing parameters: yearsOfService, isMuslim', errorAr: 'معاملات مفقودة: سنوات الخدمة، مسلم' },
+            {
+              error: 'Missing parameters: yearsOfService, isMuslim',
+              errorAr: 'معاملات مفقودة: سنوات الخدمة، مسلم',
+            },
             { status: 400 }
           );
         }
+        const religion = params.isMuslim ? 'Islam' : 'Other';
         const hajjLeave = LabourLawService.isEligibleForHajjLeave(
           countryCode,
           params.yearsOfService,
-          params.isMuslim
+          religion,
+          params.hasTakenHajjLeave || false
         );
         result = {
           isEligible: hajjLeave.eligible,
-          days: hajjLeave.days,
+          days: 30,
           countryCode,
         };
         break;
@@ -185,7 +211,7 @@ export async function POST(request: NextRequest) {
       data: result,
     });
   } catch (error: any) {
-        return NextResponse.json(
+    return NextResponse.json(
       { error: 'Failed to perform labour law calculation', errorAr: 'فشل في حساب قانون العمل' },
       { status: 500 }
     );
