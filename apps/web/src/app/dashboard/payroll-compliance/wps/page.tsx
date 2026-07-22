@@ -140,6 +140,7 @@ export default function WPSPage() {
         bankRoutingCode: wpsConfig.bankCode,
         netSalary: r.netSalary,
         basicSalary: r.netSalary,
+        leaveSalary: 0,
       }));
 
       const response = await fetch('/api/compliance/wps', {
@@ -205,6 +206,7 @@ export default function WPSPage() {
         bankRoutingCode: wpsConfig.bankCode,
         netSalary: r.netSalary,
         basicSalary: r.netSalary,
+        leaveSalary: 0,
       }));
 
       const response = await fetch('/api/compliance/wps', {
