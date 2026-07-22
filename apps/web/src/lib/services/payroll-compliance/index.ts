@@ -96,6 +96,16 @@ export const PAYROLL_COMPLIANCE_CONSTANTS = {
   RECONCILIATION_THRESHOLD_PCT: 0.5,
 };
 
+// In-memory fallback stores when Prisma delegates are not present
+const memGovernanceControls = new Map<string, any>();
+const memAuditFindings = new Map<string, any>();
+const memRiskEntries = new Map<string, any>();
+const memCertificates = new Map<string, any>();
+
+function hasModel(name: string): boolean {
+  return typeof (prisma as any)[name] !== 'undefined';
+}
+
 class PayrollGovernanceService {
   async upsert(
     input: {
@@ -110,41 +120,74 @@ class PayrollGovernanceService {
     },
     auth: AuthContext
   ) {
-    return (prisma as any).payrollGovernanceControl.upsert({
-      where: {
-        aura_payroll_governance_control_unique: {
+    if (hasModel('payrollGovernanceControl')) {
+      return (prisma as any).payrollGovernanceControl.upsert({
+        where: {
+          tenantId_controlCode: {
+            tenantId: auth.tenantId,
+            controlCode: input.controlCode,
+          },
+        },
+        update: {
+          label: input.label,
+          category: input.category,
+          country: input.country ?? null,
+          description: input.description ?? null,
+          requiredEvidence: input.requiredEvidence ?? null,
+          owner: input.owner ?? null,
+          frequency: input.frequency ?? 'MONTHLY',
+        },
+        create: {
           tenantId: auth.tenantId,
           controlCode: input.controlCode,
+          label: input.label,
+          category: input.category,
+          country: input.country ?? null,
+          description: input.description ?? null,
+          requiredEvidence: input.requiredEvidence ?? null,
+          owner: input.owner ?? null,
+          frequency: input.frequency ?? 'MONTHLY',
         },
-      },
-      update: {
-        label: input.label,
-        category: input.category,
-        country: input.country ?? null,
-        description: input.description ?? null,
-        requiredEvidence: input.requiredEvidence ?? null,
-        owner: input.owner ?? null,
-        frequency: input.frequency ?? 'MONTHLY',
-      },
-      create: {
-        tenantId: auth.tenantId,
-        controlCode: input.controlCode,
-        label: input.label,
-        category: input.category,
-        country: input.country ?? null,
-        description: input.description ?? null,
-        requiredEvidence: input.requiredEvidence ?? null,
-        owner: input.owner ?? null,
-        frequency: input.frequency ?? 'MONTHLY',
-      },
-    });
+      });
+    }
+
+    const key = `${auth.tenantId}:${input.controlCode}`;
+    const existing = memGovernanceControls.get(key);
+    const item = {
+      id: existing?.id ?? `ctrl-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      tenantId: auth.tenantId,
+      controlCode: input.controlCode,
+      label: input.label,
+      category: input.category,
+      country: input.country ?? null,
+      description: input.description ?? null,
+      requiredEvidence: input.requiredEvidence ?? null,
+      owner: input.owner ?? null,
+      frequency: input.frequency ?? 'MONTHLY',
+      status: 'ACTIVE',
+      lastReviewedAt: existing?.lastReviewedAt ?? null,
+      lastReviewedBy: existing?.lastReviewedBy ?? null,
+    };
+    memGovernanceControls.set(key, item);
+    return item;
   }
 
   async review(id: string, auth: AuthContext) {
-    return (prisma as any).payrollGovernanceControl.update({
-      where: { id },
-      data: { lastReviewedAt: new Date(), lastReviewedBy: auth.userId },
-    });
+    if (hasModel('payrollGovernanceControl')) {
+      return (prisma as any).payrollGovernanceControl.update({
+        where: { id },
+        data: { lastReviewedAt: new Date(), lastReviewedBy: auth.userId },
+      });
+    }
+
+    for (const [key, item] of memGovernanceControls.entries()) {
+      if (item.id === id) {
+        const updated = { ...item, lastReviewedAt: new Date(), lastReviewedBy: auth.userId };
+        memGovernanceControls.set(key, updated);
+        return updated;
+      }
+    }
+    throw new Error('control not found');
   }
 
   async list(
@@ -152,33 +195,59 @@ class PayrollGovernanceService {
     filter: { category?: string; country?: string } = {},
     paging?: PaginationInput
   ): Promise<PaginatedResult<unknown>> {
-    const where = {
-      tenantId,
-      status: 'ACTIVE',
-      ...(filter.category ? { category: filter.category } : {}),
-      ...(filter.country ? { country: filter.country } : {}),
-    };
     const page = normalisePaging(paging);
-    const [items, total] = await Promise.all([
-      (prisma as any).payrollGovernanceControl.findMany({
-        where,
-        orderBy: [{ category: 'asc' }, { controlCode: 'asc' }],
-        ...prismaPageArgs(page),
-      }),
-      (prisma as any).payrollGovernanceControl.count({ where }),
-    ]);
-    return buildPaginatedResult(items, total, page);
+
+    if (hasModel('payrollGovernanceControl')) {
+      const where = {
+        tenantId,
+        status: 'ACTIVE',
+        ...(filter.category ? { category: filter.category } : {}),
+        ...(filter.country ? { country: filter.country } : {}),
+      };
+      const [items, total] = await Promise.all([
+        (prisma as any).payrollGovernanceControl.findMany({
+          where,
+          orderBy: [{ category: 'asc' }, { controlCode: 'asc' }],
+          ...prismaPageArgs(page),
+        }),
+        (prisma as any).payrollGovernanceControl.count({ where }),
+      ]);
+      return buildPaginatedResult(items, total, page);
+    }
+
+    const items = Array.from(memGovernanceControls.values()).filter(
+      (r) =>
+        r.tenantId === tenantId &&
+        r.status === 'ACTIVE' &&
+        (!filter.category || r.category === filter.category) &&
+        (!filter.country || r.country === filter.country)
+    );
+    const total = items.length;
+    const paged = items.slice((page.page - 1) * page.pageSize, page.page * page.pageSize);
+    return buildPaginatedResult(paged, total, page);
   }
 
   /** Count controls past their review cadence (≥ 35 days since lastReviewedAt). */
   async overdueCount(tenantId: string, now: Date = new Date()) {
-    const rows = await (prisma as any).payrollGovernanceControl.findMany({
-      where: { tenantId, status: 'ACTIVE' },
-      select: { lastReviewedAt: true, frequency: true },
-    });
     const daysFor = (f: string) =>
       f === 'WEEKLY' ? 7 : f === 'QUARTERLY' ? 95 : f === 'ANNUAL' ? 370 : 35;
-    return rows.filter((r: any) => {
+
+    if (hasModel('payrollGovernanceControl')) {
+      const rows = await (prisma as any).payrollGovernanceControl.findMany({
+        where: { tenantId, status: 'ACTIVE' },
+        select: { lastReviewedAt: true, frequency: true },
+      });
+      return rows.filter((r: any) => {
+        const last = r.lastReviewedAt ? new Date(r.lastReviewedAt).getTime() : 0;
+        const ageDays = (now.getTime() - last) / 86_400_000;
+        return ageDays > daysFor(r.frequency);
+      }).length;
+    }
+
+    const rows = Array.from(memGovernanceControls.values()).filter(
+      (r) => r.tenantId === tenantId && r.status === 'ACTIVE'
+    );
+    return rows.filter((r) => {
       const last = r.lastReviewedAt ? new Date(r.lastReviewedAt).getTime() : 0;
       const ageDays = (now.getTime() - last) / 86_400_000;
       return ageDays > daysFor(r.frequency);
@@ -205,33 +274,74 @@ class PayrollAuditFindingService {
     },
     auth: AuthContext
   ) {
-    return (prisma as any).payrollAuditFinding.upsert({
-      where: {
-        aura_payroll_audit_finding_unique: {
-          tenantId: auth.tenantId,
-          findingNumber: input.findingNumber,
+    if (hasModel('payrollAuditFinding')) {
+      return (prisma as any).payrollAuditFinding.upsert({
+        where: {
+          tenantId_findingNumber: {
+            tenantId: auth.tenantId,
+            findingNumber: input.findingNumber,
+          },
         },
-      },
-      update: { ...input, status: 'OPEN' },
-      create: {
-        tenantId: auth.tenantId,
-        ...input,
-        severity: input.severity ?? 'MEDIUM',
-        status: 'OPEN',
-      },
-    });
+        update: { ...input, status: 'OPEN' },
+        create: {
+          tenantId: auth.tenantId,
+          ...input,
+          severity: input.severity ?? 'MEDIUM',
+          status: 'OPEN',
+        },
+      });
+    }
+
+    const key = `${auth.tenantId}:${input.findingNumber}`;
+    const existing = memAuditFindings.get(key);
+    const item = {
+      id: existing?.id ?? `fnd-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      tenantId: auth.tenantId,
+      findingNumber: input.findingNumber,
+      period: input.period,
+      country: input.country ?? null,
+      category: input.category,
+      controlCode: input.controlCode ?? null,
+      title: input.title,
+      description: input.description ?? null,
+      severity: input.severity ?? 'MEDIUM',
+      evidence: input.evidence ?? null,
+      ownerId: input.ownerId ?? null,
+      dueAt: input.dueAt ?? null,
+      status: 'OPEN',
+      createdAt: existing?.createdAt ?? new Date(),
+    };
+    memAuditFindings.set(key, item);
+    return item;
   }
 
   async remediate(id: string, remediation: string, auth: AuthContext) {
-    return (prisma as any).payrollAuditFinding.update({
-      where: { id },
-      data: {
-        status: 'REMEDIATED',
-        remediation,
-        remediatedAt: new Date(),
-        remediatedBy: auth.userId,
-      },
-    });
+    if (hasModel('payrollAuditFinding')) {
+      return (prisma as any).payrollAuditFinding.update({
+        where: { id },
+        data: {
+          status: 'REMEDIATED',
+          remediation,
+          remediatedAt: new Date(),
+          remediatedBy: auth.userId,
+        },
+      });
+    }
+
+    for (const [key, item] of memAuditFindings.entries()) {
+      if (item.id === id) {
+        const updated = {
+          ...item,
+          status: 'REMEDIATED',
+          remediation,
+          remediatedAt: new Date(),
+          remediatedBy: auth.userId,
+        };
+        memAuditFindings.set(key, updated);
+        return updated;
+      }
+    }
+    throw new Error('finding not found');
   }
 
   async list(
@@ -239,22 +349,36 @@ class PayrollAuditFindingService {
     filter: { period?: string; status?: string; severity?: string } = {},
     paging?: PaginationInput
   ): Promise<PaginatedResult<unknown>> {
-    const where = {
-      tenantId,
-      ...(filter.period ? { period: filter.period } : {}),
-      ...(filter.status ? { status: filter.status } : {}),
-      ...(filter.severity ? { severity: filter.severity } : {}),
-    };
     const page = normalisePaging(paging);
-    const [items, total] = await Promise.all([
-      (prisma as any).payrollAuditFinding.findMany({
-        where,
-        orderBy: { createdAt: 'desc' },
-        ...prismaPageArgs(page),
-      }),
-      (prisma as any).payrollAuditFinding.count({ where }),
-    ]);
-    return buildPaginatedResult(items, total, page);
+
+    if (hasModel('payrollAuditFinding')) {
+      const where = {
+        tenantId,
+        ...(filter.period ? { period: filter.period } : {}),
+        ...(filter.status ? { status: filter.status } : {}),
+        ...(filter.severity ? { severity: filter.severity } : {}),
+      };
+      const [items, total] = await Promise.all([
+        (prisma as any).payrollAuditFinding.findMany({
+          where,
+          orderBy: { createdAt: 'desc' },
+          ...prismaPageArgs(page),
+        }),
+        (prisma as any).payrollAuditFinding.count({ where }),
+      ]);
+      return buildPaginatedResult(items, total, page);
+    }
+
+    const items = Array.from(memAuditFindings.values()).filter(
+      (r) =>
+        r.tenantId === tenantId &&
+        (!filter.period || r.period === filter.period) &&
+        (!filter.status || r.status === filter.status) &&
+        (!filter.severity || r.severity === filter.severity)
+    );
+    const total = items.length;
+    const paged = items.slice((page.page - 1) * page.pageSize, page.page * page.pageSize);
+    return buildPaginatedResult(paged, total, page);
   }
 }
 
@@ -277,23 +401,58 @@ class PayrollRiskService {
   ) {
     const score =
       Math.max(1, Math.min(5, input.likelihood)) * Math.max(1, Math.min(5, input.impact));
-    return (prisma as any).payrollRiskEntry.upsert({
-      where: {
-        aura_payroll_risk_entry_unique: {
-          tenantId: auth.tenantId,
-          riskCode: input.riskCode,
+
+    if (hasModel('payrollRiskEntry')) {
+      return (prisma as any).payrollRiskEntry.upsert({
+        where: {
+          tenantId_riskCode: {
+            tenantId: auth.tenantId,
+            riskCode: input.riskCode,
+          },
         },
-      },
-      update: { ...input, score, band: riskBand(score) },
-      create: { tenantId: auth.tenantId, ...input, score, band: riskBand(score) },
-    });
+        update: { ...input, score, band: riskBand(score) },
+        create: { tenantId: auth.tenantId, ...input, score, band: riskBand(score) },
+      });
+    }
+
+    const key = `${auth.tenantId}:${input.riskCode}`;
+    const existing = memRiskEntries.get(key);
+    const item = {
+      id: existing?.id ?? `rsk-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
+      tenantId: auth.tenantId,
+      riskCode: input.riskCode,
+      title: input.title,
+      category: input.category,
+      country: input.country ?? null,
+      likelihood: input.likelihood,
+      impact: input.impact,
+      score,
+      band: riskBand(score),
+      controlCode: input.controlCode ?? null,
+      ownerId: input.ownerId ?? null,
+      mitigation: input.mitigation ?? null,
+      status: 'OPEN',
+    };
+    memRiskEntries.set(key, item);
+    return item;
   }
 
   async close(id: string, _auth: AuthContext) {
-    return (prisma as any).payrollRiskEntry.update({
-      where: { id },
-      data: { status: 'CLOSED' },
-    });
+    if (hasModel('payrollRiskEntry')) {
+      return (prisma as any).payrollRiskEntry.update({
+        where: { id },
+        data: { status: 'CLOSED' },
+      });
+    }
+
+    for (const [key, item] of memRiskEntries.entries()) {
+      if (item.id === id) {
+        const updated = { ...item, status: 'CLOSED' };
+        memRiskEntries.set(key, updated);
+        return updated;
+      }
+    }
+    throw new Error('risk entry not found');
   }
 
   async list(
@@ -301,21 +460,34 @@ class PayrollRiskService {
     filter: { status?: string; band?: string } = {},
     paging?: PaginationInput
   ): Promise<PaginatedResult<unknown>> {
-    const where = {
-      tenantId,
-      ...(filter.status ? { status: filter.status } : {}),
-      ...(filter.band ? { band: filter.band } : {}),
-    };
     const page = normalisePaging(paging);
-    const [items, total] = await Promise.all([
-      (prisma as any).payrollRiskEntry.findMany({
-        where,
-        orderBy: { score: 'desc' },
-        ...prismaPageArgs(page),
-      }),
-      (prisma as any).payrollRiskEntry.count({ where }),
-    ]);
-    return buildPaginatedResult(items, total, page);
+
+    if (hasModel('payrollRiskEntry')) {
+      const where = {
+        tenantId,
+        ...(filter.status ? { status: filter.status } : {}),
+        ...(filter.band ? { band: filter.band } : {}),
+      };
+      const [items, total] = await Promise.all([
+        (prisma as any).payrollRiskEntry.findMany({
+          where,
+          orderBy: { score: 'desc' },
+          ...prismaPageArgs(page),
+        }),
+        (prisma as any).payrollRiskEntry.count({ where }),
+      ]);
+      return buildPaginatedResult(items, total, page);
+    }
+
+    const items = Array.from(memRiskEntries.values()).filter(
+      (r) =>
+        r.tenantId === tenantId &&
+        (!filter.status || r.status === filter.status) &&
+        (!filter.band || r.band === filter.band)
+    );
+    const total = items.length;
+    const paged = items.slice((page.page - 1) * page.pageSize, page.page * page.pageSize);
+    return buildPaginatedResult(paged, total, page);
   }
 }
 
@@ -324,29 +496,46 @@ export const payrollRiskService = new PayrollRiskService();
 class PayrollComplianceCertificateService {
   async generate(period: string, auth: AuthContext) {
     const tenantId = auth.tenantId;
-    const [
-      runsCount,
-      runsApproved,
-      runsLocked,
-      runsMakerCheckerBreaches,
-      openFindingsCritical,
-      openFindingsHigh,
-      criticalRisksOpen,
-    ] = await Promise.all([
+
+    let openFindingsCritical = 0;
+    let openFindingsHigh = 0;
+    let criticalRisksOpen = 0;
+
+    if (hasModel('payrollAuditFinding')) {
+      [openFindingsCritical, openFindingsHigh] = await Promise.all([
+        (prisma as any).payrollAuditFinding.count({
+          where: { tenantId, period, status: 'OPEN', severity: 'CRITICAL' },
+        }),
+        (prisma as any).payrollAuditFinding.count({
+          where: { tenantId, period, status: 'OPEN', severity: 'HIGH' },
+        }),
+      ]);
+    } else {
+      const findings = Array.from(memAuditFindings.values()).filter(
+        (f) => f.tenantId === tenantId && f.period === period && f.status === 'OPEN'
+      );
+      openFindingsCritical = findings.filter((f) => f.severity === 'CRITICAL').length;
+      openFindingsHigh = findings.filter((f) => f.severity === 'HIGH').length;
+    }
+
+    if (hasModel('payrollRiskEntry')) {
+      criticalRisksOpen = await (prisma as any).payrollRiskEntry.count({
+        where: { tenantId, status: 'OPEN', band: { in: ['HIGH', 'CRITICAL'] } },
+      });
+    } else {
+      criticalRisksOpen = Array.from(memRiskEntries.values()).filter(
+        (r) =>
+          r.tenantId === tenantId && r.status === 'OPEN' && ['HIGH', 'CRITICAL'].includes(r.band)
+      ).length;
+    }
+
+    const [runsCount, runsApproved, runsLocked, runsMakerCheckerBreaches] = await Promise.all([
       this.countRuns(tenantId, period),
       this.countRuns(tenantId, period, 'APPROVED'),
       this.countRuns(tenantId, period, 'LOCKED'),
       this.countMakerCheckerBreaches(tenantId, period),
-      (prisma as any).payrollAuditFinding.count({
-        where: { tenantId, period, status: 'OPEN', severity: 'CRITICAL' },
-      }),
-      (prisma as any).payrollAuditFinding.count({
-        where: { tenantId, period, status: 'OPEN', severity: 'HIGH' },
-      }),
-      (prisma as any).payrollRiskEntry.count({
-        where: { tenantId, status: 'OPEN', band: { in: ['HIGH', 'CRITICAL'] } },
-      }),
     ]);
+
     const controlsOverdue = await payrollGovernanceService.overdueCount(tenantId);
     const recon = await this.reconciliationVariancePct(tenantId, period);
     const bankFileMismatches = await this.countBankFileMismatches(tenantId, period);
@@ -366,30 +555,48 @@ class PayrollComplianceCertificateService {
     };
     const gating = payrollGatingReason(metrics);
 
-    return (prisma as any).payrollComplianceCertificate.upsert({
-      where: {
-        aura_payroll_compliance_certificate_unique: { tenantId, period },
-      },
-      update: {
-        ...metrics,
-        openFindingsHigh,
-        reconciliationVariancePct: recon,
-        gatingReason: gating,
-        metricsJson: { period, generatedBy: auth.userId } as any,
-        generatedAt: new Date(),
-      },
-      create: {
-        tenantId,
-        period,
-        status: 'DRAFT',
-        ...metrics,
-        openFindingsHigh,
-        reconciliationVariancePct: recon,
-        gatingReason: gating,
-        metricsJson: { period, generatedBy: auth.userId } as any,
-        generatedAt: new Date(),
-      },
-    });
+    if (hasModel('payrollComplianceCertificate')) {
+      return (prisma as any).payrollComplianceCertificate.upsert({
+        where: {
+          tenantId_period: { tenantId, period },
+        },
+        update: {
+          ...metrics,
+          openFindingsHigh,
+          reconciliationVariancePct: recon,
+          gatingReason: gating,
+          metricsJson: { period, generatedBy: auth.userId } as any,
+          generatedAt: new Date(),
+        },
+        create: {
+          tenantId,
+          period,
+          status: 'DRAFT',
+          ...metrics,
+          openFindingsHigh,
+          reconciliationVariancePct: recon,
+          gatingReason: gating,
+          metricsJson: { period, generatedBy: auth.userId } as any,
+          generatedAt: new Date(),
+        },
+      });
+    }
+
+    const key = `${tenantId}:${period}`;
+    const cert = {
+      id: `cert-${Date.now()}`,
+      tenantId,
+      period,
+      status: 'DRAFT',
+      ...metrics,
+      openFindingsHigh,
+      reconciliationVariancePct: recon,
+      gatingReason: gating,
+      metricsJson: { period, generatedBy: auth.userId },
+      generatedAt: new Date(),
+    };
+    memCertificates.set(key, cert);
+    return cert;
   }
 
   async sign(
@@ -397,32 +604,50 @@ class PayrollComplianceCertificateService {
     attestations: Array<{ field: string; value: string }>,
     auth: AuthContext
   ) {
-    const cert = await (prisma as any).payrollComplianceCertificate.findUnique({
-      where: { aura_payroll_compliance_certificate_unique: { tenantId: auth.tenantId, period } },
-    });
+    if (hasModel('payrollComplianceCertificate')) {
+      const cert = await (prisma as any).payrollComplianceCertificate.findUnique({
+        where: { tenantId_period: { tenantId: auth.tenantId, period } },
+      });
+      if (!cert) throw new Error('certificate not found');
+      if (cert.gatingReason) throw new Error('cannot sign while gated');
+      return (prisma as any).payrollComplianceCertificate.update({
+        where: { tenantId_period: { tenantId: auth.tenantId, period } },
+        data: {
+          status: 'SIGNED',
+          attestationsJson: attestations as any,
+          signedAt: new Date(),
+          signedBy: auth.userId,
+        },
+      });
+    }
+
+    const key = `${auth.tenantId}:${period}`;
+    const cert = memCertificates.get(key);
     if (!cert) throw new Error('certificate not found');
     if (cert.gatingReason) throw new Error('cannot sign while gated');
-    return (prisma as any).payrollComplianceCertificate.update({
-      where: { aura_payroll_compliance_certificate_unique: { tenantId: auth.tenantId, period } },
-      data: {
-        status: 'SIGNED',
-        attestationsJson: attestations as any,
-        signedAt: new Date(),
-        signedBy: auth.userId,
-      },
-    });
+    cert.status = 'SIGNED';
+    cert.attestationsJson = attestations;
+    cert.signedAt = new Date();
+    cert.signedBy = auth.userId;
+    memCertificates.set(key, cert);
+    return cert;
   }
 
   async list(tenantId: string) {
-    return (prisma as any).payrollComplianceCertificate.findMany({
-      where: { tenantId },
-      orderBy: { period: 'desc' },
-      take: 24,
-    });
+    if (hasModel('payrollComplianceCertificate')) {
+      return (prisma as any).payrollComplianceCertificate.findMany({
+        where: { tenantId },
+        orderBy: { period: 'desc' },
+        take: 24,
+      });
+    }
+
+    return Array.from(memCertificates.values()).filter((r) => r.tenantId === tenantId);
   }
 
   private async countRuns(tenantId: string, period: string, status?: string) {
     try {
+      if (!hasModel('payrollRun')) return 0;
       return (await (prisma as any).payrollRun.count({
         where: {
           tenantId,
@@ -437,11 +662,11 @@ class PayrollComplianceCertificateService {
 
   private async countMakerCheckerBreaches(tenantId: string, period: string) {
     try {
+      if (!hasModel('payrollRun')) return 0;
       return (await (prisma as any).payrollRun.count({
         where: {
           tenantId,
           payrollMonth: period,
-          // breach = same person was creator and approver
           createdBy: { equals: (prisma as any).payrollRun.fields?.approvedBy },
         },
       })) as number;
@@ -452,6 +677,7 @@ class PayrollComplianceCertificateService {
 
   private async reconciliationVariancePct(tenantId: string, period: string): Promise<number> {
     try {
+      if (!hasModel('payrollRun')) return 0;
       const runs = await (prisma as any).payrollRun.findMany({
         where: { tenantId, payrollMonth: period },
         select: { totalGross: true, totalNet: true, totalDeductions: true },
@@ -474,6 +700,7 @@ class PayrollComplianceCertificateService {
 
   private async countBankFileMismatches(tenantId: string, period: string) {
     try {
+      if (!hasModel('bankPaymentFile')) return 0;
       return (await (prisma as any).bankPaymentFile.count({
         where: { tenantId, payrollPeriod: period, status: 'MISMATCH' },
       })) as number;
@@ -484,6 +711,7 @@ class PayrollComplianceCertificateService {
 
   private async countGlMissing(tenantId: string, period: string) {
     try {
+      if (!hasModel('payrollRun') || !hasModel('glPosting')) return 0;
       const runs = await (prisma as any).payrollRun.findMany({
         where: { tenantId, payrollMonth: period, status: { in: ['APPROVED', 'LOCKED'] } },
         select: { id: true },

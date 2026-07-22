@@ -28,15 +28,19 @@ const changeTypeEnum = z.enum([
   'EXPENSE_CLAIM',
 ]);
 
+const flexDate = z
+  .string()
+  .refine((val) => !isNaN(new Date(val).getTime()), { message: 'Invalid date' });
+
 const inputSchema = z.object({
   changeType: changeTypeEnum,
   period: z.object({
     period: z.string().min(1),
-    cutOffDate: z.string().datetime(),
-    processedAt: z.string().datetime().optional(),
-    releasedAt: z.string().datetime().optional(),
+    cutOffDate: flexDate,
+    processedAt: flexDate.optional(),
+    releasedAt: flexDate.optional(),
   }),
-  appliedAt: z.string().datetime().optional(),
+  appliedAt: flexDate.optional(),
   actorRole: z.string().optional(),
   hasJustification: z.boolean().optional(),
 });
