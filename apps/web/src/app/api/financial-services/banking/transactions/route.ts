@@ -22,22 +22,40 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
+
+    // Dynamic generation
+    const amount = body.amount ? parseFloat(body.amount) : 0;
+    const type = body.type || (amount >= 0 ? 'deposit' : 'withdrawal');
+    const category = body.category || (type === 'deposit' ? 'Income' : 'Expense');
+
+    const location = body.location || {
+      city: 'Dubai',
+      country: 'UAE',
+      ip: '127.0.0.1',
+    };
+
+    const metadata = body.metadata || {
+      source: 'web_portal',
+      riskScore: Math.random() * 10,
+      cleared: false,
+    };
+
     const transaction = await db.financialTransaction.create({
       data: {
-        transactionId: body.transactionId || `txn-${Date.now()}`,
-        accountId: body.accountId,
-        accountName: body.accountName || 'Unknown Account',
-        type: body.type || 'debit',
-        amount: body.amount,
+        transactionId: body.transactionId || `TXN-${Date.now()}`,
+        accountId: body.accountId || 'acc-default',
+        accountName: body.accountName || 'Primary Account',
+        type,
+        amount,
         currency: body.currency || 'USD',
         status: body.status || 'completed',
         date: body.date ? new Date(body.date) : new Date(),
-        description: body.description || '',
-        category: body.category || 'other',
-        merchant: body.merchant,
-        location: body.location || null,
-        metadata: body.metadata || null,
-        reference: body.reference || null,
+        description: body.description || `${type} Transaction`,
+        category,
+        merchant: body.merchant || 'Internal Transfer',
+        location,
+        metadata,
+        reference: body.reference || `REF-${Math.floor(Math.random() * 10000)}`,
       },
     });
     return NextResponse.json(transaction, { status: 201 });

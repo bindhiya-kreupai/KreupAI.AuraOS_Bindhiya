@@ -16,22 +16,37 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
+
+    const policies = body.policies || [
+      { id: 'POL-01', name: 'AML Compliance', status: 'Active' },
+      { id: 'POL-02', name: 'KYC Standards', status: 'Active' },
+    ];
+
+    const procedures = body.procedures || [
+      { id: 'PROC-01', name: 'Client Onboarding', lastReviewed: new Date().toISOString() },
+    ];
+
+    const controls = body.controls || [];
+    const training = body.training || [];
+    const audits = body.audits || [];
+
     const program = await db.complianceProgram.create({
       data: {
-        programId: body.programId || `prog-${Date.now()}`,
-        programName: body.programName,
-        complianceArea: body.complianceArea,
-        status: body.status || 'active',
-        lastReviewDate: body.lastReviewDate ? new Date(body.lastReviewDate) : new Date(),
-        nextReviewDate: body.nextReviewDate ? new Date(body.nextReviewDate) : new Date(),
-        responsibleOfficer: body.responsibleOfficer,
-        policies: body.policies || [],
-        procedures: body.procedures || [],
-        controls: body.controls || [],
-        training: body.training || [],
-        audits: body.audits || [],
+        programId: body.programId || `CP-${Date.now()}`,
+        programName: body.programName || 'Standard Compliance Program',
+        complianceArea: body.complianceArea || 'General',
+        status: body.status || 'Active',
+        lastReviewDate: new Date(body.lastReviewDate || Date.now()),
+        nextReviewDate: new Date(body.nextReviewDate || Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
+        responsibleOfficer: body.responsibleOfficer || 'Unassigned',
+        policies,
+        procedures,
+        controls,
+        training,
+        audits,
       },
     });
+
     return NextResponse.json(program, { status: 201 });
   } catch (error) {
     console.error('Failed to create compliance program:', error);
