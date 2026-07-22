@@ -17,22 +17,8 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    const assetAllocation = body.assetAllocation || [
-      { assetClass: 'Equities', percentage: 60 },
-      { assetClass: 'Fixed Income', percentage: 30 },
-      { assetClass: 'Cash', percentage: 10 },
-    ];
-
-    const riskProfile = body.riskProfile || {
-      tolerance: 'Moderate',
-      objective: 'Growth',
-      timeHorizon: 'Long-term',
-    };
-
-    const holdings = body.holdings || [];
-
     const totalValue = body.totalValue ? parseFloat(body.totalValue) : 0;
-    const cashBalance = body.cashBalance ? parseFloat(body.cashBalance) : totalValue * 0.1;
+    const cashBalance = body.cashBalance ? parseFloat(body.cashBalance) : 0;
 
     const portfolio = await db.wealthPortfolio.create({
       data: {
@@ -44,12 +30,12 @@ export async function POST(request: Request) {
         totalValue,
         cashBalance,
         currency: body.currency || 'USD',
-        advisor: body.advisor || { name: 'Unassigned' },
-        assetAllocation,
-        holdings,
-        performance: body.performance || { ytdReturn: 0, sinceInception: 0 },
-        riskProfile,
-        taxInfo: body.taxInfo || { taxLossHarvesting: false },
+        advisor: body.advisor || {},
+        assetAllocation: body.assetAllocation || [],
+        holdings: body.holdings || [],
+        performance: body.performance || {},
+        riskProfile: body.riskProfile || {},
+        taxInfo: body.taxInfo || {},
       },
     });
 

@@ -25,7 +25,6 @@ const PREVIEW_MODULES = new Set<string>([
   'esg',
   'expenses',
   'facilities',
-  'government',
   'healthcare',
   'hospitality',
   'hr-helpdesk',

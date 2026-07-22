@@ -28,18 +28,6 @@ export async function POST(request: Request) {
     const type = body.type || (amount >= 0 ? 'deposit' : 'withdrawal');
     const category = body.category || (type === 'deposit' ? 'Income' : 'Expense');
 
-    const location = body.location || {
-      city: 'Dubai',
-      country: 'UAE',
-      ip: '127.0.0.1',
-    };
-
-    const metadata = body.metadata || {
-      source: 'web_portal',
-      riskScore: Math.random() * 10,
-      cleared: false,
-    };
-
     const transaction = await db.financialTransaction.create({
       data: {
         transactionId: body.transactionId || `TXN-${Date.now()}`,
@@ -53,8 +41,8 @@ export async function POST(request: Request) {
         description: body.description || `${type} Transaction`,
         category,
         merchant: body.merchant || 'Internal Transfer',
-        location,
-        metadata,
+        location: body.location || {},
+        metadata: body.metadata || {},
         reference: body.reference || `REF-${Math.floor(Math.random() * 10000)}`,
       },
     });

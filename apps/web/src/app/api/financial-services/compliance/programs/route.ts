@@ -17,19 +17,6 @@ export async function POST(request: Request) {
   try {
     const body = await request.json();
 
-    const policies = body.policies || [
-      { id: 'POL-01', name: 'AML Compliance', status: 'Active' },
-      { id: 'POL-02', name: 'KYC Standards', status: 'Active' },
-    ];
-
-    const procedures = body.procedures || [
-      { id: 'PROC-01', name: 'Client Onboarding', lastReviewed: new Date().toISOString() },
-    ];
-
-    const controls = body.controls || [];
-    const training = body.training || [];
-    const audits = body.audits || [];
-
     const program = await db.complianceProgram.create({
       data: {
         programId: body.programId || `CP-${Date.now()}`,
@@ -39,11 +26,11 @@ export async function POST(request: Request) {
         lastReviewDate: new Date(body.lastReviewDate || Date.now()),
         nextReviewDate: new Date(body.nextReviewDate || Date.now() + 30 * 24 * 60 * 60 * 1000), // 30 days from now
         responsibleOfficer: body.responsibleOfficer || 'Unassigned',
-        policies,
-        procedures,
-        controls,
-        training,
-        audits,
+        policies: body.policies || [],
+        procedures: body.procedures || [],
+        controls: body.controls || [],
+        training: body.training || [],
+        audits: body.audits || [],
       },
     });
 

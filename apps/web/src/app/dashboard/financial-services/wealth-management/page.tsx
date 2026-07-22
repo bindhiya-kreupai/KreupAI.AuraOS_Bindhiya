@@ -149,16 +149,12 @@ export default function WealthManagementPage() {
     },
   ];
 
-  // Generate pseudo-historical graph based on YTD
+  // Generate historical graph based strictly on YTD (no random noise)
   const currentAUM = totalAUM;
   const startAUM = currentAUM / (1 + avgYtdReturn / 100);
   const monthlyData = Array.from({ length: 12 }).map((_, i) => {
-    // Interpolate linearly from startAUM to currentAUM, adding some slight random variance
-    let val = startAUM + (currentAUM - startAUM) * (i / 11);
-    if (i !== 0 && i !== 11) {
-      val = val * (1 + (Math.random() * 0.04 - 0.02)); // +/- 2% noise
-    }
-    return val;
+    // Interpolate linearly from startAUM to currentAUM
+    return startAUM + (currentAUM - startAUM) * (i / 11);
   });
 
   // Scale for percentage heights (0 to 100 for the max value)

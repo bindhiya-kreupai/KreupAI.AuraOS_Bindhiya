@@ -31,6 +31,7 @@ export default function InsuranceClaimsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Form state
+  const [claimId, setClaimId] = useState('');
   const [policyId, setPolicyId] = useState('POL-AUTO-01');
   const [claimantName, setClaimantName] = useState('');
   const [reserveAmount, setReserveAmount] = useState('');
@@ -64,6 +65,7 @@ export default function InsuranceClaimsPage() {
       queryClient.invalidateQueries({ queryKey: ['insuranceClaims'] });
       toast.success('Claim created successfully!');
       setIsModalOpen(false);
+      setClaimId('');
       setReserveAmount('');
       setClaimantName('');
       setRiskLevel('Low');
@@ -98,7 +100,13 @@ export default function InsuranceClaimsPage() {
       return;
     }
 
+    if (!claimId) {
+      toast.error('Please enter a Claim ID');
+      return;
+    }
+
     createMutation.mutate({
+      claimId,
       policyId,
       status,
       reserveAmount: Number(reserveAmount),
@@ -296,6 +304,20 @@ export default function InsuranceClaimsPage() {
               </button>
             </div>
             <form onSubmit={handleFormSubmit} className="p-6 space-y-4">
+              <div>
+                <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  Claim ID
+                </label>
+                <input
+                  type="text"
+                  value={claimId}
+                  onChange={(e) => setClaimId(e.target.value)}
+                  placeholder="e.g. CLM-12345"
+                  className="w-full bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-indigo-500"
+                  required
+                />
+              </div>
+
               <div>
                 <label className="block text-sm font-bold text-slate-700 dark:text-slate-300 mb-1">
                   Policy ID
