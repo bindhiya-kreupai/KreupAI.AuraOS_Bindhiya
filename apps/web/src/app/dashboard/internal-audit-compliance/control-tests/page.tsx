@@ -67,10 +67,11 @@ export default function ControlTestsPage() {
             controlId: String(c.controlId ?? ''),
             name: String(c.name ?? ''),
             testCadenceDays: Number(c.testCadenceDays ?? 0),
-            lastTestedAt: c.lastTestedAt
-              ? new Date(String(c.lastTestedAt)).toISOString()
-              : undefined,
-            inScope: c.inScope === true || c.inScope === 'true',
+            lastTestedAt:
+              c.lastTestedAt && !isNaN(new Date(String(c.lastTestedAt)).getTime())
+                ? new Date(String(c.lastTestedAt)).toISOString()
+                : undefined,
+            inScope: c.inScope === true || c.inScope === 'true' || c.inScope === 'YES',
           })),
           asOf: new Date().toISOString(),
         },

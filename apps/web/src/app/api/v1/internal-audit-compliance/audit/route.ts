@@ -16,8 +16,9 @@ import {
 } from '@/lib/services/internal-audit-compliance/internal-audit.service';
 import { badRequest, forbidden, hasAny, ok, serverError, type RouteContext } from '../_shared';
 
-export const dynamic = 'force-dynamic';
-const isoDate = z.string().datetime();
+const flexDate = z
+  .string()
+  .refine((val) => !isNaN(new Date(val).getTime()), { message: 'Invalid date' });
 
 const controlsInputSchema = z.object({
   controls: z.array(
@@ -25,11 +26,11 @@ const controlsInputSchema = z.object({
       controlId: z.string().min(1),
       name: z.string().min(1),
       testCadenceDays: z.number().int().positive(),
-      lastTestedAt: isoDate.optional(),
+      lastTestedAt: flexDate.optional(),
       inScope: z.boolean(),
     })
   ),
-  asOf: isoDate.optional(),
+  asOf: flexDate.optional(),
 });
 
 const severityEnum = z.enum(['LOW', 'MEDIUM', 'HIGH', 'CRITICAL']);
@@ -39,13 +40,13 @@ const findingsInputSchema = z.object({
     z.object({
       findingId: z.string().min(1),
       controlId: z.string().optional(),
-      raisedAt: isoDate,
+      raisedAt: flexDate,
       severity: severityEnum,
-      closedAt: isoDate.optional(),
+      closedAt: flexDate.optional(),
       overrideSlaDays: z.number().int().positive().optional(),
     })
   ),
-  asOf: isoDate.optional(),
+  asOf: flexDate.optional(),
 });
 
 const repeatsInputSchema = z.object({
@@ -54,7 +55,7 @@ const repeatsInputSchema = z.object({
       findingId: z.string().min(1),
       controlId: z.string().min(1),
       category: z.string().min(1),
-      raisedAt: isoDate,
+      raisedAt: flexDate,
     })
   ),
   minOccurrences: z.number().int().min(2).optional(),
