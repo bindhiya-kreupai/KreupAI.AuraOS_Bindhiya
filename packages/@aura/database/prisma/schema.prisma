@@ -7938,21 +7938,22 @@ model HealthcareCredentialing {
 }
 
 model LocumProvider {
-  id           String            @id @default(uuid())
-  tenantId     String
-  providerName String
-  specialty    String
-  npi          String?
-  hourlyRate   Decimal?          @db.Decimal(10, 2)
-  availability Json?
-  status       String            @default("ACTIVE")
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
-  createdBy    String?
-  updatedBy    String?
-  deletedAt    DateTime?
-  isDeleted    Boolean           @default(false)
-  assignments  LocumAssignment[]
+  id                String            @id @default(uuid())
+  tenantId          String
+  providerName      String
+  specialty         String
+  npi               String?
+  hourlyRate        Decimal?          @db.Decimal(10, 2)
+  availability      Json?
+  performanceRating Float?            @default(0.0)
+  status            String            @default("ACTIVE")
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  createdBy         String?
+  updatedBy         String?
+  deletedAt         DateTime?
+  isDeleted         Boolean           @default(false)
+  assignments       LocumAssignment[]
 
   @@index([tenantId])
   @@map("aura_hc_locum_provider")
@@ -18175,5 +18176,21 @@ model AccommodationMaintenanceTicket {
   @@index([tenantId, siteId])
   @@index([tenantId, status, severity])
   @@map("aura_accommodation_maintenance_ticket")
+}
+
+
+model NurseSchedule {
+  id                   String    @id @default(uuid())
+  scheduleId           String    @unique
+  scheduleName         String
+  startDate            DateTime
+  endDate              DateTime
+  shifts               Json
+  staffingRequirements Json
+  status               String
+  publishedDate        DateTime?
+  createdBy            String
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
 }
 

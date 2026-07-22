@@ -25,7 +25,7 @@ const PREVIEW_MODULES = new Set<string>([
   'esg',
   'expenses',
   'facilities',
-  'healthcare',
+  // 'healthcare' removed — live APIs wired for credentialing, rostering, locum
   'hospitality',
   'hr-helpdesk',
   'industry',
