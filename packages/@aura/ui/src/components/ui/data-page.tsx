@@ -81,6 +81,7 @@ export interface DataPageProps<T> {
      * rendered in the DataTable toolbar after the built-in icon buttons.
      */
     toolbarSlot?: React.ReactNode;
+    loading?: boolean;
 }
 
 export function DataPage<T extends { id: string | number }>({
@@ -114,6 +115,7 @@ export function DataPage<T extends { id: string | number }>({
     singularTitle,
     filterParams,
     toolbarSlot,
+    loading = false,
 }: DataPageProps<T>) {
     const [isSheetOpen, setIsSheetOpen] = useState(false);
     const [currentRecord, setCurrentRecord] = useState<Partial<T>>(defaultValues);
@@ -250,12 +252,12 @@ export function DataPage<T extends { id: string | number }>({
         ...columns,
         {
             key: 'actions',
-            header: '',
+            header: 'Actions',
             width: '120px',
             render: (row: T) => {
                 const actions = rowActions ? rowActions(row) : [];
                 return (
-                    <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center justify-end gap-2">
                         {actions.map((action, idx) => {
                             const Icon = action.icon;
                             return (
@@ -303,6 +305,53 @@ export function DataPage<T extends { id: string | number }>({
             }
         }
     ];
+
+    if (loading) {
+        return (
+            <div className="p-6 space-y-6 h-full flex flex-col relative overflow-hidden">
+                <PageHeader
+                    title={title}
+                    description={description}
+                    breadcrumbs={breadcrumbs}
+                />
+                <div className="flex-1 min-h-0">
+                    <div className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm overflow-hidden">
+                        <div className="p-3 border-b border-cloud dark:border-nebula-purple/50">
+                            <div className="h-8 w-64 bg-gray-200/80 animate-pulse rounded" />
+                        </div>
+                        <div className="p-4 space-y-3">
+                            {Array.from({ length: 6 }).map((_, i) => (
+                                <div key={i} className="h-10 bg-gray-200/80 animate-pulse rounded" />
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (filteredData.length === 0 && emptyState) {
+        return (
+            <div className="p-6 space-y-6 h-full flex flex-col relative overflow-hidden">
+                <PageHeader
+                    title={title}
+                    description={description}
+                    breadcrumbs={breadcrumbs}
+                    action={enableCreate !== false ? {
+                        label: addButtonText || `Add ${singularTitle || title.slice(0, -1)}`,
+                        onClick: handleAdd
+                    } : undefined}
+                />
+                <div className="flex-1 min-h-0 flex items-center justify-center">
+                    <div className="text-center space-y-3">
+                        {emptyState.icon && <emptyState.icon className="w-12 h-12 text-silver-mist mx-auto" />}
+                        <h3 className="text-lg font-medium text-ink-black dark:text-pearl">{emptyState.title}</h3>
+                        <p className="text-sm text-silver-mist">{emptyState.description}</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <div className="p-6 space-y-6 h-full flex flex-col relative overflow-hidden">
