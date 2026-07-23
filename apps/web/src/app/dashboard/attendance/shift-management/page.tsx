@@ -986,6 +986,7 @@ export default function ShiftManagementPage() {
                 />
               }
               loading={shiftsLoading}
+              pageSize={15}
               rowActions={(row) => {
                 const actions: any[] = [];
                 if (!row.isDefault) {
@@ -1067,6 +1068,7 @@ export default function ShiftManagementPage() {
                 icon: Users,
               }}
               loading={assignmentsLoading}
+              pageSize={15}
               renderForm={(data, onChange) => (
                 <BulkAssignForm
                   data={data}
@@ -1107,6 +1109,7 @@ export default function ShiftManagementPage() {
                 icon: Calendar,
               }}
               loading={rostersLoading}
+              pageSize={15}
               renderForm={(data, onChange) => (
                 <RosterForm data={data} onChange={onChange} employees={employees} shifts={shifts} />
               )}
@@ -1144,6 +1147,7 @@ export default function ShiftManagementPage() {
                 icon: RefreshCw,
               }}
               loading={swapsLoading}
+              pageSize={15}
               renderForm={(data, onChange) => (
                 <SwapForm data={data} onChange={onChange} employees={employees} shifts={shifts} />
               )}

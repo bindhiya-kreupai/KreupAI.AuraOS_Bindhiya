@@ -195,6 +195,8 @@ export default function ShiftTemplatesPage() {
   const [editingTemplate, setEditingTemplate] = useState<DbTemplate | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [templateToDelete, setTemplateToDelete] = useState<DbTemplate | null>(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 9;
   const seedingRef = useRef(false);
   const [newTemplate, setNewTemplate] = useState({
     name: '',
@@ -558,79 +560,137 @@ export default function ShiftTemplatesPage() {
           </button>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
-          {templates.map((tpl) => {
-            const IconComp = ICON_MAP[tpl.icon] || LayoutTemplate;
-            const isCreating = creating === tpl.id;
-            const isCreated = !!created[tpl.id];
-            return (
-              <div
-                key={tpl.id}
-                className={`bg-gradient-to-br ${tpl.accent} bg-white dark:bg-stellar-blue border rounded-xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col h-full`}
-              >
-                <div className="flex items-start justify-between mb-3">
-                  <div className="w-10 h-10 rounded-lg bg-white/70 dark:bg-stellar-blue/70 flex items-center justify-center">
-                    <IconComp className="w-5 h-5 text-slate-700 dark:text-slate-200" />
-                  </div>
-                  <div className="flex items-center gap-1">
-                    {isCreated && (
-                      <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 dark:text-emerald-300">
-                        <Check className="w-3.5 h-3.5" /> Created
-                      </span>
-                    )}
-                    <button
-                      onClick={() => editTemplate(tpl)}
-                      className="p-1 rounded-md text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
-                      title="Edit template"
-                    >
-                      <Pencil className="w-3.5 h-3.5" />
-                    </button>
-                    <button
-                      onClick={() => deleteTemplate(tpl)}
-                      className="p-1 rounded-md text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"
-                      title="Delete template"
-                    >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </button>
-                  </div>
-                </div>
-
-                <div className="flex-1">
-                  <h3 className="font-bold text-base text-ink-black dark:text-pearl">{tpl.name}</h3>
-                  <p className="text-xs text-silver-mist mt-1 mb-4">{tpl.description}</p>
-
-                  <dl className="space-y-1.5 text-xs">
-                    <Row label="Timing" value={`${tpl.startTime} – ${tpl.endTime}`} />
-                    <Row label="Work hours" value={`${tpl.workHours}h`} />
-                    <Row label="Break" value={`${tpl.breakDuration} min`} />
-                    <Row
-                      label="Grace"
-                      value={`${tpl.graceInMinutes} / ${tpl.graceOutMinutes} min`}
-                    />
-                    <Row
-                      label="Overtime"
-                      value={tpl.overtimeAllowed ? `up to ${tpl.maxOvertimeHours}h` : 'not allowed'}
-                    />
-                  </dl>
-                </div>
-
-                <button
-                  onClick={() => applyTemplate(tpl)}
-                  disabled={isCreating}
-                  className="w-full mt-4 inline-flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-60 transition-colors"
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+            {templates.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE).map((tpl) => {
+              const IconComp = ICON_MAP[tpl.icon] || LayoutTemplate;
+              const isCreating = creating === tpl.id;
+              const isCreated = !!created[tpl.id];
+              return (
+                <div
+                  key={tpl.id}
+                  className={`bg-gradient-to-br ${tpl.accent} bg-white dark:bg-stellar-blue border rounded-xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col h-full`}
                 >
-                  {isCreating ? (
-                    <>
-                      <Loader2 className="w-4 h-4 animate-spin" /> Creating…
-                    </>
-                  ) : (
-                    <>{t('shiftManagement.shift.create')}</>
-                  )}
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="w-10 h-10 rounded-lg bg-white/70 dark:bg-stellar-blue/70 flex items-center justify-center">
+                      <IconComp className="w-5 h-5 text-slate-700 dark:text-slate-200" />
+                    </div>
+                    <div className="flex items-center gap-1">
+                      {isCreated && (
+                        <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 dark:text-emerald-300">
+                          <Check className="w-3.5 h-3.5" /> Created
+                        </span>
+                      )}
+                      <button
+                        onClick={() => editTemplate(tpl)}
+                        className="p-1 rounded-md text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
+                        title="Edit template"
+                      >
+                        <Pencil className="w-3.5 h-3.5" />
+                      </button>
+                      <button
+                        onClick={() => deleteTemplate(tpl)}
+                        className="p-1 rounded-md text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"
+                        title="Delete template"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="flex-1">
+                    <h3 className="font-bold text-base text-ink-black dark:text-pearl">
+                      {tpl.name}
+                    </h3>
+                    <p className="text-xs text-silver-mist mt-1 mb-4">{tpl.description}</p>
+
+                    <dl className="space-y-1.5 text-xs">
+                      <Row label="Timing" value={`${tpl.startTime} – ${tpl.endTime}`} />
+                      <Row label="Work hours" value={`${tpl.workHours}h`} />
+                      <Row label="Break" value={`${tpl.breakDuration} min`} />
+                      <Row
+                        label="Grace"
+                        value={`${tpl.graceInMinutes} / ${tpl.graceOutMinutes} min`}
+                      />
+                      <Row
+                        label="Overtime"
+                        value={
+                          tpl.overtimeAllowed ? `up to ${tpl.maxOvertimeHours}h` : 'not allowed'
+                        }
+                      />
+                    </dl>
+                  </div>
+
+                  <button
+                    onClick={() => applyTemplate(tpl)}
+                    disabled={isCreating}
+                    className="w-full mt-4 inline-flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-60 transition-colors"
+                  >
+                    {isCreating ? (
+                      <>
+                        <Loader2 className="w-4 h-4 animate-spin" /> Creating…
+                      </>
+                    ) : (
+                      <>{t('shiftManagement.shift.create')}</>
+                    )}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+
+          {templates.length > PAGE_SIZE && (
+            <div className="flex items-center justify-between px-2 py-3 text-xs text-silver-mist">
+              <span>
+                Showing {(currentPage - 1) * PAGE_SIZE + 1} to{' '}
+                {Math.min(currentPage * PAGE_SIZE, templates.length)} of {templates.length}{' '}
+                templates
+              </span>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage <= 1}
+                  className={`px-2 py-1 rounded transition-colors ${
+                    currentPage <= 1
+                      ? 'text-slate-300 dark:text-slate-600 cursor-not-allowed'
+                      : 'text-silver-mist hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20'
+                  }`}
+                >
+                  Previous
+                </button>
+                {Array.from(
+                  { length: Math.ceil(templates.length / PAGE_SIZE) },
+                  (_, i) => i + 1
+                ).map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`px-2 py-1 rounded text-xs transition-colors ${
+                      page === currentPage
+                        ? 'bg-indigo-600 text-white'
+                        : 'text-silver-mist hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20'
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+                <button
+                  onClick={() =>
+                    setCurrentPage((p) => Math.min(Math.ceil(templates.length / PAGE_SIZE), p + 1))
+                  }
+                  disabled={currentPage >= Math.ceil(templates.length / PAGE_SIZE)}
+                  className={`px-2 py-1 rounded transition-colors ${
+                    currentPage >= Math.ceil(templates.length / PAGE_SIZE)
+                      ? 'text-slate-300 dark:text-slate-600 cursor-not-allowed'
+                      : 'text-silver-mist hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20'
+                  }`}
+                >
+                  Next
                 </button>
               </div>
-            );
-          })}
-        </div>
+            </div>
+          )}
+        </>
       )}
 
       <ConfirmDialog
