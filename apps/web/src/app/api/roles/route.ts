@@ -28,7 +28,7 @@ const RoleQuerySchema = z.object({
   isSystem: z.enum(['true', 'false']).optional(),
   search: z.string().optional(),
   page: z.coerce.number().int().positive().default(1),
-  limit: z.coerce.number().int().positive().max(100).default(20),
+  limit: z.coerce.number().int().positive().max(500).default(20),
 });
 
 // GET - Fetch all roles for the tenant
@@ -51,9 +51,9 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
       limit: searchParams.get('limit') || '20',
     });
 
-    // Build where clause
+    // Build where clause — include system-wide roles (null tenantId) + tenant-owned roles
     const where: any = {
-      tenantId: user.tenantId, // Only show tenant-specific roles
+      OR: [{ tenantId: null }, { tenantId: user.tenantId }],
     };
 
     if (query.isActive !== undefined) {

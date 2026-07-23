@@ -38,7 +38,18 @@ export class GosiReconciliationService {
     },
     auth: AuthContext
   ) {
-    const tolerance = input.tolerance ?? 0.01;
+    let tolerance = input.tolerance;
+    if (tolerance == null) {
+      const config = await (prisma as any).gosiBranchConfig.findUnique({
+        where: { tenantId_branch: { tenantId: auth.tenantId, branch: 'TOLERANCE' } },
+      });
+      if (config && config.appliesTo && config.appliesTo[0]) {
+        tolerance = parseFloat(config.appliesTo[0]);
+      }
+    }
+    if (tolerance == null || isNaN(tolerance)) {
+      tolerance = 0.01;
+    }
     const gosi = await (prisma as any).gosiContribution.findMany({
       where: {
         tenantId: auth.tenantId,

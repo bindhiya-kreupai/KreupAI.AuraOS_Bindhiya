@@ -2,32 +2,15 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { authenticator } from 'otplib';
-import crypto from 'crypto';
 import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth/enhanced-middleware';
+import { decryptSecret } from '@/lib/auth/mfa-crypto';
 import { logger } from '@/lib/logger';
 
 /**
  * MFA Verify API - Verify TOTP code to complete MFA setup
  * Requires authentication
  */
-
-if (!process.env.MFA_ENCRYPTION_KEY) {
-  throw new Error(
-    'FATAL: MFA_ENCRYPTION_KEY environment variable is not set. Refusing to start with an insecure default.'
-  );
-}
-const ENCRYPTION_KEY = process.env.MFA_ENCRYPTION_KEY;
-
-/**
- * Simple decryption for TOTP secrets
- */
-function decryptSecret(encrypted: string): string {
-  const decipher = crypto.createDecipher('aes-256-cbc', ENCRYPTION_KEY);
-  let decrypted = decipher.update(encrypted, 'hex', 'utf8');
-  decrypted += decipher.final('utf8');
-  return decrypted;
-}
 
 // Validation Schema
 const VerifyMFASchema = z.object({

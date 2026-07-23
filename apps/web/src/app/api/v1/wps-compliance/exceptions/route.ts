@@ -50,7 +50,18 @@ export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext)
       for (const f of ['code', 'description', 'severity', 'ownerRole']) {
         if (!body[f]) return badRequest(`${f} required`);
       }
-      return ok(await wpsExceptionService.raise(body, auth), 'Raised');
+      return ok(
+        await wpsExceptionService.raise(
+          {
+            code: body.code,
+            description: body.description,
+            severity: body.severity,
+            ownerRole: body.ownerRole,
+          },
+          auth
+        ),
+        'Raised'
+      );
     }
     if (body.action === 'resolve') {
       if (!body.exceptionId) return badRequest('exceptionId required');

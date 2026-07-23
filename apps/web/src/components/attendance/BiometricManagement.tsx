@@ -28,6 +28,8 @@ import {
   Loader2,
   XCircle,
   Signal,
+  Trash2,
+  X,
 } from 'lucide-react';
 import type {
   BiometricDevice,
@@ -124,12 +126,16 @@ function DeviceCard({
   syncing,
   onSelect,
   isSelected,
+  onEdit,
+  onDelete,
 }: {
   device: BiometricDevice;
   onSync: (id: string) => void;
   syncing: boolean;
   onSelect: () => void;
   isSelected: boolean;
+  onEdit: (device: BiometricDevice) => void;
+  onDelete: (device: BiometricDevice) => void;
 }) {
   const s = STATUS_STYLES[device.status];
   const _SIcon = s.icon;
@@ -206,25 +212,47 @@ function DeviceCard({
               </span>
             )}
           </div>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              onSync(device.id);
-            }}
-            disabled={syncing || device.status === 'offline'}
-            className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg font-medium transition-colors ${
-              device.status === 'offline'
-                ? 'text-slate-400 bg-slate-100 cursor-not-allowed'
-                : 'text-blue-600 bg-blue-50 hover:bg-blue-100'
-            }`}
-          >
-            {syncing ? (
-              <Loader2 className="w-3 h-3 animate-spin" />
-            ) : (
-              <RefreshCw className="w-3 h-3" />
-            )}
-            Sync
-          </button>
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit(device);
+              }}
+              className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-500"
+              title="Edit"
+            >
+              <Settings className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(device);
+              }}
+              className="p-1.5 rounded-lg hover:bg-red-50 text-red-500"
+              title="Delete"
+            >
+              <Trash2 className="w-3.5 h-3.5" />
+            </button>
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onSync(device.id);
+              }}
+              disabled={syncing || device.status === 'offline' || device.status === 'Offline'}
+              className={`flex items-center gap-1 text-xs px-2.5 py-1 rounded-lg font-medium transition-colors ${
+                device.status === 'offline' || device.status === 'Offline'
+                  ? 'text-slate-400 bg-slate-100 cursor-not-allowed'
+                  : 'text-blue-600 bg-blue-50 hover:bg-blue-100'
+              }`}
+            >
+              {syncing ? (
+                <Loader2 className="w-3 h-3 animate-spin" />
+              ) : (
+                <RefreshCw className="w-3 h-3" />
+              )}
+              Sync
+            </button>
+          </div>
         </div>
       </div>
     </div>
@@ -303,19 +331,132 @@ export default function BiometricManagement() {
   const [selectedDevice, setSelectedDevice] = useState<BiometricDevice | null>(null);
   const [syncingDevices, setSyncingDevices] = useState<Set<string>>(new Set());
   const [logSearch, setLogSearch] = useState('');
+  const [editing, setEditing] = useState<Partial<BiometricDevice> | null>(null);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [configuringDevice, setConfiguringDevice] = useState<BiometricDevice | null>(null);
+  const [configSettings, setConfigSettings] = useState<Partial<DeviceConfiguration> | null>(null);
 
   useEffect(() => {
-    Promise.all([
-      BiometricService.getDevices(),
-      BiometricService.getAttendanceLogs('dev-001', '2026-02-25'),
-      BiometricService.getBiometricAnalytics(),
-    ]).then(([devs, logs, anal]) => {
+    setErrors({});
+  }, [editing]);
+
+  const validateForm = () => {
+    const tempErrors: Record<string, string> = {};
+    if (!editing?.name?.trim()) {
+      tempErrors.name = 'Name is required';
+    } else if (editing.name.trim().length < 3) {
+      tempErrors.name = 'Name must be at least 3 characters';
+    }
+    if (!editing?.location?.trim()) {
+      tempErrors.location = 'Location is required';
+    } else if (editing.location.trim().length < 3) {
+      tempErrors.location = 'Location must be at least 3 characters';
+    }
+    if (!editing?.building?.trim()) {
+      tempErrors.building = 'Building is required';
+    } else if (editing.building.trim().length < 3) {
+      tempErrors.building = 'Building must be at least 3 characters';
+    }
+    if (!editing?.serialNumber?.trim()) {
+      tempErrors.serialNumber = 'Serial number is required';
+    } else if (editing.serialNumber.trim().length < 5) {
+      tempErrors.serialNumber = 'Serial number must be at least 5 characters';
+    }
+    if (!editing?.ipAddress?.trim()) {
+      tempErrors.ipAddress = 'IP Address is required';
+    } else {
+      const ipPattern =
+        /^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$|^localhost$/i;
+      if (!ipPattern.test(editing.ipAddress)) {
+        tempErrors.ipAddress = 'Must be a valid IPv4 address (e.g. 192.168.1.100) or "localhost"';
+      }
+    }
+    if (editing?.totalCapacity !== undefined && editing.totalCapacity <= 0) {
+      tempErrors.totalCapacity = 'Capacity must be greater than 0';
+    }
+
+    setErrors(tempErrors);
+    return Object.keys(tempErrors).length === 0;
+  };
+
+  const refreshData = async () => {
+    try {
+      const [devs, logs, anal] = await Promise.all([
+        BiometricService.getDevices(),
+        BiometricService.getAttendanceLogs('dev-001', '2026-02-25'),
+        BiometricService.getBiometricAnalytics(),
+      ]);
       setDevices(devs);
       setPunches(logs);
       setAnalytics(anal);
-      if (devs.length > 0) setSelectedDevice(devs[0]);
+      if (devs.length > 0) {
+        setSelectedDevice((prev) => devs.find((d) => d.id === prev?.id) || devs[0]);
+      } else {
+        setSelectedDevice(null);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
       setLoading(false);
-    });
+    }
+  };
+
+  const handleExportLogs = () => {
+    if (punches.length === 0) {
+      alert('No punch logs available to export.');
+      return;
+    }
+    const headers = [
+      'Time',
+      'Employee Name',
+      'Employee ID',
+      'Punch Type',
+      'Method',
+      'Verification Score',
+      'Valid',
+    ];
+    const csvRows = [
+      headers.join(','),
+      ...punches.map((p) =>
+        [
+          `"${new Date(p.punchTime).toLocaleString()}"`,
+          `"${p.employeeName.replace(/"/g, '""')}"`,
+          `"${p.employeeId}"`,
+          `"${p.punchType}"`,
+          `"${p.method}"`,
+          p.verificationScore,
+          p.isValid,
+        ].join(',')
+      ),
+    ];
+    const csvContent = 'data:text/csv;charset=utf-8,' + csvRows.join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute(
+      'download',
+      `biometric_attendance_logs_${new Date().toISOString().split('T')[0]}.csv`
+    );
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleSaveConfig = async () => {
+    if (!configuringDevice || !configSettings) return;
+    try {
+      await BiometricService.configureDevice(configuringDevice.id, configSettings);
+      setConfiguringDevice(null);
+      setConfigSettings(null);
+      alert('Configuration updated successfully!');
+    } catch (e) {
+      console.error(e);
+      alert('Failed to save device configuration.');
+    }
+  };
+
+  useEffect(() => {
+    refreshData();
   }, []);
 
   async function handleSync(deviceId: string) {
@@ -375,10 +516,31 @@ export default function BiometricManagement() {
           </p>
         </div>
         <div className="flex items-center gap-2">
-          <button className="flex items-center gap-1.5 px-3 py-2 text-sm border border-slate-200 rounded-xl bg-white hover:bg-slate-50 text-slate-600">
+          <button
+            onClick={handleExportLogs}
+            className="flex items-center gap-1.5 px-3 py-2 text-sm border border-slate-200 rounded-xl bg-white hover:bg-slate-50 text-slate-600"
+          >
             <Download className="w-4 h-4" /> Export Logs
           </button>
-          <button className="flex items-center gap-1.5 px-3 py-2 text-sm bg-blue-600 text-white rounded-xl hover:bg-blue-700">
+          <button
+            onClick={() =>
+              setEditing({
+                name: '',
+                brand: 'ZKTeco',
+                model: '',
+                type: 'fingerprint',
+                status: 'online',
+                location: '',
+                building: '',
+                ipAddress: '',
+                serialNumber: '',
+                firmwareVersion: '1.0.0',
+                enrolledEmployees: 0,
+                totalCapacity: 5000,
+              })
+            }
+            className="flex items-center gap-1.5 px-3 py-2 text-sm bg-blue-600 text-white rounded-xl hover:bg-blue-700"
+          >
             <Plus className="w-4 h-4" /> Add Device
           </button>
         </div>
@@ -463,6 +625,13 @@ export default function BiometricManagement() {
                   syncing={syncingDevices.has(device.id)}
                   onSelect={() => setSelectedDevice(device)}
                   isSelected={selectedDevice?.id === device.id}
+                  onEdit={(d) => setEditing(d)}
+                  onDelete={async (d) => {
+                    if (confirm(`Are you sure you want to delete ${d.name}?`)) {
+                      const ok = await BiometricService.deleteDevice(d.id);
+                      if (ok) refreshData();
+                    }
+                  }}
                 />
               ))}
             </div>
@@ -714,7 +883,17 @@ export default function BiometricManagement() {
               </p>
             </div>
             <div className="ml-auto flex items-center gap-2">
-              <button className="flex items-center gap-1.5 text-xs px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-600">
+              <button
+                onClick={async () => {
+                  const currentSettings = await BiometricService.configureDevice(
+                    selectedDevice.id,
+                    {}
+                  );
+                  setConfiguringDevice(selectedDevice);
+                  setConfigSettings(currentSettings);
+                }}
+                className="flex items-center gap-1.5 text-xs px-3 py-1.5 border border-slate-200 rounded-lg hover:bg-slate-50 text-slate-600"
+              >
                 <Settings className="w-3.5 h-3.5" /> Configure
               </button>
             </div>
@@ -735,6 +914,356 @@ export default function BiometricManagement() {
                 <p className="text-sm font-semibold text-slate-700">{item.value}</p>
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {editing && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
+            <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200 dark:border-slate-800">
+              <h3 className="font-bold text-slate-800">
+                {editing.id ? 'Edit Device' : 'Add Device'}
+              </h3>
+              <button
+                onClick={() => setEditing(null)}
+                className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded"
+              >
+                <X className="w-5 h-5 text-slate-500" />
+              </button>
+            </div>
+            <div className="px-5 py-4 overflow-y-auto flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3 text-slate-700">
+              <label className="block sm:col-span-2">
+                <span className="block text-xs font-medium text-slate-500 mb-1">Name</span>
+                <input
+                  value={editing.name || ''}
+                  onChange={(e) => setEditing({ ...editing, name: e.target.value })}
+                  className={`w-full px-3 py-2 bg-white rounded-lg text-sm border focus:outline-none focus:ring-2 ${errors.name ? 'border-red-500 focus:ring-red-500/30' : 'border-slate-200 focus:ring-blue-500/30'}`}
+                />
+                {errors.name && <p className="text-red-500 text-xs mt-1">{errors.name}</p>}
+              </label>
+              <label className="block">
+                <span className="block text-xs font-medium text-slate-500 mb-1">Brand</span>
+                <select
+                  value={editing.brand || 'ZKTeco'}
+                  onChange={(e) => setEditing({ ...editing, brand: e.target.value as any })}
+                  className="w-full px-3 py-2 bg-white rounded-lg text-sm border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+                >
+                  {['ZKTeco', 'HikVision', 'Suprema', 'Anviz', 'Virdi'].map((b) => (
+                    <option key={b} value={b}>
+                      {b}
+                    </option>
+                  ))}
+                </select>
+              </label>
+              <label className="block">
+                <span className="block text-xs font-medium text-slate-500 mb-1">Model</span>
+                <input
+                  value={editing.model || ''}
+                  onChange={(e) => setEditing({ ...editing, model: e.target.value })}
+                  className="w-full px-3 py-2 bg-white rounded-lg text-sm border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+                />
+              </label>
+              <label className="block">
+                <span className="block text-xs font-medium text-slate-500 mb-1">Type</span>
+                <select
+                  value={editing.type || 'fingerprint'}
+                  onChange={(e) => setEditing({ ...editing, type: e.target.value as any })}
+                  className="w-full px-3 py-2 bg-white rounded-lg text-sm border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+                >
+                  <option value="fingerprint">Fingerprint</option>
+                  <option value="face">Face Recognition</option>
+                  <option value="iris">Iris Scan</option>
+                  <option value="card_reader">Card Reader</option>
+                  <option value="multi_modal">Multi-Biometric</option>
+                </select>
+              </label>
+              <label className="block">
+                <span className="block text-xs font-medium text-slate-500 mb-1">Status</span>
+                <select
+                  value={editing.status || 'online'}
+                  onChange={(e) => setEditing({ ...editing, status: e.target.value as any })}
+                  className="w-full px-3 py-2 bg-white rounded-lg text-sm border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+                >
+                  <option value="online">Online</option>
+                  <option value="offline">Offline</option>
+                  <option value="error">Error</option>
+                  <option value="syncing">Syncing</option>
+                  <option value="maintenance">Maintenance</option>
+                </select>
+              </label>
+              <label className="block">
+                <span className="block text-xs font-medium text-slate-500 mb-1">Building</span>
+                <input
+                  value={editing.building || ''}
+                  onChange={(e) => setEditing({ ...editing, building: e.target.value })}
+                  className={`w-full px-3 py-2 bg-white rounded-lg text-sm border focus:outline-none focus:ring-2 ${errors.building ? 'border-red-500 focus:ring-red-500/30' : 'border-slate-200 focus:ring-blue-500/30'}`}
+                />
+                {errors.building && <p className="text-red-500 text-xs mt-1">{errors.building}</p>}
+              </label>
+              <label className="block">
+                <span className="block text-xs font-medium text-slate-500 mb-1">Location</span>
+                <input
+                  value={editing.location || ''}
+                  onChange={(e) => setEditing({ ...editing, location: e.target.value })}
+                  className={`w-full px-3 py-2 bg-white rounded-lg text-sm border focus:outline-none focus:ring-2 ${errors.location ? 'border-red-500 focus:ring-red-500/30' : 'border-slate-200 focus:ring-blue-500/30'}`}
+                />
+                {errors.location && <p className="text-red-500 text-xs mt-1">{errors.location}</p>}
+              </label>
+              <label className="block">
+                <span className="block text-xs font-medium text-slate-500 mb-1">IP Address</span>
+                <input
+                  value={editing.ipAddress || ''}
+                  onChange={(e) => setEditing({ ...editing, ipAddress: e.target.value })}
+                  placeholder="10.0.1.100"
+                  className={`w-full px-3 py-2 bg-white rounded-lg text-sm border focus:outline-none focus:ring-2 ${errors.ipAddress ? 'border-red-500 focus:ring-red-500/30' : 'border-slate-200 focus:ring-blue-500/30'}`}
+                />
+                {errors.ipAddress && (
+                  <p className="text-red-500 text-xs mt-1">{errors.ipAddress}</p>
+                )}
+              </label>
+              <label className="block">
+                <span className="block text-xs font-medium text-slate-500 mb-1">Serial Number</span>
+                <input
+                  value={editing.serialNumber || ''}
+                  onChange={(e) => setEditing({ ...editing, serialNumber: e.target.value })}
+                  className={`w-full px-3 py-2 bg-white rounded-lg text-sm border focus:outline-none focus:ring-2 ${errors.serialNumber ? 'border-red-500 focus:ring-red-500/30' : 'border-slate-200 focus:ring-blue-500/30'}`}
+                />
+                {errors.serialNumber && (
+                  <p className="text-red-500 text-xs mt-1">{errors.serialNumber}</p>
+                )}
+              </label>
+              <label className="block">
+                <span className="block text-xs font-medium text-slate-500 mb-1">
+                  Firmware Version
+                </span>
+                <input
+                  value={editing.firmwareVersion || ''}
+                  onChange={(e) => setEditing({ ...editing, firmwareVersion: e.target.value })}
+                  className="w-full px-3 py-2 bg-white rounded-lg text-sm border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+                />
+              </label>
+              <label className="block">
+                <span className="block text-xs font-medium text-slate-500 mb-1">
+                  Total Capacity
+                </span>
+                <input
+                  type="number"
+                  value={editing.totalCapacity || 5000}
+                  onChange={(e) =>
+                    setEditing({ ...editing, totalCapacity: parseInt(e.target.value) || 0 })
+                  }
+                  className={`w-full px-3 py-2 bg-white rounded-lg text-sm border focus:outline-none focus:ring-2 ${errors.totalCapacity ? 'border-red-500 focus:ring-red-500/30' : 'border-slate-200 focus:ring-blue-500/30'}`}
+                />
+                {errors.totalCapacity && (
+                  <p className="text-red-500 text-xs mt-1">{errors.totalCapacity}</p>
+                )}
+              </label>
+            </div>
+            <div className="flex justify-end gap-2 px-5 py-3 border-t border-slate-200 dark:border-slate-800">
+              <button
+                onClick={() => setEditing(null)}
+                className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={async () => {
+                  if (!validateForm()) {
+                    return;
+                  }
+                  if (editing.id) {
+                    await BiometricService.updateDevice(editing.id, editing);
+                  } else {
+                    await BiometricService.addDevice(editing);
+                  }
+                  setEditing(null);
+                  refreshData();
+                }}
+                className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                Save
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {configuringDevice && configSettings && (
+        <div className="fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center p-0 sm:p-4">
+          <div className="bg-white dark:bg-slate-900 w-full max-w-lg rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col max-h-[90vh]">
+            <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200 dark:border-slate-800">
+              <h3 className="font-bold text-slate-800">Configure {configuringDevice.name}</h3>
+              <button
+                onClick={() => {
+                  setConfiguringDevice(null);
+                  setConfigSettings(null);
+                }}
+                className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded"
+              >
+                <X className="w-5 h-5 text-slate-500" />
+              </button>
+            </div>
+            <div className="px-5 py-4 overflow-y-auto flex-1 grid grid-cols-1 sm:grid-cols-2 gap-3 text-slate-700">
+              <label className="block sm:col-span-2">
+                <span className="block text-xs font-medium text-slate-500 mb-1">
+                  Attendance Rule
+                </span>
+                <select
+                  value={configSettings.attendanceRule || 'first_last'}
+                  onChange={(e) =>
+                    setConfigSettings({ ...configSettings, attendanceRule: e.target.value as any })
+                  }
+                  className="w-full px-3 py-2 bg-white rounded-lg text-sm border border-slate-200 focus:outline-none focus:ring-2 focus:ring-blue-500/30"
+                >
+                  <option value="first_last">First & Last Punch Only</option>
+                  <option value="all_punches">All Punches</option>
+                  <option value="smart">Smart De-duplication (Automatic)</option>
+                </select>
+              </label>
+
+              <label className="block">
+                <span className="block text-xs font-medium text-slate-500 mb-1">
+                  Match Threshold ({configSettings.matchThreshold || 45})
+                </span>
+                <input
+                  type="range"
+                  min="30"
+                  max="80"
+                  value={configSettings.matchThreshold || 45}
+                  onChange={(e) =>
+                    setConfigSettings({
+                      ...configSettings,
+                      matchThreshold: parseInt(e.target.value),
+                    })
+                  }
+                  className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer focus:outline-none"
+                />
+              </label>
+
+              <label className="block">
+                <span className="block text-xs font-medium text-slate-500 mb-1">
+                  Sync Interval (Minutes)
+                </span>
+                <input
+                  type="number"
+                  min="1"
+                  max="60"
+                  value={configSettings.syncIntervalMinutes || 5}
+                  onChange={(e) =>
+                    setConfigSettings({
+                      ...configSettings,
+                      syncIntervalMinutes: parseInt(e.target.value) || 5,
+                    })
+                  }
+                  className="w-full px-3 py-2 bg-white rounded-lg text-sm border border-slate-200 focus:outline-none"
+                />
+              </label>
+
+              <label className="block sm:col-span-2">
+                <span className="block text-xs font-medium text-slate-500 mb-1">
+                  Welcome Display Message
+                </span>
+                <input
+                  type="text"
+                  value={configSettings.displayMessage || ''}
+                  onChange={(e) =>
+                    setConfigSettings({ ...configSettings, displayMessage: e.target.value })
+                  }
+                  placeholder="Welcome to KreupAI"
+                  className="w-full px-3 py-2 bg-white rounded-lg text-sm border border-slate-200 focus:outline-none"
+                />
+              </label>
+
+              <label className="block">
+                <span className="block text-xs font-medium text-slate-500 mb-1">Timezone</span>
+                <input
+                  type="text"
+                  value={configSettings.timezone || 'Asia/Dubai'}
+                  onChange={(e) =>
+                    setConfigSettings({ ...configSettings, timezone: e.target.value })
+                  }
+                  className="w-full px-3 py-2 bg-white rounded-lg text-sm border border-slate-200 focus:outline-none"
+                />
+              </label>
+
+              <label className="block">
+                <span className="block text-xs font-medium text-slate-500 mb-1">
+                  Failed Scan Retries
+                </span>
+                <input
+                  type="number"
+                  min="1"
+                  max="10"
+                  value={configSettings.failedScanRetries || 3}
+                  onChange={(e) =>
+                    setConfigSettings({
+                      ...configSettings,
+                      failedScanRetries: parseInt(e.target.value) || 3,
+                    })
+                  }
+                  className="w-full px-3 py-2 bg-white rounded-lg text-sm border border-slate-200 focus:outline-none"
+                />
+              </label>
+
+              <div className="flex items-center gap-3 sm:col-span-2 mt-2">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={configSettings.cameraEnabled ?? true}
+                    onChange={(e) =>
+                      setConfigSettings({ ...configSettings, cameraEnabled: e.target.checked })
+                    }
+                    className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500"
+                  />
+                  <span className="text-sm font-medium text-slate-600">Enable Camera Captures</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer ml-4">
+                  <input
+                    type="checkbox"
+                    checked={configSettings.audioFeedback ?? true}
+                    onChange={(e) =>
+                      setConfigSettings({ ...configSettings, audioFeedback: e.target.checked })
+                    }
+                    className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500"
+                  />
+                  <span className="text-sm font-medium text-slate-600">Enable Audio Chimes</span>
+                </label>
+              </div>
+
+              <div className="flex items-center gap-3 sm:col-span-2">
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={configSettings.autoSync ?? true}
+                    onChange={(e) =>
+                      setConfigSettings({ ...configSettings, autoSync: e.target.checked })
+                    }
+                    className="w-4 h-4 text-blue-600 border-slate-300 rounded focus:ring-blue-500"
+                  />
+                  <span className="text-sm font-medium text-slate-600">
+                    Auto Sync Attendance Logs
+                  </span>
+                </label>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 px-5 py-3 border-t border-slate-200 dark:border-slate-800">
+              <button
+                onClick={() => {
+                  setConfiguringDevice(null);
+                  setConfigSettings(null);
+                }}
+                className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSaveConfig}
+                className="px-4 py-2 text-sm font-medium bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+              >
+                Save Configuration
+              </button>
+            </div>
           </div>
         </div>
       )}

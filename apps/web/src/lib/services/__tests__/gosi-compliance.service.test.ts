@@ -15,6 +15,70 @@ const m = prisma as any;
 const auth = { tenantId: 'tenant-1', userId: 'user-1' };
 
 beforeEach(() => {
+  m.employee = {
+    findFirst: vi.fn().mockResolvedValue({
+      id: 'emp-1',
+      firstName: 'John',
+      lastName: 'Doe',
+      employeeCode: 'EMP0001',
+      companyId: 'company-1',
+      joiningDate: new Date('2020-01-01'),
+      isDeleted: false,
+      company: { id: 'company-1', name: 'Test Company', status: 'ACTIVE', tenantId: 'tenant-1' },
+      status: { name: 'Active' },
+    }),
+    findMany: vi.fn().mockResolvedValue([
+      {
+        id: 'emp-1',
+        firstName: 'John',
+        lastName: 'Doe',
+        employeeCode: 'EMP0001',
+        companyId: 'company-1',
+        joiningDate: new Date('2020-01-01'),
+        isDeleted: false,
+        company: { id: 'company-1', name: 'Test Company', status: 'ACTIVE', tenantId: 'tenant-1' },
+        status: { name: 'Active' },
+      },
+    ]),
+  };
+  m.gccLegalEntity = {
+    findFirst: vi.fn().mockResolvedValue({
+      id: 'est-1',
+      tenantId: 'tenant-1',
+      companyId: 'company-1',
+      countryCode: 'SA',
+      legalName: 'Saudi Legal Entity',
+      registrationRef: '7001234567',
+      registrationType: 'GOSI',
+      isActive: true,
+      isDeleted: false,
+    }),
+    findMany: vi.fn().mockResolvedValue([
+      {
+        id: 'est-1',
+        tenantId: 'tenant-1',
+        companyId: 'company-1',
+        countryCode: 'SA',
+        legalName: 'Saudi Legal Entity',
+        registrationRef: '7001234567',
+        registrationType: 'GOSI',
+        isActive: true,
+        isDeleted: false,
+      },
+    ]),
+  };
+  m.tenant = {
+    findUnique: vi.fn().mockResolvedValue({ id: 'tenant-1', status: 'ACTIVE' }),
+  };
+  m.employeeComplianceDetails = {
+    findFirst: vi.fn().mockResolvedValue({
+      id: 'comp-1',
+      tenantId: 'tenant-1',
+      employeeId: 'emp-1',
+      nationality: 'SA',
+      isDeleted: false,
+    }),
+  };
   m.gosiEstablishment = {
     findUnique: vi.fn().mockResolvedValue(null),
     findMany: vi.fn().mockResolvedValue([]),
@@ -31,7 +95,21 @@ beforeEach(() => {
   };
   m.gosiEmployeeRegistration = {
     findUnique: vi.fn().mockResolvedValue(null),
+    findFirst: vi.fn().mockImplementation(async () => {
+      const mockVal = await m.gosiEmployeeRegistration.findUnique();
+      if (mockVal === null) return null;
+      return (
+        mockVal || {
+          id: 'reg-1',
+          employeeId: 'emp-1',
+          establishmentId: 'est-1',
+          status: 'ACTIVE',
+          nationalityClass: 'SAUDI',
+        }
+      );
+    }),
     findMany: vi.fn().mockResolvedValue([]),
+    create: vi.fn().mockImplementation(async ({ data }: any) => ({ id: 'reg-1', ...data })),
     upsert: vi.fn().mockImplementation(async ({ create }: any) => ({ id: 'reg-1', ...create })),
     update: vi.fn().mockImplementation(async ({ data }: any) => ({ id: 'reg-1', ...data })),
   };
@@ -322,6 +400,11 @@ describe('gosiCertificateService', () => {
 
 describe('gosiRegistrationService', () => {
   it('deregister sets status DEREGISTERED with reason', async () => {
+    m.gosiEmployeeRegistration.findUnique.mockResolvedValue({
+      id: 'reg-1',
+      employeeId: 'emp-1',
+      status: 'ACTIVE',
+    });
     await gosiRegistrationService.deregister(
       'emp-1',
       { reason: 'Resignation', date: new Date('2026-06-30') },

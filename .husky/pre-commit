@@ -3,7 +3,8 @@
 # real secret, rotate it AND remove from history; the rotation runbook
 # is at docs/runbooks/ROLLBACK.md (and the secrets manager pattern at
 # docs/SECRETS.md).
-bash scripts/scan-staged-for-secrets.sh
+node scripts/scan-staged-for-secrets.js
 
 # Run lint-staged (eslint --fix + prettier --write)
 pnpm lint-staged
+

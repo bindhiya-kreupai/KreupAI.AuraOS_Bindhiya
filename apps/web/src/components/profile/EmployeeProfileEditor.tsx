@@ -6,7 +6,9 @@
 
 'use client';
 
-import React, { useState, useCallback, useMemo, useRef } from 'react';
+import React, { useState, useCallback, useMemo, useRef, useEffect } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useCurrentUser } from '@/lib/auth/AuthProvider';
 import {
   User,
   Mail,
@@ -178,6 +180,8 @@ function calculateCompleteness(profile: ProfileData): { percentage: number; miss
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export const EmployeeProfileEditor: React.FC = () => {
+  const queryClient = useQueryClient();
+  const { refresh } = useCurrentUser();
   const [profile, setProfile] = useState<ProfileData>(INITIAL_PROFILE);
   const [editingSection, setEditingSection] = useState<string | null>(null);
   const [expandedSections, setExpandedSections] = useState<Set<string>>(
@@ -185,6 +189,77 @@ export const EmployeeProfileEditor: React.FC = () => {
   );
   const [_saved, setSaved] = useState(false);
   const [showPhotoUpload, setShowPhotoUpload] = useState(false);
+  const dataFetchedRef = useRef(false);
+
+  const {
+    data: profileData,
+    isLoading,
+    error,
+  } = useQuery({
+    queryKey: ['my-services', 'profile'],
+    queryFn: async () => {
+      const res = await fetch('/api/my-services/profile');
+      if (!res.ok) throw new Error('Failed to fetch profile');
+      const json = await res.json();
+      return json.success ? json.data : null;
+    },
+    staleTime: 30_000,
+  });
+
+  useEffect(() => {
+    if (profileData && !dataFetchedRef.current) {
+      dataFetchedRef.current = true;
+      setProfile({
+        firstName: profileData.firstName || '',
+        lastName: profileData.lastName || '',
+        middleName: profileData.middleName || '',
+        preferredName: profileData.preferredName || '',
+        dateOfBirth: profileData.dateOfBirth?.split('T')[0] || '',
+        gender: profileData.gender || 'prefer_not_to_say',
+        maritalStatus: profileData.maritalStatus || 'single',
+        nationality: profileData.nationality || '',
+        personalEmail: profileData.personalEmail || '',
+        mobilePhone: profileData.mobilePhone || '',
+        workPhone: profileData.workPhone || '',
+        address: profileData.address || '',
+        city: profileData.city || '',
+        state: profileData.state || '',
+        country: profileData.country || '',
+        postalCode: profileData.postalCode || '',
+        employeeId: profileData.employeeId || '',
+        jobTitle: profileData.jobTitle || '',
+        department: profileData.department || '',
+        employmentType: profileData.employmentType || 'full_time',
+        hireDate: profileData.hireDate?.split('T')[0] || '',
+        location: profileData.location || '',
+        reportsTo: profileData.reportsTo || '',
+        status: profileData.status || 'active',
+        profilePhoto: profileData.profilePhoto || '',
+        skills: profileData.skills || [],
+        certifications: profileData.certifications || [],
+      });
+    }
+  }, [profileData]);
+
+  const saveMutation = useMutation({
+    mutationFn: async (data: ProfileData) => {
+      const res = await fetch('/api/my-services/profile', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      });
+      if (!res.ok) throw new Error('Failed to save profile');
+      const json = await res.json();
+      return json.success ? json.data : null;
+    },
+    onSuccess: () => {
+      setEditingSection(null);
+      setSaved(true);
+      queryClient.invalidateQueries({ queryKey: ['my-services', 'profile'] });
+      refresh();
+      setTimeout(() => setSaved(false), 2000);
+    },
+  });
 
   const completeness = useMemo(() => calculateCompleteness(profile), [profile]);
 
@@ -203,10 +278,8 @@ export const EmployeeProfileEditor: React.FC = () => {
   }, []);
 
   const handleSave = useCallback(() => {
-    setEditingSection(null);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
-  }, []);
+    saveMutation.mutate(profile);
+  }, [saveMutation, profile]);
 
   // Skills management
   const addSkill = useCallback(() => {
@@ -272,6 +345,35 @@ export const EmployeeProfileEditor: React.FC = () => {
 
   return (
     <div className="space-y-5">
+      {/* Loading state */}
+      {isLoading && (
+        <div className="bg-white dark:bg-stellar-blue rounded-2xl border border-cloud dark:border-nebula-purple/30 p-8 text-center">
+          <div className="animate-spin h-8 w-8 border-4 border-celestial-indigo border-t-transparent rounded-full mx-auto mb-3" />
+          <p className="text-sm text-silver-mist">Loading profile...</p>
+        </div>
+      )}
+
+      {/* Error state */}
+      {error && (
+        <div className="bg-white dark:bg-stellar-blue rounded-2xl border border-coral-alert/30 p-8 text-center">
+          <p className="text-sm text-coral-alert font-medium">Failed to load profile</p>
+          <p className="text-xs text-silver-mist mt-1">{(error as Error).message}</p>
+        </div>
+      )}
+
+      {/* Saving indicator */}
+      {saveMutation.isPending && (
+        <div className="bg-celestial-indigo/10 border border-celestial-indigo/30 rounded-xl px-4 py-2 text-sm text-celestial-indigo font-medium">
+          Saving changes...
+        </div>
+      )}
+
+      {saveMutation.isError && (
+        <div className="bg-coral-alert/10 border border-coral-alert/30 rounded-xl px-4 py-2 text-sm text-coral-alert font-medium">
+          Failed to save: {(saveMutation.error as Error).message}
+        </div>
+      )}
+
       {/* Profile Completeness Bar */}
       <div className="bg-white dark:bg-stellar-blue rounded-2xl border border-cloud dark:border-nebula-purple/30 p-4">
         <div className="flex items-center justify-between mb-2">

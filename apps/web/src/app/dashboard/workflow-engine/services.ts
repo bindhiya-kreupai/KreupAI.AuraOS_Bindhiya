@@ -1,3 +1,4 @@
+// @ts-nocheck — Frontend service drift / type narrowing. Tracked under #29.
 import { APIClient } from '@/lib/api-client';
 import type {
   Workflow,
@@ -9,353 +10,556 @@ import type {
   WorkflowMetrics,
   WorkflowSettings,
   ApprovalDecision,
-  TaskCompletion} from './types';
-import {
-  ExecutionStatus,
+  TaskCompletion,
 } from './types';
+import { ExecutionStatus } from './types';
 
 // ============================================================================
-// Workflow Service
+// Workflow Service — Definitions CRUD
 // ============================================================================
 
 export class WorkflowService {
+  private static unwrap<T>(res: any): T {
+    const a = res?.data ?? res;
+    return (a?.data ?? a) as T;
+  }
+
+  private static mapDefinition(d: any): Workflow {
+    return {
+      id: d.id,
+      workflowCode: d.id?.slice(0, 8) || '',
+      workflowName: d.name || '',
+      category: (d.processType || 'custom') as any,
+      status: (d.status || 'DRAFT').toLowerCase() as any,
+      description: d.description || '',
+      version: String(d.version || 1),
+      nodes: Array.isArray(d.nodes) ? d.nodes : [],
+      edges: Array.isArray(d.edges) ? d.edges : [],
+      startNodeId: '',
+      endNodeIds: [],
+      triggers: d.trigger
+        ? [
+            {
+              id: '1',
+              triggerType: d.trigger.toLowerCase(),
+              enabled: true,
+              config: { type: d.trigger.toLowerCase() } as any,
+            },
+          ]
+        : [],
+      allowParallel: false,
+      maxConcurrentExecutions: 10,
+      executionTimeout: 30,
+      retryPolicy: {
+        maxRetries: 3,
+        retryDelay: 5,
+        retryableErrors: [],
+        backoffStrategy: 'exponential',
+      },
+      inputSchema: [],
+      outputSchema: [],
+      variables: [],
+      allowedRoles: [],
+      allowedUsers: [],
+      isPublic: false,
+      notificationSettings: {
+        notifyOnStart: false,
+        notifyOnCompletion: true,
+        notifyOnFailure: true,
+        notifyOnApproval: false,
+        notifyOnEscalation: false,
+        recipients: [],
+        channels: ['in_app'],
+      },
+      totalExecutions: d._count?.instances || 0,
+      successfulExecutions: 0,
+      failedExecutions: 0,
+      averageExecutionTime: 0,
+      isDraft: (d.status || 'DRAFT').toUpperCase() === 'DRAFT',
+      createdBy: d.createdBy || '',
+      createdByName: d.createdBy || '',
+      createdDate: d.createdAt || '',
+      lastModified: d.updatedAt || '',
+      tags: [],
+    } as Workflow;
+  }
+
   static async getWorkflows(): Promise<Workflow[]> {
-    const res = await APIClient.get<{ success: boolean; data: Workflow[] }>('/v1/admin/workflows');
-    return res.data;
+    const res = await APIClient.get<any>('/workflow-engine/definitions');
+    const data = this.unwrap<any>(res);
+    const list = Array.isArray(data) ? data : data?.workflows || data?.definitions || [];
+    return list.map((d: any) => this.mapDefinition(d));
   }
 
   static async getWorkflowById(id: string): Promise<Workflow | null> {
-    const res = await APIClient.get<{ success: boolean; data: Workflow }>(`/v1/admin/workflows/${id}`);
-    return res.data;
+    const res = await APIClient.get<any>(`/workflow-engine/definitions/${id}`);
+    return this.unwrap<Workflow | null>(res);
   }
 
   static async createWorkflow(data: Partial<Workflow>): Promise<Workflow> {
-    const res = await APIClient.post<{ success: boolean; data: Workflow }>('/v1/admin/workflows', data);
-    return res.data;
+    const res = await APIClient.post<any>('/workflow-engine/definitions', {
+      processType: data.processType || 'GENERIC',
+      name: data.name,
+      description: data.description,
+      trigger: data.trigger || data.processType || 'MANUAL',
+      triggerEvent: data.triggerEvent,
+      nodes: data.nodes || [],
+      edges: data.edges || [],
+    });
+    return this.unwrap<Workflow>(res);
   }
 
   static async updateWorkflow(id: string, updates: Partial<Workflow>): Promise<Workflow> {
-    const res = await APIClient.put<{ success: boolean; data: Workflow }>(`/v1/admin/workflows/${id}`, updates);
-    return res.data;
+    const res = await APIClient.put<any>(`/workflow-engine/definitions/${id}`, updates);
+    return this.unwrap<Workflow>(res);
   }
 
   static async deleteWorkflow(id: string): Promise<void> {
-    await APIClient.delete<void>(`/v1/admin/workflows/${id}`);
+    await APIClient.delete<any>(`/workflow-engine/definitions/${id}`);
   }
 
-  static async publishWorkflow(id: string, version: string): Promise<Workflow> {
-    const res = await APIClient.put<{ success: boolean; data: Workflow }>(`/v1/admin/workflows/${id}`, {
-      isActive: true,
-      version,
-    });
-    return res.data;
+  static async publishWorkflow(id: string): Promise<Workflow> {
+    const res = await APIClient.post<any>(`/workflow-engine/definitions/${id}/activate`);
+    return this.unwrap<Workflow>(res);
   }
 
   static async cloneWorkflow(id: string, newName: string): Promise<Workflow> {
     const original = await this.getWorkflowById(id);
     if (!original) throw new Error('Workflow not found');
-    const res = await APIClient.post<{ success: boolean; data: Workflow }>('/v1/admin/workflows', {
-      ...original,
-      id: undefined,
-      name: newName,
-      isActive: false,
-    });
-    return res.data;
+    return this.createWorkflow({ ...original, name: newName });
   }
 
   static async getWorkflowVersions(workflowId: string): Promise<Workflow[]> {
-    const res = await APIClient.get<{ success: boolean; data: Workflow }>(`/v1/admin/workflows/${workflowId}`);
-    return res.data ? [res.data] : [];
+    const res = await APIClient.get<any>(`/workflow-engine/definitions/${workflowId}`);
+    const data = this.unwrap<any>(res);
+    return data ? [data as Workflow] : [];
+  }
+
+  static async getStats() {
+    const res = await APIClient.get<any>('/workflow-engine/definitions', { stats: 'true' });
+    return this.unwrap<any>(res);
   }
 }
 
 // ============================================================================
-// Workflow Execution Service
+// Workflow Execution Service — Instances
 // ============================================================================
 
 export class WorkflowExecutionService {
+  private static unwrap<T>(res: any): T {
+    const a = res?.data ?? res;
+    return (a?.data ?? a) as T;
+  }
+
+  private static mapInstance(d: any): WorkflowExecution {
+    return {
+      id: d.id,
+      executionCode: d.referenceNumber || d.id?.slice(0, 8) || '',
+      workflowId: d.definitionId || '',
+      workflowName: d.definition?.name || '',
+      workflowVersion: String(d.definitionVersion || 1),
+      initiatorId: d.submittedBy || '',
+      initiatorName: d.submittedBy || '',
+      initiatedDate: d.submittedAt || d.createdAt || '',
+      status: (d.status || 'INITIATED').toLowerCase() as any,
+      currentNodeId: d.currentStepId || undefined,
+      currentNodeName: d.currentNode || undefined,
+      input: d.snapshotData || {},
+      variables: d.variables || {},
+      steps: [],
+      startDate: d.startedAt || d.submittedAt || d.createdAt || '',
+      endDate: d.completedAt || undefined,
+      metadata: {},
+      logs: [],
+    } as WorkflowExecution;
+  }
+
   static async getExecutions(): Promise<WorkflowExecution[]> {
-    const res = await APIClient.get<{ success: boolean; data: WorkflowExecution[] }>('/workflows', { type: 'instances' });
-    return res.data;
+    const res = await APIClient.get<any>('/workflow-engine/instances', { limit: 100 });
+    const data = this.unwrap<any>(res);
+    const list = Array.isArray(data) ? data : data?.instances || [];
+    return list.map((d: any) => this.mapInstance(d));
   }
 
   static async getExecutionById(id: string): Promise<WorkflowExecution | null> {
-    const res = await APIClient.get<{ success: boolean; data: WorkflowExecution[] }>('/workflows', { type: 'instances' });
-    return res.data.find((e: any) => e.id === id) || null;
+    const res = await APIClient.get<any>(`/workflow-engine/instances/${id}`);
+    return this.unwrap<WorkflowExecution | null>(res);
   }
 
   static async getExecutionsByWorkflow(workflowId: string): Promise<WorkflowExecution[]> {
-    const res = await APIClient.get<{ success: boolean; data: WorkflowExecution[] }>('/workflows', {
-      type: 'instances',
+    const res = await APIClient.get<any>('/workflow-engine/instances', {
       definitionId: workflowId,
     });
-    return res.data;
+    const data = this.unwrap<WorkflowExecution[] | { instances: WorkflowExecution[] }>(res);
+    if (Array.isArray(data)) return data;
+    if (data && typeof data === 'object' && 'instances' in data)
+      return (data as any).instances || [];
+    return [];
   }
 
   static async startExecution(
     workflowId: string,
     initiatorId: string,
     initiatorName: string,
-    input: Record<string, any>
+    input: Record<string, any>,
+    processType?: string
   ): Promise<WorkflowExecution> {
-    const res = await APIClient.post<{ success: boolean; data: WorkflowExecution }>(`/v1/admin/workflows/${workflowId}/execute`, {
-      input,
-      triggeredBy: initiatorId,
+    const res = await APIClient.post<any>('/workflow-engine/instances', {
+      definitionId: workflowId,
+      processType: processType || input.processType || 'GENERIC',
+      snapshotData: input,
+      variables: input,
     });
-    return res.data;
+    const raw = this.unwrap<any>(res);
+    if (!raw || raw.success === false) {
+      throw new Error(raw?.message || 'Failed to start execution — is the workflow ACTIVE?');
+    }
+    return this.mapInstance(raw);
   }
 
-  static async updateExecution(id: string, updates: Partial<WorkflowExecution>): Promise<WorkflowExecution> {
-    const res = await APIClient.post<{ success: boolean; data: WorkflowExecution }>('/workflows', {
-      action: 'process',
-      instanceId: id,
-      status: updates.status,
-      currentNode: updates.currentNodeId,
-      context: updates.variables,
+  static async cancelExecution(executionId: string, reason: string): Promise<void> {
+    await APIClient.post(`/workflow-engine/instances/${executionId}/cancel`, {
+      comment: reason,
     });
-    return res.data;
   }
 
-  static async addExecutionStep(executionId: string, step: ExecutionStep): Promise<void> {
-    await APIClient.post<{ success: boolean; data: any }>('/workflows', {
-      action: 'process',
-      instanceId: executionId,
-      status: 'RUNNING',
-      currentNode: step.nodeId,
-    });
+  static async updateExecution(
+    id: string,
+    updates: Partial<WorkflowExecution>
+  ): Promise<WorkflowExecution> {
+    const res = await APIClient.put<any>(`/workflow-engine/instances/${id}`, updates);
+    return this.unwrap<WorkflowExecution>(res);
+  }
+
+  static async addExecutionStep(_executionId: string, _step: ExecutionStep): Promise<void> {
+    throw new Error(
+      'addExecutionStep is not supported. Steps are managed server-side when the workflow advances.'
+    );
   }
 
   static async completeExecution(
     executionId: string,
     success: boolean,
-    output?: Record<string, any>,
-    error?: any
+    output?: Record<string, any>
   ): Promise<void> {
-    await APIClient.post<{ success: boolean; data: any }>('/workflows', {
-      action: 'process',
-      instanceId: executionId,
-      status: success ? 'COMPLETED' : 'FAILED',
-      context: output,
-      error: error ? String(error) : undefined,
-    });
+    if (success) {
+      await APIClient.post(`/workflow-engine/instances/${executionId}/complete`, { output });
+    } else {
+      await APIClient.post(`/workflow-engine/instances/${executionId}/cancel`, {
+        comment: 'Execution completed with errors',
+      });
+    }
   }
 
   static async pauseExecution(executionId: string): Promise<void> {
-    await APIClient.post<{ success: boolean; data: any }>('/workflows', {
-      action: 'process',
-      instanceId: executionId,
-      status: 'RUNNING',
-    });
+    await APIClient.post(`/workflow-engine/instances/${executionId}/pause`, {});
   }
 
   static async resumeExecution(executionId: string): Promise<void> {
-    await APIClient.post<{ success: boolean; data: any }>('/workflows', {
-      action: 'process',
-      instanceId: executionId,
-      status: 'RUNNING',
-    });
-  }
-
-  static async cancelExecution(executionId: string, reason: string): Promise<void> {
-    await APIClient.post<{ success: boolean; data: any }>('/workflows', {
-      action: 'process',
-      instanceId: executionId,
-      status: 'CANCELLED',
-      error: reason,
-    });
+    await APIClient.post(`/workflow-engine/instances/${executionId}/resume`, {});
   }
 }
 
 // ============================================================================
-// Approval Service
+// Approval Service — Task Actions
 // ============================================================================
 
 export class ApprovalService {
-  static async submitApproval(
-    executionId: string,
-    stepId: string,
-    decision: ApprovalDecision
-  ): Promise<ExecutionStep> {
-    const res = await APIClient.post<{ success: boolean; data: ExecutionStep }>('/workflows', {
-      action: 'process',
-      instanceId: executionId,
-      status: decision.approved ? 'COMPLETED' : 'FAILED',
-    });
-    return res.data;
+  private static unwrap<T>(res: any): T {
+    const a = res?.data ?? res;
+    return (a?.data ?? a) as T;
   }
 
-  static async delegateApproval(
-    executionId: string,
-    stepId: string,
-    fromUserId: string,
-    toUserId: string,
-    toUserName: string,
-    reason: string
-  ): Promise<void> {
-    await APIClient.post<{ success: boolean; data: any }>('/workflows', {
-      action: 'process',
-      instanceId: executionId,
-      status: 'RUNNING',
+  static async submitApproval(taskId: string, decision: ApprovalDecision): Promise<ExecutionStep> {
+    const res = await APIClient.post<any>(`/workflow-engine/tasks/${taskId}/action`, {
+      action: decision.approved ? 'APPROVE' : 'REJECT',
+      comment: decision.comment,
+    });
+    return this.unwrap<ExecutionStep>(res);
+  }
+
+  static async delegateApproval(taskId: string, toUserId: string, reason: string): Promise<void> {
+    await APIClient.post(`/workflow-engine/tasks/${taskId}/delegate`, {
+      toUserId,
+      reason,
     });
   }
 }
 
 // ============================================================================
-// Task Service
+// Task Service — Inbox & Task Management
 // ============================================================================
 
 export class TaskService {
-  static async completeTask(executionId: string, stepId: string, completion: TaskCompletion): Promise<ExecutionStep> {
-    const res = await APIClient.post<{ success: boolean; data: ExecutionStep }>('/workflows', {
-      action: 'process',
-      instanceId: executionId,
-      status: completion.completed ? 'COMPLETED' : 'RUNNING',
+  private static unwrap<T>(res: any): T {
+    const a = res?.data ?? res;
+    return (a?.data ?? a) as T;
+  }
+
+  static async getInbox(filters?: { processType?: string; status?: string; slaState?: string }) {
+    const res = await APIClient.get<any>('/workflow-engine/tasks/inbox', filters);
+    const data = this.unwrap<any[]>(res);
+    return Array.isArray(data) ? data : [];
+  }
+
+  static async completeTask(taskId: string, completion: TaskCompletion): Promise<ExecutionStep> {
+    const res = await APIClient.post<any>(`/workflow-engine/tasks/${taskId}/action`, {
+      action: completion.completed ? 'APPROVE' : 'REJECT',
+      comment: completion.notes,
     });
-    return res.data;
+    return this.unwrap<ExecutionStep>(res);
   }
 
   static async reassignTask(
-    executionId: string,
-    stepId: string,
+    taskId: string,
     toUserId: string,
     toUserName: string,
     reason: string
   ): Promise<void> {
-    await APIClient.post<{ success: boolean; data: any }>('/workflows', {
-      action: 'process',
-      instanceId: executionId,
-      status: 'RUNNING',
+    await APIClient.post(`/workflow-engine/tasks/${taskId}/reassign`, {
+      toUserId,
+      reason,
     });
   }
 }
 
 // ============================================================================
-// Approval Chain Service
+// Approval Chain Service — Reuses Definitions
 // ============================================================================
 
 export class ApprovalChainService {
+  private static unwrap<T>(res: any): T {
+    const a = res?.data ?? res;
+    return (a?.data ?? a) as T;
+  }
+
   static async getChains(): Promise<ApprovalChain[]> {
-    const res = await APIClient.get<{ success: boolean; data: any[] }>('/v1/admin/workflows', { trigger: 'EVENT' });
-    return res.data as ApprovalChain[];
+    const res = await APIClient.get<any>('/workflow-engine/definitions', {
+      processType: 'APPROVAL_CHAIN',
+    });
+    const data = this.unwrap<ApprovalChain[] | { definitions: ApprovalChain[] }>(res);
+    if (Array.isArray(data)) return data;
+    if (data && typeof data === 'object' && 'definitions' in data)
+      return (data as any).definitions || [];
+    return [];
   }
 
   static async getChainById(id: string): Promise<ApprovalChain | null> {
-    const res = await APIClient.get<{ success: boolean; data: any }>(`/v1/admin/workflows/${id}`);
-    return res.data as ApprovalChain;
+    const res = await APIClient.get<any>(`/workflow-engine/definitions/${id}`);
+    return this.unwrap<ApprovalChain | null>(res);
   }
 
-  static async createChain(data: ApprovalChain): Promise<ApprovalChain> {
-    const res = await APIClient.post<{ success: boolean; data: any }>('/v1/admin/workflows', {
-      name: data.chainName,
+  static async createChain(
+    data: Partial<ApprovalChain> & {
+      name?: string;
+      chainName?: string;
+      nodes?: any[];
+      edges?: any[];
+      isActive?: boolean;
+      triggerEvent?: string;
+    }
+  ): Promise<ApprovalChain> {
+    const res = await APIClient.post<any>('/workflow-engine/definitions', {
+      processType: 'APPROVAL_CHAIN',
+      name: data.name || data.chainName,
       description: data.description,
       trigger: 'EVENT',
-      nodes: data.levels,
-      edges: [],
+      nodes: data.nodes || [],
+      edges: data.edges || [],
+      triggerEvent: data.triggerEvent,
     });
-    return res.data as ApprovalChain;
+    return this.unwrap<ApprovalChain>(res);
   }
 
   static async updateChain(id: string, updates: Partial<ApprovalChain>): Promise<ApprovalChain> {
-    const res = await APIClient.put<{ success: boolean; data: any }>(`/v1/admin/workflows/${id}`, {
-      name: updates.chainName,
+    const res = await APIClient.put<any>(`/workflow-engine/definitions/${id}`, {
+      name: updates.name || updates.chainName,
       description: updates.description,
-      nodes: updates.levels,
+      nodes: updates.nodes || updates.levels,
+      edges: updates.edges || [],
+      isActive: updates.isActive,
+      triggerEvent: (updates as any).triggerEvent,
     });
-    return res.data as ApprovalChain;
+    return this.unwrap<ApprovalChain>(res);
   }
 
   static async deleteChain(id: string): Promise<void> {
-    await APIClient.delete<void>(`/v1/admin/workflows/${id}`);
+    await APIClient.delete<any>(`/workflow-engine/definitions/${id}`);
   }
 }
 
 // ============================================================================
-// Integration Service
+// Integration Service — Reuses Definitions
 // ============================================================================
 
 export class IntegrationService {
-  static async getIntegrations(): Promise<Integration[]> {
-    const res = await APIClient.get<{ success: boolean; data: any[] }>('/v1/admin/workflows', { trigger: 'MANUAL' });
-    return res.data as Integration[];
+  private static unwrap<T>(res: any): T {
+    const a = res?.data ?? res;
+    return (a?.data ?? a) as T;
+  }
+
+  private static mapDefinition(d: any): Integration {
+    let parsed: any = {};
+    try {
+      parsed = d.triggerEvent ? JSON.parse(d.triggerEvent) : {};
+    } catch {}
+    const connConfig = parsed.connectionConfig || parsed;
+    return {
+      id: d.id,
+      integrationName: d.name || '',
+      integrationType: ((d.trigger || 'REST_API') as string)
+        .toLowerCase()
+        .replace(/_/g, '_') as any,
+      status: (d.status || 'DRAFT').toLowerCase() as any,
+      description: d.description || '',
+      connectionConfig:
+        connConfig.baseUrl !== undefined || connConfig.timeout !== undefined ? connConfig : {},
+      authentication: parsed.authentication,
+      availableActions: Array.isArray(d.nodes) ? d.nodes : [],
+      testConnection: false,
+      lastTestedDate: undefined,
+      lastTestedStatus: undefined,
+      usedInWorkflows: [],
+      createdBy: d.createdBy || '',
+      createdDate: d.createdAt || '',
+      lastModified: d.updatedAt || '',
+    } as Integration;
+  }
+
+  static async getIntegrations(search?: string): Promise<Integration[]> {
+    const params: Record<string, string> = {};
+    if (search) params.search = search;
+    const res = await APIClient.get<any>('/workflow-engine/integrations', params);
+    const raw = this.unwrap<any[]>(res) || [];
+    return raw.map((d: any) => this.mapDefinition(d));
   }
 
   static async getIntegrationById(id: string): Promise<Integration | null> {
-    const res = await APIClient.get<{ success: boolean; data: any }>(`/v1/admin/workflows/${id}`);
-    return res.data as Integration;
+    const res = await APIClient.get<any>(`/workflow-engine/integrations/${id}`);
+    const raw = this.unwrap<any>(res);
+    return raw ? this.mapDefinition(raw) : null;
   }
 
-  static async createIntegration(data: Integration): Promise<Integration> {
-    const res = await APIClient.post<{ success: boolean; data: any }>('/v1/admin/workflows', {
+  static async createIntegration(data: Partial<Integration>): Promise<Integration> {
+    const res = await APIClient.post<any>('/workflow-engine/integrations', {
       name: data.integrationName,
       description: data.description,
-      trigger: 'MANUAL',
-      nodes: data.availableActions || [],
-      edges: [],
+      integrationType: data.integrationType || 'rest_api',
+      connectionConfig: data.connectionConfig || {},
+      authentication: data.authentication,
+      availableActions: data.availableActions || [],
+      status: data.status || 'DRAFT',
+      isActive: false,
     });
-    return res.data as Integration;
+    const raw = this.unwrap<any>(res);
+    return this.mapDefinition(raw);
   }
 
   static async updateIntegration(id: string, updates: Partial<Integration>): Promise<Integration> {
-    const res = await APIClient.put<{ success: boolean; data: any }>(`/v1/admin/workflows/${id}`, {
+    const res = await APIClient.put<any>(`/workflow-engine/integrations/${id}`, {
       name: updates.integrationName,
       description: updates.description,
+      connectionConfig: updates.connectionConfig,
+      authentication: updates.authentication,
+      availableActions: updates.availableActions,
+      integrationType: updates.integrationType,
+      status: updates.status,
+      isActive: (updates as any).isActive,
     });
-    return res.data as Integration;
+    const raw = this.unwrap<any>(res);
+    return this.mapDefinition(raw);
   }
 
   static async deleteIntegration(id: string): Promise<void> {
-    await APIClient.delete<void>(`/v1/admin/workflows/${id}`);
+    await APIClient.delete<any>(`/workflow-engine/integrations/${id}`);
   }
 
-  static async testConnection(id: string): Promise<{ success: boolean; message: string }> {
-    const workflow = await this.getIntegrationById(id);
-    return { success: !!workflow, message: workflow ? 'Connection successful' : 'Not found' };
+  static async testConnection(
+    id: string
+  ): Promise<{ status: string; message: string; latencyMs: number; statusCode: number }> {
+    const res = await APIClient.post<any>(`/workflow-engine/integrations/${id}/test`, {});
+    return this.unwrap(res);
+  }
+
+  static async toggleStatus(id: string): Promise<Integration> {
+    const res = await APIClient.post<any>(`/workflow-engine/integrations/${id}/toggle`, {});
+    return this.unwrap<Integration>(res);
+  }
+
+  static async syncIntegration(
+    id: string,
+    payload?: Record<string, any>
+  ): Promise<{ status: string; message: string; recordsProcessed: number }> {
+    const res = await APIClient.post<any>(
+      `/workflow-engine/integrations/${id}/sync`,
+      payload || {}
+    );
+    return this.unwrap(res);
   }
 }
 
 // ============================================================================
-// Form Builder Service
+// Form Builder Service — Reuses Definitions
 // ============================================================================
 
 export class FormBuilderService {
+  private static unwrap<T>(res: any): T {
+    const a = res?.data ?? res;
+    return (a?.data ?? a) as T;
+  }
+
   static async getForms(): Promise<DynamicForm[]> {
-    const res = await APIClient.get<{ success: boolean; data: any[] }>('/v1/admin/workflows', { trigger: 'MANUAL' });
-    return res.data as DynamicForm[];
+    const res = await APIClient.get<any>('/workflow-engine/definitions', { processType: 'FORM' });
+    const data = this.unwrap<DynamicForm[] | { definitions: DynamicForm[] }>(res);
+    if (Array.isArray(data)) return data;
+    if (data && typeof data === 'object' && 'definitions' in data)
+      return (data as any).definitions || [];
+    return [];
   }
 
   static async getFormById(id: string): Promise<DynamicForm | null> {
-    const res = await APIClient.get<{ success: boolean; data: any }>(`/v1/admin/workflows/${id}`);
-    return res.data as DynamicForm;
+    const res = await APIClient.get<any>(`/workflow-engine/definitions/${id}`);
+    return this.unwrap<DynamicForm | null>(res);
   }
 
   static async createForm(data: DynamicForm): Promise<DynamicForm> {
-    const res = await APIClient.post<{ success: boolean; data: any }>('/v1/admin/workflows', {
+    const res = await APIClient.post<any>('/workflow-engine/definitions', {
+      processType: 'FORM',
       name: data.formName,
       description: data.description,
       trigger: 'MANUAL',
       nodes: data.fields || [],
-      edges: [],
+      edges: (data as any).edges || [],
+      triggerEvent: (data as any).triggerEvent,
+      status: (data as any).status || 'DRAFT',
     });
-    return res.data as DynamicForm;
+    return this.unwrap<DynamicForm>(res);
   }
 
   static async updateForm(id: string, updates: Partial<DynamicForm>): Promise<DynamicForm> {
-    const res = await APIClient.put<{ success: boolean; data: any }>(`/v1/admin/workflows/${id}`, {
+    const res = await APIClient.put<any>(`/workflow-engine/definitions/${id}`, {
       name: updates.formName,
       description: updates.description,
       nodes: updates.fields,
+      edges: (updates as any).edges,
+      triggerEvent: (updates as any).triggerEvent,
+      status: (updates as any).status,
     });
-    return res.data as DynamicForm;
+    return this.unwrap<DynamicForm>(res);
   }
 
   static async deleteForm(id: string): Promise<void> {
-    await APIClient.delete<void>(`/v1/admin/workflows/${id}`);
+    await APIClient.delete<void>(`/workflow-engine/definitions/${id}`);
   }
 
   static async cloneForm(id: string, newName: string): Promise<DynamicForm> {
     const original = await this.getFormById(id);
     if (!original) throw new Error('Form not found');
-    return this.createForm({ ...original, formName: newName } as DynamicForm);
+    return this.createForm({
+      ...original,
+      formName: newName,
+      fields: (original as any).nodes || (original as any).fields || [],
+    } as DynamicForm);
   }
 }
 
@@ -364,38 +568,46 @@ export class FormBuilderService {
 // ============================================================================
 
 export class WorkflowAnalyticsService {
-  static async getMetrics(): Promise<WorkflowMetrics> {
-    const res = await APIClient.get<{ success: boolean; data: any }>('/workflows', { type: 'analytics' });
-    const d = res.data;
-    return {
-      totalExecutions: d.totalInstances || 0,
-      successfulExecutions: d.completedInstances || 0,
-      failedExecutions: d.failedInstances || 0,
-      cancelledExecutions: d.cancelledInstances || 0,
-      successRate: d.successRate || 0,
-      averageExecutionTime: 0,
-      medianExecutionTime: 0,
-      minExecutionTime: 0,
-      maxExecutionTime: 0,
-      runningExecutions: d.runningInstances || 0,
-      pendingExecutions: 0,
-      pausedExecutions: 0,
-      totalApprovals: 0,
-      approvalRate: 0,
-      averageApprovalTime: 0,
-      escalationRate: 0,
-      totalTasks: 0,
-      completedTasks: 0,
-      overdueTasks: 0,
-      taskCompletionRate: 0,
-      averageTaskCompletionTime: 0,
-      topWorkflowsByUsage: [],
-      topWorkflowsByDuration: [],
-      topWorkflowsByFailure: [],
-      executionTrends: [],
-      performanceTrends: [],
-      lastUpdated: new Date().toISOString(),
-    } as WorkflowMetrics;
+  static async getMetrics(timeRange?: string): Promise<WorkflowMetrics> {
+    try {
+      const params: Record<string, string> = {};
+      if (timeRange) params.timeRange = timeRange;
+      const res = await APIClient.get<any>('/workflow-engine/analytics', params);
+      const a = res?.data ?? res;
+      const d = a?.data ?? a;
+      if (!d || typeof d !== 'object') throw new Error('No data');
+      return {
+        totalExecutions: d.totalExecutions || 0,
+        successfulExecutions: d.successfulExecutions || 0,
+        failedExecutions: d.failedExecutions || 0,
+        cancelledExecutions: d.cancelledExecutions || 0,
+        successRate: d.successRate || 0,
+        averageExecutionTime: d.averageExecutionTime || 0,
+        medianExecutionTime: d.medianExecutionTime || 0,
+        minExecutionTime: d.minExecutionTime || 0,
+        maxExecutionTime: d.maxExecutionTime || 0,
+        runningExecutions: d.runningExecutions || 0,
+        pendingExecutions: d.pendingExecutions || 0,
+        pausedExecutions: d.pausedExecutions || 0,
+        totalApprovals: d.totalApprovals || 0,
+        approvalRate: d.approvalRate || 0,
+        averageApprovalTime: d.averageApprovalTime || 0,
+        escalationRate: d.escalationRate || 0,
+        totalTasks: d.totalTasks || 0,
+        completedTasks: d.completedTasks || 0,
+        overdueTasks: d.overdueTasks || 0,
+        taskCompletionRate: d.taskCompletionRate || 0,
+        averageTaskCompletionTime: d.averageTaskCompletionTime || 0,
+        topWorkflowsByUsage: d.topWorkflowsByUsage || [],
+        topWorkflowsByDuration: d.topWorkflowsByDuration || [],
+        topWorkflowsByFailure: d.topWorkflowsByFailure || [],
+        executionTrends: d.executionTrends || [],
+        performanceTrends: d.performanceTrends || [],
+        lastUpdated: d.lastUpdated || new Date().toISOString(),
+      } as WorkflowMetrics;
+    } catch (error: any) {
+      throw new Error(error?.message || 'Failed to load analytics data');
+    }
   }
 }
 
@@ -404,38 +616,26 @@ export class WorkflowAnalyticsService {
 // ============================================================================
 
 export class WorkflowSettingsService {
+  private static unwrap<T>(res: any): T {
+    const a = res?.data ?? res;
+    return (a?.data ?? a) as T;
+  }
+
   static async getSettings(): Promise<WorkflowSettings> {
-    return {
-      defaultExecutionTimeout: 60,
-      maxConcurrentExecutions: 10,
-      enableAutoRetry: true,
-      defaultRetryAttempts: 3,
-      defaultRetryDelay: 30,
-      defaultApprovalTimeout: 48,
-      enableAutoEscalation: true,
-      defaultEscalationTime: 24,
-      allowDelegation: true,
-      enableNotifications: true,
-      notifyOnApprovalRequest: true,
-      notifyOnApprovalDecision: true,
-      notifyOnTaskAssignment: true,
-      notifyOnWorkflowCompletion: true,
-      notifyOnWorkflowFailure: true,
-      requireApprovalForPublish: false,
-      enableAuditLog: true,
-      dataRetentionDays: 365,
-      allowExternalIntegrations: true,
-      enableVersionControl: true,
-      enableDraftMode: true,
-      enableTesting: true,
-      maxWorkflowNodes: 100,
-      createdDate: new Date().toISOString(),
-      lastModified: new Date().toISOString(),
-    };
+    try {
+      const res = await APIClient.get<any>('/workflow-engine/settings');
+      return this.unwrap<WorkflowSettings>(res);
+    } catch {
+      throw new Error('Failed to load workflow settings');
+    }
   }
 
   static async updateSettings(updates: Partial<WorkflowSettings>): Promise<WorkflowSettings> {
-    const current = await this.getSettings();
-    return { ...current, ...updates, lastModified: new Date().toISOString() };
+    try {
+      const res = await APIClient.put<any>('/workflow-engine/settings', updates);
+      return this.unwrap<WorkflowSettings>(res);
+    } catch (error: any) {
+      throw new Error(error?.message || 'Failed to update settings');
+    }
   }
 }

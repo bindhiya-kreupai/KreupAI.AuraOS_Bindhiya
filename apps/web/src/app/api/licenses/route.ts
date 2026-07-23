@@ -1,4 +1,4 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { z } from 'zod';
 import { withEnhancedAuth } from '@/lib/auth';
@@ -15,32 +15,26 @@ import { logger } from '@/lib/logger';
 // GET - Fetch licenses with filters
 export const GET = withEnhancedAuth(async (request: NextRequest, { user, permissions }) => {
   try {
-    // Check permission
     const permissionError = requirePermission(Resource.LICENSES, Action.READ, permissions);
     if (permissionError) return permissionError;
 
-    // Validate query parameters
     const { searchParams } = new URL(request.url);
     const { search, type, status, page, limit } = validateQueryParams(
       LicenseQuerySchema,
       searchParams
     );
 
-    // Use service layer - include tenantId for tenant isolation
     const result = await licenseService.listLicenses({
+      tenantId: user.tenantId,
       search,
       type,
       status,
-      tenantId: user.tenantId,
       page,
       limit,
     });
 
     if (!result.success) {
-      return NextResponse.json(
-        { success: false, error: result.error },
-        { status: 500 }
-      );
+      return NextResponse.json({ success: false, error: result.error }, { status: 500 });
     }
 
     return NextResponse.json({
@@ -64,32 +58,24 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
 // POST - Create new license
 export const POST = withEnhancedAuth(async (request: NextRequest, { user, permissions }) => {
   try {
-    // Check permission
     const permissionError = requirePermission(Resource.LICENSES, Action.CREATE, permissions);
     if (permissionError) return permissionError;
 
-    // Validate request body
     const body = await request.json();
     const validatedData = CreateLicenseSchema.parse(body);
 
-    // Extract IP address
     const ipAddress =
-      request.headers.get('x-forwarded-for') ||
-      request.headers.get('x-real-ip') ||
-      'unknown';
+      request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
 
-    // Use service layer
     const result = await licenseService.createLicense(
       validatedData,
+      user.tenantId,
       user.userId,
       ipAddress
     );
 
     if (!result.success) {
-      return NextResponse.json(
-        { success: false, error: result.error },
-        { status: 400 }
-      );
+      return NextResponse.json({ success: false, error: result.error }, { status: 400 });
     }
 
     return NextResponse.json(

@@ -1,13 +1,59 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import { EvaluatorPage } from '@aura/ui/components/ui';
 
 export default function SubmissionCadencePage() {
+  const [initialData, setInitialData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const res = await fetch('/api/v1/external-reporting-compliance/reporting');
+        const data = await res.json();
+        if (data.success && data.data) {
+          setInitialData(data.data);
+        }
+      } catch (err) {
+        console.error('Failed to load submission cadence defaults', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, []);
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 flex items-center justify-center">
+        <p className="text-sm font-semibold text-slate-500">Loading obligations from database...</p>
+      </main>
+    );
+  }
+
+  const defaultObligations = initialData?.extObligations || [
+    {
+      obligationId: 'OBL_WPS',
+      regulator: 'MOHRE',
+      cadenceDays: 30,
+      lastSubmittedAt: new Date(Date.now() - 10 * 24 * 3600 * 1000).toISOString(),
+      active: true,
+    },
+    {
+      obligationId: 'OBL_GOSI',
+      regulator: 'GOSI_KSA',
+      cadenceDays: 30,
+      lastSubmittedAt: new Date(Date.now() - 40 * 24 * 3600 * 1000).toISOString(),
+      active: true,
+    },
+  ];
+
   return (
     <EvaluatorPage
       title="External reporting — submission cadence"
       titleAr="دورية التقديم للجهات الرقابية"
-      description="Score each active regulator obligation against its filing cadence."
+      description="Score each active regulator obligation against its filing cadence. Obligations are persisted to the database."
       descriptionAr="تقييم الالتزامات الرقابية مقابل الدورة المطلوبة."
       fields={[
         {
@@ -17,6 +63,7 @@ export default function SubmissionCadencePage() {
           type: 'structured-array',
           required: true,
           minRows: 1,
+          defaultRows: defaultObligations,
           columns: [
             {
               key: 'obligationId',

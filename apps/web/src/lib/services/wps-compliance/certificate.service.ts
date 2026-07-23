@@ -55,7 +55,12 @@ export class WpsCertificateService {
     if (stats.openPenalties > 0) reasons.push(`${stats.openPenalties} open penalties`);
     const gatingReason = reasons.length ? `Blocked: ${reasons.join('; ')}` : null;
     return (prisma as any).wpsMonthlyCertificate.upsert({
-      where: { aura_wps_monthly_certificate_unique: { tenantId: auth.tenantId, period } },
+      where: {
+        tenantId_period: {
+          tenantId: auth.tenantId,
+          period,
+        },
+      },
       update: {
         submissionsCount: stats.submissions,
         delayFlagsCount: stats.delayFlags,
@@ -85,7 +90,7 @@ export class WpsCertificateService {
     auth: AuthContext
   ) {
     const cert = await (prisma as any).wpsMonthlyCertificate.findUnique({
-      where: { aura_wps_monthly_certificate_unique: { tenantId: auth.tenantId, period } },
+      where: { tenantId_period: { tenantId: auth.tenantId, period } },
     });
     if (!cert) throw new Error('certificate not generated');
     if (cert.gatingReason) throw new Error(`cannot sign while gated: ${cert.gatingReason}`);

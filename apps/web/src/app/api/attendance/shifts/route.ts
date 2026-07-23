@@ -41,18 +41,13 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
 
     const shifts = await prisma.shift.findMany({
       where,
+      include: {
+        _count: {
+          select: { assignments: true },
+        },
+      },
       orderBy: { name: 'asc' },
     });
-
-    const assignmentCounts = await prisma.shiftAssignment.groupBy({
-      by: ['shiftId'],
-      where: { tenantId: user.tenantId },
-      _count: { _all: true },
-    });
-    const countByShift = new Map<string, number>(
-      assignmentCounts.map((c) => [c.shiftId, c._count._all])
-    );
-
     const data = shifts.map((shift) => ({
       id: shift.id,
       name: shift.name,
@@ -66,7 +61,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
       breakDuration: shift.breakDuration,
       weeklyOff: shift.weekendDays,
       status: shift.isActive ? 'ACTIVE' : 'INACTIVE',
-      employeeCount: countByShift.get(shift.id) ?? 0,
+      employeeCount: shift._count.assignments,
       isFlexible: shift.isFlexible,
       flexWindow: shift.flexWindow,
       overtimeAllowed: shift.overtimeAllowed,
@@ -107,6 +102,11 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
         weekendDays: data.weeklyOff.map(String),
         isActive: true,
       },
+      include: {
+        _count: {
+          select: { assignments: true },
+        },
+      },
     });
 
     await prisma.auditLog.create({
@@ -133,7 +133,7 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
       breakDuration: newShift.breakDuration,
       weeklyOff: newShift.weekendDays,
       status: 'ACTIVE',
-      employeeCount: 0,
+      employeeCount: newShift._count.assignments,
     };
 
     return NextResponse.json({ success: true, data: responseData }, { status: 201 });

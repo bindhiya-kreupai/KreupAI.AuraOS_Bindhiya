@@ -6,14 +6,46 @@
  * Calls POST /api/v1/expense-compliance/checks with action=perDiemCap.
  */
 
+import { useEffect, useState } from 'react';
 import { EvaluatorPage } from '@aura/ui/components/ui';
 
 export default function ExpenseComplianceChecksPage() {
+  const [initialData, setInitialData] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const res = await fetch('/api/v1/expense-compliance/checks');
+        const data = await res.json();
+        if (data.success && data.data) {
+          setInitialData(data.data);
+        }
+      } catch (err) {
+        console.error('Failed to load expense settings', err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, []);
+
+  if (loading) {
+    return (
+      <main className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 flex items-center justify-center">
+        <p className="text-sm font-semibold text-slate-500">Loading policy caps from database...</p>
+      </main>
+    );
+  }
+
+  const claim = initialData?.perDiemClaim || {};
+  const policy = initialData?.perDiemPolicy || {};
+
   return (
     <EvaluatorPage
       title="Per-diem cap evaluator"
       titleAr="فحص حد البدل اليومي"
-      description="Validate a per-diem claim against the country + city-tier policy cap."
+      description="Validate a per-diem claim against the country + city-tier policy cap. Settings are saved to the database."
       descriptionAr="تحقق من مطالب البدل اليومي مقابل سقف السياسة للدولة ومستوى المدينة."
       fields={[
         {
@@ -22,7 +54,7 @@ export default function ExpenseComplianceChecksPage() {
           labelAr: 'رمز الدولة',
           type: 'text',
           required: true,
-          defaultValue: 'AE',
+          defaultValue: claim.countryCode || policy.countryCode || 'AE',
         },
         {
           name: 'cityTier',
@@ -30,6 +62,7 @@ export default function ExpenseComplianceChecksPage() {
           labelAr: 'مستوى المدينة',
           type: 'select',
           required: true,
+          defaultValue: claim.cityTier || 'TIER_1',
           options: [
             { value: 'TIER_1', label: 'Tier 1' },
             { value: 'TIER_2', label: 'Tier 2' },
@@ -42,6 +75,7 @@ export default function ExpenseComplianceChecksPage() {
           labelAr: 'الأيام',
           type: 'number',
           required: true,
+          defaultValue: claim.daysClaimed !== undefined ? String(claim.daysClaimed) : '5',
         },
         {
           name: 'totalClaimedAmount',
@@ -49,19 +83,22 @@ export default function ExpenseComplianceChecksPage() {
           labelAr: 'إجمالي المطالب',
           type: 'number',
           required: true,
+          defaultValue:
+            claim.totalClaimedAmount !== undefined ? String(claim.totalClaimedAmount) : '1500',
         },
         {
           name: 'mealsProvided',
           label: 'Meals provided',
           labelAr: 'الوجبات مقدمة',
           type: 'boolean',
+          defaultValue: claim.mealsProvided === true ? 'true' : 'false',
         },
         {
           name: 'currency',
           label: 'Currency',
           labelAr: 'العملة',
           type: 'text',
-          defaultValue: 'AED',
+          defaultValue: policy.currency || 'AED',
           required: true,
         },
         {
@@ -70,6 +107,8 @@ export default function ExpenseComplianceChecksPage() {
           labelAr: 'سقف المستوى 1',
           type: 'number',
           required: true,
+          defaultValue:
+            policy.capsByTier?.TIER_1 !== undefined ? String(policy.capsByTier.TIER_1) : '500',
         },
         {
           name: 'capTier2',
@@ -77,6 +116,8 @@ export default function ExpenseComplianceChecksPage() {
           labelAr: 'سقف المستوى 2',
           type: 'number',
           required: true,
+          defaultValue:
+            policy.capsByTier?.TIER_2 !== undefined ? String(policy.capsByTier.TIER_2) : '300',
         },
         {
           name: 'capTier3',
@@ -84,6 +125,8 @@ export default function ExpenseComplianceChecksPage() {
           labelAr: 'سقف المستوى 3',
           type: 'number',
           required: true,
+          defaultValue:
+            policy.capsByTier?.TIER_3 !== undefined ? String(policy.capsByTier.TIER_3) : '150',
         },
       ]}
       endpoint={{ method: 'POST', url: '/api/v1/expense-compliance/checks' }}
