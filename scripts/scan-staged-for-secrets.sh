@@ -38,6 +38,7 @@ fi
 # Files staged for commit, excluding deletions, and skipping known-safe paths
 STAGED=$(git diff --cached --name-only --diff-filter=ACMRT "$AGAINST" \
   | grep -vE '^(node_modules|dist|\.next|coverage|\.turbo)/' \
+  | grep -vE '\.env\.(example|template|test)$' \
   | grep -vE '\.(lock|map)$' \
   || true)
 

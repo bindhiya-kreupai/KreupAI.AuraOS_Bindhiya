@@ -31,12 +31,7 @@ import { ToastContainer, useToast } from '../../components/Toast';
 
 type DisbursementStatus = 'all' | 'pending' | 'approved' | 'rejected' | 'reimbursed';
 type DisbursementCategory =
-  | 'office-supplies'
-  | 'travel'
-  | 'meals'
-  | 'utilities'
-  | 'maintenance'
-  | 'misc';
+  'office-supplies' | 'travel' | 'meals' | 'utilities' | 'maintenance' | 'misc';
 
 interface Disbursement {
   id: string;
