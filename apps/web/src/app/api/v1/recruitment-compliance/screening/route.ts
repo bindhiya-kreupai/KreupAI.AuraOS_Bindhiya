@@ -57,3 +57,30 @@ export const POST = createProtectedRoute(
   },
   { requiredPermissions: ['recruitment:write'] } as any
 );
+export const DELETE = createProtectedRoute(
+  async (request: NextRequest, { auth }) => {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json({ success: false, error: 'Id is required' }, { status: 400 });
+    }
+
+    try {
+      await candidateScreeningService.delete(id, auth as any);
+
+      return NextResponse.json({
+        success: true,
+      });
+    } catch (err) {
+      return NextResponse.json(
+        {
+          success: false,
+          error: err instanceof Error ? err.message : 'Delete failed',
+        },
+        { status: 400 }
+      );
+    }
+  },
+  { requiredPermissions: ['recruitment:write'] } as any
+);
