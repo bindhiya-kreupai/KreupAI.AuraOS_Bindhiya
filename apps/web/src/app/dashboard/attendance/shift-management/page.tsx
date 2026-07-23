@@ -257,13 +257,29 @@ export default function ShiftManagementPage() {
   ];
 
   const saveShift = async (record: Partial<Shift>) => {
+    if (!record.name?.trim()) {
+      toast.error('Shift name is required');
+      return;
+    }
+    if (!record.startTime) {
+      toast.error('Start time is required');
+      return;
+    }
+    if (!record.endTime) {
+      toast.error('End time is required');
+      return;
+    }
+    if (record.workHours === undefined || record.workHours <= 0) {
+      toast.error('Work hours must be greater than 0');
+      return;
+    }
+
     const payload: Record<string, any> = {
-      code: record.code,
       name: record.name,
       description: record.description,
       startTime: record.startTime,
       endTime: record.endTime,
-      workHours: record.workHours !== undefined ? Number(record.workHours) : undefined,
+      workHours: Number(record.workHours),
       graceInMinutes:
         record.graceInMinutes !== undefined ? Number(record.graceInMinutes) : undefined,
       graceOutMinutes:
@@ -399,6 +415,18 @@ export default function ShiftManagementPage() {
   const saveAssignment = async (record: Partial<Assignment>) => {
     const ext = record as Record<string, any>;
     if (record.id) {
+      if (!record.employeeId) {
+        toast.error('Employee is required');
+        return;
+      }
+      if (!record.shiftId) {
+        toast.error('Shift is required');
+        return;
+      }
+      if (!record.effectiveFrom) {
+        toast.error('Effective from date is required');
+        return;
+      }
       const payload = {
         employeeId: record.employeeId,
         shiftId: record.shiftId,
@@ -419,6 +447,14 @@ export default function ShiftManagementPage() {
       const employeeIds = ext.employeeIds || (record.employeeId ? [record.employeeId] : []);
       if (!employeeIds.length) {
         toast.error('Select at least one employee');
+        return;
+      }
+      if (!record.shiftId) {
+        toast.error('Shift is required');
+        return;
+      }
+      if (!record.effectiveFrom) {
+        toast.error('Effective from date is required');
         return;
       }
       const payload = {
@@ -498,6 +534,19 @@ export default function ShiftManagementPage() {
   ];
 
   const saveRoster = async (record: Partial<Roster>) => {
+    if (!record.employeeId) {
+      toast.error('Employee is required');
+      return;
+    }
+    if (!record.shiftId) {
+      toast.error('Shift is required');
+      return;
+    }
+    if (!record.rosterDate) {
+      toast.error('Roster date is required');
+      return;
+    }
+
     const payload = {
       employeeId: record.employeeId,
       shiftId: record.shiftId,
@@ -598,6 +647,39 @@ export default function ShiftManagementPage() {
       toast.error('Swap requests cannot be edited — use approve/reject.');
       return;
     }
+    if (!record.requestorId) {
+      toast.error('Requestor is required');
+      return;
+    }
+    if (!record.swapWithId) {
+      toast.error('Swap with colleague is required');
+      return;
+    }
+    if (record.requestorId === record.swapWithId) {
+      toast.error('Cannot swap with yourself');
+      return;
+    }
+    if (!record.requestorShiftId) {
+      toast.error('Your shift is required');
+      return;
+    }
+    if (!record.swapWithShiftId) {
+      toast.error('Colleague shift is required');
+      return;
+    }
+    if (!record.requestorDate) {
+      toast.error('Your shift date is required');
+      return;
+    }
+    if (!record.swapWithDate) {
+      toast.error('Colleague shift date is required');
+      return;
+    }
+    if (!record.reason?.trim()) {
+      toast.error('Reason is required');
+      return;
+    }
+
     const payload = {
       requestorId: record.requestorId,
       swapWithId: record.swapWithId,
@@ -849,7 +931,7 @@ export default function ShiftManagementPage() {
       </div>
       <div className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm">
         <div className="border-b border-cloud dark:border-nebula-purple/40">
-          <nav className="flex gap-6 px-4 overflow-x-auto" aria-label="Tabs">
+          <nav className="flex px-4 overflow-x-auto" aria-label="Tabs">
             {[
               { id: 'shifts', label: t('shiftManagement.tabs.overview'), count: shifts.length },
               {
@@ -863,7 +945,7 @@ export default function ShiftManagementPage() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as typeof activeTab)}
-                className={`py-3 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition-colors ${
+                className={`flex-1 py-3 px-1 border-b-2 font-medium text-sm whitespace-nowrap transition-colors ${
                   activeTab === tab.id
                     ? 'border-indigo-500 text-indigo-600 dark:text-indigo-300'
                     : 'border-transparent text-slate-500 hover:text-slate-700 hover:border-slate-300'
@@ -903,6 +985,7 @@ export default function ShiftManagementPage() {
                   rowCount={shifts.length}
                 />
               }
+              loading={shiftsLoading}
               rowActions={(row) => {
                 const actions: any[] = [];
                 if (!row.isDefault) {
@@ -922,28 +1005,19 @@ export default function ShiftManagementPage() {
                 return actions;
               }}
               formFields={[
-                {
-                  name: 'code',
-                  label: 'Shift code',
-                  type: 'text',
-                  required: true,
-                  placeholder: 'GEN-09',
-                },
                 { name: 'name', label: 'Name', type: 'text', required: true },
                 { name: 'description', label: 'Description', type: 'textarea' },
                 {
                   name: 'startTime',
-                  label: 'Start time (HH:MM)',
-                  type: 'text',
+                  label: 'Start time',
+                  type: 'time',
                   required: true,
-                  placeholder: '09:00',
                 },
                 {
                   name: 'endTime',
-                  label: 'End time (HH:MM)',
-                  type: 'text',
+                  label: 'End time',
+                  type: 'time',
                   required: true,
-                  placeholder: '18:00',
                 },
                 { name: 'workHours', label: 'Work hours', type: 'number', required: true },
                 { name: 'graceInMinutes', label: 'Grace in (min)', type: 'number', required: true },
@@ -992,6 +1066,7 @@ export default function ShiftManagementPage() {
                 description: 'Assign shifts to employees to define their work schedule.',
                 icon: Users,
               }}
+              loading={assignmentsLoading}
               renderForm={(data, onChange) => (
                 <BulkAssignForm
                   data={data}
@@ -1031,6 +1106,7 @@ export default function ShiftManagementPage() {
                 description: 'Plan daily shift rosters for your employees.',
                 icon: Calendar,
               }}
+              loading={rostersLoading}
               renderForm={(data, onChange) => (
                 <RosterForm data={data} onChange={onChange} employees={employees} shifts={shifts} />
               )}
@@ -1067,6 +1143,7 @@ export default function ShiftManagementPage() {
                 description: 'Shift swap requests from employees will appear here.',
                 icon: RefreshCw,
               }}
+              loading={swapsLoading}
               renderForm={(data, onChange) => (
                 <SwapForm data={data} onChange={onChange} employees={employees} shifts={shifts} />
               )}
