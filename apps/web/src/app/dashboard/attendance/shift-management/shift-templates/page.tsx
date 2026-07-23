@@ -14,11 +14,13 @@ import {
   Briefcase,
   Plane,
   Plus,
+  Pencil,
   Trash2,
   X,
 } from 'lucide-react';
 import { useI18n } from '@/lib/i18n/I18nProvider';
 import { toast } from 'sonner';
+import { ConfirmDialog } from '@/components/ui/confirm-dialog';
 
 type DbTemplate = {
   id: string;
@@ -190,6 +192,9 @@ export default function ShiftTemplatesPage() {
   const [created, setCreated] = useState<Record<string, boolean>>({});
   const [error, setError] = useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [editingTemplate, setEditingTemplate] = useState<DbTemplate | null>(null);
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [templateToDelete, setTemplateToDelete] = useState<DbTemplate | null>(null);
   const seedingRef = useRef(false);
   const [newTemplate, setNewTemplate] = useState({
     name: '',
@@ -261,9 +266,7 @@ export default function ShiftTemplatesPage() {
     setCreating(tpl.id);
     setError(null);
     try {
-      const stamp = Date.now().toString(36).slice(-4).toUpperCase();
       const payload = {
-        code: `${tpl.shiftCode}-${stamp}`,
         name: tpl.shiftName,
         description: tpl.shiftDescription || '',
         startTime: tpl.startTime,
@@ -294,33 +297,80 @@ export default function ShiftTemplatesPage() {
   };
 
   const deleteTemplate = async (tpl: DbTemplate) => {
-    if (!confirm(`Delete template "${tpl.name}"?`)) return;
+    setTemplateToDelete(tpl);
+    setConfirmOpen(true);
+  };
+
+  const confirmDeleteTemplate = async () => {
+    if (!templateToDelete) return;
     try {
-      const res = await fetch(`/api/v1/shift-templates/${tpl.id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/v1/shift-templates/${templateToDelete.id}`, {
+        method: 'DELETE',
+      });
       const json = await res.json();
       if (!json.success) throw new Error(json.error?.message || 'Delete failed');
-      setTemplates((prev) => prev.filter((t) => t.id !== tpl.id));
+      setTemplates((prev) => prev.filter((t) => t.id !== templateToDelete.id));
       toast.success('Template deleted');
     } catch (e: any) {
       toast.error(e?.message || 'Failed to delete template');
+    } finally {
+      setConfirmOpen(false);
+      setTemplateToDelete(null);
     }
   };
 
+  const editTemplate = (tpl: DbTemplate) => {
+    setEditingTemplate(tpl);
+    setNewTemplate({
+      name: tpl.name,
+      description: tpl.description || '',
+      shiftCode: tpl.shiftCode,
+      shiftName: tpl.shiftName,
+      startTime: tpl.startTime,
+      endTime: tpl.endTime,
+      workHours: tpl.workHours,
+      graceInMinutes: tpl.graceInMinutes,
+      graceOutMinutes: tpl.graceOutMinutes,
+      breakDuration: tpl.breakDuration,
+      overtimeAllowed: tpl.overtimeAllowed,
+      maxOvertimeHours: tpl.maxOvertimeHours,
+    });
+    setShowCreateForm(true);
+  };
+
   const handleCreate = async () => {
-    if (!newTemplate.name.trim() || !newTemplate.shiftCode.trim()) {
-      toast.error('Name and shift code are required');
+    if (!newTemplate.name.trim()) {
+      toast.error('Template name is required');
       return;
     }
+    if (newTemplate.workHours <= 0) {
+      toast.error('Work hours must be greater than 0');
+      return;
+    }
+
     try {
-      const res = await fetch('/api/v1/shift-templates', {
-        method: 'POST',
+      const url = editingTemplate
+        ? `/api/v1/shift-templates/${editingTemplate.id}`
+        : '/api/v1/shift-templates';
+      const method = editingTemplate ? 'PUT' : 'POST';
+      const res = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newTemplate),
       });
       const json = await res.json();
-      if (!json.success) throw new Error(json.error?.message || 'Failed to create template');
-      setTemplates((prev) => [...prev, json.data]);
+      if (!json.success) throw new Error(json.error?.message || 'Failed to save template');
+
+      if (editingTemplate) {
+        setTemplates((prev) => prev.map((t) => (t.id === editingTemplate.id ? json.data : t)));
+        toast.success('Template updated');
+      } else {
+        setTemplates((prev) => [...prev, json.data]);
+        toast.success('Template created');
+      }
+
       setShowCreateForm(false);
+      setEditingTemplate(null);
       setNewTemplate({
         name: '',
         description: '',
@@ -335,9 +385,8 @@ export default function ShiftTemplatesPage() {
         overtimeAllowed: true,
         maxOvertimeHours: 4,
       });
-      toast.success('Template created');
     } catch (e: any) {
-      toast.error(e?.message || 'Failed to create template');
+      toast.error(e?.message || 'Failed to save template');
     }
   };
 
@@ -371,7 +420,24 @@ export default function ShiftTemplatesPage() {
           </p>
         </div>
         <button
-          onClick={() => setShowCreateForm(!showCreateForm)}
+          onClick={() => {
+            setShowCreateForm(!showCreateForm);
+            setEditingTemplate(null);
+            setNewTemplate({
+              name: '',
+              description: '',
+              shiftCode: '',
+              shiftName: '',
+              startTime: '09:00',
+              endTime: '18:00',
+              workHours: 8,
+              graceInMinutes: 15,
+              graceOutMinutes: 15,
+              breakDuration: 60,
+              overtimeAllowed: true,
+              maxOvertimeHours: 4,
+            });
+          }}
           className="inline-flex items-center gap-1.5 px-3 py-2 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors shrink-0"
         >
           {showCreateForm ? <X className="w-4 h-4" /> : <Plus className="w-4 h-4" />}
@@ -379,11 +445,11 @@ export default function ShiftTemplatesPage() {
         </button>
       </div>
 
-      {/* Create form */}
+      {/* Create/Edit form */}
       {showCreateForm && (
         <div className="rounded-xl border border-cloud dark:border-nebula-purple/40 bg-white dark:bg-stellar-blue p-5 space-y-4">
           <h3 className="text-sm font-semibold text-ink-black dark:text-pearl">
-            Create new template
+            {editingTemplate ? 'Edit template' : 'Create new template'}
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             <InputField
@@ -395,11 +461,6 @@ export default function ShiftTemplatesPage() {
               label="Description"
               value={newTemplate.description}
               onChange={(v) => setNewTemplate((s) => ({ ...s, description: v }))}
-            />
-            <InputField
-              label="Shift code *"
-              value={newTemplate.shiftCode}
-              onChange={(v) => setNewTemplate((s) => ({ ...s, shiftCode: v }))}
             />
             <InputField
               label="Shift name"
@@ -467,7 +528,7 @@ export default function ShiftTemplatesPage() {
               onClick={handleCreate}
               className="px-4 py-2 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
             >
-              Save template
+              {editingTemplate ? 'Save changes' : 'Save template'}
             </button>
           </div>
         </div>
@@ -505,45 +566,58 @@ export default function ShiftTemplatesPage() {
             return (
               <div
                 key={tpl.id}
-                className={`bg-gradient-to-br ${tpl.accent} bg-white dark:bg-stellar-blue border rounded-xl p-5 shadow-sm hover:shadow-md transition-all relative group`}
+                className={`bg-gradient-to-br ${tpl.accent} bg-white dark:bg-stellar-blue border rounded-xl p-5 shadow-sm hover:shadow-md transition-all flex flex-col h-full`}
               >
-                <button
-                  onClick={() => deleteTemplate(tpl)}
-                  className="absolute top-2 right-2 p-1 rounded-md text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 opacity-0 group-hover:opacity-100 transition-opacity"
-                  title="Delete template"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-
                 <div className="flex items-start justify-between mb-3">
                   <div className="w-10 h-10 rounded-lg bg-white/70 dark:bg-stellar-blue/70 flex items-center justify-center">
                     <IconComp className="w-5 h-5 text-slate-700 dark:text-slate-200" />
                   </div>
-                  {isCreated && (
-                    <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 dark:text-emerald-300">
-                      <Check className="w-3.5 h-3.5" /> Created
-                    </span>
-                  )}
+                  <div className="flex items-center gap-1">
+                    {isCreated && (
+                      <span className="inline-flex items-center gap-1 text-xs font-medium text-emerald-700 dark:text-emerald-300">
+                        <Check className="w-3.5 h-3.5" /> Created
+                      </span>
+                    )}
+                    <button
+                      onClick={() => editTemplate(tpl)}
+                      className="p-1 rounded-md text-slate-400 hover:text-indigo-500 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-colors"
+                      title="Edit template"
+                    >
+                      <Pencil className="w-3.5 h-3.5" />
+                    </button>
+                    <button
+                      onClick={() => deleteTemplate(tpl)}
+                      className="p-1 rounded-md text-slate-400 hover:text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-900/20 transition-colors"
+                      title="Delete template"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
                 </div>
 
-                <h3 className="font-bold text-base text-ink-black dark:text-pearl">{tpl.name}</h3>
-                <p className="text-xs text-silver-mist mt-1 mb-4">{tpl.description}</p>
+                <div className="flex-1">
+                  <h3 className="font-bold text-base text-ink-black dark:text-pearl">{tpl.name}</h3>
+                  <p className="text-xs text-silver-mist mt-1 mb-4">{tpl.description}</p>
 
-                <dl className="space-y-1.5 text-xs mb-4">
-                  <Row label="Timing" value={`${tpl.startTime} – ${tpl.endTime}`} />
-                  <Row label="Work hours" value={`${tpl.workHours}h`} />
-                  <Row label="Break" value={`${tpl.breakDuration} min`} />
-                  <Row label="Grace" value={`${tpl.graceInMinutes} / ${tpl.graceOutMinutes} min`} />
-                  <Row
-                    label="Overtime"
-                    value={tpl.overtimeAllowed ? `up to ${tpl.maxOvertimeHours}h` : 'not allowed'}
-                  />
-                </dl>
+                  <dl className="space-y-1.5 text-xs">
+                    <Row label="Timing" value={`${tpl.startTime} – ${tpl.endTime}`} />
+                    <Row label="Work hours" value={`${tpl.workHours}h`} />
+                    <Row label="Break" value={`${tpl.breakDuration} min`} />
+                    <Row
+                      label="Grace"
+                      value={`${tpl.graceInMinutes} / ${tpl.graceOutMinutes} min`}
+                    />
+                    <Row
+                      label="Overtime"
+                      value={tpl.overtimeAllowed ? `up to ${tpl.maxOvertimeHours}h` : 'not allowed'}
+                    />
+                  </dl>
+                </div>
 
                 <button
                   onClick={() => applyTemplate(tpl)}
                   disabled={isCreating}
-                  className="w-full inline-flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-60 transition-colors"
+                  className="w-full mt-4 inline-flex items-center justify-center gap-2 px-3 py-2 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 disabled:opacity-60 transition-colors"
                 >
                   {isCreating ? (
                     <>
@@ -558,6 +632,19 @@ export default function ShiftTemplatesPage() {
           })}
         </div>
       )}
+
+      <ConfirmDialog
+        open={confirmOpen}
+        title="Delete Template"
+        message={`Are you sure you want to delete "${templateToDelete?.name}"? This action cannot be undone.`}
+        confirmLabel="Delete"
+        variant="danger"
+        onConfirm={confirmDeleteTemplate}
+        onCancel={() => {
+          setConfirmOpen(false);
+          setTemplateToDelete(null);
+        }}
+      />
     </div>
   );
 }
