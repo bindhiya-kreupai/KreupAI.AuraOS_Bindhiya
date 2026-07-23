@@ -168,6 +168,10 @@ export default function ShiftSwappingPage() {
       setStatusMsg({ kind: 'error', text: 'Please enter a colleague employee ID.' });
       return;
     }
+    if (swapWithInput.trim() === user.employeeId) {
+      setStatusMsg({ kind: 'error', text: 'You cannot swap with yourself.' });
+      return;
+    }
     setSubmitting(true);
     setStatusMsg(null);
     try {
