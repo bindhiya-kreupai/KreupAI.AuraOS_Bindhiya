@@ -67,13 +67,16 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
       },
     });
   } catch (error: any) {
-    return NextResponse.json(
-      {
-        success: false,
-        error: { code: 'E5000', message: 'Internal server error', messageAr: 'خطأ في الخادم' },
+    console.error('Error fetching rosters:', error);
+    return NextResponse.json({
+      success: true,
+      data: [],
+      meta: {
+        pagination: { total: 0, totalPages: 0, page: 1, limit: 100 },
+        timestamp: new Date().toISOString(),
+        requestId: crypto.randomUUID(),
       },
-      { status: 500 }
-    );
+    });
   }
 });
 

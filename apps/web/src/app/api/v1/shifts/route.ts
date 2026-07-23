@@ -7,10 +7,14 @@ import { AuditAction } from '@/lib/audit/audit.service';
 
 const timeRegex = /^([01]\d|2[0-3]):[0-5]\d$/;
 
+function generateShiftCode(): string {
+  const now = new Date();
+  const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');
+  const seq = String(Math.floor(Math.random() * 999) + 1).padStart(3, '0');
+  return `SHIFT-${dateStr}-${seq}`;
+}
+
 function validateShiftPayload(body: Record<string, unknown>): { valid: boolean; error?: string } {
-  if (!body.code || typeof body.code !== 'string' || body.code.trim().length === 0) {
-    return { valid: false, error: 'Shift code is required' };
-  }
   if (!body.name || typeof body.name !== 'string' || body.name.trim().length === 0) {
     return { valid: false, error: 'Shift name is required' };
   }
@@ -135,6 +139,10 @@ export const POST = withAudit(
           },
           { status: 400 }
         );
+      }
+
+      if (!body.code || typeof body.code !== 'string' || body.code.trim().length === 0) {
+        body.code = generateShiftCode();
       }
 
       body.tenantId = user.tenantId;

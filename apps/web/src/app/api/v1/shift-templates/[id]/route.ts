@@ -47,7 +47,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     );
   }
   try {
-    const id = request.url.split('/shift-templates/')[1]?.split('?')[0] || context.params?.id;
+    const { id } = context.params;
     const template = await (prisma as any).shiftTemplate.findFirst({
       where: { id, tenantId: user.tenantId, isDeleted: false },
     });
@@ -82,7 +82,7 @@ export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) =
     );
   }
   try {
-    const id = request.url.split('/shift-templates/')[1]?.split('?')[0] || context.params?.id;
+    const { id } = context.params;
     const existing = await (prisma as any).shiftTemplate.findFirst({
       where: { id, tenantId: user.tenantId, isDeleted: false },
     });
@@ -141,7 +141,7 @@ export const DELETE = withEnhancedAuth(async (request: NextRequest, context: any
     );
   }
   try {
-    const id = request.url.split('/shift-templates/')[1]?.split('?')[0] || context.params?.id;
+    const { id } = context.params;
     const existing = await (prisma as any).shiftTemplate.findFirst({
       where: { id, tenantId: user.tenantId, isDeleted: false },
     });

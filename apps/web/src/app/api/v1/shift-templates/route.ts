@@ -6,12 +6,19 @@ import { z } from 'zod';
 
 export const dynamic = 'force-dynamic';
 
+function generateShiftCode(): string {
+  const now = new Date();
+  const dateStr = now.toISOString().slice(0, 10).replace(/-/g, '');
+  const seq = String(Math.floor(Math.random() * 999) + 1).padStart(3, '0');
+  return `SHIFT-${dateStr}-${seq}`;
+}
+
 const createTemplateSchema = z.object({
   name: z.string().min(1).max(100),
   description: z.string().max(300).optional().nullable(),
   icon: z.string().default('Briefcase'),
   accent: z.string().default('from-blue-500/15 to-blue-500/5 border-blue-500/30'),
-  shiftCode: z.string().min(1).max(20),
+  shiftCode: z.string().min(1).max(20).optional(),
   shiftName: z.string().min(1).max(100),
   shiftDescription: z.string().max(300).optional().nullable(),
   startTime: z.string().regex(/^\d{2}:\d{2}$/),
@@ -71,6 +78,11 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
   try {
     const body = await request.json();
     const parsed = createTemplateSchema.parse(body);
+
+    if (!parsed.shiftCode) {
+      parsed.shiftCode = generateShiftCode();
+    }
+
     const template = await (prisma as any).shiftTemplate.create({
       data: {
         ...parsed,
