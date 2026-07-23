@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useTheme } from '@/stores/theme-store';
+import { EmployeeSearchableSelect } from '@/components/shared/EmployeeSearchableSelect';
 import {
   Search,
   SlidersHorizontal,
@@ -186,12 +187,11 @@ export default function ContributionsPage() {
 
             <div className="grid gap-5 md:grid-cols-4 lg:grid-cols-5">
               <label className="text-sm font-semibold text-slate-700 dark:text-slate-300 flex flex-col gap-1.5 md:col-span-2 lg:col-span-1">
-                Employee ID
-                <input
+                Employee Name
+                <EmployeeSearchableSelect
                   value={wageForm.employeeId}
-                  onChange={(e) => setWageForm((f) => ({ ...f, employeeId: e.target.value }))}
-                  placeholder="e.g. EMP-002"
-                  className="w-full rounded-xl border border-slate-200 dark:border-slate-750 bg-slate-50/50 dark:bg-slate-850 px-3.5 py-2.5 text-slate-950 dark:text-slate-100 focus:outline-none focus:ring-2 focus:ring-slate-950 text-sm transition-all"
+                  onChange={(val) => setWageForm((f) => ({ ...f, employeeId: val }))}
+                  placeholder="Search employee..."
                 />
               </label>
 

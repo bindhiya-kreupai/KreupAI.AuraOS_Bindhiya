@@ -45,8 +45,7 @@ export default function AspirationsPage() {
       setAspiration(existing);
       if (existing) {
         const meta = (existing as unknown as Record<string, unknown>).preferences as
-          | Partial<AspirationState>
-          | undefined;
+          Partial<AspirationState> | undefined;
         setState({
           primaryPath: meta?.primaryPath ?? DEFAULT_STATE.primaryPath,
           relocate: meta?.relocate ?? DEFAULT_STATE.relocate,

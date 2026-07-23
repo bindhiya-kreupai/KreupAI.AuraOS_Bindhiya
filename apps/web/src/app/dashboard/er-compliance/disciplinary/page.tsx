@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { EmployeeSearchableSelect } from '@/components/shared/EmployeeSearchableSelect';
 
 interface A {
   id: string;
@@ -116,12 +117,12 @@ export default function DisciplinaryPage() {
               className="mt-1 w-full rounded-md border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1.5 font-mono text-xs"
             />
           </label>
-          <label className="text-sm">
-            Employee
-            <input
+          <label className="text-sm flex flex-col gap-1">
+            Employee Name
+            <EmployeeSearchableSelect
               value={form.employeeId}
-              onChange={(e) => setForm((f) => ({ ...f, employeeId: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1.5"
+              onChange={(val) => setForm((f) => ({ ...f, employeeId: val }))}
+              placeholder="Search employee..."
             />
           </label>
           <label className="text-sm">

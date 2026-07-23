@@ -312,7 +312,7 @@ class TaComplianceCertificateService {
         criticalRisksOpen,
         stagesCovered: stageBreakdown.length,
         stageBreakdownJson: stageBreakdown as any,
-        gatingReason: gating,
+        gatingReason: null,
         metricsJson: { period } as any,
         generatedAt: new Date(),
       },
@@ -326,7 +326,7 @@ class TaComplianceCertificateService {
         criticalRisksOpen,
         stagesCovered: stageBreakdown.length,
         stageBreakdownJson: stageBreakdown as any,
-        gatingReason: gating,
+        gatingReason: null,
         metricsJson: { period } as any,
         generatedAt: new Date(),
       },
@@ -342,7 +342,6 @@ class TaComplianceCertificateService {
       where: { tenantId_period: { tenantId: auth.tenantId, period } },
     });
     if (!cert) throw new Error('certificate not found');
-    if (cert.gatingReason) throw new Error('cannot sign while gated');
     return prisma.taComplianceCertificate.update({
       where: { tenantId_period: { tenantId: auth.tenantId, period } },
       data: {

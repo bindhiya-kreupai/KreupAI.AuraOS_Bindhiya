@@ -47,13 +47,7 @@ export type SeparationType =
   | 'RETIREMENT';
 
 export type ClearanceDept =
-  | 'HR'
-  | 'IT'
-  | 'FINANCE'
-  | 'SECURITY'
-  | 'LINE_MANAGER'
-  | 'ADMIN'
-  | 'LEGAL';
+  'HR' | 'IT' | 'FINANCE' | 'SECURITY' | 'LINE_MANAGER' | 'ADMIN' | 'LEGAL';
 
 export const DEFAULT_NOTICE_DAYS: Record<string, number> = {
   UAE: 30,
@@ -364,7 +358,14 @@ export class SeparationHandoverService {
     auth: AuthContext
   ) {
     return (prisma as any).separationHandover.create({
-      data: { tenantId: auth.tenantId, ...input, status: 'PENDING' },
+      data: {
+        tenantId: auth.tenantId,
+        caseId: input.caseId,
+        itemDescription: input.itemDescription,
+        itemType: input.itemType,
+        successorId: input.successorId,
+        status: 'PENDING',
+      },
     });
   }
 
