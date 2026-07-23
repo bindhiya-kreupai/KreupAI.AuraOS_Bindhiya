@@ -17147,3 +17147,162 @@ model TaComplianceCertificate {
   @@index([tenantId, status], map: "aura_ta_compliance_certificate_status_idx")
   @@map("aura_ta_compliance_certificate")
 }
+
+
+
+// ============================================================================
+// Recruitment Compliance (EPIC-04) — S01/S06/S10/S11/S14/S16
+// ============================================================================
+
+model RecruitmentCase {
+  id           String    @id @default(uuid())
+  tenantId     String
+  vacancyId    String
+  candidateId  String
+  ownerId      String
+  slaDays      Int       @default(30)
+  currentStage String    @default("APPLIED")
+  status       String    @default("OPEN")
+  openedAt     DateTime  @default(now())
+  closedAt     DateTime?
+  closedReason String?
+
+  @@index([tenantId])
+  @@index([vacancyId])
+  @@index([candidateId])
+  @@map("aura_recruitment_case")
+}
+
+model RecruitmentCandidateScreening {
+  id               String    @id @default(uuid())
+  tenantId         String
+  caseId           String
+  candidateId      String
+  score            Float
+  outcome          String
+  rejectionReason  String?
+  knockoutReason   String?
+  protectedFactors String[]  @default([])
+  detailJson       Json?
+  decidedById      String?
+  decidedAt        DateTime?
+
+  @@unique([tenantId, caseId], name: "aura_recruitment_candidate_screening_unique", map: "aura_recruitment_candidate_screening_unique")
+  @@map("aura_recruitment_candidate_screening")
+}
+
+model RecruitmentBgvCase {
+  id              String    @id @default(uuid())
+  tenantId        String
+  caseId          String
+  candidateId     String
+  vendorName      String?
+  consentCaptured Boolean   @default(false)
+  consentAt       DateTime?
+  consentRef      String?
+  status          String    @default("PENDING")
+  blockedReason   String?
+
+ @@unique([tenantId, caseId], name: "aura_recruitment_bgv_case_unique", map: "aura_recruitment_bgv_case_unique")
+ @@map("aura_recruitment_bgv_case")
+}
+
+model RecruitmentBgvCheck {
+  id                String    @id @default(uuid())
+  tenantId          String
+  bgvCaseId         String
+  checkType         String
+  result            String    @default("PENDING")
+  discrepancyAction String?
+  vendorRef         String?
+  evidenceUrl       String?
+  notes             String?
+  completedAt       DateTime?
+
+@@unique([tenantId, bgvCaseId, checkType], name: "aura_recruitment_bgv_check_unique", map: "aura_recruitment_bgv_check_unique")
+@@map("aura_recruitment_bgv_check")
+}
+
+model RecruitmentImmigrationEligibility {
+  id          String    @id @default(uuid())
+  tenantId    String
+  caseId      String
+  candidateId String
+  countryCode String
+  nationality String
+  profession  String?
+  banStatus   String    @default("UNKNOWN")
+  nocRequired Boolean   @default(false)
+  nocReceived Boolean   @default(false)
+  eligibility String    @default("PENDING")
+  checkedById String?
+  checkedAt   DateTime?
+
+  @@unique([tenantId, caseId], name: "aura_recruitment_imm_elig_unique", map: "aura_recruitment_imm_elig_unique")
+  @@map("aura_recruitment_immigration_eligibility")
+}
+
+model RecruitmentScreeningCriteria {
+  id            String  @id @default(uuid())
+  tenantId      String
+  vacancyId     String
+  criterionCode String
+  description   String
+  weight        Float   @default(1)
+  isMandatory   Boolean @default(false)
+
+@@unique([tenantId, vacancyId, criterionCode], name: "aura_recruitment_screening_criteria_unique", map: "aura_recruitment_screening_criteria_unique")
+@@map("aura_recruitment_screening_criteria")
+}
+
+model RecruitmentCandidateConsent {
+  id            String    @id @default(uuid())
+  tenantId      String
+  candidateId   String
+  lawfulBasis   String
+  purpose       String
+  retentionDays Int       @default(365)
+  evidenceRef   String?
+  metadata      Json?
+  consentedAt   DateTime  @default(now())
+  withdrawnAt   DateTime?
+
+  @@index([tenantId])
+  @@index([candidateId])
+  @@map("aura_recruitment_candidate_consent")
+}
+
+model RecruitmentAuditChecklist {
+  id           String    @id @default(uuid())
+  tenantId     String
+  period       String
+  itemCode     String
+  description  String
+  status       String    @default("PENDING")
+  evidenceRef  String?
+  notes        String?
+  reviewedById String?
+  reviewedAt   DateTime?
+
+@@unique([tenantId, period, itemCode], name: "aura_recruitment_audit_checklist_unique", map: "aura_recruitment_audit_checklist_unique")
+@@map("aura_recruitment_audit_checklist")
+}
+
+model RecruitmentRisk {
+  id             String    @id @default(uuid())
+  tenantId       String
+  code           String
+  description    String
+  likelihood     Int
+  impact         Int
+  band           String
+  mitigationPlan String?
+  ownerId        String?
+  status         String    @default("OPEN")
+  raisedAt       DateTime  @default(now())
+  mitigatedAt    DateTime?
+
+@@unique([tenantId, code], name: "aura_recruitment_risk_unique", map: "aura_recruitment_risk_unique")
+ @@map("aura_recruitment_risk")
+}
+
