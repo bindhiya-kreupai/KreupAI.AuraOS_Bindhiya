@@ -1173,11 +1173,6 @@ export class ShiftManagementService {
     // is handled by the route layer which already checks permissions.
     const isRequestor = swap.requestorId === rejectedBy;
     const isSwapWith = swap.swapWithId === rejectedBy;
-    // If neither requestor nor swapWith, the route layer must have validated
-    // permission — we allow it here since the route already checked shifts:update.
-    if (!isRequestor && !isSwapWith) {
-      // Allow managers/admins — the route layer already verified shift-swaps:update permission
-    }
 
     ShiftManagementService.validateSwapTransition(swap.status, 'REJECTED');
 
