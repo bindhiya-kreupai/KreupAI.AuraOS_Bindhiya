@@ -29,6 +29,30 @@ export default function AppealsPage() {
     filedAt: new Date().toISOString().slice(0, 10),
   });
   const [message, setMessage] = useState('');
+  const [employees, setEmployees] = useState<any[]>([]);
+  const [empLoading, setEmpLoading] = useState(false);
+  const [empDropdownOpen, setEmpDropdownOpen] = useState(false);
+  const [empSearchQuery, setEmpSearchQuery] = useState('');
+  const [selectedEmpName, setSelectedEmpName] = useState('');
+
+  async function searchEmployees(query: string) {
+    setEmpLoading(true);
+    try {
+      const res = await fetch(`/api/employees/search?q=${encodeURIComponent(query)}&size=50`);
+      const payload = await res.json();
+      if (payload.success) {
+        setEmployees(payload.data?.employees ?? []);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setEmpLoading(false);
+    }
+  }
+
+  useEffect(() => {
+    searchEmployees('');
+  }, []);
 
   async function load() {
     setIsLoading(true);
@@ -122,14 +146,68 @@ export default function AppealsPage() {
               className="mt-1 w-full rounded-md border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1.5 font-mono text-xs"
             />
           </label>
-          <label className="text-sm">
-            Appellant
-            <input
-              value={form.appellantId}
-              onChange={(e) => setForm((f) => ({ ...f, appellantId: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1.5"
-            />
-          </label>
+          <div className="text-sm relative flex flex-col justify-end">
+            <label className="text-sm">
+              Appellant
+              <input
+                type="text"
+                placeholder="Search employee..."
+                value={
+                  empDropdownOpen
+                    ? empSearchQuery
+                    : form.appellantId
+                      ? selectedEmpName
+                      : empSearchQuery
+                }
+                onFocus={() => {
+                  setEmpDropdownOpen(true);
+                  searchEmployees(empSearchQuery);
+                }}
+                onChange={(e) => {
+                  setEmpSearchQuery(e.target.value);
+                  setEmpDropdownOpen(true);
+                  searchEmployees(e.target.value);
+                }}
+                className="mt-1 w-full rounded-md border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1.5"
+              />
+            </label>
+
+            {empDropdownOpen && (
+              <>
+                <div className="fixed inset-0 z-10" onClick={() => setEmpDropdownOpen(false)} />
+                <div className="absolute top-[100%] left-0 right-0 z-20 mt-1 max-h-60 overflow-y-auto rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 shadow-lg py-1">
+                  {empLoading ? (
+                    <div className="px-3 py-2 text-xs text-slate-500 dark:text-slate-400">
+                      Loading...
+                    </div>
+                  ) : employees.length === 0 ? (
+                    <div className="px-3 py-2 text-xs text-slate-500 dark:text-slate-400">
+                      No matching employees
+                    </div>
+                  ) : (
+                    employees.map((e) => (
+                      <button
+                        key={e.id}
+                        type="button"
+                        onClick={() => {
+                          setForm((f) => ({ ...f, appellantId: e.id }));
+                          setSelectedEmpName(`${e.firstName} ${e.lastName} (${e.employeeCode})`);
+                          setEmpSearchQuery('');
+                          setEmpDropdownOpen(false);
+                        }}
+                        className="w-full px-3 py-2 text-left text-xs text-slate-850 dark:text-slate-200 hover:bg-slate-100 dark:hover:bg-slate-800 flex items-center justify-between"
+                      >
+                        <span>
+                          {e.firstName} {e.lastName}
+                        </span>
+                        <span className="text-[10px] text-slate-450">{e.employeeCode}</span>
+                      </button>
+                    ))
+                  )}
+                </div>
+              </>
+            )}
+          </div>
           <label className="text-sm md:col-span-2">
             Reason
             <input

@@ -159,8 +159,8 @@ describe('executiveComplianceCertificateService', () => {
 });
 
 describe('EXECUTIVE_COMPLIANCE_CONSTANTS', () => {
-  it('exposes all 21 domains', () => {
-    expect(EXECUTIVE_COMPLIANCE_CONSTANTS.DOMAIN_INVENTORY.length).toBe(21);
+  it('exposes all 22 domains', () => {
+    expect(EXECUTIVE_COMPLIANCE_CONSTANTS.DOMAIN_INVENTORY.length).toBe(22);
     const codes = EXECUTIVE_COMPLIANCE_CONSTANTS.DOMAIN_INVENTORY.map((d) => d.domain);
     expect(codes).toContain('WPS');
     expect(codes).toContain('HSE');

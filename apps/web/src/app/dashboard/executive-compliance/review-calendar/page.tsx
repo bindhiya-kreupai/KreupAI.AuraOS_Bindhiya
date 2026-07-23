@@ -237,14 +237,20 @@ export default function ReviewCalendarPage() {
                           </span>
                         </td>
                         <td className="px-5 py-3">
-                          <button
-                            type="button"
-                            onClick={() => complete(i.id)}
-                            className="flex items-center gap-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 px-2.5 py-1.5 text-xs text-white font-bold transition-colors shadow-sm"
-                          >
-                            <RotateCcw className="h-3 w-3" />
-                            Complete & roll
-                          </button>
+                          {overdue ? (
+                            <button
+                              type="button"
+                              onClick={() => complete(i.id)}
+                              className="flex items-center gap-1 rounded-lg bg-emerald-600 hover:bg-emerald-500 px-2.5 py-1.5 text-xs text-white font-bold transition-colors shadow-sm"
+                            >
+                              <RotateCcw className="h-3 w-3" />
+                              Complete & roll
+                            </button>
+                          ) : (
+                            <span className="text-xs text-slate-400 dark:text-slate-500 font-semibold">
+                              Rolled forward
+                            </span>
+                          )}
                         </td>
                       </tr>
                     );
