@@ -101,6 +101,19 @@ export class GccTenancyService {
     if (!input.registrationRef.trim()) {
       throw new Error('registrationRef is required');
     }
+    const existing = await (prisma as any).gccLegalEntity.findFirst({
+      where: {
+        tenantId: auth.tenantId,
+        countryCode: code,
+        registrationRef: input.registrationRef.trim(),
+        isDeleted: false,
+      },
+    });
+    if (existing) {
+      throw new Error(
+        `A legal entity with registration reference '${input.registrationRef.trim()}' already exists for country ${code}`
+      );
+    }
     return (prisma as any).gccLegalEntity.create({
       data: {
         tenantId: auth.tenantId,

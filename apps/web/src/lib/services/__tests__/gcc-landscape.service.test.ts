@@ -28,6 +28,7 @@ beforeEach(() => {
   };
   prismaMock.gccLegalEntity = {
     findMany: vi.fn().mockResolvedValue([]),
+    findFirst: vi.fn().mockResolvedValue(null),
     create: vi.fn().mockImplementation(async ({ data }: any) => ({ id: 'le-1', ...data })),
     update: vi.fn().mockResolvedValue({ id: 'le-1', isActive: false }),
   };
@@ -160,6 +161,38 @@ describe('gccTenancyService', () => {
     expect(entity.countryCode).toBe('AE');
     expect(entity.currency).toBe('AED');
     expect(entity.registrationType).toBe('MOHRE_ESTABLISHMENT');
+  });
+
+  it('blocks creating a legal entity when a duplicate registration reference exists', async () => {
+    prismaMock.gccTenantCountry.findUnique.mockResolvedValue({
+      id: 'tc-1',
+      isEnabled: true,
+      defaultCurrency: 'AED',
+      defaultTimezone: 'Asia/Dubai',
+    });
+    prismaMock.gccLegalEntity.findFirst.mockResolvedValue({
+      id: 'le-old',
+      countryCode: 'AE',
+      registrationRef: 'MOHRE-100',
+    });
+    await expect(
+      gccTenancyService.createLegalEntity(
+        { countryCode: 'AE', legalName: 'Acme UAE Duplicate', registrationRef: 'MOHRE-100' },
+        auth
+      )
+    ).rejects.toThrow(/already exists/);
+  });
+
+  it('deactivates a legal entity', async () => {
+    prismaMock.gccLegalEntity.update.mockResolvedValue({ id: 'le-1', isActive: false });
+    const result = await gccTenancyService.deactivateLegalEntity('le-1', auth);
+    expect(prismaMock.gccLegalEntity.update).toHaveBeenCalledWith(
+      expect.objectContaining({
+        where: { id: 'le-1' },
+        data: expect.objectContaining({ isActive: false }),
+      })
+    );
+    expect(result.isActive).toBe(false);
   });
 });
 
