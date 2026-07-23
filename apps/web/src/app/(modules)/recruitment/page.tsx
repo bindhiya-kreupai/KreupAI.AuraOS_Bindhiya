@@ -2,18 +2,35 @@
 
 import React, { useState, useEffect } from 'react';
 import {
-  Users, Briefcase, Zap, Star,
-  Search, Filter, Plus, ChevronRight,
-  TrendingUp, Clock, Target, Bot,
-  ShieldCheck, BarChart3, Mail,
-  MessageSquare, Calendar, Sparkles,
-  ArrowUpRight, AlertCircle, UserCheck
+  Users,
+  Briefcase,
+  Zap,
+  Star,
+  Search,
+  Filter,
+  Plus,
+  ChevronRight,
+  TrendingUp,
+  Clock,
+  Target,
+  Bot,
+  ShieldCheck,
+  BarChart3,
+  Mail,
+  MessageSquare,
+  Calendar,
+  Sparkles,
+  ArrowUpRight,
+  AlertCircle,
+  UserCheck,
+  Trash2,
+  Download,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
   RecruitmentAnalyticsService,
   CandidateApplicationService,
-  JobRequisitionService
+  JobRequisitionService,
 } from '@/app/dashboard/recruitment/services';
 
 export default function RecruitmentPage() {
@@ -21,6 +38,44 @@ export default function RecruitmentPage() {
   const [activeRequisitions, setActiveRequisitions] = useState<any[]>([]);
   const [topCandidates, setTopCandidates] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState({
+    title: '',
+    department: 'Engineering',
+    location: 'Remote',
+    priority: 'high',
+  });
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredRequisitions = activeRequisitions.filter((req) =>
+    (req.jobTitle || '').toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
+  const handleCreateRequisition = () => {
+    setIsModalOpen(false);
+  };
+
+  const handleExport = () => {
+    const csvContent =
+      'data:text/csv;charset=utf-8,Title,Department,Location,Priority\n' +
+      activeRequisitions
+        .map((r) => `${r.jobTitle},${r.departmentName},${r.locationName},${r.priority || 'high'}`)
+        .join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', 'requisitions.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleDelete = (id: string) => {
+    if (confirm('Delete this requisition?')) {
+      const updated = activeRequisitions.filter((r) => r.id !== id);
+      setActiveRequisitions(updated);
+    }
+  };
 
   useEffect(() => {
     loadRecruitmentData();
@@ -32,7 +87,7 @@ export default function RecruitmentPage() {
       const [analytics, requisitions, applications] = await Promise.all([
         RecruitmentAnalyticsService.getStats(),
         JobRequisitionService.getRequisitions({ status: 'open' }),
-        CandidateApplicationService.getApplications()
+        CandidateApplicationService.getApplications(),
       ]);
 
       setStats(analytics);
@@ -40,15 +95,14 @@ export default function RecruitmentPage() {
 
       // Mock AI Matching logic for 5-star UI demo
       const matched = applications
-        .filter(a => (a.rating || 0) >= 4)
+        .filter((a) => (a.rating || 0) >= 4)
         .slice(0, 3)
-        .map(a => ({
+        .map((a) => ({
           ...a,
           matchScore: Math.floor(Math.random() * 15) + 85, // 85-100%
-          reason: 'Strong match in React & Node.js ecosystem'
+          reason: 'Strong match in React & Node.js ecosystem',
         }));
       setTopCandidates(matched);
-
     } catch (error: any) {
       console.error('Failed to load recruitment data:', error);
     } finally {
@@ -68,7 +122,8 @@ export default function RecruitmentPage() {
             Hiring <span className="text-indigo-600 dark:text-indigo-400">Command Center</span>
           </h1>
           <p className="text-silver-mist text-sm max-w-2xl leading-relaxed">
-            Unify sourcing, screening, and requisition management. AI-powered matching identifies top 1% talent while optimizing the hiring lifecycle.
+            Unify sourcing, screening, and requisition management. AI-powered matching identifies
+            top 1% talent while optimizing the hiring lifecycle.
           </p>
         </div>
 
@@ -76,7 +131,18 @@ export default function RecruitmentPage() {
           <button className="flex items-center gap-2 px-5 py-2.5 bg-white dark:bg-stellar-blue border border-cloud dark:border-nebula-purple/30 rounded-xl text-xs font-bold text-ink-black dark:text-pearl hover:bg-slate-50 transition-all shadow-sm">
             <Calendar className="w-4 h-4" /> Interview Board
           </button>
-          <button className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-lg shadow-indigo-600/20 transition-all">
+          <button
+            onClick={() => {
+              setFormData({
+                title: '',
+                department: 'Engineering',
+                location: 'Remote',
+                priority: 'high',
+              });
+              setIsModalOpen(true);
+            }}
+            className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-lg shadow-indigo-600/20 transition-all"
+          >
             <Plus className="w-4 h-4" /> Create Requisition
           </button>
         </div>
@@ -84,10 +150,31 @@ export default function RecruitmentPage() {
 
       {/* Analytics Dashboard */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <RecruitStatCard title="Open Requisitions" value={stats?.openRequisitions || 0} icon={Briefcase} color="indigo" />
-        <RecruitStatCard title="New Applicants" value={stats?.totalApplications || 0} icon={Users} color="emerald" trend="+12%" />
-        <RecruitStatCard title="Avg Time to Hire" value={`${stats?.averageTimeToHire || 0}d`} icon={Clock} color="amber" />
-        <RecruitStatCard title="Offer Acceptance" value={`${stats?.offerAcceptanceRate || 0}%`} icon={Target} color="rose" />
+        <RecruitStatCard
+          title="Open Requisitions"
+          value={stats?.openRequisitions || 0}
+          icon={Briefcase}
+          color="indigo"
+        />
+        <RecruitStatCard
+          title="New Applicants"
+          value={stats?.totalApplications || 0}
+          icon={Users}
+          color="emerald"
+          trend="+12%"
+        />
+        <RecruitStatCard
+          title="Avg Time to Hire"
+          value={`${stats?.averageTimeToHire || 0}d`}
+          icon={Clock}
+          color="amber"
+        />
+        <RecruitStatCard
+          title="Offer Acceptance"
+          value={`${stats?.offerAcceptanceRate || 0}%`}
+          icon={Target}
+          color="rose"
+        />
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8">
@@ -96,60 +183,114 @@ export default function RecruitmentPage() {
           {/* Active Requisitions */}
           <div className="space-y-4">
             <div className="flex items-center justify-between px-2">
-              <h2 className="text-xl font-bold text-ink-black dark:text-pearl">Critical Vacancies</h2>
-              <button className="text-xs font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1 hover:underline">
-                View All <ArrowUpRight className="w-3 h-3" />
-              </button>
+              <h2 className="text-xl font-bold text-ink-black dark:text-pearl">
+                Critical Vacancies
+              </h2>
+              <div className="flex gap-3">
+                <div className="relative">
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-silver-mist" />
+                  <input
+                    type="text"
+                    placeholder="Search roles..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9 pr-4 py-2 w-48 bg-slate-50 dark:bg-slate-900 border border-cloud dark:border-nebula-purple/30 rounded-xl text-xs focus:outline-none focus:border-indigo-500"
+                  />
+                </div>
+                <button
+                  onClick={handleExport}
+                  className="p-2 bg-slate-50 dark:bg-slate-900 border border-cloud dark:border-nebula-purple/30 rounded-xl text-silver-mist hover:text-indigo-600 transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                </button>
+                <button className="text-xs font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1 hover:underline ml-2">
+                  View All <ArrowUpRight className="w-3 h-3" />
+                </button>
+              </div>
             </div>
 
             <div className="bg-white dark:bg-stellar-blue border border-cloud dark:border-nebula-purple/30 rounded-[2.5rem] p-1 shadow-sm overflow-hidden">
               <div className="grid grid-cols-1 md:grid-cols-2">
-                {activeRequisitions.length > 0 ? activeRequisitions.map((req, i) => (
-                  <div key={req.id} className="p-8 border-r border-b last:border-b-0 md:even:border-r-0 border-cloud dark:border-nebula-purple/10 hover:bg-slate-50/50 dark:hover:bg-indigo-900/5 transition-all group cursor-pointer">
-                    <div className="flex justify-between items-start mb-6">
-                      <div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl text-indigo-600 group-hover:scale-110 transition-transform">
-                        <Briefcase className="w-6 h-6" />
-                      </div>
-                      <div className="flex flex-col items-end gap-2">
-                        <span className={cn(
-                          "text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest",
-                          req.priority === 'urgent' ? "bg-rose-50 text-rose-600" : "bg-emerald-50 text-emerald-600"
-                        )}>
-                          {req.priority || 'High'}
-                        </span>
-                        <span className="text-[10px] font-bold text-silver-mist">Created 4d ago</span>
-                      </div>
-                    </div>
-                    <h3 className="text-xl font-extrabold text-ink-black dark:text-pearl mb-2 group-hover:text-indigo-600 transition-colors uppercase tracking-tight">{req.jobTitle}</h3>
-                    <p className="text-xs text-silver-mist mb-8 flex items-center gap-2">
-                      <Users className="w-3.5 h-3.5" /> {req.departmentName} <span className="text-slate-200">•</span> <Target className="w-3.5 h-3.5" /> {req.locationName}
-                    </p>
-
-                    <div className="flex items-center justify-between">
-                      <div className="flex -space-x-3">
-                        {[1, 2, 3].map(j => (
-                          <div key={j} className="w-10 h-10 rounded-full border-4 border-white dark:border-stellar-blue bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs font-black">
-                            {j}
-                          </div>
-                        ))}
-                        <div className="w-10 h-10 rounded-full border-4 border-white dark:border-stellar-blue bg-indigo-600 flex items-center justify-center text-xs font-black text-white">
-                          +8
+                {filteredRequisitions.length > 0 ? (
+                  filteredRequisitions.map((req, i) => (
+                    <div
+                      key={req.id || i}
+                      className="p-8 border-r border-b last:border-b-0 md:even:border-r-0 border-cloud dark:border-nebula-purple/10 hover:bg-slate-50/50 dark:hover:bg-indigo-900/5 transition-all group cursor-pointer relative"
+                    >
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(req.id);
+                        }}
+                        className="absolute top-4 right-4 p-2 text-silver-mist hover:text-red-500 opacity-0 group-hover:opacity-100 transition-all"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                      <div className="flex justify-between items-start mb-6">
+                        <div className="p-3 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl text-indigo-600 group-hover:scale-110 transition-transform">
+                          <Briefcase className="w-6 h-6" />
+                        </div>
+                        <div className="flex flex-col items-end gap-2 pr-8">
+                          <span
+                            className={cn(
+                              'text-[10px] font-black px-3 py-1 rounded-full uppercase tracking-widest',
+                              req.priority === 'urgent'
+                                ? 'bg-rose-50 text-rose-600'
+                                : 'bg-emerald-50 text-emerald-600'
+                            )}
+                          >
+                            {req.priority || 'High'}
+                          </span>
+                          <span className="text-[10px] font-bold text-silver-mist">
+                            Created 4d ago
+                          </span>
                         </div>
                       </div>
-                      <div className="text-right">
-                        <p className="text-2xl font-black text-ink-black dark:text-pearl">12</p>
-                        <p className="text-[9px] font-black text-silver-mist uppercase tracking-widest leading-none">Candidates</p>
+                      <h3 className="text-xl font-extrabold text-ink-black dark:text-pearl mb-2 group-hover:text-indigo-600 transition-colors uppercase tracking-tight">
+                        {req.jobTitle}
+                      </h3>
+                      <p className="text-xs text-silver-mist mb-8 flex items-center gap-2">
+                        <Users className="w-3.5 h-3.5" /> {req.departmentName}{' '}
+                        <span className="text-slate-200">•</span> <Target className="w-3.5 h-3.5" />{' '}
+                        {req.locationName}
+                      </p>
+
+                      <div className="flex items-center justify-between">
+                        <div className="flex -space-x-3">
+                          {[1, 2, 3].map((j) => (
+                            <div
+                              key={j}
+                              className="w-10 h-10 rounded-full border-4 border-white dark:border-stellar-blue bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-xs font-black"
+                            >
+                              {j}
+                            </div>
+                          ))}
+                          <div className="w-10 h-10 rounded-full border-4 border-white dark:border-stellar-blue bg-indigo-600 flex items-center justify-center text-xs font-black text-white">
+                            +8
+                          </div>
+                        </div>
+                        <div className="text-right">
+                          <p className="text-2xl font-black text-ink-black dark:text-pearl">12</p>
+                          <p className="text-[9px] font-black text-silver-mist uppercase tracking-widest leading-none">
+                            Candidates
+                          </p>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                )) : (
+                  ))
+                ) : (
                   <div className="col-span-2 p-12 text-center space-y-4">
                     <div className="w-16 h-16 bg-slate-100 dark:bg-slate-800 rounded-3xl flex items-center justify-center mx-auto">
                       <AlertCircle className="w-8 h-8 text-slate-300" />
                     </div>
                     <div>
-                      <p className="text-lg font-black text-ink-black dark:text-pearl uppercase tracking-tight">Zero Critical Gaps</p>
-                      <p className="text-sm text-silver-mist italic leading-relaxed max-w-sm mx-auto">Your requisition pipeline is currently clear. AI predicts next headcount requirement in Q3.</p>
+                      <p className="text-lg font-black text-ink-black dark:text-pearl uppercase tracking-tight">
+                        Zero Critical Gaps
+                      </p>
+                      <p className="text-sm text-silver-mist italic leading-relaxed max-w-sm mx-auto">
+                        Your requisition pipeline is currently clear. AI predicts next headcount
+                        requirement in Q3.
+                      </p>
                     </div>
                   </div>
                 )}
@@ -165,19 +306,25 @@ export default function RecruitmentPage() {
             <div className="space-y-6">
               {(() => {
                 const sourceMap = stats?.applicationsBySource || {};
-                const entries = Object.entries(sourceMap).sort(([,a]: any, [,b]: any) => b - a);
+                const entries = Object.entries(sourceMap).sort(([, a]: any, [, b]: any) => b - a);
                 const total = entries.reduce((sum, [, count]: any) => sum + count, 0) || 1;
                 const colors = ['blue', 'indigo', 'emerald', 'rose'];
-                return entries.length > 0 ? entries.slice(0, 4).map(([source, count]: any, i) => (
-                  <SourcingBar
-                    key={source}
-                    label={source.charAt(0).toUpperCase() + source.slice(1).replace(/_/g, ' ')}
-                    percentage={Math.round((count / total) * 100)}
-                    color={colors[i % colors.length]}
-                    count={count}
-                  />
-                )) : (
-                  <p className="text-sm text-silver-mist text-center py-4">No sourcing data available yet</p>
+                return entries.length > 0 ? (
+                  entries
+                    .slice(0, 4)
+                    .map(([source, count]: any, i) => (
+                      <SourcingBar
+                        key={source}
+                        label={source.charAt(0).toUpperCase() + source.slice(1).replace(/_/g, ' ')}
+                        percentage={Math.round((count / total) * 100)}
+                        color={colors[i % colors.length]}
+                        count={count}
+                      />
+                    ))
+                ) : (
+                  <p className="text-sm text-silver-mist text-center py-4">
+                    No sourcing data available yet
+                  </p>
                 );
               })()}
             </div>
@@ -198,14 +345,24 @@ export default function RecruitmentPage() {
 
               <div className="space-y-3">
                 {topCandidates.map((can, idx) => (
-                  <div key={idx} className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/5 hover:bg-white/20 transition-all cursor-pointer">
+                  <div
+                    key={idx}
+                    className="bg-white/10 backdrop-blur-md rounded-2xl p-4 border border-white/5 hover:bg-white/20 transition-all cursor-pointer"
+                  >
                     <div className="flex justify-between items-start mb-2">
-                      <div className="font-bold text-sm">{can.firstName} {can.lastName}</div>
+                      <div className="font-bold text-sm">
+                        {can.firstName} {can.lastName}
+                      </div>
                       <div className="text-indigo-200 font-black text-xs">{can.matchScore}%</div>
                     </div>
-                    <div className="text-[10px] text-indigo-100/70 truncate mb-2">{can.jobTitle}</div>
+                    <div className="text-[10px] text-indigo-100/70 truncate mb-2">
+                      {can.jobTitle}
+                    </div>
                     <div className="h-1 w-full bg-white/10 rounded-full overflow-hidden">
-                      <div className="h-full bg-indigo-300" style={{ width: `${can.matchScore}%` }} />
+                      <div
+                        className="h-full bg-indigo-300"
+                        style={{ width: `${can.matchScore}%` }}
+                      />
                     </div>
                   </div>
                 ))}
@@ -232,47 +389,142 @@ export default function RecruitmentPage() {
           </div>
         </div>
       </div>
+
+      {/* CRUD Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-stellar-blue p-8 rounded-3xl shadow-2xl w-full max-w-md">
+            <h3 className="text-xl font-black text-ink-black dark:text-pearl uppercase tracking-tight mb-6">
+              Create Requisition
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-silver-mist uppercase tracking-widest mb-1">
+                  Job Title
+                </label>
+                <input
+                  type="text"
+                  value={formData.title}
+                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                  className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-cloud dark:border-nebula-purple/30 rounded-xl focus:border-indigo-500 outline-none"
+                  placeholder="e.g. Senior Frontend Engineer"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-silver-mist uppercase tracking-widest mb-1">
+                  Department
+                </label>
+                <select
+                  value={formData.department}
+                  onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+                  className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-cloud dark:border-nebula-purple/30 rounded-xl focus:border-indigo-500 outline-none"
+                >
+                  <option value="Engineering">Engineering</option>
+                  <option value="Sales">Sales</option>
+                  <option value="Marketing">Marketing</option>
+                  <option value="HR">HR</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-silver-mist uppercase tracking-widest mb-1">
+                  Location
+                </label>
+                <select
+                  value={formData.location}
+                  onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                  className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-cloud dark:border-nebula-purple/30 rounded-xl focus:border-indigo-500 outline-none"
+                >
+                  <option value="Remote">Remote</option>
+                  <option value="Dubai">Dubai, UAE</option>
+                  <option value="London">London, UK</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-silver-mist uppercase tracking-widest mb-1">
+                  Priority
+                </label>
+                <select
+                  value={formData.priority}
+                  onChange={(e) => setFormData({ ...formData, priority: e.target.value })}
+                  className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-cloud dark:border-nebula-purple/30 rounded-xl focus:border-indigo-500 outline-none"
+                >
+                  <option value="high">High</option>
+                  <option value="urgent">Urgent</option>
+                  <option value="normal">Normal</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 mt-8">
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="px-5 py-2.5 bg-slate-100 dark:bg-slate-800 text-ink-black dark:text-pearl rounded-xl text-xs font-bold transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCreateRequisition}
+                className="px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition-colors"
+              >
+                Create
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
 
 function RecruitStatCard({ title, value, icon: Icon, color, trend }: any) {
   const colorMap: Record<string, string> = {
-    indigo: "text-indigo-600 bg-indigo-50 dark:bg-indigo-900/20",
-    emerald: "text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20",
-    amber: "text-amber-600 bg-amber-50 dark:bg-amber-900/20",
-    rose: "text-rose-600 bg-rose-50 dark:bg-rose-900/20",
+    indigo: 'text-indigo-600 bg-indigo-50 dark:bg-indigo-900/20',
+    emerald: 'text-emerald-600 bg-emerald-50 dark:bg-emerald-900/20',
+    amber: 'text-amber-600 bg-amber-50 dark:bg-amber-900/20',
+    rose: 'text-rose-600 bg-rose-50 dark:bg-rose-900/20',
   };
 
   return (
     <div className="bg-white dark:bg-stellar-blue rounded-3xl p-6 border border-cloud dark:border-nebula-purple/30 shadow-sm group hover:border-indigo-500/50 transition-all">
       <div className="flex items-center justify-between mb-4">
-        <div className={cn("p-2.5 rounded-2xl", colorMap[color])}>
+        <div className={cn('p-2.5 rounded-2xl', colorMap[color])}>
           <Icon className="w-5 h-5" />
         </div>
-        {trend && <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">{trend}</span>}
+        {trend && (
+          <span className="text-[10px] font-black text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+            {trend}
+          </span>
+        )}
       </div>
-      <p className="text-[10px] font-extrabold text-silver-mist uppercase tracking-widest">{title}</p>
-      <div className="text-3xl font-black text-ink-black dark:text-pearl mt-1 group-hover:scale-105 transition-transform origin-left">{value}</div>
+      <p className="text-[10px] font-extrabold text-silver-mist uppercase tracking-widest">
+        {title}
+      </p>
+      <div className="text-3xl font-black text-ink-black dark:text-pearl mt-1 group-hover:scale-105 transition-transform origin-left">
+        {value}
+      </div>
     </div>
   );
 }
 
 function SourcingBar({ label, percentage, color, count }: any) {
   const colors: Record<string, string> = {
-    blue: "bg-blue-500",
-    indigo: "bg-indigo-500",
-    emerald: "bg-emerald-500",
-    rose: "bg-rose-500",
+    blue: 'bg-blue-500',
+    indigo: 'bg-indigo-500',
+    emerald: 'bg-emerald-500',
+    rose: 'bg-rose-500',
   };
   return (
     <div className="space-y-2">
       <div className="flex justify-between text-xs font-bold">
         <span className="text-ink-black dark:text-pearl">{label}</span>
-        <span className="text-silver-mist">{count} Apps • {percentage}%</span>
+        <span className="text-silver-mist">
+          {count} Apps • {percentage}%
+        </span>
       </div>
       <div className="h-2 w-full bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
-        <div className={cn("h-full rounded-full transition-all duration-1000", colors[color])} style={{ width: `${percentage}%` }} />
+        <div
+          className={cn('h-full rounded-full transition-all duration-1000', colors[color])}
+          style={{ width: `${percentage}%` }}
+        />
       </div>
     </div>
   );
@@ -283,12 +535,16 @@ function VelocityMetric({ label, time, status, alert }: any) {
     <div className="flex items-center justify-between py-2 border-b border-cloud dark:border-nebula-purple/10 last:border-0">
       <div>
         <div className="text-xs font-bold text-ink-black dark:text-pearl">{label}</div>
-        <div className="text-[10px] text-silver-mist uppercase tracking-widest font-black">{time}</div>
+        <div className="text-[10px] text-silver-mist uppercase tracking-widest font-black">
+          {time}
+        </div>
       </div>
-      <div className={cn(
-        "text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-wider",
-        alert ? "bg-rose-50 text-rose-600" : "bg-slate-50 text-silver-mist"
-      )}>
+      <div
+        className={cn(
+          'text-[9px] px-2 py-0.5 rounded-full font-black uppercase tracking-wider',
+          alert ? 'bg-rose-50 text-rose-600' : 'bg-slate-50 text-silver-mist'
+        )}
+      >
         {status}
       </div>
     </div>

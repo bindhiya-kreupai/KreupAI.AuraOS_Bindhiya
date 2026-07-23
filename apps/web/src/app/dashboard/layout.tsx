@@ -22,15 +22,11 @@ const PREVIEW_MODULES = new Set<string>([
   'collaboration',
   'community',
   'construction',
-  'education',
-  'energy',
   'esg',
   'expenses',
   'facilities',
-  'financial-services',
-  'government',
-  'healthcare',
-  'hospitality',
+  // 'healthcare' removed — live APIs wired for credentialing, rostering, locum
+  // 'hospitality' removed — live APIs wired for tip management, event staffing, housekeeping
   'hr-helpdesk',
   'industry',
   'industry-solutions',

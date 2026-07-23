@@ -19,6 +19,11 @@ import {
   Network,
   Globe,
   Calculator,
+  Download,
+  Filter,
+  Search,
+  Trash2,
+  Edit2,
 } from 'lucide-react';
 import { cn } from '@aura/ui/utils';
 import Link from 'next/link';
@@ -27,6 +32,47 @@ import { PayrollAnalyticsService } from '@/app/dashboard/payroll/services';
 export default function PayrollPage() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const [stats, setStats] = useState<any>(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [payrollRuns, setPayrollRuns] = useState([
+    { id: 'PR-2026-02', period: 'Feb 2026', status: 'Active', cost: 1250000 },
+    { id: 'PR-2026-01', period: 'Jan 2026', status: 'Completed', cost: 1245000 },
+  ]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('All');
+  const [formData, setFormData] = useState({ period: '', status: 'Draft', cost: 0 });
+
+  const handleExport = () => {
+    const csvContent =
+      'data:text/csv;charset=utf-8,ID,Period,Status,Cost\n' +
+      payrollRuns.map((r) => `${r.id},${r.period},${r.status},${r.cost}`).join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', 'payroll_runs.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const handleDelete = (id: string) => {
+    if (confirm('Delete this payroll run?')) {
+      setPayrollRuns(payrollRuns.filter((r) => r.id !== id));
+    }
+  };
+
+  const handleSave = () => {
+    setPayrollRuns([{ id: `PR-${Date.now()}`, ...formData }, ...payrollRuns]);
+    setIsModalOpen(false);
+  };
+
+  const filteredRuns = payrollRuns.filter((r) => {
+    const matchesSearch =
+      r.id.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      r.period.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesStatus = statusFilter === 'All' || r.status === statusFilter;
+    return matchesSearch && matchesStatus;
+  });
+
   useEffect(() => {
     loadPayrollData();
   }, []);
@@ -63,7 +109,13 @@ export default function PayrollPage() {
               <Calculator className="w-4 h-4" /> EOSB / Gratuity
             </button>
           </Link>
-          <button className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-lg shadow-indigo-600/20 transition-all">
+          <button
+            onClick={() => {
+              setFormData({ period: '', status: 'Draft', cost: 0 });
+              setIsModalOpen(true);
+            }}
+            className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-lg shadow-indigo-600/20 transition-all"
+          >
             <Plus className="w-4 h-4" /> New Payroll Run
           </button>
         </div>
@@ -213,6 +265,90 @@ export default function PayrollPage() {
               </Link>
             </div>
           </div>
+
+          {/* Recent Payroll Runs Table with Filters and Export */}
+          <div className="bg-white dark:bg-stellar-blue border border-cloud dark:border-nebula-purple/30 rounded-3xl p-6 shadow-sm mt-8">
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-bold text-ink-black dark:text-pearl">
+                Recent Payroll Runs
+              </h2>
+              <div className="flex gap-3">
+                <div className="relative">
+                  <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-silver-mist" />
+                  <input
+                    type="text"
+                    placeholder="Search runs..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-900 border border-cloud dark:border-nebula-purple/30 rounded-xl text-xs focus:outline-none focus:border-indigo-500"
+                  />
+                </div>
+                <select
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-cloud dark:border-nebula-purple/30 rounded-xl text-xs focus:outline-none focus:border-indigo-500"
+                >
+                  <option value="All">All Status</option>
+                  <option value="Active">Active</option>
+                  <option value="Completed">Completed</option>
+                  <option value="Draft">Draft</option>
+                </select>
+                <button
+                  onClick={handleExport}
+                  className="p-2.5 bg-slate-50 dark:bg-slate-900 border border-cloud dark:border-nebula-purple/30 rounded-xl text-silver-mist hover:text-indigo-600 transition-colors"
+                >
+                  <Download className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-cloud dark:border-nebula-purple/10 text-left text-[10px] font-black text-silver-mist uppercase tracking-widest">
+                    <th className="py-3 px-4">Run ID</th>
+                    <th className="py-3 px-4">Period</th>
+                    <th className="py-3 px-4">Total Cost</th>
+                    <th className="py-3 px-4">Status</th>
+                    <th className="py-3 px-4 text-right">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-cloud dark:divide-nebula-purple/10">
+                  {filteredRuns.map((run) => (
+                    <tr key={run.id} className="hover:bg-slate-50 dark:hover:bg-slate-900/50">
+                      <td className="py-3 px-4 text-sm font-bold text-ink-black dark:text-pearl">
+                        {run.id}
+                      </td>
+                      <td className="py-3 px-4 text-sm text-silver-mist">{run.period}</td>
+                      <td className="py-3 px-4 text-sm font-bold text-indigo-600">
+                        ${run.cost.toLocaleString()}
+                      </td>
+                      <td className="py-3 px-4">
+                        <span
+                          className={cn(
+                            'px-2 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest',
+                            run.status === 'Completed'
+                              ? 'bg-emerald-50 text-emerald-600'
+                              : 'bg-amber-50 text-amber-600'
+                          )}
+                        >
+                          {run.status}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4 text-right">
+                        <button
+                          onClick={() => handleDelete(run.id)}
+                          className="text-silver-mist hover:text-red-500 transition-colors p-1"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
 
         {/* Global Distribution Analytics */}
@@ -296,6 +432,58 @@ export default function PayrollPage() {
           </div>
         </div>
       </div>
+
+      {/* CRUD Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-stellar-blue p-8 rounded-3xl shadow-2xl w-full max-w-md">
+            <h3 className="text-xl font-black text-ink-black dark:text-pearl uppercase tracking-tight mb-6">
+              New Payroll Run
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-silver-mist uppercase tracking-widest mb-1">
+                  Period
+                </label>
+                <input
+                  type="text"
+                  value={formData.period}
+                  onChange={(e) => setFormData({ ...formData, period: e.target.value })}
+                  className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-cloud dark:border-nebula-purple/30 rounded-xl focus:border-indigo-500 outline-none"
+                  placeholder="e.g. Mar 2026"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-silver-mist uppercase tracking-widest mb-1">
+                  Status
+                </label>
+                <select
+                  value={formData.status}
+                  onChange={(e) => setFormData({ ...formData, status: e.target.value })}
+                  className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-cloud dark:border-nebula-purple/30 rounded-xl focus:border-indigo-500 outline-none"
+                >
+                  <option value="Draft">Draft</option>
+                  <option value="Active">Active</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 mt-8">
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="px-5 py-2.5 bg-slate-100 dark:bg-slate-800 text-ink-black dark:text-pearl rounded-xl text-xs font-bold transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleSave}
+                className="px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition-colors"
+              >
+                Create Run
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

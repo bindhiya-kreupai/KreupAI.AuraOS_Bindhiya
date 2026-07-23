@@ -44,7 +44,7 @@ app.post('/api/v1/ai/predict/engagement', async (request, reply) => {
 });
 
 const start = async () => {
-  const port = parseInt(process.env.PORT || '3000', 10);
+  const port = parseInt(process.env.AI_SERVICE_PORT || '3006', 10);
   const host = process.env.HOST || '0.0.0.0';
 
   try {

@@ -79,8 +79,24 @@ export class ApprovalService {
 
     this.approvals.set(approval.id, approval);
 
-    // TODO: Send notifications to approvers
-    // TODO: Schedule expiry check if dueDate is set
+    // Mock sending notifications to approvers
+    console.log(`[Notification] Approval request ${approval.id} sent to ${approval.approvers.map((a) => a.email).join(', ')}`);
+
+    // Schedule expiry check if dueDate is set
+    if (approval.dueDate) {
+      const delay = new Date(approval.dueDate).getTime() - Date.now();
+      if (delay > 0) {
+        setTimeout(() => {
+          const currentApproval = this.approvals.get(approval.id);
+          if (currentApproval && currentApproval.status === 'pending') {
+            currentApproval.status = 'expired';
+            console.log(`[Expiry] Approval ${approval.id} expired.`);
+          }
+        }, delay);
+      } else {
+        approval.status = 'expired';
+      }
+    }
 
     return approval;
   }
