@@ -63,16 +63,20 @@ export default function ControlTestsPage() {
       buildPayload={(v) => ({
         action: 'controls',
         input: {
-          controls: ((v.controls as Array<Record<string, unknown>>) ?? []).map((c) => ({
-            controlId: String(c.controlId ?? ''),
-            name: String(c.name ?? ''),
-            testCadenceDays: Number(c.testCadenceDays ?? 0),
-            lastTestedAt:
-              c.lastTestedAt && !isNaN(new Date(String(c.lastTestedAt)).getTime())
-                ? new Date(String(c.lastTestedAt)).toISOString()
-                : undefined,
-            inScope: c.inScope === true || c.inScope === 'true' || c.inScope === 'YES',
-          })),
+          controls: ((v.controls as Array<Record<string, unknown>>) ?? []).map((c, idx) => {
+            const rawDate = c.lastTestedAt ? String(c.lastTestedAt).trim() : '';
+            const validDate =
+              rawDate && rawDate !== '—' && rawDate !== '-' && !isNaN(new Date(rawDate).getTime())
+                ? new Date(rawDate).toISOString()
+                : undefined;
+            return {
+              controlId: String(c.controlId || c.id || `CTRL-${idx + 1}`),
+              name: String(c.name || `Control-${idx + 1}`),
+              testCadenceDays: Number(c.testCadenceDays ?? c.cadence ?? 0),
+              lastTestedAt: validDate,
+              inScope: Boolean(c.inScope === true || c.inScope === 'true' || c.inScope === 'YES'),
+            };
+          }),
           asOf: new Date().toISOString(),
         },
       })}
