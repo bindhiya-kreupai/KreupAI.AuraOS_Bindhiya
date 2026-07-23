@@ -20,11 +20,7 @@ import { FinancialAssetService, exportToCsv } from '../../services';
 import { ToastContainer, useToast } from '../../components/Toast';
 
 type DepreciationMethod =
-  | 'all'
-  | 'straight-line'
-  | 'declining-balance'
-  | 'sum-of-years'
-  | 'units-of-production';
+  'all' | 'straight-line' | 'declining-balance' | 'sum-of-years' | 'units-of-production';
 
 interface DepreciableAsset {
   id: string;

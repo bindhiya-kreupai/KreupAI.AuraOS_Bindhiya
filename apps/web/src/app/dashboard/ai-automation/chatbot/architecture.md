@@ -138,13 +138,7 @@ type ChatbotFlowGraph = {
 
 type ChatbotNodeData = {
   type:
-    | 'trigger'
-    | 'bot_message'
-    | 'user_input'
-    | 'intent_branch'
-    | 'api_action'
-    | 'handoff'
-    | 'end';
+    'trigger' | 'bot_message' | 'user_input' | 'intent_branch' | 'api_action' | 'handoff' | 'end';
   label: string;
   message?: { en: string; ar?: string };
   intents?: { key: string; edgeId: string }[];

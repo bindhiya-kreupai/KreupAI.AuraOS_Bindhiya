@@ -994,11 +994,7 @@ export class HRAgentService {
     employeeId: string,
     tenantId: string,
     documentType:
-      | 'EMPLOYMENT_LETTER'
-      | 'SALARY_CERTIFICATE'
-      | 'EXPERIENCE_LETTER'
-      | 'PAYSLIP'
-      | 'FORM_16',
+      'EMPLOYMENT_LETTER' | 'SALARY_CERTIFICATE' | 'EXPERIENCE_LETTER' | 'PAYSLIP' | 'FORM_16',
     options?: {
       addressTo?: string;
       purpose?: string;

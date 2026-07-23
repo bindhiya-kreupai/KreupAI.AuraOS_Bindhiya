@@ -1,0 +1,195 @@
+
+// ==========================================
+// ENERGY MODULE
+// ==========================================
+
+model SmartMeter {
+  id                String   @id @default(uuid())
+  meterId           String   @unique
+  location          Json
+  type              String
+  status            String
+  installationDate  DateTime
+  lastCalibration   DateTime
+  firmwareVersion   String
+  readings          Json
+  alerts            Json
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model EnergyConsumption {
+  id                String   @id @default(uuid())
+  consumptionId     String   @unique
+  facilityId        String
+  period            Json
+  totalConsumption  Float
+  peakDemand        Float
+  breakdown         Json
+  departmentConsumption Json
+  equipmentConsumption Json
+  comparison        Json
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model LoadManagement {
+  id                String   @id @default(uuid())
+  programId         String   @unique
+  name              String
+  type              String
+  status            String
+  targetReduction   Float
+  actualReduction   Float
+  events            Json
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model GridEvent {
+  id                String   @id @default(uuid())
+  eventId           String   @unique
+  programId         String
+  type              String
+  status            String
+  startTime         DateTime
+  endTime           DateTime
+  requiredReduction Float
+  actualReduction   Float
+  impact            Json
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model WaterMeter {
+  id                String   @id @default(uuid())
+  meterId           String   @unique
+  location          Json
+  type              String
+  status            String
+  installationDate  DateTime
+  lastCalibration   DateTime
+  readings          Json
+  alerts            Json
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model WaterUsage {
+  id                String   @id @default(uuid())
+  usageId           String   @unique
+  facilityId        String
+  period            Json
+  totalUsage        Float
+  breakdown         Json
+  departmentUsage   Json
+  fixtureUsage      Json
+  comparison        Json
+  efficiency        Json
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model LeakDetection {
+  id                String   @id @default(uuid())
+  leakId            String   @unique
+  location          Json
+  severity          String
+  status            String
+  detectedAt        DateTime
+  estimatedLoss     Float
+  repairedAt        DateTime?
+  repairCost        Float?
+  notes             String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model ConservationInitiative {
+  id                String   @id @default(uuid())
+  initiativeId      String   @unique
+  name              String
+  description       String
+  targetSavings     Float
+  actualSavings     Float
+  startDate         DateTime
+  endDate           DateTime?
+  status            String
+  budget            Float
+  spent             Float
+  metrics           Json
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model RenewableAsset {
+  id                String   @id @default(uuid())
+  assetId           String   @unique
+  name              String
+  type              String
+  status            String
+  location          Json
+  capacity          Json
+  installation      Json
+  performance       Json
+  maintenance       Json
+  financials        Json
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model EnergyProduction {
+  id                String   @id @default(uuid())
+  productionId      String   @unique
+  assetId           String
+  period            Json
+  totalProduced     Float
+  expectedProduction Float
+  efficiency        Float
+  weather           Json
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model UtilityAccount {
+  id                String   @id @default(uuid())
+  accountId         String   @unique
+  provider          Json
+  accountNumber     String
+  serviceAddress    Json
+  rateSchedule      Json
+  status            String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model UtilityBill {
+  id                String   @id @default(uuid())
+  billId            String   @unique
+  accountId         String
+  billingCycle      Json
+  consumption       Json
+  charges           Json
+  total             Json
+  dueDate           DateTime
+  status            String
+  paymentInfo       Json
+  documents         Json
+  alerts            Json
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model EnergyPayment {
+  id                String   @id @default(uuid())
+  paymentId         String   @unique
+  billId            String
+  accountId         String
+  amount            Float
+  date              DateTime
+  method            Json
+  status            String
+  reference         String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}

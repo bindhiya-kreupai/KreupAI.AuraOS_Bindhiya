@@ -413,6 +413,59 @@ export default function WorkflowEnginePage() {
           </div>
         </div>
       </div>
+
+      {/* CRUD Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-stellar-blue p-8 rounded-3xl shadow-2xl w-full max-w-md">
+            <h3 className="text-xl font-black text-ink-black dark:text-pearl uppercase tracking-tight mb-6">
+              New Workflow
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-silver-mist uppercase tracking-widest mb-1">
+                  Workflow Name
+                </label>
+                <input
+                  type="text"
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-cloud dark:border-nebula-purple/30 rounded-xl focus:border-indigo-500 outline-none"
+                  placeholder="e.g. Leave Approval"
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-bold text-silver-mist uppercase tracking-widest mb-1">
+                  Trigger Event
+                </label>
+                <select
+                  value={formData.trigger}
+                  onChange={(e) => setFormData({ ...formData, trigger: e.target.value })}
+                  className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-cloud dark:border-nebula-purple/30 rounded-xl focus:border-indigo-500 outline-none"
+                >
+                  <option value="Manual">Manual Trigger</option>
+                  <option value="API">API Webhook</option>
+                  <option value="Schedule">Schedule</option>
+                </select>
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 mt-8">
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="px-5 py-2.5 bg-slate-100 dark:bg-slate-800 text-ink-black dark:text-pearl rounded-xl text-xs font-bold transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCreateWorkflow}
+                className="px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition-colors"
+              >
+                Create Workflow
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

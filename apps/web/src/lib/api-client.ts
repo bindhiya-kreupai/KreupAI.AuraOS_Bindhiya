@@ -56,11 +56,34 @@ export class APIClient {
 
     const config: RequestInit = {
       ...fetchOptions,
+      // Ensure cookies are sent for same-origin auth flows and include any custom headers
+      credentials: 'include',
       headers: {
         'Content-Type': 'application/json',
         ...fetchOptions.headers,
       },
     };
+
+    // If running in the browser and an auth token is stored locally, attach it as a Bearer header.
+    // This is optional — server routes also accept cookies — but including a token helps
+    // when apps store tokens in localStorage for SPA flows.
+    if (typeof window !== 'undefined') {
+      try {
+        const storedToken =
+          localStorage.getItem('access_token') || localStorage.getItem('auth_token');
+        if (storedToken) {
+          // Avoid overwriting an explicit Authorization header passed in fetchOptions
+          const existing =
+            (config.headers as Record<string, any>)?.Authorization ||
+            (config.headers as Record<string, any>)?.authorization;
+          if (!existing) {
+            (config.headers as Record<string, any>)['Authorization'] = `Bearer ${storedToken}`;
+          }
+        }
+      } catch (e) {
+        // ignore localStorage errors (e.g., during SSR or restricted contexts)
+      }
+    }
 
     try {
       const response = await fetch(url, config);
@@ -83,7 +106,20 @@ export class APIClient {
         return {} as T;
       }
 
-      return isJSON ? await response.json() : ({} as T);
+      if (isJSON) {
+        return await response.json();
+      }
+
+      if (
+        contentType?.includes('application/octet-stream') ||
+        contentType?.includes('application/vnd') ||
+        contentType?.includes('text/csv') ||
+        contentType?.includes('application/pdf')
+      ) {
+        return (await response.blob()) as unknown as T;
+      }
+
+      return (await response.text()) as unknown as T;
     } catch (error: any) {
       if (error instanceof APIError) {
         throw error;

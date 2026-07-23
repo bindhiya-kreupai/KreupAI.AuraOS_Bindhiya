@@ -1,16 +1,7 @@
 import type { NextRequest } from 'next/server';
+import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
-import { withEnhancedAuth } from '@/lib/auth';
-import { logger } from '@/lib/logger';
-import {
-  forbidden,
-  parsePagination,
-  safeJson,
-  serverError,
-  successItem,
-  successList,
-  validationError,
-} from '@/lib/api/crud-helpers';
+import { createProtectedRoute } from '@/lib/api/route-wrapper';
 
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
@@ -23,20 +14,14 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
       (prisma as any).aviationTurnaround.findMany({
         where,
         orderBy: { createdAt: 'desc' },
-        skip,
-        take: limit,
-      }),
-      (prisma as any).aviationTurnaround.count({ where }),
-    ]);
-    return successList(rows, page, limit, total);
-  } catch (error: any) {
-    logger.error(
-      { err: error, route: 'industry-aviation/ground-operations/turnarounds/route.ts' },
-      'Failed to list'
-    );
-    return serverError(error, 'list');
-  }
-});
+      });
+      return NextResponse.json({ turnarounds: data }, { status: 200 });
+    } catch (error: any) {
+      return NextResponse.json({ error: error.message }, { status: 500 });
+    }
+  },
+  { requiredPermissions: ['aviation:read'] }
+);
 
 export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {

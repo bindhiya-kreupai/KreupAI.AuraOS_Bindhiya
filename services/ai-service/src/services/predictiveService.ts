@@ -96,12 +96,16 @@ export class PredictiveService {
 
     const trend = this.determineEngagementTrend(employeeData);
 
+    // Mock team comparison calculation
+    const mockTeamAverage = 75; 
+    const comparedToTeamAvg = Math.round(overallScore - mockTeamAverage);
+
     return {
       employeeId: employeeData.id,
       overallScore: Math.round(overallScore),
       dimensions,
       trend,
-      comparedToTeamAvg: 0, // TODO: Calculate team comparison
+      comparedToTeamAvg,
       generatedAt: new Date().toISOString(),
     };
   }

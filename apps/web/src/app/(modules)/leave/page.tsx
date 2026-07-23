@@ -21,6 +21,9 @@ import {
   FileText,
   Calculator,
   Layers,
+  Search,
+  Download,
+  Trash2,
 } from 'lucide-react';
 import { cn } from '@aura/ui/utils';
 import Link from 'next/link';
@@ -93,6 +96,13 @@ export default function LeaveCommandCenter() {
   >('overview');
   const [calendarMode, setCalendarMode] = useState<'gregorian' | 'hijri'>('gregorian');
   const [aiInsight, setAiInsight] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [formData, setFormData] = useState({ type: 'Annual', days: 1, from: '', to: '' });
+
+  const handleCreateRequest = () => {
+    // In a real app, this would call an API
+    setIsModalOpen(false);
+  };
 
   useEffect(() => {
     const insights = [
@@ -144,11 +154,82 @@ export default function LeaveCommandCenter() {
           >
             <FileText className="w-4 h-4" /> Policies
           </Link>
-          <button className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 active:scale-95 transition-all">
+          <button
+            onClick={() => {
+              setFormData({ type: 'Annual', days: 1, from: '', to: '' });
+              setIsModalOpen(true);
+            }}
+            className="flex items-center gap-2 px-6 py-2.5 bg-indigo-600 text-white rounded-xl text-xs font-black uppercase tracking-widest shadow-lg shadow-indigo-600/20 hover:bg-indigo-700 active:scale-95 transition-all"
+          >
             <Plus className="w-4 h-4" /> New Request
           </button>
         </div>
       </div>
+
+      {/* CRUD Modal */}
+      {isModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink-black/50 backdrop-blur-sm">
+          <div className="bg-white dark:bg-stellar-blue p-8 rounded-3xl shadow-2xl w-full max-w-md">
+            <h3 className="text-xl font-black text-ink-black dark:text-pearl uppercase tracking-tight mb-6">
+              New Leave Request
+            </h3>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-xs font-bold text-silver-mist uppercase tracking-widest mb-1">
+                  Leave Type
+                </label>
+                <select
+                  value={formData.type}
+                  onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                  className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-cloud dark:border-nebula-purple/30 rounded-xl focus:border-indigo-500 outline-none"
+                >
+                  <option value="Annual">Annual Leave</option>
+                  <option value="Sick">Sick Leave</option>
+                  <option value="Unpaid">Unpaid Leave</option>
+                </select>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-xs font-bold text-silver-mist uppercase tracking-widest mb-1">
+                    From
+                  </label>
+                  <input
+                    type="date"
+                    value={formData.from}
+                    onChange={(e) => setFormData({ ...formData, from: e.target.value })}
+                    className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-cloud dark:border-nebula-purple/30 rounded-xl focus:border-indigo-500 outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-silver-mist uppercase tracking-widest mb-1">
+                    To
+                  </label>
+                  <input
+                    type="date"
+                    value={formData.to}
+                    onChange={(e) => setFormData({ ...formData, to: e.target.value })}
+                    className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-cloud dark:border-nebula-purple/30 rounded-xl focus:border-indigo-500 outline-none"
+                  />
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-end gap-3 mt-8">
+              <button
+                onClick={() => setIsModalOpen(false)}
+                className="px-5 py-2.5 bg-slate-100 dark:bg-slate-800 text-ink-black dark:text-pearl rounded-xl text-xs font-bold transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleCreateRequest}
+                className="px-5 py-2.5 bg-indigo-600 text-white rounded-xl text-xs font-bold hover:bg-indigo-700 transition-colors"
+              >
+                Submit Request
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* ── AI Sentinel ──────────────────────────────────────────── */}
       <div className="mb-8 bg-gradient-to-r from-indigo-600 via-violet-600 to-purple-600 rounded-[2rem] p-6 shadow-xl shadow-indigo-600/10 relative overflow-hidden">
@@ -208,6 +289,38 @@ function OverviewTab() {
   const [leaveStats, setLeaveStats] = useState(FALLBACK_LEAVE_STATS);
   const [pendingRequests, setPendingRequests] = useState<any[]>([]);
   const [_loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterType, setFilterType] = useState('All');
+
+  const handleExport = () => {
+    const csvContent =
+      'data:text/csv;charset=utf-8,Name,Type,Days,From,To,Department\n' +
+      pendingRequests
+        .map((r) => `${r.name},${r.type},${r.days},${r.from},${r.to},${r.dept}`)
+        .join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', 'leave_requests.csv');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
+  const filteredRequests = pendingRequests.filter((r) => {
+    const matchesSearch =
+      r.name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      r.dept?.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesType = filterType === 'All' || r.type === filterType;
+    return matchesSearch && matchesType;
+  });
+
+  const handleDelete = (index: number) => {
+    if (confirm('Delete this leave request?')) {
+      const updated = pendingRequests.filter((_, i) => i !== index);
+      setPendingRequests(updated);
+    }
+  };
 
   useEffect(() => {
     (async () => {
@@ -296,13 +409,37 @@ function OverviewTab() {
             <h2 className="text-lg font-black text-ink-black dark:text-pearl uppercase tracking-tight">
               Pending Approvals
             </h2>
-            <button className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">
-              View All
-            </button>
+            <div className="flex gap-3">
+              <div className="relative">
+                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-silver-mist" />
+                <input
+                  type="text"
+                  placeholder="Search requests..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-900 border border-cloud dark:border-nebula-purple/30 rounded-xl text-xs focus:outline-none focus:border-indigo-500"
+                />
+              </div>
+              <select
+                value={filterType}
+                onChange={(e) => setFilterType(e.target.value)}
+                className="px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-cloud dark:border-nebula-purple/30 rounded-xl text-xs focus:outline-none focus:border-indigo-500"
+              >
+                <option value="All">All Types</option>
+                <option value="Annual">Annual</option>
+                <option value="Sick">Sick</option>
+              </select>
+              <button
+                onClick={handleExport}
+                className="p-2.5 bg-slate-50 dark:bg-slate-900 border border-cloud dark:border-nebula-purple/30 rounded-xl text-silver-mist hover:text-indigo-600 transition-colors"
+              >
+                <Download className="w-4 h-4" />
+              </button>
+            </div>
           </div>
           <div className="space-y-4">
-            {(pendingRequests.length > 0
-              ? pendingRequests
+            {(filteredRequests.length > 0
+              ? filteredRequests
               : [
                   {
                     name: 'No pending requests',
@@ -315,7 +452,7 @@ function OverviewTab() {
                   },
                 ]
             )
-              .filter((r) => r.days > 0 || pendingRequests.length === 0)
+              .filter((r) => r.days > 0 || filteredRequests.length === 0)
               .map((req, i) => (
                 <div
                   key={i}
@@ -354,6 +491,15 @@ function OverviewTab() {
                       {req.days}d
                     </span>
                     <div className="flex gap-2">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDelete(i);
+                        }}
+                        className="p-2 bg-slate-100 text-slate-500 rounded-xl hover:bg-slate-200 transition-all text-xs font-black"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
                       <button className="p-2 bg-emerald-50 text-emerald-600 rounded-xl hover:bg-emerald-100 transition-all text-xs font-black">
                         <CheckCircle2 className="w-4 h-4" />
                       </button>

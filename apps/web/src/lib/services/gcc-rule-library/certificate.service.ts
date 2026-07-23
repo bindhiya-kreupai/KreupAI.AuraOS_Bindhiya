@@ -71,7 +71,7 @@ export class CountryComplianceCertificateService {
 
     return (prisma as any).countryComplianceCertificate.upsert({
       where: {
-        aura_country_compliance_certificate_unique: {
+        tenantId_countryCode_period: {
           tenantId: auth.tenantId,
           countryCode: cc,
           period,
@@ -109,7 +109,7 @@ export class CountryComplianceCertificateService {
     const cc = countryCode.toUpperCase();
     const cert = await (prisma as any).countryComplianceCertificate.findUnique({
       where: {
-        aura_country_compliance_certificate_unique: {
+        tenantId_countryCode_period: {
           tenantId: auth.tenantId,
           countryCode: cc,
           period,

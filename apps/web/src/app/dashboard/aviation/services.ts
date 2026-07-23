@@ -33,7 +33,7 @@ export class CabinCrewService {
       const response = await APIClient.get<unknown>(this.endpoint);
 
       return APIClient.unwrapList<CrewMemberProfile>(response, 'crewMembers');
-    } catch (_error: any) {
+    } catch (error: any) {
       return [];
     }
   }
@@ -42,7 +42,7 @@ export class CabinCrewService {
     try {
       const response = await APIClient.get<unknown>(`${this.endpoint}/members/${crewId}`);
       return APIClient.unwrapItem<CrewMemberProfile>(response, 'crewMember');
-    } catch (_error: any) {
+    } catch (error: any) {
       return null;
     }
   }
@@ -84,7 +84,7 @@ export class CabinCrewService {
     try {
       const response = await APIClient.get<unknown>(`${this.endpoint}/assignments`);
       return APIClient.unwrapList<FlightAssignment>(response, 'assignments');
-    } catch (_error: any) {
+    } catch (error: any) {
       return [];
     }
   }
@@ -93,7 +93,7 @@ export class CabinCrewService {
     try {
       const response = await APIClient.get<unknown>(`${this.endpoint}/assignments/${assignmentId}`);
       return APIClient.unwrapItem<FlightAssignment>(response, 'assignment');
-    } catch (_error: any) {
+    } catch (error: any) {
       return null;
     }
   }
@@ -104,7 +104,7 @@ export class CabinCrewService {
         `${this.endpoint}/members/${crewId}/assignments`
       );
       return APIClient.unwrapList<FlightAssignment>(response, 'assignments');
-    } catch (_error: any) {
+    } catch (error: any) {
       return [];
     }
   }
@@ -130,12 +130,17 @@ export class CabinCrewService {
     return response.assignment;
   }
 
+  static async deleteFlightAssignment(assignmentId: string): Promise<boolean> {
+    await APIClient.delete(`${this.endpoint}/assignments/${assignmentId}`);
+    return true;
+  }
+
   // Duty Time Management
   static async getAllDutyTimes(): Promise<DutyTime[]> {
     try {
       const response = await APIClient.get<unknown>(`${this.endpoint}/duty-times`);
       return APIClient.unwrapList<DutyTime>(response, 'dutyTimes');
-    } catch (_error: any) {
+    } catch (error: any) {
       return [];
     }
   }
@@ -146,7 +151,7 @@ export class CabinCrewService {
         `${this.endpoint}/members/${crewId}/duty-times`
       );
       return APIClient.unwrapList<DutyTime>(response, 'dutyTimes');
-    } catch (_error: any) {
+    } catch (error: any) {
       return [];
     }
   }
@@ -164,7 +169,7 @@ export class CabinCrewService {
     try {
       const response = await APIClient.get<unknown>(`${this.endpoint}/rest-periods`);
       return APIClient.unwrapList<RestPeriod>(response, 'restPeriods');
-    } catch (_error: any) {
+    } catch (error: any) {
       return [];
     }
   }
@@ -175,7 +180,7 @@ export class CabinCrewService {
         `${this.endpoint}/members/${crewId}/rest-periods`
       );
       return APIClient.unwrapList<RestPeriod>(response, 'restPeriods');
-    } catch (_error: any) {
+    } catch (error: any) {
       return [];
     }
   }
@@ -205,7 +210,7 @@ export class PilotTrainingService {
       const response = await APIClient.get<unknown>(this.endpoint);
 
       return APIClient.unwrapList<PilotProfile>(response, 'pilots');
-    } catch (_error: any) {
+    } catch (error: any) {
       return [];
     }
   }
@@ -214,7 +219,7 @@ export class PilotTrainingService {
     try {
       const response = await APIClient.get<unknown>(`${this.endpoint}/pilots/${pilotId}`);
       return APIClient.unwrapItem<PilotProfile>(response, 'pilot');
-    } catch (_error: any) {
+    } catch (error: any) {
       return null;
     }
   }
@@ -247,7 +252,7 @@ export class PilotTrainingService {
     try {
       const response = await APIClient.get<unknown>(`${this.endpoint}/training-records`);
       return APIClient.unwrapList<TrainingRecord>(response, 'trainingRecords');
-    } catch (_error: any) {
+    } catch (error: any) {
       return [];
     }
   }
@@ -258,7 +263,7 @@ export class PilotTrainingService {
         `${this.endpoint}/pilots/${pilotId}/training-records`
       );
       return APIClient.unwrapList<TrainingRecord>(response, 'trainingRecords');
-    } catch (_error: any) {
+    } catch (error: any) {
       return [];
     }
   }
@@ -290,7 +295,7 @@ export class PilotTrainingService {
     try {
       const response = await APIClient.get<unknown>(`${this.endpoint}/simulator-sessions`);
       return APIClient.unwrapList<SimulatorSession>(response, 'simulatorSessions');
-    } catch (_error: any) {
+    } catch (error: any) {
       return [];
     }
   }
@@ -301,7 +306,7 @@ export class PilotTrainingService {
         `${this.endpoint}/pilots/${pilotId}/simulator-sessions`
       );
       return APIClient.unwrapList<SimulatorSession>(response, 'simulatorSessions');
-    } catch (_error: any) {
+    } catch (error: any) {
       return [];
     }
   }
@@ -332,7 +337,7 @@ export class PilotTrainingService {
     try {
       const response = await APIClient.get<unknown>(`${this.endpoint}/proficiency-checks`);
       return APIClient.unwrapList<ProficiencyCheck>(response, 'proficiencyChecks');
-    } catch (_error: any) {
+    } catch (error: any) {
       return [];
     }
   }
@@ -343,7 +348,7 @@ export class PilotTrainingService {
         `${this.endpoint}/pilots/${pilotId}/proficiency-checks`
       );
       return APIClient.unwrapList<ProficiencyCheck>(response, 'proficiencyChecks');
-    } catch (_error: any) {
+    } catch (error: any) {
       return [];
     }
   }
@@ -378,7 +383,7 @@ export class GroundOperationsService {
     try {
       const response = await APIClient.get<unknown>(`${this.endpoint}/staff`);
       return APIClient.unwrapList<GroundStaffMember>(response, 'groundStaff');
-    } catch (_error: any) {
+    } catch (error: any) {
       return [];
     }
   }
@@ -387,7 +392,7 @@ export class GroundOperationsService {
     try {
       const response = await APIClient.get<unknown>(`${this.endpoint}/staff/${staffId}`);
       return APIClient.unwrapItem<GroundStaffMember>(response, 'groundStaff');
-    } catch (_error: any) {
+    } catch (error: any) {
       return null;
     }
   }
@@ -426,7 +431,7 @@ export class GroundOperationsService {
     try {
       const response = await APIClient.get<unknown>(`${this.endpoint}/turnarounds`);
       return APIClient.unwrapList<TurnaroundAssignment>(response, 'turnarounds');
-    } catch (_error: any) {
+    } catch (error: any) {
       return [];
     }
   }
@@ -435,7 +440,7 @@ export class GroundOperationsService {
     try {
       const response = await APIClient.get<unknown>(`${this.endpoint}/turnarounds/${assignmentId}`);
       return APIClient.unwrapItem<TurnaroundAssignment>(response, 'turnaround');
-    } catch (_error: any) {
+    } catch (error: any) {
       return null;
     }
   }
@@ -465,12 +470,17 @@ export class GroundOperationsService {
     return response.turnaround;
   }
 
+  static async deleteTurnaround(assignmentId: string): Promise<boolean> {
+    await APIClient.delete(`${this.endpoint}/turnarounds/${assignmentId}`);
+    return true;
+  }
+
   // Ground Equipment
   static async getAllEquipment(): Promise<GroundEquipment[]> {
     try {
       const response = await APIClient.get<unknown>(`${this.endpoint}/equipment`);
       return APIClient.unwrapList<GroundEquipment>(response, 'equipment');
-    } catch (_error: any) {
+    } catch (error: any) {
       return [];
     }
   }
@@ -479,7 +489,7 @@ export class GroundOperationsService {
     try {
       const response = await APIClient.get<unknown>(`${this.endpoint}/equipment/${equipmentId}`);
       return APIClient.unwrapItem<GroundEquipment>(response, 'equipment');
-    } catch (_error: any) {
+    } catch (error: any) {
       return null;
     }
   }
@@ -521,7 +531,7 @@ export class GroundOperationsService {
     try {
       const response = await APIClient.get<unknown>(`${this.endpoint}/procedures`);
       return APIClient.unwrapList<RampHandlingProcedure>(response, 'procedures');
-    } catch (_error: any) {
+    } catch (error: any) {
       return [];
     }
   }
@@ -530,7 +540,7 @@ export class GroundOperationsService {
     try {
       const response = await APIClient.get<unknown>(`${this.endpoint}/procedures/${procedureId}`);
       return APIClient.unwrapItem<RampHandlingProcedure>(response, 'procedure');
-    } catch (_error: any) {
+    } catch (error: any) {
       return null;
     }
   }
@@ -561,7 +571,7 @@ export class GroundOperationsService {
     try {
       const response = await APIClient.get<unknown>(`${this.endpoint}/safety-compliance`);
       return APIClient.unwrapList<SafetyCompliance>(response, 'safetyCompliance');
-    } catch (_error: any) {
+    } catch (error: any) {
       return [];
     }
   }
@@ -572,7 +582,7 @@ export class GroundOperationsService {
         `${this.endpoint}/safety-compliance/${complianceId}`
       );
       return APIClient.unwrapItem<SafetyCompliance>(response, 'safetyCompliance');
-    } catch (_error: any) {
+    } catch (error: any) {
       return null;
     }
   }
@@ -608,9 +618,9 @@ export class AviationSettingsService {
 
   static async getSettings(): Promise<AviationSettings | null> {
     try {
-      const response = await APIClient.get<unknown>(this.endpoint);
-      return APIClient.unwrapItem<AviationSettings>(response, 'settings');
-    } catch (_error: any) {
+      const response = await APIClient.get<{ settings: AviationSettings }>(this.endpoint);
+      return response.settings;
+    } catch (error: any) {
       return null;
     }
   }
@@ -632,7 +642,7 @@ export class AlertsService {
     try {
       const response = await APIClient.get<unknown>(this.endpoint);
       return APIClient.unwrapList<Alert>(response, 'alerts');
-    } catch (_error: any) {
+    } catch (error: any) {
       return [];
     }
   }

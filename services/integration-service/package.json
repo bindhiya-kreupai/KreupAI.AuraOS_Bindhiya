@@ -13,7 +13,7 @@
     "@microsoft/microsoft-graph-client": "^3.0.7",
     "@prisma/client": "^5.9.1",
     "@sentry/node": "^7.110.0",
-    "@slack/web-api": "^6.11.0",
+    "@slack/web-api": "^6.13.0",
     "axios": "^1.6.5",
     "bullmq": "^5.1.0",
     "crypto": "^1.0.1",

@@ -3,13 +3,7 @@
  */
 
 export type WorkflowStepType =
-  | 'trigger'
-  | 'action'
-  | 'approval'
-  | 'condition'
-  | 'notification'
-  | 'wait'
-  | 'integration';
+  'trigger' | 'action' | 'approval' | 'condition' | 'notification' | 'wait' | 'integration';
 
 export type WorkflowGeneratedStep = {
   id: string;

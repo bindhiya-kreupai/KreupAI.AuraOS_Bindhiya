@@ -117,12 +117,7 @@ Legacy stub already writes `runType: 'email_parse'` with regex output in `/api/a
 
 ```ts
 type EmailCategory =
-  | 'LEAVE_REQUEST'
-  | 'EXPENSE_REPORT'
-  | 'SUPPORT_TICKET'
-  | 'PAYROLL_INQUIRY'
-  | 'GENERAL'
-  | 'UNKNOWN';
+  'LEAVE_REQUEST' | 'EXPENSE_REPORT' | 'SUPPORT_TICKET' | 'PAYROLL_INQUIRY' | 'GENERAL' | 'UNKNOWN';
 
 type ExtractedField<T = string | number | null> = {
   value: T;

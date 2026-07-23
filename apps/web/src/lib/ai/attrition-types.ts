@@ -6,13 +6,7 @@ export type AttritionRiskLevel = 'LOW' | 'MEDIUM' | 'HIGH' | 'CRITICAL';
 export type AttritionHorizonDays = 90 | 180 | 365;
 
 export type AttritionFactorCategory =
-  | 'COMPENSATION'
-  | 'ENGAGEMENT'
-  | 'PERFORMANCE'
-  | 'GROWTH'
-  | 'MANAGEMENT'
-  | 'WORKLOAD'
-  | 'EXTERNAL';
+  'COMPENSATION' | 'ENGAGEMENT' | 'PERFORMANCE' | 'GROWTH' | 'MANAGEMENT' | 'WORKLOAD' | 'EXTERNAL';
 
 export type AttritionFactor = {
   name: string;

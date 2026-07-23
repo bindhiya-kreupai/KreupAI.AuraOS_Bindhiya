@@ -1,3 +1,5 @@
+import { Client } from '@microsoft/microsoft-graph-client';
+
 export interface TeamsConfig {
   clientId: string;
   clientSecret: string;
@@ -77,15 +79,21 @@ export class TeamsService {
     this.ensureInitialized();
 
     try {
-      // TODO: Implement with @microsoft/microsoft-graph-client
-      // const client = Client.init({ authProvider: ... });
-      // const message = {
-      //   body: { contentType: 'html', content: '' },
-      //   attachments: [{
-      //     contentType: 'application/vnd.microsoft.card.adaptive',
-      //     content: JSON.stringify(params.card),
-      //   }],
-      // };
+      const client = Client.init({
+        authProvider: (done) => {
+          done(null, this.config!.accessToken!);
+        }
+      });
+      
+      const message = {
+        body: { contentType: 'html', content: '' },
+        attachments: [{
+          contentType: 'application/vnd.microsoft.card.adaptive',
+          content: JSON.stringify(params.card),
+        }],
+      };
+      
+      const result = await client.api(`/teams/${this.config!.tenantId}/channels/${params.channelId}/messages`).post(message);
 
       return {
         success: true,
@@ -105,8 +113,17 @@ export class TeamsService {
   async listChannels(teamId: string): Promise<TeamsChannel[]> {
     this.ensureInitialized();
 
-    // TODO: Implement with Microsoft Graph API
-    return [];
+    const client = Client.init({
+      authProvider: (done) => done(null, this.config!.accessToken!)
+    });
+    const result = await client.api(`/teams/${teamId}/channels`).get();
+    
+    return (result.value || []).map((ch: any) => ({
+      id: ch.id,
+      displayName: ch.displayName,
+      description: ch.description,
+      membershipType: ch.membershipType
+    }));
   }
 
   /**
@@ -115,11 +132,23 @@ export class TeamsService {
   async getTeamInfo(teamId: string): Promise<TeamInfo> {
     this.ensureInitialized();
 
-    // TODO: Implement with Microsoft Graph API
+    const client = Client.init({
+      authProvider: (done) => done(null, this.config!.accessToken!)
+    });
+    
+    const team = await client.api(`/teams/${teamId}`).get();
+    const members = await client.api(`/teams/${teamId}/members`).get();
+    
     return {
       id: teamId,
-      displayName: '',
-      members: [],
+      displayName: team.displayName,
+      description: team.description,
+      members: (members.value || []).map((m: any) => ({
+        id: m.id,
+        displayName: m.displayName,
+        email: m.email || '',
+        roles: m.roles || []
+      })),
     };
   }
 
@@ -129,12 +158,23 @@ export class TeamsService {
   async createChannel(teamId: string, displayName: string, description?: string): Promise<TeamsChannel> {
     this.ensureInitialized();
 
-    // TODO: Implement with Microsoft Graph API
-    return {
-      id: 'ch_' + Date.now().toString(),
+    const client = Client.init({
+      authProvider: (done) => done(null, this.config!.accessToken!)
+    });
+    
+    const channel = {
       displayName,
       description,
-      membershipType: 'standard',
+      membershipType: 'standard'
+    };
+    
+    const result = await client.api(`/teams/${teamId}/channels`).post(channel);
+    
+    return {
+      id: result.id,
+      displayName: result.displayName,
+      description: result.description,
+      membershipType: result.membershipType,
     };
   }
 
@@ -144,7 +184,17 @@ export class TeamsService {
   async addMember(teamId: string, userId: string, role: string = 'member'): Promise<boolean> {
     this.ensureInitialized();
 
-    // TODO: Implement with Microsoft Graph API
+    const client = Client.init({
+      authProvider: (done) => done(null, this.config!.accessToken!)
+    });
+    
+    const conversationMember = {
+      '@odata.type': '#microsoft.graph.aadUserConversationMember',
+      roles: [role],
+      'user@odata.bind': `https://graph.microsoft.com/v1.0/users('${userId}')`
+    };
+    
+    await client.api(`/teams/${teamId}/members`).post(conversationMember);
     return true;
   }
 
@@ -154,7 +204,11 @@ export class TeamsService {
   async removeMember(teamId: string, membershipId: string): Promise<boolean> {
     this.ensureInitialized();
 
-    // TODO: Implement with Microsoft Graph API
+    const client = Client.init({
+      authProvider: (done) => done(null, this.config!.accessToken!)
+    });
+    
+    await client.api(`/teams/${teamId}/members/${membershipId}`).delete();
     return true;
   }
 

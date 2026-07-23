@@ -854,11 +854,7 @@ export class RecruitmentAgentService {
     candidateId: string,
     tenantId: string,
     templateType:
-      | 'APPLICATION_RECEIVED'
-      | 'SHORTLISTED'
-      | 'INTERVIEW_SCHEDULED'
-      | 'REJECTED'
-      | 'OFFER',
+      'APPLICATION_RECEIVED' | 'SHORTLISTED' | 'INTERVIEW_SCHEDULED' | 'REJECTED' | 'OFFER',
     additionalData?: Record<string, unknown>
   ): Promise<{ sent: boolean; draft: boolean; messageId: string }> {
     const candidate = await this.getCandidateById(candidateId, tenantId);
