@@ -164,7 +164,26 @@ export function DataPage<T extends { id: string | number }>({
         setCurrentPage(page);
     };
 
+    // Reset to page 1 when data changes (for client-side pagination)
+    useEffect(() => {
+        if (!apiEndpoint && data && data.length > 0) {
+            setCurrentPage(1);
+        }
+    }, [data, apiEndpoint]);
+
     const effectiveData = apiEndpoint ? fetchedData : (data || []);
+
+    // Client-side pagination for non-apiEndpoint mode
+    const effectivePageSize = pageSize || 20;
+    const clientSideTotal = effectiveData.length;
+    const clientSideTotalPages = Math.ceil(clientSideTotal / effectivePageSize);
+    const clientSidePagination = !apiEndpoint && clientSideTotalPages > 1 ? {
+        currentPage,
+        totalPages: clientSideTotalPages,
+        total: clientSideTotal,
+        pageSize: effectivePageSize,
+        onPageChange: handlePageChange,
+    } : undefined;
 
     const handleAdd = () => {
         setCurrentRecord(defaultValues);
@@ -228,7 +247,7 @@ export function DataPage<T extends { id: string | number }>({
     const formRenderer = renderForm || renderDefaultForm;
 
     // Filter data — use searchKeys if provided, otherwise search all string values
-    const filteredData = effectiveData.filter(row => {
+    const searchedData = effectiveData.filter(row => {
         if (!searchQuery) return true;
         const query = searchQuery.toLowerCase();
         if (searchKeys && searchKeys.length > 0) {
@@ -246,6 +265,14 @@ export function DataPage<T extends { id: string | number }>({
             val != null && String(val).toLowerCase().includes(query)
         );
     });
+
+    // Apply client-side pagination when not using apiEndpoint
+    const filteredData = !apiEndpoint && clientSidePagination
+        ? searchedData.slice(
+            (currentPage - 1) * effectivePageSize,
+            currentPage * effectivePageSize
+          )
+        : searchedData;
 
     // Add actions column
     const displayColumns = [
@@ -376,68 +403,9 @@ export function DataPage<T extends { id: string | number }>({
                     onFilter={onFilter}
                     toolbarSlot={toolbarSlot}
                     className="h-full"
+                    pagination={clientSidePagination}
                 />
             </div>
-
-            {paginationMeta && paginationMeta.totalPages > 1 && (
-                <div className="flex items-center justify-between px-2 py-3 border-t border-slate-200 dark:border-slate-700">
-                    <div className="text-sm text-silver-mist dark:text-slate-400">
-                        Showing {((currentPage - 1) * (pageSize || 20)) + 1} to {Math.min(currentPage * (pageSize || 20), paginationMeta.total)} of {paginationMeta.total} entries
-                    </div>
-                    <div className="flex items-center gap-1">
-                        <button
-                            onClick={() => handlePageChange(currentPage - 1)}
-                            disabled={currentPage <= 1}
-                            className={cn(
-                                "p-1.5 rounded-md transition-colors",
-                                currentPage <= 1
-                                    ? "text-slate-300 dark:text-slate-600 cursor-not-allowed"
-                                    : "text-silver-mist hover:text-celestial-indigo hover:bg-celestial-indigo/10"
-                            )}
-                        >
-                            <ChevronLeft className="w-4 h-4" />
-                        </button>
-                        {Array.from({ length: Math.min(paginationMeta.totalPages, 7) }, (_, i) => {
-                            let pageNum: number;
-                            if (paginationMeta.totalPages <= 7) {
-                                pageNum = i + 1;
-                            } else if (currentPage <= 4) {
-                                pageNum = i + 1;
-                            } else if (currentPage >= paginationMeta.totalPages - 3) {
-                                pageNum = paginationMeta.totalPages - 6 + i;
-                            } else {
-                                pageNum = currentPage - 3 + i;
-                            }
-                            return (
-                                <button
-                                    key={pageNum}
-                                    onClick={() => handlePageChange(pageNum)}
-                                    className={cn(
-                                        "px-2.5 py-1 text-sm rounded-md transition-colors",
-                                        pageNum === currentPage
-                                            ? "bg-celestial-indigo text-white"
-                                            : "text-silver-mist hover:text-celestial-indigo hover:bg-celestial-indigo/10"
-                                    )}
-                                >
-                                    {pageNum}
-                                </button>
-                            );
-                        })}
-                        <button
-                            onClick={() => handlePageChange(currentPage + 1)}
-                            disabled={currentPage >= paginationMeta.totalPages}
-                            className={cn(
-                                "p-1.5 rounded-md transition-colors",
-                                currentPage >= paginationMeta.totalPages
-                                    ? "text-slate-300 dark:text-slate-600 cursor-not-allowed"
-                                    : "text-silver-mist hover:text-celestial-indigo hover:bg-celestial-indigo/10"
-                            )}
-                        >
-                            <ChevronRight className="w-4 h-4" />
-                        </button>
-                    </div>
-                </div>
-            )}
 
             <Sheet
                 isOpen={isSheetOpen}
