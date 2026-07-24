@@ -77,7 +77,15 @@ export default function RecordsRiskPage() {
     setMessage(p.success ? 'Closed' : (p.error?.details?.error ?? p.error?.message ?? 'failed'));
     load();
   }
-
+  async function remove(id: string) {
+    if (!confirm('Delete this risk entry?')) return;
+    const r = await fetch(`/api/v1/records-compliance/risk-register?id=${id}`, {
+      method: 'DELETE',
+    });
+    const p = await r.json();
+    setMessage(p.success ? 'Deleted' : (p.error?.message ?? 'failed'));
+    load();
+  }
   return (
     <main className="min-h-screen bg-slate-50 p-6 text-slate-950">
       <div className="mx-auto flex max-w-7xl flex-col gap-6">
@@ -154,6 +162,7 @@ export default function RecordsRiskPage() {
                 <th className="px-3 py-2">Band</th>
                 <th className="px-3 py-2">Status</th>
                 <th className="px-3 py-2">Action</th>
+                <th className="px-3 py-2">Delete</th>
               </tr>
             </thead>
             <tbody>
@@ -186,11 +195,20 @@ export default function RecordsRiskPage() {
                       '—'
                     )}
                   </td>
+                  <td className="px-3 py-2">
+                    <button
+                      type="button"
+                      onClick={() => remove(r.id)}
+                      className="text-xs text-rose-600 hover:underline"
+                    >
+                      Delete
+                    </button>
+                  </td>
                 </tr>
               ))}
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={9} className="px-3 py-6 text-center text-slate-500">
+                  <td colSpan={10} className="px-3 py-6 text-center text-slate-500">
                     No risks.
                   </td>
                 </tr>

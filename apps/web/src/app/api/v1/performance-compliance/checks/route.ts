@@ -51,7 +51,6 @@ const calibSchema = z.object({
   requiredByDays: z.number().int().min(0),
   evidence: z
     .object({
-      cycleId: z.string().min(1),
       meetingAt: z.string(),
       minuteRef: z.string().optional(),
       attendees: z.array(
@@ -98,7 +97,7 @@ export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext)
         asOf: body.asOf ? new Date(body.asOf) : undefined,
         evidence: body.evidence
           ? {
-              cycleId: body.evidence.cycleId,
+              cycleId: `${body.cycleStartDate}_${body.cycleEndDate}`,
               meetingAt: new Date(body.evidence.meetingAt),
               minuteRef: body.evidence.minuteRef,
               attendees: body.evidence.attendees,
