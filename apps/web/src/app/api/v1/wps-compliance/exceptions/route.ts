@@ -71,6 +71,26 @@ export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext)
       if (!body.flagId) return badRequest('flagId required');
       return ok(await wpsExceptionService.resolveDelayFlag(body.flagId), 'Resolved');
     }
+    if (body.action === 'record-delay') {
+      for (const f of ['employeeId', 'countryCode', 'period', 'dueDate', 'creditedAt']) {
+        if (!body[f]) return badRequest(`${f} required`);
+      }
+
+      return ok(
+        await wpsExceptionService.recordDelay(
+          {
+            employeeId: body.employeeId,
+            countryCode: body.countryCode,
+            period: body.period,
+            dueDate: new Date(body.dueDate),
+            creditedAt: new Date(body.creditedAt),
+            submissionId: body.submissionId,
+          },
+          auth
+        ),
+        'Delay flag created'
+      );
+    }
     return badRequest('unknown action');
   } catch (err) {
     return serverError('Failed to update exception', err);
