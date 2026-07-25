@@ -11997,7 +11997,7 @@ model SeparationCase {
   deletedAt                 DateTime?
   isDeleted                 Boolean   @default(false)
 
- @@unique([tenantId, caseNumber], name: "aura_separation_case_unique", map: "aura_separation_case_unique")
+  @@unique([tenantId, caseNumber], name: "aura_separation_case_unique", map: "aura_separation_case_unique")
   @@index([tenantId, employeeId], map: "aura_separation_case_employee")
   @@map("aura_separation_case")
 }
@@ -12098,8 +12098,8 @@ model SeparationCertificate {
   deletedAt              DateTime?
   isDeleted              Boolean   @default(false)
 
-  @@unique([tenantId, period],name:"aura_separation_certificate_unique",map: "aura_separation_certificate_unique")
-  @@map("aura_separation_certificate")
+@@unique([tenantId, period], name: "aura_separation_certificate_unique", map: "aura_separation_certificate_unique")
+@@map("aura_separation_certificate")
 }
 
 model ComplianceKpiSnapshot {
