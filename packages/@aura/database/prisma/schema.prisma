@@ -983,10 +983,10 @@ model Shift {
   deletedAt        DateTime?
   isDeleted        Boolean   @default(false)
 
-  assignments      ShiftAssignment[]
-  rosters          ShiftRoster[]
-  swapAsRequestor  ShiftSwapRequest[] @relation("RequestorShift")
-  swapAsTarget     ShiftSwapRequest[] @relation("SwapWithShift")
+  assignments     ShiftAssignment[]
+  rosters         ShiftRoster[]
+  swapAsRequestor ShiftSwapRequest[] @relation("RequestorShift")
+  swapAsTarget    ShiftSwapRequest[] @relation("SwapWithShift")
 
   @@unique([tenantId, code], map: "Shift_tenantId_code_key")
   @@index([isActive], map: "Shift_isActive_idx")
@@ -1020,7 +1020,7 @@ model ShiftTemplate {
   deletedAt        DateTime?
   isDeleted        Boolean   @default(false)
 
-  tenant           Tenant    @relation(fields: [tenantId], references: [id])
+  tenant Tenant @relation(fields: [tenantId], references: [id])
 
   @@unique([tenantId, name], map: "ShiftTemplate_tenantId_name_key")
   @@index([tenantId], map: "ShiftTemplate_tenantId_idx")
@@ -1045,7 +1045,7 @@ model ShiftAssignment {
   deletedAt     DateTime?
   isDeleted     Boolean   @default(false)
 
-  shift         Shift     @relation(fields: [shiftId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  shift Shift @relation(fields: [shiftId], references: [id], onDelete: Restrict, onUpdate: Cascade)
 
   @@index([employeeId], map: "ShiftAssignment_employeeId_idx")
   @@index([shiftId], map: "ShiftAssignment_shiftId_idx")
@@ -1074,7 +1074,7 @@ model ShiftRoster {
   deletedAt       DateTime?
   isDeleted       Boolean   @default(false)
 
-  shift           Shift     @relation(fields: [shiftId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  shift Shift @relation(fields: [shiftId], references: [id], onDelete: Restrict, onUpdate: Cascade)
 
   @@unique([tenantId, employeeId, rosterDate], map: "ShiftRoster_tenantId_employeeId_rosterDate_key")
   @@index([employeeId], map: "ShiftRoster_employeeId_idx")
@@ -1106,8 +1106,8 @@ model ShiftSwapRequest {
   deletedAt        DateTime?
   isDeleted        Boolean   @default(false)
 
-  requestorShift   Shift     @relation("RequestorShift", fields: [requestorShiftId], references: [id], onDelete: Restrict, onUpdate: Cascade)
-  swapWithShift    Shift     @relation("SwapWithShift", fields: [swapWithShiftId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  requestorShift Shift @relation("RequestorShift", fields: [requestorShiftId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  swapWithShift  Shift @relation("SwapWithShift", fields: [swapWithShiftId], references: [id], onDelete: Restrict, onUpdate: Cascade)
 
   @@index([requestorId], map: "ShiftSwapRequest_requestorId_idx")
   @@index([status], map: "ShiftSwapRequest_status_idx")
@@ -1117,23 +1117,23 @@ model ShiftSwapRequest {
 }
 
 model ShiftPattern {
-  id               String    @id @default(uuid())
-  tenantId         String
-  name             String
-  type             String    @default("FIXED")
-  departmentId     String?
-  rotationDays     Int?
-  status           String    @default("ACTIVE")
-  shifts           Json      @default("[]")
-  weeklyHours      Float     @default(0)
-  employeesAssigned Int     @default(0)
-  isActive         Boolean   @default(true)
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-  createdBy        String?
-  updatedBy        String?
-  deletedAt        DateTime?
-  isDeleted        Boolean   @default(false)
+  id                String    @id @default(uuid())
+  tenantId          String
+  name              String
+  type              String    @default("FIXED")
+  departmentId      String?
+  rotationDays      Int?
+  status            String    @default("ACTIVE")
+  shifts            Json      @default("[]")
+  weeklyHours       Float     @default(0)
+  employeesAssigned Int       @default(0)
+  isActive          Boolean   @default(true)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  createdBy         String?
+  updatedBy         String?
+  deletedAt         DateTime?
+  isDeleted         Boolean   @default(false)
 
   @@index([tenantId], map: "ShiftPattern_tenantId_idx")
   @@index([tenantId, isActive], map: "ShiftPattern_tenantId_isActive_idx")
@@ -7883,53 +7883,53 @@ model ManufacturingAlert {
 }
 
 model AviationCabinCrewMember {
-  id            String    @id @default(uuid())
-  tenantId      String
-  crewId        String    @unique
-  employeeId    String    @unique
-  personalInfo  Json
-  crewType      String
-  seniority     Json?
-  qualifications Json?
-  languages     Json?
-  certifications Json?
-  medicalStatus Json?
-  dutyStatus    String
-  preferences   Json?
-  performanceRating Json?
-  status        String    @default("active")
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  createdBy     String?
-  updatedBy     String?
-  deletedAt     DateTime?
-  isDeleted     Boolean   @default(false)
-
-  @@index([tenantId])
-  @@map("aura_av_cabin_crew")
-}
-
-model AviationPilotTraining {
   id                String    @id @default(uuid())
   tenantId          String
-  recordId          String    @unique
-  pilotId           String
-  programName       String
-  programType       String
-  startDate         DateTime
-  endDate           DateTime?
-  status            String
-  syllabus          Json?
-  progress          Json?
-  instructor        Json?
-  certification     Json?
-  notes             String?
+  crewId            String    @unique
+  employeeId        String    @unique
+  personalInfo      Json
+  crewType          String
+  seniority         Json?
+  qualifications    Json?
+  languages         Json?
+  certifications    Json?
+  medicalStatus     Json?
+  dutyStatus        String
+  preferences       Json?
+  performanceRating Json?
+  status            String    @default("active")
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
   createdBy         String?
   updatedBy         String?
   deletedAt         DateTime?
   isDeleted         Boolean   @default(false)
+
+  @@index([tenantId])
+  @@map("aura_av_cabin_crew")
+}
+
+model AviationPilotTraining {
+  id            String    @id @default(uuid())
+  tenantId      String
+  recordId      String    @unique
+  pilotId       String
+  programName   String
+  programType   String
+  startDate     DateTime
+  endDate       DateTime?
+  status        String
+  syllabus      Json?
+  progress      Json?
+  instructor    Json?
+  certification Json?
+  notes         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  createdBy     String?
+  updatedBy     String?
+  deletedAt     DateTime?
+  isDeleted     Boolean   @default(false)
 
   @@index([tenantId])
   @@index([pilotId])
@@ -7955,27 +7955,27 @@ model AviationGroundEquipment {
 }
 
 model AviationGroundStaff {
-  id             String    @id @default(uuid())
-  tenantId       String
-  staffId        String    @unique
-  employeeId     String    @unique
-  personalInfo   Json
-  jobRole        String
-  department     String
-  baseStation    String
-  shiftInfo      Json?
-  qualifications Json?
-  certifications Json?
+  id                      String    @id @default(uuid())
+  tenantId                String
+  staffId                 String    @unique
+  employeeId              String    @unique
+  personalInfo            Json
+  jobRole                 String
+  department              String
+  baseStation             String
+  shiftInfo               Json?
+  qualifications          Json?
+  certifications          Json?
   equipmentQualifications Json?
-  safetyRecord   Json?
-  performanceMetrics Json?
-  status         String
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  createdBy      String?
-  updatedBy      String?
-  deletedAt      DateTime?
-  isDeleted      Boolean   @default(false)
+  safetyRecord            Json?
+  performanceMetrics      Json?
+  status                  String
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+  createdBy               String?
+  updatedBy               String?
+  deletedAt               DateTime?
+  isDeleted               Boolean   @default(false)
 
   @@index([tenantId])
   @@map("aura_av_ground_staff")
@@ -12511,7 +12511,7 @@ model SeparationCase {
   deletedAt                 DateTime?
   isDeleted                 Boolean   @default(false)
 
- @@unique([tenantId, caseNumber], name: "aura_separation_case_unique", map: "aura_separation_case_unique")
+  @@unique([tenantId, caseNumber], name: "aura_separation_case_unique", map: "aura_separation_case_unique")
   @@index([tenantId, employeeId], map: "aura_separation_case_employee")
   @@map("aura_separation_case")
 }
@@ -12558,7 +12558,7 @@ model SeparationHandover {
   deletedAt       DateTime?
   isDeleted       Boolean   @default(false)
 
-  @@index([tenantId, caseId],map: "aura_separation_handover_case")
+  @@index([tenantId, caseId], map: "aura_separation_handover_case")
   @@map("aura_separation_handover")
 }
 
@@ -12581,7 +12581,7 @@ model SeparationExitInterview {
   deletedAt         DateTime?
   isDeleted         Boolean   @default(false)
 
-  @@unique([tenantId, caseId],name:"aura_separation_exit_interview_unique", map: "aura_separation_exit_interview_unique")
+  @@unique([tenantId, caseId], name: "aura_separation_exit_interview_unique", map: "aura_separation_exit_interview_unique")
   @@map("aura_separation_exit_interview")
 }
 
@@ -12612,7 +12612,7 @@ model SeparationCertificate {
   deletedAt              DateTime?
   isDeleted              Boolean   @default(false)
 
-  @@unique([tenantId, period],name:"aura_separation_certificate_unique",map: "aura_separation_certificate_unique")
+  @@unique([tenantId, period], name: "aura_separation_certificate_unique", map: "aura_separation_certificate_unique")
   @@map("aura_separation_certificate")
 }
 
@@ -18152,6 +18152,162 @@ model TaComplianceCertificate {
 }
 
 // ============================================================================
+// Recruitment Compliance (EPIC-04) — S01/S06/S10/S11/S14/S16
+// ============================================================================
+
+model RecruitmentCase {
+  id           String    @id @default(uuid())
+  tenantId     String
+  vacancyId    String
+  candidateId  String
+  ownerId      String
+  slaDays      Int       @default(30)
+  currentStage String    @default("APPLIED")
+  status       String    @default("OPEN")
+  openedAt     DateTime  @default(now())
+  closedAt     DateTime?
+  closedReason String?
+
+  @@index([tenantId])
+  @@index([vacancyId])
+  @@index([candidateId])
+  @@map("aura_recruitment_case")
+}
+
+model RecruitmentCandidateScreening {
+  id               String    @id @default(uuid())
+  tenantId         String
+  caseId           String
+  candidateId      String
+  score            Float
+  outcome          String
+  rejectionReason  String?
+  knockoutReason   String?
+  protectedFactors String[]  @default([])
+  detailJson       Json?
+  decidedById      String?
+  decidedAt        DateTime?
+
+  @@unique([tenantId, caseId], name: "aura_recruitment_candidate_screening_unique", map: "aura_recruitment_candidate_screening_unique")
+  @@map("aura_recruitment_candidate_screening")
+}
+
+model RecruitmentBgvCase {
+  id              String    @id @default(uuid())
+  tenantId        String
+  caseId          String
+  candidateId     String
+  vendorName      String?
+  consentCaptured Boolean   @default(false)
+  consentAt       DateTime?
+  consentRef      String?
+  status          String    @default("PENDING")
+  blockedReason   String?
+
+  @@unique([tenantId, caseId], name: "aura_recruitment_bgv_case_unique", map: "aura_recruitment_bgv_case_unique")
+  @@map("aura_recruitment_bgv_case")
+}
+
+model RecruitmentBgvCheck {
+  id                String    @id @default(uuid())
+  tenantId          String
+  bgvCaseId         String
+  checkType         String
+  result            String    @default("PENDING")
+  discrepancyAction String?
+  vendorRef         String?
+  evidenceUrl       String?
+  notes             String?
+  completedAt       DateTime?
+
+  @@unique([tenantId, bgvCaseId, checkType], name: "aura_recruitment_bgv_check_unique", map: "aura_recruitment_bgv_check_unique")
+  @@map("aura_recruitment_bgv_check")
+}
+
+model RecruitmentImmigrationEligibility {
+  id          String    @id @default(uuid())
+  tenantId    String
+  caseId      String
+  candidateId String
+  countryCode String
+  nationality String
+  profession  String?
+  banStatus   String    @default("UNKNOWN")
+  nocRequired Boolean   @default(false)
+  nocReceived Boolean   @default(false)
+  eligibility String    @default("PENDING")
+  checkedById String?
+  checkedAt   DateTime?
+
+  @@unique([tenantId, caseId], name: "aura_recruitment_imm_elig_unique", map: "aura_recruitment_imm_elig_unique")
+  @@map("aura_recruitment_immigration_eligibility")
+}
+
+model RecruitmentScreeningCriteria {
+  id            String  @id @default(uuid())
+  tenantId      String
+  vacancyId     String
+  criterionCode String
+  description   String
+  weight        Float   @default(1)
+  isMandatory   Boolean @default(false)
+
+  @@unique([tenantId, vacancyId, criterionCode], name: "aura_recruitment_screening_criteria_unique", map: "aura_recruitment_screening_criteria_unique")
+  @@map("aura_recruitment_screening_criteria")
+}
+
+model RecruitmentCandidateConsent {
+  id            String    @id @default(uuid())
+  tenantId      String
+  candidateId   String
+  lawfulBasis   String
+  purpose       String
+  retentionDays Int       @default(365)
+  evidenceRef   String?
+  metadata      Json?
+  consentedAt   DateTime  @default(now())
+  withdrawnAt   DateTime?
+
+  @@index([tenantId])
+  @@index([candidateId])
+  @@map("aura_recruitment_candidate_consent")
+}
+
+model RecruitmentAuditChecklist {
+  id           String    @id @default(uuid())
+  tenantId     String
+  period       String
+  itemCode     String
+  description  String
+  status       String    @default("PENDING")
+  evidenceRef  String?
+  notes        String?
+  reviewedById String?
+  reviewedAt   DateTime?
+
+  @@unique([tenantId, period, itemCode], name: "aura_recruitment_audit_checklist_unique", map: "aura_recruitment_audit_checklist_unique")
+  @@map("aura_recruitment_audit_checklist")
+}
+
+model RecruitmentRisk {
+  id             String    @id @default(uuid())
+  tenantId       String
+  code           String
+  description    String
+  likelihood     Int
+  impact         Int
+  band           String
+  mitigationPlan String?
+  ownerId        String?
+  status         String    @default("OPEN")
+  raisedAt       DateTime  @default(now())
+  mitigatedAt    DateTime?
+
+  @@unique([tenantId, code], name: "aura_recruitment_risk_unique", map: "aura_recruitment_risk_unique")
+  @@map("aura_recruitment_risk")
+}
+
+// ============================================================================
 // Workforce Extensions Models (Themes E, F, I — EPIC-19, EPIC-21, EPIC-22, EPIC-23, EPIC-24)
 // ============================================================================
 
@@ -18291,7 +18447,6 @@ model AccommodationMaintenanceTicket {
   @@map("aura_accommodation_maintenance_ticket")
 }
 
-
 model NurseSchedule {
   id                   String    @id @default(uuid())
   scheduleId           String    @unique
@@ -18306,4 +18461,3 @@ model NurseSchedule {
   createdAt            DateTime  @default(now())
   updatedAt            DateTime  @updatedAt
 }
-

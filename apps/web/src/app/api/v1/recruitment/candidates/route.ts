@@ -54,7 +54,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     );
   }
   try {
-    const { _user } = context;
+    const _user = context.user ?? context._user;
     const { searchParams } = new URL(request.url);
 
     const page = parseInt(searchParams.get('page') || '1');
