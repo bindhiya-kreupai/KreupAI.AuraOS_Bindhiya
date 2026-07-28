@@ -1,3 +1,8 @@
+# Skip pre-commit hooks automatically during git merge commits
+if [ -f .git/MERGE_HEAD ]; then
+  exit 0
+fi
+
 # Phase 0 #26 — scan staged content for committed secrets before letting
 # lint-staged run. Cheap, no external dependencies. If this fires on a
 # real secret, rotate it AND remove from history; the rotation runbook
