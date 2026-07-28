@@ -14,6 +14,8 @@ import {
   Users,
   X,
 } from 'lucide-react';
+import { apiJson } from '@/lib/api-utils';
+import { useI18n } from '@/lib/i18n/I18nProvider';
 
 type Employee = {
   id: string;
@@ -73,29 +75,8 @@ function weekNumber(d: Date) {
   return Math.ceil(((date.getTime() - yearStart.getTime()) / 86400000 + 1) / 7);
 }
 
-async function api<T>(
-  url: string,
-  init?: RequestInit
-): Promise<{ ok: boolean; data?: T; error?: string }> {
-  try {
-    const res = await fetch(url, {
-      ...init,
-      headers: { 'Content-Type': 'application/json', ...(init?.headers || {}) },
-    });
-    const json = await res.json().catch(() => ({}));
-    if (!res.ok || json?.success === false) {
-      return {
-        ok: false,
-        error: json?.error?.message || json?.error || `Request failed (${res.status})`,
-      };
-    }
-    return { ok: true, data: json?.data as T };
-  } catch (e: any) {
-    return { ok: false, error: e?.message || 'Network error' };
-  }
-}
-
 export default function RosterAssignmentPage() {
+  const { t, isRTL } = useI18n();
   const [weekStart, setWeekStart] = useState<Date>(() => startOfWeek(new Date()));
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [shifts, setShifts] = useState<Shift[]>([]);
@@ -132,9 +113,9 @@ export default function RosterAssignmentPage() {
     const startStr = isoDate(weekStart);
     const endStr = isoDate(weekEnd);
     const [empRes, shiftRes, rosterRes] = await Promise.all([
-      api<any>('/api/v1/employees?limit=200'),
-      api<Shift[]>('/api/v1/shifts?limit=100'),
-      api<Roster[]>(`/api/v1/shift-rosters?startDate=${startStr}&endDate=${endStr}&limit=2000`),
+      apiJson<any>('/api/v1/employees?limit=200'),
+      apiJson<Shift[]>('/api/v1/shifts?limit=100'),
+      apiJson<Roster[]>(`/api/v1/shift-rosters?startDate=${startStr}&endDate=${endStr}&limit=2000`),
     ]);
 
     if (empRes.ok && empRes.data) {
@@ -159,7 +140,13 @@ export default function RosterAssignmentPage() {
     if (shiftRes.ok && shiftRes.data) setShifts(shiftRes.data);
     if (rosterRes.ok && rosterRes.data) setRosters(rosterRes.data);
 
-    if (!empRes.ok) setStatus({ kind: 'error', text: empRes.error || 'Failed to load employees' });
+    const errors: string[] = [];
+    if (!empRes.ok) errors.push(empRes.error?.message || 'Failed to load employees');
+    if (!shiftRes.ok) errors.push(shiftRes.error?.message || 'Failed to load shifts');
+    if (!rosterRes.ok) errors.push(rosterRes.error?.message || 'Failed to load rosters');
+    if (errors.length > 0) {
+      setStatus({ kind: 'error', text: errors.join('; ') });
+    }
     setLoading(false);
   };
 
@@ -216,6 +203,16 @@ export default function RosterAssignmentPage() {
     });
   }, [employees, search, filterRole, filterShiftId, filterCoverage, weekDates, rosterByKey]);
 
+  const dayKeys = [
+    t('shiftManagement.days.sunday'),
+    t('shiftManagement.days.monday'),
+    t('shiftManagement.days.tuesday'),
+    t('shiftManagement.days.wednesday'),
+    t('shiftManagement.days.thursday'),
+    t('shiftManagement.days.friday'),
+    t('shiftManagement.days.saturday'),
+  ];
+
   const hoursForEmployee = (empId: string) => {
     let total = 0;
     weekDates.forEach((d) => {
@@ -235,12 +232,33 @@ export default function RosterAssignmentPage() {
   ) => {
     setStatus(null);
     const existing = rosterByKey.get(`${empId}:${date}`);
+
     if (existing) {
-      // Delete existing then create new (simpler than partial update with version)
-      await api(`/api/v1/shift-rosters/${existing.id}`, { method: 'DELETE' });
-    }
-    if (choice.shiftId || choice.isWeekOff || choice.isHoliday) {
-      const r = await api<Roster>('/api/v1/shift-rosters', {
+      // Use PUT to update existing roster entry (avoids DELETE+POST data loss risk)
+      if (choice.shiftId || choice.isWeekOff || choice.isHoliday) {
+        const r = await apiJson(`/api/v1/shift-rosters/${existing.id}`, {
+          method: 'PUT',
+          body: JSON.stringify({
+            shiftId: choice.shiftId || existing.shiftId,
+            isWeekOff: !!choice.isWeekOff,
+            isHoliday: !!choice.isHoliday,
+          }),
+        });
+        if (!r.ok) {
+          setStatus({ kind: 'error', text: r.error?.message || 'Failed to save roster' });
+          return;
+        }
+      } else {
+        // Clear mode: soft-delete the existing entry
+        const r = await apiJson(`/api/v1/shift-rosters/${existing.id}`, { method: 'DELETE' });
+        if (!r.ok) {
+          setStatus({ kind: 'error', text: r.error?.message || 'Failed to clear roster entry' });
+          return;
+        }
+      }
+    } else if (choice.shiftId || choice.isWeekOff || choice.isHoliday) {
+      // No existing entry — create new
+      const r = await apiJson<Roster>('/api/v1/shift-rosters', {
         method: 'POST',
         body: JSON.stringify({
           employeeId: empId,
@@ -251,7 +269,7 @@ export default function RosterAssignmentPage() {
         }),
       });
       if (!r.ok) {
-        setStatus({ kind: 'error', text: r.error || 'Failed to save roster' });
+        setStatus({ kind: 'error', text: r.error?.message || 'Failed to save roster' });
         return;
       }
     }
@@ -261,12 +279,12 @@ export default function RosterAssignmentPage() {
   };
 
   return (
-    <div className="space-y-4 pb-6">
+    <div className="space-y-4 pb-6" dir={isRTL ? 'rtl' : 'ltr'}>
       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
         <div>
           <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
             <CalendarDays className="w-6 h-6 text-indigo-500" />
-            Roster Assignment
+            {t('shiftManagement.tabs.rosters')}
           </h1>
           <p className="text-silver-mist text-sm mt-1">
             Manage weekly shift schedules and assignments.
@@ -283,10 +301,28 @@ export default function RosterAssignmentPage() {
             onClick={() => reload()}
             className="flex items-center gap-2 px-4 py-2 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition-colors shadow-sm text-sm"
           >
-            <Save className="w-4 h-4" /> Refresh
+            <Save className="w-4 h-4" /> {t('common.refresh')}
           </button>
         </div>
       </div>
+
+      {/* Breadcrumb */}
+      <nav className="flex items-center gap-1.5 text-sm text-silver-mist" aria-label="Breadcrumb">
+        <Link href="/dashboard/attendance" className="hover:text-indigo-500 transition-colors">
+          Attendance
+        </Link>
+        <span>/</span>
+        <Link
+          href="/dashboard/attendance/shift-management"
+          className="hover:text-indigo-500 transition-colors"
+        >
+          Shift Management
+        </Link>
+        <span>/</span>
+        <span className="text-ink-black dark:text-pearl font-medium">
+          {t('shiftManagement.tabs.rosters')}
+        </span>
+      </nav>
 
       {status && (
         <div
@@ -353,7 +389,7 @@ export default function RosterAssignmentPage() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               type="text"
-              placeholder="Search employee..."
+              placeholder={t('common.search') + '...'}
               className="pl-9 pr-4 py-2 bg-slate-50 dark:bg-slate-900/50 border border-cloud dark:border-nebula-purple/50 rounded-lg text-sm focus:outline-none"
             />
           </div>
@@ -397,7 +433,9 @@ export default function RosterAssignmentPage() {
             </select>
           </label>
           <label className="block">
-            <span className="block text-xs font-bold text-silver-mist mb-1 uppercase">Shift</span>
+            <span className="block text-xs font-bold text-silver-mist mb-1 uppercase">
+              {t('attendance.shift')}
+            </span>
             <select
               value={filterShiftId}
               onChange={(e) => setFilterShiftId(e.target.value)}
@@ -435,7 +473,7 @@ export default function RosterAssignmentPage() {
             disabled={activeFilterCount === 0}
             className="px-4 py-2 text-sm font-bold border border-cloud dark:border-nebula-purple/50 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-800 disabled:opacity-40 disabled:cursor-not-allowed"
           >
-            Clear filters
+            {t('common.clear')}
           </button>
         </div>
       )}
@@ -445,7 +483,7 @@ export default function RosterAssignmentPage() {
           <thead className="bg-slate-50 dark:bg-slate-900/50">
             <tr>
               <th className="p-4 text-left min-w-[220px] border-b border-r border-cloud dark:border-nebula-purple/50 sticky left-0 bg-slate-50 dark:bg-slate-900/50 z-10">
-                Employee
+                {t('shiftManagement.roster.employee')}
               </th>
               {weekDates.map((d) => {
                 const isWeekend = d.getDay() === 0 || d.getDay() === 6;
@@ -456,7 +494,7 @@ export default function RosterAssignmentPage() {
                   >
                     <div className="flex flex-col items-center">
                       <span className="text-xs text-silver-mist font-medium uppercase">
-                        {d.toLocaleDateString(undefined, { weekday: 'short' })}
+                        {dayKeys[d.getDay()]}
                       </span>
                       <span
                         className={`text-lg font-bold ${
@@ -470,7 +508,7 @@ export default function RosterAssignmentPage() {
                 );
               })}
               <th className="p-4 text-center border-b border-cloud dark:border-nebula-purple/50 min-w-[70px]">
-                Hours
+                {t('attendance.totalHours')}
               </th>
             </tr>
           </thead>
@@ -556,6 +594,7 @@ export default function RosterAssignmentPage() {
           date={editing.date}
           existing={editing.existing}
           shifts={shifts}
+          employees={employees}
           onClose={() => setEditing(null)}
           onSave={(choice) => saveRoster(editing.empId, editing.date, choice)}
         />
@@ -569,6 +608,7 @@ function RosterCellModal({
   date,
   existing,
   shifts,
+  employees,
   onClose,
   onSave,
 }: {
@@ -576,6 +616,7 @@ function RosterCellModal({
   date: string;
   existing?: Roster;
   shifts: Shift[];
+  employees: Employee[];
   onClose: () => void;
   onSave: (c: { shiftId?: string; isWeekOff?: boolean; isHoliday?: boolean }) => void;
 }) {
@@ -589,13 +630,23 @@ function RosterCellModal({
           : 'shift'
   );
   const [shiftId, setShiftId] = useState<string>(existing?.shiftId || shifts[0]?.id || '');
+  const { t, isRTL } = useI18n();
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center p-0 sm:p-4">
+    <div
+      className="fixed inset-0 z-50 bg-black/40 flex items-end sm:items-center justify-center p-0 sm:p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="roster-modal-title"
+      dir={isRTL ? 'rtl' : 'ltr'}
+      onKeyDown={(e) => {
+        if (e.key === 'Escape') onClose();
+      }}
+    >
       <div className="bg-white dark:bg-stellar-blue w-full max-w-md rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col">
         <div className="flex items-center justify-between px-5 py-3 border-b border-cloud dark:border-nebula-purple/30">
-          <h3 className="font-bold">
-            Roster ·{' '}
+          <h3 id="roster-modal-title" className="font-bold">
+            {t('attendance.roster')} ·{' '}
             {new Date(date).toLocaleDateString(undefined, {
               weekday: 'short',
               day: '2-digit',
@@ -611,7 +662,10 @@ function RosterCellModal({
         </div>
         <div className="px-5 py-4 space-y-3 text-sm">
           <div className="text-xs text-silver-mist">
-            Employee: <span className="font-mono">{empId}</span>
+            {t('shiftManagement.roster.employee')}:{' '}
+            <span className="font-medium text-ink-black dark:text-pearl">
+              {employees.find((e) => e.id === empId)?.name || empId}
+            </span>
           </div>
           <div className="flex gap-2 flex-wrap">
             {(['shift', 'week-off', 'holiday', 'clear'] as const).map((m) => (
@@ -625,18 +679,20 @@ function RosterCellModal({
                 }`}
               >
                 {m === 'shift'
-                  ? 'Shift'
+                  ? t('attendance.shift')
                   : m === 'week-off'
                     ? 'Week off'
                     : m === 'holiday'
                       ? 'Holiday'
-                      : 'Clear'}
+                      : t('common.clear')}
               </button>
             ))}
           </div>
           {mode === 'shift' && (
             <label className="block">
-              <span className="block text-xs font-medium text-silver-mist mb-1">Shift</span>
+              <span className="block text-xs font-medium text-silver-mist mb-1">
+                {t('attendance.shift')}
+              </span>
               <select
                 value={shiftId}
                 onChange={(e) => setShiftId(e.target.value)}
@@ -656,7 +712,7 @@ function RosterCellModal({
             onClick={onClose}
             className="px-4 py-2 text-sm font-medium text-slate-600 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg"
           >
-            Cancel
+            {t('common.cancel')}
           </button>
           <button
             onClick={() => {
@@ -667,7 +723,7 @@ function RosterCellModal({
             }}
             className="px-4 py-2 text-sm font-medium bg-indigo-600 text-white rounded-lg hover:bg-indigo-700"
           >
-            Save
+            {t('common.save')}
           </button>
         </div>
       </div>

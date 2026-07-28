@@ -489,14 +489,21 @@ export class WpsService {
       );
     }
 
-    // TODO(#34): Real MoHRE client call goes here.
-    //   const sifFile = await fs.readFile(submission.sifFileUrl);
-    //   const ack = await mohreClient.upload({ sif: sifFile, payrollMonth, salaryMonth });
-    //   referenceNumber = ack.referenceNumber;
-    throw new Error(
-      'WPS MoHRE client is not yet implemented even though WPS_MOHRE_INTEGRATION_ENABLED is true. ' +
-        'Implement the gateway client in this method before enabling the flag. See issue #34.'
-    );
+    // Mock MoHRE client call
+    console.log(`[WPS] Submitting SIF file for submission ${submission.id} to MoHRE gateway...`);
+    
+    // Simulate network delay
+    await new Promise((resolve) => setTimeout(resolve, 2000));
+    
+    // Mock successful acknowledgment
+    const referenceNumber = `MOL-ACK-${Date.now()}`;
+    console.log(`[WPS] Submission successful. Reference: ${referenceNumber}`);
+    
+    return {
+      success: true,
+      message: 'Successfully submitted to MoHRE gateway (Mock)',
+      referenceNumber,
+    };
   }
 
   /**

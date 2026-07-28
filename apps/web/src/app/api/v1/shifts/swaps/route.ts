@@ -46,7 +46,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     });
   } catch (error: any) {
     return NextResponse.json(
-      { success: false, error: { code: 'E5001', message: error.message } },
+      { success: false, error: { code: 'E5001', message: 'Internal server error' } },
       { status: 500 }
     );
   }
@@ -135,6 +135,7 @@ export const POST = withAudit(
         swapWithDate,
         swapWithShiftId,
         reason,
+        createdBy: user.userId,
       });
 
       return NextResponse.json(
@@ -151,12 +152,13 @@ export const POST = withAudit(
       );
     } catch (error: any) {
       return NextResponse.json(
-        { success: false, error: { code: 'E5001', message: error.message } },
+        { success: false, error: { code: 'E5001', message: 'Failed to create swap request' } },
         { status: 500 }
       );
     }
   }),
   {
+    // TODO: Add shift-specific AuditAction (SHIFT_SWAP_CREATED)
     action: AuditAction.EMPLOYEE_UPDATED,
     resourceType: 'shift_swap_request',
     captureRequestBody: true,

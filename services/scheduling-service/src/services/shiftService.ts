@@ -124,7 +124,9 @@ export class ShiftService {
 
     this.swapRequests.set(swapRequest.id, swapRequest);
 
-    // TODO: Notify target employee and manager
+    // Mock notification to target employee and manager
+    console.log(`[Notification] Shift swap requested by ${params.requestedBy} for shift ${params.shiftId}. Target: ${params.targetEmployeeId}.`);
+    
     return swapRequest;
   }
 
@@ -202,10 +204,35 @@ export class ShiftService {
 
     const generatedShifts: Shift[] = [];
 
-    // TODO: Iterate through date range and generate shifts based on template
-    // - For each day in the range, check if the day of week matches template shifts
-    // - Assign employees round-robin or based on availability
-    // - Create shift records
+    const start = new Date(params.startDate);
+    const end = new Date(params.endDate);
+
+    for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+      const dayOfWeek = d.getDay();
+      
+      const dayShifts = template.shifts.filter(s => s.dayOfWeek === dayOfWeek);
+      for (const tShift of dayShifts) {
+        for (let i = 0; i < tShift.headcount; i++) {
+          const employeeId = params.employeeIds[i % params.employeeIds.length] || 'unassigned';
+          
+          const newShift: Shift = {
+            id: 'sft_' + Date.now().toString() + '_' + Math.random().toString(36).substr(2, 5),
+            scheduleId: params.scheduleId,
+            employeeId,
+            date: d.toISOString().split('T')[0],
+            startTime: tShift.startTime,
+            endTime: tShift.endTime,
+            breakDuration: tShift.breakDuration,
+            role: tShift.role,
+            status: 'scheduled',
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString()
+          };
+          this.shifts.set(newShift.id, newShift);
+          generatedShifts.push(newShift);
+        }
+      }
+    }
 
     return generatedShifts;
   }

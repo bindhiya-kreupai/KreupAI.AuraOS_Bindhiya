@@ -48,6 +48,15 @@ const periodNow = () => {
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
 };
 
+const minPeriod = () => {
+  return '2010-01';
+};
+
+const maxPeriod = () => {
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
+};
+
 const ragColor: Record<string, string> = {
   GREEN: 'bg-emerald-500/10 text-emerald-500 border-emerald-500/25',
   AMBER: 'bg-amber-500/10 text-amber-500 border-amber-500/25',
@@ -110,6 +119,10 @@ export default function ExecHome() {
     }
   }
 
+  const inputYear = parseInt(inputPeriod.slice(0, 4), 10);
+  const isInvalidYear =
+    isNaN(inputYear) || inputYear < 2010 || inputYear > new Date().getFullYear();
+
   return (
     <main
       className="min-h-screen bg-[#f8fafc] dark:bg-slate-950 p-8 text-slate-950 dark:text-slate-50 transition-colors duration-200"
@@ -132,21 +145,27 @@ export default function ExecHome() {
             </p>
           </div>
           <div className="flex flex-col sm:flex-row items-center gap-3 bg-white/10 p-4 rounded-xl backdrop-blur-sm self-start lg:self-auto border border-white/10 shrink-0">
-            <span className="text-sm font-medium text-slate-300">Reporting Period</span>
+            <span className="text-sm font-medium text-slate-300">Reporting Year</span>
             <input
-              value={inputPeriod}
-              onChange={(e) => setInputPeriod(e.target.value)}
-              placeholder="YYYY-MM"
+              type="number"
+              value={isNaN(inputYear) ? '' : inputYear}
+              onChange={(e) => {
+                const val = e.target.value;
+                setInputPeriod(val + (inputPeriod.slice(4) || '-07'));
+              }}
               disabled={loading || isPersisting}
-              className="w-28 rounded-lg border border-slate-700 bg-slate-900 text-white placeholder-slate-500 px-3 py-2 text-sm text-center font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
+              min="2010"
+              max={new Date().getFullYear()}
+              className="w-24 rounded-lg border border-slate-700 bg-slate-900 text-white placeholder-slate-500 px-3 py-2 text-sm text-center font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500 disabled:opacity-50"
             />
             <button
               type="button"
               onClick={() => setPeriod(inputPeriod)}
-              disabled={loading || isPersisting || period === inputPeriod}
-              className="rounded-lg bg-white text-slate-950 hover:bg-slate-100 px-4 py-2 text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm shrink-0"
+              disabled={loading || isPersisting || period === inputPeriod || isInvalidYear}
+              className="rounded-lg bg-white text-slate-950 hover:bg-slate-100 px-4 py-2 text-sm font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-sm shrink-0 flex items-center justify-center gap-1.5"
             >
-              Apply
+              {loading && <RefreshCw className="w-4 h-4 animate-spin text-slate-950" />}
+              {loading ? 'Applying...' : 'Apply'}
             </button>
             <button
               type="button"

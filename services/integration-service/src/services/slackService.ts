@@ -1,3 +1,5 @@
+import { WebClient } from '@slack/web-api';
+
 export interface SlackConfig {
   token: string;
   teamId: string;
@@ -56,14 +58,13 @@ export class SlackService {
     this.ensureInitialized();
 
     try {
-      // TODO: Implement with @slack/web-api
-      // const client = new WebClient(this.config!.token);
-      // const result = await client.chat.postMessage({
-      //   channel: params.channel,
-      //   text: params.text,
-      //   blocks: params.blocks,
-      //   thread_ts: params.threadTs,
-      // });
+      const client = new WebClient(this.config!.token);
+      const result = await client.chat.postMessage({
+        channel: params.channel,
+        text: params.text,
+        blocks: params.blocks as any,
+        thread_ts: params.threadTs,
+      });
 
       return {
         ok: true,
@@ -86,11 +87,15 @@ export class SlackService {
   async listChannels(): Promise<SlackChannel[]> {
     this.ensureInitialized();
 
-    // TODO: Implement with @slack/web-api
-    // const client = new WebClient(this.config!.token);
-    // const result = await client.conversations.list();
-
-    return [];
+    const client = new WebClient(this.config!.token);
+    const result = await client.conversations.list();
+    
+    return (result.channels || []).map((ch: any) => ({
+      id: ch.id,
+      name: ch.name,
+      isPrivate: ch.is_private,
+      memberCount: ch.num_members || 0
+    }));
   }
 
   /**
@@ -99,9 +104,21 @@ export class SlackService {
   async createChannel(params: ChannelCreateParams): Promise<SlackChannel> {
     this.ensureInitialized();
 
-    // TODO: Implement with @slack/web-api
+    const client = new WebClient(this.config!.token);
+    const result = await client.conversations.create({
+      name: params.name,
+      is_private: params.isPrivate || false
+    });
+    
+    if (params.members && params.members.length > 0 && result.channel?.id) {
+      await client.conversations.invite({
+        channel: result.channel.id,
+        users: params.members.join(',')
+      });
+    }
+
     return {
-      id: 'C_generated',
+      id: result.channel?.id || 'C_generated',
       name: params.name,
       isPrivate: params.isPrivate || false,
       memberCount: params.members?.length || 0,
@@ -114,7 +131,8 @@ export class SlackService {
   async archiveChannel(channelId: string): Promise<boolean> {
     this.ensureInitialized();
 
-    // TODO: Implement with @slack/web-api
+    const client = new WebClient(this.config!.token);
+    await client.conversations.archive({ channel: channelId });
     return true;
   }
 
@@ -124,7 +142,11 @@ export class SlackService {
   async inviteToChannel(channelId: string, userIds: string[]): Promise<boolean> {
     this.ensureInitialized();
 
-    // TODO: Implement with @slack/web-api
+    const client = new WebClient(this.config!.token);
+    await client.conversations.invite({
+      channel: channelId,
+      users: userIds.join(',')
+    });
     return true;
   }
 

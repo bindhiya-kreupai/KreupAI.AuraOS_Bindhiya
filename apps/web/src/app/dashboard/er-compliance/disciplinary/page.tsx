@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { EmployeeSearchableSelect } from '@/components/shared/EmployeeSearchableSelect';
 
 interface A {
   id: string;
@@ -116,12 +117,12 @@ export default function DisciplinaryPage() {
               className="mt-1 w-full rounded-md border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1.5 font-mono text-xs"
             />
           </label>
-          <label className="text-sm">
-            Employee
-            <input
+          <label className="text-sm flex flex-col gap-1">
+            Employee Name
+            <EmployeeSearchableSelect
               value={form.employeeId}
-              onChange={(e) => setForm((f) => ({ ...f, employeeId: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1.5"
+              onChange={(val) => setForm((f) => ({ ...f, employeeId: val }))}
+              placeholder="Search employee..."
             />
           </label>
           <label className="text-sm">
@@ -235,11 +236,33 @@ export default function DisciplinaryPage() {
                           {a.status === 'DRAFT' && !a.hearingHeld && (
                             <button
                               type="button"
-                              onClick={() =>
+                              onClick={() => {
+                                const dateInput = window.prompt(
+                                  'Enter Hearing Date (YYYY-MM-DD):',
+                                  new Date().toISOString().slice(0, 10)
+                                );
+                                if (!dateInput) return;
+
+                                const hearingDate = new Date(dateInput);
+                                const today = new Date();
+                                today.setHours(0, 0, 0, 0);
+
+                                let responseRecorded = false;
+                                if (hearingDate <= today) {
+                                  responseRecorded = window.confirm(
+                                    'Was the employee response recorded during the hearing?'
+                                  );
+                                } else {
+                                  window.alert(
+                                    'Hearing is scheduled for a future date. Employee response will not be marked as recorded yet.'
+                                  );
+                                }
+
                                 call('record-hearing', a.id, {
-                                  hearingDate: new Date().toISOString().slice(0, 10),
-                                })
-                              }
+                                  hearingDate: dateInput,
+                                  responseRecorded,
+                                });
+                              }}
                               className="rounded-md border border-slate-300 dark:border-slate-700 dark:hover:bg-slate-800 px-2 py-1 text-xs"
                             >
                               Record Hearing

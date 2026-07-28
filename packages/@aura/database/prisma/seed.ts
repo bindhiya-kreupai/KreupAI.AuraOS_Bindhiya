@@ -474,10 +474,10 @@ async function main() {
 
     // Shift Types
     for (const st of shiftTypesSeed) {
-        const existing = await prisma.shiftType.findFirst({ where: { code: st.code } });
+        const existing = await prisma.shiftType.findFirst({ where: { tenantId_code: { tenantId: tenant.id, code: st.code } } });
         if (!existing) {
             await prisma.shiftType.create({
-                data: { code: st.code, name: st.name, startTime: st.startTime, endTime: st.endTime }
+                data: { tenantId: tenant.id, code: st.code, name: st.name, startTime: st.startTime, endTime: st.endTime }
             });
         }
     }

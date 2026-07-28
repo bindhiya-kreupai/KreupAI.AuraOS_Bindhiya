@@ -221,6 +221,7 @@ const ENTITIES: Record<
     createSchema: GenericCreateSchema,
     updateSchema: GenericUpdateSchema,
     searchFields: ['name', 'code'],
+    tenantScoped: true,
   },
 
   // Document types

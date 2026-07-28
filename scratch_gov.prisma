@@ -1,0 +1,68 @@
+
+// ==========================================
+// GOVERNMENT MODULE
+// ==========================================
+
+model CivilServiceGrade {
+  id                   String   @id @default(uuid())
+  gradeId              String   @unique
+  employeeId           String
+  employeeName         String
+  department           String
+  position             String
+  gradeLevel           String
+  step                 Int
+  series               String
+  effectiveDate        DateTime
+  salaryInformation    Json
+  promotionEligibility Json
+  performanceHistory   Json
+  qualifications       Json
+  status               String
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model SecurityClearance {
+  id                     String   @id @default(uuid())
+  clearanceId            String   @unique
+  employeeId             String
+  employeeName           String
+  department             String
+  position               String
+  clearanceLevel         String
+  status                 String
+  grantedDate            DateTime
+  expiryDate             DateTime
+  investigationType      String
+  investigationDetails   Json
+  polygraphRequired      Boolean
+  polygraphStatus        String?
+  continuousEvaluation   Json
+  accessAuthorizations   Json
+  suspensionHistory      Json
+  debriefRequired        Boolean
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+}
+
+model PensionScheme {
+  id                     String   @id @default(uuid())
+  pensionId              String   @unique
+  employeeId             String
+  employeeName           String
+  department             String
+  pensionType            String
+  enrollmentDate         DateTime
+  serviceComputationDate DateTime
+  yearsOfService         Int
+  vestingStatus          String
+  retirementEligibility  Json
+  contributions          Json
+  projections            Json
+  beneficiaries          Json
+  thriftSavingsPlan      Json
+  status                 String
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+}

@@ -19,7 +19,16 @@ import {
   DialogTitle,
   DialogTrigger,
 } from '@/components/ui/dialog';
-import { FileText, Play, Download, Clock, CheckCircle, XCircle } from 'lucide-react';
+import {
+  FileText,
+  Play,
+  Download,
+  Clock,
+  CheckCircle,
+  XCircle,
+  Search,
+  Trash2,
+} from 'lucide-react';
 
 export default function CustomReportsPage() {
   const [reports, setReports] = useState<any[]>([]);
@@ -35,6 +44,13 @@ export default function CustomReportsPage() {
     dataSource: '',
     chartType: 'TABLE',
   });
+  const [searchQuery, setSearchQuery] = useState('');
+
+  const filteredReports = reports.filter(
+    (r) =>
+      r.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      r.code.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   useEffect(() => {
     fetchReports();
@@ -113,6 +129,33 @@ export default function CustomReportsPage() {
     } catch (error: any) {
       console.error('Error executing report:', error);
     }
+  };
+
+  const handleDeleteReport = async (reportId: string) => {
+    if (!confirm('Are you sure you want to delete this report?')) return;
+    try {
+      const res = await fetch(`/api/v1/reports/${reportId}`, {
+        method: 'DELETE',
+      });
+      if (res.ok) {
+        fetchReports();
+      }
+    } catch (error: any) {
+      console.error('Error deleting report:', error);
+    }
+  };
+
+  const handleExportExecution = (execution: any) => {
+    const csvContent =
+      'data:text/csv;charset=utf-8,ID,Status,Report,Rows,Time,Executed At\n' +
+      `${execution.id},${execution.status},${execution.report?.name},${execution.rowCount},${execution.executionTime},${execution.executedAt}`;
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute('download', `execution_${execution.id}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   };
 
   const getCategoryBadgeColor = (category: string) => {
@@ -282,8 +325,18 @@ export default function CustomReportsPage() {
 
       {/* Reports List */}
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>Available Reports</CardTitle>
+          <div className="relative">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <input
+              type="text"
+              placeholder="Search reports..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 pr-4 py-1.5 bg-background border rounded-md text-sm focus:outline-none focus:ring-1 focus:ring-primary w-64"
+            />
+          </div>
         </CardHeader>
         <CardContent>
           {loading ? (
@@ -306,7 +359,7 @@ export default function CustomReportsPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {reports.map((report) => (
+                  {filteredReports.map((report) => (
                     <tr key={report.id} className="border-b hover:bg-muted/50">
                       <td className="py-3 px-4 font-mono text-sm">{report.code}</td>
                       <td className="py-3 px-4">
@@ -348,8 +401,12 @@ export default function CustomReportsPage() {
                             <Play className="h-3 w-3 mr-1" />
                             Execute
                           </Button>
-                          <Button variant="outline" size="sm">
-                            <Download className="h-3 w-3" />
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleDeleteReport(report.id)}
+                          >
+                            <Trash2 className="h-3 w-3 text-red-500" />
                           </Button>
                         </div>
                       </td>
@@ -406,7 +463,11 @@ export default function CustomReportsPage() {
                         {new Date(execution.executedAt).toLocaleString()}
                       </td>
                       <td className="py-3 px-4 text-right">
-                        <Button variant="outline" size="sm">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleExportExecution(execution)}
+                        >
                           <Download className="h-3 w-3 mr-1" />
                           Export
                         </Button>
@@ -422,4 +483,3 @@ export default function CustomReportsPage() {
     </div>
   );
 }
-

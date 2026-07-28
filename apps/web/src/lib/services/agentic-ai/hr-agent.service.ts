@@ -18,7 +18,8 @@ import type {
   AgentAction,
   LeaveQueryIntent,
   AttendanceQueryIntent,
-  PayrollQueryIntent} from './types';
+  PayrollQueryIntent,
+} from './types';
 import {
   AgentCapability,
   DetectedIntent,
@@ -177,73 +178,85 @@ export class HRAgentService {
   // ============================================================================
 
   /**
-   * Get leave balance for employee
+   * Normalize leave type strings for flexible matching (code, name, or natural language).
+   */
+  private static normalizeLeaveTypeKey(value: string): string {
+    return value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  }
+
+  /**
+   * Match a user/LLM leave type against policy code or display name.
+   * Accepts "ANNUAL", "annual leave", "Annual Leave", etc.
+   */
+  private static leaveTypeMatches(balance: LeaveBalance, leaveType: string): boolean {
+    const query = this.normalizeLeaveTypeKey(leaveType);
+    if (!query) return false;
+
+    const code = this.normalizeLeaveTypeKey(balance.leaveType);
+    const name = this.normalizeLeaveTypeKey(balance.leaveTypeName);
+
+    if (code === query || name === query) return true;
+
+    // Substring match for phrases like "annual" → "Annual Leave" / "ANNUALLEAVE"
+    if (query.length >= 3) {
+      if (name.includes(query) || code.includes(query)) return true;
+      if (query.includes(name) || (code.length >= 3 && query.includes(code))) return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Match a leave type query against policy code/name.
+   */
+  private static policyTypeMatches(
+    policy: { code: string; name: string },
+    leaveType: string
+  ): boolean {
+    return this.leaveTypeMatches(
+      {
+        leaveType: policy.code,
+        leaveTypeName: policy.name,
+        entitled: 0,
+        used: 0,
+        pending: 0,
+        balance: 0,
+        carryForward: 0,
+      },
+      leaveType
+    );
+  }
+
+  /**
+   * Get leave balance for employee. Falls back to the most recent leave year when
+   * the current year has no rows (see LeaveService.getBalanceByEmployee).
    */
   static async getLeaveBalance(
     employeeId: string,
     tenantId: string,
     leaveType?: string
   ): Promise<LeaveBalance[]> {
-    // In production, fetch from database
-    const allBalances: LeaveBalance[] = [
-      {
-        leaveType: 'ANNUAL',
-        leaveTypeName: 'Annual Leave',
-        entitled: 20,
-        used: 8,
-        pending: 2,
-        balance: 10,
-        carryForward: 5,
-        expiryDate: new Date(new Date().getFullYear() + 1, 2, 31),
-      },
-      {
-        leaveType: 'SICK',
-        leaveTypeName: 'Sick Leave',
-        entitled: 10,
-        used: 2,
-        pending: 0,
-        balance: 8,
-        carryForward: 0,
-      },
-      {
-        leaveType: 'CASUAL',
-        leaveTypeName: 'Casual Leave',
-        entitled: 8,
-        used: 3,
-        pending: 1,
-        balance: 4,
-        carryForward: 0,
-      },
-      {
-        leaveType: 'COMP_OFF',
-        leaveTypeName: 'Compensatory Off',
-        entitled: 0,
-        used: 0,
-        pending: 0,
-        balance: 2,
-        carryForward: 0,
-        expiryDate: new Date(new Date().getFullYear(), 11, 31),
-      },
-      {
-        leaveType: 'WFH',
-        leaveTypeName: 'Work From Home',
-        entitled: 24,
-        used: 12,
-        pending: 0,
-        balance: 12,
-        carryForward: 0,
-      },
-    ];
+    const { LeaveService } = await import('@/lib/services/leave.service');
+
+    const rows = await LeaveService.getBalanceByEmployee(tenantId, employeeId).catch(() => []);
+    const allBalances: LeaveBalance[] = rows.map((b) => ({
+      leaveType: b.policy?.code || b.policyId,
+      leaveTypeName: b.policy?.name || 'Leave',
+      entitled: Number(b.openingBalance) + Number(b.accrued) + Number(b.carriedForward),
+      used: Number(b.taken),
+      pending: 0,
+      balance: Number(b.currentBalance),
+      carryForward: Number(b.carriedForward),
+    }));
 
     if (leaveType) {
-      return allBalances.filter(b => b.leaveType === leaveType.toUpperCase());
+      return allBalances.filter((b) => this.leaveTypeMatches(b, leaveType));
     }
-
     return allBalances;
   }
 
   /**
-   * Apply for leave
+   * Apply for leave — resolves policy by code/name (balance optional, matches /api/v1/leave/apply).
    */
   static async applyLeave(
     employeeId: string,
@@ -257,51 +270,101 @@ export class HRAgentService {
       halfDayPeriod?: 'FIRST_HALF' | 'SECOND_HALF';
     }
   ): Promise<LeaveRequest> {
-    // Validate leave balance
-    const balances = await this.getLeaveBalance(employeeId, tenantId, request.leaveType);
-    if (balances.length === 0) {
-      throw new Error('Invalid leave type');
+    const { prisma } = await import('@aura/database');
+    const { LeaveService } = await import('@/lib/services/leave.service');
+
+    const policies = await prisma.leavePolicy.findMany({
+      where: { tenantId, isDeleted: false, isActive: true },
+      take: 50,
+    });
+
+    const policy =
+      policies.find((p) => this.policyTypeMatches(p, request.leaveType)) ||
+      (await prisma.leavePolicy.findFirst({
+        where: {
+          tenantId,
+          isDeleted: false,
+          OR: [
+            { code: { equals: request.leaveType, mode: 'insensitive' } },
+            { name: { contains: request.leaveType, mode: 'insensitive' } },
+          ],
+        },
+      }));
+
+    if (!policy) {
+      const available = policies.map((p) => `${p.name} (${p.code})`).join(', ');
+      throw new Error(
+        available
+          ? `Invalid leave type "${request.leaveType}". Available: ${available}`
+          : `Invalid leave type "${request.leaveType}". No leave policies are configured for your organization.`
+      );
     }
 
-    const balance = balances[0];
-    const duration = this.calculateLeaveDuration(request.startDate, request.endDate, request.halfDay);
+    const duration = this.calculateLeaveDuration(
+      request.startDate,
+      request.endDate,
+      request.halfDay
+    );
 
-    if (duration > balance.balance) {
-      throw new Error(`Insufficient leave balance. Available: ${balance.balance} days, Requested: ${duration} days`);
+    const leaveYear = request.startDate.getFullYear();
+    const balanceRow = await prisma.leaveBalance.findFirst({
+      where: {
+        tenantId,
+        employeeId,
+        policyId: policy.id,
+        leaveYear,
+        isDeleted: false,
+      },
+    });
+
+    if (
+      balanceRow &&
+      duration > Number(balanceRow.currentBalance) &&
+      !policy.allowNegativeBalance
+    ) {
+      throw new Error(
+        `Insufficient leave balance. Available: ${Number(balanceRow.currentBalance)} days, Requested: ${duration} days`
+      );
     }
 
-    // Check for overlapping leaves
-    const overlapping = await this.checkOverlappingLeaves(employeeId, request.startDate, request.endDate);
+    const overlapping = await this.checkOverlappingLeaves(
+      employeeId,
+      request.startDate,
+      request.endDate
+    );
     if (overlapping) {
       throw new Error('You already have a leave request for this period');
     }
 
-    // Create leave request
-    const leaveRequest: LeaveRequest = {
-      id: `leave_${Date.now()}`,
+    const created = await LeaveService.createRequest({
+      tenantId,
       employeeId,
-      leaveType: request.leaveType,
+      leaveTypeId: policy.leaveTypeId,
+      policyId: policy.id,
       startDate: request.startDate,
       endDate: request.endDate,
-      duration,
+      totalDays: duration,
+      halfDayStart: Boolean(request.halfDay),
       reason: request.reason,
-      status: 'PENDING',
-      appliedAt: new Date(),
+    });
+
+    return {
+      id: created.id,
+      employeeId: created.employeeId,
+      leaveType: policy.name || request.leaveType,
+      startDate: created.startDate,
+      endDate: created.endDate,
+      duration: Number(created.totalDays),
+      reason: created.reason,
+      status: created.status as LeaveRequest['status'],
+      appliedAt: created.appliedAt || created.createdAt,
     };
-
-    // In production, save to database and trigger workflow
-
-    return leaveRequest;
   }
 
   /**
    * Calculate leave duration
    */
-  private static calculateLeaveDuration(
-    startDate: Date,
-    endDate: Date,
-    halfDay?: boolean
-  ): number {
+  private static calculateLeaveDuration(startDate: Date, endDate: Date, halfDay?: boolean): number {
     if (halfDay) {
       return 0.5;
     }
@@ -330,8 +393,17 @@ export class HRAgentService {
     startDate: Date,
     endDate: Date
   ): Promise<boolean> {
-    // In production, check database
-    return false;
+    const { prisma } = await import('@aura/database');
+    const overlap = await prisma.leaveRequest.findFirst({
+      where: {
+        employeeId,
+        isDeleted: false,
+        status: { in: ['PENDING', 'APPROVED'] },
+        startDate: { lte: endDate },
+        endDate: { gte: startDate },
+      },
+    });
+    return Boolean(overlap);
   }
 
   /**
@@ -346,39 +418,32 @@ export class HRAgentService {
       endDate?: Date;
     }
   ): Promise<LeaveRequest[]> {
-    // In production, fetch from database
-    const mockRequests: LeaveRequest[] = [
-      {
-        id: 'leave_001',
-        employeeId,
-        leaveType: 'ANNUAL',
-        startDate: new Date(2024, 11, 25),
-        endDate: new Date(2024, 11, 27),
-        duration: 3,
-        reason: 'Family vacation',
-        status: 'APPROVED',
-        appliedAt: new Date(2024, 11, 15),
-        approver: 'John Manager',
-        approvedAt: new Date(2024, 11, 16),
-      },
-      {
-        id: 'leave_002',
-        employeeId,
-        leaveType: 'CASUAL',
-        startDate: new Date(2024, 11, 30),
-        endDate: new Date(2024, 11, 30),
-        duration: 1,
-        reason: 'Personal work',
-        status: 'PENDING',
-        appliedAt: new Date(2024, 11, 20),
-      },
-    ];
+    const { prisma } = await import('@aura/database');
 
-    if (filters?.status) {
-      return mockRequests.filter(r => r.status === filters.status);
-    }
+    const rows = await prisma.leaveRequest
+      .findMany({
+        where: {
+          tenantId,
+          employeeId,
+          isDeleted: false,
+          ...(filters?.status ? { status: filters.status } : {}),
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 20,
+      })
+      .catch(() => []);
 
-    return mockRequests;
+    return rows.map((r) => ({
+      id: r.id,
+      employeeId: r.employeeId,
+      leaveType: r.leaveTypeId,
+      startDate: r.startDate,
+      endDate: r.endDate,
+      duration: Number(r.totalDays),
+      reason: r.reason || '',
+      status: r.status as LeaveRequest['status'],
+      appliedAt: r.createdAt,
+    }));
   }
 
   /**
@@ -389,21 +454,37 @@ export class HRAgentService {
     employeeId: string,
     reason: string
   ): Promise<LeaveRequest> {
-    // In production, fetch and update in database
-    const request: LeaveRequest = {
-      id: leaveId,
-      employeeId,
-      leaveType: 'ANNUAL',
-      startDate: new Date(),
-      endDate: new Date(),
-      duration: 1,
-      reason: '',
+    const { prisma } = await import('@aura/database');
+    const existing = await prisma.leaveRequest.findFirst({
+      where: { id: leaveId, employeeId, isDeleted: false },
+    });
+    if (!existing) throw new Error('Leave request not found');
+    if (!['PENDING', 'APPROVED'].includes(existing.status)) {
+      throw new Error('Leave request cannot be cancelled');
+    }
+
+    const updated = await prisma.leaveRequest.update({
+      where: { id: leaveId },
+      data: {
+        status: 'CANCELLED',
+        cancelledAt: new Date(),
+        cancelledBy: employeeId,
+        cancellationReason: reason,
+      },
+    });
+
+    return {
+      id: updated.id,
+      employeeId: updated.employeeId,
+      leaveType: updated.leaveTypeId,
+      startDate: updated.startDate,
+      endDate: updated.endDate,
+      duration: Number(updated.totalDays),
+      reason: updated.reason || '',
       status: 'CANCELLED',
-      appliedAt: new Date(),
+      appliedAt: updated.appliedAt || updated.createdAt,
       comments: reason,
     };
-
-    return request;
   }
 
   // ============================================================================
@@ -413,18 +494,39 @@ export class HRAgentService {
   /**
    * Get today's attendance
    */
-  static async getTodayAttendance(
-    employeeId: string,
-    tenantId: string
-  ): Promise<AttendanceRecord> {
-    // In production, fetch from database
+  static async getTodayAttendance(employeeId: string, tenantId: string): Promise<AttendanceRecord> {
+    const { prisma } = await import('@aura/database');
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const record = await prisma.attendanceRecord
+      .findFirst({
+        where: {
+          tenantId,
+          employeeId,
+          isDeleted: false,
+          date: { gte: today, lt: tomorrow },
+        },
+      })
+      .catch(() => null);
+
+    if (!record) {
+      return { date: new Date(), status: 'ABSENT' };
+    }
+
     return {
-      date: new Date(),
-      checkIn: '09:15',
-      checkOut: null,
-      workingHours: undefined,
-      status: 'PRESENT',
-      lateBy: 15,
+      date: record.date,
+      checkIn: record.clockIn
+        ? record.clockIn.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+        : undefined,
+      checkOut: record.clockOut
+        ? record.clockOut.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+        : undefined,
+      workingHours: record.workHours,
+      status: (record.status?.toUpperCase() || 'PRESENT') as AttendanceRecord['status'],
+      lateBy: record.isLate ? 15 : undefined,
     };
   }
 
@@ -437,25 +539,30 @@ export class HRAgentService {
     startDate: Date,
     endDate: Date
   ): Promise<AttendanceRecord[]> {
-    // In production, fetch from database
-    const records: AttendanceRecord[] = [];
-    const current = new Date(startDate);
+    const { prisma } = await import('@aura/database');
+    const rows = await prisma.attendanceRecord.findMany({
+      where: {
+        tenantId,
+        employeeId,
+        isDeleted: false,
+        date: { gte: startDate, lte: endDate },
+      },
+      orderBy: { date: 'asc' },
+    });
 
-    while (current <= endDate) {
-      const day = current.getDay();
-      if (day !== 0 && day !== 6) {
-        records.push({
-          date: new Date(current),
-          checkIn: '09:00',
-          checkOut: '18:00',
-          workingHours: 9,
-          status: 'PRESENT',
-        });
-      }
-      current.setDate(current.getDate() + 1);
-    }
-
-    return records;
+    return rows.map((record) => ({
+      date: record.date,
+      checkIn: record.clockIn
+        ? record.clockIn.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+        : undefined,
+      checkOut: record.clockOut
+        ? record.clockOut.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
+        : undefined,
+      workingHours: record.workHours,
+      status: (record.status?.toUpperCase() || 'PRESENT') as AttendanceRecord['status'],
+      lateBy: record.isLate ? 1 : undefined,
+      overtimeHours: record.overtimeHours,
+    }));
   }
 
   /**
@@ -477,16 +584,44 @@ export class HRAgentService {
     avgWorkingHours: number;
     overtimeHours: number;
   }> {
+    const { prisma } = await import('@aura/database');
+    const start = new Date(year, month - 1, 1);
+    const end = new Date(year, month, 0, 23, 59, 59);
+
+    const rows = await prisma.attendanceRecord.findMany({
+      where: {
+        tenantId,
+        employeeId,
+        isDeleted: false,
+        date: { gte: start, lte: end },
+      },
+    });
+
+    const statusOf = (s: string) => s.toUpperCase();
+    const present = rows.filter((r) =>
+      ['PRESENT', 'WFH', 'HALF_DAY'].includes(statusOf(r.status))
+    ).length;
+    const absent = rows.filter((r) => statusOf(r.status) === 'ABSENT').length;
+    const leaves = rows.filter((r) => statusOf(r.status) === 'LEAVE').length;
+    const holidays = rows.filter((r) => statusOf(r.status) === 'HOLIDAY').length;
+    const wfh = rows.filter((r) => statusOf(r.status) === 'WFH').length;
+    const lateCount = rows.filter((r) => r.isLate).length;
+    const workHours = rows.map((r) => r.workHours || 0);
+    const avgWorkingHours = workHours.length
+      ? workHours.reduce((a, b) => a + b, 0) / workHours.length
+      : 0;
+    const overtimeHours = rows.reduce((sum, r) => sum + (r.overtimeHours || 0), 0);
+
     return {
-      totalDays: 22,
-      present: 18,
-      absent: 0,
-      leaves: 2,
-      holidays: 2,
-      wfh: 4,
-      lateCount: 3,
-      avgWorkingHours: 8.5,
-      overtimeHours: 12,
+      totalDays: rows.length,
+      present,
+      absent,
+      leaves,
+      holidays,
+      wfh,
+      lateCount,
+      avgWorkingHours: Math.round(avgWorkingHours * 10) / 10,
+      overtimeHours,
     };
   }
 
@@ -549,31 +684,76 @@ export class HRAgentService {
     bankAccount: string;
     payDate: Date;
   }> {
-    const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
-      'July', 'August', 'September', 'October', 'November', 'December'];
+    const { prisma } = await import('@aura/database');
+    const monthNames = [
+      'January',
+      'February',
+      'March',
+      'April',
+      'May',
+      'June',
+      'July',
+      'August',
+      'September',
+      'October',
+      'November',
+      'December',
+    ];
+    const payrollMonth = `${year}-${String(month).padStart(2, '0')}`;
+
+    const run = await prisma.payrollRun.findFirst({
+      where: { tenantId, payrollMonth, isDeleted: false },
+      orderBy: { createdAt: 'desc' },
+    });
+
+    if (!run) {
+      throw new Error(`No payroll run found for ${monthNames[month - 1]} ${year}`);
+    }
+
+    const slip = await prisma.payslip.findFirst({
+      where: { payrollRunId: run.id, employeeId, isDeleted: false },
+    });
+
+    if (!slip) {
+      throw new Error(`No payslip found for ${monthNames[month - 1]} ${year}`);
+    }
+
+    const earningsRaw = Array.isArray(slip.earnings) ? slip.earnings : [];
+    const deductionsRaw = Array.isArray(slip.deductions) ? slip.deductions : [];
+
+    const earnings = earningsRaw.map((e: unknown) => {
+      const item = e as { component?: string; name?: string; amount?: number };
+      return {
+        component: String(item.component || item.name || 'Earning'),
+        amount: Number(item.amount || 0),
+      };
+    });
+    const deductions = deductionsRaw.map((d: unknown) => {
+      const item = d as { component?: string; name?: string; amount?: number };
+      return {
+        component: String(item.component || item.name || 'Deduction'),
+        amount: Number(item.amount || 0),
+      };
+    });
+
+    const profile = await prisma.employeePayrollProfile.findFirst({
+      where: { tenantId, employeeId, isDeleted: false },
+      select: { bankAccountNumber: true },
+    });
+
+    const acct = profile?.bankAccountNumber || '';
+    const masked = acct.length > 4 ? `XXXX-XXXX-${acct.slice(-4)}` : 'N/A';
 
     return {
       month: monthNames[month - 1],
       year,
-      earnings: [
-        { component: 'Basic Salary', amount: 42500 },
-        { component: 'House Rent Allowance', amount: 17000 },
-        { component: 'Special Allowance', amount: 20000 },
-        { component: 'Transport Allowance', amount: 1600 },
-        { component: 'Medical Allowance', amount: 1250 },
-        { component: 'Other Allowances', amount: 2650 },
-      ],
-      deductions: [
-        { component: 'Provident Fund', amount: 5100 },
-        { component: 'Professional Tax', amount: 200 },
-        { component: 'Income Tax (TDS)', amount: 8500 },
-        { component: 'ESI', amount: 0 },
-      ],
-      grossEarnings: 85000,
-      totalDeductions: 13800,
-      netPay: 71200,
-      bankAccount: 'XXXX-XXXX-1234',
-      payDate: new Date(year, month, 1),
+      earnings,
+      deductions,
+      grossEarnings: Number(slip.grossSalary),
+      totalDeductions: Number(slip.totalDeductions),
+      netPay: Number(slip.netSalary),
+      bankAccount: masked,
+      payDate: run.paidAt || run.processedAt || run.createdAt,
     };
   }
 
@@ -594,26 +774,64 @@ export class HRAgentService {
     balance: number;
     monthlyTDS: { month: string; amount: number }[];
   }> {
+    const { prisma } = await import('@aura/database');
+    // financialYear like "2024-25" → use first year for payrollMonth prefix
+    const startYear = Number(String(financialYear).split('-')[0]) || new Date().getFullYear();
+    const months: string[] = [];
+    for (let m = 4; m <= 12; m++) months.push(`${startYear}-${String(m).padStart(2, '0')}`);
+    for (let m = 1; m <= 3; m++) months.push(`${startYear + 1}-${String(m).padStart(2, '0')}`);
+
+    const runs = await prisma.payrollRun.findMany({
+      where: { tenantId, payrollMonth: { in: months }, isDeleted: false },
+      select: { id: true, payrollMonth: true },
+    });
+
+    const runIds = runs.map((r) => r.id);
+    const slips = runIds.length
+      ? await prisma.payslip.findMany({
+          where: { employeeId, payrollRunId: { in: runIds }, isDeleted: false },
+          select: { payrollRunId: true, employeeTDS: true, grossSalary: true },
+        })
+      : [];
+
+    const monthName = (pm: string) => {
+      const idx = Number(pm.split('-')[1]) - 1;
+      return (
+        [
+          'January',
+          'February',
+          'March',
+          'April',
+          'May',
+          'June',
+          'July',
+          'August',
+          'September',
+          'October',
+          'November',
+          'December',
+        ][idx] || pm
+      );
+    };
+
+    const runMonth = new Map(runs.map((r) => [r.id, r.payrollMonth]));
+    const monthlyTDS = slips.map((s) => ({
+      month: monthName(runMonth.get(s.payrollRunId) || ''),
+      amount: Number(s.employeeTDS || 0),
+    }));
+
+    const grossSalary = slips.reduce((sum, s) => sum + Number(s.grossSalary || 0), 0);
+    const tdsDeducted = slips.reduce((sum, s) => sum + Number(s.employeeTDS || 0), 0);
+
     return {
-      regime: 'OLD',
-      grossSalary: 1020000,
-      exemptions: 250000,
-      taxableIncome: 770000,
-      taxPayable: 62400,
-      tdsDeducted: 51000,
-      balance: 11400,
-      monthlyTDS: [
-        { month: 'April', amount: 5100 },
-        { month: 'May', amount: 5100 },
-        { month: 'June', amount: 5100 },
-        { month: 'July', amount: 5100 },
-        { month: 'August', amount: 5100 },
-        { month: 'September', amount: 5100 },
-        { month: 'October', amount: 5100 },
-        { month: 'November', amount: 5100 },
-        { month: 'December', amount: 5100 },
-        { month: 'January', amount: 5100 },
-      ],
+      regime: 'NEW',
+      grossSalary,
+      exemptions: 0,
+      taxableIncome: grossSalary,
+      taxPayable: tdsDeducted,
+      tdsDeducted,
+      balance: 0,
+      monthlyTDS,
     };
   }
 
@@ -630,25 +848,48 @@ export class HRAgentService {
     totalCTC: number;
     takeHome: number;
   }> {
+    const { prisma } = await import('@aura/database');
+    const structure = await prisma.employeeSalaryStructure.findFirst({
+      where: { tenantId, employeeId, isActive: true, isDeleted: false },
+      orderBy: { effectiveFrom: 'desc' },
+    });
+
+    if (!structure) {
+      throw new Error('No active salary structure found for your account');
+    }
+
+    const basic = Number(structure.basicSalary);
+    const hra = Number(structure.houseRentAllowance);
+    const transport = Number(structure.transportAllowance);
+    const medical = Number(structure.medicalInsurance);
+    const other =
+      structure.otherAllowances && typeof structure.otherAllowances === 'object'
+        ? Object.entries(structure.otherAllowances as Record<string, unknown>).map(([k, v]) => ({
+            component: k,
+            amount: Number(v) || 0,
+          }))
+        : [];
+
+    const monthly = [
+      { component: 'Basic Salary', amount: basic },
+      { component: 'House Rent Allowance', amount: hra },
+      { component: 'Transport Allowance', amount: transport },
+      { component: 'Medical Insurance', amount: medical },
+      ...other,
+    ].filter((c) => c.amount > 0);
+
+    const annual = monthly.map((c) => ({
+      component: c.component,
+      amount: c.amount * 12,
+      type: 'FIXED' as const,
+    }));
+
     return {
-      effectiveDate: new Date(2024, 3, 1),
-      annual: [
-        { component: 'Basic Salary', amount: 510000, type: 'FIXED' },
-        { component: 'House Rent Allowance', amount: 204000, type: 'FIXED' },
-        { component: 'Special Allowance', amount: 240000, type: 'FIXED' },
-        { component: 'Transport Allowance', amount: 19200, type: 'FIXED' },
-        { component: 'Medical Allowance', amount: 15000, type: 'FIXED' },
-        { component: 'Bonus', amount: 31800, type: 'VARIABLE' },
-      ],
-      monthly: [
-        { component: 'Basic Salary', amount: 42500 },
-        { component: 'House Rent Allowance', amount: 17000 },
-        { component: 'Special Allowance', amount: 20000 },
-        { component: 'Transport Allowance', amount: 1600 },
-        { component: 'Medical Allowance', amount: 1250 },
-      ],
-      totalCTC: 1020000,
-      takeHome: 854400,
+      effectiveDate: structure.effectiveFrom,
+      annual,
+      monthly,
+      totalCTC: Number(structure.ctc),
+      takeHome: Number(structure.grossSalary) * 12,
     };
   }
 
@@ -662,64 +903,51 @@ export class HRAgentService {
   static async searchPolicies(
     tenantId: string,
     query: string
-  ): Promise<{
-    id: string;
-    title: string;
-    category: string;
-    summary: string;
-    relevance: number;
-  }[]> {
-    const policies = [
-      {
-        id: 'pol_001',
-        title: 'Leave Policy',
-        category: 'Leave Management',
-        summary: 'Comprehensive guide to all leave types, entitlements, and application process',
-        keywords: ['leave', 'vacation', 'sick', 'casual', 'annual'],
+  ): Promise<
+    {
+      id: string;
+      title: string;
+      category: string;
+      summary: string;
+      relevance: number;
+    }[]
+  > {
+    const { prisma } = await import('@aura/database');
+    const q = query.trim();
+    const policies = await prisma.policyDocument.findMany({
+      where: {
+        tenantId,
+        isDeleted: false,
+        status: { in: ['PUBLISHED', 'ACTIVE', 'Published'] },
+        ...(q
+          ? {
+              OR: [
+                { title: { contains: q, mode: 'insensitive' } },
+                { category: { contains: q, mode: 'insensitive' } },
+                { summary: { contains: q, mode: 'insensitive' } },
+              ],
+            }
+          : {}),
       },
-      {
-        id: 'pol_002',
-        title: 'Work From Home Policy',
-        category: 'Attendance',
-        summary: 'Guidelines for remote work, eligibility, and approval process',
-        keywords: ['wfh', 'remote', 'work from home', 'home'],
-      },
-      {
-        id: 'pol_003',
-        title: 'Expense Reimbursement Policy',
-        category: 'Finance',
-        summary: 'Process for claiming business expenses and reimbursements',
-        keywords: ['expense', 'reimbursement', 'claim', 'travel'],
-      },
-      {
-        id: 'pol_004',
-        title: 'Code of Conduct',
-        category: 'Ethics',
-        summary: 'Expected behavior and professional standards for all employees',
-        keywords: ['conduct', 'behavior', 'ethics', 'professional'],
-      },
-      {
-        id: 'pol_005',
-        title: 'Performance Review Policy',
-        category: 'Performance',
-        summary: 'Annual and quarterly review process, criteria, and timeline',
-        keywords: ['performance', 'review', 'appraisal', 'rating'],
-      },
-    ];
+      take: 20,
+      orderBy: { updatedAt: 'desc' },
+    });
 
-    const queryLower = query.toLowerCase();
+    const queryLower = q.toLowerCase();
     return policies
-      .filter(p =>
-        p.keywords.some(k => queryLower.includes(k)) ||
-        p.title.toLowerCase().includes(queryLower)
-      )
-      .map(p => ({
-        id: p.id,
-        title: p.title,
-        category: p.category,
-        summary: p.summary,
-        relevance: p.keywords.filter(k => queryLower.includes(k)).length,
-      }))
+      .map((p) => {
+        let relevance = 0;
+        if (queryLower && p.title.toLowerCase().includes(queryLower)) relevance += 2;
+        if (queryLower && p.category.toLowerCase().includes(queryLower)) relevance += 1;
+        if (queryLower && (p.summary || '').toLowerCase().includes(queryLower)) relevance += 1;
+        return {
+          id: p.id,
+          title: p.title,
+          category: p.category,
+          summary: p.summary || '',
+          relevance: relevance || 1,
+        };
+      })
       .sort((a, b) => b.relevance - a.relevance);
   }
 
@@ -738,44 +966,20 @@ export class HRAgentService {
     content: string;
     faqs: { question: string; answer: string }[];
   }> {
+    const { prisma } = await import('@aura/database');
+    const policy = await prisma.policyDocument.findFirst({
+      where: { id: policyId, tenantId, isDeleted: false },
+    });
+    if (!policy) throw new Error('Policy not found');
+
     return {
-      id: policyId,
-      title: 'Leave Policy',
-      category: 'Leave Management',
-      version: '2.1',
-      effectiveDate: new Date(2024, 0, 1),
-      content: `
-## Leave Entitlements
-
-| Leave Type | Annual Entitlement | Carry Forward | Encashment |
-|------------|-------------------|---------------|------------|
-| Annual Leave | 20 days | Up to 5 days | Yes |
-| Sick Leave | 10 days | No | No |
-| Casual Leave | 8 days | No | No |
-
-## Application Process
-
-1. Submit leave request through HRMS portal or HR Agent
-2. Manager receives notification for approval
-3. Approved leaves are updated in attendance system
-4. Rejected requests can be modified and resubmitted
-
-## Advance Notice Required
-
-- Planned Leave: 3 working days
-- Sick Leave: Same day or next working day
-- Emergency Leave: As soon as possible
-      `,
-      faqs: [
-        {
-          question: 'Can I carry forward unused leaves?',
-          answer: 'Yes, up to 5 days of annual leave can be carried forward to the next year.',
-        },
-        {
-          question: 'How do I check my leave balance?',
-          answer: 'You can check your leave balance through the HRMS portal or by asking the HR Agent.',
-        },
-      ],
+      id: policy.id,
+      title: policy.title,
+      category: policy.category,
+      version: policy.version,
+      effectiveDate: policy.effectiveDate || policy.publishedAt || policy.createdAt,
+      content: policy.contentMarkdown || policy.summary || '',
+      faqs: [],
     };
   }
 
@@ -789,7 +993,8 @@ export class HRAgentService {
   static async requestDocument(
     employeeId: string,
     tenantId: string,
-    documentType: 'EMPLOYMENT_LETTER' | 'SALARY_CERTIFICATE' | 'EXPERIENCE_LETTER' | 'PAYSLIP' | 'FORM_16',
+    documentType:
+      'EMPLOYMENT_LETTER' | 'SALARY_CERTIFICATE' | 'EXPERIENCE_LETTER' | 'PAYSLIP' | 'FORM_16',
     options?: {
       addressTo?: string;
       purpose?: string;
@@ -801,6 +1006,9 @@ export class HRAgentService {
     status: string;
     estimatedDelivery: Date;
   }> {
+    // Document generation is supervised: create a tracked request ID only.
+    // Actual letter generation happens in the HR documents module after human review.
+    const requestId = crypto.randomUUID();
     const estimatedDays: Record<string, number> = {
       EMPLOYMENT_LETTER: 2,
       SALARY_CERTIFICATE: 2,
@@ -808,12 +1016,33 @@ export class HRAgentService {
       PAYSLIP: 0,
       FORM_16: 1,
     };
-
     const delivery = new Date();
     delivery.setDate(delivery.getDate() + (estimatedDays[documentType] || 3));
 
+    // Persist audit trail on an agent conversation metadata row when possible
+    const { prisma } = await import('@aura/database');
+    await prisma.aIAgentConversation
+      .create({
+        data: {
+          tenantId,
+          userId: employeeId,
+          agentType: 'HR_AGENT',
+          sessionId: `doc-request-${requestId}`,
+          title: `Document request: ${documentType}`,
+          metadata: {
+            type: 'DOCUMENT_REQUEST',
+            documentType,
+            employeeId,
+            options: options || {},
+            status: documentType === 'PAYSLIP' ? 'READY' : 'PROCESSING',
+          },
+          createdBy: employeeId,
+        },
+      })
+      .catch(() => null);
+
     return {
-      requestId: `doc_${Date.now()}`,
+      requestId,
       documentType,
       status: documentType === 'PAYSLIP' ? 'READY' : 'PROCESSING',
       estimatedDelivery: delivery,
@@ -855,22 +1084,19 @@ export class HRAgentService {
             contentType: 'text',
             requiresInput: {
               type: 'text',
-              prompt: 'Please provide leave details (e.g., "Annual leave from Dec 25 to Dec 27 for family vacation")',
+              prompt:
+                'Please provide leave details (e.g., "Annual leave from Dec 25 to Dec 27 for family vacation")',
             },
             timestamp: new Date(),
           };
         }
 
-        const leaveRequest = await this.applyLeave(
-          context.userId,
-          context.tenantId,
-          {
-            leaveType: intent.leaveType,
-            startDate: intent.startDate,
-            endDate: intent.endDate,
-            reason: intent.reason || 'Personal',
-          }
-        );
+        const leaveRequest = await this.applyLeave(context.userId, context.tenantId, {
+          leaveType: intent.leaveType,
+          startDate: intent.startDate,
+          endDate: intent.endDate,
+          reason: intent.reason || 'Personal',
+        });
         content = `✅ Leave request submitted successfully!\n\n- **Request ID:** ${leaveRequest.id}\n- **Type:** ${leaveRequest.leaveType}\n- **Duration:** ${leaveRequest.duration} days\n- **Status:** Pending Approval`;
         break;
       }
@@ -925,7 +1151,8 @@ export class HRAgentService {
       }
 
       case 'RANGE': {
-        const startDate = intent.startDate || new Date(new Date().getFullYear(), new Date().getMonth(), 1);
+        const startDate =
+          intent.startDate || new Date(new Date().getFullYear(), new Date().getMonth(), 1);
         const endDate = intent.endDate || new Date();
         const summary = await this.getAttendanceSummary(
           context.userId,
@@ -950,7 +1177,8 @@ export class HRAgentService {
       }
 
       case 'CORRECTION': {
-        content = 'To request an attendance correction, please provide the date and the correct check-in/check-out times.';
+        content =
+          'To request an attendance correction, please provide the date and the correct check-in/check-out times.';
         break;
       }
     }
@@ -998,7 +1226,8 @@ export class HRAgentService {
       }
 
       case 'REIMBURSEMENT': {
-        content = 'To submit a reimbursement, please upload your expense bills through the expense portal or describe your expense.';
+        content =
+          'To submit a reimbursement, please upload your expense bills through the expense portal or describe your expense.';
         break;
       }
     }

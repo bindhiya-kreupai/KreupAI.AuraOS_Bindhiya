@@ -493,8 +493,8 @@ export class AccommodationAssignmentService {
       db.accommodationAssignment.count({ where }),
     ]);
 
-    const siteIds = Array.from(new Set(items.map((i) => i.siteId)));
-    const employeeIds = Array.from(new Set(items.map((i) => i.employeeId)));
+    const siteIds = Array.from(new Set(items.map((i: any) => i.siteId)));
+    const employeeIds = Array.from(new Set(items.map((i: any) => i.employeeId)));
 
     const [sites, employees] = await Promise.all([
       db.accommodationSite.findMany({
@@ -507,10 +507,10 @@ export class AccommodationAssignmentService {
       }),
     ]);
 
-    const siteMap = new Map(sites.map((s) => [s.id, s.name]));
-    const employeeMap = new Map(employees.map((e) => [e.id, `${e.firstName} ${e.lastName}`]));
+    const siteMap = new Map(sites.map((s: any) => [s.id, s.name]));
+    const employeeMap = new Map(employees.map((e: any) => [e.id, `${e.firstName} ${e.lastName}`]));
 
-    const mappedItems = items.map((item) => ({
+    const mappedItems = items.map((item: any) => ({
       ...item,
       siteName: siteMap.get(item.siteId) ?? 'Unknown Site',
       employeeName: employeeMap.get(item.employeeId) ?? item.employeeId,
@@ -726,15 +726,15 @@ export class AccommodationInspectionService {
       db.accommodationInspection.count({ where }),
     ]);
 
-    const siteIds = Array.from(new Set(items.map((i) => i.siteId)));
+    const siteIds = Array.from(new Set(items.map((i: any) => i.siteId)));
     const sites = await db.accommodationSite.findMany({
       where: { id: { in: siteIds } },
       select: { id: true, name: true },
     });
 
-    const siteMap = new Map(sites.map((s) => [s.id, s.name]));
+    const siteMap = new Map(sites.map((s: any) => [s.id, s.name]));
 
-    const mappedItems = items.map((item) => ({
+    const mappedItems = items.map((item: any) => ({
       ...item,
       siteName: siteMap.get(item.siteId) ?? 'Unknown Site',
     }));
@@ -937,9 +937,9 @@ export class AccommodationComplaintService {
       db.accommodationComplaint.count({ where }),
     ]);
 
-    const siteIds = Array.from(new Set(items.map((i) => i.siteId)));
+    const siteIds = Array.from(new Set(items.map((i: any) => i.siteId)));
     const employeeIds = Array.from(
-      new Set(items.filter((i) => i.employeeId).map((i) => i.employeeId as string))
+      new Set(items.filter((i: any) => i.employeeId).map((i: any) => i.employeeId as string))
     );
 
     const [sites, employees] = await Promise.all([
@@ -953,10 +953,10 @@ export class AccommodationComplaintService {
       }),
     ]);
 
-    const siteMap = new Map(sites.map((s) => [s.id, s.name]));
-    const employeeMap = new Map(employees.map((e) => [e.id, `${e.firstName} ${e.lastName}`]));
+    const siteMap = new Map(sites.map((s: any) => [s.id, s.name]));
+    const employeeMap = new Map(employees.map((e: any) => [e.id, `${e.firstName} ${e.lastName}`]));
 
-    const mappedItems = items.map((item) => ({
+    const mappedItems = items.map((item: any) => ({
       ...item,
       siteName: siteMap.get(item.siteId) ?? 'Unknown Site',
       employeeName: item.employeeId ? (employeeMap.get(item.employeeId) ?? item.employeeId) : null,

@@ -1,84 +1,28 @@
 /**
- * Agent Messages API Routes
- * Phase 4 Sprint 31-32: Conversation Messages
+ * Agent Messages API Routes — DB-backed session messages
  */
 
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import { AgentFrameworkService } from '@/lib/services/agentic-ai';
+import { resolveAgentAuth } from '@/lib/ai/agent-auth';
+import { agentError } from '@/lib/ai/agent-types';
+import { getSessionById } from '@/lib/ai/agent-session';
 
-/**
- * POST /api/agents/sessions/[sessionId]/messages
- * Send a message to the agent
- */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ sessionId: string }> }
-) {
-  try {
-    const { sessionId } = await params;
-    const body = await request.json();
-    const { message } = body;
+type RouteContext = { params: Promise<{ sessionId: string }> };
 
-    if (!message || typeof message !== 'string') {
-      return NextResponse.json(
-        { success: false, error: 'Message is required and must be a string' },
-        { status: 400 }
-      );
-    }
-
-    const session = AgentFrameworkService.getSession(sessionId);
-    if (!session) {
-      return NextResponse.json(
-        { success: false, error: 'Session not found' },
-        { status: 404 }
-      );
-    }
-
-    // Process the message and get response
-    const response = await AgentFrameworkService.processMessage(sessionId, message);
-
-    return NextResponse.json({
-      success: true,
-      data: {
-        sessionId: response.sessionId,
-        messageId: response.messageId,
-        agentType: response.agentType,
-        content: response.content,
-        contentType: response.contentType,
-        intent: response.intent,
-        actions: response.actions,
-        suggestions: response.suggestions,
-        attachments: response.attachments,
-        requiresInput: response.requiresInput,
-        timestamp: response.timestamp,
-      },
-    });
-  } catch (error: any) {
-        return NextResponse.json(
-      { success: false, error: 'Failed to process message' },
-      { status: 500 }
-    );
+export async function GET(request: NextRequest, context: RouteContext) {
+  const auth = await resolveAgentAuth(request);
+  if (!auth) {
+    return NextResponse.json(agentError('Unauthorized', 'غير مصرح'), { status: 401 });
   }
-}
 
-/**
- * GET /api/agents/sessions/[sessionId]/messages
- * Get conversation history
- */
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ sessionId: string }> }
-) {
   try {
-    const { sessionId } = await params;
-    const session = AgentFrameworkService.getSession(sessionId);
-
+    const { sessionId } = await context.params;
+    const session = await getSessionById(auth.tenantId, auth.userId, sessionId);
     if (!session) {
-      return NextResponse.json(
-        { success: false, error: 'Session not found' },
-        { status: 404 }
-      );
+      return NextResponse.json(agentError('Session not found', 'الجلسة غير موجودة'), {
+        status: 404,
+      });
     }
 
     return NextResponse.json({
@@ -89,10 +33,24 @@ export async function GET(
         totalMessages: session.messages.length,
       },
     });
-  } catch (error: any) {
-        return NextResponse.json(
-      { success: false, error: 'Failed to fetch messages' },
-      { status: 500 }
-    );
+  } catch {
+    return NextResponse.json(agentError('Failed to fetch messages', 'فشل تحميل الرسائل'), {
+      status: 500,
+    });
   }
+}
+
+export async function POST(request: NextRequest, context: RouteContext) {
+  const auth = await resolveAgentAuth(request);
+  if (!auth) {
+    return NextResponse.json(agentError('Unauthorized', 'غير مصرح'), { status: 401 });
+  }
+
+  return NextResponse.json(
+    agentError(
+      'Use agent chat endpoints (POST /api/agents/hr|recruitment|analytics with action: chat)',
+      'استخدم نقاط محادثة الوكيل'
+    ),
+    { status: 400 }
+  );
 }

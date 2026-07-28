@@ -1,15 +1,59 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<testsuites name="vitest tests" tests="5" failures="0" errors="0" time="0.010415667">
-    <testsuite name="src/__tests__/api/attendance-regularization-route.test.ts" timestamp="2026-07-01T18:41:04.708Z" hostname="MacBookPro.lan" tests="5" failures="0" errors="0" skipped="0" time="0.010415667">
-        <testcase classname="src/__tests__/api/attendance-regularization-route.test.ts" name="attendance regularization API &gt; uses the authenticated employee when the submitted employee id is a placeholder" time="0.005250666">
+<testsuites name="vitest tests" tests="26" failures="0" errors="0" time="0.0316616">
+    <testsuite name="src/lib/services/__tests__/executive-compliance.service.test.ts" timestamp="2026-07-21T07:58:35.743Z" hostname="Anuvab" tests="14" failures="0" errors="0" skipped="0" time="0.0212767">
+        <testcase classname="src/lib/services/__tests__/executive-compliance.service.test.ts" name="domainScore &gt; returns 100 GREEN when no blocking issues and not gated" time="0.0037568">
         </testcase>
-        <testcase classname="src/__tests__/api/attendance-regularization-route.test.ts" name="attendance regularization API &gt; falls back to the authenticated approver and scopes approve actions by tenant" time="0.001275125">
+        <testcase classname="src/lib/services/__tests__/executive-compliance.service.test.ts" name="domainScore &gt; drops 30 when gated" time="0.0014374">
         </testcase>
-        <testcase classname="src/__tests__/api/attendance-regularization-route.test.ts" name="attendance regularization API &gt; cancels a pending request owned by the authenticated employee" time="0.000882709">
+        <testcase classname="src/lib/services/__tests__/executive-compliance.service.test.ts" name="domainScore &gt; subtracts 5 per blocking issue (capped at 40)" time="0.0009504">
         </testcase>
-        <testcase classname="src/__tests__/api/attendance-regularization-route.test.ts" name="attendance regularization API &gt; rejects cancelling a request owned by another employee (bilingual error)" time="0.000759959">
+        <testcase classname="src/lib/services/__tests__/executive-compliance.service.test.ts" name="domainScore &gt; flips to RED below 70" time="0.0004457">
         </testcase>
-        <testcase classname="src/__tests__/api/attendance-regularization-route.test.ts" name="attendance regularization API &gt; rejects cancelling a non-pending request" time="0.000841708">
+        <testcase classname="src/lib/services/__tests__/executive-compliance.service.test.ts" name="executiveRollupService.snapshot &gt; rolls up GREEN baseline when no certificates exist" time="0.0010818">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/executive-compliance.service.test.ts" name="executiveRollupService.snapshot &gt; derives RED from gated certificate with many blockers" time="0.0015985">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/executive-compliance.service.test.ts" name="complianceRiskService.upsert &gt; computes score and band from likelihood × impact" time="0.00056">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/executive-compliance.service.test.ts" name="complianceRiskService.upsert &gt; clamps likelihood and impact to 1–5" time="0.0003581">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/executive-compliance.service.test.ts" name="complianceReviewCalendarService.complete &gt; rolls dueAt forward by frequency interval" time="0.0008118">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/executive-compliance.service.test.ts" name="executiveComplianceCertificateService &gt; gates when RED domains present" time="0.0014576">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/executive-compliance.service.test.ts" name="executiveComplianceCertificateService &gt; gates when HIGH/CRITICAL risks open" time="0.0007967">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/executive-compliance.service.test.ts" name="executiveComplianceCertificateService &gt; gates when corrective actions overdue" time="0.0007415">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/executive-compliance.service.test.ts" name="executiveComplianceCertificateService &gt; refuses to sign while gated" time="0.0017531">
+        </testcase>
+        <testcase classname="src/lib/services/__tests__/executive-compliance.service.test.ts" name="EXECUTIVE_COMPLIANCE_CONSTANTS &gt; exposes all 22 domains" time="0.0011414">
+        </testcase>
+    </testsuite>
+    <testsuite name="src/lib/services/executive-compliance/__tests__/drill-down.test.ts" timestamp="2026-07-21T07:58:35.747Z" hostname="Anuvab" tests="12" failures="0" errors="0" skipped="0" time="0.0103849">
+        <testcase classname="src/lib/services/executive-compliance/__tests__/drill-down.test.ts" name="computeRiskScore &gt; returns 0 when no flags" time="0.0011939">
+        </testcase>
+        <testcase classname="src/lib/services/executive-compliance/__tests__/drill-down.test.ts" name="computeRiskScore &gt; one CRITICAL produces a meaningful score" time="0.0003606">
+        </testcase>
+        <testcase classname="src/lib/services/executive-compliance/__tests__/drill-down.test.ts" name="computeRiskScore &gt; one LOW barely registers but is non-zero" time="0.0002692">
+        </testcase>
+        <testcase classname="src/lib/services/executive-compliance/__tests__/drill-down.test.ts" name="computeRiskScore &gt; clamps to 100" time="0.0001889">
+        </testcase>
+        <testcase classname="src/lib/services/executive-compliance/__tests__/drill-down.test.ts" name="aggregateFlagsByCountryEntity — EPIC-31 drill-down &gt; drops RESOLVED and WAIVED flags from the rollup" time="0.0004175">
+        </testcase>
+        <testcase classname="src/lib/services/executive-compliance/__tests__/drill-down.test.ts" name="aggregateFlagsByCountryEntity — EPIC-31 drill-down &gt; groups by country → entity → department" time="0.0011776">
+        </testcase>
+        <testcase classname="src/lib/services/executive-compliance/__tests__/drill-down.test.ts" name="aggregateFlagsByCountryEntity — EPIC-31 drill-down &gt; computes per-country max severity" time="0.0002898">
+        </testcase>
+        <testcase classname="src/lib/services/executive-compliance/__tests__/drill-down.test.ts" name="aggregateFlagsByCountryEntity — EPIC-31 drill-down &gt; emits topFive sorted by severity weight" time="0.0008569">
+        </testcase>
+        <testcase classname="src/lib/services/executive-compliance/__tests__/drill-down.test.ts" name="buildRiskHeatmap — EPIC-31 2D heatmap &gt; produces one cell per (domain, country) pair" time="0.0008003">
+        </testcase>
+        <testcase classname="src/lib/services/executive-compliance/__tests__/drill-down.test.ts" name="buildRiskHeatmap — EPIC-31 2D heatmap &gt; sorts cells by riskScore desc" time="0.0002179">
+        </testcase>
+        <testcase classname="src/lib/services/executive-compliance/__tests__/drill-down.test.ts" name="buildRiskHeatmap — EPIC-31 2D heatmap &gt; aggregates multiple flags per cell into one count" time="0.0002379">
+        </testcase>
+        <testcase classname="src/lib/services/executive-compliance/__tests__/drill-down.test.ts" name="buildRiskHeatmap — EPIC-31 2D heatmap &gt; excludes RESOLVED + WAIVED from the heatmap" time="0.0001232">
         </testcase>
     </testsuite>
 </testsuites>
