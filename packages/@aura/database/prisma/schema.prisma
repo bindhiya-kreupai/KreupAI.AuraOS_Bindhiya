@@ -32,6 +32,8 @@ model Tenant {
   passwordPolicies  PasswordPolicy[]
   ssoConfigs        SSOConfig[]
   licenses          License[]
+  shiftTypes        ShiftType[]
+  shiftTemplates    ShiftTemplate[]
 
   @@map("aura_tenant")
 }
@@ -799,7 +801,8 @@ model LeaveType {
 
 model ShiftType {
   id        String    @id(map: "ShiftType_pkey") @default(uuid())
-  code      String    @unique(map: "ShiftType_code_key")
+  tenantId  String
+  code      String
   name      String
   startTime String
   endTime   String
@@ -811,6 +814,10 @@ model ShiftType {
   deletedAt DateTime?
   isDeleted Boolean   @default(false)
 
+  tenant Tenant @relation(fields: [tenantId], references: [id], map: "ShiftType_tenantId_fkey")
+
+  @@unique([tenantId, code], map: "ShiftType_tenantId_code_key")
+  @@index([tenantId], map: "ShiftType_tenantId_idx")
   @@map("aura_shift_type")
 }
 
@@ -976,10 +983,49 @@ model Shift {
   deletedAt        DateTime?
   isDeleted        Boolean   @default(false)
 
+  assignments      ShiftAssignment[]
+  rosters          ShiftRoster[]
+  swapAsRequestor  ShiftSwapRequest[] @relation("RequestorShift")
+  swapAsTarget     ShiftSwapRequest[] @relation("SwapWithShift")
+
   @@unique([tenantId, code], map: "Shift_tenantId_code_key")
   @@index([isActive], map: "Shift_isActive_idx")
   @@index([tenantId], map: "Shift_tenantId_idx")
   @@map("aura_shift")
+}
+
+model ShiftTemplate {
+  id               String    @id @default(uuid())
+  tenantId         String
+  name             String
+  description      String?
+  icon             String    @default("Briefcase")
+  accent           String    @default("from-blue-500/15 to-blue-500/5 border-blue-500/30")
+  shiftCode        String
+  shiftName        String
+  shiftDescription String?
+  startTime        String
+  endTime          String
+  workHours        Float
+  graceInMinutes   Int       @default(15)
+  graceOutMinutes  Int       @default(15)
+  breakDuration    Int       @default(60)
+  overtimeAllowed  Boolean   @default(true)
+  maxOvertimeHours Float     @default(4)
+  isActive         Boolean   @default(true)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  createdBy        String?
+  updatedBy        String?
+  deletedAt        DateTime?
+  isDeleted        Boolean   @default(false)
+
+  tenant           Tenant    @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, name], map: "ShiftTemplate_tenantId_name_key")
+  @@index([tenantId], map: "ShiftTemplate_tenantId_idx")
+  @@index([tenantId, isActive], map: "ShiftTemplate_tenantId_isActive_idx")
+  @@map("aura_shift_template")
 }
 
 model ShiftAssignment {
@@ -999,9 +1045,12 @@ model ShiftAssignment {
   deletedAt     DateTime?
   isDeleted     Boolean   @default(false)
 
+  shift         Shift     @relation(fields: [shiftId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
   @@index([employeeId], map: "ShiftAssignment_employeeId_idx")
   @@index([shiftId], map: "ShiftAssignment_shiftId_idx")
   @@index([tenantId], map: "ShiftAssignment_tenantId_idx")
+  @@index([tenantId, employeeId, isActive], map: "ShiftAssignment_tenant_employee_active_idx")
   @@map("aura_shift_assignment")
 }
 
@@ -1016,12 +1065,16 @@ model ShiftRoster {
   isWeekOff       Boolean   @default(false)
   isHoliday       Boolean   @default(false)
   status          String    @default("SCHEDULED")
+  publishedAt     DateTime?
+  publishedBy     String?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   createdBy       String?
   updatedBy       String?
   deletedAt       DateTime?
   isDeleted       Boolean   @default(false)
+
+  shift           Shift     @relation(fields: [shiftId], references: [id], onDelete: Restrict, onUpdate: Cascade)
 
   @@unique([tenantId, employeeId, rosterDate], map: "ShiftRoster_tenantId_employeeId_rosterDate_key")
   @@index([employeeId], map: "ShiftRoster_employeeId_idx")
@@ -1053,10 +1106,69 @@ model ShiftSwapRequest {
   deletedAt        DateTime?
   isDeleted        Boolean   @default(false)
 
+  requestorShift   Shift     @relation("RequestorShift", fields: [requestorShiftId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  swapWithShift    Shift     @relation("SwapWithShift", fields: [swapWithShiftId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
   @@index([requestorId], map: "ShiftSwapRequest_requestorId_idx")
   @@index([status], map: "ShiftSwapRequest_status_idx")
   @@index([tenantId], map: "ShiftSwapRequest_tenantId_idx")
+  @@index([tenantId, status], map: "ShiftSwapRequest_tenant_status_idx")
   @@map("aura_shift_swap_request")
+}
+
+model ShiftPattern {
+  id               String    @id @default(uuid())
+  tenantId         String
+  name             String
+  type             String    @default("FIXED")
+  departmentId     String?
+  rotationDays     Int?
+  status           String    @default("ACTIVE")
+  shifts           Json      @default("[]")
+  weeklyHours      Float     @default(0)
+  employeesAssigned Int     @default(0)
+  isActive         Boolean   @default(true)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  createdBy        String?
+  updatedBy        String?
+  deletedAt        DateTime?
+  isDeleted        Boolean   @default(false)
+
+  @@index([tenantId], map: "ShiftPattern_tenantId_idx")
+  @@index([tenantId, isActive], map: "ShiftPattern_tenantId_isActive_idx")
+  @@index([tenantId, status], map: "ShiftPattern_tenantId_status_idx")
+  @@map("aura_shift_pattern")
+}
+
+model ShiftDifferential {
+  id               String    @id @default(uuid())
+  tenantId         String
+  name             String
+  shiftType        String
+  timeRange        Json?
+  differentialType String    @default("FLAT_AMOUNT")
+  amount           Float?
+  percentAmount    Float?
+  multiplier       Float?
+  applicableDays   Json?
+  eligibleRoles    Json?
+  jurisdiction     String    @default("DEFAULT")
+  regulatoryBasis  String?
+  isActive         Boolean   @default(true)
+  effectiveFrom    DateTime?
+  effectiveTo      DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  createdBy        String?
+  updatedBy        String?
+  deletedAt        DateTime?
+  isDeleted        Boolean   @default(false)
+
+  @@index([tenantId], map: "ShiftDifferential_tenantId_idx")
+  @@index([tenantId, jurisdiction], map: "ShiftDifferential_tenantId_jurisdiction_idx")
+  @@index([tenantId, isActive], map: "ShiftDifferential_tenantId_isActive_idx")
+  @@map("aura_shift_differential")
 }
 
 model OvertimeRequest {
@@ -13047,6 +13159,7 @@ enum AuditAction {
   APPROVE_LEAVE_REQUEST
   APPROVE_OVERTIME_REQUEST
   APPROVE_SHIFT_SWAP_REQUEST
+  PUBLISH_SHIFT_ROSTER
   REJECT_ATTENDANCE_REGULARIZATION
   REJECT_COMP_OFF_REQUEST
   REJECT_CONFIRMATION_REQUEST

@@ -5,6 +5,7 @@ import { withAudit } from '@/lib/middleware/audit.middleware';
 import { AuditAction } from '@/lib/audit/audit.service';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
+import { notificationService } from '@/lib/services/notification.service';
 
 export const dynamic = 'force-dynamic';
 
@@ -151,68 +152,59 @@ export const POST = withAudit(
 
       const effectiveFrom = new Date(data.effectiveFrom);
       const effectiveTo = data.effectiveTo ? new Date(data.effectiveTo) : null;
+      const dayBeforeEffective = new Date(new Date(data.effectiveFrom).getTime() - 86400000);
 
-      // Check for overlapping active shift assignments
-      const overlapping = await prisma.shiftAssignment.findMany({
-        where: {
-          tenantId: user.tenantId,
-          employeeId: { in: data.employeeIds },
-          isActive: true,
-          effectiveFrom: { lte: effectiveTo || new Date('9999-12-31') },
-          OR: [{ effectiveTo: null }, { effectiveTo: { gte: effectiveFrom } }],
-        },
-        select: {
-          employeeId: true,
-          shiftId: true,
-          effectiveFrom: true,
-          effectiveTo: true,
-        },
-      });
-
-      if (overlapping.length > 0) {
-        // Deactivate overlapping assignments
-        await prisma.shiftAssignment.updateMany({
+      // Atomic transaction: overlap check, deactivation, and creation
+      const assignments = await prisma.$transaction(async (tx) => {
+        // Check for overlapping active shift assignments
+        const overlapping = await tx.shiftAssignment.findMany({
           where: {
-            id: { in: overlapping.map((o) => o.employeeId) },
             tenantId: user.tenantId,
             employeeId: { in: data.employeeIds },
             isActive: true,
             effectiveFrom: { lte: effectiveTo || new Date('9999-12-31') },
             OR: [{ effectiveTo: null }, { effectiveTo: { gte: effectiveFrom } }],
           },
-          data: {
-            isActive: false,
-            effectiveTo: new Date(new Date(data.effectiveFrom).getTime() - 86400000), // day before new assignment
-          },
+          select: { id: true },
         });
-      }
 
-      // Create new shift assignments for all employees
-      // Cast: the `shift` relation is not declared on ShiftAssignment in schema.prisma
-      const assignments = await prisma.$transaction(
-        data.employeeIds.map((employeeId) =>
-          (prisma as any).shiftAssignment.create({
+        // Deactivate overlapping assignments within the same transaction
+        if (overlapping.length > 0) {
+          await tx.shiftAssignment.updateMany({
+            where: { id: { in: overlapping.map((o) => o.id) } },
             data: {
-              tenantId: user.tenantId,
-              employeeId,
-              shiftId: data.shiftId,
-              effectiveFrom,
-              effectiveTo,
-              isActive: true,
-              assignedBy: user.userId,
-              reason: data.notes || null,
+              isActive: false,
+              effectiveTo: dayBeforeEffective,
             },
-            include: {
-              shift: {
-                select: {
-                  name: true,
-                  code: true,
+          });
+        }
+
+        // Create new shift assignments for all employees
+        return Promise.all(
+          data.employeeIds.map((employeeId) =>
+            tx.shiftAssignment.create({
+              data: {
+                tenantId: user.tenantId,
+                employeeId,
+                shiftId: data.shiftId,
+                effectiveFrom,
+                effectiveTo,
+                isActive: true,
+                assignedBy: user.userId,
+                reason: data.notes || null,
+              },
+              include: {
+                shift: {
+                  select: {
+                    name: true,
+                    code: true,
+                  },
                 },
               },
-            },
-          })
-        )
-      );
+            })
+          )
+        );
+      });
 
       const employeeMap = new Map(employees.map((e) => [e.id, e]));
 
@@ -244,6 +236,19 @@ export const POST = withAudit(
         assignedBy: user.userId,
       };
 
+      // Fire notifications to all assigned employees
+      for (const a of assignments) {
+        notificationService
+          .notifyShiftAssigned(a.employeeId, {
+            shiftId: data.shiftId,
+            shiftName: shift.name,
+            shiftCode: shift.code,
+            effectiveFrom: data.effectiveFrom,
+            effectiveTo: data.effectiveTo || null,
+          })
+          .catch(() => {});
+      }
+
       return NextResponse.json(
         {
           success: true,
@@ -257,8 +262,6 @@ export const POST = withAudit(
         { status: 201 }
       );
     } catch (error: any) {
-      console.error('[Shift Assignment API] POST Error:', error);
-
       if (error instanceof Error && error.message.includes('not found')) {
         return NextResponse.json(
           {
@@ -283,7 +286,6 @@ export const POST = withAudit(
           error: {
             code: 'E5001',
             message: 'Failed to assign shift',
-            details: { error: error instanceof Error ? error.message : 'Unknown error' },
           },
           meta: {
             timestamp: new Date().toISOString(),
@@ -296,6 +298,7 @@ export const POST = withAudit(
     }
   }),
   {
+    // TODO: Add shift-specific AuditAction (SHIFT_ASSIGNED)
     action: AuditAction.EMPLOYEE_UPDATED,
     resourceType: 'shift_assignment',
     captureRequestBody: true,

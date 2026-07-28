@@ -2,33 +2,66 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { ShiftManagementService } from '@/lib/services/shift-management.service';
 import { withEnhancedAuth } from '@/lib/auth';
+import { withAudit } from '@/lib/middleware/audit.middleware';
+import { AuditAction } from '@/lib/audit/audit.service';
 
-export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
-  try {
-    const { user, params, permissions } = context;
-    if (!permissions.includes('shift-swaps:create')) {
+export const POST = withAudit(
+  withEnhancedAuth(async (request: NextRequest, context: any) => {
+    try {
+      const { user, params, permissions } = context;
+      if (!permissions.includes('shift-swaps:update')) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'E4030',
+              message: 'Forbidden: missing shift-swaps:update permission',
+              messageAr: 'ممنوع',
+            },
+          },
+          { status: 403 }
+        );
+      }
+      const { id } = params;
+      const body = await request.json();
+      const { reason } = body;
+      const employeeId = context.employeeId || user.userId;
+
+      if (!reason || typeof reason !== 'string' || reason.trim().length === 0) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: {
+              code: 'E2001',
+              message: 'Rejection reason is required',
+              messageAr: 'سبب الرفض مطلوب',
+            },
+          },
+          { status: 400 }
+        );
+      }
+
+      const swap = await ShiftManagementService.rejectSwap(id, user.tenantId, employeeId, reason);
+      return NextResponse.json({ success: true, data: swap });
+    } catch (error: any) {
       return NextResponse.json(
         {
           success: false,
           error: {
-            code: 'E4030',
-            message: 'Forbidden: missing shift-swaps:create permission',
-            messageAr: 'ممنوع',
+            code: 'E3001',
+            message: 'Failed to reject swap request',
+            messageAr: 'خطأ في رفض طلب التبادل',
           },
         },
-        { status: 403 }
+        { status: 400 }
       );
     }
-    const { id } = params;
-    const body = await request.json();
-    const { reason } = body;
-
-    const swap = await ShiftManagementService.rejectSwap(id, user.tenantId, user.id, reason);
-    return NextResponse.json({ success: true, data: swap });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: { code: 'E3001', message: error.message } },
-      { status: 400 }
-    );
+  }),
+  {
+    // TODO: Add shift-specific AuditAction (SHIFT_SWAP_REJECTED)
+    action: AuditAction.LEAVE_REQUEST_REJECTED,
+    resourceType: 'shiftSwap',
+    captureRequestBody: true,
+    extractResourceId: (req, ctx) => ctx?.params?.id,
   }
-});
+);
