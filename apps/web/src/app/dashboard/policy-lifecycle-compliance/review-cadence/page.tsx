@@ -46,7 +46,7 @@ export default function PolicyReviewPage() {
               key: 'lastReviewedAt',
               label: 'Last reviewed',
               labelAr: 'آخر مراجعة',
-              type: 'text',
+              type: 'date',
               widthClass: 'w-40',
             },
             {
