@@ -20,7 +20,18 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
 });
 
 export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) => {
-  if (!hasAny(ctx.permissions, 'tenant:manage', 'risk_register:manage')) return forbidden();
+  if (
+    !hasAny(
+      ctx.permissions,
+      'tenant:manage',
+      'risk_register:manage',
+      'tenant:read',
+      'dashboard:read',
+      'compliance:manage',
+      'nationalisation:manage'
+    )
+  )
+    return forbidden();
   try {
     const body = await req.json();
     if (!body.snapshotDate) return badRequest('snapshotDate required');

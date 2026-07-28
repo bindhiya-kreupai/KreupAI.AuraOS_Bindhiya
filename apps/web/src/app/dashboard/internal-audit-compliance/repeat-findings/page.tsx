@@ -69,7 +69,10 @@ export default function RepeatFindingsPage() {
             findingId: String(h.findingId ?? ''),
             controlId: String(h.controlId ?? ''),
             category: String(h.category ?? ''),
-            raisedAt: new Date(String(h.raisedAt)).toISOString(),
+            raisedAt:
+              h.raisedAt && !isNaN(new Date(String(h.raisedAt)).getTime())
+                ? new Date(String(h.raisedAt)).toISOString()
+                : new Date().toISOString(),
           })),
         },
       })}

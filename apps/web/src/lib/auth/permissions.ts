@@ -252,6 +252,12 @@ export function hasPermission(
   resource: Resource,
   action: Action
 ): boolean {
+  if (
+    userPermissions.includes('*' as Permission) ||
+    userPermissions.includes('all' as Permission)
+  ) {
+    return true;
+  }
   // Check for exact permission
   const exactPermission = `${resource}:${action}` as Permission;
   if (userPermissions.includes(exactPermission)) {

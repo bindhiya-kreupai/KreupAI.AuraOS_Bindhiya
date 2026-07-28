@@ -40,7 +40,7 @@ export default function NitaqatPrivilegeCheckPage() {
   async function load() {
     const r = await fetch('/api/v1/nitaqat-compliance/snapshots');
     const p = await r.json();
-    if (p.success) setSnaps(p.data ?? []);
+    if (p.success) setSnaps(Array.isArray(p.data) ? p.data : (p.data?.items ?? []));
   }
   useEffect(() => {
     load();

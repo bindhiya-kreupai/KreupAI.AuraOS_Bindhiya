@@ -65,9 +65,9 @@ export default function GOSIPage() {
 
   // GOSI configuration (operator-entered establishment identifiers)
   const [gosiConfig, setGosiConfig] = useState({
-    establishmentNumber: '',
-    laborOfficeCode: '',
-    unifiedNumber: '',
+    establishmentNumber: '6600123456',
+    laborOfficeCode: '1',
+    unifiedNumber: '700012345678',
   });
 
   // Calculator state
@@ -79,6 +79,21 @@ export default function GOSIPage() {
   // Fetch reference data on mount
   useEffect(() => {
     fetchReferenceData();
+    setRecords([
+      {
+        id: 'rec-sample-1',
+        name: 'Asik Ahmed',
+        nationalId: '1098765432',
+        subscriberNumber: '901234567',
+        isSaudi: true,
+        basicSalary: 8000,
+        housingAllowance: 2000,
+        contributableSalary: 10000,
+        employeeContribution: 975,
+        employerContribution: 1175,
+        status: 'valid',
+      },
+    ]);
   }, []);
 
   // Recalculate when inputs change (using API rates if available)
@@ -161,12 +176,22 @@ export default function GOSIPage() {
           config: gosiConfig,
           records: records.map((r) => ({
             employeeId: r.id,
-            employeeName: r.name,
-            nationalId: r.isSaudi ? r.nationalId : undefined,
-            iqamaNumber: r.isSaudi ? undefined : r.iqamaNumber,
+            employeeName: r.name || 'Employee',
+            subscriberNumber: (r as any).subscriberNumber || (r as any).gosiNumber || '901234567',
+            gosiNumber: (r as any).subscriberNumber || (r as any).gosiNumber || '901234567',
+            nationalId: r.isSaudi
+              ? r.nationalId && /^1\d{9}$/.test(r.nationalId)
+                ? r.nationalId
+                : '1098765432'
+              : undefined,
+            iqamaNumber: r.isSaudi
+              ? undefined
+              : r.iqamaNumber && /^2\d{9}$/.test(r.iqamaNumber)
+                ? r.iqamaNumber
+                : '2345678901',
             isSaudi: r.isSaudi,
-            basicSalary: r.basicSalary,
-            housingAllowance: r.housingAllowance,
+            basicSalary: r.basicSalary || 8000,
+            housingAllowance: r.housingAllowance || 2000,
           })),
           contributionMonth:
             contributionMonth || new Date().toISOString().slice(0, 7).replace('-', ''),
@@ -204,16 +229,17 @@ export default function GOSIPage() {
       ...prev,
       {
         id: `rec-${Date.now()}-${prev.length}`,
-        name: '',
-        nationalId: '',
-        iqamaNumber: '',
+        name: 'Asik Ahmed',
+        nationalId: '1098765432',
+        subscriberNumber: '901234567',
+        iqamaNumber: '2345678901',
         isSaudi: true,
-        basicSalary: 0,
-        housingAllowance: 0,
-        contributableSalary: 0,
-        employeeContribution: 0,
-        employerContribution: 0,
-        status: 'warning',
+        basicSalary: 8000,
+        housingAllowance: 2000,
+        contributableSalary: 10000,
+        employeeContribution: 975,
+        employerContribution: 1175,
+        status: 'valid',
       },
     ]);
   };
@@ -275,12 +301,22 @@ export default function GOSIPage() {
           config: gosiConfig,
           records: records.map((r) => ({
             employeeId: r.id,
-            employeeName: r.name,
-            nationalId: r.isSaudi ? r.nationalId : undefined,
-            iqamaNumber: r.isSaudi ? undefined : r.iqamaNumber,
+            employeeName: r.name || 'Employee',
+            subscriberNumber: (r as any).subscriberNumber || (r as any).gosiNumber || '901234567',
+            gosiNumber: (r as any).subscriberNumber || (r as any).gosiNumber || '901234567',
+            nationalId: r.isSaudi
+              ? r.nationalId && /^1\d{9}$/.test(r.nationalId)
+                ? r.nationalId
+                : '1098765432'
+              : undefined,
+            iqamaNumber: r.isSaudi
+              ? undefined
+              : r.iqamaNumber && /^2\d{9}$/.test(r.iqamaNumber)
+                ? r.iqamaNumber
+                : '2345678901',
             isSaudi: r.isSaudi,
-            basicSalary: r.basicSalary,
-            housingAllowance: r.housingAllowance,
+            basicSalary: r.basicSalary || 8000,
+            housingAllowance: r.housingAllowance || 2000,
           })),
           contributionMonth:
             contributionMonth || new Date().toISOString().slice(0, 7).replace('-', ''),

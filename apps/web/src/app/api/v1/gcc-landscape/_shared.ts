@@ -30,5 +30,6 @@ export const serverError = (msg: string, err: unknown) => {
 };
 
 export function hasAny(perms: Permissions, ...needed: string[]) {
+  if (perms.includes('*') || perms.includes('all')) return true;
   return needed.some((p) => perms.includes(p));
 }

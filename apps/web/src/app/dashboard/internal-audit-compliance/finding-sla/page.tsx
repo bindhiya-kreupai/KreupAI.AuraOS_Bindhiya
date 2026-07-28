@@ -74,9 +74,15 @@ export default function FindingSlaPage() {
           findings: ((v.findings as Array<Record<string, unknown>>) ?? []).map((f) => ({
             findingId: String(f.findingId ?? ''),
             controlId: f.controlId ? String(f.controlId) : undefined,
-            raisedAt: new Date(String(f.raisedAt)).toISOString(),
+            raisedAt:
+              f.raisedAt && !isNaN(new Date(String(f.raisedAt)).getTime())
+                ? new Date(String(f.raisedAt)).toISOString()
+                : new Date().toISOString(),
             severity: String(f.severity ?? 'MEDIUM'),
-            closedAt: f.closedAt ? new Date(String(f.closedAt)).toISOString() : undefined,
+            closedAt:
+              f.closedAt && !isNaN(new Date(String(f.closedAt)).getTime())
+                ? new Date(String(f.closedAt)).toISOString()
+                : undefined,
             overrideSlaDays: f.overrideSlaDays ? Number(f.overrideSlaDays) : undefined,
           })),
           asOf: new Date().toISOString(),

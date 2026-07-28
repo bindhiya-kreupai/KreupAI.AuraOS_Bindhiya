@@ -27,7 +27,7 @@ export default function NitaqatHiresPage() {
   async function load() {
     const r = await fetch('/api/v1/nitaqat-compliance/hires');
     const p = await r.json();
-    if (p.success) setHires(p.data ?? []);
+    if (p.success) setHires(Array.isArray(p.data) ? p.data : (p.data?.items ?? []));
   }
   useEffect(() => {
     load();
