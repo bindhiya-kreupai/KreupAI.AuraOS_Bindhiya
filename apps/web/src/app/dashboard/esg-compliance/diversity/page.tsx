@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { Users, AlertTriangle, Plus, Trash2, CheckCircle2 } from 'lucide-react';
+import { EmployeeSearchableSelect } from '@/components/shared/EmployeeSearchableSelect';
 
 interface EmployeeInput {
   employeeId: string;
@@ -266,13 +267,14 @@ export default function DiversityMetricsPage() {
                 Add Employee Entry
               </h2>
               <div className="space-y-3">
-                <input
-                  type="text"
-                  placeholder="Employee ID"
-                  value={newEmp.employeeId}
-                  onChange={(e) => setNewEmp({ ...newEmp, employeeId: e.target.value })}
-                  className="w-full rounded-lg border border-slate-300 dark:border-slate-700 px-3 py-1.5 text-sm outline-none bg-slate-50 dark:bg-slate-855 text-slate-900 dark:text-slate-100 focus:bg-white dark:focus:bg-slate-800"
-                />
+                <div className="flex flex-col gap-1">
+                  <span className="text-xs text-slate-500 font-semibold">Employee Name</span>
+                  <EmployeeSearchableSelect
+                    value={newEmp.employeeId}
+                    onChange={(val) => setNewEmp({ ...newEmp, employeeId: val })}
+                    placeholder="Search employee..."
+                  />
+                </div>
                 <div className="grid grid-cols-2 gap-2">
                   <select
                     value={newEmp.gender}

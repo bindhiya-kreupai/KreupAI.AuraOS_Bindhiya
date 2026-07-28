@@ -34,7 +34,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
     return NextResponse.json({ success: true, data: shift });
   } catch (error: any) {
     return NextResponse.json(
-      { success: false, error: { code: 'E5000', message: error.message } },
+      { success: false, error: { code: 'E5000', message: 'Internal server error' } },
       { status: 500 }
     );
   }
@@ -60,7 +60,12 @@ export const PUT = withAudit(
       const { id } = params;
       const body = await request.json();
 
-      const shift = await ShiftManagementService.updateShift(id, user.tenantId, body);
+      const shift = await ShiftManagementService.updateShift(
+        id,
+        user.tenantId,
+        body,
+        user.userId || user.id
+      );
       if (!shift) {
         return NextResponse.json(
           { success: false, error: { code: 'E2001', message: 'Shift not found' } },
@@ -74,13 +79,19 @@ export const PUT = withAudit(
       return NextResponse.json(
         {
           success: false,
-          error: { code: isValidationError ? 'E1001' : 'E5000', message: error.message },
+          error: {
+            code: isValidationError ? 'E1001' : 'E5000',
+            message: isValidationError
+              ? 'Shift with this code already exists'
+              : 'Internal server error',
+          },
         },
         { status: isValidationError ? 400 : 500 }
       );
     }
   }),
   {
+    // TODO: Add shift-specific AuditAction (SHIFT_UPDATED)
     action: AuditAction.EMPLOYEE_UPDATED,
     resourceType: 'shift',
     captureRequestBody: true,
@@ -118,13 +129,14 @@ export const DELETE = withAudit(
       return NextResponse.json({ success: true, data: shift });
     } catch (error: any) {
       return NextResponse.json(
-        { success: false, error: { code: 'E5000', message: error.message } },
+        { success: false, error: { code: 'E5000', message: 'Internal server error' } },
         { status: 500 }
       );
     }
   }),
   {
-    action: AuditAction.EMPLOYEE_UPDATED,
+    // TODO: Add shift-specific AuditAction (SHIFT_DELETED)
+    action: AuditAction.EMPLOYEE_DELETED,
     resourceType: 'shift',
     extractResourceId: (req, ctx) => ctx?.params?.id,
   }

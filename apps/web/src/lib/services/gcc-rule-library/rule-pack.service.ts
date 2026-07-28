@@ -88,7 +88,7 @@ export class CountryRulePackService {
   private async upsertRuleOnPack(tx: any, rulePackId: string, countryCode: string, rule: SeedRule) {
     return (tx as any).countryRule.upsert({
       where: {
-        aura_country_rule_pack_domain_key_unique: {
+        rulePackId_domain_ruleKey: {
           rulePackId,
           domain: rule.domain,
           ruleKey: rule.ruleKey,

@@ -1,7 +1,7 @@
 import React from 'react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
-import { Search, Filter, ArrowUpDown, Download, Upload } from 'lucide-react';
+import { Search, Filter, ArrowUpDown, Download, Upload, ChevronLeft, ChevronRight } from 'lucide-react';
 
 function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
@@ -30,6 +30,14 @@ interface DataTableProps<T> {
      */
     toolbarSlot?: React.ReactNode;
     className?: string;
+    /** Client-side pagination */
+    pagination?: {
+        currentPage: number;
+        totalPages: number;
+        total: number;
+        pageSize: number;
+        onPageChange: (page: number) => void;
+    };
 }
 
 export function DataTable<T extends { id: string | number }>({
@@ -41,8 +49,11 @@ export function DataTable<T extends { id: string | number }>({
     onImport,
     onFilter,
     toolbarSlot,
-    className
+    className,
+    pagination
 }: DataTableProps<T>) {
+    const showPagination = pagination && pagination.totalPages > 1;
+
     return (
         <div className={cn("bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm overflow-hidden", className)}>
             {/* Toolbar */}
@@ -129,14 +140,72 @@ export function DataTable<T extends { id: string | number }>({
                 </table>
             </div>
 
-            {/* Footer / Pagination (Simple) */}
-            <div className="px-4 py-3 border-t border-cloud dark:border-nebula-purple/50 flex items-center justify-between text-xs text-silver-mist">
-                <span>Showing {data.length} entries</span>
-                <div className="flex gap-2">
-                    <button disabled className="px-2 py-1 rounded hover:bg-pearl dark:hover:bg-deep-cosmos disabled:opacity-50">Previous</button>
-                    <button disabled className="px-2 py-1 rounded hover:bg-pearl dark:hover:bg-deep-cosmos disabled:opacity-50">Next</button>
+            {/* Footer / Pagination */}
+            {showPagination && pagination ? (
+                <div className="px-4 py-3 border-t border-cloud dark:border-nebula-purple/50 flex items-center justify-between text-xs text-silver-mist">
+                    <span>
+                        Showing {((pagination.currentPage - 1) * pagination.pageSize) + 1} to{' '}
+                        {Math.min(pagination.currentPage * pagination.pageSize, pagination.total)} of{' '}
+                        {pagination.total} entries
+                    </span>
+                    <div className="flex items-center gap-1">
+                        <button
+                            onClick={() => pagination.onPageChange(pagination.currentPage - 1)}
+                            disabled={pagination.currentPage <= 1}
+                            className={cn(
+                                "p-1.5 rounded-md transition-colors",
+                                pagination.currentPage <= 1
+                                    ? "text-slate-300 dark:text-slate-600 cursor-not-allowed"
+                                    : "text-silver-mist hover:text-celestial-indigo hover:bg-celestial-indigo/10"
+                            )}
+                        >
+                            <ChevronLeft className="w-4 h-4" />
+                        </button>
+                        {Array.from({ length: Math.min(pagination.totalPages, 7) }, (_, i) => {
+                            let pageNum: number;
+                            if (pagination.totalPages <= 7) {
+                                pageNum = i + 1;
+                            } else if (pagination.currentPage <= 4) {
+                                pageNum = i + 1;
+                            } else if (pagination.currentPage >= pagination.totalPages - 3) {
+                                pageNum = pagination.totalPages - 6 + i;
+                            } else {
+                                pageNum = pagination.currentPage - 3 + i;
+                            }
+                            return (
+                                <button
+                                    key={pageNum}
+                                    onClick={() => pagination.onPageChange(pageNum)}
+                                    className={cn(
+                                        "px-2.5 py-1 text-sm rounded-md transition-colors",
+                                        pageNum === pagination.currentPage
+                                            ? "bg-celestial-indigo text-white"
+                                            : "text-silver-mist hover:text-celestial-indigo hover:bg-celestial-indigo/10"
+                                    )}
+                                >
+                                    {pageNum}
+                                </button>
+                            );
+                        })}
+                        <button
+                            onClick={() => pagination.onPageChange(pagination.currentPage + 1)}
+                            disabled={pagination.currentPage >= pagination.totalPages}
+                            className={cn(
+                                "p-1.5 rounded-md transition-colors",
+                                pagination.currentPage >= pagination.totalPages
+                                    ? "text-slate-300 dark:text-slate-600 cursor-not-allowed"
+                                    : "text-silver-mist hover:text-celestial-indigo hover:bg-celestial-indigo/10"
+                            )}
+                        >
+                            <ChevronRight className="w-4 h-4" />
+                        </button>
+                    </div>
                 </div>
-            </div>
+            ) : (
+                <div className="px-4 py-3 border-t border-cloud dark:border-nebula-purple/50 flex items-center justify-between text-xs text-silver-mist">
+                    <span>Showing {data.length} entries</span>
+                </div>
+            )}
         </div>
     );
 }

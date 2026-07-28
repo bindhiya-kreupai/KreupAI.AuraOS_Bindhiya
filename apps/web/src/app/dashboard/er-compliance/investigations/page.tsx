@@ -160,34 +160,18 @@ export default function InvestigationsPage() {
                   <td className="px-3 py-2 text-xs">{i.status}</td>
                   <td className="px-3 py-2">
                     {i.status === 'OPEN' && (
-                      <div className="flex flex-wrap gap-1">
-                        <button
-                          type="button"
-                          onClick={() => call('add-interview', i.id)}
-                          className="rounded-md border border-slate-300 dark:border-slate-700 dark:hover:bg-slate-800 px-2 py-1 text-xs"
-                        >
-                          + Interview
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => call('add-evidence', i.id)}
-                          className="rounded-md border border-slate-300 dark:border-slate-700 dark:hover:bg-slate-800 px-2 py-1 text-xs"
-                        >
-                          + Evidence
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            call('complete', i.id, {
-                              findings: window.prompt('Findings?') ?? '',
-                              recommendation: window.prompt('Recommendation?') ?? undefined,
-                            })
-                          }
-                          className="rounded-md bg-emerald-700 px-2 py-1 text-xs text-white"
-                        >
-                          Complete
-                        </button>
-                      </div>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          call('complete', i.id, {
+                            findings: window.prompt('Findings?') ?? '',
+                            recommendation: window.prompt('Recommendation?') ?? undefined,
+                          })
+                        }
+                        className="rounded-md bg-emerald-700 px-2 py-1 text-xs text-white"
+                      >
+                        Complete
+                      </button>
                     )}
                   </td>
                 </tr>

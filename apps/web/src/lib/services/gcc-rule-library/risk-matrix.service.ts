@@ -124,7 +124,7 @@ export class CountryRiskMatrixService {
     for (const seed of SEED) {
       const existing = await (prisma as any).countryRiskMatrix.findUnique({
         where: {
-          aura_country_risk_matrix_unique: {
+          tenantId_countryCode_riskCode: {
             tenantId: auth.tenantId,
             countryCode: seed.countryCode,
             riskCode: seed.riskCode,
@@ -179,7 +179,7 @@ export class CountryRiskMatrixService {
     const { score: sc, rating } = score(input.likelihood, input.impact);
     return (prisma as any).countryRiskMatrix.upsert({
       where: {
-        aura_country_risk_matrix_unique: {
+        tenantId_countryCode_riskCode: {
           tenantId: auth.tenantId,
           countryCode: input.countryCode,
           riskCode: input.riskCode,

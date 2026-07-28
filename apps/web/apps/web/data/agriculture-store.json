@@ -1,0 +1,940 @@
+{
+  "workers": [
+    {
+      "workerId": "worker-001",
+      "employeeId": "emp-season-001",
+      "fullName": "Juan Rodriguez",
+      "dateOfBirth": "1985-03-15T00:00:00.000Z",
+      "nationality": "Mexico",
+      "phone": "+1-555-0101",
+      "email": "juan.rodriguez@email.com",
+      "emergencyContact": {
+        "name": "Maria Rodriguez",
+        "relationship": "Wife",
+        "phone": "+1-555-0102",
+        "address": "Ciudad Juarez, Mexico"
+      },
+      "visaType": "H-2A",
+      "visaNumber": "H2A-2024-001234",
+      "visaExpiryDate": "2024-12-31T00:00:00.000Z",
+      "workPermitNumber": "WP-001234",
+      "workPermitExpiry": "2024-12-31T00:00:00.000Z",
+      "h2aStatus": "approved",
+      "employmentType": "h2a",
+      "seasonType": "Spring Planting",
+      "startDate": "2024-03-01T00:00:00.000Z",
+      "endDate": "2024-06-30T00:00:00.000Z",
+      "contractedHours": 800,
+      "hourlyRate": 16.5,
+      "skills": ["Planting", "Irrigation", "Equipment Operation", "Tractor Driving"],
+      "certifications": [
+        {
+          "certificationId": "cert-001",
+          "certificationType": "Equipment",
+          "certificationName": "Tractor Operation License",
+          "issuedDate": "2023-01-15T00:00:00.000Z",
+          "expiryDate": "2026-01-15T00:00:00.000Z",
+          "issuingAuthority": "Agricultural Safety Board",
+          "certificationNumber": "TO-123456",
+          "status": "active"
+        }
+      ],
+      "languages": ["Spanish", "English"],
+      "previousSeasons": 5,
+      "currentAssignment": {
+        "assignmentId": "assign-001",
+        "workerId": "worker-001",
+        "workerName": "Juan Rodriguez",
+        "farm": "Green Valley Farms",
+        "farmId": "farm-001",
+        "field": "North Field A",
+        "fieldId": "field-001",
+        "crop": "Corn",
+        "assignmentType": "planting",
+        "startDate": "2024-03-15T00:00:00.000Z",
+        "estimatedHours": 320,
+        "actualHours": 280,
+        "supervisor": "Mike Johnson",
+        "supervisorId": "supervisor-001",
+        "crewLead": "Carlos Mendez",
+        "teamSize": 12,
+        "targetQuantity": 50,
+        "actualQuantity": 45,
+        "unitOfMeasure": "acres",
+        "qualityScore": 4.5,
+        "status": "in_progress",
+        "completionPercentage": 90,
+        "notes": "Excellent performance, highly experienced"
+      },
+      "assignmentHistory": [],
+      "housingRequired": true,
+      "housingAssignment": {
+        "assignmentId": "housing-001",
+        "facilityId": "facility-001",
+        "facilityName": "Valley View Dormitory",
+        "workerId": "worker-001",
+        "workerName": "Juan Rodriguez",
+        "roomNumber": "101",
+        "bedNumber": "A",
+        "checkInDate": "2024-02-28T00:00:00.000Z",
+        "plannedCheckOutDate": "2024-07-01T00:00:00.000Z",
+        "roommates": ["worker-002", "worker-003"],
+        "weeklyRate": 50,
+        "totalCharged": 800,
+        "totalPaid": 800,
+        "balance": 0,
+        "checkInCondition": {
+          "inspectionDate": "2024-02-28T00:00:00.000Z",
+          "inspector": "Housing Manager",
+          "overallCondition": "good",
+          "cleanliness": 4,
+          "damages": [],
+          "photos": []
+        },
+        "status": "active"
+      },
+      "performanceRating": 4.7,
+      "attendanceRate": 98.5,
+      "productivityScore": 4.5,
+      "rehireEligible": true,
+      "status": "active",
+      "documents": [
+        {
+          "documentId": "doc-001",
+          "documentType": "Visa",
+          "documentName": "H-2A Visa Copy",
+          "uploadedDate": "2024-02-15T00:00:00.000Z",
+          "expiryDate": "2024-12-31T00:00:00.000Z",
+          "fileUrl": "/documents/visa-001.pdf",
+          "verified": true,
+          "verifiedBy": "HR Admin",
+          "verifiedDate": "2024-02-16T00:00:00.000Z"
+        },
+        {
+          "documentId": "doc-002",
+          "documentType": "Work Permit",
+          "documentName": "Work Authorization",
+          "uploadedDate": "2024-02-15T00:00:00.000Z",
+          "expiryDate": "2024-12-31T00:00:00.000Z",
+          "fileUrl": "/documents/permit-001.pdf",
+          "verified": true,
+          "verifiedBy": "HR Admin",
+          "verifiedDate": "2024-02-16T00:00:00.000Z"
+        }
+      ],
+      "createdDate": "2024-02-10T00:00:00.000Z",
+      "lastUpdatedDate": "2026-07-17T05:17:44.484Z",
+      "notes": "Returning worker, highly reliable"
+    },
+    {
+      "workerId": "worker-002",
+      "fullName": "Maria Garcia",
+      "dateOfBirth": "1992-07-22T00:00:00.000Z",
+      "nationality": "Guatemala",
+      "phone": "+1-555-0103",
+      "email": "maria.garcia@email.com",
+      "emergencyContact": {
+        "name": "Pedro Garcia",
+        "relationship": "Brother",
+        "phone": "+1-555-0104"
+      },
+      "visaType": "H-2A",
+      "visaNumber": "H2A-2024-001235",
+      "visaExpiryDate": "2024-12-31T00:00:00.000Z",
+      "h2aStatus": "approved",
+      "employmentType": "h2a",
+      "seasonType": "Spring Planting",
+      "startDate": "2024-03-01T00:00:00.000Z",
+      "endDate": "2024-06-30T00:00:00.000Z",
+      "contractedHours": 800,
+      "hourlyRate": 15,
+      "skills": ["Hand Planting", "Weeding", "Quality Control"],
+      "certifications": [],
+      "languages": ["Spanish", "Basic English"],
+      "previousSeasons": 2,
+      "assignmentHistory": [],
+      "housingRequired": true,
+      "performanceRating": 4.2,
+      "attendanceRate": 96,
+      "productivityScore": 4,
+      "rehireEligible": true,
+      "status": "active",
+      "documents": [],
+      "createdDate": "2024-02-12T00:00:00.000Z",
+      "lastUpdatedDate": "2026-07-17T05:17:44.484Z"
+    },
+    {
+      "workerId": "worker-003",
+      "fullName": "Carlos Mendez",
+      "dateOfBirth": "1980-11-05T00:00:00.000Z",
+      "nationality": "Mexico",
+      "phone": "+1-555-0105",
+      "emergencyContact": {
+        "name": "Ana Mendez",
+        "relationship": "Wife",
+        "phone": "+1-555-0106"
+      },
+      "visaType": "H-2A",
+      "visaNumber": "H2A-2024-001236",
+      "visaExpiryDate": "2024-12-31T00:00:00.000Z",
+      "h2aStatus": "approved",
+      "employmentType": "h2a",
+      "seasonType": "Spring Planting",
+      "startDate": "2024-03-01T00:00:00.000Z",
+      "endDate": "2024-06-30T00:00:00.000Z",
+      "contractedHours": 900,
+      "hourlyRate": 18,
+      "skills": [
+        "Crew Leadership",
+        "Planting",
+        "Equipment Operation",
+        "Quality Control",
+        "Safety Training"
+      ],
+      "certifications": [
+        {
+          "certificationId": "cert-002",
+          "certificationType": "Leadership",
+          "certificationName": "Crew Lead Certification",
+          "issuedDate": "2022-05-10T00:00:00.000Z",
+          "expiryDate": "2025-05-10T00:00:00.000Z",
+          "issuingAuthority": "Agricultural Leadership Institute",
+          "certificationNumber": "CL-789012",
+          "status": "active"
+        }
+      ],
+      "languages": ["Spanish", "English"],
+      "previousSeasons": 8,
+      "assignmentHistory": [],
+      "housingRequired": true,
+      "performanceRating": 4.9,
+      "attendanceRate": 99.5,
+      "productivityScore": 4.8,
+      "rehireEligible": true,
+      "status": "active",
+      "documents": [],
+      "createdDate": "2024-02-08T00:00:00.000Z",
+      "lastUpdatedDate": "2026-07-17T05:17:44.484Z",
+      "notes": "Experienced crew lead, excellent with team management"
+    },
+    {
+      "fullName": "John",
+      "nationality": "India ",
+      "phone": "8897868668",
+      "email": "john@gmail.com",
+      "employmentType": "seasonal",
+      "seasonType": "Summer Harvest",
+      "status": "recruited",
+      "dateOfBirth": "1990-01-01T00:00:00.000Z",
+      "startDate": "2026-07-17T05:50:43.710Z",
+      "endDate": "2026-10-15T05:50:43.710Z",
+      "contractedHours": 40,
+      "hourlyRate": 15,
+      "skills": [],
+      "certifications": [],
+      "languages": ["English"],
+      "previousSeasons": 0,
+      "housingRequired": false,
+      "attendanceRate": 100,
+      "rehireEligible": true,
+      "documents": [],
+      "assignmentHistory": [],
+      "createdDate": "2026-07-17T05:50:45.791Z",
+      "lastUpdatedDate": "2026-07-17T05:50:45.791Z",
+      "emergencyContact": {
+        "name": "Unknown",
+        "relationship": "Unknown",
+        "phone": "000-000-0000"
+      },
+      "workerId": "worker-mroirodb-9gtxy3"
+    }
+  ],
+  "pools": [
+    {
+      "poolId": "pool-001",
+      "seasonName": "Spring 2024 Planting Season",
+      "seasonType": "Spring Planting",
+      "seasonStartDate": "2024-03-01T00:00:00.000Z",
+      "seasonEndDate": "2024-06-30T00:00:00.000Z",
+      "recruitmentStartDate": "2024-01-15T00:00:00.000Z",
+      "recruitmentEndDate": "2024-02-25T00:00:00.000Z",
+      "targetWorkers": 50,
+      "currentWorkers": 47,
+      "activeWorkers": 45,
+      "onLeaveWorkers": 2,
+      "workers": ["worker-001", "worker-002", "worker-003"],
+      "recruitmentSources": [
+        {
+          "sourceName": "H-2A Program",
+          "workersRecruited": 35,
+          "cost": 52500,
+          "averageQuality": 4.5
+        },
+        {
+          "sourceName": "Local Recruitment",
+          "workersRecruited": 10,
+          "cost": 5000,
+          "averageQuality": 4
+        },
+        {
+          "sourceName": "Returning Workers",
+          "workersRecruited": 2,
+          "cost": 500,
+          "averageQuality": 4.8
+        }
+      ],
+      "recruitmentCost": 58000,
+      "averageAttendance": 97.2,
+      "averageProductivity": 4.3,
+      "turnoverRate": 8.5,
+      "status": "active",
+      "createdDate": "2024-01-10T00:00:00.000Z"
+    },
+    {
+      "poolId": "pool-002",
+      "seasonName": "Summer 2024 Harvest Season",
+      "seasonType": "Summer Harvest",
+      "seasonStartDate": "2024-07-01T00:00:00.000Z",
+      "seasonEndDate": "2024-09-30T00:00:00.000Z",
+      "recruitmentStartDate": "2024-05-01T00:00:00.000Z",
+      "recruitmentEndDate": "2024-06-15T00:00:00.000Z",
+      "targetWorkers": 75,
+      "currentWorkers": 12,
+      "activeWorkers": 0,
+      "onLeaveWorkers": 0,
+      "workers": [],
+      "recruitmentSources": [],
+      "recruitmentCost": 15000,
+      "averageAttendance": 0,
+      "averageProductivity": 0,
+      "turnoverRate": 0,
+      "status": "pending",
+      "createdDate": "2024-04-15T00:00:00.000Z"
+    }
+  ],
+  "facilities": [
+    {
+      "facilityId": "facility-001",
+      "facilityName": "Valley View Dormitory",
+      "facilityType": "dormitory",
+      "address": "1234 Farm Road, Rural County, State 12345",
+      "farm": "Green Valley Farms",
+      "farmId": "farm-001",
+      "gpsCoordinates": {
+        "latitude": 40.7128,
+        "longitude": -74.006
+      },
+      "totalBeds": 60,
+      "occupiedBeds": 48,
+      "availableBeds": 12,
+      "totalRooms": 15,
+      "bedsPerRoom": 4,
+      "amenities": ["Communal Kitchen", "Common Room", "Laundry Facilities", "WiFi", "Parking"],
+      "hasKitchen": true,
+      "hasBathroom": true,
+      "hasLaundry": true,
+      "hasCommonArea": true,
+      "hasCooling": true,
+      "hasHeating": true,
+      "hasWifi": true,
+      "waterSupply": "municipal",
+      "powerSupply": "grid",
+      "sewerSystem": "municipal",
+      "occupancyPermitNumber": "OP-2024-001",
+      "occupancyPermitExpiry": "2025-12-31T00:00:00.000Z",
+      "lastInspectionDate": "2024-03-15T00:00:00.000Z",
+      "nextInspectionDate": "2024-06-15T00:00:00.000Z",
+      "inspectionScore": 92,
+      "complianceStatus": "compliant",
+      "violations": [],
+      "maintenanceSchedule": [
+        {
+          "scheduleId": "maint-001",
+          "maintenanceType": "routine",
+          "description": "Weekly cleaning and inspection",
+          "frequency": "weekly",
+          "lastCompleted": "2024-04-15T00:00:00.000Z",
+          "nextDue": "2024-04-22T00:00:00.000Z",
+          "assignedTo": "Maintenance Team",
+          "status": "scheduled"
+        },
+        {
+          "scheduleId": "maint-002",
+          "maintenanceType": "preventive",
+          "description": "HVAC system maintenance",
+          "frequency": "quarterly",
+          "lastCompleted": "2024-01-15T00:00:00.000Z",
+          "nextDue": "2024-04-15T00:00:00.000Z",
+          "assignedTo": "HVAC Contractor",
+          "status": "scheduled"
+        }
+      ],
+      "openWorkOrders": 2,
+      "lastMaintenanceDate": "2024-04-15T00:00:00.000Z",
+      "monthlyCost": 3000,
+      "costPerBed": 50,
+      "currentOccupants": [],
+      "status": "active",
+      "photos": [
+        "/housing/facility-001/exterior.jpg",
+        "/housing/facility-001/room.jpg",
+        "/housing/facility-001/common-area.jpg"
+      ],
+      "documents": [
+        {
+          "documentId": "doc-fac-001",
+          "documentType": "Occupancy Permit",
+          "documentName": "Occupancy Permit 2024",
+          "uploadedDate": "2024-01-05T00:00:00.000Z",
+          "expiryDate": "2025-12-31T00:00:00.000Z",
+          "fileUrl": "/documents/occupancy-permit-001.pdf"
+        },
+        {
+          "documentId": "doc-fac-002",
+          "documentType": "Inspection Report",
+          "documentName": "Q1 2024 Inspection",
+          "uploadedDate": "2024-03-16T00:00:00.000Z",
+          "fileUrl": "/documents/inspection-report-001.pdf"
+        }
+      ],
+      "createdDate": "2023-01-15T00:00:00.000Z",
+      "lastUpdatedDate": "2026-07-17T05:17:44.484Z",
+      "notes": "Main seasonal housing facility, well-maintained"
+    },
+    {
+      "facilityId": "facility-002",
+      "facilityName": "Riverside Apartments",
+      "facilityType": "apartment",
+      "address": "5678 River Road, Rural County, State 12345",
+      "farm": "Green Valley Farms",
+      "farmId": "farm-001",
+      "totalBeds": 24,
+      "occupiedBeds": 18,
+      "availableBeds": 6,
+      "totalRooms": 6,
+      "bedsPerRoom": 4,
+      "amenities": ["Kitchen in Unit", "Bathroom in Unit", "WiFi"],
+      "hasKitchen": true,
+      "hasBathroom": true,
+      "hasLaundry": false,
+      "hasCommonArea": false,
+      "hasCooling": true,
+      "hasHeating": true,
+      "hasWifi": true,
+      "waterSupply": "municipal",
+      "powerSupply": "grid",
+      "sewerSystem": "municipal",
+      "complianceStatus": "compliant",
+      "violations": [],
+      "maintenanceSchedule": [],
+      "openWorkOrders": 1,
+      "monthlyCost": 2400,
+      "costPerBed": 100,
+      "currentOccupants": [],
+      "status": "active",
+      "photos": [],
+      "documents": [],
+      "createdDate": "2023-06-01T00:00:00.000Z",
+      "lastUpdatedDate": "2026-07-17T05:17:44.484Z"
+    }
+  ],
+  "assignments": [],
+  "inspections": [
+    {
+      "inspectionId": "inspect-001",
+      "facilityId": "facility-001",
+      "facilityName": "Valley View Dormitory",
+      "inspectionDate": "2024-03-15T00:00:00.000Z",
+      "inspectionType": "routine",
+      "inspector": "State Housing Inspector",
+      "inspectorCredentials": "License #12345",
+      "overallScore": 92,
+      "passed": true,
+      "structuralIntegrity": {
+        "status": "pass",
+        "score": 95,
+        "notes": "Building structure sound, no issues"
+      },
+      "electrical": {
+        "status": "pass",
+        "score": 90,
+        "notes": "All electrical systems functioning properly"
+      },
+      "plumbing": {
+        "status": "pass",
+        "score": 88,
+        "notes": "Minor leak in Room 5 - scheduled for repair"
+      },
+      "heating": {
+        "status": "pass",
+        "score": 92
+      },
+      "cooling": {
+        "status": "pass",
+        "score": 94
+      },
+      "firesafety": {
+        "status": "pass",
+        "score": 96,
+        "notes": "All fire extinguishers current, smoke detectors operational"
+      },
+      "sanitation": {
+        "status": "pass",
+        "score": 90
+      },
+      "ventilation": {
+        "status": "pass",
+        "score": 91
+      },
+      "emergencyExits": {
+        "status": "pass",
+        "score": 98,
+        "notes": "All emergency exits clear and properly marked"
+      },
+      "violations": [],
+      "recommendations": [
+        "Consider upgrading bathroom fixtures in older wing",
+        "Schedule regular pest control treatments"
+      ],
+      "reinspectionRequired": false,
+      "photos": ["/inspections/inspect-001/photo1.jpg", "/inspections/inspect-001/photo2.jpg"],
+      "notes": "Facility in excellent condition, minor plumbing issue noted"
+    }
+  ],
+  "cycles": [
+    {
+      "cycleId": "cycle-001",
+      "cropName": "Corn",
+      "cropType": "Field Corn",
+      "variety": "Pioneer 1234",
+      "farm": "Green Valley Farms",
+      "farmId": "farm-001",
+      "fields": [
+        {
+          "fieldId": "field-001",
+          "fieldName": "North Field A",
+          "acreage": 50,
+          "soilType": "Loam",
+          "irrigationAvailable": true
+        },
+        {
+          "fieldId": "field-002",
+          "fieldName": "North Field B",
+          "acreage": 45,
+          "soilType": "Clay Loam",
+          "irrigationAvailable": true
+        }
+      ],
+      "totalAcreage": 95,
+      "plantingDate": "2024-04-01T00:00:00.000Z",
+      "expectedHarvestDate": "2024-09-15T00:00:00.000Z",
+      "cycleDuration": 167,
+      "growingSeason": "Spring/Summer 2024",
+      "currentStage": "vegetative_growth",
+      "stages": [
+        {
+          "stage": "land_preparation",
+          "startDate": "2024-03-01T00:00:00.000Z",
+          "endDate": "2024-03-25T00:00:00.000Z",
+          "duration": 24,
+          "completed": true,
+          "notes": "Land cleared, tilled, and fertilized"
+        },
+        {
+          "stage": "planting",
+          "startDate": "2024-03-26T00:00:00.000Z",
+          "endDate": "2024-04-10T00:00:00.000Z",
+          "duration": 15,
+          "completed": true,
+          "notes": "Planting completed ahead of schedule"
+        },
+        {
+          "stage": "germination",
+          "startDate": "2024-04-11T00:00:00.000Z",
+          "endDate": "2024-04-25T00:00:00.000Z",
+          "duration": 14,
+          "completed": true,
+          "notes": "Excellent germination rate of 95%"
+        },
+        {
+          "stage": "vegetative_growth",
+          "startDate": "2024-04-26T00:00:00.000Z",
+          "completed": false
+        }
+      ],
+      "laborRequirements": [
+        {
+          "requirementId": "labor-req-001",
+          "stage": "planting",
+          "activity": "Seed planting",
+          "startDate": "2024-03-26T00:00:00.000Z",
+          "endDate": "2024-04-10T00:00:00.000Z",
+          "workersNeeded": 20,
+          "skillsRequired": ["Planting", "Equipment Operation"],
+          "estimatedHours": 1600,
+          "actualHours": 1520,
+          "workersAssigned": 20,
+          "completionPercentage": 100,
+          "status": "completed"
+        },
+        {
+          "requirementId": "labor-req-002",
+          "stage": "harvesting",
+          "activity": "Corn harvesting",
+          "startDate": "2024-09-01T00:00:00.000Z",
+          "endDate": "2024-09-20T00:00:00.000Z",
+          "workersNeeded": 40,
+          "skillsRequired": ["Harvesting", "Equipment Operation", "Quality Control"],
+          "estimatedHours": 3200,
+          "workersAssigned": 0,
+          "completionPercentage": 0,
+          "status": "planned"
+        }
+      ],
+      "peakLaborNeed": 40,
+      "currentLaborAssigned": 15,
+      "expectedYield": 14250,
+      "yieldUnit": "bushels",
+      "yieldPerAcre": 150,
+      "weatherImpact": [
+        {
+          "date": "2024-04-15T00:00:00.000Z",
+          "weatherEvent": "Heavy Rain",
+          "severity": "moderate",
+          "impactDescription": "Heavy rainfall delayed field work for 2 days but provided good soil moisture",
+          "yieldImpact": 0,
+          "actionTaken": "Adjusted work schedule, no long-term impact"
+        }
+      ],
+      "irrigationRequired": true,
+      "irrigationSchedule": [
+        {
+          "scheduleId": "irr-001",
+          "fieldId": "field-001",
+          "startDate": "2024-05-01T00:00:00.000Z",
+          "endDate": "2024-08-31T00:00:00.000Z",
+          "frequency": "Twice weekly",
+          "duration": 120,
+          "waterVolume": 5000,
+          "status": "scheduled"
+        }
+      ],
+      "seedCost": 18000,
+      "laborCost": 45000,
+      "irrigationCost": 8500,
+      "fertilizerCost": 12000,
+      "pesticideCost": 5500,
+      "equipmentCost": 15000,
+      "totalCost": 104000,
+      "expectedRevenue": 145000,
+      "profitMargin": 28.3,
+      "status": "growing",
+      "cropHealth": "excellent",
+      "diseasePresent": false,
+      "pestPresent": false,
+      "issues": [],
+      "risks": [
+        {
+          "riskId": "risk-001",
+          "riskType": "Weather",
+          "riskDescription": "Potential drought in July-August period",
+          "probability": "medium",
+          "impact": "high",
+          "mitigationPlan": "Irrigation system ready, water reserves adequate",
+          "status": "monitoring"
+        }
+      ],
+      "createdDate": "2024-02-15T00:00:00.000Z",
+      "lastUpdatedDate": "2026-07-17T05:17:44.484Z",
+      "notes": "Excellent start to season, crop progressing well"
+    },
+    {
+      "cropName": "onion",
+      "cropType": "Vegetable",
+      "currentStage": "planting",
+      "status": "planting",
+      "totalAcreage": 10,
+      "expectedYield": 1000,
+      "farm": "Main Farm",
+      "farmId": "F-001",
+      "fields": [],
+      "plantingDate": "2026-07-17T05:18:23.976Z",
+      "expectedHarvestDate": "2026-10-15T05:18:23.976Z",
+      "cycleDuration": 90,
+      "growingSeason": "Current Season",
+      "stages": [],
+      "laborRequirements": [],
+      "peakLaborNeed": 50,
+      "currentLaborAssigned": 0,
+      "yieldUnit": "lbs",
+      "weatherImpact": [],
+      "irrigationRequired": true,
+      "seedCost": 500,
+      "laborCost": 2000,
+      "irrigationCost": 300,
+      "fertilizerCost": 600,
+      "pesticideCost": 400,
+      "equipmentCost": 800,
+      "totalCost": 4600,
+      "expectedRevenue": 15000,
+      "cropHealth": "good",
+      "diseasePresent": false,
+      "pestPresent": false,
+      "issues": [],
+      "risks": [],
+      "createdDate": "2026-07-17T05:18:25.658Z",
+      "lastUpdatedDate": "2026-07-17T05:18:25.658Z",
+      "cycleId": "cycle-mrohm3cq-vvm6s2"
+    }
+  ],
+  "schedules": [
+    {
+      "scheduleId": "harvest-001",
+      "cycleId": "cycle-001",
+      "cropName": "Corn",
+      "plannedStartDate": "2024-09-01T00:00:00.000Z",
+      "plannedEndDate": "2024-09-20T00:00:00.000Z",
+      "farm": "Green Valley Farms",
+      "fields": ["field-001", "field-002"],
+      "totalAcreage": 95,
+      "workersRequired": 40,
+      "workersScheduled": 35,
+      "shifts": [
+        {
+          "shiftId": "shift-001",
+          "shiftDate": "2024-09-01T00:00:00.000Z",
+          "startTime": "06:00 AM",
+          "endTime": "02:00 PM",
+          "workersAssigned": ["worker-001", "worker-002"],
+          "supervisor": "Mike Johnson",
+          "targetAcres": 5,
+          "status": "scheduled"
+        }
+      ],
+      "equipmentNeeded": ["Combine Harvester x2", "Grain Carts x3", "Semi Trucks x2"],
+      "equipmentScheduled": ["Combine Harvester x2", "Grain Carts x3"],
+      "acresHarvested": 0,
+      "percentageComplete": 0,
+      "targetYield": 14250,
+      "currentYield": 0,
+      "status": "planned"
+    }
+  ],
+  "analytics": {
+    "seasonalLaborMetrics": {
+      "totalWorkers": 47,
+      "activeWorkers": 45,
+      "averageSeasonLength": 120,
+      "averageHourlyRate": 15.75,
+      "totalLaborCost": 705600,
+      "averageAttendance": 97.2,
+      "averageProductivity": 4.3,
+      "turnoverRate": 8.5,
+      "rehireRate": 68,
+      "workersByType": [
+        {
+          "type": "H-2A",
+          "count": 35
+        },
+        {
+          "type": "Seasonal",
+          "count": 10
+        },
+        {
+          "type": "Temporary",
+          "count": 2
+        }
+      ],
+      "workersBySkill": [
+        {
+          "skill": "Planting",
+          "count": 38
+        },
+        {
+          "skill": "Harvesting",
+          "count": 42
+        },
+        {
+          "skill": "Equipment Operation",
+          "count": 22
+        },
+        {
+          "skill": "Quality Control",
+          "count": 15
+        }
+      ],
+      "certificationExpiringSoon": 3,
+      "visaExpiringSoon": 5
+    },
+    "housingMetrics": {
+      "totalFacilities": 2,
+      "totalBeds": 84,
+      "occupiedBeds": 66,
+      "occupancyRate": 78.6,
+      "averageOccupancyRate": 75.3,
+      "totalHousingCost": 5400,
+      "costPerOccupant": 81.82,
+      "complianceRate": 100,
+      "openViolations": 0,
+      "pendingInspections": 1,
+      "maintenanceBacklog": 3,
+      "facilitiesByType": [
+        {
+          "type": "Dormitory",
+          "count": 1
+        },
+        {
+          "type": "Apartment",
+          "count": 1
+        }
+      ],
+      "facilitiesByStatus": [
+        {
+          "status": "Active",
+          "count": 2
+        },
+        {
+          "status": "Under Maintenance",
+          "count": 0
+        }
+      ]
+    },
+    "cropCycleMetrics": {
+      "activeCycles": 2,
+      "completedCycles": 0,
+      "totalAcreage": 110,
+      "averageYieldPerAcre": 142,
+      "totalProduction": 0,
+      "totalRevenue": 0,
+      "totalCost": 152000,
+      "profitMargin": 0,
+      "cyclesByStage": [
+        {
+          "stage": "Vegetative Growth",
+          "count": 1
+        },
+        {
+          "stage": "Flowering",
+          "count": 1
+        }
+      ],
+      "cyclesByCrop": [
+        {
+          "crop": "Corn",
+          "count": 1,
+          "acreage": 95
+        },
+        {
+          "crop": "Strawberries",
+          "count": 1,
+          "acreage": 15
+        }
+      ],
+      "cropHealthDistribution": [
+        {
+          "health": "Excellent",
+          "count": 1
+        },
+        {
+          "health": "Good",
+          "count": 1
+        }
+      ],
+      "laborUtilization": 78.5,
+      "openIssues": 1,
+      "highRisks": 0
+    },
+    "laborTrend": [
+      {
+        "month": "Jan 2024",
+        "workers": 0,
+        "cost": 0
+      },
+      {
+        "month": "Feb 2024",
+        "workers": 15,
+        "cost": 180000
+      },
+      {
+        "month": "Mar 2024",
+        "workers": 45,
+        "cost": 540000
+      },
+      {
+        "month": "Apr 2024",
+        "workers": 47,
+        "cost": 705600
+      }
+    ],
+    "occupancyTrend": [
+      {
+        "month": "Jan 2024",
+        "occupancyRate": 0
+      },
+      {
+        "month": "Feb 2024",
+        "occupancyRate": 55
+      },
+      {
+        "month": "Mar 2024",
+        "occupancyRate": 75
+      },
+      {
+        "month": "Apr 2024",
+        "occupancyRate": 78.6
+      }
+    ],
+    "productionTrend": [
+      {
+        "month": "Jan 2024",
+        "yield": 0,
+        "revenue": 0
+      },
+      {
+        "month": "Feb 2024",
+        "yield": 0,
+        "revenue": 0
+      },
+      {
+        "month": "Mar 2024",
+        "yield": 0,
+        "revenue": 0
+      },
+      {
+        "month": "Apr 2024",
+        "yield": 0,
+        "revenue": 0
+      }
+    ]
+  },
+  "settings": {
+    "settingsId": "settings-001",
+    "laborSettings": {
+      "defaultHourlyRate": 15,
+      "overtimeMultiplier": 1.5,
+      "requiredCertifications": ["Basic Safety", "Equipment Operation"],
+      "backgroundCheckRequired": true,
+      "drugTestRequired": false,
+      "minWorkAge": 18,
+      "maxSeasonLength": 180
+    },
+    "housingSettings": {
+      "maxOccupancyPerRoom": 4,
+      "weeklyRatePerBed": 50,
+      "damageDepositAmount": 100,
+      "inspectionFrequency": "quarterly",
+      "requireOccupancyPermit": true,
+      "complianceStandards": ["OSHA", "Local Housing Code", "Fire Safety Code"]
+    },
+    "cropSettings": {
+      "defaultIrrigationSchedule": "Daily morning - 6:00 AM",
+      "weatherMonitoringEnabled": true,
+      "soilTestingFrequency": 30,
+      "enableYieldForecasting": true,
+      "enableRiskAssessment": true
+    },
+    "lastUpdatedDate": "2026-07-17T05:17:44.484Z",
+    "lastUpdatedBy": "admin",
+    "lastUpdatedByName": "Admin User"
+  }
+}

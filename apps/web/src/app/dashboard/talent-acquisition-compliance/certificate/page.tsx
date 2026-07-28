@@ -118,9 +118,23 @@ export default function TaCertPage() {
                   <td className="px-3 py-2 text-rose-700">{c.checklistOverdue}</td>
                   <td className="px-3 py-2 text-rose-700">{c.criticalRisksOpen}</td>
                   <td className="px-3 py-2">{c.stagesCovered}</td>
-                  <td className="px-3 py-2 text-xs text-rose-700">{c.gatingReason ?? '—'}</td>
                   <td className="px-3 py-2">
-                    {c.status === 'DRAFT' && !c.gatingReason ? (
+                    {c.status === 'SIGNED' ? (
+                      <span className="rounded-full bg-emerald-100 px-2 py-1 text-xs font-medium text-emerald-700">
+                        Approved
+                      </span>
+                    ) : c.gatingReason ? (
+                      <span className="rounded-full bg-rose-100 px-2 py-1 text-xs font-medium text-rose-700">
+                        Not Approved
+                      </span>
+                    ) : (
+                      <span className="rounded-full bg-amber-100 px-2 py-1 text-xs font-medium text-amber-700">
+                        Pending Approval
+                      </span>
+                    )}
+                  </td>
+                  <td className="px-3 py-2">
+                    {c.status === 'DRAFT' ? (
                       <button
                         type="button"
                         onClick={() => sign(c)}

@@ -2,12 +2,13 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@/lib/database';
+import { shiftAttendanceService } from '@/lib/services/shift-management/shift-attendance';
 
 export const dynamic = 'force-dynamic';
 
 /**
  * POST /api/v1/attendance/clock
- * Clock in or clock out for an employee
+ * Clock in, clock out, or break for an employee — shift-aware for late/overtime detection
  */
 export const POST = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
@@ -45,7 +46,36 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
     const empId = employeeId || user.employeeId;
     const now = new Date();
 
-    // Create the attendance punch record
+    if (type === 'CLOCK_IN') {
+      const result = await shiftAttendanceService.processClockIn(user.tenantId, empId, now);
+      return NextResponse.json(
+        {
+          success: true,
+          data: { ...result, punch: result.punchId },
+          message:
+            result.status === 'LATE'
+              ? `Clocked in (${result.lateMinutes} min late)`
+              : 'Clocked in successfully',
+          meta: { timestamp: now.toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
+        },
+        { status: 201 }
+      );
+    }
+
+    if (type === 'CLOCK_OUT') {
+      const result = await shiftAttendanceService.processClockOut(user.tenantId, empId, now);
+      return NextResponse.json(
+        {
+          success: true,
+          data: result,
+          message: 'Clocked out successfully',
+          meta: { timestamp: now.toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
+        },
+        { status: 201 }
+      );
+    }
+
+    // BREAK_START / BREAK_END — simple punch creation, no shift validation
     const punch = await prisma.attendancePunch.create({
       data: {
         tenantId: user.tenantId,
@@ -62,42 +92,11 @@ export const POST = withEnhancedAuth(async (request: NextRequest, context: any) 
       },
     });
 
-    // If clocking in or out, update/create the attendance record for the day
-    if (type === 'CLOCK_IN' || type === 'CLOCK_OUT') {
-      const dateOnly = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-
-      const existingRecord = await prisma.attendanceRecord.findFirst({
-        where: { tenantId: user.tenantId, employeeId: empId, date: dateOnly },
-      });
-
-      if (existingRecord) {
-        await prisma.attendanceRecord.update({
-          where: { id: existingRecord.id },
-          data: {
-            ...(type === 'CLOCK_IN' && !existingRecord.clockIn ? { clockIn: now } : {}),
-            ...(type === 'CLOCK_OUT' ? { clockOut: now } : {}),
-            status: 'PRESENT',
-          },
-        });
-      } else if (type === 'CLOCK_IN') {
-        await prisma.attendanceRecord.create({
-          data: {
-            tenantId: user.tenantId,
-            employeeId: empId,
-            date: dateOnly,
-            clockIn: now,
-            status: 'PRESENT',
-            approvalStatus: 'PENDING',
-          },
-        });
-      }
-    }
-
     return NextResponse.json(
       {
         success: true,
         data: punch,
-        message: `${type === 'CLOCK_IN' ? 'Clocked in' : type === 'CLOCK_OUT' ? 'Clocked out' : type} successfully`,
+        message: `${type === 'BREAK_START' ? 'Break started' : 'Break ended'} successfully`,
         meta: { timestamp: now.toISOString(), requestId: crypto.randomUUID(), apiVersion: 'v1' },
       },
       { status: 201 }

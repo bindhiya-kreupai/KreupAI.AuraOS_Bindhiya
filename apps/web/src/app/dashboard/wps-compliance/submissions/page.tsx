@@ -35,6 +35,13 @@ export default function SubmissionsPage() {
   const [subs, setSubs] = useState<Submission[]>([]);
   const [period, setPeriod] = useState(periodNow());
   const [message, setMessage] = useState('');
+  const [form, setForm] = useState({
+    country: '',
+    format: '',
+    employees: '',
+    dueDate: '',
+    submittedDate: '',
+  });
 
   async function load() {
     const r = await fetch(`/api/v1/wps-compliance/submissions?period=${period}`);
@@ -60,6 +67,53 @@ export default function SubmissionsPage() {
     );
     load();
   }
+  async function saveSubmission() {
+    const r = await fetch('/api/v1/wps-compliance/submissions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        action: 'build',
+        countryCode: form.country,
+        establishmentId: 'demo-1',
+        period,
+        rows: [
+          {
+            employeeCode: 'EMP001',
+            employeeName: 'Demo Employee',
+            iban: 'BH67BMAG00001299123456',
+            bankSwift: 'BMAGBHBM',
+            currency: 'BHD',
+            fixedPay: 1000,
+            variablePay: 0,
+            deductions: 0,
+            netPay: 1000,
+            daysWorked: 30,
+            nationalId: '123456789',
+            labourCardNumber: 'LC123456',
+          },
+        ],
+      }),
+    });
+
+    const p = await r.json();
+
+    if (p.success) {
+      setMessage('Submission created successfully');
+      load();
+
+      setForm({
+        country: '',
+        format: '',
+        employees: '',
+        dueDate: '',
+        submittedDate: '',
+      });
+    } else {
+      setMessage(p.error?.message ?? p.error?.details?.error ?? 'Failed to create submission');
+    }
+  }
 
   return (
     <main className="min-h-screen bg-slate-50 p-6 text-slate-950">
@@ -75,7 +129,59 @@ export default function SubmissionsPage() {
             className="rounded-md border border-slate-300 px-2 py-1.5 text-sm"
           />
         </header>
+
         {message ? <p className="text-sm">{message}</p> : null}
+
+        {/* Add Submission Form */}
+        <div className="mb-6 rounded-lg border border-slate-200 bg-white p-4">
+          <h3 className="mb-4 text-lg font-semibold">New WPS Submission</h3>
+
+          <div className="grid grid-cols-2 gap-4">
+            <input
+              placeholder="Country"
+              value={form.country}
+              onChange={(e) => setForm({ ...form, country: e.target.value })}
+              className="rounded border p-2"
+            />
+
+            <input
+              placeholder="Format"
+              value={form.format}
+              onChange={(e) => setForm({ ...form, format: e.target.value })}
+              className="rounded border p-2"
+            />
+
+            <input
+              type="number"
+              placeholder="Employees"
+              value={form.employees}
+              onChange={(e) => setForm({ ...form, employees: e.target.value })}
+              className="rounded border p-2"
+            />
+
+            <input
+              type="date"
+              value={form.dueDate}
+              onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
+              className="rounded border p-2"
+            />
+
+            <input
+              type="date"
+              value={form.submittedDate}
+              onChange={(e) => setForm({ ...form, submittedDate: e.target.value })}
+              className="rounded border p-2"
+            />
+          </div>
+
+          <button
+            type="button"
+            onClick={saveSubmission}
+            className="mt-4 rounded-md bg-blue-600 px-4 py-2 text-white"
+          >
+            Save Submission
+          </button>
+        </div>
 
         <section className="rounded-lg border border-slate-200 bg-white p-4">
           <table className="w-full text-left text-sm">

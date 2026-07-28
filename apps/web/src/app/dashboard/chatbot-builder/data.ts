@@ -344,6 +344,7 @@ export const sampleTrainingDatasets: TrainingDataset[] = [
 export const sampleTrainingExamples: TrainingExample[] = [
   {
     exampleId: 'example-001',
+    datasetId: 'dataset-001',
     text: 'I need 3 days vacation next week',
     intent: 'request_leave',
     entities: [
@@ -358,6 +359,7 @@ export const sampleTrainingExamples: TrainingExample[] = [
   },
   {
     exampleId: 'example-002',
+    datasetId: 'dataset-001',
     text: 'How many sick days do I have left?',
     intent: 'check_balance',
     entities: [
@@ -486,6 +488,9 @@ export const sampleConversationAnalytics: ConversationAnalytics = {
   period: { start: new Date('2024-11-01'), end: new Date('2024-11-30') },
   totalConversations: 1245,
   totalMessages: 5832,
+  totalIntents: 200,
+  totalEntities: 450,
+  totalFlows: 15,
   averageConversationLength: 4.7,
   averageResponseTime: 0.8,
   userSatisfactionScore: 4.2,

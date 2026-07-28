@@ -1,85 +1,86 @@
 /**
  * Agent Sessions API Routes
- * Phase 4 Sprint 31-32: Conversation Sessions
  */
 
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
-import type { AgentType } from '@/lib/services/agentic-ai';
-import { AgentFrameworkService } from '@/lib/services/agentic-ai';
+import { resolveAgentAuth } from '@/lib/ai/agent-auth';
+import { agentError, AGENT_TYPES, type AgentTypeValue } from '@/lib/ai/agent-types';
+import {
+  deleteSession,
+  getOrCreateSession,
+  getSessionById,
+  listSessions,
+} from '@/lib/ai/agent-session';
 
-/**
- * POST /api/agents/sessions
- * Start a new conversation session
- */
+const VALID_TYPES: AgentTypeValue[] = [
+  AGENT_TYPES.HR,
+  AGENT_TYPES.RECRUITMENT,
+  AGENT_TYPES.ANALYTICS,
+];
+
 export async function POST(request: NextRequest) {
+  const auth = await resolveAgentAuth(request);
+  if (!auth) {
+    return NextResponse.json(agentError('Unauthorized', 'غير مصرح'), { status: 401 });
+  }
+
   try {
     const body = await request.json();
-    const { agentType, userId, tenantId } = body;
+    const { agentType, sessionId } = body;
 
-    if (!agentType || !userId || !tenantId) {
+    if (!agentType || !VALID_TYPES.includes(agentType)) {
       return NextResponse.json(
-        { success: false, error: 'Missing required fields: agentType, userId, tenantId' },
+        agentError(
+          `Invalid agent type. Must be one of: ${VALID_TYPES.join(', ')}`,
+          'نوع وكيل غير صالح'
+        ),
         { status: 400 }
       );
     }
 
-    // Validate agent type
-    const validTypes: AgentType[] = ['HR_AGENT', 'RECRUITMENT_AGENT', 'ANALYTICS_AGENT'];
-    if (!validTypes.includes(agentType)) {
-      return NextResponse.json(
-        { success: false, error: `Invalid agent type. Must be one of: ${validTypes.join(', ')}` },
-        { status: 400 }
-      );
-    }
+    const session = await getOrCreateSession(auth.tenantId, auth.userId, agentType, sessionId);
 
-    const session = await AgentFrameworkService.startSession(
-      userId,
-      tenantId,
-      agentType as AgentType
-    );
+    const detail = await getSessionById(auth.tenantId, auth.userId, session.sessionId);
 
     return NextResponse.json({
       success: true,
       data: {
         sessionId: session.sessionId,
         agentType: session.agentType,
-        startedAt: session.startedAt,
-        messages: session.messages,
+        startedAt: session.createdAt,
+        messages: (detail?.messages || []).map((m) => ({
+          role: m.role,
+          content: m.content,
+          timestamp: m.createdAt.toISOString(),
+        })),
       },
     });
-  } catch (error: any) {
-    return NextResponse.json({ success: false, error: 'Failed to start session' }, { status: 500 });
+  } catch {
+    return NextResponse.json(agentError('Failed to start session', 'فشل بدء الجلسة'), {
+      status: 500,
+    });
   }
 }
 
-/**
- * GET /api/agents/sessions
- * Get all active sessions for a user
- */
 export async function GET(request: NextRequest) {
+  const auth = await resolveAgentAuth(request);
+  if (!auth) {
+    return NextResponse.json(agentError('Unauthorized', 'غير مصرح'), { status: 401 });
+  }
+
   try {
     const { searchParams } = new URL(request.url);
-    const userId = searchParams.get('userId');
-    const tenantId = searchParams.get('tenantId');
-
-    if (!userId || !tenantId) {
-      return NextResponse.json(
-        { success: false, error: 'Missing required query params: userId, tenantId' },
-        { status: 400 }
-      );
-    }
-
-    // In production, fetch from database
-    // For now, return empty array (sessions are in memory)
-    return NextResponse.json({
-      success: true,
-      data: [],
-    });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: 'Failed to fetch sessions' },
-      { status: 500 }
+    const agentType = searchParams.get('agentType') as AgentTypeValue | null;
+    const sessions = await listSessions(
+      auth.tenantId,
+      auth.userId,
+      agentType && VALID_TYPES.includes(agentType) ? agentType : undefined
     );
+    return NextResponse.json({ success: true, data: sessions });
+  } catch {
+    return NextResponse.json(agentError('Failed to fetch sessions', 'فشل تحميل الجلسات'), {
+      status: 500,
+    });
   }
 }
