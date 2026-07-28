@@ -227,9 +227,9 @@ services:
     container_name: auraos-ai-service
     restart: unless-stopped
     environment:
-      PORT: 3000
+      PORT: 3006
     ports:
-      - "3000:3000"
+      - "3006:3006"
     networks:
       - auraos-network
 

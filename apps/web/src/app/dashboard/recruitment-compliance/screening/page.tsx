@@ -37,6 +37,7 @@ function unwrapList(payload: unknown): any[] {
 export default function CandidateScreeningPage() {
   const [rows, setRows] = useState<Screening[]>([]);
   const [candidates, setCandidates] = useState<{ value: string; label: string }[]>([]);
+  const [cases, setCases] = useState<{ value: string; label: string }[]>([]);
 
   const fetchScreenings = useCallback(async () => {
     try {
@@ -58,6 +59,15 @@ export default function CandidateScreeningPage() {
           unwrapList(json).map((c: any) => ({
             value: c.id,
             label: [c.firstName, c.lastName].filter(Boolean).join(' ') || c.email || c.id,
+          }))
+        );
+        const caseRes = await fetch('/api/v1/recruitment-compliance/cases');
+        const caseJson = await caseRes.json();
+
+        setCases(
+          unwrapList(caseJson).map((c: any) => ({
+            value: c.id,
+            label: c.caseNumber || c.id,
           }))
         );
       } catch (err) {
@@ -116,7 +126,13 @@ export default function CandidateScreeningPage() {
   ];
 
   const formFields = [
-    { name: 'caseId', label: 'Recruitment case ID', type: 'text', required: true },
+    {
+      name: 'caseId',
+      label: 'Recruitment Case',
+      type: 'select',
+      required: true,
+      options: cases,
+    },
     {
       name: 'candidateId',
       label: 'Candidate',
@@ -178,6 +194,24 @@ export default function CandidateScreeningPage() {
       alert('Failed to record screening');
     }
   };
+  const handleDelete = async (record: Screening) => {
+    if (confirm('Are you sure you want to delete this screening?')) {
+      try {
+        const response = await fetch(`/api/v1/recruitment-compliance/screening?id=${record.id}`, {
+          method: 'DELETE',
+        });
+
+        if (response.ok) {
+          fetchScreenings();
+        } else {
+          alert('Failed to delete screening');
+        }
+      } catch (error) {
+        console.error(error);
+        alert('Error deleting screening');
+      }
+    }
+  };
 
   return (
     <DataPage<Screening>
@@ -188,6 +222,7 @@ export default function CandidateScreeningPage() {
       columns={columns}
       formFields={formFields}
       onSave={handleSave}
+      onDelete={handleDelete}
       addButtonText="Record screening"
       searchKeys={['candidateId', 'caseId', 'outcome']}
       emptyState={{

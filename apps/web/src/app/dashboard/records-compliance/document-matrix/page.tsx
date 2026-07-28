@@ -66,6 +66,15 @@ export default function DocumentMatrixPage() {
     setMessage(p.success ? 'Saved' : (p.error?.details?.error ?? p.error?.message ?? 'failed'));
     load();
   }
+  async function remove(id: string) {
+    if (!confirm('Delete this document matrix entry?')) return;
+    const r = await fetch(`/api/v1/records-compliance/document-matrix?id=${id}`, {
+      method: 'DELETE',
+    });
+    const p = await r.json();
+    setMessage(p.success ? 'Deleted' : (p.error?.message ?? 'failed'));
+    load();
+  }
 
   return (
     <main className="min-h-screen bg-slate-50 p-6 text-slate-950">
@@ -142,6 +151,7 @@ export default function DocumentMatrixPage() {
                 <th className="px-3 py-2">Retention</th>
                 <th className="px-3 py-2">Renewal</th>
                 <th className="px-3 py-2">Sensitivity</th>
+                <th className="px-3 py-2">Actions</th>
               </tr>
             </thead>
             <tbody>
@@ -157,11 +167,20 @@ export default function DocumentMatrixPage() {
                     {r.renewalCadenceMonths ? `${r.renewalCadenceMonths}m` : '—'}
                   </td>
                   <td className="px-3 py-2 text-xs">{r.sensitivity}</td>
+                  <td className="px-3 py-2">
+                    <button
+                      type="button"
+                      onClick={() => remove(r.id)}
+                      className="text-xs text-rose-600 hover:underline"
+                    >
+                      Delete
+                    </button>
+                  </td>
                 </tr>
               ))}
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-3 py-6 text-center text-slate-500">
+                  <td colSpan={9} className="px-3 py-6 text-center text-slate-500">
                     No items.
                   </td>
                 </tr>

@@ -4,46 +4,69 @@ import { generateAccessToken, generateRefreshToken } from '@/lib/auth/jwt';
 import { setAuthCookies } from '@/lib/auth/cookies';
 
 export async function POST(request: NextRequest) {
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });
+  }
+
   try {
-    const body = await request.json().catch(() => ({}));
+    const body = await request.json();
+    const userId = body.userId || 'dev-user';
     const email = body.email || 'dev@auraos.local';
     const tenantId = body.tenantId || 'dev-tenant';
-    const userId = body.userId || 'dev-user';
+    const sessionId = crypto.randomUUID();
 
-    const accessToken = generateAccessToken({
-      userId,
-      email,
-      tenantId,
-      sessionId: 'dev-session',
-    });
+    // Generate tokens
+    const accessToken = generateAccessToken({ userId, email, tenantId, sessionId });
+    const refreshToken = generateRefreshToken({ userId, email, tenantId, sessionId });
 
-    const refreshToken = generateRefreshToken({
-      userId,
-      email,
-      tenantId,
-      sessionId: 'dev-session',
-    });
-
+    // Create response
     const response = NextResponse.json({
       success: true,
       data: {
-        accessToken,
-        refreshToken,
-        user: {
-          id: userId,
-          email,
-          tenantId,
-        },
+        userId,
+        email,
+        tenantId,
+        sessionId,
       },
-      message: 'Dev quick-login successful',
     });
 
+    // Set cookies
     setAuthCookies(response, { accessToken, refreshToken });
+
     return response;
-  } catch (err: any) {
+  } catch (error: any) {
+    console.error('Dev login error:', error);
     return NextResponse.json(
-      { success: false, error: err?.message || 'Dev login failed' },
+      { success: false, error: error?.message || 'Dev login failed' },
       { status: 500 }
     );
+  }
+}
+
+export async function GET(request: NextRequest) {
+  if (process.env.NODE_ENV === 'production') {
+    return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });
+  }
+
+  try {
+    const userId = 'dev-user';
+    const email = 'dev@auraos.local';
+    const tenantId = 'dev-tenant';
+    const sessionId = crypto.randomUUID();
+
+    // Generate tokens
+    const accessToken = generateAccessToken({ userId, email, tenantId, sessionId });
+    const refreshToken = generateRefreshToken({ userId, email, tenantId, sessionId });
+
+    // Redirect to dashboard (or wherever user came from)
+    const url = new URL('/dashboard/aviation/cabin-crew', request.url);
+    const response = NextResponse.redirect(url);
+
+    // Set cookies
+    setAuthCookies(response, { accessToken, refreshToken });
+
+    return response;
+  } catch (error: any) {
+    return NextResponse.json({ success: false, error: error?.message }, { status: 500 });
   }
 }

@@ -104,7 +104,7 @@ export default function IntentLibraryPage() {
         priority: form.priority,
         confidenceThreshold: form.confidenceThreshold,
         webhookEnabled: form.webhookEnabled,
-        webhookUrl: form.webhookEnabled ? form.webhookUrl.trim() : null,
+        webhookUrl: form.webhookEnabled ? form.webhookUrl.trim() : undefined,
         isActive: true,
       });
       setForm(emptyForm);
@@ -127,7 +127,7 @@ export default function IntentLibraryPage() {
         priority: form.priority,
         confidenceThreshold: form.confidenceThreshold,
         webhookEnabled: form.webhookEnabled,
-        webhookUrl: form.webhookEnabled ? form.webhookUrl.trim() : null,
+        webhookUrl: form.webhookEnabled ? form.webhookUrl.trim() : undefined,
       });
       setForm(emptyForm);
       setEditingIntent(null);

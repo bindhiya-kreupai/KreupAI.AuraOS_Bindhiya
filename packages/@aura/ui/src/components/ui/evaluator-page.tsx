@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { 
   Loader2, Globe, Database, History, FileSpreadsheet, 
@@ -7,7 +8,8 @@ import {
   Activity, Bookmark
 } from 'lucide-react';
 import { VerdictPanel, type VerdictPanelProps } from './verdict-panel';
-import { StructuredArrayEditor, type StructuredColumn } from './structured-array-editor';
+import { StructuredArrayEditor, SearchableSelect, type StructuredColumn } from './structured-array-editor';
+import { SkeletonVerdict } from './skeleton';
 import { ErrorState, type ZodFlattenedShape } from './error-state';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -24,6 +26,7 @@ export type EvaluatorFieldType =
     | 'datetime-local'
     | 'select'
     | 'boolean'
+    | 'searchable-select'
     | 'structured-array';
 
 export interface EvaluatorField {
@@ -41,6 +44,7 @@ export interface EvaluatorField {
     defaultRows?: Array<Record<string, unknown>>;
     minRows?: number;
     maxRows?: number;
+    apiUrl?: string;
 }
 
 export interface EvaluatorEndpoint {
@@ -509,34 +513,21 @@ export function EvaluatorPage({
                 }
                 return;
             }
+           const v = buildVerdict(json.data);
+setVerdict(v);
+const resetValues: Record<string, unknown> = {};
+for (const f of fields) {
+    if (f.type === 'structured-array') {
+        resetValues[f.name] = f.defaultRows ?? [];
+    } else {
+        resetValues[f.name] = f.defaultValue ?? '';
+    }
+}
+setValues(resetValues);
+if (onSuccess) {
+    onSuccess(json.data, setValues);
+}
 
-            const endTime = performance.now();
-            const elapsed = Math.round(endTime - startTime);
-            setExecutionTime(elapsed);
-
-            const v = buildVerdict(json.data);
-            setVerdict(v);
-            setVerdictRaw(json.data);
-
-            // Save to Local History
-            const newHistoryEntry: EvaluationHistoryEntry = {
-              timestamp: new Date().toLocaleString(),
-              verdictTitle: v?.title ?? 'Completed',
-              outcome: v?.outcome ?? 'INFO',
-              recordCount: derivedStats?.total ?? 1,
-              durationMs: elapsed,
-              payload,
-              verdictData: json.data
-            };
-
-            const updatedHistory = [newHistoryEntry, ...history].slice(0, 50);
-            setHistory(updatedHistory);
-            localStorage.setItem(storageHistoryKey, JSON.stringify(updatedHistory));
-
-            if (onSuccess) {
-                onSuccess(json.data, setValues);
-            }
-            toast.success(locale === 'ar' ? 'تم التقييم بنجاح' : 'Evaluation succeeded');
         } catch (err) {
             setError(
                 err instanceof Error
@@ -819,104 +810,102 @@ export function EvaluatorPage({
 
                         const stringValue = (values[f.name] as string) ?? '';
 
-                        return (
-                            <div key={f.name} className="space-y-2">
-                                <label
-                                    htmlFor={id}
-                                    className="block text-sm font-semibold text-slate-700 dark:text-slate-300"
-                                >
-                                    {label}
-                                    {f.required && (
-                                        <span className="text-rose-600" aria-hidden>
-                                            {' '}
-                                            *
-                                        </span>
-                                    )}
-                                </label>
-                                {f.type === 'select' && f.options ? (
-                                    <select
-                                        id={id}
-                                        className="w-full border border-slate-200 dark:border-slate-750 rounded-xl px-3.5 py-2.5 text-sm bg-slate-50/50 hover:bg-slate-50 dark:bg-slate-950 dark:text-white transition-all focus:outline-none focus:ring-2 focus:ring-slate-950 dark:focus:ring-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
-                                        value={stringValue}
-                                        onChange={(e) => onChange(f.name, e.target.value)}
-                                        required={f.required}
-                                        disabled={loading}
-                                    >
-                                        <option value="">{locale === 'ar' ? 'اختر…' : 'Select…'}</option>
-                                        {f.options.map((o) => (
-                                            <option key={o.value} value={o.value}>
-                                                {o.label}
-                                            </option>
-                                        ))}
-                                    </select>
-                                ) : f.type === 'boolean' ? (
-                                    <select
-                                        id={id}
-                                        className="w-full border border-slate-200 dark:border-slate-750 rounded-xl px-3.5 py-2.5 text-sm bg-slate-50/50 hover:bg-slate-50 dark:bg-slate-950 dark:text-white transition-all focus:outline-none focus:ring-2 focus:ring-slate-950 dark:focus:ring-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
-                                        value={stringValue}
-                                        onChange={(e) => onChange(f.name, e.target.value)}
-                                        disabled={loading}
-                                    >
-                                        <option value="">{locale === 'ar' ? 'اختر…' : 'Select…'}</option>
-                                        <option value="true">{locale === 'ar' ? 'نعم' : 'Yes'}</option>
-                                        <option value="false">{locale === 'ar' ? 'لا' : 'No'}</option>
-                                    </select>
-                                ) : f.type === 'textarea' ? (
-                                    <textarea
-                                        id={id}
-                                        rows={6}
-                                        className="w-full border border-slate-200 dark:border-slate-750 rounded-xl px-3.5 py-2.5 text-sm font-mono bg-slate-50/50 hover:bg-slate-50 dark:bg-slate-950 dark:text-white transition-all focus:outline-none focus:ring-2 focus:ring-slate-950 dark:focus:ring-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
-                                        value={stringValue}
-                                        onChange={(e) => onChange(f.name, e.target.value)}
-                                        placeholder={f.placeholder}
-                                        required={f.required}
-                                        disabled={loading}
-                                    />
-                                ) : (
-                                    <input
-                                        id={id}
-                                        type={f.type}
-                                        className="w-full border border-slate-200 dark:border-slate-750 rounded-xl px-3.5 py-2.5 text-sm bg-slate-50/50 hover:bg-slate-50 dark:bg-slate-950 dark:text-white transition-all focus:outline-none focus:ring-2 focus:ring-slate-950 dark:focus:ring-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
-                                        value={stringValue}
-                                        onChange={(e) => onChange(f.name, e.target.value)}
-                                        placeholder={f.placeholder}
-                                        required={f.required}
-                                        disabled={loading}
-                                    />
+                    return (
+                        <div key={f.name} className="space-y-2">
+                            <label
+                                htmlFor={id}
+                                className="block text-sm font-semibold text-slate-700 dark:text-slate-300"
+                            >
+                                {label}
+                                {f.required && (
+                                    <span className="text-rose-605" aria-hidden>
+                                        {' '}
+                                        *
+                                    </span>
                                 )}
-                                {help && <p className="text-xs text-slate-400 dark:text-slate-500 pt-0.5">{help}</p>}
-                            </div>
-                        );
-                    })}
-
-                    {error && (
-                        <ErrorState
-                            title={locale === 'ar' ? 'فشل التقييم' : 'Could not evaluate'}
-                            titleAr="فشل التقييم"
-                            message={error}
-                            issues={errorIssues}
-                            locale={locale}
-                        />
-                    )}
-
-                    <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-slate-100 dark:border-slate-800">
-                        <button
-                            type="submit"
-                            disabled={loading || !!validationError}
-                            className="inline-flex items-center gap-2 rounded-xl bg-slate-950 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-100 text-white dark:text-slate-950 px-5 py-3 text-sm font-semibold transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
-                        >
-                            {loading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Play className="w-4 h-4" />}
-                            {displaySubmit}
-                            <span className="ml-1 text-[10px] opacity-60 font-mono hidden sm:inline-block">Ctrl+Enter</span>
-                        </button>
-
-                        <div className="flex items-center gap-3 text-[11px] font-medium text-slate-400 dark:text-slate-500">
-                          <span className="hidden sm:inline-block">Shortcuts: <kbd className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 font-mono text-[10px]">Ctrl+S</kbd> Save Draft</span>
-                          <span className="hidden sm:inline-block">·</span>
-                          <span className="hidden sm:inline-block"><kbd className="bg-slate-100 dark:bg-slate-800 px-1.5 py-0.5 rounded border border-slate-200 dark:border-slate-700 font-mono text-[10px]">Ctrl+/</kbd> Search</span>
+                            </label>
+                            {f.type === 'select' && f.options ? (
+                                <select
+                                    id={id}
+                                    className="w-full border border-slate-200 dark:border-slate-750 rounded-xl px-3.5 py-2.5 text-sm bg-slate-50/50 hover:bg-slate-50 dark:bg-slate-950 dark:text-white transition-all focus:outline-none focus:ring-2 focus:ring-slate-950 dark:focus:ring-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    value={stringValue}
+                                    onChange={(e) => onChange(f.name, e.target.value)}
+                                    required={f.required}
+                                    disabled={loading}
+                                >
+                                    <option value="">{locale === 'ar' ? 'اختر…' : 'Select…'}</option>
+                                    {f.options.map((o) => (
+                                        <option key={o.value} value={o.value}>
+                                            {o.label}
+                                        </option>
+                                    ))}
+                                </select>
+                            ) : f.type === 'boolean' ? (
+                                <select
+                                    id={id}
+                                    className="w-full border border-slate-200 dark:border-slate-750 rounded-xl px-3.5 py-2.5 text-sm bg-slate-50/50 hover:bg-slate-50 dark:bg-slate-950 dark:text-white transition-all focus:outline-none focus:ring-2 focus:ring-slate-950 dark:focus:ring-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    value={stringValue}
+                                    onChange={(e) => onChange(f.name, e.target.value)}
+                                    disabled={loading}
+                                >
+                                    <option value="">{locale === 'ar' ? 'اختر…' : 'Select…'}</option>
+                                    <option value="true">{locale === 'ar' ? 'نعم' : 'Yes'}</option>
+                                    <option value="false">{locale === 'ar' ? 'لا' : 'No'}</option>
+                                </select>
+                            ) : f.type === 'textarea' ? (
+                                <textarea
+                                    id={id}
+                                    rows={6}
+                                    className="w-full border border-slate-200 dark:border-slate-750 rounded-xl px-3.5 py-2.5 text-sm font-mono bg-slate-50/50 hover:bg-slate-50 dark:bg-slate-950 dark:text-white transition-all focus:outline-none focus:ring-2 focus:ring-slate-950 dark:focus:ring-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    value={stringValue}
+                                    onChange={(e) => onChange(f.name, e.target.value)}
+                                    placeholder={f.placeholder}
+                                    required={f.required}
+                                    disabled={loading}
+                                />
+                             ) : f.type === 'searchable-select' ? (
+                               <SearchableSelect
+                                   apiUrl={f.apiUrl ?? ''}
+                                   value={stringValue}
+                                   onSelect={(id) => onChange(f.name, id)}
+                                   placeholder={f.placeholder ?? (locale === 'ar' ? 'بحث...' : 'Search...')}
+                               />
+                            ) : (
+                                <input
+                                    id={id}
+                                    type={f.type}
+                                    className="w-full border border-slate-200 dark:border-slate-750 rounded-xl px-3.5 py-2.5 text-sm bg-slate-50/50 hover:bg-slate-50 dark:bg-slate-950 dark:text-white transition-all focus:outline-none focus:ring-2 focus:ring-slate-950 dark:focus:ring-white/30 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    value={stringValue}
+                                    onChange={(e) => onChange(f.name, e.target.value)}
+                                    placeholder={f.placeholder}
+                                    required={f.required}
+                                    disabled={loading}
+                                />
+                            )}
+                            {help && <p className="text-xs text-slate-450 dark:text-slate-500 pt-0.5">{help}</p>}
                         </div>
-                    </div>
+                    );
+                })}
+                {error && (
+                    <ErrorState
+                        title={locale === 'ar' ? 'فشل التقييم' : 'Could not evaluate'}
+                        titleAr="فشل التقييم"
+                        message={error}
+                        issues={errorIssues}
+                        locale={locale}
+                    />
+                )}
+                <div className="flex items-center gap-3 pt-2">
+                    <button
+                        type="submit"
+                        disabled={loading}
+                        className="inline-flex items-center gap-2 rounded-xl bg-slate-950 dark:bg-white hover:bg-slate-800 dark:hover:bg-slate-100 text-white dark:text-slate-950 px-5 py-3 text-sm font-semibold transition-all shadow-sm disabled:opacity-70 disabled:cursor-not-allowed cursor-pointer"
+                    >
+                        {loading && <Loader2 className="w-4 h-4 animate-spin" />}
+                        {displaySubmit}
+                    </button>
                 </div>
+              </div>
             </form>
 
             {/* ── Progress Loader Indicator ── */}

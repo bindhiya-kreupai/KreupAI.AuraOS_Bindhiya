@@ -45,12 +45,12 @@ export class ContractorAssignmentService {
     };
     const page = normalisePaging(paging);
     const [items, total] = await Promise.all([
-      (prisma as any).contractorAssignment.findMany({
+      prisma.contractorAssignment.findMany({
         where,
         orderBy: [{ domain: 'asc' }, { startDate: 'desc' }],
         ...prismaPageArgs(page),
       }),
-      (prisma as any).contractorAssignment.count({ where }),
+      prisma.contractorAssignment.count({ where }),
     ]);
     return buildPaginatedResult(items, total, page);
   }
@@ -73,7 +73,7 @@ export class ContractorAssignmentService {
     if (input.endDate && input.endDate < input.startDate) {
       throw new Error('endDate cannot precede startDate');
     }
-    return (prisma as any).contractorAssignment.upsert({
+    return prisma.contractorAssignment.upsert({
       where: {
         aura_contractor_assignment_unique: {
           tenantId: auth.tenantId,
@@ -109,7 +109,7 @@ export class ContractorAssignmentService {
   }
 
   async terminate(id: string, auth: AuthContext) {
-    return (prisma as any).contractorAssignment.update({
+    return prisma.contractorAssignment.update({
       where: { id },
       data: { status: 'TERMINATED' as ContractorStatus, endDate: new Date() },
     });
@@ -146,12 +146,12 @@ export class EmployeeLoanService {
     };
     const page = normalisePaging(paging);
     const [items, total] = await Promise.all([
-      (prisma as any).employeeLoanSchedule.findMany({
+      prisma.employeeLoanSchedule.findMany({
         where,
         orderBy: [{ employeeId: 'asc' }, { startDate: 'desc' }],
         ...prismaPageArgs(page),
       }),
-      (prisma as any).employeeLoanSchedule.count({ where }),
+      prisma.employeeLoanSchedule.count({ where }),
     ]);
     return buildPaginatedResult(items, total, page);
   }
@@ -175,7 +175,7 @@ export class EmployeeLoanService {
     const installmentAmount = Number(
       equalInstallment(input.principal, input.interestRatePct ?? 0, input.installments).toFixed(2)
     );
-    return (prisma as any).employeeLoanSchedule.create({
+    return prisma.employeeLoanSchedule.create({
       data: {
         tenantId: auth.tenantId,
         employeeId: input.employeeId,
@@ -195,12 +195,12 @@ export class EmployeeLoanService {
 
   async recordPayment(id: string, amount: number, auth: AuthContext) {
     if (amount <= 0) throw new Error('payment amount must be > 0');
-    const row = await (prisma as any).employeeLoanSchedule.findUnique({ where: { id } });
+    const row = await prisma.employeeLoanSchedule.findUnique({ where: { id } });
     if (!row || row.tenantId !== auth.tenantId) throw new Error('loan not found');
     const balanceNum = Number(row.balance);
     const newBalance = Math.max(0, balanceNum - amount);
     const status = newBalance === 0 ? 'PAID_OFF' : row.status;
-    return (prisma as any).employeeLoanSchedule.update({
+    return prisma.employeeLoanSchedule.update({
       where: { id },
       data: {
         balance: newBalance,
@@ -231,12 +231,12 @@ export class UniformPpeIssuanceService {
     };
     const page = normalisePaging(paging);
     const [items, total] = await Promise.all([
-      (prisma as any).uniformPpeIssuance.findMany({
+      prisma.uniformPpeIssuance.findMany({
         where,
         orderBy: { issuedAt: 'desc' },
         ...prismaPageArgs(page),
       }),
-      (prisma as any).uniformPpeIssuance.count({ where }),
+      prisma.uniformPpeIssuance.count({ where }),
     ]);
     return buildPaginatedResult(items, total, page);
   }
@@ -255,7 +255,7 @@ export class UniformPpeIssuanceService {
     if (input.quantity !== undefined && input.quantity <= 0) {
       throw new Error('quantity must be > 0');
     }
-    return (prisma as any).uniformPpeIssuance.create({
+    return prisma.uniformPpeIssuance.create({
       data: {
         tenantId: auth.tenantId,
         employeeId: input.employeeId,
@@ -270,7 +270,7 @@ export class UniformPpeIssuanceService {
   }
 
   async markReturned(id: string, condition: string | undefined, auth: AuthContext) {
-    return (prisma as any).uniformPpeIssuance.update({
+    return prisma.uniformPpeIssuance.update({
       where: { id },
       data: {
         returnedAt: new Date(),
@@ -296,12 +296,12 @@ export class AccommodationTransportRouteService {
     const where = { tenantId, ...(siteId ? { siteId } : {}) };
     const page = normalisePaging(paging);
     const [items, total] = await Promise.all([
-      (prisma as any).accommodationTransportRoute.findMany({
+      prisma.accommodationTransportRoute.findMany({
         where,
         orderBy: [{ siteId: 'asc' }, { routeCode: 'asc' }],
         ...prismaPageArgs(page),
       }),
-      (prisma as any).accommodationTransportRoute.count({ where }),
+      prisma.accommodationTransportRoute.count({ where }),
     ]);
     return buildPaginatedResult(items, total, page);
   }
@@ -321,7 +321,7 @@ export class AccommodationTransportRouteService {
     },
     auth: AuthContext
   ) {
-    return (prisma as any).accommodationTransportRoute.upsert({
+    return prisma.accommodationTransportRoute.upsert({
       where: {
         aura_accommodation_transport_route_unique: {
           tenantId: auth.tenantId,
@@ -368,12 +368,12 @@ export class AccommodationClinicService {
     const where = { tenantId, ...(siteId ? { siteId } : {}) };
     const page = normalisePaging(paging);
     const [items, total] = await Promise.all([
-      (prisma as any).accommodationClinic.findMany({
+      prisma.accommodationClinic.findMany({
         where,
         orderBy: [{ siteId: 'asc' }, { clinicCode: 'asc' }],
         ...prismaPageArgs(page),
       }),
-      (prisma as any).accommodationClinic.count({ where }),
+      prisma.accommodationClinic.count({ where }),
     ]);
     return buildPaginatedResult(items, total, page);
   }
@@ -392,7 +392,7 @@ export class AccommodationClinicService {
     },
     auth: AuthContext
   ) {
-    return (prisma as any).accommodationClinic.upsert({
+    return prisma.accommodationClinic.upsert({
       where: {
         aura_accommodation_clinic_unique: {
           tenantId: auth.tenantId,
@@ -426,7 +426,7 @@ export class AccommodationClinicService {
     });
   }
   async recordInspection(id: string, result: string, auth: AuthContext) {
-    return (prisma as any).accommodationClinic.update({
+    return prisma.accommodationClinic.update({
       where: { id },
       data: { lastInspectionAt: new Date(), lastInspectionResult: result },
     });
@@ -458,12 +458,12 @@ export class AccommodationMaintenanceService {
     };
     const page = normalisePaging(paging);
     const [items, total] = await Promise.all([
-      (prisma as any).accommodationMaintenanceTicket.findMany({
+      prisma.accommodationMaintenanceTicket.findMany({
         where,
         orderBy: [{ severity: 'desc' }, { reportedAt: 'desc' }],
         ...prismaPageArgs(page),
       }),
-      (prisma as any).accommodationMaintenanceTicket.count({ where }),
+      prisma.accommodationMaintenanceTicket.count({ where }),
     ]);
     return buildPaginatedResult(items, total, page);
   }
@@ -481,7 +481,7 @@ export class AccommodationMaintenanceService {
     const severity = input.severity ?? 'MEDIUM';
     const slaHours = DEFAULT_SLA_HOURS[severity];
     const slaDueAt = new Date(Date.now() + slaHours * 60 * 60 * 1000);
-    return (prisma as any).accommodationMaintenanceTicket.create({
+    return prisma.accommodationMaintenanceTicket.create({
       data: {
         tenantId: auth.tenantId,
         siteId: input.siteId,
@@ -496,7 +496,7 @@ export class AccommodationMaintenanceService {
   }
 
   async resolve(id: string, notes: string, auth: AuthContext) {
-    return (prisma as any).accommodationMaintenanceTicket.update({
+    return prisma.accommodationMaintenanceTicket.update({
       where: { id },
       data: {
         status: 'RESOLVED' as MaintenanceStatus,
@@ -508,7 +508,7 @@ export class AccommodationMaintenanceService {
   }
 
   async openCriticalCount(tenantId: string): Promise<number> {
-    return (prisma as any).accommodationMaintenanceTicket.count({
+    return prisma.accommodationMaintenanceTicket.count({
       where: {
         tenantId,
         status: { in: ['OPEN', 'IN_PROGRESS'] },

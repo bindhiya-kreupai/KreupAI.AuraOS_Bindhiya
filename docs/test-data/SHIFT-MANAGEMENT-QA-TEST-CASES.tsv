@@ -1,0 +1,199 @@
+Test ID	Module	Sub Page	Feature	Field	Input Value	Expected Result	Priority	Status
+SHIFT-C001	Main Page	Shifts Tab	Create Shift	Shift Code	MORN-01	Shift created; appears in table with code MORN-01	P0	Not Run
+SHIFT-C002	Main Page	Shifts Tab	Create Shift	Name	Morning Shift	Stored as display name	P0	Not Run
+SHIFT-C003	Main Page	Shifts Tab	Create Shift	Description	Standard morning shift for office staff	Stored in description field	P2	Not Run
+SHIFT-C004	Main Page	Shifts Tab	Create Shift	Start Time	06:00	Stored; table shows 06:00	P0	Not Run
+SHIFT-C005	Main Page	Shifts Tab	Create Shift	End Time	14:00	Stored; table shows 14:00	P0	Not Run
+SHIFT-C006	Main Page	Shifts Tab	Create Shift	Work Hours	8	Stored; table shows 8h	P0	Not Run
+SHIFT-C007	Main Page	Shifts Tab	Create Shift	Grace In (min)	10	Stored; table shows 10 min	P1	Not Run
+SHIFT-C008	Main Page	Shifts Tab	Create Shift	Grace Out (min)	10	Stored; table shows 10 min	P1	Not Run
+SHIFT-C009	Main Page	Shifts Tab	Create Shift	Break Duration (min)	60	Stored	P1	Not Run
+SHIFT-C010	Main Page	Shifts Tab	Create Shift	Overtime Allowed	FALSE	Overtime not permitted	P1	Not Run
+SHIFT-C011	Main Page	Shifts Tab	Create Shift	Max Overtime Hours	0	Stored as 0	P2	Not Run
+SHIFT-C012	Main Page	Shifts Tab	Create Shift	(All fields)	Night shift with OT	Shift created; code NIGHT-01, times 22:00-06:00, OT checked, max OT 4h	P0	Not Run
+SHIFT-C013	Main Page	Shifts Tab	Create Shift	(All fields)	Short half-day shift	Shift created; code SHORT-01, times 08:00-12:00, hours 4	P1	Not Run
+SHIFT-C014	Main Page	Shifts Tab	Create Shift	Work Hours	0.5	Minimum valid value accepted; table shows 0.5h	P1	Not Run
+SHIFT-C015	Main Page	Shifts Tab	Create Shift	Start Time / End Time	00:00 / 23:59	Maximum time range accepted	P1	Not Run
+SHIFT-C016	Main Page	Shifts Tab	Create Shift	Start Time / End Time	00:00 / 00:01	Minimum valid time range accepted	P2	Not Run
+SHIFT-C017	Main Page	Shifts Tab	Create Shift	Start Time / End Time	23:58 / 23:59	End-of-day edge range accepted	P2	Not Run
+SHIFT-C018	Main Page	Shifts Tab	Create Shift	Start Time / End Time	07:30 / 16:30	Half-hour offsets accepted	P2	Not Run
+SHIFT-C019	Main Page	Shifts Tab	Create Shift	Break Duration	0	Zero break accepted	P2	Not Run
+SHIFT-C020	Main Page	Shifts Tab	Create Shift	Break Duration	480	Maximum break (8h) accepted	P2	Not Run
+SHIFT-C021	Main Page	Shifts Tab	Create Shift	Max Overtime Hours	12	Large OT value accepted	P2	Not Run
+SHIFT-C022	Main Page	Shifts Tab	Create Shift	Grace In / Out	120 / 120	Maximum grace accepted	P2	Not Run
+SHIFT-C023	Main Page	Shifts Tab	Create Shift	Grace In / Out	0 / 0	Minimum grace accepted	P2	Not Run
+SHIFT-C024	Main Page	Shifts Tab	Create Shift	Name	Night 🌙 Shift	Emoji accepted in Unicode	P2	Not Run
+SHIFT-C025	Main Page	Shifts Tab	Create Shift	Name	员工班次	Chinese characters accepted	P2	Not Run
+SHIFT-C026	Main Page	Shifts Tab	Create Shift	Name	وردي الصباح	Arabic characters accepted	P2	Not Run
+SHIFT-C027	Main Page	Shifts Tab	Create Shift	Description	'; DROP TABLE aura_shift; --	SQL string stored literally; no injection	P1	Not Run
+SHIFT-C028	Main Page	Shifts Tab	Create Shift	Name	<script>alert(1)</script>	Stored as plain text; no XSS execution	P1	Not Run
+SHIFT-E001	Main Page	Shifts Tab	Create Shift (Invalid)	Shift Code	(empty)	Validation error: code is required (min 1)	P0	Not Run
+SHIFT-E002	Main Page	Shifts Tab	Create Shift (Invalid)	Name	(empty)	Validation error: name is required (min 1)	P0	Not Run
+SHIFT-E003	Main Page	Shifts Tab	Create Shift (Invalid)	Start Time	9am	Zod error: Start time must be in HH:MM format (00:00–23:59)	P0	Not Run
+SHIFT-E004	Main Page	Shifts Tab	Create Shift (Invalid)	End Time	25:00	Zod error: End time must be in HH:MM format (00:00–23:59)	P0	Not Run
+SHIFT-E005	Main Page	Shifts Tab	Create Shift (Invalid)	End Time	17:65	Zod error: End time must be in HH:MM format (00:00–23:59)	P0	Not Run
+SHIFT-E006	Main Page	Shifts Tab	Create Shift (Invalid)	Start Time / End Time	09:00 / 09:00	Zod refine error: Start time and end time must be different	P0	Not Run
+SHIFT-E007	Main Page	Shifts Tab	Create Shift (Invalid)	Work Hours	0.4	Zod error: Number must be >= 0.5	P0	Not Run
+SHIFT-E008	Main Page	Shifts Tab	Create Shift (Invalid)	Work Hours	0	Zod error: Number must be >= 0.5	P0	Not Run
+SHIFT-E009	Main Page	Shifts Tab	Create Shift (Invalid)	Work Hours	-5	Zod error: Number must be >= 0.5	P0	Not Run
+SHIFT-E010	Main Page	Shifts Tab	Create Shift (Invalid)	Grace In (min)	-1	Zod error: Number must be >= 0	P1	Not Run
+SHIFT-E011	Main Page	Shifts Tab	Create Shift (Invalid)	Break Duration (min)	-10	Zod error: Number must be >= 0	P1	Not Run
+SHIFT-E012	Main Page	Shifts Tab	Create Shift (Invalid)	Max Overtime Hours	-1	Zod error: Number must be >= 0	P1	Not Run
+SHIFT-E013	Main Page	Shifts Tab	Create Shift (Invalid)	Shift Code	MORN-01 (duplicate)	Service error: A shift with code "MORN-01" already exists	P0	Not Run
+SHIFT-E014	Main Page	Shifts Tab	Create Shift (Invalid)	Start Time	9:00 (single-digit hour)	Zod regex fails; error: must be HH:MM format	P1	Not Run
+SHIFT-E015	Main Page	Shifts Tab	Create Shift (Invalid)	Start Time	09:00:00 (with seconds)	Zod regex fails; not valid HH:MM	P1	Not Run
+SHIFT-E016	Main Page	Shifts Tab	Create Shift (Invalid)	End Time	09:00 (cross-midnight invalid: start>end not equal but same time)	Zod refine error: times must be different	P1	Not Run
+SHIFT-E017	Main Page	Shifts Tab	Create Shift (Invalid)	Shift Code	ÜÑÏÇÖDÉ	Unicode code accepted if non-empty	P2	Not Run
+SHIFT-E018	Main Page	Shifts Tab	Create Shift (Invalid)	Name	 	Whitespace-only: min(1) may pass (length 3); verify trimming	P2	Not Run
+SHIFT-E019	Main Page	Shifts Tab	Create Shift (Invalid)	Start Time	(empty)	Zod regex fails on empty string	P0	Not Run
+SHIFT-E020	Main Page	Shifts Tab	Create Shift (Invalid)	End Time	(empty)	Zod regex fails on empty string	P0	Not Run
+SHIFT-U001	Main Page	Shifts Tab	Edit Shift	Name	Updated Morning Shift	Toast: Shift updated; table reflects new name	P0	Not Run
+SHIFT-U002	Main Page	Shifts Tab	Edit Shift	Start Time	07:00	Time updated in table	P1	Not Run
+SHIFT-U003	Main Page	Shifts Tab	Edit Shift	End Time	15:00	Time updated in table	P1	Not Run
+SHIFT-U004	Main Page	Shifts Tab	Edit Shift	Description	Updated description	Text updated	P2	Not Run
+SHIFT-U005	Main Page	Shifts Tab	Edit Shift	Description	(empty)	Cleared to null/empty	P2	Not Run
+SHIFT-U006	Main Page	Shifts Tab	Edit Shift (Invalid)	Start / End Time	09:00 / 09:00	Zod refine error	P0	Not Run
+SHIFT-U007	Main Page	Shifts Tab	Edit Shift (Invalid)	Shift Code	EXISTING-CODE (duplicate)	Service error: code already exists	P0	Not Run
+SHIFT-U008	Main Page	Shifts Tab	Edit Shift	Name	<script>xss</script>	Stored as plain text; no execution	P1	Not Run
+SHIFT-D001	Main Page	Shifts Tab	Delete Shift	Confirmation	Click Delete on shift with no assignments	Confirm dialog appears; cancel keeps shift	P0	Not Run
+SHIFT-D002	Main Page	Shifts Tab	Delete Shift	Confirmation	Confirm delete	Dialog closes; toast: Shift deleted; shift removed from table	P0	Not Run
+SHIFT-D003	Main Page	Shifts Tab	Delete Shift	Cancel	Press Escape in confirm dialog	Dialog closes; shift NOT deleted	P1	Not Run
+SHIFT-D004	Main Page	Shifts Tab	Delete Shift (Invalid)	Delete shift with active assignments	Confirm -> Service error: Cannot delete shift that has active assignments	P0	Not Run
+SHIFT-D005	Main Page	Shifts Tab	Delete Shift	Cancel backdrop	Click outside confirm dialog	Dialog closes; shift NOT deleted	P2	Not Run
+SHIFT-DF01	Main Page	Shifts Tab	Set Default	Star button	Click star on non-default shift	Toast: "<name>" set as default shift; "Default" badge appears	P0	Not Run
+SHIFT-DF02	Main Page	Shifts Tab	Set Default	Exclusivity	Set default on shift B after shift A is default	Shift A loses "Default" badge; only shift B has it	P0	Not Run
+SHIFT-DF03	Main Page	Shifts Tab	Set Default	Stats	Toggle default back and forth	Stats do not change (default is display-only flag)	P2	Not Run
+SHIFT-SR01	Main Page	Shifts Tab	Search	Exact code	MORN-01	Table filters to that exact shift	P0	Not Run
+SHIFT-SR02	Main Page	Shifts Tab	Search	Partial name	Night	Table shows shifts containing "Night"	P1	Not Run
+SHIFT-SR03	Main Page	Shifts Tab	Search	Time value	09:00	Table shows shifts with 09:00 in start or end	P1	Not Run
+SHIFT-SR04	Main Page	Shifts Tab	Search	Partial description	office	Table shows shifts with "office" in description	P2	Not Run
+SHIFT-SR05	Main Page	Shifts Tab	Search	No results	ZZZZNOTEXIST	Empty table or no results message	P1	Not Run
+SHIFT-SR06	Main Page	Shifts Tab	Search	Clear search	(empty)	All shifts reappear	P0	Not Run
+SHIFT-SR07	Main Page	Shifts Tab	Search	Case insensitive	morn	Same result as MORN	P1	Not Run
+SHIFT-SR08	Main Page	Shifts Tab	Search	Special chars	@#$	No results; no error	P2	Not Run
+SHIFT-SR09	Main Page	Shifts Tab	Search	SQL injection	' OR 1=1 --	No results; no injection	P1	Not Run
+SHIFT-SR10	Main Page	Shifts Tab	Search	Unicode	تم	No results (unless Arabic text in data)	P2	Not Run
+SHIFT-SR11	Main Page	Shifts Tab	Search	Whitespace only	   	No results or all (depends on trim)	P2	Not Run
+SHIFT-SR12	Main Page	Shifts Tab	Search	Very long input	200+ chars of 'a'	No results; no crash	P2	Not Run
+ASSN-C001	Main Page	Assignments Tab	Create Assignment	Employee ID	emp-001	Assignment created; appears in table	P0	Not Run
+ASSN-C002	Main Page	Assignments Tab	Create Assignment	Shift ID	shift-1 (existing)	Shift name displayed in row	P0	Not Run
+ASSN-C003	Main Page	Assignments Tab	Create Assignment	Effective From	2026-07-16	From date shown in table	P0	Not Run
+ASSN-C004	Main Page	Assignments Tab	Create Assignment	Effective To	(empty)	To column shows gray "Current"	P1	Not Run
+ASSN-C005	Main Page	Assignments Tab	Create Assignment	Effective To	2026-12-31	To column shows 12/31/2026	P1	Not Run
+ASSN-C006	Main Page	Assignments Tab	Create Assignment	Reason	New hire onboarding	Stored	P2	Not Run
+ASSN-C007	Main Page	Assignments Tab	Create Assignment	Reason	(empty)	Assignment created (reason optional)	P2	Not Run
+ASSN-C008	Main Page	Assignments Tab	Create Assignment	Auto-deactivate	Second assignment for same employee	Previous assignment auto-deactivated (isActive=false, effectiveTo=now)	P0	Not Run
+ASSN-C009	Main Page	Assignments Tab	Create Assignment	Status card	After creation	Active assignments stat card increments by 1	P1	Not Run
+ASSN-D001	Main Page	Assignments Tab	Delete Assignment	Confirm	Click Delete on active assignment	Confirm dialog: "End Assignment" / "Are you sure..."	P0	Not Run
+ASSN-D002	Main Page	Assignments Tab	Delete Assignment	Confirm	Confirm action	Toast: Assignment ended; removed from table	P0	Not Run
+ASSN-D003	Main Page	Assignments Tab	Delete Assignment	Cancel	Press Escape	Dialog closes; assignment NOT deleted	P1	Not Run
+ASSN-SR01	Main Page	Assignments Tab	Search	Employee ID	emp-001	Table filters to emp-001 assignments	P1	Not Run
+ASSN-SR02	Main Page	Assignments Tab	Search	Shift name	Morning	Table shows matching assignments	P1	Not Run
+ASSN-SR03	Main Page	Assignments Tab	Search	No results	ZZZ	Empty results	P2	Not Run
+ROST-C001	Main Page	Rosters Tab	Create Roster	Employee ID	emp-001	Roster entry created; appears in table	P0	Not Run
+ROST-C002	Main Page	Rosters Tab	Create Roster	Shift ID	shift-1 (existing)	Shift name displayed	P0	Not Run
+ROST-C003	Main Page	Rosters Tab	Create Roster	Date	2026-07-17	Date shown in table	P0	Not Run
+ROST-C004	Main Page	Rosters Tab	Create Roster	Custom Start Time	07:30	Stored (if not displayed in table columns)	P2	Not Run
+ROST-C005	Main Page	Rosters Tab	Create Roster	Custom End Time	16:30	Stored	P2	Not Run
+ROST-C006	Main Page	Rosters Tab	Create Roster	Week Off	checked	Checkmark in Week Off column	P1	Not Run
+ROST-C007	Main Page	Rosters Tab	Create Roster	Holiday	checked	Checkmark in Holiday column	P1	Not Run
+ROST-C008	Main Page	Rosters Tab	Create Roster	Status	(default)	Status badge shows SCHEDULED	P0	Not Run
+ROST-C009	Main Page	Rosters Tab	Create Roster (Invalid)	Duplicate emp+date	Service error: Employee already has a roster entry for [date]	P0	Not Run
+ROST-D001	Main Page	Rosters Tab	Delete Roster	Confirm	Click Delete	Confirm dialog: "Delete Roster Entry" / "Are you sure..."	P0	Not Run
+ROST-D002	Main Page	Rosters Tab	Delete Roster	Confirm	Confirm action	Toast: Roster entry deleted	P0	Not Run
+ROST-D003	Main Page	Rosters Tab	Delete Roster	Cancel	Press Escape	Dialog closes; NOT deleted	P1	Not Run
+ROST-SR01	Main Page	Rosters Tab	Search	Employee ID	emp-001	Table filters	P1	Not Run
+ROST-SR02	Main Page	Rosters Tab	Search	Status	SCHEDULED	Table shows only SCHEDULED entries	P1	Not Run
+ROST-SR03	Main Page	Rosters Tab	Search	No results	ZZZ	Empty results	P2	Not Run
+SWAP-C001	Main Page	Swaps Tab	Create Swap	Your Employee ID	emp-001	Swap request created; status PENDING (yellow)	P0	Not Run
+SWAP-C002	Main Page	Swaps Tab	Create Swap	Your Shift ID	shift-1	Stored	P0	Not Run
+SWAP-C003	Main Page	Swaps Tab>Create Swap	Your Shift Date	2026-07-20	Stored; displayed in table	P0	Not Run
+SWAP-C004	Main Page	Swaps Tab	Create Swap	Swap With ID	emp-002	Stored; displayed in table	P0	Not Run
+SWAP-C005	Main Page	Swaps Tab	Create Swap	Their Shift ID	shift-2	Stored	P0	Not Run
+SWAP-C006	Main Page	Swaps Tab	Create Swap	Their Shift Date	2026-07-21	Stored; displayed in table	P0	Not Run
+SWAP-C007	Main Page	Swaps Tab	Create Swap	Reason	Family appointment	Stored; displayed	P0	Not Run
+SWAP-C008	Main Page	Swaps Tab	Create Swap	Reason	Personal	Stored (no min length)	P1	Not Run
+SWAP-C009	Main Page	Swaps Tab	Create Swap	Reason	تم رفض الطلب	Arabic text stored	P2	Not Run
+SWAP-E001	Main Page	Swaps Tab	Edit Swap (Blocked)	Attempt edit	Toast error: Swap requests cannot be edited -- use approve/reject	P0	Not Run
+SWAP-E002	Main Page	Swaps Tab	Edit Swap (Blocked)	Delete button	disableDelete={false} Delete button is hidden	P0	Not Run
+SWAP-PA01	Main Page	Swaps Tab	Peer Approve	Action button	Click Peer approve on PENDING swap	Toast: Peer approved; status -> APPROVED_BY_PEER (blue)	P0	Not Run
+SWAP-PA02	Main Page	Swaps Tab	Peer Approve	Wrong user	different employee tries peer-approve	Service error: Unauthorized	P1	Not Run
+SWAP-MA01	Main Page	Swaps Tab	Manager Approve	Action button	Click Manager approve on APPROVED_BY_PEER	Toast: Manager approved; status -> APPROVED_BY_MANAGER (green)	P0	Not Run
+SWAP-MA02	Main Page	Swaps Tab	Manager Approve	Skip peer	Service error: Peer approval required first	P0	Not Run
+SWAP-RJ01	Main Page	Swaps Tab	Reject	Reason	Schedule conflict with project deadline	Toast: Swap rejected; status -> REJECTED (red)	P0	Not Run
+SWAP-RJ02	Main Page	Swaps Tab	Reject	Empty reason	(empty)	Toast error: Please provide a rejection reason; dialog stays open	P0	Not Run
+SWAP-RJ03	Main Page	Swaps Tab	Reject	Whitespace only	    	Toast error: Please provide a rejection reason (trim check)	P0	Not Run
+SWAP-RJ04	Main Page	Swaps Tab	Reject	Cancel dialog	Press Escape	Dialog closes; swap unchanged	P1	Not Run
+SWAP-RJ05	Main Page	Swaps Tab	Reject	Cancel backdrop	Click outside	Dialog closes; swap unchanged	P2	Not Run
+SWAP-RJ06	Main Page	Swaps Tab	Reject	Unicode reason	تم رفض - لا يوجد توفر	Toast: Swap rejected; Arabic reason stored	P2	Not Run
+SWAP-FL01	Main Page	Swaps Tab	Status Flow	Full approval	Create -> Peer approve -> Manager approve	Status transitions: PENDING -> APPROVED_BY_PEER -> APPROVED_BY_MANAGER	P0	Not Run
+SWAP-FL02	Main Page	Swaps Tab	Status Flow	Reject from pending	Create -> Reject	Status -> REJECTED; no action buttons remain	P0	Not Run
+SWAP-FL03	Main Page	Swaps Tab	Status Flow	Reject from peer-approved	Create -> Peer approve -> Reject	Status -> REJECTED from APPROVED_BY_PEER	P0	Not Run
+SWAP-SR01	Main Page	Swaps Tab	Search	Requestor ID	emp-001	Table filters to requestor matches	P1	Not Run
+SWAP-SR02	Main Page	Swaps Tab	Search	Status	PENDING	Table shows only pending swaps	P1	Not Run
+SWAP-SR03	Main Page	Swaps Tab	Search	No results	ZZZ	Empty results	P2	Not Run
+TPL-AP01	Templates	Page	Apply Template	General (9 to 6)	Click Use button	Button spinner -> green "Created" badge; shift created with code GEN-09-XXXX	P0	Not Run
+TPL-AP02	Templates	Page	Apply Template	Morning (6 to 3)	Click Use button	Shift created: MORN-06-XXXX, 06:00-15:00, 8h	P0	Not Run
+TPL-AP03	Templates	Page	Apply Template	Night (10 PM to 7 AM)	Click Use button	Shift created: NIGHT-22-XXXX, 22:00-07:00, cross-midnight	P0	Not Run
+TPL-AP04	Templates	Page	Apply Template	Split (retail)	Click Use button	Shift created: SPLIT-09-XXXX, 09:00-20:00, 180min break	P1	Not Run
+TPL-AP05	Templates	Page	Apply Template	Ramadan-reduced	Click Use button	Shift created: RAM-09-XXXX, 09:00-15:00, 6h, no OT	P1	Not Run
+TPL-AP06	Templates	Page	Apply Template	Flexible (core 11-3)	Click Use button	Shift created: FLEX-08-XXXX, 08:00-17:00, 120min grace	P1	Not Run
+TPL-AP07	Templates	Page	Apply Template	Weekend on-call	Click Use button	Shift created: WKND-OC-XXXX, 10:00-14:00, 4h	P1	Not Run
+TPL-AP08	Templates	Page	Apply Template	Duplicate apply	Click Use twice on same template	Two shifts created with different timestamp suffixes	P1	Not Run
+TPL-NAV01	Templates	Page	Navigate Back	Back link	Click "<-- Back to Shift Management"	Navigates to /dashboard/attendance/shift-management	P0	Not Run
+RM-C001	Ramadan	Page	Country Select	Dropdown	AE	United Arab Emirates; status cards update	P0	Not Run
+RM-C002	Ramadan	Page	Country Select	Dropdown	SA	Saudi Arabia; hours update	P0	Not Run
+RM-C003	Ramadan	Page	Country Select	Dropdown	BH	Bahrain; hours update	P1	Not Run
+RM-C004	Ramadan.Page	Country Select	Dropdown	QA	Qatar; hours update	P1	Not Run
+RM-C005	Ramadan.Page	Country Select	Dropdown	OM	Oman; hours update	P2	Not Run
+RM-C006	Ramadan.Page	Country Select	Dropdown	KW	Kuwait; hours update	P2	Not Run
+RM-TG01	Ramadan	Page	Auto-Switch Toggle	ON	Click toggle	Toggle switches to ON; mappings configurable	P0	Not Run
+RM-TG02	Ramadan	Page	Auto-Switch Toggle	OFF	Click toggle	Toggle switches to OFF	P0	Not Run
+RM-MP01	Ramadan	Page	Shift Mapping	Map regular to Ramadan	Select Ramadan shift from dropdown next to regular shift	Mapping stored locally	P0	Not Run
+RM-MP02	Ramadan	Page	Shift Mapping	Save mapping	Click Save Mapping	Toast: Ramadan mapping saved; "Saved" badge appears	P0	Not Run
+RM-MP03	Ramadan	Page	Shift Mapping	Save empty	Click Save without mappings	Toast: Ramadan mapping saved; empty object saved	P1	Not Run
+RM-MP04	Ramadan	Page	Shift Mapping	Persist reload	After save, reload page	Mappings loaded from server	P1	Not Run
+RM-CLC01	Ramadan	Page	Daily Hours Calculator	Date	2026-07-17	Click Calculate -> shows hours per working day for country	P1	Not Run
+RM-CLC02	Ramadan.Page	Overtime Calculator	Actual 10 / Shift 8 / Rate 100	Click Calculate	OT hours: 2; multiplier shown; pay = 2 * 100 * multiplier	P1	Not Run
+RM-CLC03	Ramadan.Page	Overtime Calculator	Actual 0 / Shift 8 / Rate 100	Click Calculate	OT hours: 0; pay: 0	P2	Not Run
+RM-CLC04	Ramadan.Page	Overtime Calculator	Actual 6 / Shift 8 / Rate 100	Click Calculate	OT hours: 0 (under shift)	P2	Not Run
+RM-CLC05	Ramadan.Page	Compliance Validator	Worked 8 / OT 0	Click Validate	Green "Compliant"; no violations	P1	Not Run
+RM-CLC06	Ramadan.Page	Compliance Validator	Worked 12 / OT 4	Click Validate	Red "Non-compliant"; violations list	P1	Not Run
+RM-CLC07	Ramadan.Page	Friday Compensation	Hours 8 / Salary 5000	Click Calculate	Compensation amount shown	P1	Not Run
+RM-CLC08	Ramadan.Page	Friday Compensation	Hours 0 / Salary 5000	Click Calculate	Compensation: 0	P2	Not Run
+GRID-NAV01	Roster Assignment	Weekly Grid	Week Navigation	Previous week	Click ChevronLeft	Grid shifts to previous Mon-Sun	P0	Not Run
+GRID-NAV02	Roster Assignment	Weekly Grid	Week Navigation	Next week	Click ChevronRight	Grid shifts to next Mon-Sun	P0	Not Run
+GRID-NAV03	Roster Assignment	Weekly Grid	Week Navigation	Today	Click Today button	Grid returns to current week	P0	Not Run
+GRID-SR01	Roster Assignment	Weekly Grid	Search	Employee name	Ahmed	Grid filters to matching employees	P1	Not Run
+GRID-SR02	Roster Assignment	Weekly Grid	Search	Role	Supervisor	Grid filters to matching roles	P1	Not Run
+GRID-FL01	Roster Assignment	Weekly Grid	Filter by Role	Select role	Engineer	Only engineers shown	P1	Not Run
+GRID-FL02	Roster Assignment	Weekly Grid	Filter by Shift	Select shift	Morning Only	Only employees with morning shifts shown	P1	Not Run
+GRID-FL03	Roster Assignment	Weekly Grid	Filter by Coverage	Assigned	Only employees with at least one working day	P1	Not Run
+GRID-FL04	Roster Assignment	Weekly Grid	Filter by Coverage	Unassigned	Only employees with zero working days	P1	Not Run
+GRID-FL05	Roster Assignment	Weekly Grid	Multiple Filters	Role + Shift + Coverage combined	AND logic applied	P1	Not Run
+GRID-FL06	Roster Assignment	Weekly Grid	Clear Filters	Click Clear Filters	All filters reset; full list shown	P0	Not Run
+GRID-CELL01	Roster Assignment	Weekly Grid	Cell Modal - Shift	Mode: Shift; select shift	Cell shows shift abbreviation (3 chars); color-coded; toast: Roster updated	P0	Not Run
+GRID-CELL02	Roster Assignment	Weekly Grid	Cell Modal - Week Off	Mode: Week off	Cell shows WO in slate color	P0	Not Run
+GRID-CELL03	Roster Assignment	Weekly Grid	Cell Modal - Holiday	Mode: Holiday	Cell shows H in purple	P1	Not Run
+GRID-CELL04	Roster Assignment	Weekly Grid	Cell Modal - Clear	Mode: Clear	Cell shows --; previous entry deleted	P0	Not Run
+GRID-CELL05	Roster Assignment	Weekly Grid	Cell Modal - Change shift	Click cell with existing shift; choose different shift	Old entry deleted; new shift displayed	P1	Not Run
+GRID-CELL06	Roster Assignment	Weekly Grid	Cell Modal - Escape	Press Escape in modal	Modal closes without changes	P1	Not Run
+GRID-HRS01	Roster Assignment	Weekly Grid	Weekly Hours	Sum of assigned hours	Hours column shows total work hours for the week	P1	Not Run
+ESS-MS01	Shift Swapping	ESS Page	My Shifts Tab	Load shifts	Navigate to page	Shift cards displayed with type, date, time, location	P0	Not Run
+ESS-MS02	Shift Swapping	ESS Page	Request Swap	Click Request Swap on Scheduled shift	Button loads; toast: Swap request submitted; status -> Pending	P0	Not Run
+ESS-MS03	Shift Swapping	ESS Page	Request Swap	Pending state	Button shows "Swap Pending" and is disabled	P0	Not Run
+ESS-MS04	Shift Swapping	ESS Page	No shifts	Employee with no assignments	Empty state: No shifts assigned	P1	Not Run
+ESS-MK01	Shift Swapping	ESS Page	Marketplace Tab	Click Marketplace	Marketplace tab active; cards shown with offer details	P0	Not Run
+ESS-MK02	Shift Swapping	ESS Page	Accept Swap	Click Accept Swap	Button loads; toast: Swap accepted; card removed	P0	Not Run
+ESS-MK03	Shift Swapping	ESS Page	Empty Marketplace	No pending offers	Empty state: No shifts available in the marketplace	P1	Not Run
+ESS-NAV01	Shift Swapping	ESS Page	View Full Roster	Click View Full Roster card	Navigates to /dashboard/attendance/roster-assignment	P1	Not Run
+STAT-001	Main Page	Shifts Tab	Stat Cards	After create shift	Total shifts +1; Active shifts +1	P1	Not Run
+STAT-002	Main Page	Shifts Tab	Stat Cards	After delete shift	Total shifts -1; Active shifts -1	P1	Not Run
+STAT-003	Main Page	Assignments Tab	Stat Cards	After create assignment	Active assignments +1	P1	Not Run
+STAT-004	Main Page	Swaps Tab	Stat Cards	After create swap	Pending swaps +1	P1	Not Run
+PERM-001	Main Page	Shifts Tab	Missing Permission	shifts:read	403: Forbidden: missing shifts:read permission; ممنوع	P0	Not Run
+PERM-002	Main Page	Shifts Tab	Missing Permission	shifts:create	403: Forbidden: missing shifts:create permission; ممنوع	P0	Not Run
+PERM-003	Main Page	Shifts Tab	Missing Permission	shifts:delete	403: Forbidden: missing shifts:delete permission; ممنوع	P0	Not Run
+PERM-004	Main Page	Swaps Tab	Missing Permission	shift-swaps:update	403: Forbidden: missing shift-swaps:update permission; ممنوع	P0	Not Run
+PERM-005	Main Page	Assignments Tab	Missing Permission	shift-assignments:read	403 error with bilingual message	P1	Not Run
+PERM-006	Main Page	Rosters Tab	Missing Permission	shift-rosters:create	403 error with bilingual message	P1	Not Run

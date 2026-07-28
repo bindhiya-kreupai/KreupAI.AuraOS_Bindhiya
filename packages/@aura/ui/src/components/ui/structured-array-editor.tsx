@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Plus, Trash2, ChevronLeft, ChevronRight, Search, Edit2, X, Check, Lock, Unlock, ShieldCheck } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
@@ -19,9 +19,10 @@ function cn(...inputs: ClassValue[]) {
  *   - Dynamic Pagination (10, 20, 50, 100, All)
  *   - Instant dataset search & filtering
  *   - Bilingual headers & jurisdiction flag chips
+ *   - Async searchable-select fields backed by a remote API
  */
 
-export type StructuredFieldType = 'text' | 'number' | 'boolean' | 'select'| 'date';
+export type StructuredFieldType = 'text' | 'number' | 'boolean' | 'select' | 'date' | 'searchable-select';
 
 export interface StructuredColumn {
     key: string;
@@ -31,8 +32,9 @@ export interface StructuredColumn {
     options?: Array<{ value: string; label: string }>;
     required?: boolean;
     placeholder?: string;
-    /** Width hint (CSS class, e.g. 'w-24'). */
     widthClass?: string;
+    apiUrl?: string;
+    readOnly?: boolean;
 }
 
 export interface StructuredArrayEditorProps<T extends Record<string, unknown> = Record<string, unknown>> {
@@ -430,7 +432,7 @@ export function StructuredArrayEditor<T extends Record<string, unknown> = Record
                                             </td>
                                         );
                                     }
-                                    
+
                                     if (col.type === 'date') {
                                         return (
                                             <td key={col.key} className="px-2.5 py-2">
@@ -445,6 +447,35 @@ export function StructuredArrayEditor<T extends Record<string, unknown> = Record
                                                     disabled={disabled}
                                                     className={cn(
                                                         'w-full border border-slate-200 dark:border-slate-750 rounded-xl px-2.5 py-1.5 text-sm bg-slate-50/50 hover:bg-slate-50 dark:bg-slate-950 dark:text-white transition-all focus:outline-none focus:ring-2 focus:ring-slate-950 dark:focus:ring-white/30 disabled:opacity-50 disabled:cursor-not-allowed',
+                                                        col.widthClass,
+                                                    )}
+                                                />
+                                            </td>
+                                        );
+                                    }
+                                    if (col.type === 'searchable-select') {
+                                        return (
+                                            <td key={col.key} className="px-2.5 py-2">
+                                                <SearchableSelect
+                                                    apiUrl={col.apiUrl ?? ''}
+                                                    value={(cellValue as string) ?? ''}
+                                                    onSelect={(id) => {
+                                                        update(originalIndex, col.key, id);
+                                                    }}
+                                                    placeholder={col.placeholder ?? 'Search...'}
+                                                />
+                                            </td>
+                                        );
+                                    }
+                                    if (col.readOnly) {
+                                        return (
+                                            <td key={col.key} className="px-2.5 py-2">
+                                                <input
+                                                    type="text"
+                                                    value={(cellValue as string) ?? ''}
+                                                    readOnly
+                                                    className={cn(
+                                                        'w-full border border-slate-200 bg-slate-50 dark:bg-slate-950 dark:border-slate-750 rounded-xl px-2.5 py-1.5 text-sm text-slate-500 dark:text-slate-400',
                                                         col.widthClass,
                                                     )}
                                                 />
@@ -579,13 +610,13 @@ export function StructuredArrayEditor<T extends Record<string, unknown> = Record
                         <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
                             {columns.map((col) => {
                                 const val = modalData[col.key];
-                                const label = locale === 'ar' && col.labelAr ? col.labelAr : col.label;
+                                const fieldLabel = locale === 'ar' && col.labelAr ? col.labelAr : col.label;
                                 const fieldId = `modal-field-${col.key}`;
 
                                 return (
                                     <div key={col.key} className="space-y-1.5">
                                         <label htmlFor={fieldId} className="block text-xs font-bold text-slate-700 dark:text-slate-300">
-                                            {label}
+                                            {fieldLabel}
                                             {col.required && <span className="text-rose-600 ml-0.5">*</span>}
                                         </label>
 
@@ -628,14 +659,25 @@ export function StructuredArrayEditor<T extends Record<string, unknown> = Record
                                                 onChange={(e) => setModalData({ ...modalData, [col.key]: e.target.value })}
                                                 className="w-full border border-slate-200 dark:border-slate-750 rounded-xl px-3 py-2 text-xs bg-slate-50 dark:bg-slate-950 dark:text-white focus:outline-none focus:ring-1 focus:ring-slate-950 dark:focus:ring-white font-mono"
                                             />
+                                        ) : col.type === 'searchable-select' ? (
+                                            <SearchableSelect
+                                                apiUrl={col.apiUrl ?? ''}
+                                                value={(val as string) ?? ''}
+                                                onSelect={(id) => setModalData({ ...modalData, [col.key]: id })}
+                                                placeholder={col.placeholder ?? 'Search...'}
+                                            />
                                         ) : (
                                             <input
                                                 id={fieldId}
                                                 type="text"
                                                 value={(val as string) ?? ''}
                                                 placeholder={col.placeholder}
+                                                readOnly={col.readOnly}
                                                 onChange={(e) => setModalData({ ...modalData, [col.key]: e.target.value })}
-                                                className="w-full border border-slate-200 dark:border-slate-750 rounded-xl px-3 py-2 text-xs bg-slate-50 dark:bg-slate-950 dark:text-white focus:outline-none focus:ring-1 focus:ring-slate-950 dark:focus:ring-white"
+                                                className={cn(
+                                                    "w-full border border-slate-200 dark:border-slate-750 rounded-xl px-3 py-2 text-xs bg-slate-50 dark:bg-slate-950 dark:text-white focus:outline-none focus:ring-1 focus:ring-slate-950 dark:focus:ring-white",
+                                                    col.readOnly && "opacity-60 cursor-not-allowed"
+                                                )}
                                             />
                                         )}
                                     </div>
@@ -664,6 +706,116 @@ export function StructuredArrayEditor<T extends Record<string, unknown> = Record
                             </button>
                         </div>
                     </div>
+                </div>
+            )}
+        </div>
+    );
+}
+
+/**
+ * Async searchable-select — used by the 'searchable-select' column type.
+ * Debounces input, queries `apiUrl?search=...&limit=10`, and lets the user
+ * pick a result. Accepts either `{ data: [...] }` or `{ data: { items: [...] } }`
+ * response shapes.
+ */
+export function SearchableSelect({
+    apiUrl,
+    value,
+    onSelect,
+    placeholder,
+}: {
+    apiUrl: string;
+    value: string;
+    onSelect: (id: string, label: string, extra?: Record<string, unknown>) => void;
+    placeholder: string;
+}) {
+    const [query, setQuery] = useState('');
+    const [results, setResults] = useState<Array<{ id: string; label: string; role?: string }>>([]);
+    const [open, setOpen] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const boxRef = useRef<HTMLDivElement>(null);
+
+    useEffect(() => {
+        function handleClickOutside(e: MouseEvent) {
+            if (boxRef.current && !boxRef.current.contains(e.target as Node)) {
+                setOpen(false);
+            }
+        }
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    useEffect(() => {
+        if (!query || query.length < 2) {
+            setResults([]);
+            return;
+        }
+        const timer = setTimeout(async () => {
+            setLoading(true);
+            try {
+                const res = await fetch(`${apiUrl}?search=${encodeURIComponent(query)}&limit=10`);
+                const json = await res.json();
+                const items = Array.isArray(json?.data)
+                    ? json.data
+                    : Array.isArray(json?.data?.items)
+                        ? json.data.items
+                        : [];
+                setResults(
+                    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                    items.map((it: any) => ({
+                        id: it.id,
+                        label:
+                            it.name ??
+                            it.label ??
+                            it.documentCode ??
+                            `${it.firstName ?? ''} ${it.lastName ?? ''}`.trim() ??
+                            it.email ??
+                            it.id,
+                        role: it.role ?? undefined,
+                    })),
+                );
+            } catch {
+                setResults([]);
+            } finally {
+                setLoading(false);
+            }
+        }, 300);
+        return () => clearTimeout(timer);
+    }, [query, apiUrl]);
+
+    return (
+        <div className="relative" ref={boxRef}>
+            <input
+                type="text"
+                value={open ? query : value}
+                onChange={(e) => {
+                    setQuery(e.target.value);
+                    setOpen(true);
+                }}
+                onFocus={() => setOpen(true)}
+                placeholder={placeholder}
+                className="w-full border border-slate-200 dark:border-slate-750 rounded-xl px-2.5 py-1.5 text-sm bg-slate-50/50 hover:bg-slate-50 dark:bg-slate-950 dark:text-white transition-all focus:outline-none focus:ring-2 focus:ring-slate-950 dark:focus:ring-white/30"
+            />
+            {open && (query.length >= 2) && (
+                <div className="absolute z-10 mt-1 w-full max-h-48 overflow-auto rounded-md border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-lg">
+                    {loading && <div className="px-2 py-1 text-xs text-slate-500">Searching…</div>}
+                    {!loading && results.length === 0 && (
+                        <div className="px-2 py-1 text-xs text-slate-500">No results</div>
+                    )}
+                    {results.map((r) => (
+                        <button
+                            key={r.id}
+                            type="button"
+                            onClick={() => {
+                                onSelect(r.id, r.label, { role: r.role });
+                                setQuery(r.label);
+                                setOpen(false);
+                            }}
+                            className="block w-full text-left px-2 py-1 text-sm hover:bg-slate-50 dark:hover:bg-slate-800"
+                        >
+                            {r.label}
+                        </button>
+                    ))}
                 </div>
             )}
         </div>

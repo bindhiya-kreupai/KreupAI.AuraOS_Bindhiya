@@ -236,11 +236,33 @@ export default function DisciplinaryPage() {
                           {a.status === 'DRAFT' && !a.hearingHeld && (
                             <button
                               type="button"
-                              onClick={() =>
+                              onClick={() => {
+                                const dateInput = window.prompt(
+                                  'Enter Hearing Date (YYYY-MM-DD):',
+                                  new Date().toISOString().slice(0, 10)
+                                );
+                                if (!dateInput) return;
+
+                                const hearingDate = new Date(dateInput);
+                                const today = new Date();
+                                today.setHours(0, 0, 0, 0);
+
+                                let responseRecorded = false;
+                                if (hearingDate <= today) {
+                                  responseRecorded = window.confirm(
+                                    'Was the employee response recorded during the hearing?'
+                                  );
+                                } else {
+                                  window.alert(
+                                    'Hearing is scheduled for a future date. Employee response will not be marked as recorded yet.'
+                                  );
+                                }
+
                                 call('record-hearing', a.id, {
-                                  hearingDate: new Date().toISOString().slice(0, 10),
-                                })
-                              }
+                                  hearingDate: dateInput,
+                                  responseRecorded,
+                                });
+                              }}
                               className="rounded-md border border-slate-300 dark:border-slate-700 dark:hover:bg-slate-800 px-2 py-1 text-xs"
                             >
                               Record Hearing

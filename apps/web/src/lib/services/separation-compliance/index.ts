@@ -274,6 +274,11 @@ export class SeparationCaseService {
       data: { status: 'CLOSED' },
     });
   }
+   async delete(id: string, _auth: AuthContext) {
+    await (prisma as any).separationClearance.deleteMany({ where: { caseId: id } });
+    await (prisma as any).separationHandover.deleteMany({ where: { caseId: id } });
+    return (prisma as any).separationCase.delete({ where: { id } });
+  }
 
   async list(
     tenantId: string,
@@ -320,6 +325,9 @@ export class SeparationClearanceService {
         clearedBy: completedItems >= cur.totalItems ? _auth.userId : null,
       },
     });
+  }
+   async delete(id: string, _auth: AuthContext) {
+    return (prisma as any).separationClearance.delete({ where: { id } });
   }
 
   async list(
@@ -380,6 +388,11 @@ export class SeparationHandoverService {
       },
     });
   }
+
+    async delete(id: string, _auth: AuthContext) {
+    return (prisma as any).separationHandover.delete({ where: { id } });
+  }
+
 
   async list(
     tenantId: string,

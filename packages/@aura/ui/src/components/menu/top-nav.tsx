@@ -35,11 +35,12 @@ interface TopNavProps {
   onSignOut?: () => void;
   isDark?: boolean;
   onThemeToggle?: () => void;
+  onLanguageToggle?: () => void;
   user?: { email?: string; firstName?: string; lastName?: string; role?: string } | null;
   className?: string;
 }
 
-export const TopNav: React.FC<TopNavProps> = ({ onMenuClick, onSearchClick, onAIAssistantClick, onHelpClick, onSignOut, isDark = false, onThemeToggle, user, className }) => {
+export const TopNav: React.FC<TopNavProps> = ({ onMenuClick, onSearchClick, onAIAssistantClick, onHelpClick, onSignOut, isDark = false, onThemeToggle, onLanguageToggle, user, className }) => {
   const [isProfileOpen, setIsProfileOpen] = useState(false);
   const [isNotificationsOpen, setIsNotificationsOpen] = useState(false);
 
@@ -111,6 +112,15 @@ export const TopNav: React.FC<TopNavProps> = ({ onMenuClick, onSearchClick, onAI
           ) : (
             <Moon className="w-5 h-5 text-twilight dark:text-silver-mist" />
           )}
+        </button>
+
+        {/* Language Toggle */}
+        <button
+          onClick={onLanguageToggle}
+          className="px-2.5 py-1.5 rounded-lg text-xs font-medium bg-pearl dark:bg-stellar-blue hover:bg-slate-200 dark:hover:bg-slate-700 text-twilight dark:text-silver-mist transition-colors"
+          title="Toggle language / تبديل اللغة"
+        >
+          EN/AR
         </button>
 
         {/* Help */}

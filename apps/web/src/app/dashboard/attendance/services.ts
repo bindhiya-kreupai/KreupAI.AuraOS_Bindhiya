@@ -415,6 +415,8 @@ function avatarClassForSwap(name?: string): string {
 function mapMarketplaceSwap(raw: ShiftSwapApiResponse) {
   return {
     id: raw.id,
+    requestorId: raw.requestorId,
+    swapWithId: raw.swapWithId,
     offeredBy: {
       name: raw.requestorName || 'Unknown Employee',
       role: 'Colleague',
@@ -1620,7 +1622,34 @@ export class WFHService {
 // ============================================================================
 
 export class ShiftSwapService {
-  private static endpoint = '/attendance/shift-swap';
+  private static endpoint = '/v1/shift-swaps';
+
+  static async getMySwaps(
+    employeeId: string
+  ): Promise<{ outgoing: ShiftSwapApiResponse[]; incoming: ShiftSwapApiResponse[] }> {
+    try {
+      const normalizedId = normalizePlaceholderEmployeeId(employeeId);
+      if (!normalizedId) return { outgoing: [], incoming: [] };
+
+      const [outgoingRes, incomingRes] = await Promise.all([
+        APIClient.get<{ success?: boolean; data?: ShiftSwapApiResponse[] }>(this.endpoint, {
+          requestorId: normalizedId,
+          limit: '50',
+        }),
+        APIClient.get<{ success?: boolean; data?: ShiftSwapApiResponse[] }>(this.endpoint, {
+          swapWithId: normalizedId,
+          limit: '50',
+        }),
+      ]);
+
+      return {
+        outgoing: outgoingRes.data || [],
+        incoming: incomingRes.data || [],
+      };
+    } catch {
+      return { outgoing: [], incoming: [] };
+    }
+  }
 
   static async getMyShifts(
     employeeId: string,
@@ -1629,45 +1658,29 @@ export class ShiftSwapService {
   ): Promise<any[]> {
     try {
       const normalizedEmployeeId = normalizePlaceholderEmployeeId(employeeId);
-      const [scheduleResponse, swapResponse] = await Promise.all([
+      const [scheduleResponse] = await Promise.all([
         APIClient.get<{
           success?: boolean;
           data?: { schedules?: ScheduleApiResponse[] };
         }>('/v1/attendance/schedules'),
-        APIClient.get<{ success?: boolean; data?: ShiftSwapApiResponse[] }>(this.endpoint, {
-          employeeId: normalizedEmployeeId,
-          status: 'PENDING',
-        }),
       ]);
 
       const schedules = scheduleResponse.data?.schedules || [];
-      const swaps = swapResponse.data || [];
+
+      if (!normalizedEmployeeId) return [];
 
       return schedules
-        .filter((schedule) => {
-          if (!normalizedEmployeeId) {
-            return true;
-          }
-
-          return schedule.employeeId === normalizedEmployeeId;
-        })
-        .map((schedule) => {
-          const matchedSwap = swaps.find(
-            (swap) =>
-              swap.requestorId === schedule.employeeId &&
-              (swap.requestorShiftId === schedule.id || swap.requestorShiftId === schedule.shiftId)
-          );
-
-          return {
-            id: schedule.id,
-            date: schedule.effectiveFrom || '',
-            time: `${schedule.startTime || '09:00'} - ${schedule.endTime || '18:00'}`,
-            type: inferShiftCardType(schedule.shiftName, schedule.startTime),
-            location: schedule.shiftName || 'Assigned Shift',
-            status: mapShiftSwapStatus(matchedSwap?.status),
-          };
-        });
-    } catch (error: any) {
+        .filter((schedule) => schedule.employeeId === normalizedEmployeeId)
+        .map((schedule) => ({
+          id: schedule.id,
+          shiftId: schedule.shiftId,
+          date: schedule.effectiveFrom || '',
+          time: `${schedule.startTime || '09:00'} - ${schedule.endTime || '18:00'}`,
+          type: inferShiftCardType(schedule.shiftName, schedule.startTime),
+          location: schedule.shiftName || 'Assigned Shift',
+          status: 'Scheduled' as const,
+        }));
+    } catch {
       return [];
     }
   }
@@ -1680,68 +1693,73 @@ export class ShiftSwapService {
     try {
       const response = await APIClient.get<{ success?: boolean; data?: ShiftSwapApiResponse[] }>(
         this.endpoint,
-        { ...filters, status: 'PENDING' }
+        { ...filters, status: 'PENDING', limit: '100' }
       );
       return (response.data || []).map(mapMarketplaceSwap);
-    } catch (error: any) {
+    } catch {
       return [];
     }
   }
 
   static async requestSwap(swap: {
     fromEmployeeId: string;
-    toEmployeeId?: string;
-    shiftId: string;
-    date: string;
+    swapWithId: string;
+    requestorShiftId: string;
+    swapWithShiftId: string;
+    requestorDate: string;
+    swapWithDate: string;
     reason: string;
   }): Promise<any> {
-    const payload: Record<string, unknown> = {
-      requestorShiftId: swap.shiftId,
-      requestorDate: swap.date,
-      targetDate: swap.date,
-      reason: swap.reason,
-    };
-
     const requestorId = normalizePlaceholderEmployeeId(swap.fromEmployeeId);
-    const targetEmployeeId = normalizePlaceholderEmployeeId(swap.toEmployeeId);
-
-    if (requestorId) {
-      payload.requestorId = requestorId;
-    }
-
-    if (targetEmployeeId) {
-      payload.targetEmployeeId = targetEmployeeId;
-    }
+    if (!requestorId) throw new Error('Invalid employee ID');
 
     const response = await APIClient.post<{
       success?: boolean;
       data?: ShiftSwapApiResponse;
-      swap?: ShiftSwapApiResponse;
-    }>(this.endpoint, payload);
-    return response.data || response.swap;
+    }>(this.endpoint, {
+      requestorId,
+      swapWithId: swap.swapWithId,
+      requestorShiftId: swap.requestorShiftId,
+      swapWithShiftId: swap.swapWithShiftId,
+      requestorDate: swap.requestorDate,
+      swapWithDate: swap.swapWithDate,
+      reason: swap.reason,
+    });
+    return response.data;
   }
 
   static async acceptSwap(swapId: string, employeeId: string): Promise<any> {
     const normalizedEmployeeId = normalizePlaceholderEmployeeId(employeeId);
-    const response = await APIClient.put<{
+    if (!normalizedEmployeeId) throw new Error('Invalid employee ID');
+
+    const response = await APIClient.post<{
       success?: boolean;
       data?: ShiftSwapApiResponse;
-      swap?: ShiftSwapApiResponse;
-    }>(this.endpoint, {
-      id: swapId,
-      status: 'APPROVED',
+    }>(`${this.endpoint}/${swapId}/peer-approve`, {
       employeeId: normalizedEmployeeId,
     });
-    return response.data || response.swap;
+    return response.data;
+  }
+
+  static async cancelSwap(swapId: string, employeeId: string): Promise<any> {
+    const normalizedEmployeeId = normalizePlaceholderEmployeeId(employeeId);
+    if (!normalizedEmployeeId) throw new Error('Invalid employee ID');
+
+    const response = await APIClient.post<{
+      success?: boolean;
+      data?: ShiftSwapApiResponse;
+    }>(`${this.endpoint}/${swapId}/cancel`, {
+      employeeId: normalizedEmployeeId,
+    });
+    return response.data;
   }
 
   static async rejectSwap(swapId: string, reason: string): Promise<any> {
-    const response = await APIClient.put<{
+    const response = await APIClient.post<{
       success?: boolean;
       data?: ShiftSwapApiResponse;
-      swap?: ShiftSwapApiResponse;
-    }>(this.endpoint, { id: swapId, status: 'REJECTED', reason });
-    return response.data || response.swap;
+    }>(`${this.endpoint}/${swapId}/reject`, { reason });
+    return response.data;
   }
 }
 

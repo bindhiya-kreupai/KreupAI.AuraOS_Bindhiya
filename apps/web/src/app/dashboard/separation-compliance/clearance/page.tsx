@@ -84,6 +84,16 @@ export default function ClearancePage() {
     }
   }
 
+  async function remove(id: string) {
+    if (!confirm('Delete this clearance record?')) return;
+    const r = await fetch(`/api/v1/separation-compliance/clearance?id=${id}`, {
+      method: 'DELETE',
+    });
+    const p = await r.json();
+    setMessage(p.success ? 'Deleted' : (p.error?.message ?? 'failed'));
+    load();
+  }
+
   return (
     <main className="min-h-screen bg-slate-50 p-6 text-slate-950">
       <div className="mx-auto flex max-w-7xl flex-col gap-6">
@@ -125,6 +135,7 @@ export default function ClearancePage() {
                 <th className="px-3 py-2">Blocker</th>
                 <th className="px-3 py-2">Status</th>
                 <th className="px-3 py-2">Action</th>
+                <th className="px-3 py-2">Delete</th>
               </tr>
             </thead>
             <tbody>
@@ -156,11 +167,20 @@ export default function ClearancePage() {
                       </button>
                     )}
                   </td>
+                  <td className="px-3 py-2">
+                    <button
+                      type="button"
+                      onClick={() => remove(c.id)}
+                      className="text-xs text-rose-600 hover:underline"
+                    >
+                      Delete
+                    </button>
+                  </td>
                 </tr>
               ))}
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-3 py-6 text-center text-slate-500">
+                  <td colSpan={9} className="px-3 py-6 text-center text-slate-500">
                     {loading ? 'Loading…' : 'No clearance records.'}
                   </td>
                 </tr>

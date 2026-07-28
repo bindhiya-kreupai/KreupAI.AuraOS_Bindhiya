@@ -43,7 +43,13 @@ export interface AuthContext {
 }
 
 export type Stage =
-  'APPLIED' | 'SCREENED' | 'INTERVIEWED' | 'OFFERED' | 'HIRED' | 'REJECTED' | 'WITHDRAWN';
+  | 'APPLIED'
+  | 'SCREENED'
+  | 'INTERVIEWED'
+  | 'OFFERED'
+  | 'HIRED'
+  | 'REJECTED'
+  | 'WITHDRAWN';
 
 const FORWARD_FLOW: Record<Stage, Stage[]> = {
   APPLIED: ['SCREENED', 'REJECTED', 'WITHDRAWN'],
@@ -306,6 +312,13 @@ export class CandidateScreeningService {
     ]);
     const items = rows.filter((r: any) => (r.protectedFactors ?? []).length > 0);
     return buildPaginatedResult(items, total, page);
+  }
+  async delete(id: string, auth: AuthContext) {
+    return db.recruitmentCandidateScreening.delete({
+      where: {
+        id,
+      },
+    });
   }
 }
 
