@@ -168,7 +168,7 @@ export class ExecutiveRollupService {
     for (const s of snaps) {
       await (prisma as any).complianceKpiSnapshot.upsert({
         where: {
-          aura_compliance_kpi_snapshot_unique: {
+          tenantId_period_domain: {
             tenantId,
             period,
             domain: s.domain,
@@ -281,7 +281,7 @@ export class ComplianceCorrectiveActionService {
   ) {
     return (prisma as any).complianceCorrectiveAction.upsert({
       where: {
-        aura_compliance_corrective_action_unique: {
+        tenantId_actionNumber: {
           tenantId: auth.tenantId,
           actionNumber: input.actionNumber,
         },
@@ -451,13 +451,14 @@ export class ExecutiveComplianceCertificateService {
     if (stats.correctiveActionsOverdue > 0)
       reasons.push(`${stats.correctiveActionsOverdue} overdue corrective action(s)`);
     const gatingReason = reasons.length ? `Blocked: ${reasons.join('; ')}` : null;
+    const { domainBreakdown, ...certStats } = stats;
     return (prisma as any).executiveComplianceCertificate.upsert({
       where: {
-        aura_executive_compliance_certificate_unique: { tenantId: auth.tenantId, period },
+        tenantId_period: { tenantId: auth.tenantId, period },
       },
       update: {
-        ...stats,
-        domainBreakdownJson: stats.domainBreakdown,
+        ...certStats,
+        domainBreakdownJson: domainBreakdown,
         gatingReason,
         generatedAt: new Date(),
         status: 'DRAFT',
@@ -465,17 +466,17 @@ export class ExecutiveComplianceCertificateService {
       create: {
         tenantId: auth.tenantId,
         period,
-        domainCount: stats.domainCount,
-        greenDomains: stats.greenDomains,
-        amberDomains: stats.amberDomains,
-        redDomains: stats.redDomains,
-        blockingIssuesTotal: stats.blockingIssuesTotal,
-        averageScore: stats.averageScore,
-        criticalRisksOpen: stats.criticalRisksOpen,
-        correctiveActionsOpen: stats.correctiveActionsOpen,
-        correctiveActionsOverdue: stats.correctiveActionsOverdue,
-        reviewItemsOverdue: stats.reviewItemsOverdue,
-        domainBreakdownJson: stats.domainBreakdown,
+        domainCount: certStats.domainCount,
+        greenDomains: certStats.greenDomains,
+        amberDomains: certStats.amberDomains,
+        redDomains: certStats.redDomains,
+        blockingIssuesTotal: certStats.blockingIssuesTotal,
+        averageScore: certStats.averageScore,
+        criticalRisksOpen: certStats.criticalRisksOpen,
+        correctiveActionsOpen: certStats.correctiveActionsOpen,
+        correctiveActionsOverdue: certStats.correctiveActionsOverdue,
+        reviewItemsOverdue: certStats.reviewItemsOverdue,
+        domainBreakdownJson: domainBreakdown,
         gatingReason,
         generatedAt: new Date(),
         status: 'DRAFT',
@@ -490,7 +491,7 @@ export class ExecutiveComplianceCertificateService {
   ) {
     const cert = await (prisma as any).executiveComplianceCertificate.findUnique({
       where: {
-        aura_executive_compliance_certificate_unique: { tenantId: auth.tenantId, period },
+        tenantId_period: { tenantId: auth.tenantId, period },
       },
     });
     if (!cert) throw new Error('certificate not generated');

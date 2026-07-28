@@ -62,7 +62,7 @@ JWT_REFRESH_EXPIRES_IN="7d"
 
 # Application
 NODE_ENV="development"
-NEXT_PUBLIC_APP_URL="http://localhost:3006"
+NEXT_PUBLIC_APP_URL="http://localhost:3000"
 ```
 
 ### 3.3 Optional Configuration
@@ -124,12 +124,12 @@ Or start specific applications:
 pnpm dev:web
 
 # Start on a specific port
-PORT=3006 pnpm dev:web
+PORT=3000 pnpm dev:web
 ```
 
 ## Step 6: Verify Installation
 
-1. Open your browser and navigate to `http://localhost:3006`
+1. Open your browser and navigate to `http://localhost:3000`
 2. You should see the AuraOS login page
 3. Check the console for any errors
 
@@ -236,14 +236,14 @@ pnpm build
 ### Issue: Port already in use
 
 ```bash
-# Find process using port 3006
-lsof -i :3006
+# Find process using port 3000
+lsof -i :3000
 
 # Kill the process
 kill -9 <PID>
 
 # Or use a different port
-PORT=3007 pnpm dev
+PORT=3001 pnpm dev
 ```
 
 ### Issue: Prisma schema errors
@@ -271,7 +271,7 @@ nvm use 20
 
 ## Next Steps
 
-1. **Explore the API**: Check `http://localhost:3006/api/docs` for API documentation
+1. **Explore the API**: Check `http://localhost:3000/api/docs` for API documentation
 2. **Read Architecture Docs**: See [docs/BACKEND_ARCHITECTURE.md](./docs/BACKEND_ARCHITECTURE.md)
 3. **Configure Authentication**: See [docs/AUTHENTICATION.md](./docs/AUTHENTICATION.md)
 4. **Set Up Testing**: See [docs/testing/TESTING-STANDARDS.md](./docs/testing/TESTING-STANDARDS.md)

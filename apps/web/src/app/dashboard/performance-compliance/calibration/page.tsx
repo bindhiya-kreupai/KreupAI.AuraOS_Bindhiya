@@ -43,13 +43,7 @@ export default function PerformanceComplianceCalibrationPage() {
           type: 'boolean',
           required: true,
         },
-        {
-          name: 'cycleId',
-          label: 'Cycle ID',
-          labelAr: 'معرف الدورة',
-          type: 'text',
-          placeholder: 'e.g. CYCLE-2026-H1',
-        },
+
         {
           name: 'meetingAt',
           label: 'Meeting date & time',
@@ -58,10 +52,11 @@ export default function PerformanceComplianceCalibrationPage() {
         },
         {
           name: 'minuteRef',
-          label: 'Minute reference (document ID)',
+          label: 'Minute reference (document)',
           labelAr: 'مرجع المحضر',
-          type: 'text',
-          placeholder: 'e.g. DOC-4521',
+          type: 'searchable-select',
+          apiUrl: '/api/v1/records-compliance/document-matrix',
+          placeholder: 'Search document...',
         },
         {
           name: 'distributionReviewed',
@@ -80,9 +75,11 @@ export default function PerformanceComplianceCalibrationPage() {
               key: 'userId',
               label: 'User ID',
               labelAr: 'معرف المستخدم',
-              type: 'text',
+              type: 'searchable-select',
               required: true,
-              widthClass: 'w-40',
+              apiUrl: '/api/v1/employees',
+              placeholder: 'Search employee...',
+              widthClass: 'w-48',
             },
             {
               key: 'role',
@@ -111,7 +108,6 @@ export default function PerformanceComplianceCalibrationPage() {
           ...(hasEvidence
             ? {
                 evidence: {
-                  cycleId: String(v.cycleId ?? ''),
                   meetingAt: String(v.meetingAt ?? ''),
                   ...(v.minuteRef ? { minuteRef: String(v.minuteRef) } : {}),
                   attendees: ((v.attendees as Array<Record<string, unknown>>) ?? []).map((a) => ({

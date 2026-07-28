@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useTheme } from '@/stores/theme-store';
 
 interface Cert {
   id: string;
@@ -21,14 +22,21 @@ const periodNow = () => {
 };
 
 export default function EosbCertificatePage() {
+  const { isDark } = useTheme();
   const [certs, setCerts] = useState<Cert[]>([]);
   const [period, setPeriod] = useState(periodNow());
   const [message, setMessage] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
 
   async function load() {
-    const r = await fetch('/api/v1/eosb-compliance/certificate');
-    const p = await r.json();
-    if (p.success) setCerts(p.data ?? []);
+    setIsLoading(true);
+    try {
+      const r = await fetch('/api/v1/eosb-compliance/certificate');
+      const p = await r.json();
+      if (p.success) setCerts(p.data ?? []);
+    } finally {
+      setIsLoading(false);
+    }
   }
   useEffect(() => {
     load();
@@ -60,33 +68,40 @@ export default function EosbCertificatePage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 p-6 text-slate-950">
+    <main
+      className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 text-slate-950 dark:text-slate-50 transition-colors duration-200"
+      style={{ colorScheme: isDark ? 'dark' : 'light' }}
+    >
       <div className="mx-auto flex max-w-7xl flex-col gap-6">
-        <header className="flex items-center justify-between border-b border-slate-200 pb-4">
+        <header className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
           <div>
-            <p className="text-sm uppercase text-slate-500">EPIC-28 · S17 / S19 / S29</p>
-            <h1 className="text-2xl font-semibold">Monthly EOSB Compliance Certificate</h1>
+            <p className="text-sm uppercase text-slate-500 dark:text-slate-400">
+              EPIC-28 · S17 / S19 / S29
+            </p>
+            <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
+              Monthly EOSB Compliance Certificate
+            </h1>
           </div>
           <div className="flex gap-2">
             <input
               value={period}
               onChange={(e) => setPeriod(e.target.value)}
-              className="rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+              className="rounded-md border border-slate-300 dark:border-slate-700 px-2 py-1.5 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-indigo-500"
             />
             <button
               type="button"
               onClick={generate}
-              className="rounded-md bg-slate-900 px-3 py-2 text-sm text-white"
+              className="rounded-md bg-slate-900 dark:bg-slate-750 hover:bg-slate-800 dark:hover:bg-slate-650 px-3 py-2 text-sm text-white transition-colors"
             >
               Generate
             </button>
           </div>
         </header>
-        {message ? <p className="text-sm">{message}</p> : null}
+        {message ? <p className="text-sm text-amber-600 dark:text-amber-400">{message}</p> : null}
 
-        <section className="rounded-lg border border-slate-200 bg-white p-4">
+        <section className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-slate-200 text-xs uppercase text-slate-500">
+            <thead className="border-b border-slate-200 dark:border-slate-800 text-xs uppercase text-slate-500 dark:text-slate-400">
               <tr>
                 <th className="px-3 py-2">Period</th>
                 <th className="px-3 py-2">Status</th>
@@ -100,36 +115,65 @@ export default function EosbCertificatePage() {
                 <th className="px-3 py-2">Action</th>
               </tr>
             </thead>
-            <tbody>
-              {certs.map((c) => (
-                <tr key={c.id} className="border-b border-slate-100">
-                  <td className="px-3 py-2">{c.period}</td>
-                  <td className="px-3 py-2">{c.status}</td>
-                  <td className="px-3 py-2">{c.calcsCount}</td>
-                  <td className="px-3 py-2">{c.calcsTotalAmount}</td>
-                  <td className="px-3 py-2">{c.accrualsCount}</td>
-                  <td className="px-3 py-2">{c.accrualsTotalAmount}</td>
-                  <td className="px-3 py-2 text-amber-700">{c.openDisputesCount}</td>
-                  <td className="px-3 py-2 text-rose-700">{c.unsettledCount}</td>
-                  <td className="px-3 py-2 text-xs text-rose-700">{c.gatingReason ?? '—'}</td>
-                  <td className="px-3 py-2">
-                    {c.status === 'DRAFT' && !c.gatingReason ? (
-                      <button
-                        type="button"
-                        onClick={() => sign(c)}
-                        className="rounded-md bg-emerald-700 px-2 py-1 text-xs text-white"
-                      >
-                        Sign
-                      </button>
-                    ) : (
-                      '—'
-                    )}
-                  </td>
-                </tr>
-              ))}
-              {certs.length === 0 && (
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+              {isLoading
+                ? Array.from({ length: 3 }).map((_, i) => (
+                    <tr key={`skel-${i}`} className="animate-pulse">
+                      <td colSpan={10} className="px-3 py-4">
+                        <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-full"></div>
+                      </td>
+                    </tr>
+                  ))
+                : certs.map((c) => (
+                    <tr key={c.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-850/50">
+                      <td className="px-3 py-2 text-slate-800 dark:text-slate-200">{c.period}</td>
+                      <td className="px-3 py-2 text-slate-800 dark:text-slate-200">{c.status}</td>
+                      <td className="px-3 py-2 text-slate-800 dark:text-slate-200">
+                        {c.calcsCount}
+                      </td>
+                      <td className="px-3 py-2 text-slate-800 dark:text-slate-200">
+                        {c.calcsTotalAmount != null
+                          ? `${Number(c.calcsTotalAmount).toLocaleString()} AED`
+                          : '—'}
+                      </td>
+                      <td className="px-3 py-2 text-slate-800 dark:text-slate-200">
+                        {c.accrualsCount}
+                      </td>
+                      <td className="px-3 py-2 text-slate-800 dark:text-slate-200">
+                        {c.accrualsTotalAmount != null
+                          ? `${Number(c.accrualsTotalAmount).toLocaleString()} AED`
+                          : '—'}
+                      </td>
+                      <td className="px-3 py-2 text-amber-700 dark:text-amber-455 font-medium">
+                        {c.openDisputesCount}
+                      </td>
+                      <td className="px-3 py-2 text-rose-700 dark:text-rose-450 font-medium">
+                        {c.unsettledCount}
+                      </td>
+                      <td className="px-3 py-2 text-xs text-rose-700 dark:text-rose-455 font-medium">
+                        {c.gatingReason ?? '—'}
+                      </td>
+                      <td className="px-3 py-2">
+                        {c.status === 'DRAFT' && !c.gatingReason ? (
+                          <button
+                            type="button"
+                            onClick={() => sign(c)}
+                            className="rounded-md bg-emerald-700 dark:bg-emerald-650 hover:bg-emerald-800 dark:hover:bg-emerald-555 px-2 py-1 text-xs text-white transition-colors"
+                          >
+                            Sign
+                          </button>
+                        ) : (
+                          <span className="text-slate-400 dark:text-slate-550">—</span>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+              {!isLoading && certs.length === 0 && (
                 <tr>
-                  <td colSpan={10} className="px-3 py-6 text-center text-slate-500">
+                  <td
+                    colSpan={10}
+                    className="px-3 py-6 text-center text-slate-500 dark:text-slate-400"
+                  >
                     No certificates.
                   </td>
                 </tr>

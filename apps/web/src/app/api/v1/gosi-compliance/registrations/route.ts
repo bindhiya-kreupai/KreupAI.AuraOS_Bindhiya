@@ -10,6 +10,16 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
     return forbidden();
   try {
     const url = new URL(req.url);
+    const action = url.searchParams.get('action');
+    if (action === 'preview-employee') {
+      const employeeId = url.searchParams.get('employeeId');
+      if (!employeeId) return badRequest('employeeId required');
+      const preview = await gosiRegistrationService.getEmployeePreview(
+        employeeId,
+        ctx.user.tenantId
+      );
+      return ok(preview);
+    }
     return ok(
       await gosiRegistrationService.list(
         ctx.user.tenantId,
@@ -24,7 +34,7 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
       )
     );
   } catch (err) {
-    return serverError('Failed to list registrations', err);
+    return serverError('Failed to list registrations/preview employee', err);
   }
 });
 

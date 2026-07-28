@@ -1,4 +1,5 @@
 import type { NextRequest } from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { Redis } from 'ioredis';
 import { logger } from '@/lib/logger';
@@ -13,19 +14,30 @@ import { logger } from '@/lib/logger';
 // Redis client singleton
 let redisClient: Redis | null = null;
 
-function getRedisClient(): Redis {
+function getRedisClient(): Redis | null {
+  if (process.env.REDIS_ENABLED === 'false') {
+    return null;
+  }
+
   if (!redisClient) {
     const redisUrl = process.env.REDIS_URL || 'redis://localhost:6379';
-    const redisPassword = process.env.REDIS_PASSWORD;
+    let loggedError = false;
     redisClient = new Redis(redisUrl, {
-      maxRetriesPerRequest: 3,
-      password: redisPassword,
+      maxRetriesPerRequest: 1,
       enableReadyCheck: true,
+      enableOfflineQueue: false,
       lazyConnect: true,
+      retryStrategy: (times) => (times > 5 ? null : Math.min(times * 200, 2000)),
     });
 
     redisClient.on('error', (error) => {
-      // logger.error({ error }, 'Redis connection error');
+      if (!loggedError) {
+        loggedError = true;
+        logger.error(
+          { error },
+          'Redis connection error — rate limiting will use in-memory fallback. Set REDIS_ENABLED=false to silence.'
+        );
+      }
     });
 
     redisClient.on('connect', () => {
@@ -113,6 +125,15 @@ function getRateLimitKey(config: RateLimitConfig, request: NextRequest, userId?:
 async function checkRateLimit(key: string, config: RateLimitConfig): Promise<RateLimitResult> {
   try {
     const redis = getRedisClient();
+    if (!redis) {
+      return {
+        allowed: true,
+        remaining: config.maxRequests,
+        resetTime: Date.now() + config.windowSeconds * 1000,
+        total: config.maxRequests,
+      };
+    }
+
     await redis.connect().catch(() => {
       // Already connected or connection in progress
     });
@@ -357,6 +378,8 @@ export async function getRateLimitStatus(
 export async function resetRateLimit(config: RateLimitConfig, identifier: string): Promise<void> {
   try {
     const redis = getRedisClient();
+    if (!redis) return;
+
     await redis.connect().catch(() => {});
 
     const key = `ratelimit:${config.identifier}:${identifier}`;

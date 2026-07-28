@@ -1,6 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { EmployeeSearchableSelect } from '@/components/shared/EmployeeSearchableSelect';
+import { Loader2 } from 'lucide-react';
 
 interface Calc {
   id: string;
@@ -29,8 +31,11 @@ const statusColor: Record<string, string> = {
 };
 
 export default function EosbCalcsPage() {
-  const [rows, setRows] = useState<Calc[]>([]);
+  const [rows, setRows] = useState<any[]>([]);
   const [filter, setFilter] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
+  const [isFinalizing, setIsFinalizing] = useState(false);
+  const [actionLoadingId, setActionLoadingId] = useState<string | null>(null);
   const [form, setForm] = useState({
     employeeId: '',
     countryCode: 'AE',
@@ -46,55 +51,79 @@ export default function EosbCalcsPage() {
   const [message, setMessage] = useState('');
 
   async function load() {
-    const url = new URL('/api/v1/eosb-compliance/calculations', window.location.origin);
-    if (filter) url.searchParams.set('status', filter);
-    const r = await fetch(url.toString());
-    const p = await r.json();
-    if (p.success) setRows(p.data ?? []);
+    setIsLoading(true);
+    try {
+      const url = new URL('/api/v1/eosb-compliance/calculations', window.location.origin);
+      if (filter) url.searchParams.set('status', filter);
+      const r = await fetch(url.toString());
+      const p = await r.json();
+      if (p.success) {
+        setRows(Array.isArray(p.data) ? p.data : (p.data?.items ?? []));
+      }
+    } finally {
+      setIsLoading(false);
+    }
   }
   useEffect(() => {
     load();
   }, [filter]);
 
   async function finalize() {
+    setIsFinalizing(true);
     setMessage('');
-    const r = await fetch('/api/v1/eosb-compliance/calculations', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        action: 'finalize',
-        ...form,
-        basicSalary: Number(form.basicSalary),
-        unpaidLeaveDays: Number(form.unpaidLeaveDays),
-        socialInsuranceOffset: Number(form.socialInsuranceOffset),
-      }),
-    });
-    const p = await r.json();
-    setMessage(p.success ? 'Finalized' : (p.error?.details?.error ?? p.error?.message ?? 'failed'));
-    load();
+    try {
+      const r = await fetch('/api/v1/eosb-compliance/calculations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          action: 'finalize',
+          ...form,
+          basicSalary: Number(form.basicSalary),
+          unpaidLeaveDays: Number(form.unpaidLeaveDays),
+          socialInsuranceOffset: Number(form.socialInsuranceOffset),
+        }),
+      });
+      const p = await r.json();
+      setMessage(
+        p.success ? 'Finalized' : (p.error?.details?.error ?? p.error?.message ?? 'failed')
+      );
+    } finally {
+      setIsFinalizing(false);
+      load();
+    }
   }
 
   async function approve(id: string) {
-    const r = await fetch('/api/v1/eosb-compliance/calculations', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'approve', id }),
-    });
-    const p = await r.json();
-    setMessage(p.success ? 'Approved' : p.error?.message);
-    load();
+    setActionLoadingId(id);
+    try {
+      const r = await fetch('/api/v1/eosb-compliance/calculations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'approve', id }),
+      });
+      const p = await r.json();
+      setMessage(p.success ? 'Approved' : p.error?.message);
+    } finally {
+      setActionLoadingId(null);
+      load();
+    }
   }
   async function settle(id: string) {
     const ref = window.prompt('Payment reference?') ?? '';
     if (!ref) return;
-    const r = await fetch('/api/v1/eosb-compliance/calculations', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'settle', id, paymentReference: ref }),
-    });
-    const p = await r.json();
-    setMessage(p.success ? 'Settled' : p.error?.message);
-    load();
+    setActionLoadingId(id);
+    try {
+      const r = await fetch('/api/v1/eosb-compliance/calculations', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: 'settle', id, paymentReference: ref }),
+      });
+      const p = await r.json();
+      setMessage(p.success ? 'Settled' : p.error?.message);
+    } finally {
+      setActionLoadingId(null);
+      load();
+    }
   }
 
   return (
@@ -120,12 +149,12 @@ export default function EosbCalcsPage() {
         </header>
 
         <section className="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 md:grid-cols-8">
-          <label className="text-sm">
-            Employee
-            <input
+          <label className="text-sm flex flex-col gap-1">
+            Employee Name
+            <EmployeeSearchableSelect
               value={form.employeeId}
-              onChange={(e) => setForm((f) => ({ ...f, employeeId: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5"
+              onChange={(val) => setForm((f) => ({ ...f, employeeId: val }))}
+              placeholder="Search employee..."
             />
           </label>
           <label className="text-sm">
@@ -198,9 +227,11 @@ export default function EosbCalcsPage() {
           <button
             type="button"
             onClick={finalize}
-            className="rounded-md bg-slate-900 px-3 py-2 text-sm text-white"
+            disabled={isFinalizing || isLoading}
+            className="rounded-md bg-slate-900 px-3 py-2 text-sm text-white flex items-center justify-center gap-1.5"
           >
-            Finalize
+            {isFinalizing && <Loader2 className="w-4 h-4 animate-spin" />}
+            {isFinalizing ? 'Finalizing...' : 'Finalize'}
           </button>
         </section>
         {message ? <p className="text-sm">{message}</p> : null}
@@ -210,74 +241,91 @@ export default function EosbCalcsPage() {
             <thead className="border-b border-slate-200 text-xs uppercase text-slate-500">
               <tr>
                 <th className="px-3 py-2">Employee</th>
-                <th className="px-3 py-2">Country</th>
-                <th className="px-3 py-2">Type</th>
-                <th className="px-3 py-2">Last Day</th>
-                <th className="px-3 py-2">Years</th>
+                <th className="px-3 py-2">Service</th>
+                <th className="px-3 py-2">Basic</th>
                 <th className="px-3 py-2">Gratuity</th>
-                <th className="px-3 py-2">Offset</th>
+                <th className="px-3 py-2">SI Offset</th>
                 <th className="px-3 py-2">Net Payable</th>
                 <th className="px-3 py-2">Status</th>
-                <th className="px-3 py-2">Actions</th>
+                <th className="px-3 py-2">Action</th>
               </tr>
             </thead>
             <tbody>
-              {rows.map((r) => (
-                <tr key={r.id} className="border-b border-slate-100">
-                  <td className="px-3 py-2 font-mono text-xs">{r.employeeId}</td>
-                  <td className="px-3 py-2">{r.countryCode}</td>
-                  <td className="px-3 py-2 text-xs">{r.terminationType}</td>
-                  <td className="px-3 py-2 text-xs">{r.lastWorkingDate?.slice(0, 10)}</td>
-                  <td className="px-3 py-2">{r.totalServiceYears}</td>
-                  <td className="px-3 py-2">
-                    {r.gratuityAmount} {r.currency}
-                  </td>
-                  <td className="px-3 py-2">{r.socialInsuranceOffset}</td>
-                  <td className="px-3 py-2 font-semibold text-emerald-700">
-                    {r.netPayable} {r.currency}
-                  </td>
-                  <td className="px-3 py-2">
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-xs font-semibold ${statusColor[r.status] ?? ''}`}
-                    >
-                      {r.status}
-                    </span>
-                  </td>
-                  <td className="px-3 py-2">
-                    <div className="flex gap-1">
-                      {r.status === 'DRAFT' && (
-                        <button
-                          type="button"
-                          onClick={() => approve(r.id)}
-                          className="rounded-md bg-indigo-700 px-2 py-1 text-xs text-white"
-                        >
-                          Approve
-                        </button>
-                      )}
-                      {r.status === 'APPROVED' && (
-                        <button
-                          type="button"
-                          onClick={() => settle(r.id)}
-                          className="rounded-md bg-emerald-700 px-2 py-1 text-xs text-white"
-                        >
-                          Settle
-                        </button>
-                      )}
-                      {r.paymentReference && (
-                        <span className="font-mono text-xs text-slate-500">
-                          {r.paymentReference}
-                        </span>
-                      )}
-                    </div>
-                  </td>
-                </tr>
-              ))}
-              {rows.length === 0 && (
+              {isLoading ? (
                 <tr>
-                  <td colSpan={10} className="px-3 py-6 text-center text-slate-500">
-                    No calculations.
+                  <td colSpan={8} className="py-4 text-center text-slate-400">
+                    Loading...
                   </td>
                 </tr>
+              ) : rows.length === 0 ? (
+                <tr>
+                  <td colSpan={8} className="py-4 text-center text-slate-400">
+                    No calculations found
+                  </td>
+                </tr>
+              ) : (
+                rows.map((r) => (
+                  <tr key={r.id} className="border-b border-slate-100">
+                    <td className="px-3 py-2">
+                      <div className="font-semibold text-slate-900">
+                        {r.employeeName ?? r.employeeId}
+                      </div>
+                      <div className="text-xs text-slate-500 font-mono">
+                        {r.joiningDate?.slice(0, 10)} to {r.lastWorkingDate?.slice(0, 10)} (
+                        {r.terminationType})
+                      </div>
+                    </td>
+                    <td className="px-3 py-2 font-mono text-xs">
+                      {r.totalServiceYears}y {r.totalServiceMonths}m
+                    </td>
+                    <td className="px-3 py-2">{r.basicSalary} AED</td>
+                    <td className="px-3 py-2">{r.gratuityAmount} AED</td>
+                    <td className="px-3 py-2">{r.socialInsuranceOffset} AED</td>
+                    <td className="px-3 py-2 font-semibold text-emerald-700">{r.netPayable} AED</td>
+                    <td className="px-3 py-2">
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-xs font-semibold ${statusColor[r.status] ?? ''}`}
+                      >
+                        {r.status}
+                      </span>
+                    </td>
+                    <td className="px-3 py-2">
+                      <div className="flex gap-1">
+                        {r.status === 'DRAFT' && (
+                          <button
+                            type="button"
+                            onClick={() => approve(r.id)}
+                            disabled={actionLoadingId === r.id}
+                            className="rounded-md bg-indigo-700 px-2 py-1 text-xs text-white flex items-center justify-center gap-1"
+                          >
+                            {actionLoadingId === r.id && (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            )}
+                            {actionLoadingId === r.id ? 'Approving...' : 'Approve'}
+                          </button>
+                        )}
+                        {r.status === 'APPROVED' && (
+                          <button
+                            type="button"
+                            onClick={() => settle(r.id)}
+                            disabled={actionLoadingId === r.id}
+                            className="rounded-md bg-emerald-700 px-2 py-1 text-xs text-white flex items-center justify-center gap-1"
+                          >
+                            {actionLoadingId === r.id && (
+                              <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                            )}
+                            {actionLoadingId === r.id ? 'Settling...' : 'Settle'}
+                          </button>
+                        )}
+                        {r.paymentReference && (
+                          <span className="font-mono text-xs text-slate-500">
+                            {r.paymentReference}
+                          </span>
+                        )}
+                      </div>
+                    </td>
+                  </tr>
+                ))
               )}
             </tbody>
           </table>

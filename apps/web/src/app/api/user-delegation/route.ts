@@ -12,22 +12,68 @@ import {
   validateQueryParams,
 } from '@/lib/validators';
 
-// GET - Fetch user delegations with filters
+// GET - Fetch user delegations with filters, or candidate users for picker
 export const GET = withEnhancedAuth(async (request: NextRequest, { user, permissions }) => {
   try {
     // Check permission
     const permissionError = requirePermission(Resource.USERS, Action.READ, permissions);
     if (permissionError) return permissionError;
 
-    // Validate query parameters
     const { searchParams } = new URL(request.url);
+
+    // Return delegate candidates for the form picker (same tenant, active users)
+    if (searchParams.get('candidates') === 'true') {
+      const query = (searchParams.get('q') || '').trim();
+      const candidates = await prisma.user.findMany({
+        where: {
+          tenantId: user.tenantId,
+          status: 'Active',
+          isDeleted: false,
+          ...(query
+            ? {
+                OR: [
+                  { firstName: { contains: query, mode: 'insensitive' } },
+                  { lastName: { contains: query, mode: 'insensitive' } },
+                  { email: { contains: query, mode: 'insensitive' } },
+                ],
+              }
+            : {}),
+        },
+        select: {
+          id: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          employee: {
+            select: { firstName: true, lastName: true },
+          },
+        },
+        orderBy: [{ firstName: 'asc' }, { lastName: 'asc' }],
+        take: 100,
+      });
+
+      return NextResponse.json({
+        success: true,
+        data: candidates.map((c) => ({
+          id: c.id,
+          email: c.email,
+          firstName: c.firstName || c.employee?.firstName || null,
+          lastName: c.lastName || c.employee?.lastName || null,
+        })),
+      });
+    }
+
+    // Validate query parameters
     const { delegatorId, delegateeId, status, page, limit } = validateQueryParams(
       UserDelegationQuerySchema,
       searchParams
     );
 
-    // Build where clause
-    const where: any = {};
+    // Build where clause — always scope by tenant and exclude soft-deleted
+    const where: any = {
+      isDeleted: false,
+      OR: [{ delegator: { tenantId: user.tenantId } }, { delegatee: { tenantId: user.tenantId } }],
+    };
 
     if (delegatorId) {
       where.delegatorId = delegatorId;
@@ -150,11 +196,12 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
       );
     }
 
-    // Check for overlapping delegations
+    // Check for overlapping delegations (exclude soft-deleted)
     const overlappingDelegation = await prisma.userDelegation.findFirst({
       where: {
         delegatorId: validatedData.delegatorId,
         delegateeId: validatedData.delegateeId,
+        isDeleted: false,
         status: {
           in: ['Active', 'Scheduled'],
         },
@@ -181,12 +228,18 @@ export const POST = withEnhancedAuth(async (request: NextRequest, { user, permis
       );
     }
 
-    // Create new delegation
+    // Create new delegation — auto-set status based on start date
+    const start = new Date(validatedData.startDate);
+    const autoStatus = start <= new Date() ? 'Active' : 'Scheduled';
+
     const newDelegation = await prisma.userDelegation.create({
       data: {
         ...validatedData,
-        startDate: new Date(validatedData.startDate),
+        startDate: start,
         endDate: new Date(validatedData.endDate),
+        status: autoStatus,
+        createdBy: user.userId,
+        updatedBy: user.userId,
       },
       include: {
         delegator: {

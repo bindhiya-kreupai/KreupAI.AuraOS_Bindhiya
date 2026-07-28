@@ -47,13 +47,7 @@ export type SeparationType =
   | 'RETIREMENT';
 
 export type ClearanceDept =
-  | 'HR'
-  | 'IT'
-  | 'FINANCE'
-  | 'SECURITY'
-  | 'LINE_MANAGER'
-  | 'ADMIN'
-  | 'LEGAL';
+  'HR' | 'IT' | 'FINANCE' | 'SECURITY' | 'LINE_MANAGER' | 'ADMIN' | 'LEGAL';
 
 export const DEFAULT_NOTICE_DAYS: Record<string, number> = {
   UAE: 30,

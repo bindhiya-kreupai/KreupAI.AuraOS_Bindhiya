@@ -4,7 +4,7 @@
  * High-level API for sending real-time notifications
  */
 
-import type { NotificationPayload} from '../websocket/server';
+import type { NotificationPayload } from '../websocket/server';
 import { wsServer, NotificationType } from '../websocket/server';
 import { logger } from '../logger';
 
@@ -12,7 +12,10 @@ export class NotificationService {
   /**
    * Send payroll notification
    */
-  async notifyPayrollRunStarted(userId: string, data: { runId: string; month: string }): Promise<void> {
+  async notifyPayrollRunStarted(
+    userId: string,
+    data: { runId: string; month: string }
+  ): Promise<void> {
     await wsServer.notifyUser(userId, {
       type: NotificationType.PAYROLL_RUN_STARTED,
       title: 'Payroll Processing Started',
@@ -48,7 +51,10 @@ export class NotificationService {
     });
   }
 
-  async notifyPayslipGenerated(userId: string, data: { month: string; fileUrl: string }): Promise<void> {
+  async notifyPayslipGenerated(
+    userId: string,
+    data: { month: string; fileUrl: string }
+  ): Promise<void> {
     await wsServer.notifyUser(userId, {
       type: NotificationType.PAYSLIP_GENERATED,
       title: 'Payslip Available',
@@ -243,7 +249,10 @@ export class NotificationService {
     });
   }
 
-  async notifySystemUpdate(companyId: string, data: { version: string; features: string[] }): Promise<void> {
+  async notifySystemUpdate(
+    companyId: string,
+    data: { version: string; features: string[] }
+  ): Promise<void> {
     await wsServer.notifyCompany(companyId, {
       type: NotificationType.SYSTEM_UPDATE,
       title: 'System Update',
@@ -266,6 +275,236 @@ export class NotificationService {
       message: `Welcome ${data.employeeName} to ${data.department}!`,
       data,
       priority: 'low',
+    });
+  }
+
+  // ==================== SHIFT NOTIFICATIONS ====================
+
+  async notifyShiftSwapRequested(
+    userId: string,
+    data: {
+      requestorId: string;
+      requestorName: string;
+      requestorDate: string;
+      swapWithDate: string;
+      reason: string;
+      swapId: string;
+    }
+  ): Promise<void> {
+    await wsServer.notifyUser(userId, {
+      type: NotificationType.SHIFT_SWAP_REQUESTED,
+      title: 'New Shift Swap Request',
+      message: `${data.requestorName} has requested a shift swap with you`,
+      data,
+      priority: 'medium',
+    });
+  }
+
+  async notifyShiftSwapPeerApproved(
+    userId: string,
+    data: {
+      swapWithId: string;
+      swapWithName: string;
+      requestorDate: string;
+      swapWithDate: string;
+      swapId: string;
+    }
+  ): Promise<void> {
+    await wsServer.notifyUser(userId, {
+      type: NotificationType.SHIFT_SWAP_PEER_APPROVED,
+      title: 'Swap Peer Approved',
+      message: `${data.swapWithName} has approved your swap request. Awaiting manager approval.`,
+      data,
+      priority: 'high',
+    });
+  }
+
+  async notifyShiftSwapCompleted(
+    userId: string,
+    data: {
+      otherPartyId: string;
+      otherPartyName: string;
+      requestorDate: string;
+      swapWithDate: string;
+      swapId: string;
+    }
+  ): Promise<void> {
+    await wsServer.notifyUser(userId, {
+      type: NotificationType.SHIFT_SWAP_COMPLETED,
+      title: 'Shift Swap Completed',
+      message: 'Your shift swap has been approved and completed.',
+      data,
+      priority: 'high',
+    });
+  }
+
+  async notifyShiftSwapCancelled(
+    userId: string,
+    data: {
+      cancelledBy: string;
+      cancelledByName: string;
+      reason?: string;
+      swapId: string;
+    }
+  ): Promise<void> {
+    await wsServer.notifyUser(userId, {
+      type: NotificationType.SHIFT_SWAP_CANCELLED,
+      title: 'Shift Swap Cancelled',
+      message: `A shift swap request was cancelled by ${data.cancelledByName}.`,
+      data,
+      priority: 'high',
+    });
+  }
+
+  async notifyShiftSwapRejected(
+    userId: string,
+    data: {
+      rejectedBy: string;
+      rejectedByName: string;
+      reason: string;
+      swapId: string;
+    }
+  ): Promise<void> {
+    await wsServer.notifyUser(userId, {
+      type: NotificationType.SHIFT_SWAP_REJECTED,
+      title: 'Shift Swap Rejected',
+      message: `Your shift swap request was rejected by ${data.rejectedByName}. Reason: ${data.reason}`,
+      data,
+      priority: 'high',
+    });
+  }
+
+  async notifyShiftAssigned(
+    employeeId: string,
+    data: {
+      shiftId: string;
+      shiftName: string;
+      shiftCode: string;
+      effectiveFrom: string;
+      effectiveTo?: string | null;
+    }
+  ): Promise<void> {
+    await wsServer.notifyUser(employeeId, {
+      type: NotificationType.SHIFT_ASSIGNED,
+      title: 'Shift Assigned',
+      message: `You have been assigned to shift "${data.shiftName}" (${data.shiftCode}) effective ${data.effectiveFrom}`,
+      data,
+      priority: 'high',
+    });
+  }
+
+  async notifyShiftAssignmentRemoved(
+    employeeId: string,
+    data: {
+      shiftId: string;
+      shiftName: string;
+      effectiveFrom: string;
+    }
+  ): Promise<void> {
+    await wsServer.notifyUser(employeeId, {
+      type: NotificationType.SHIFT_ASSIGNMENT_REMOVED,
+      title: 'Shift Assignment Removed',
+      message: `Your assignment to shift "${data.shiftName}" has been removed`,
+      data,
+      priority: 'medium',
+    });
+  }
+
+  async notifyShiftRosterAssigned(
+    employeeId: string,
+    data: {
+      shiftId: string;
+      shiftName: string;
+      rosterDate: string;
+      customStartTime?: string;
+      customEndTime?: string;
+      isWeekOff?: boolean;
+      isHoliday?: boolean;
+    }
+  ): Promise<void> {
+    let message: string;
+    if (data.isWeekOff) {
+      message = `You are scheduled for a week off on ${data.rosterDate}`;
+    } else if (data.isHoliday) {
+      message = `You are scheduled for a holiday on ${data.rosterDate}`;
+    } else {
+      message = `You have been rostered for shift "${data.shiftName}" on ${data.rosterDate}`;
+    }
+
+    await wsServer.notifyUser(employeeId, {
+      type: NotificationType.SHIFT_ROSTER_ASSIGNED,
+      title: 'Roster Updated',
+      message,
+      data,
+      priority: 'medium',
+    });
+  }
+
+  async notifyShiftRosterConfirmed(
+    employeeId: string,
+    data: {
+      shiftId: string;
+      shiftName: string;
+      rosterDate: string;
+    }
+  ): Promise<void> {
+    await wsServer.notifyUser(employeeId, {
+      type: NotificationType.SHIFT_ROSTER_CONFIRMED,
+      title: 'Roster Confirmed',
+      message: `Your roster entry for shift "${data.shiftName}" on ${data.rosterDate} has been confirmed`,
+      data,
+      priority: 'high',
+    });
+  }
+
+  async notifyShiftRosterCancelled(
+    employeeId: string,
+    data: {
+      shiftId: string;
+      shiftName: string;
+      rosterDate: string;
+    }
+  ): Promise<void> {
+    await wsServer.notifyUser(employeeId, {
+      type: NotificationType.SHIFT_ROSTER_CANCELLED,
+      title: 'Roster Cancelled',
+      message: `Your roster entry for shift "${data.shiftName}" on ${data.rosterDate} has been cancelled`,
+      data,
+      priority: 'medium',
+    });
+  }
+
+  async notifyShiftOpenClaimed(
+    employeeId: string,
+    data: {
+      rosterId: string;
+      shiftId: string;
+      shiftName: string;
+      rosterDate: string;
+    }
+  ): Promise<void> {
+    await wsServer.notifyUser(employeeId, {
+      type: NotificationType.SHIFT_OPEN_CLAIMED,
+      title: 'Open Shift Claimed',
+      message: `You have successfully claimed the open shift "${data.shiftName}" on ${data.rosterDate}`,
+      data,
+      priority: 'high',
+    });
+  }
+
+  async notifyShiftRosterPublished(
+    employeeId: string,
+    data: {
+      dateFrom: string;
+      dateTo: string;
+    }
+  ): Promise<void> {
+    await wsServer.notifyUser(employeeId, {
+      type: NotificationType.SHIFT_ROSTER_CONFIRMED,
+      title: 'Roster Published',
+      message: `Your roster for ${data.dateFrom} to ${data.dateTo} has been published and is now active`,
+      data,
+      priority: 'high',
     });
   }
 

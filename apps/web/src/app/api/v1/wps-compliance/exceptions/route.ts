@@ -50,7 +50,18 @@ export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext)
       for (const f of ['code', 'description', 'severity', 'ownerRole']) {
         if (!body[f]) return badRequest(`${f} required`);
       }
-      return ok(await wpsExceptionService.raise(body, auth), 'Raised');
+      return ok(
+        await wpsExceptionService.raise(
+          {
+            code: body.code,
+            description: body.description,
+            severity: body.severity,
+            ownerRole: body.ownerRole,
+          },
+          auth
+        ),
+        'Raised'
+      );
     }
     if (body.action === 'resolve') {
       if (!body.exceptionId) return badRequest('exceptionId required');
@@ -59,6 +70,26 @@ export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext)
     if (body.action === 'resolve-delay-flag') {
       if (!body.flagId) return badRequest('flagId required');
       return ok(await wpsExceptionService.resolveDelayFlag(body.flagId), 'Resolved');
+    }
+    if (body.action === 'record-delay') {
+      for (const f of ['employeeId', 'countryCode', 'period', 'dueDate', 'creditedAt']) {
+        if (!body[f]) return badRequest(`${f} required`);
+      }
+
+      return ok(
+        await wpsExceptionService.recordDelay(
+          {
+            employeeId: body.employeeId,
+            countryCode: body.countryCode,
+            period: body.period,
+            dueDate: new Date(body.dueDate),
+            creditedAt: new Date(body.creditedAt),
+            submissionId: body.submissionId,
+          },
+          auth
+        ),
+        'Delay flag created'
+      );
     }
     return badRequest('unknown action');
   } catch (err) {

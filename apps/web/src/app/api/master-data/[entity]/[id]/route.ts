@@ -197,8 +197,13 @@ export const DELETE = withEnhancedAuth(
         return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });
       }
 
-      // Soft delete if status field exists, otherwise hard delete
-      if ('status' in existing) {
+      // Soft delete if isDeleted field exists; else set status to Inactive; else hard delete
+      if ('isDeleted' in existing) {
+        await config.model.update({
+          where: { id: params.id },
+          data: { isDeleted: true, deletedAt: new Date() },
+        });
+      } else if ('status' in existing) {
         await config.model.update({
           where: { id: params.id },
           data: { status: 'Inactive' },

@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { EmployeeSearchableSelect } from '@/components/shared/EmployeeSearchableSelect';
 
 interface Dispute {
   id: string;
@@ -25,8 +26,9 @@ const statusColor: Record<string, string> = {
 };
 
 export default function EosbDisputesPage() {
-  const [rows, setRows] = useState<Dispute[]>([]);
+  const [rows, setRows] = useState<any[]>([]);
   const [filter, setFilter] = useState('');
+  const [isLoading, setIsLoading] = useState(true);
   const [form, setForm] = useState({
     employeeId: '',
     calculationId: '',
@@ -39,11 +41,18 @@ export default function EosbDisputesPage() {
   const [message, setMessage] = useState('');
 
   async function load() {
-    const url = new URL('/api/v1/eosb-compliance/disputes', window.location.origin);
-    if (filter) url.searchParams.set('status', filter);
-    const r = await fetch(url.toString());
-    const p = await r.json();
-    if (p.success) setRows(p.data ?? []);
+    setIsLoading(true);
+    try {
+      const url = new URL('/api/v1/eosb-compliance/disputes', window.location.origin);
+      if (filter) url.searchParams.set('status', filter);
+      const r = await fetch(url.toString());
+      const p = await r.json();
+      if (p.success) {
+        setRows(Array.isArray(p.data) ? p.data : (p.data?.items ?? []));
+      }
+    } finally {
+      setIsLoading(false);
+    }
   }
   useEffect(() => {
     load();
@@ -103,12 +112,12 @@ export default function EosbDisputesPage() {
         </header>
 
         <section className="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 md:grid-cols-7">
-          <label className="text-sm">
-            Employee
-            <input
+          <label className="text-sm flex flex-col gap-1">
+            Employee Name
+            <EmployeeSearchableSelect
               value={form.employeeId}
-              onChange={(e) => setForm((f) => ({ ...f, employeeId: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5"
+              onChange={(val) => setForm((f) => ({ ...f, employeeId: val }))}
+              placeholder="Search employee..."
             />
           </label>
           <label className="text-sm">
@@ -187,57 +196,68 @@ export default function EosbDisputesPage() {
               </tr>
             </thead>
             <tbody>
-              {rows.map((d) => (
-                <tr key={d.id} className="border-b border-slate-100">
-                  <td className="px-3 py-2 text-xs">{d.raisedAt?.slice(0, 10)}</td>
-                  <td className="px-3 py-2 font-mono text-xs">{d.employeeId}</td>
-                  <td className="px-3 py-2">{d.subject}</td>
-                  <td className="px-3 py-2 text-xs">{d.category}</td>
-                  <td className="px-3 py-2">
-                    {d.claimedAmount ?? '—'} {d.currency}
-                  </td>
-                  <td className="px-3 py-2">
-                    {d.calculatedAmount ?? '—'} {d.currency}
-                  </td>
-                  <td className="px-3 py-2">
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-xs font-semibold ${statusColor[d.status] ?? ''}`}
-                    >
-                      {d.status}
-                    </span>
-                  </td>
-                  <td className="px-3 py-2">
-                    {d.status === 'OPEN' && (
-                      <button
-                        type="button"
-                        onClick={() => transition(d.id, 'UNDER_REVIEW')}
-                        className="rounded-md border border-slate-300 px-2 py-1 text-xs"
-                      >
-                        Review
-                      </button>
-                    )}
-                    {(d.status === 'OPEN' || d.status === 'UNDER_REVIEW') && (
-                      <div className="mt-1 flex gap-1">
-                        <button
-                          type="button"
-                          onClick={() => transition(d.id, 'RESOLVED')}
-                          className="rounded-md bg-emerald-700 px-2 py-1 text-xs text-white"
+              {isLoading
+                ? Array.from({ length: 3 }).map((_, i) => (
+                    <tr key={`skel-${i}`} className="animate-pulse">
+                      <td colSpan={8} className="px-3 py-4">
+                        <div className="h-4 bg-slate-200 dark:bg-slate-800 rounded w-full"></div>
+                      </td>
+                    </tr>
+                  ))
+                : rows.map((d) => (
+                    <tr key={d.id} className="border-b border-slate-100">
+                      <td className="px-3 py-2 text-xs">{d.raisedAt?.slice(0, 10)}</td>
+                      <td className="px-3 py-2 font-semibold">
+                        <div>{d.employeeName}</div>
+                        <div className="text-[10px] text-slate-400 font-mono">{d.employeeId}</div>
+                      </td>
+                      <td className="px-3 py-2">{d.subject}</td>
+                      <td className="px-3 py-2 text-xs">{d.category}</td>
+                      <td className="px-3 py-2 font-medium">
+                        {d.claimedAmount != null ? `${d.claimedAmount} AED` : '—'}
+                      </td>
+                      <td className="px-3 py-2 font-medium">
+                        {d.calculatedAmount != null ? `${d.calculatedAmount} AED` : '—'}
+                      </td>
+                      <td className="px-3 py-2">
+                        <span
+                          className={`rounded-full px-2 py-0.5 text-xs font-semibold ${statusColor[d.status] ?? ''}`}
                         >
-                          Resolve
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => transition(d.id, 'REJECTED')}
-                          className="rounded-md bg-rose-700 px-2 py-1 text-xs text-white"
-                        >
-                          Reject
-                        </button>
-                      </div>
-                    )}
-                  </td>
-                </tr>
-              ))}
-              {rows.length === 0 && (
+                          {d.status}
+                        </span>
+                      </td>
+                      <td className="px-3 py-2">
+                        {d.status === 'OPEN' && (
+                          <button
+                            type="button"
+                            onClick={() => transition(d.id, 'UNDER_REVIEW')}
+                            className="rounded-md border border-slate-300 px-2 py-1 text-xs"
+                          >
+                            Review
+                          </button>
+                        )}
+                        {(d.status === 'OPEN' || d.status === 'UNDER_REVIEW') && (
+                          <div className="mt-1 flex gap-1">
+                            <button
+                              type="button"
+                              onClick={() => transition(d.id, 'RESOLVED')}
+                              className="rounded-md bg-emerald-700 px-2 py-1 text-xs text-white"
+                            >
+                              Resolve
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => transition(d.id, 'REJECTED')}
+                              className="rounded-md bg-rose-700 px-2 py-1 text-xs text-white"
+                            >
+                              Reject
+                            </button>
+                          </div>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+              {!isLoading && rows.length === 0 && (
                 <tr>
                   <td colSpan={8} className="px-3 py-6 text-center text-slate-500">
                     No disputes.

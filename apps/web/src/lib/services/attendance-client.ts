@@ -93,7 +93,12 @@ export const overtime = {
 
 // ===== Regularization =====
 export const regularization = {
-  async getRegularizations(params?: { employeeId?: string; status?: string; startDate?: string; endDate?: string }) {
+  async getRegularizations(params?: {
+    employeeId?: string;
+    status?: string;
+    startDate?: string;
+    endDate?: string;
+  }) {
     const query = new URLSearchParams(params as any).toString();
     const response = await fetch(`/api/attendance/regularization?${query}`);
     return response.json();
@@ -248,7 +253,12 @@ export const workFromHome = {
 
 // ===== Timesheets =====
 export const timesheets = {
-  async getTimesheets(params?: { employeeId?: string; startDate?: string; endDate?: string; status?: string }) {
+  async getTimesheets(params?: {
+    employeeId?: string;
+    startDate?: string;
+    endDate?: string;
+    status?: string;
+  }) {
     const query = new URLSearchParams(params as any).toString();
     const response = await fetch(`/api/attendance/timesheets?${query}`);
     return response.json();
@@ -257,7 +267,13 @@ export const timesheets = {
   async submitTimesheet(data: {
     employeeId: string;
     weekEnding: string;
-    entries: Array<{ date: string; checkIn: string; checkOut: string; hours: number; status: string }>;
+    entries: Array<{
+      date: string;
+      checkIn: string;
+      checkOut: string;
+      hours: number;
+      status: string;
+    }>;
   }) {
     const response = await fetch('/api/attendance/timesheets', {
       method: 'POST',
@@ -294,10 +310,11 @@ export const geoFencing = {
     address?: string;
     strictMode?: boolean;
   }) {
+    const { type, ...rest } = data;
     const response = await fetch('/api/attendance/geo-fencing', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(data),
+      body: JSON.stringify({ ...rest, fenceType: type }),
     });
     return response.json();
   },
@@ -323,7 +340,12 @@ export const ipRestriction = {
 
 // ===== Field Force =====
 export const fieldForce = {
-  async getVisits(params?: { employeeId?: string; date?: string; visitType?: string; status?: string }) {
+  async getVisits(params?: {
+    employeeId?: string;
+    date?: string;
+    visitType?: string;
+    status?: string;
+  }) {
     const query = new URLSearchParams(params as any).toString();
     const response = await fetch(`/api/attendance/field-force?${query}`);
     return response.json();
@@ -347,11 +369,24 @@ export const fieldForce = {
     return response.json();
   },
 
-  async checkOut(visitId: string, checkOut: string, notes?: string, photos?: string[], distanceTraveled?: number) {
+  async checkOut(
+    visitId: string,
+    checkOut: string,
+    notes?: string,
+    photos?: string[],
+    distanceTraveled?: number
+  ) {
     const response = await fetch('/api/attendance/field-force', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ action: 'checkout', visitId, checkOut, notes, photos, distanceTraveled }),
+      body: JSON.stringify({
+        action: 'checkout',
+        visitId,
+        checkOut,
+        notes,
+        photos,
+        distanceTraveled,
+      }),
     });
     return response.json();
   },
@@ -390,7 +425,8 @@ export const approvalWorkflow = {
 
   async createWorkflow(data: {
     name: string;
-    requestType: 'LEAVE' | 'OVERTIME' | 'COMP_OFF' | 'WFH' | 'SHIFT_SWAP' | 'REGULARIZATION' | 'TIMESHEET';
+    requestType:
+      'LEAVE' | 'OVERTIME' | 'COMP_OFF' | 'WFH' | 'SHIFT_SWAP' | 'REGULARIZATION' | 'TIMESHEET';
     applicableTo: 'ALL' | 'DEPARTMENT' | 'DESIGNATION' | 'CUSTOM';
     approvalLevels: Array<{
       level: number;

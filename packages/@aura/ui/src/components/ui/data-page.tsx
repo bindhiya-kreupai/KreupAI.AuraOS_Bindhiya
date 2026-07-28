@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { PageHeader } from '../layout/page-header';
 import { DataTable, type Column } from './data-table';
 import { Sheet } from './sheet';
-import { Trash2, Save, Download, Upload, Filter, Plus, Search } from 'lucide-react';
+import { Trash2, Save, Download, Upload, Filter, Plus, Search, ChevronLeft, ChevronRight } from 'lucide-react';
 import { cn } from '../../utils';
 
 export interface RowAction<T> {
@@ -49,7 +49,7 @@ export interface DataPageProps<T> {
     onExport?: () => void;
     onImport?: () => void;
     onFilter?: () => void;
-    renderForm?: (data: Partial<T>, onChange: (field: keyof T, value: any) => void) => React.ReactNode;
+    renderForm?: (data: Partial<T>, onChange: (field: string, value: any) => void) => React.ReactNode;
     formFields?: FormField[];
     rowActions?: (row: T) => RowAction<T>[];
     onDataChange?: () => void;
@@ -57,6 +57,7 @@ export interface DataPageProps<T> {
     searchKeys?: string[];
     searchPlaceholder?: string;
     pageSize?: number;
+    singularTitle?: string;
     enableCreate?: boolean;
     enableEdit?: boolean;
     enableDelete?: boolean;
@@ -80,6 +81,7 @@ export interface DataPageProps<T> {
      * rendered in the DataTable toolbar after the built-in icon buttons.
      */
     toolbarSlot?: React.ReactNode;
+    loading?: boolean;
 }
 
 export function DataPage<T extends { id: string | number }>({
@@ -110,31 +112,43 @@ export function DataPage<T extends { id: string | number }>({
     enableFilter,
     enableColumnVisibility,
     addButtonText,
+    singularTitle,
     filterParams,
     toolbarSlot,
+    loading = false,
 }: DataPageProps<T>) {
     const [isSheetOpen, setIsSheetOpen] = useState(false);
     const [currentRecord, setCurrentRecord] = useState<Partial<T>>(defaultValues);
     const [searchQuery, setSearchQuery] = useState('');
     const [fetchedData, setFetchedData] = useState<T[]>([]);
     const [loading, setLoading] = useState(false);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [paginationMeta, setPaginationMeta] = useState<{ total: number; totalPages: number; page: number } | null>(null);
 
     useEffect(() => {
         if (apiEndpoint) {
-            fetchData();
+            fetchData(1);
         }
     }, [apiEndpoint]);
 
-    const fetchData = async () => {
+    const fetchData = async (page: number = 1) => {
         if (!apiEndpoint) return;
         setLoading(true);
         try {
-            const res = await fetch(apiEndpoint);
+            const url = new URL(apiEndpoint, window.location.origin);
+            url.searchParams.set('page', String(page));
+            url.searchParams.set('limit', String(pageSize || 20));
+            const res = await fetch(url.toString());
             const json = await res.json();
             if (json.success) {
                 setFetchedData(json.data);
+                if (json.meta?.pagination) {
+                    setPaginationMeta(json.meta.pagination);
+                    setCurrentPage(json.meta.pagination.page || page);
+                }
             } else if (Array.isArray(json)) {
                 setFetchedData(json);
+                setPaginationMeta(null);
             }
         } catch (err) {
             console.error(err);
@@ -143,7 +157,33 @@ export function DataPage<T extends { id: string | number }>({
         }
     };
 
+    const handlePageChange = (page: number) => {
+        if (apiEndpoint) {
+            fetchData(page);
+        }
+        setCurrentPage(page);
+    };
+
+    // Reset to page 1 when data changes (for client-side pagination)
+    useEffect(() => {
+        if (!apiEndpoint && data && data.length > 0) {
+            setCurrentPage(1);
+        }
+    }, [data, apiEndpoint]);
+
     const effectiveData = apiEndpoint ? fetchedData : (data || []);
+
+    // Client-side pagination for non-apiEndpoint mode
+    const effectivePageSize = pageSize || 20;
+    const clientSideTotal = effectiveData.length;
+    const clientSideTotalPages = Math.ceil(clientSideTotal / effectivePageSize);
+    const clientSidePagination = !apiEndpoint && clientSideTotalPages > 1 ? {
+        currentPage,
+        totalPages: clientSideTotalPages,
+        total: clientSideTotal,
+        pageSize: effectivePageSize,
+        onPageChange: handlePageChange,
+    } : undefined;
 
     const handleAdd = () => {
         setCurrentRecord(defaultValues);
@@ -155,13 +195,18 @@ export function DataPage<T extends { id: string | number }>({
         setIsSheetOpen(true);
     };
 
-    const handleSave = () => {
-        onSave?.(currentRecord);
-        setIsSheetOpen(false);
-        onDataChange?.();
+    const handleSave = async () => {
+        try {
+            await onSave?.(currentRecord);
+            setIsSheetOpen(false);
+            onDataChange?.();
+        } catch (err) {
+            // Keep sheet open on error so the user can retry
+            console.error('Save failed:', err);
+        }
     };
 
-    const handleFieldChange = (field: keyof T, value: any) => {
+    const handleFieldChange = (field: string, value: any) => {
         setCurrentRecord(prev => ({ ...prev, [field]: value }));
     };
 
@@ -201,24 +246,45 @@ export function DataPage<T extends { id: string | number }>({
 
     const formRenderer = renderForm || renderDefaultForm;
 
-    // Filter data
-    const filteredData = effectiveData.filter(row =>
-        Object.values(row).some(val =>
-            String(val).toLowerCase().includes(searchQuery.toLowerCase())
-        )
-    );
+    // Filter data — use searchKeys if provided, otherwise search all string values
+    const searchedData = effectiveData.filter(row => {
+        if (!searchQuery) return true;
+        const query = searchQuery.toLowerCase();
+        if (searchKeys && searchKeys.length > 0) {
+            return searchKeys.some(key => {
+                // Support nested keys like 'shift.name'
+                const parts = key.split('.');
+                let val: any = row;
+                for (const part of parts) {
+                    val = val?.[part];
+                }
+                return val != null && String(val).toLowerCase().includes(query);
+            });
+        }
+        return Object.values(row).some(val =>
+            val != null && String(val).toLowerCase().includes(query)
+        );
+    });
+
+    // Apply client-side pagination when not using apiEndpoint
+    const filteredData = !apiEndpoint && clientSidePagination
+        ? searchedData.slice(
+            (currentPage - 1) * effectivePageSize,
+            currentPage * effectivePageSize
+          )
+        : searchedData;
 
     // Add actions column
     const displayColumns = [
         ...columns,
         {
             key: 'actions',
-            header: '',
+            header: 'Actions',
             width: '120px',
             render: (row: T) => {
                 const actions = rowActions ? rowActions(row) : [];
                 return (
-                    <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex items-center justify-end gap-2">
                         {actions.map((action, idx) => {
                             const Icon = action.icon;
                             return (
@@ -267,6 +333,53 @@ export function DataPage<T extends { id: string | number }>({
         }
     ];
 
+    if (loading) {
+        return (
+            <div className="p-6 space-y-6 h-full flex flex-col relative overflow-hidden">
+                <PageHeader
+                    title={title}
+                    description={description}
+                    breadcrumbs={breadcrumbs}
+                />
+                <div className="flex-1 min-h-0">
+                    <div className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm overflow-hidden">
+                        <div className="p-3 border-b border-cloud dark:border-nebula-purple/50">
+                            <div className="h-8 w-64 bg-gray-200/80 animate-pulse rounded" />
+                        </div>
+                        <div className="p-4 space-y-3">
+                            {Array.from({ length: 6 }).map((_, i) => (
+                                <div key={i} className="h-10 bg-gray-200/80 animate-pulse rounded" />
+                            ))}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    if (filteredData.length === 0 && emptyState) {
+        return (
+            <div className="p-6 space-y-6 h-full flex flex-col relative overflow-hidden">
+                <PageHeader
+                    title={title}
+                    description={description}
+                    breadcrumbs={breadcrumbs}
+                    action={enableCreate !== false ? {
+                        label: addButtonText || `Add ${singularTitle || title.slice(0, -1)}`,
+                        onClick: handleAdd
+                    } : undefined}
+                />
+                <div className="flex-1 min-h-0 flex items-center justify-center">
+                    <div className="text-center space-y-3">
+                        {emptyState.icon && <emptyState.icon className="w-12 h-12 text-silver-mist mx-auto" />}
+                        <h3 className="text-lg font-medium text-ink-black dark:text-pearl">{emptyState.title}</h3>
+                        <p className="text-sm text-silver-mist">{emptyState.description}</p>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="p-6 space-y-6 h-full flex flex-col relative overflow-hidden">
             <PageHeader
@@ -274,7 +387,7 @@ export function DataPage<T extends { id: string | number }>({
                 description={description}
                 breadcrumbs={breadcrumbs}
                 action={enableCreate !== false ? {
-                    label: addButtonText || `Add ${title.slice(0, -1)}`,
+                    label: addButtonText || `Add ${singularTitle || title.slice(0, -1)}`,
                     onClick: handleAdd
                 } : undefined}
             />
@@ -284,19 +397,20 @@ export function DataPage<T extends { id: string | number }>({
                     data={filteredData}
                     columns={displayColumns}
                     onSearch={setSearchQuery}
-                    onRowClick={handleEdit}
+                    onRowClick={onSave ? handleEdit : undefined}
                     onExport={onExport}
                     onImport={onImport}
                     onFilter={onFilter}
                     toolbarSlot={toolbarSlot}
                     className="h-full"
+                    pagination={clientSidePagination}
                 />
             </div>
 
             <Sheet
                 isOpen={isSheetOpen}
                 onClose={() => setIsSheetOpen(false)}
-                title={currentRecord.id ? `Edit ${title.slice(0, -1)}` : `New ${title.slice(0, -1)}`}
+                title={currentRecord.id ? `Edit ${singularTitle || title.slice(0, -1)}` : `New ${singularTitle || title.slice(0, -1)}`}
                 footer={
                     <div className="flex justify-end gap-3">
                         <button

@@ -104,7 +104,8 @@ export interface LaborAssignment {
   crop: string;
 
   // Assignment Details
-  assignmentType: 'planting' | 'cultivation' | 'harvesting' | 'sorting' | 'packing' | 'maintenance' | 'other';
+  assignmentType:
+    'planting' | 'cultivation' | 'harvesting' | 'sorting' | 'packing' | 'maintenance' | 'other';
   startDate: Date;
   endDate?: Date;
   estimatedHours: number;
@@ -202,7 +203,6 @@ export interface HousingFacility {
   availableBeds: number;
   totalRooms: number;
   bedsPerRoom: number;
-
   // Amenities
   amenities: string[];
   hasKitchen: boolean;
@@ -352,9 +352,11 @@ export interface HousingInspection {
   facilityName: string;
   inspectionDate: Date;
   inspectionType: 'routine' | 'annual' | 'complaint' | 'follow_up';
+  status?: string;
 
   // Inspector
   inspector: string;
+  inspectorName?: string;
   inspectorCredentials?: string;
 
   // Inspection Results

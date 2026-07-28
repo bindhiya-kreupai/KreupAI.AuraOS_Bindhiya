@@ -1,5 +1,16 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { IntegrationRegistryService } from '../registry.service';
+
+vi.mock('@aura/database', () => ({
+  prisma: {
+    integrationConnection: {
+      findMany: vi.fn(() => Promise.resolve([])),
+    },
+  },
+  Prisma: {
+    DbNull: 'DbNull',
+  },
+}));
 
 describe('IntegrationRegistryService.getIntegrations', () => {
   it('returns the full catalog when no filter', async () => {

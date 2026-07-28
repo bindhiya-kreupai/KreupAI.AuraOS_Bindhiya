@@ -33,6 +33,30 @@ export default function CompensationPlanningPage() {
   const [submitting, setSubmitting] = useState(false);
   const { toasts, removeToast, success, error } = useToast();
 
+  // Modal states
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [isReviseOpen, setIsReviseOpen] = useState(false);
+  const [selectedComp, setSelectedComp] = useState<any>(null);
+
+  // Create Form States
+  const [empId, setEmpId] = useState('');
+  const [annualCTC, setAnnualCTC] = useState<number>(0);
+  const [annualBasic, setAnnualBasic] = useState<number>(0);
+  const [annualGross, setAnnualGross] = useState<number>(0);
+  const [effectiveDate, setEffectiveDate] = useState(new Date().toISOString().split('T')[0]);
+
+  // Revise Form States
+  const [newSalary, setNewSalary] = useState<number>(0);
+  const [reviseReason, setReviseReason] = useState('');
+  const [reviseEffectiveFrom, setReviseEffectiveFrom] = useState(
+    new Date().toISOString().split('T')[0]
+  );
+
+  // Edit fields states
+  const [reviseEmployeeId, setReviseEmployeeId] = useState('');
+  const [reviseBasicSalary, setReviseBasicSalary] = useState<number>(0);
+  const [reviseIsActive, setReviseIsActive] = useState<boolean>(true);
+
   useEffect(() => {
     fetchData();
   }, []);

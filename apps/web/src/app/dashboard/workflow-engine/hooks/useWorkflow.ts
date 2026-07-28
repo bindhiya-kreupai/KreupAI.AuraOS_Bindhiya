@@ -53,21 +53,13 @@ export interface UseWorkflowReturn {
   getExecutionsByWorkflow: (workflowId: string) => Promise<WorkflowExecution[]>;
 
   // Approvals
-  submitApproval: (executionId: string, stepId: string, decision: ApprovalDecision) => Promise<void>;
-  delegateApproval: (
-    executionId: string,
-    stepId: string,
-    fromUserId: string,
-    toUserId: string,
-    toUserName: string,
-    reason: string
-  ) => Promise<void>;
+  submitApproval: (taskId: string, decision: ApprovalDecision) => Promise<void>;
+  delegateApproval: (taskId: string, toUserId: string, reason: string) => Promise<void>;
 
   // Tasks
-  completeTask: (executionId: string, stepId: string, completion: TaskCompletion) => Promise<void>;
+  completeTask: (taskId: string, completion: TaskCompletion) => Promise<void>;
   reassignTask: (
-    executionId: string,
-    stepId: string,
+    taskId: string,
     toUserId: string,
     toUserName: string,
     reason: string
@@ -84,7 +76,9 @@ export interface UseWorkflowReturn {
   createIntegration: (data: Integration) => Promise<Integration>;
   updateIntegration: (id: string, updates: Partial<Integration>) => Promise<Integration>;
   deleteIntegration: (id: string) => Promise<void>;
-  testConnection: (id: string) => Promise<{ success: boolean; message: string }>;
+  testConnection: (
+    id: string
+  ) => Promise<{ status: string; message: string; latencyMs: number; statusCode: number }>;
 
   // Forms
   forms: DynamicForm[];
@@ -179,8 +173,8 @@ export function useWorkflow(): UseWorkflowReturn {
     setWorkflows(workflows.filter((w) => w.id !== id));
   };
 
-  const publishWorkflow = async (id: string, version: string): Promise<Workflow> => {
-    const published = await WorkflowService.publishWorkflow(id, version);
+  const publishWorkflow = async (id: string, _version?: string): Promise<Workflow> => {
+    const published = await WorkflowService.publishWorkflow(id);
     setWorkflows(workflows.map((w) => (w.id === id ? published : w)));
     return published;
   };
@@ -205,7 +199,12 @@ export function useWorkflow(): UseWorkflowReturn {
     initiatorName: string,
     input: Record<string, any>
   ): Promise<WorkflowExecution> => {
-    const execution = await WorkflowExecutionService.startExecution(workflowId, initiatorId, initiatorName, input);
+    const execution = await WorkflowExecutionService.startExecution(
+      workflowId,
+      initiatorId,
+      initiatorName,
+      input
+    );
     setExecutions([...executions, execution]);
 
     // Update workflow stats
@@ -251,25 +250,18 @@ export function useWorkflow(): UseWorkflowReturn {
   // Approval Methods
   // ============================================================================
 
-  const submitApproval = async (
-    executionId: string,
-    stepId: string,
-    decision: ApprovalDecision
-  ): Promise<void> => {
-    await ApprovalService.submitApproval(executionId, stepId, decision);
+  const submitApproval = async (taskId: string, decision: ApprovalDecision): Promise<void> => {
+    await ApprovalService.submitApproval(taskId, decision);
     const updatedExecutions = await WorkflowExecutionService.getExecutions();
     setExecutions(updatedExecutions);
   };
 
   const delegateApproval = async (
-    executionId: string,
-    stepId: string,
-    fromUserId: string,
+    taskId: string,
     toUserId: string,
-    toUserName: string,
     reason: string
   ): Promise<void> => {
-    await ApprovalService.delegateApproval(executionId, stepId, fromUserId, toUserId, toUserName, reason);
+    await ApprovalService.delegateApproval(taskId, toUserId, reason);
     const updatedExecutions = await WorkflowExecutionService.getExecutions();
     setExecutions(updatedExecutions);
   };
@@ -278,24 +270,19 @@ export function useWorkflow(): UseWorkflowReturn {
   // Task Methods
   // ============================================================================
 
-  const completeTask = async (
-    executionId: string,
-    stepId: string,
-    completion: TaskCompletion
-  ): Promise<void> => {
-    await TaskService.completeTask(executionId, stepId, completion);
+  const completeTask = async (taskId: string, completion: TaskCompletion): Promise<void> => {
+    await TaskService.completeTask(taskId, completion);
     const updatedExecutions = await WorkflowExecutionService.getExecutions();
     setExecutions(updatedExecutions);
   };
 
   const reassignTask = async (
-    executionId: string,
-    stepId: string,
+    taskId: string,
     toUserId: string,
     toUserName: string,
     reason: string
   ): Promise<void> => {
-    await TaskService.reassignTask(executionId, stepId, toUserId, toUserName, reason);
+    await TaskService.reassignTask(taskId, toUserId, toUserName, reason);
     const updatedExecutions = await WorkflowExecutionService.getExecutions();
     setExecutions(updatedExecutions);
   };
@@ -310,7 +297,10 @@ export function useWorkflow(): UseWorkflowReturn {
     return chain;
   };
 
-  const updateApprovalChain = async (id: string, updates: Partial<ApprovalChain>): Promise<ApprovalChain> => {
+  const updateApprovalChain = async (
+    id: string,
+    updates: Partial<ApprovalChain>
+  ): Promise<ApprovalChain> => {
     const updated = await ApprovalChainService.updateChain(id, updates);
     setApprovalChains(approvalChains.map((c) => (c.id === id ? updated : c)));
     return updated;
@@ -331,7 +321,10 @@ export function useWorkflow(): UseWorkflowReturn {
     return integration;
   };
 
-  const updateIntegration = async (id: string, updates: Partial<Integration>): Promise<Integration> => {
+  const updateIntegration = async (
+    id: string,
+    updates: Partial<Integration>
+  ): Promise<Integration> => {
     const updated = await IntegrationService.updateIntegration(id, updates);
     setIntegrations(integrations.map((i) => (i.id === id ? updated : i)));
     return updated;
@@ -342,7 +335,7 @@ export function useWorkflow(): UseWorkflowReturn {
     setIntegrations(integrations.filter((i) => i.id !== id));
   };
 
-  const testConnection = async (id: string): Promise<{ success: boolean; message: string }> => {
+  const testConnection = async (id: string) => {
     const result = await IntegrationService.testConnection(id);
     const updatedIntegrations = await IntegrationService.getIntegrations();
     setIntegrations(updatedIntegrations);

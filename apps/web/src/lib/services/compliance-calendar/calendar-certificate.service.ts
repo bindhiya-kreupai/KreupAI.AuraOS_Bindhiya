@@ -55,7 +55,7 @@ export class CalendarCertificateService {
         ? `Blocked: ${stats.criticalOverdue} critical task(s) overdue`
         : null;
     return (prisma as any).calendarCertificate.upsert({
-      where: { aura_calendar_certificate_unique: { tenantId: auth.tenantId, period } },
+      where: { tenantId_period: { tenantId: auth.tenantId, period } },
       update: {
         tasksDue: stats.total,
         tasksCompleted: stats.completed,
@@ -87,7 +87,7 @@ export class CalendarCertificateService {
     auth: AuthContext
   ) {
     const cert = await (prisma as any).calendarCertificate.findUnique({
-      where: { aura_calendar_certificate_unique: { tenantId: auth.tenantId, period } },
+      where: { tenantId_period: { tenantId: auth.tenantId, period } },
     });
     if (!cert) throw new Error('certificate not generated');
     if (cert.gatingReason) throw new Error(`cannot sign while gated: ${cert.gatingReason}`);

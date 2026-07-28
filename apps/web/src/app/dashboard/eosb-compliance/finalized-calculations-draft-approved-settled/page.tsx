@@ -1,6 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { useTheme } from '@/stores/theme-store';
+import { EmployeeSearchableSelect } from '@/components/shared/EmployeeSearchableSelect';
 
 interface Calc {
   id: string;
@@ -23,15 +25,16 @@ interface Calc {
 }
 
 const statusColor: Record<string, string> = {
-  DRAFT: 'bg-amber-100 text-amber-800',
-  APPROVED: 'bg-indigo-100 text-indigo-800',
-  SETTLED: 'bg-emerald-100 text-emerald-800',
+  DRAFT: 'bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-400',
+  APPROVED: 'bg-indigo-100 text-indigo-800 dark:bg-indigo-950/40 dark:text-indigo-400',
+  SETTLED: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-400',
 };
 
 const yearsAgo = (n: number) =>
   new Date(new Date().setFullYear(new Date().getFullYear() - n)).toISOString().slice(0, 10);
 
 export default function FinalizedCalculationsPage() {
+  const { isDark } = useTheme();
   const [rows, setRows] = useState<Calc[]>([]);
   const [filter, setFilter] = useState('');
   const [form, setForm] = useState({
@@ -109,83 +112,99 @@ export default function FinalizedCalculationsPage() {
     void post({ action: 'settle', id, paymentReference: ref }, 'Settled');
   }
 
+  const inputClass =
+    'mt-1 w-full rounded-md border border-slate-300 dark:border-slate-700 px-2 py-1.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500';
+
   return (
-    <main className="min-h-screen bg-slate-50 p-6 text-slate-950">
+    <main
+      className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 text-slate-950 dark:text-slate-50 transition-colors duration-200"
+      style={{ colorScheme: isDark ? 'dark' : 'light' }}
+    >
       <div className="mx-auto flex max-w-7xl flex-col gap-6">
-        <header className="flex items-center justify-between border-b border-slate-200 pb-4">
+        <header className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
           <div>
-            <p className="text-sm uppercase text-slate-500">
+            <p className="text-sm uppercase text-slate-500 dark:text-slate-400">
               EPIC-28 · S03 / S06 / S07 / S08 / S12
             </p>
-            <h1 className="text-2xl font-semibold">
+            <h1 className="text-2xl font-semibold text-slate-900 dark:text-white">
               Finalized EOSB Calculations (DRAFT → APPROVED → SETTLED)
             </h1>
           </div>
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            className="rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+            className="rounded-md border border-slate-300 dark:border-slate-700 px-2 py-1.5 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
           >
-            <option value="">All</option>
-            <option value="DRAFT">DRAFT</option>
-            <option value="APPROVED">APPROVED</option>
-            <option value="SETTLED">SETTLED</option>
+            <option value="" className="bg-white dark:bg-slate-850">
+              All
+            </option>
+            <option value="DRAFT" className="bg-white dark:bg-slate-850">
+              DRAFT
+            </option>
+            <option value="APPROVED" className="bg-white dark:bg-slate-850">
+              APPROVED
+            </option>
+            <option value="SETTLED" className="bg-white dark:bg-slate-850">
+              SETTLED
+            </option>
           </select>
         </header>
 
-        <section className="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 md:grid-cols-8">
-          <label className="text-sm">
-            Employee
-            <input
+        <section className="grid gap-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 md:grid-cols-8 items-end">
+          <label className="text-sm text-slate-700 dark:text-slate-300 flex flex-col gap-1">
+            Employee Name
+            <EmployeeSearchableSelect
               value={form.employeeId}
-              onChange={(e) => setForm((f) => ({ ...f, employeeId: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5"
+              onChange={(val) => setForm((f) => ({ ...f, employeeId: val }))}
+              placeholder="Search employee..."
             />
           </label>
-          <label className="text-sm">
+          <label className="text-sm text-slate-700 dark:text-slate-300">
             Country
             <select
               value={form.countryCode}
               onChange={(e) => setForm((f) => ({ ...f, countryCode: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5"
+              className={inputClass}
             >
               {['AE', 'SA', 'BH', 'QA', 'OM', 'KW', 'IN'].map((c) => (
-                <option key={c}>{c}</option>
+                <option key={c} className="bg-white dark:bg-slate-800">
+                  {c}
+                </option>
               ))}
             </select>
           </label>
-          <label className="text-sm">
+          <label className="text-sm text-slate-700 dark:text-slate-300">
             Joining
             <input
               type="date"
               value={form.joiningDate}
               onChange={(e) => setForm((f) => ({ ...f, joiningDate: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5"
+              className={inputClass}
             />
           </label>
-          <label className="text-sm">
+          <label className="text-sm text-slate-700 dark:text-slate-300">
             Last Day
             <input
               type="date"
               value={form.lastWorkingDate}
               onChange={(e) => setForm((f) => ({ ...f, lastWorkingDate: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5"
+              className={inputClass}
             />
           </label>
-          <label className="text-sm">
+          <label className="text-sm text-slate-700 dark:text-slate-300">
             Basic
             <input
               value={form.basicSalary}
               onChange={(e) => setForm((f) => ({ ...f, basicSalary: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5"
+              className={inputClass}
             />
           </label>
-          <label className="text-sm">
+          <label className="text-sm text-slate-700 dark:text-slate-300">
             Type
             <select
               value={form.terminationType}
               onChange={(e) => setForm((f) => ({ ...f, terminationType: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5"
+              className={inputClass}
             >
               {[
                 'RESIGNATION',
@@ -197,32 +216,34 @@ export default function FinalizedCalculationsPage() {
                 'DISABILITY',
                 'MUTUAL_AGREEMENT',
               ].map((t) => (
-                <option key={t}>{t}</option>
+                <option key={t} className="bg-white dark:bg-slate-800">
+                  {t}
+                </option>
               ))}
             </select>
           </label>
-          <label className="text-sm">
+          <label className="text-sm text-slate-700 dark:text-slate-300">
             SI Offset
             <input
               value={form.socialInsuranceOffset}
               onChange={(e) => setForm((f) => ({ ...f, socialInsuranceOffset: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5"
+              className={inputClass}
             />
           </label>
           <button
             type="button"
             onClick={finalize}
             disabled={busy}
-            className="rounded-md bg-slate-900 px-3 py-2 text-sm text-white disabled:opacity-50"
+            className="w-full rounded-md bg-slate-900 dark:bg-slate-750 hover:bg-slate-800 dark:hover:bg-slate-650 px-3 py-2 text-sm text-white disabled:opacity-50 transition-colors h-[38px] mb-[1px]"
           >
             Finalize
           </button>
         </section>
-        {message ? <p className="text-sm">{message}</p> : null}
+        {message ? <p className="text-sm text-amber-600 dark:text-amber-400">{message}</p> : null}
 
-        <section className="rounded-lg border border-slate-200 bg-white p-4">
+        <section className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-slate-200 text-xs uppercase text-slate-500">
+            <thead className="border-b border-slate-200 dark:border-slate-800 text-xs uppercase text-slate-500 dark:text-slate-400">
               <tr>
                 <th className="px-3 py-2">Employee</th>
                 <th className="px-3 py-2">Country</th>
@@ -236,19 +257,29 @@ export default function FinalizedCalculationsPage() {
                 <th className="px-3 py-2">Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {rows.map((r) => (
-                <tr key={r.id} className="border-b border-slate-100">
-                  <td className="px-3 py-2 font-mono text-xs">{r.employeeId}</td>
-                  <td className="px-3 py-2">{r.countryCode}</td>
-                  <td className="px-3 py-2 text-xs">{r.terminationType}</td>
-                  <td className="px-3 py-2 text-xs">{r.lastWorkingDate?.slice(0, 10)}</td>
-                  <td className="px-3 py-2">{r.totalServiceYears}</td>
-                  <td className="px-3 py-2">
+                <tr key={r.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-850/50">
+                  <td className="px-3 py-2 font-mono text-xs text-slate-700 dark:text-slate-300">
+                    {r.employeeId}
+                  </td>
+                  <td className="px-3 py-2 text-slate-800 dark:text-slate-200">{r.countryCode}</td>
+                  <td className="px-3 py-2 text-xs text-slate-700 dark:text-slate-300">
+                    {r.terminationType}
+                  </td>
+                  <td className="px-3 py-2 text-xs text-slate-700 dark:text-slate-300">
+                    {r.lastWorkingDate?.slice(0, 10)}
+                  </td>
+                  <td className="px-3 py-2 text-slate-800 dark:text-slate-200">
+                    {r.totalServiceYears}
+                  </td>
+                  <td className="px-3 py-2 text-slate-800 dark:text-slate-200">
                     {r.gratuityAmount} {r.currency}
                   </td>
-                  <td className="px-3 py-2">{r.socialInsuranceOffset}</td>
-                  <td className="px-3 py-2 font-semibold text-emerald-700">
+                  <td className="px-3 py-2 text-slate-800 dark:text-slate-200">
+                    {r.socialInsuranceOffset}
+                  </td>
+                  <td className="px-3 py-2 font-semibold text-emerald-700 dark:text-emerald-450">
                     {r.netPayable} {r.currency}
                   </td>
                   <td className="px-3 py-2">
@@ -265,7 +296,7 @@ export default function FinalizedCalculationsPage() {
                           type="button"
                           onClick={() => approve(r.id)}
                           disabled={busy}
-                          className="rounded-md bg-indigo-700 px-2 py-1 text-xs text-white disabled:opacity-50"
+                          className="rounded-md bg-indigo-700 dark:bg-indigo-650 hover:bg-indigo-800 dark:hover:bg-indigo-550 px-2 py-1 text-xs text-white disabled:opacity-50 transition-colors"
                         >
                           Approve
                         </button>
@@ -276,20 +307,20 @@ export default function FinalizedCalculationsPage() {
                             value={rowRef[r.id] ?? ''}
                             onChange={(e) => setRowRef((m) => ({ ...m, [r.id]: e.target.value }))}
                             placeholder="Payment ref"
-                            className="w-28 rounded-md border border-slate-300 px-2 py-1 text-xs"
+                            className="w-28 rounded-md border border-slate-300 dark:border-slate-700 px-2 py-1 text-xs bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
                           />
                           <button
                             type="button"
                             onClick={() => settle(r.id)}
                             disabled={busy}
-                            className="rounded-md bg-emerald-700 px-2 py-1 text-xs text-white disabled:opacity-50"
+                            className="rounded-md bg-emerald-700 dark:bg-emerald-650 hover:bg-emerald-800 dark:hover:bg-emerald-550 px-2 py-1 text-xs text-white disabled:opacity-50 transition-colors"
                           >
                             Settle
                           </button>
                         </>
                       )}
                       {r.paymentReference && (
-                        <span className="font-mono text-xs text-slate-500">
+                        <span className="font-mono text-xs text-slate-500 dark:text-slate-400">
                           {r.paymentReference}
                         </span>
                       )}
@@ -299,7 +330,10 @@ export default function FinalizedCalculationsPage() {
               ))}
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={10} className="px-3 py-6 text-center text-slate-500">
+                  <td
+                    colSpan={10}
+                    className="px-3 py-6 text-center text-slate-500 dark:text-slate-400"
+                  >
                     No calculations.
                   </td>
                 </tr>

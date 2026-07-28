@@ -34,7 +34,9 @@ export default function InvestigationsPage() {
     if (filter) url.searchParams.set('status', filter);
     const r = await fetch(url.toString());
     const p = await r.json();
-    if (p.success) setRows(p.data ?? []);
+    if (p.success) {
+      setRows(Array.isArray(p.data) ? p.data : (p.data?.items ?? []));
+    }
   }
   useEffect(() => {
     load();
@@ -69,17 +71,19 @@ export default function InvestigationsPage() {
   }
 
   return (
-    <main className="min-h-screen bg-slate-50 p-6 text-slate-950">
+    <main className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 text-slate-950 dark:text-slate-50">
       <div className="mx-auto flex max-w-7xl flex-col gap-6">
-        <header className="flex items-center justify-between border-b border-slate-200 pb-4">
+        <header className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
           <div>
-            <p className="text-sm uppercase text-slate-500">EPIC-25 · S05 / EPIC-26 · S03</p>
+            <p className="text-sm uppercase text-slate-500 dark:text-slate-400">
+              EPIC-25 · S05 / EPIC-26 · S03
+            </p>
             <h1 className="text-2xl font-semibold">Investigation Register</h1>
           </div>
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            className="rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+            className="rounded-md border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1.5 text-sm"
           >
             <option value="">All</option>
             <option value="OPEN">OPEN</option>
@@ -87,13 +91,13 @@ export default function InvestigationsPage() {
           </select>
         </header>
 
-        <section className="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 md:grid-cols-6">
+        <section className="grid gap-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 md:grid-cols-6">
           <label className="text-sm">
             Inv #
             <input
               value={form.investigationNumber}
               onChange={(e) => setForm((f) => ({ ...f, investigationNumber: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5 font-mono text-xs"
+              className="mt-1 w-full rounded-md border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1.5 font-mono text-xs"
             />
           </label>
           <label className="text-sm">
@@ -101,7 +105,7 @@ export default function InvestigationsPage() {
             <input
               value={form.grievanceCaseId}
               onChange={(e) => setForm((f) => ({ ...f, grievanceCaseId: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5 font-mono text-xs"
+              className="mt-1 w-full rounded-md border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1.5 font-mono text-xs"
             />
           </label>
           <label className="text-sm">
@@ -109,7 +113,7 @@ export default function InvestigationsPage() {
             <input
               value={form.disciplinaryActionId}
               onChange={(e) => setForm((f) => ({ ...f, disciplinaryActionId: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5 font-mono text-xs"
+              className="mt-1 w-full rounded-md border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1.5 font-mono text-xs"
             />
           </label>
           <label className="text-sm md:col-span-2">
@@ -117,22 +121,22 @@ export default function InvestigationsPage() {
             <input
               value={form.scope}
               onChange={(e) => setForm((f) => ({ ...f, scope: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5"
+              className="mt-1 w-full rounded-md border border-slate-300 dark:border-slate-700 bg-transparent px-2 py-1.5"
             />
           </label>
           <button
             type="button"
             onClick={open}
-            className="rounded-md bg-slate-900 px-3 py-2 text-sm text-white"
+            className="rounded-md bg-slate-900 dark:bg-slate-800 dark:hover:bg-slate-700 px-3 py-2 text-sm text-white"
           >
             Open
           </button>
         </section>
         {message ? <p className="text-sm">{message}</p> : null}
 
-        <section className="rounded-lg border border-slate-200 bg-white p-4">
+        <section className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-slate-200 text-xs uppercase text-slate-500">
+            <thead className="border-b border-slate-200 dark:border-slate-800 text-xs uppercase text-slate-500 dark:text-slate-400">
               <tr>
                 <th className="px-3 py-2">Inv #</th>
                 <th className="px-3 py-2">Started</th>
@@ -146,7 +150,7 @@ export default function InvestigationsPage() {
             </thead>
             <tbody>
               {rows.map((i) => (
-                <tr key={i.id} className="border-b border-slate-100">
+                <tr key={i.id} className="border-b border-slate-100 dark:border-slate-800/50">
                   <td className="px-3 py-2 font-mono text-xs">{i.investigationNumber}</td>
                   <td className="px-3 py-2 text-xs">{i.startedAt?.slice(0, 10)}</td>
                   <td className="px-3 py-2 text-xs">{i.scope ?? '—'}</td>
@@ -156,41 +160,28 @@ export default function InvestigationsPage() {
                   <td className="px-3 py-2 text-xs">{i.status}</td>
                   <td className="px-3 py-2">
                     {i.status === 'OPEN' && (
-                      <div className="flex flex-wrap gap-1">
-                        <button
-                          type="button"
-                          onClick={() => call('add-interview', i.id)}
-                          className="rounded-md border border-slate-300 px-2 py-1 text-xs"
-                        >
-                          + Interview
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => call('add-evidence', i.id)}
-                          className="rounded-md border border-slate-300 px-2 py-1 text-xs"
-                        >
-                          + Evidence
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() =>
-                            call('complete', i.id, {
-                              findings: window.prompt('Findings?') ?? '',
-                              recommendation: window.prompt('Recommendation?') ?? undefined,
-                            })
-                          }
-                          className="rounded-md bg-emerald-700 px-2 py-1 text-xs text-white"
-                        >
-                          Complete
-                        </button>
-                      </div>
+                      <button
+                        type="button"
+                        onClick={() =>
+                          call('complete', i.id, {
+                            findings: window.prompt('Findings?') ?? '',
+                            recommendation: window.prompt('Recommendation?') ?? undefined,
+                          })
+                        }
+                        className="rounded-md bg-emerald-700 px-2 py-1 text-xs text-white"
+                      >
+                        Complete
+                      </button>
                     )}
                   </td>
                 </tr>
               ))}
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-3 py-6 text-center text-slate-500">
+                  <td
+                    colSpan={8}
+                    className="px-3 py-6 text-center text-slate-500 dark:text-slate-400"
+                  >
                     No investigations.
                   </td>
                 </tr>

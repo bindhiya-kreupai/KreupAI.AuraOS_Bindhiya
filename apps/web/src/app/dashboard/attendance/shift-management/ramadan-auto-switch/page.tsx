@@ -2,6 +2,8 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
+import { toast } from 'sonner';
+import { fetchJson } from '@/lib/api-utils';
 import {
   ArrowLeft,
   Moon,
@@ -15,6 +17,7 @@ import {
   Calculator,
   Clock,
 } from 'lucide-react';
+import { useI18n } from '@/lib/i18n/I18nProvider';
 
 type Country = 'AE' | 'SA' | 'BH' | 'QA' | 'OM' | 'KW';
 
@@ -53,20 +56,6 @@ type Shift = {
   workHours: number;
   isActive: boolean;
 };
-
-const MAPPING_STORAGE_KEY = 'auraos.shiftManagement.ramadanMapping.v1';
-const ENABLED_STORAGE_KEY = 'auraos.shiftManagement.ramadanEnabled.v1';
-
-async function fetchJson<T>(url: string): Promise<T | null> {
-  try {
-    const res = await fetch(url);
-    const json = await res.json().catch(() => ({}));
-    if (!res.ok || json?.success === false) return null;
-    return (json?.data ?? json) as T;
-  } catch {
-    return null;
-  }
-}
 
 // POST helper for the working-hours engine — returns .data or throws a bilingual message
 async function postWorkingHours(body: Record<string, unknown>): Promise<any> {
@@ -119,7 +108,7 @@ function DailyHoursCalc({ country }: { country: string }) {
         countryCode: country,
         date,
       });
-      setResult(typeof data === 'number' ? data : (data?.dailyHours ?? data));
+      setResult(data?.effectiveHours ?? (typeof data === 'number' ? data : null));
     } catch (e: any) {
       setErr(e?.message || 'Failed');
     } finally {
@@ -130,8 +119,11 @@ function DailyHoursCalc({ country }: { country: string }) {
   return (
     <WhCard title="Daily working hours">
       <form onSubmit={run} className="space-y-2">
-        <label className="block text-xs text-silver-mist">Date (Ramadan-aware)</label>
+        <label htmlFor="wh-date" className="block text-xs text-silver-mist">
+          Date (Ramadan-aware)
+        </label>
         <input
+          id="wh-date"
           type="date"
           value={date}
           onChange={(e) => setDate(e.target.value)}
@@ -194,8 +186,11 @@ function OvertimeCalc({ country }: { country: string }) {
       <form onSubmit={run} className="space-y-2">
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="block text-xs text-silver-mist">Actual hours</label>
+            <label htmlFor="ot-actual" className="block text-xs text-silver-mist">
+              Actual hours
+            </label>
             <input
+              id="ot-actual"
               type="number"
               min="0"
               step="0.5"
@@ -205,8 +200,11 @@ function OvertimeCalc({ country }: { country: string }) {
             />
           </div>
           <div>
-            <label className="block text-xs text-silver-mist">Shift hours</label>
+            <label htmlFor="ot-shift" className="block text-xs text-silver-mist">
+              Shift hours
+            </label>
             <input
+              id="ot-shift"
               type="number"
               min="0"
               step="0.5"
@@ -216,8 +214,11 @@ function OvertimeCalc({ country }: { country: string }) {
             />
           </div>
         </div>
-        <label className="block text-xs text-silver-mist">Hourly rate (for amount)</label>
+        <label htmlFor="ot-rate" className="block text-xs text-silver-mist">
+          Hourly rate (for amount)
+        </label>
         <input
+          id="ot-rate"
           type="number"
           min="0"
           step="0.01"
@@ -303,8 +304,11 @@ function ValidateDailyCalc({ country }: { country: string }) {
       <form onSubmit={run} className="space-y-2">
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="block text-xs text-silver-mist">Hours worked</label>
+            <label htmlFor="dc-hours" className="block text-xs text-silver-mist">
+              Hours worked
+            </label>
             <input
+              id="dc-hours"
               type="number"
               min="0"
               step="0.5"
@@ -314,8 +318,11 @@ function ValidateDailyCalc({ country }: { country: string }) {
             />
           </div>
           <div>
-            <label className="block text-xs text-silver-mist">Overtime hours</label>
+            <label htmlFor="dc-ot" className="block text-xs text-silver-mist">
+              Overtime hours
+            </label>
             <input
+              id="dc-ot"
               type="number"
               min="0"
               step="0.5"
@@ -405,8 +412,11 @@ function FridayCompCalc({ country }: { country: string }) {
       <form onSubmit={run} className="space-y-2">
         <div className="grid grid-cols-2 gap-2">
           <div>
-            <label className="block text-xs text-silver-mist">Hours worked</label>
+            <label htmlFor="fc-hours" className="block text-xs text-silver-mist">
+              Hours worked
+            </label>
             <input
+              id="fc-hours"
               type="number"
               min="0"
               step="0.5"
@@ -416,8 +426,11 @@ function FridayCompCalc({ country }: { country: string }) {
             />
           </div>
           <div>
-            <label className="block text-xs text-silver-mist">Monthly base salary</label>
+            <label htmlFor="fc-salary" className="block text-xs text-silver-mist">
+              Monthly base salary
+            </label>
             <input
+              id="fc-salary"
               type="number"
               min="0"
               step="1"
@@ -458,6 +471,7 @@ function FridayCompCalc({ country }: { country: string }) {
 }
 
 export default function RamadanAutoSwitchPage() {
+  const { t, isRTL } = useI18n();
   const [country, setCountry] = useState<Country>('AE');
   const [status, setStatus] = useState<RamadanStatus | null>(null);
   const [config, setConfig] = useState<WorkingHoursConfig | null>(null);
@@ -469,14 +483,19 @@ export default function RamadanAutoSwitchPage() {
   const [savedAt, setSavedAt] = useState<number | null>(null);
 
   useEffect(() => {
-    try {
-      const m = localStorage.getItem(MAPPING_STORAGE_KEY);
-      if (m) setMapping(JSON.parse(m));
-      const e = localStorage.getItem(ENABLED_STORAGE_KEY);
-      if (e !== null) setEnabled(e === 'true');
-    } catch {
-      /* ignore */
+    async function loadConfig() {
+      try {
+        const res = await fetch('/api/attendance/shift-management/ramadan-auto-switch');
+        const json = await res.json();
+        if (json.success && json.data) {
+          if (json.data.mapping) setMapping(json.data.mapping);
+          if (json.data.enabled !== undefined) setEnabled(json.data.enabled);
+        }
+      } catch (err) {
+        // Config load failure is non-critical
+      }
     }
+    loadConfig();
   }, []);
 
   const refresh = useCallback(async () => {
@@ -519,34 +538,53 @@ export default function RamadanAutoSwitchPage() {
     setSavedAt(null);
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     try {
-      localStorage.setItem(MAPPING_STORAGE_KEY, JSON.stringify(mapping));
-      localStorage.setItem(ENABLED_STORAGE_KEY, String(enabled));
-      setSavedAt(Date.now());
+      const res = await fetch('/api/attendance/shift-management/ramadan-auto-switch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          enabled,
+          mapping,
+        }),
+      });
+      const json = await res.json();
+      if (json.success) {
+        setSavedAt(Date.now());
+        toast.success('Ramadan mapping saved');
+      } else {
+        toast.error(json.error || 'Failed to save');
+      }
     } catch (e: any) {
-      alert(`Could not save: ${e?.message || 'storage unavailable'}`);
+      toast.error(e?.message || 'Storage unavailable');
     }
   };
 
   return (
-    <div className="space-y-4 pb-6">
+    <div dir={isRTL ? 'rtl' : 'ltr'} className="space-y-4 pb-6 text-slate-900 dark:text-slate-100">
+      {/* Breadcrumb */}
+      <nav className="flex items-center gap-1.5 text-sm text-silver-mist" aria-label="Breadcrumb">
+        <Link href="/dashboard/attendance" className="hover:text-indigo-500 transition-colors">
+          Attendance
+        </Link>
+        <span>/</span>
+        <Link
+          href="/dashboard/attendance/shift-management"
+          className="hover:text-indigo-500 transition-colors"
+        >
+          Shift Management
+        </Link>
+        <span>/</span>
+        <span className="text-ink-black dark:text-pearl font-medium">Ramadan Auto-switch</span>
+      </nav>
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div>
-          <Link
-            href="/dashboard/attendance/shift-management"
-            className="inline-flex items-center gap-1 text-sm text-silver-mist hover:text-indigo-500 transition-colors mb-1"
-          >
-            <ArrowLeft className="w-4 h-4" /> Back to Shift Management
-          </Link>
           <h1 className="text-2xl font-bold text-ink-black dark:text-pearl flex items-center gap-2">
             <Moon className="w-6 h-6 text-indigo-500" />
-            Ramadan Auto-switch
+            {t('shiftManagement.ramadan.title')}
           </h1>
-          <p className="text-silver-mist text-sm mt-1 max-w-2xl">
-            During Ramadan, GCC labour law requires reduced working hours. Map each regular shift to
-            its Ramadan equivalent so the roster automatically uses the shorter shift while the
-            Hijri month is active.
+          <p className="text-silver-mist dark:text-slate-400 text-sm mt-1 max-w-2xl">
+            {t('shiftManagement.ramadan.subtitle')}
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -554,7 +592,7 @@ export default function RamadanAutoSwitchPage() {
           <select
             value={country}
             onChange={(e) => setCountry(e.target.value as Country)}
-            className="px-3 py-2 rounded-lg border border-cloud dark:border-nebula-purple/50 bg-white dark:bg-stellar-blue text-sm"
+            className="px-3 py-2 rounded-lg border border-cloud dark:border-nebula-purple/50 bg-white dark:bg-stellar-blue text-sm text-slate-900 dark:text-slate-100"
           >
             {(Object.keys(COUNTRY_NAMES) as Country[]).map((c) => (
               <option key={c} value={c}>
@@ -610,8 +648,10 @@ export default function RamadanAutoSwitchPage() {
       {/* Toggle */}
       <div className="bg-white dark:bg-stellar-blue rounded-xl border border-cloud dark:border-nebula-purple/50 shadow-sm p-4 flex items-center justify-between gap-3 flex-wrap">
         <div>
-          <p className="font-semibold text-ink-black dark:text-pearl">Auto-switch enabled</p>
-          <p className="text-xs text-silver-mist mt-0.5">
+          <p className="font-semibold text-ink-black dark:text-pearl">
+            {t('shiftManagement.ramadan.enabled')}
+          </p>
+          <p className="text-xs text-silver-mist dark:text-slate-400 mt-0.5">
             When on and Hijri calendar reports the month of Ramadan, roster generation prefers the
             mapped Ramadan shift over the regular one.
           </p>
@@ -633,7 +673,9 @@ export default function RamadanAutoSwitchPage() {
               }`}
             />
           </span>
-          <span className="text-sm font-medium">{enabled ? 'On' : 'Off'}</span>
+          <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
+            {enabled ? t('shiftManagement.ramadan.enabled') : t('shiftManagement.ramadan.disabled')}
+          </span>
         </label>
       </div>
 
@@ -656,7 +698,7 @@ export default function RamadanAutoSwitchPage() {
               onClick={handleSave}
               className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium rounded-lg bg-indigo-600 text-white hover:bg-indigo-700 transition-colors"
             >
-              <Save className="w-4 h-4" /> Save mapping
+              <Save className="w-4 h-4" /> {t('shiftManagement.ramadan.saveConfig')}
             </button>
           </div>
         </div>
@@ -690,7 +732,7 @@ export default function RamadanAutoSwitchPage() {
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
-              <thead className="bg-slate-50 dark:bg-slate-900/50 text-left text-xs font-semibold uppercase text-silver-mist">
+              <thead className="bg-slate-50 dark:bg-slate-900/50 text-left text-xs font-semibold uppercase text-silver-mist dark:text-slate-400">
                 <tr>
                   <th className="px-4 py-2.5">Regular shift</th>
                   <th className="px-4 py-2.5">Timing</th>
@@ -704,8 +746,12 @@ export default function RamadanAutoSwitchPage() {
                   return (
                     <tr key={shift.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-900/30">
                       <td className="px-4 py-3">
-                        <div className="font-medium">{shift.name}</div>
-                        <div className="text-xs font-mono text-silver-mist">{shift.code}</div>
+                        <div className="font-medium text-slate-900 dark:text-slate-100">
+                          {shift.name}
+                        </div>
+                        <div className="text-xs font-mono text-silver-mist dark:text-slate-400">
+                          {shift.code}
+                        </div>
                       </td>
                       <td className="px-4 py-3 text-slate-600 dark:text-slate-300">
                         {shift.startTime} – {shift.endTime}
@@ -717,11 +763,20 @@ export default function RamadanAutoSwitchPage() {
                         <select
                           value={mapped}
                           onChange={(e) => handleMappingChange(shift.id, e.target.value)}
-                          className="w-full px-2 py-1.5 rounded-md border border-cloud dark:border-nebula-purple/50 bg-white dark:bg-stellar-blue text-sm"
+                          className="w-full px-2 py-1.5 rounded-md border border-cloud dark:border-nebula-purple/50 bg-white dark:bg-stellar-blue text-sm text-slate-900 dark:text-slate-100"
                         >
-                          <option value="">— not mapped —</option>
+                          <option
+                            value=""
+                            className="bg-white dark:bg-stellar-blue text-slate-900 dark:text-slate-100"
+                          >
+                            — not mapped —
+                          </option>
                           {ramadanShifts.map((r) => (
-                            <option key={r.id} value={r.id}>
+                            <option
+                              key={r.id}
+                              value={r.id}
+                              className="bg-white dark:bg-stellar-blue text-slate-900 dark:text-slate-100"
+                            >
                               {r.name} ({r.workHours}h)
                             </option>
                           ))}
@@ -757,11 +812,9 @@ export default function RamadanAutoSwitchPage() {
       <div className="rounded-lg border border-amber-200 bg-amber-50 dark:bg-amber-900/20 dark:border-amber-800 px-4 py-3 text-xs text-amber-800 dark:text-amber-200 flex gap-2">
         <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
         <p>
-          Mapping is currently stored per-browser. Roster generation reads Ramadan-reduced hours
-          from the country-level{' '}
-          <code className="px-1 bg-amber-100 dark:bg-amber-900/40 rounded">LabourLawConfig</code>{' '}
-          via the working-hours engine. A tenant-wide persisted mapping table can be added once the
-          schema is migrated.
+          Configuration is persisted tenant-wide on the server. Roster generation reads these
+          mappings and Ramadan-reduced hours from the compliance rules during the Holy Month of
+          Ramadan.
         </p>
       </div>
     </div>

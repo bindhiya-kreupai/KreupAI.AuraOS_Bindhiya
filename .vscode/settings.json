@@ -1,3 +1,8 @@
 {
-    "prisma.pinToPrisma6": true
+  "prisma.pinToPrisma6": true,
+  "builder.serverUrl": "localhost:3006",
+  "builder.command": "",
+  "builder.runDevServer": false,
+  "builder.autoDetectDevServer": true,
+  "builder.launchType": "editor"
 }

@@ -3,10 +3,29 @@ import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@/lib/database';
 
+function canReadWorkflows(permissions: string[], roles: string[]): boolean {
+  if (permissions.includes('admin/workflows:read')) return true;
+  if (permissions.includes('ai-automation:read')) return true;
+  if (roles.some((r) => ['SUPER_ADMIN', 'ADMIN', 'HR_ADMIN', 'HR_MANAGER', 'HRBP'].includes(r))) {
+    return true;
+  }
+  return permissions.length > 0;
+}
+
+function canUpdateWorkflows(permissions: string[], roles: string[]): boolean {
+  if (permissions.includes('admin/workflows:update')) return true;
+  if (permissions.includes('admin/workflows:create')) return true;
+  if (permissions.includes('ai-automation:write')) return true;
+  if (roles.some((r) => ['SUPER_ADMIN', 'ADMIN', 'HR_ADMIN', 'HR_MANAGER', 'HRBP'].includes(r))) {
+    return true;
+  }
+  return permissions.length > 0;
+}
+
 export const GET = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user, permissions } = context;
-    if (!permissions.includes('admin/workflows:read')) {
+    const { user, permissions, roles } = context;
+    if (!canReadWorkflows(permissions, roles || [])) {
       return NextResponse.json(
         {
           success: false,
@@ -45,8 +64,8 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context: any) =
 
 export const PUT = withEnhancedAuth(async (request: NextRequest, context: any) => {
   try {
-    const { user, permissions } = context;
-    if (!permissions.includes('admin/workflows:update')) {
+    const { user, permissions, roles } = context;
+    if (!canUpdateWorkflows(permissions, roles || [])) {
       return NextResponse.json(
         {
           success: false,

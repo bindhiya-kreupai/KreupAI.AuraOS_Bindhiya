@@ -157,6 +157,12 @@ class RecordsDocumentMatrixService {
       },
     });
   }
+  async delete(id: string, auth: AuthContext) {
+    return (prisma as any).recordsDocumentMatrix.update({
+      where: { id },
+      data: { status: 'ARCHIVED' },
+    });
+  }
 
   async list(
     tenantId: string,
@@ -238,6 +244,11 @@ class RecordsCompletenessService {
         band,
         missingCodes: (input.missingCodes ?? []) as any,
       },
+    });
+  }
+  async delete(id: string, _auth: AuthContext) {
+    return (prisma as any).recordsCompletenessSnapshot.delete({
+      where: { id },
     });
   }
 
@@ -353,6 +364,12 @@ class RecordsAuditChecklistService {
       },
     });
   }
+  async delete(id: string, _auth: AuthContext) {
+    return (prisma as any).recordsAuditChecklistItem.update({
+      where: { id },
+      data: { status: 'ARCHIVED' },
+    });
+  }
 
   async list(
     tenantId: string,
@@ -417,6 +434,16 @@ class RecordsRiskService {
   ) {
     const score =
       Math.max(1, Math.min(5, input.likelihood)) * Math.max(1, Math.min(5, input.impact));
+    const data = {
+      riskCode: input.riskCode,
+      title: input.title,
+      category: input.category,
+      country: input.country ?? null,
+      likelihood: input.likelihood,
+      impact: input.impact,
+      ownerId: input.ownerId ?? null,
+      mitigation: input.mitigation ?? null,
+    };
     return (prisma as any).recordsRiskEntry.upsert({
       where: {
         aura_records_risk_entry_unique: {
@@ -424,8 +451,8 @@ class RecordsRiskService {
           riskCode: input.riskCode,
         },
       },
-      update: { ...input, score, band: riskBand(score) },
-      create: { tenantId: auth.tenantId, ...input, score, band: riskBand(score) },
+      update: { ...data, score, band: riskBand(score) },
+      create: { tenantId: auth.tenantId, ...data, score, band: riskBand(score) },
     });
   }
 
@@ -433,6 +460,12 @@ class RecordsRiskService {
     return (prisma as any).recordsRiskEntry.update({
       where: { id },
       data: { status: 'CLOSED' },
+    });
+  }
+
+  async delete(id: string, _auth: AuthContext) {
+    return (prisma as any).recordsRiskEntry.delete({
+      where: { id },
     });
   }
 

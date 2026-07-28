@@ -35,7 +35,7 @@ export async function seedRemainingCoverage(prisma: PrismaClient, tenantId: stri
   // ============================================================================
   console.log('    - Creating permissions...');
 
-  const resources = ['employees', 'departments', 'payroll', 'leave', 'attendance', 'recruitment'];
+  const resources = ['employees', 'departments', 'payroll', 'leave', 'attendance', 'recruitment', 'shifts', 'shift-assignments', 'shift-rosters', 'shift-swaps'];
   const actions = ['create', 'read', 'update', 'delete', 'manage'];
   const createdPermissions: Array<{ id: string; resource: string; action: string }> = [];
 

@@ -41,6 +41,11 @@ export function generateRefreshToken(payload: Omit<JWTPayload, 'type'>): string 
 export function verifyToken(token: string): JWTPayload {
   try {
     const decoded = jwt.verify(token, JWT_SECRET) as JWTPayload;
+
+    console.log('========== JWT VERIFIED ==========');
+    console.log(decoded);
+    console.log('==================================');
+
     return decoded;
   } catch (error: any) {
     if (error instanceof jwt.TokenExpiredError) {

@@ -66,9 +66,40 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
         details: true,
       },
     });
+
+    const [entities, depts] = await Promise.all([
+      (prisma as any).gccLegalEntity.findMany({
+        where: { tenantId: ctx.user.tenantId },
+        select: { id: true, legalName: true },
+      }),
+      (prisma as any).department.findMany({
+        where: { company: { tenantId: ctx.user.tenantId } },
+        select: { id: true, name: true },
+      }),
+    ]);
+
+    const entityMap = new Map<string, string>(entities.map((e: any) => [e.id, e.legalName]));
+    const deptMap = new Map<string, string>(depts.map((d: any) => [d.id, d.name]));
+
+    function mapTreeLabels(node: any): any {
+      let label = node.label;
+      if (node.level === 'ENTITY') {
+        label = entityMap.get(node.key) ?? node.label;
+      } else if (node.level === 'DEPARTMENT') {
+        label = deptMap.get(node.key) ?? node.label;
+      }
+      return {
+        ...node,
+        label,
+        children: node.children ? node.children.map((c: any) => mapTreeLabels(c)) : undefined,
+      };
+    }
+
     const snapshots = rows.map(snapshotFromRow);
-    const tree = aggregateFlagsByCountryEntity(snapshots);
-    return ok(tree);
+    const rawTree = aggregateFlagsByCountryEntity(snapshots);
+    const mappedTree = mapTreeLabels(rawTree);
+
+    return ok(mappedTree);
   } catch (err) {
     return serverError('Failed to load drill-down tree', err);
   }

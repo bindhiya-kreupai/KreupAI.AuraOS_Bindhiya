@@ -19,7 +19,8 @@ export type IntegrationCategory =
   | 'SSO'
   | 'CUSTOM';
 
-export type IntegrationStatus = 'AVAILABLE' | 'CONNECTED' | 'DISCONNECTED' | 'ERROR' | 'PENDING' | 'DEPRECATED';
+export type IntegrationStatus =
+  'AVAILABLE' | 'CONNECTED' | 'DISCONNECTED' | 'ERROR' | 'PENDING' | 'DEPRECATED';
 
 export type AuthType = 'OAUTH2' | 'API_KEY' | 'BASIC' | 'JWT' | 'CERTIFICATE' | 'CUSTOM';
 
@@ -423,6 +424,7 @@ export interface MarketplaceListing {
   installCount: number;
   isInstalled: boolean;
   isPremium: boolean;
+  connectionId?: string;
   pricing?: {
     type: 'FREE' | 'PAID' | 'FREEMIUM';
     monthlyPrice?: number;
