@@ -14,7 +14,7 @@ import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import Image from 'next/image';
 import { ChevronDown, ChevronRight, Search, X, PanelLeftClose, PanelLeft, Star } from 'lucide-react';
-import { cn } from '../../utils';
+import { cn } from '../../utils/index';
 import { getMenuIcon } from './menu-icons';
 import { superAdminMenu } from '@aura/config';
 import type { MenuIconName } from '@aura/types';

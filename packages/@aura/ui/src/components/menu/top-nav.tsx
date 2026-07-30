@@ -25,7 +25,7 @@ import {
   LogOut,
   MessageSquare,
 } from 'lucide-react';
-import { cn } from '../../utils';
+import { cn } from '../../utils/index';
 
 interface TopNavProps {
   onMenuClick?: () => void;

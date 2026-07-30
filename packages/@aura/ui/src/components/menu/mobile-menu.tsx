@@ -22,7 +22,7 @@ import {
   Settings,
   LogOut,
 } from 'lucide-react';
-import { cn } from '../../utils';
+import { cn } from '../../utils/index';
 import { getMenuIcon } from './menu-icons';
 import { superAdminMenu } from '@aura/config';
 import type { MenuIconName } from '@aura/types';

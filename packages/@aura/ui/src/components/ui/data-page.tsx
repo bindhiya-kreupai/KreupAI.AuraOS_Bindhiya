@@ -3,7 +3,7 @@ import { PageHeader } from '../layout/page-header';
 import { DataTable, type Column } from './data-table';
 import { Sheet } from './sheet';
 import { Trash2, Save, Download, Upload, Filter, Plus, Search, ChevronLeft, ChevronRight } from 'lucide-react';
-import { cn } from '../../utils';
+import { cn } from '../../utils/index';
 
 export interface RowAction<T> {
     label: string;

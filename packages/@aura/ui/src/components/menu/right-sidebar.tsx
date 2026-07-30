@@ -21,7 +21,7 @@ import {
   PanelRight,
   History,
 } from 'lucide-react';
-import { cn } from '../../utils';
+import { cn } from '../../utils/index';
 
 interface ActivityItem {
   path: string;
