@@ -48,7 +48,7 @@ const envSchema = z
       .string()
       .url()
       .optional()
-      .default(process.env.RENDER_EXTERNAL_URL || 'http://localhost:3000')
+      .default(process.env.RENDER_EXTERNAL_URL || 'http://localhost:3006')
       .describe('Public application URL'),
     PORT: z.coerce.number().int().positive().default(3000).describe('Application port'),
 
