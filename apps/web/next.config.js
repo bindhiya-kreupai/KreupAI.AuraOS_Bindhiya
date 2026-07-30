@@ -41,10 +41,9 @@ const nextConfig = {
       },
     ];
   },
-  output: 'standalone',
+  productionBrowserSourceMaps: false,
+  output: process.platform === 'win32' ? undefined : 'standalone',
   experimental: {
-    workerThreads: false,
-    cpus: 1,
     serverComponentsExternalPackages: [
       '@elastic/elasticsearch',
       '@elastic/transport',
@@ -62,7 +61,11 @@ const nextConfig = {
       'thread-stream',
     ],
   },
-  webpack: (config, { isServer }) => {
+  webpack: (config, { isServer, dev }) => {
+    if (!dev) {
+      // Disable persistent Webpack cache in production to prevent PackFileCacheStrategy heap exhaustion
+      config.cache = false;
+    }
     if (isServer) {
       config.externals = config.externals || [];
       config.externals.push({

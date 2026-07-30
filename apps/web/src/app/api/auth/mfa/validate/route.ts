@@ -8,7 +8,7 @@ import { generateTokens } from '@/lib/auth/jwt';
 import { generateDeviceFingerprint } from '@/lib/auth/device-fingerprint.service';
 import { resolveLocation, formatLocation } from '@/lib/auth/geolocation.service';
 import { decryptSecret } from '@/lib/auth/mfa-crypto';
-import { withRateLimit, RATE_LIMIT_PRESETS } from '@/lib/middleware/advanced-rate-limit';
+import { withRateLimit, RateLimitPresets } from '@/lib/middleware/advanced-rate-limit';
 import { logger } from '@/lib/logger';
 
 function parseDuration(duration: string): number {
@@ -48,7 +48,7 @@ const ValidateMFASchema = z.object({
  * Validate MFA code during login process
  */
 export const POST = withRateLimit(
-  RATE_LIMIT_PRESETS.MFA_VALIDATION,
+  RateLimitPresets.MFA_VALIDATION,
   async (request: NextRequest) => {
     try {
       // Parse and validate request body

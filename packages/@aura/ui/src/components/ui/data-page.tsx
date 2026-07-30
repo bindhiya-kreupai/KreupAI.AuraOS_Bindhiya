@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useEffect } from 'react';
 import { PageHeader } from '../layout/page-header';
 import { DataTable, type Column } from './data-table';

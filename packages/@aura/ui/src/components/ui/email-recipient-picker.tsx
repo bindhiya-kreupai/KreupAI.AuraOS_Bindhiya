@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { ChevronDown, Loader2, Mail, Send, X } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';

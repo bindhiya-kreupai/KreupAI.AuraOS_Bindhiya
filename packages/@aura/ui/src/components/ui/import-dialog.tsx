@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useMemo, useRef, useState } from 'react';
 import { AlertCircle, CheckCircle2, FileSpreadsheet, Loader2, Upload, X } from 'lucide-react';
 import { Sheet } from './sheet';
