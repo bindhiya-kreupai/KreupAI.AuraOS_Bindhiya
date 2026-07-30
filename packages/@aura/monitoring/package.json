@@ -13,7 +13,7 @@
   },
   "scripts": {
     "build": "tsup",
-    "postinstall": "tsup",
+    "postinstall": "tsup --no-dts",
     "dev": "tsup --watch",
     "lint": "eslint src/",
     "clean": "rm -rf dist",
