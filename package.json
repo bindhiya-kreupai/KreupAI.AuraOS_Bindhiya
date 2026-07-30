@@ -5,6 +5,7 @@
   "scripts": {
     "verify": "node verify-setup.js",
     "build": "turbo run build",
+    "build:web": "pnpm --filter \"./packages/@aura/*\" build && pnpm --filter web --no-bail build",
     "dev": "turbo run dev --concurrency=30",
     "lint": "turbo run lint",
     "test": "turbo run test",
