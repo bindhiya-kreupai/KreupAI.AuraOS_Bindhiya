@@ -346,6 +346,8 @@ export const RateLimitPresets = {
   } as RateLimitConfig,
 };
 
+export const RATE_LIMIT_PRESETS = RateLimitPresets;
+
 /**
  * Helper function to wrap API route with rate limiting
  */
