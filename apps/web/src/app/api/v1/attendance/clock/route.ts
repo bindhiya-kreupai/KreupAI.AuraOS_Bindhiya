@@ -2,7 +2,7 @@ import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
 import { prisma } from '@/lib/database';
-import { shiftAttendanceService } from '@/lib/services/shift-management/shift-attendance';
+import { shiftAttendanceService } from '@/lib/services/shift-management/shift-attendance.service';
 
 export const dynamic = 'force-dynamic';
 

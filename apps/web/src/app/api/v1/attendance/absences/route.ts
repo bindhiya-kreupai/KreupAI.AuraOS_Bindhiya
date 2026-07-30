@@ -3,7 +3,7 @@ export const dynamic = 'force-dynamic';
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
-import { shiftAttendanceService } from '@/lib/services/shift-management/shift-attendance';
+import { shiftAttendanceService } from '@/lib/services/shift-management/shift-attendance.service';
 import { badRequest, forbidden, hasAny, serverError, type RouteContext } from '../_shared';
 
 export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) => {

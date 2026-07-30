@@ -19,8 +19,7 @@ function looksLikeBinaryGarbage(text: string): boolean {
 }
 
 async function extractPdf(buffer: Buffer): Promise<string> {
-  // Import lib entry to avoid pdf-parse debug/test side-effects under Next bundling
-  const mod = await import('pdf-parse/lib/pdf-parse.js');
+  const mod = await import('pdf-parse');
   const pdfParse = (mod.default || mod) as (data: Buffer) => Promise<{ text: string }>;
   const parsed = await pdfParse(buffer);
   return String(parsed.text || '').trim();

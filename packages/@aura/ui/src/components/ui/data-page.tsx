@@ -115,15 +115,17 @@ export function DataPage<T extends { id: string | number }>({
     singularTitle,
     filterParams,
     toolbarSlot,
-    loading = false,
+    loading: externalLoading = false,
 }: DataPageProps<T>) {
     const [isSheetOpen, setIsSheetOpen] = useState(false);
     const [currentRecord, setCurrentRecord] = useState<Partial<T>>(defaultValues);
     const [searchQuery, setSearchQuery] = useState('');
     const [fetchedData, setFetchedData] = useState<T[]>([]);
-    const [loading, setLoading] = useState(false);
+    const [internalLoading, setInternalLoading] = useState(false);
     const [currentPage, setCurrentPage] = useState(1);
     const [paginationMeta, setPaginationMeta] = useState<{ total: number; totalPages: number; page: number } | null>(null);
+
+    const loading = externalLoading || internalLoading;
 
     useEffect(() => {
         if (apiEndpoint) {
@@ -133,7 +135,7 @@ export function DataPage<T extends { id: string | number }>({
 
     const fetchData = async (page: number = 1) => {
         if (!apiEndpoint) return;
-        setLoading(true);
+        setInternalLoading(true);
         try {
             const url = new URL(apiEndpoint, window.location.origin);
             url.searchParams.set('page', String(page));
@@ -153,7 +155,7 @@ export function DataPage<T extends { id: string | number }>({
         } catch (err) {
             console.error(err);
         } finally {
-            setLoading(false);
+            setInternalLoading(false);
         }
     };
 
