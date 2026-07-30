@@ -1,1 +1,1 @@
-﻿export * from '@aura/ui/components/ui/module-page'
+export * from '@aura/ui/components/ui';
