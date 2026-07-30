@@ -41,24 +41,6 @@ const nextConfig = {
       },
     ];
   },
-  // Transpile workspace packages that expose TypeScript source (no dist build).
-  // This tells Next.js webpack to compile these from source instead of trying
-  // to resolve them through their package.json exports.
-  transpilePackages: [
-    '@aura/ui',
-    '@aura/auth',
-    '@aura/cache',
-    '@aura/cloud',
-    '@aura/config',
-    '@aura/types',
-    '@aura/resilience',
-    '@aura/i18n',
-    '@aura/security',
-    '@aura/tracing',
-    '@aura/scheduler',
-    '@aura/service-mesh',
-    '@aura/learning-runtime',
-  ],
   output: 'standalone',
   experimental: {
     workerThreads: false,
