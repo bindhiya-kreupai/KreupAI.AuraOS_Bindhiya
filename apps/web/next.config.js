@@ -41,7 +41,10 @@ const nextConfig = {
       },
     ];
   },
+  output: 'standalone',
   experimental: {
+    workerThreads: false,
+    cpus: 1,
     serverComponentsExternalPackages: [
       '@elastic/elasticsearch',
       '@elastic/transport',
