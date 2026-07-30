@@ -375,108 +375,96 @@ export default function CabinCrewPage() {
           </div>
         </div>
 
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
-            <div className="mb-4 flex items-center gap-2">
-              <Languages className="h-5 w-5 text-indigo-500" />
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+          <div className="mb-4 flex items-center gap-2">
+            <Languages className="h-5 w-5 text-indigo-500" />
 
-              <h3 className="text-lg font-bold">Language Coverage</h3>
-            </div>
-
-            <div className="space-y-3">
-              {getLanguageSummary(crewRows)
-                .slice(0, 5)
-                .map(([language, count]) => (
-                  <div
-                    key={language}
-                    className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3 dark:bg-slate-800/60"
-                  >
-                    <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
-                      {language}
-                    </span>
-
-                    <span className="font-bold">{count}</span>
-                  </div>
-                ))}
-
-              {getLanguageSummary(crewRows).length === 0 && (
-                <div className="py-5 text-center text-sm text-slate-400">
-                  No language data available.
-                </div>
-              )}
-            </div>
+            <h3 className="text-lg font-bold">Language Coverage</h3>
           </div>
 
-          <div className="space-y-4">
-            <div className="bg-white dark:bg-slate-900 p-6 rounded-2xl border border-slate-200 dark:border-slate-800">
-              <div className="flex justify-between items-center mb-4">
-                <h3 className="font-bold text-lg">Crew Roster</h3>
-              </div>
-              <div className="space-y-3 max-h-[300px] overflow-y-auto pr-2">
-                {crewMembers.map((crew, i) => (
-                  <div
-                    key={crew.crewId || i}
-                    className="flex justify-between items-center text-sm p-2 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg group"
-                  >
-                    <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-[10px] font-bold">
-                        {crew.crewType?.substring(0, 2).toUpperCase() || 'CC'}
-                      </div>
-                      <span className="font-bold">
-                        {crew.personalInfo?.firstName} {crew.personalInfo?.lastName}
-                      </span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`text-[10px] uppercase font-bold px-1.5 py-0.5 rounded ${
-                          crew.dutyStatus === 'available'
-                            ? 'bg-emerald-100 text-emerald-600'
-                            : crew.dutyStatus === 'standby'
-                              ? 'bg-amber-100 text-amber-600'
-                              : 'bg-slate-100 text-slate-500'
-                        }`}
-                      >
-                        {crew.dutyStatus}
-                      </span>
-                      <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <button
-                          onClick={() => {
-                            setEditingCrew(crew);
-                            setCrewModalOpen(true);
-                          }}
-                          className="text-slate-400 hover:text-indigo-500"
-                        >
-                          <Edit2 className="w-3.5 h-3.5" />
-                        </button>
-                        <button
-                          onClick={() => {
-                            if (confirm('Delete crew?')) deleteCrewMutation.mutate(crew.crewId);
-                          }}
-                          className="text-slate-400 hover:text-rose-500"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                {crewMembers.length === 0 && (
-                  <div className="text-xs text-slate-400 py-4 text-center italic">
-                    No crew members found.
-                  </div>
-                )}
-              </div>
-            </div>
+          <div className="space-y-3">
+            {getLanguageSummary(crewRows)
+              .slice(0, 5)
+              .map(([language, count]) => (
+                <div
+                  key={language}
+                  className="flex items-center justify-between rounded-xl bg-slate-50 px-4 py-3 dark:bg-slate-800/60"
+                >
+                  <span className="text-sm font-medium text-slate-600 dark:text-slate-300">
+                    {language}
+                  </span>
 
-            <div className="bg-indigo-600 text-white p-6 rounded-2xl shadow-xl">
-              <div className="flex items-center gap-2 mb-2 opacity-80">
-                <Globe className="w-5 h-5" />
-                <span className="text-sm font-bold uppercase">Network Status</span>
+                  <span className="font-bold">{count}</span>
+                </div>
+              ))}
+
+            {getLanguageSummary(crewRows).length === 0 && (
+              <div className="py-5 text-center text-sm text-slate-400">
+                No language data available.
               </div>
-              <h3 className="text-3xl font-bold mb-1">98.2%</h3>
-              <p className="text-indigo-100 text-sm mb-4">
-                Crew assignment coverage for next 48 hours.
-              </p>
-            </div>
+            )}
+          </div>
+        </div>
+
+        <div className="rounded-2xl border border-slate-200 bg-white p-6 dark:border-slate-800 dark:bg-slate-900">
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="text-lg font-bold">Crew Roster</h3>
+          </div>
+          <div className="max-h-[300px] space-y-3 overflow-y-auto pr-2">
+            {crewMembers.map((crew, i) => (
+              <div
+                key={crew.crewId || i}
+                className="group flex items-center justify-between rounded-lg p-2 text-sm hover:bg-slate-50 dark:hover:bg-slate-800/50"
+              >
+                <div className="flex items-center gap-2">
+                  <div className="flex h-6 w-6 items-center justify-center rounded-full bg-slate-100 text-[10px] font-bold dark:bg-slate-800">
+                    {crew.crewType?.substring(0, 2).toUpperCase() || 'CC'}
+                  </div>
+                  <span className="font-bold">
+                    {crew.personalInfo?.firstName} {crew.personalInfo?.lastName}
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span
+                    className={`rounded px-1.5 py-0.5 text-[10px] font-bold uppercase ${
+                      crew.dutyStatus === 'available'
+                        ? 'bg-emerald-100 text-emerald-600'
+                        : crew.dutyStatus === 'standby'
+                          ? 'bg-amber-100 text-amber-600'
+                          : 'bg-slate-100 text-slate-500'
+                    }`}
+                  >
+                    {crew.dutyStatus}
+                  </span>
+                  <div className="flex gap-1 opacity-0 transition-opacity group-hover:opacity-100">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setEditingCrew(crew);
+                        setCrewModalOpen(true);
+                      }}
+                      className="text-slate-400 hover:text-indigo-500"
+                    >
+                      <Edit2 className="h-3.5 w-3.5" />
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        if (confirm('Delete crew?')) deleteCrewMutation.mutate(crew.crewId);
+                      }}
+                      className="text-slate-400 hover:text-rose-500"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            ))}
+            {crewMembers.length === 0 && (
+              <div className="py-4 text-center text-xs italic text-slate-400">
+                No crew members found.
+              </div>
+            )}
           </div>
         </div>
       </div>

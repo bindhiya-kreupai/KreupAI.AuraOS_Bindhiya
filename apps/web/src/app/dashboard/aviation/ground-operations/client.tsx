@@ -447,7 +447,6 @@ function GroundOpsContent() {
               {filteredTurnarounds.length} records
             </span>
           </div>
-        </div>
 
           <div className="max-h-[430px] space-y-4 overflow-y-auto pr-2">
             {filteredTurnarounds.map((turnaround, index) => (
