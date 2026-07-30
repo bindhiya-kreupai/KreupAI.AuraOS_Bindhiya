@@ -16,7 +16,7 @@
     "check:mobile-drift": "node scripts/check-mobile-contract-drift.mjs",
     "check:all": "pnpm check:tenant-isolation && pnpm check:authz-coverage && pnpm check:query-perf && pnpm check:api-contract && pnpm check:mobile-drift",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "prepare": "husky install"
+    "prepare": "husky || true"
   },
   "devDependencies": {
     "@prisma/client": "^5.22.0",
