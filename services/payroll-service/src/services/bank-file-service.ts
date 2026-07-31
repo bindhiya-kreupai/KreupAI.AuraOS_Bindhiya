@@ -20,9 +20,7 @@
 
 import { z } from 'zod';
 import Decimal from 'decimal.js';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '@aura/database';
 
 // ---------------------------------------------------------------------------
 // Zod Schemas

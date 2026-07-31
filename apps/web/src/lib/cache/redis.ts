@@ -5,6 +5,7 @@
 
 import Redis from 'ioredis';
 import { logger } from '@/lib/logger';
+import { isBuildPhase } from '@/lib/utils/build-phase';
 
 // Redis configuration from environment
 const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379';
@@ -25,8 +26,7 @@ class RedisClient {
   private hasLoggedConnectionError = false;
 
   constructor() {
-    if (!REDIS_ENABLED) {
-      logger.info('Redis is disabled. Caching will be skipped.');
+    if (!REDIS_ENABLED || isBuildPhase()) {
       return;
     }
 
@@ -325,8 +325,23 @@ class RedisClient {
   }
 }
 
-// Export singleton instance
-export const redis = new RedisClient();
+let redisInstance: RedisClient | undefined;
+
+export function getRedisClient(): RedisClient {
+  if (!redisInstance) {
+    redisInstance = new RedisClient();
+  }
+  return redisInstance;
+}
+
+// Proxy export for 100% backward compatibility with lazy evaluation
+export const redis = new Proxy({} as RedisClient, {
+  get(_target, prop) {
+    const instance = getRedisClient();
+    const value = (instance as any)[prop];
+    return typeof value === 'function' ? value.bind(instance) : value;
+  },
+});
 
 // Export for testing
 export { RedisClient };

@@ -1,8 +1,6 @@
 // @ts-nocheck-removed 2026-06-17: validated against ProbationTracking model in schema. Original tracker #29.
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@aura/database';
 import { z } from 'zod';
-
-const prisma = new PrismaClient();
 
 export const createProbationSchema = z.object({
   tenantId: z.string(),

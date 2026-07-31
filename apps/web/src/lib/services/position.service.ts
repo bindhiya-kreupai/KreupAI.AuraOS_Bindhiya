@@ -4,10 +4,8 @@
  * @project AURA HCM Platform
  */
 
-import { PrismaClient } from '@aura/database';
+import { prisma } from '@aura/database';
 import { z } from 'zod';
-
-const prisma = new PrismaClient();
 
 // ========================================
 // VALIDATION SCHEMAS
@@ -186,7 +184,9 @@ export class PositionService {
     const position = await prisma.position.create({
       data: {
         ...validatedData,
-        effectiveDate: validatedData.effectiveDate ? new Date(validatedData.effectiveDate) : undefined,
+        effectiveDate: validatedData.effectiveDate
+          ? new Date(validatedData.effectiveDate)
+          : undefined,
         vacantCount: validatedData.headcount, // Initially all vacant
       },
       include: {
@@ -237,7 +237,9 @@ export class PositionService {
       where: { id },
       data: {
         ...validatedData,
-        effectiveDate: validatedData.effectiveDate ? new Date(validatedData.effectiveDate) : undefined,
+        effectiveDate: validatedData.effectiveDate
+          ? new Date(validatedData.effectiveDate)
+          : undefined,
       },
       include: {
         department: true,
@@ -286,31 +288,23 @@ export class PositionService {
    * Get dashboard statistics
    */
   static async getStats(tenantId: string) {
-    const [
-      total,
-      draft,
-      open,
-      filled,
-      frozen,
-      closed,
-      totalHeadcount,
-      filledHeadcount,
-    ] = await Promise.all([
-      prisma.position.count({ where: { tenantId, isActive: true } }),
-      prisma.position.count({ where: { tenantId, isActive: true, status: 'DRAFT' } }),
-      prisma.position.count({ where: { tenantId, isActive: true, status: 'OPEN' } }),
-      prisma.position.count({ where: { tenantId, isActive: true, status: 'FILLED' } }),
-      prisma.position.count({ where: { tenantId, isActive: true, status: 'FROZEN' } }),
-      prisma.position.count({ where: { tenantId, isActive: true, status: 'CLOSED' } }),
-      prisma.position.aggregate({
-        where: { tenantId, isActive: true },
-        _sum: { headcount: true },
-      }),
-      prisma.position.aggregate({
-        where: { tenantId, isActive: true },
-        _sum: { filledCount: true },
-      }),
-    ]);
+    const [total, draft, open, filled, frozen, closed, totalHeadcount, filledHeadcount] =
+      await Promise.all([
+        prisma.position.count({ where: { tenantId, isActive: true } }),
+        prisma.position.count({ where: { tenantId, isActive: true, status: 'DRAFT' } }),
+        prisma.position.count({ where: { tenantId, isActive: true, status: 'OPEN' } }),
+        prisma.position.count({ where: { tenantId, isActive: true, status: 'FILLED' } }),
+        prisma.position.count({ where: { tenantId, isActive: true, status: 'FROZEN' } }),
+        prisma.position.count({ where: { tenantId, isActive: true, status: 'CLOSED' } }),
+        prisma.position.aggregate({
+          where: { tenantId, isActive: true },
+          _sum: { headcount: true },
+        }),
+        prisma.position.aggregate({
+          where: { tenantId, isActive: true },
+          _sum: { filledCount: true },
+        }),
+      ]);
 
     const totalHeadcountValue = totalHeadcount._sum.headcount || 0;
     const filledHeadcountValue = filledHeadcount._sum.filledCount || 0;
