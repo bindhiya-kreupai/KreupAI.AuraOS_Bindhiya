@@ -1,3 +1,5 @@
+const path = require('path');
+
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   // #29 — Both TypeScript and ESLint errors now gate the build.
@@ -62,6 +64,10 @@ const nextConfig = {
     ],
   },
   webpack: (config, { isServer, dev }) => {
+    config.resolve = config.resolve || {};
+    config.resolve.alias = config.resolve.alias || {};
+    config.resolve.alias['@'] = path.resolve(__dirname, 'src');
+
     if (!dev) {
       // Disable persistent Webpack cache in production to prevent PackFileCacheStrategy heap exhaustion
       config.cache = false;
