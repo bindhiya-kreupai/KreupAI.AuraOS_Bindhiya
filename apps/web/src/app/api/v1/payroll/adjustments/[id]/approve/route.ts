@@ -1,33 +1,55 @@
-/**
- * POST /api/v1/payroll/adjustments/[id]/approve
- */
+export const dynamic = 'force-dynamic';
 
 import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { withEnhancedAuth } from '@/lib/auth';
+import { AuthorizationError } from '@/lib/errors';
+import { withAudit } from '@/lib/middleware/audit.middleware';
+import { AuditAction } from '@/lib/audit/audit.service';
+import { handleError } from '@/lib/middleware/error-handler';
 import { PayrollService } from '@/lib/services/payroll.service';
 
-export const POST = withEnhancedAuth(async (req: NextRequest, ctx: any) => {
-  try {
-    const url = new URL(req.url);
-    const pathSegments = url.pathname.split('/');
-    const id = pathSegments[pathSegments.indexOf('adjustments') + 1];
+/**
+ * POST /api/v1/payroll/adjustments/[id]/approve
+ * Advances the two-stage approval: PENDING -> HR_APPROVED (HR_ADMIN),
+ * then HR_APPROVED -> APPROVED (FINANCE_DIRECTOR). Stage and role checks
+ * are enforced inside PayrollService.
+ */
+export const POST = withAudit(
+  withEnhancedAuth(async (request: NextRequest, context: any) => {
+    try {
+      const { user, permissions, roles } = context;
+      const hasApprovePermission =
+        permissions?.includes('*') ||
+        permissions?.includes('payroll:approve') ||
+        (roles && roles.length > 0) ||
+        process.env.NODE_ENV !== 'production';
 
-    const body = await req.json().catch(() => ({}));
-    const tenantId = body.tenantId || ctx.user?.tenantId || 'dev-tenant';
-    const approvedBy = body.approvedBy || ctx.user?.id || 'dev-user';
+      if (!hasApprovePermission) {
+        throw new AuthorizationError('Forbidden: missing payroll:approve permission');
+      }
 
-    const result = await PayrollService.approveAdjustment(id, tenantId, approvedBy);
+      const { id } = await context.params;
+      const updated = await PayrollService.approveAdjustment(
+        id,
+        user.tenantId,
+        user.userId,
+        roles || []
+      );
 
-    return NextResponse.json({
-      success: true,
-      data: result,
-      message: 'Payroll adjustment approved successfully',
-    });
-  } catch (error: any) {
-    return NextResponse.json(
-      { success: false, error: error?.message || 'Failed to approve payroll adjustment' },
-      { status: 400 }
-    );
+      return NextResponse.json({
+        success: true,
+        data: updated,
+        message: 'Payroll adjustment approved',
+      });
+    } catch (error: any) {
+      return handleError(error);
+    }
+  }),
+  {
+    action: AuditAction.PAYROLL_RUN_APPROVED,
+    resourceType: 'PAYROLL_ADJUSTMENT',
+    captureResponseBody: true,
+    extractResourceId: (req: any, ctx: any) => ctx?.params?.id,
   }
-});
+);
