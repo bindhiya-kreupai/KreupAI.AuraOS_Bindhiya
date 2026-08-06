@@ -18,6 +18,7 @@ import {
   Plus,
   Search,
   SlidersHorizontal,
+  Trash2,
   X,
 } from 'lucide-react';
 import { AdjustmentService } from '../services';
@@ -87,14 +88,7 @@ const STATUS_CONFIG: Record<
   },
 };
 
-const TABS: AdjustmentApprovalStatus[] = [
-  'ALL' as any,
-  'PENDING',
-  'HR_APPROVED',
-  'APPROVED',
-  'REJECTED',
-  'CANCELLED',
-];
+const TABS: string[] = ['ALL', 'PENDING', 'HR_APPROVED', 'APPROVED', 'REJECTED', 'CANCELLED'];
 
 const emptyForm: NewAdjustmentForm = {
   employeeId: '',
@@ -112,7 +106,13 @@ export default function PayrollAdjustmentsPage() {
 
   const [adjustments, setAdjustments] = useState<PayrollAdjustment[]>([]);
   const [loading, setLoading] = useState(true);
-  const [meta, setMeta] = useState({ total: 0, page: 1, limit: 15, totalPages: 1 });
+  const [meta, setMeta] = useState<{
+    total: number;
+    page: number;
+    limit: number;
+    totalPages: number;
+    summary?: { totalEarnings: number; totalDeductions: number; pendingCount: number };
+  }>({ total: 0, page: 1, limit: 15, totalPages: 1 });
   const [activeTab, setActiveTab] = useState<string>('ALL');
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState<string>('');
@@ -124,6 +124,7 @@ export default function PayrollAdjustmentsPage() {
   const [creating, setCreating] = useState(false);
   const [approvingId, setApprovingId] = useState<string | null>(null);
   const [showCreateForm, setShowCreateForm] = useState(false);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [createForm, setCreateForm] = useState<NewAdjustmentForm>({ ...emptyForm });
   const [rejectModal, setRejectModal] = useState<{ open: boolean; id: string | null }>({
     open: false,
@@ -133,7 +134,7 @@ export default function PayrollAdjustmentsPage() {
   const [confirmAction, setConfirmAction] = useState<{
     open: boolean;
     id: string | null;
-    action: 'cancel' | null;
+    action: 'cancel' | 'delete' | null;
   }>({
     open: false,
     id: null,
@@ -217,24 +218,82 @@ export default function PayrollAdjustmentsPage() {
     }
     setCreating(true);
     try {
-      await AdjustmentService.createAdjustment({
-        employeeId: createForm.employeeId,
-        payrollMonth: createForm.payrollMonth,
-        adjustmentType: createForm.adjustmentType,
-        code: createForm.code,
-        name: createForm.name,
-        amount: Number(createForm.amount),
-        reason: createForm.reason,
-        category: createForm.category || undefined,
-      });
-      success('Adjustment created successfully.');
+      if (editingId) {
+        await AdjustmentService.updateAdjustment(editingId, {
+          employeeId: createForm.employeeId,
+          payrollMonth: createForm.payrollMonth,
+          adjustmentType: createForm.adjustmentType,
+          code: createForm.code,
+          name: createForm.name,
+          amount: Number(createForm.amount),
+          reason: createForm.reason,
+          category: createForm.category || undefined,
+        });
+        success('Adjustment updated successfully.');
+      } else {
+        await AdjustmentService.createAdjustment({
+          employeeId: createForm.employeeId,
+          payrollMonth: createForm.payrollMonth,
+          adjustmentType: createForm.adjustmentType,
+          code: createForm.code,
+          name: createForm.name,
+          amount: Number(createForm.amount),
+          reason: createForm.reason,
+          category: createForm.category || undefined,
+        });
+        success('Adjustment created successfully.');
+      }
       setShowCreateForm(false);
+      setEditingId(null);
       setCreateForm({ ...emptyForm });
       fetchAdjustments();
     } catch (e: any) {
-      toastError(e?.message || 'Failed to create adjustment.');
+      toastError(e?.message || 'Failed to save adjustment.');
     } finally {
       setCreating(false);
+    }
+  };
+
+  const openEdit = (adj: PayrollAdjustment) => {
+    setEditingId(adj.id);
+    setCreateForm({
+      employeeId: adj.employeeId,
+      payrollMonth: adj.payrollMonth,
+      adjustmentType: adj.adjustmentType,
+      code: adj.code || '',
+      name: adj.name || '',
+      amount: String(Number(adj.amount) || ''),
+      reason: adj.reason || '',
+      category: adj.category || '',
+    });
+    setShowCreateForm(true);
+  };
+
+  const handleSubmit = async (id: string) => {
+    setApprovingId(id);
+    try {
+      await AdjustmentService.submitAdjustment(id);
+      success('Adjustment submitted for approval.');
+      fetchAdjustments();
+    } catch (e: any) {
+      toastError(e?.message || 'Failed to submit adjustment.');
+    } finally {
+      setApprovingId(null);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!confirmAction.id) return;
+    setApprovingId(confirmAction.id);
+    try {
+      await AdjustmentService.deleteAdjustment(confirmAction.id);
+      success('Adjustment deleted.');
+      setConfirmAction({ open: false, id: null, action: null });
+      fetchAdjustments();
+    } catch (e: any) {
+      toastError(e?.message || 'Failed to delete adjustment.');
+    } finally {
+      setApprovingId(null);
     }
   };
 
@@ -272,14 +331,20 @@ export default function PayrollAdjustmentsPage() {
 
   const handleCancel = async () => {
     if (!confirmAction.id) return;
-    setApprovingId(confirmAction.id);
+    const { id, action } = confirmAction;
+    setApprovingId(id);
     try {
-      await AdjustmentService.cancelAdjustment(confirmAction.id);
-      success('Adjustment cancelled.');
+      if (action === 'delete') {
+        await AdjustmentService.deleteAdjustment(id);
+        success('Adjustment deleted.');
+      } else {
+        await AdjustmentService.cancelAdjustment(id);
+        success('Adjustment cancelled.');
+      }
       setConfirmAction({ open: false, id: null, action: null });
       fetchAdjustments();
     } catch (e: any) {
-      toastError(e?.message || 'Failed to cancel adjustment.');
+      toastError(e?.message || 'Failed to update adjustment.');
     } finally {
       setApprovingId(null);
     }
@@ -294,6 +359,13 @@ export default function PayrollAdjustmentsPage() {
     .reduce((sum, a) => sum + Number(a.amount || 0), 0);
 
   const pendingCount = adjustments.filter((a) => a.approvalStatus === 'PENDING').length;
+
+  // Prefer server-computed summary (across the whole filtered result set) over
+  // client-side sums that only cover the current page.
+  const summary = meta.summary;
+  const statEarnings = summary?.totalEarnings ?? totalEarnings;
+  const statDeductions = summary?.totalDeductions ?? totalDeductions;
+  const statPending = summary?.pendingCount ?? pendingCount;
 
   const SortIcon = ({ field }: { field: SortField }) => (
     <ArrowUpDown
@@ -343,7 +415,7 @@ export default function PayrollAdjustmentsPage() {
             <DollarSign className="w-4 h-4 text-emerald-500" />
           </div>
           <div className="text-2xl font-extrabold text-emerald-600 mt-2">
-            +${totalEarnings.toLocaleString()}
+            +${statEarnings.toLocaleString()}
           </div>
         </div>
         <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
@@ -352,7 +424,7 @@ export default function PayrollAdjustmentsPage() {
             <DollarSign className="w-4 h-4 text-rose-500" />
           </div>
           <div className="text-2xl font-extrabold text-rose-600 mt-2">
-            -${totalDeductions.toLocaleString()}
+            -${statDeductions.toLocaleString()}
           </div>
         </div>
         <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
@@ -360,7 +432,7 @@ export default function PayrollAdjustmentsPage() {
             <span>Pending</span>
             <Clock className="w-4 h-4 text-amber-500" />
           </div>
-          <div className="text-2xl font-extrabold text-amber-600 mt-2">{pendingCount}</div>
+          <div className="text-2xl font-extrabold text-amber-600 mt-2">{statPending}</div>
         </div>
         <div className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-sm">
           <div className="flex items-center justify-between text-xs font-bold uppercase tracking-wider text-slate-400">
@@ -502,9 +574,8 @@ export default function PayrollAdjustmentsPage() {
                 filtered.map((adj) => {
                   const sc = STATUS_CONFIG[adj.approvalStatus] || STATUS_CONFIG.DRAFT;
                   const StatusIcon = sc.icon;
-                  const canApprove = adj.approvalStatus === 'PENDING';
-                  const canCancel =
-                    adj.approvalStatus === 'DRAFT' || adj.approvalStatus === 'PENDING';
+                  const actions = adj.actions || [];
+                  const has = (a: string) => actions.includes(a);
                   const isWorking = approvingId === adj.id;
 
                   return (
@@ -563,7 +634,30 @@ export default function PayrollAdjustmentsPage() {
                       </td>
                       <td className="py-3.5 px-4 text-right">
                         <div className="flex items-center justify-end gap-1.5">
-                          {canApprove && (
+                          {has('edit') && (
+                            <button
+                              disabled={isWorking}
+                              onClick={() => openEdit(adj)}
+                              className="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 text-[11px] font-bold rounded-lg transition-all disabled:opacity-50 flex items-center gap-1"
+                            >
+                              Edit
+                            </button>
+                          )}
+                          {has('submit') && (
+                            <button
+                              disabled={isWorking}
+                              onClick={() => handleSubmit(adj.id)}
+                              className="px-2.5 py-1 bg-indigo-600 hover:bg-indigo-700 text-white text-[11px] font-bold rounded-lg transition-all disabled:opacity-50 flex items-center gap-1"
+                            >
+                              {isWorking ? (
+                                <Loader2 className="w-3 h-3 animate-spin" />
+                              ) : (
+                                <CheckCircle2 className="w-3 h-3" />
+                              )}
+                              Submit
+                            </button>
+                          )}
+                          {(has('approveHR') || has('approveFinance')) && (
                             <button
                               disabled={isWorking}
                               onClick={() => handleApprove(adj.id)}
@@ -574,10 +668,10 @@ export default function PayrollAdjustmentsPage() {
                               ) : (
                                 <CheckCircle2 className="w-3 h-3" />
                               )}
-                              Approve
+                              {has('approveFinance') ? 'Approve Fin' : 'Approve'}
                             </button>
                           )}
-                          {canApprove && (
+                          {has('reject') && (
                             <button
                               disabled={isWorking}
                               onClick={() => setRejectModal({ open: true, id: adj.id })}
@@ -587,7 +681,7 @@ export default function PayrollAdjustmentsPage() {
                               Reject
                             </button>
                           )}
-                          {canCancel && !canApprove && (
+                          {has('cancel') && (
                             <button
                               disabled={isWorking}
                               onClick={() =>
@@ -603,7 +697,23 @@ export default function PayrollAdjustmentsPage() {
                               Cancel
                             </button>
                           )}
-                          {!canApprove && !canCancel && (
+                          {has('delete') && (
+                            <button
+                              disabled={isWorking}
+                              onClick={() =>
+                                setConfirmAction({
+                                  open: true,
+                                  id: adj.id,
+                                  action: 'delete',
+                                })
+                              }
+                              className="px-2.5 py-1 bg-slate-100 dark:bg-slate-800 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-slate-500 hover:text-rose-600 text-[11px] font-bold rounded-lg transition-all disabled:opacity-50 flex items-center gap-1"
+                            >
+                              <Trash2 className="w-3 h-3" />
+                              Delete
+                            </button>
+                          )}
+                          {actions.length === 0 && (
                             <span className="text-[11px] text-slate-400 italic">No action</span>
                           )}
                         </div>
