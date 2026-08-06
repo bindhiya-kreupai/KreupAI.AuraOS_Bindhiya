@@ -94,11 +94,21 @@ export class APIClient {
 
       if (!response.ok) {
         const error = isJSON ? await response.json() : { message: response.statusText };
-        throw new APIError(
-          error.message || error.error || 'Request failed',
-          response.status,
-          error
-        );
+        let errMsg = 'Request failed';
+        if (typeof error === 'string') {
+          errMsg = error;
+        } else if (typeof error.error === 'string') {
+          errMsg = error.error;
+        } else if (error.error && typeof error.error.message === 'string') {
+          errMsg = error.error.message;
+        } else if (typeof error.message === 'string') {
+          errMsg = error.message;
+        } else if (error.message && typeof error.message === 'object') {
+          errMsg = error.message.message || JSON.stringify(error.message);
+        } else {
+          errMsg = JSON.stringify(error);
+        }
+        throw new APIError(errMsg, response.status, error);
       }
 
       // Handle 204 No Content
