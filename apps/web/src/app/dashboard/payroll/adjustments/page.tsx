@@ -950,7 +950,8 @@ export default function PayrollAdjustmentsPage() {
           <div className="bg-white dark:bg-slate-900 w-full max-w-sm rounded-t-2xl sm:rounded-2xl shadow-2xl flex flex-col">
             <div className="flex items-center justify-between px-5 py-3 border-b border-slate-200 dark:border-slate-800">
               <h3 className="font-bold flex items-center gap-2">
-                <AlertCircle className="w-4 h-4 text-amber-500" /> Cancel Adjustment
+                <AlertCircle className="w-4 h-4 text-amber-500" />
+                {confirmAction.action === 'delete' ? 'Delete Adjustment' : 'Cancel Adjustment'}
               </h3>
               <button
                 onClick={() => setConfirmAction({ open: false, id: null, action: null })}
@@ -961,7 +962,9 @@ export default function PayrollAdjustmentsPage() {
             </div>
             <div className="px-5 py-4">
               <p className="text-sm text-slate-600 dark:text-slate-400">
-                Are you sure you want to cancel this adjustment? This action cannot be undone.
+                {confirmAction.action === 'delete'
+                  ? 'Are you sure you want to delete this draft adjustment? This action cannot be undone.'
+                  : 'Are you sure you want to cancel this adjustment? This action cannot be undone.'}
               </p>
             </div>
             <div className="flex justify-end gap-2 px-5 py-3 border-t border-slate-200 dark:border-slate-800">
@@ -974,10 +977,18 @@ export default function PayrollAdjustmentsPage() {
               <button
                 onClick={handleCancel}
                 disabled={approvingId !== null}
-                className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium bg-slate-700 text-white rounded-lg hover:bg-slate-800 disabled:opacity-60"
+                className={`inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-white rounded-lg disabled:opacity-60 ${
+                  confirmAction.action === 'delete'
+                    ? 'bg-rose-600 hover:bg-rose-700'
+                    : 'bg-slate-700 hover:bg-slate-800'
+                }`}
               >
                 {approvingId && <Loader2 className="w-4 h-4 animate-spin" />}
-                {approvingId ? 'Cancelling...' : 'Yes, Cancel'}
+                {approvingId
+                  ? 'Processing...'
+                  : confirmAction.action === 'delete'
+                    ? 'Yes, Delete'
+                    : 'Yes, Cancel'}
               </button>
             </div>
           </div>
