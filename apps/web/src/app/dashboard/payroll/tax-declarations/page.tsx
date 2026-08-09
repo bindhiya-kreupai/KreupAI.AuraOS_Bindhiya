@@ -107,48 +107,65 @@ export default function TaxDeclarationsPage() {
     }
   };
 
-  const calcSection80C = () =>
-    (parseFloat(formData.ppf) || 0) +
-    (parseFloat(formData.elss) || 0) +
-    (parseFloat(formData.lifeInsurance) || 0) +
-    (parseFloat(formData.homeLoanPrincipal) || 0);
+  const [modalError, setModalError] = useState<string | null>(null);
 
-  const calcSection80D = () =>
-    (parseFloat(formData.medicalSelf) || 0) + (parseFloat(formData.medicalParents) || 0);
+  const calcSection80C = () => {
+    if (formData.taxRegime === 'NEW') return 0;
+    return (
+      (parseFloat(formData.ppf) || 0) +
+      (parseFloat(formData.elss) || 0) +
+      (parseFloat(formData.lifeInsurance) || 0) +
+      (parseFloat(formData.homeLoanPrincipal) || 0)
+    );
+  };
 
-  const calcTotalDeductions = () => calcSection80C() + calcSection80D();
+  const calcSection80D = () => {
+    if (formData.taxRegime === 'NEW') return 0;
+    return (parseFloat(formData.medicalSelf) || 0) + (parseFloat(formData.medicalParents) || 0);
+  };
+
+  const calcTotalDeductions = () => {
+    if (formData.taxRegime === 'NEW') return 0;
+    return calcSection80C() + calcSection80D();
+  };
 
   const handleCreateSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
+    setModalError(null);
     setError(null);
     try {
+      const isNew = formData.taxRegime === 'NEW';
       const res = await fetch('/api/v1/tax-declarations', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
-          ppf: parseFloat(formData.ppf) || 0,
-          elss: parseFloat(formData.elss) || 0,
-          lifeInsurance: parseFloat(formData.lifeInsurance) || 0,
-          homeLoanPrincipal: parseFloat(formData.homeLoanPrincipal) || 0,
-          medicalSelf: parseFloat(formData.medicalSelf) || 0,
-          medicalParents: parseFloat(formData.medicalParents) || 0,
-          rentPaid: parseFloat(formData.rentPaid) || 0,
+          ppf: isNew ? 0 : parseFloat(formData.ppf) || 0,
+          elss: isNew ? 0 : parseFloat(formData.elss) || 0,
+          lifeInsurance: isNew ? 0 : parseFloat(formData.lifeInsurance) || 0,
+          homeLoanPrincipal: isNew ? 0 : parseFloat(formData.homeLoanPrincipal) || 0,
+          medicalSelf: isNew ? 0 : parseFloat(formData.medicalSelf) || 0,
+          medicalParents: isNew ? 0 : parseFloat(formData.medicalParents) || 0,
+          rentPaid: isNew ? 0 : parseFloat(formData.rentPaid) || 0,
         }),
       });
 
       const json = await res.json();
       if (json.success) {
-        setSuccessMsg('Tax declaration created successfully!');
+        setSuccessMsg(`Tax declaration for ${formData.employeeId} saved successfully!`);
         setShowCreateModal(false);
         fetchDeclarations();
-        setTimeout(() => setSuccessMsg(null), 3500);
+        setTimeout(() => setSuccessMsg(null), 4000);
       } else {
-        setError(json.error || 'Failed to create tax declaration');
+        const errMsg =
+          typeof json.error === 'object'
+            ? json.error?.message || JSON.stringify(json.error)
+            : json.error;
+        setModalError(errMsg || 'Failed to create tax declaration');
       }
     } catch (_err) {
-      setError('Error creating tax declaration');
+      setModalError('Error creating tax declaration');
     } finally {
       setSubmitting(false);
     }
@@ -572,6 +589,13 @@ export default function TaxDeclarationsPage() {
                 <X className="w-4 h-4" />
               </button>
             </div>
+
+            {modalError && (
+              <div className="p-3 bg-rose-50 dark:bg-rose-950/40 border border-rose-200 dark:border-rose-800 rounded-xl text-rose-700 dark:text-rose-400 text-xs flex items-center gap-2">
+                <AlertTriangle className="w-4 h-4 flex-shrink-0 text-rose-500" />
+                <span>{modalError}</span>
+              </div>
+            )}
 
             <form onSubmit={handleCreateSubmit} className="space-y-4 text-xs">
               <div className="grid grid-cols-2 gap-3">
