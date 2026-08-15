@@ -22,6 +22,11 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
   async headers() {
+    const isProd = process.env.NODE_ENV === 'production';
+    const scriptSrc = isProd
+      ? "script-src 'self';"
+      : "script-src 'self' 'unsafe-eval' 'unsafe-inline';";
+
     return [
       {
         source: '/(.*)',
@@ -37,7 +42,7 @@ const nextConfig = {
           },
           {
             key: 'Content-Security-Policy',
-            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https: wss:; frame-ancestors 'none';",
+            value: `default-src 'self'; ${scriptSrc} style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' https: wss:; frame-ancestors 'none';`,
           },
         ],
       },

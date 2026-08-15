@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { generateNonce, buildCspHeader } from '@/lib/security/csp';
 
 // Allow-list of origins permitted to call /api/* with credentials.
 // Production tenants belong here; dev origins are allowed when NODE_ENV !== 'production'.
@@ -49,7 +50,6 @@ function applyCorsHeaders(response: NextResponse, origin: string | null): NextRe
   response.headers.set('Access-Control-Max-Age', '86400');
   return response;
 }
-
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const isApi = pathname.startsWith('/api/');
@@ -60,19 +60,30 @@ export function middleware(request: NextRequest) {
   const requestId =
     incomingRequestId && incomingRequestId.length <= 100 ? incomingRequestId : crypto.randomUUID();
 
+  // Generate per-request nonce for Content Security Policy (AOS-SEC-008)
+  const nonce = generateNonce();
+  const isProduction = process.env.NODE_ENV === 'production';
+  const cspHeader = buildCspHeader(nonce, isProduction);
+
   // Preflight: short-circuit OPTIONS for /api with CORS headers, never hitting route handlers.
   if (isApi && request.method === 'OPTIONS') {
     const preflight = new NextResponse(null, { status: 204 });
     preflight.headers.set('X-Request-Id', requestId);
+    preflight.headers.set('Content-Security-Policy', cspHeader);
+    preflight.headers.set('x-nonce', nonce);
     return applyCorsHeaders(preflight, origin);
   }
 
-  // Forward request id to the route handler.
+  // Forward request id & nonce to the route handlers and Server Components.
   const forwardedHeaders = new Headers(request.headers);
   forwardedHeaders.set('x-request-id', requestId);
+  forwardedHeaders.set('x-nonce', nonce);
+  forwardedHeaders.set('Content-Security-Policy', cspHeader);
 
   const response = NextResponse.next({ request: { headers: forwardedHeaders } });
   response.headers.set('X-Request-Id', requestId);
+  response.headers.set('Content-Security-Policy', cspHeader);
+  response.headers.set('x-nonce', nonce);
 
   if (isApi) {
     applyCorsHeaders(response, origin);

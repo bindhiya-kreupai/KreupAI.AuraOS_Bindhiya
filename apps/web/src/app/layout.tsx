@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+import { headers } from 'next/headers';
 
 export const dynamic = 'force-dynamic';
 import '@/styles/globals.css';
@@ -28,6 +29,9 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const headersList = headers();
+  const nonce = headersList.get('x-nonce') || undefined;
+
   return (
     <html lang="en">
       <head>
@@ -36,6 +40,7 @@ export default function RootLayout({
       </head>
       <body className={inter.className}>
         <script
+          nonce={nonce}
           dangerouslySetInnerHTML={{
             __html: `
               // Service worker only in production — in dev it caches stale
