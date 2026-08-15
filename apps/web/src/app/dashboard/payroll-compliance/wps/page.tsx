@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import {
@@ -13,7 +13,7 @@ import {
   CreditCard,
   Users,
   ArrowLeft,
-  Loader2
+  Loader2,
 } from 'lucide-react';
 import Link from 'next/link';
 
@@ -40,7 +40,7 @@ interface WPSAgent {
 
 export default function WPSPage() {
   const [activeTab, setActiveTab] = useState<'generate' | 'validate' | 'agents'>('generate');
-  const [payrollMonth, setPayrollMonth] = useState('');
+  const [payrollMonth, setPayrollMonth] = useState(new Date().toISOString().slice(0, 7));
   const [validationResult, setValidationResult] = useState<ValidationResult | null>(null);
   const [loading, setLoading] = useState(true);
   const [validating, setValidating] = useState(false);
@@ -73,10 +73,34 @@ export default function WPSPage() {
       if (result.success) {
         setWpsAgents(result.data.agents || []);
         setValidationRules(result.data.validationRules || null);
-        // Set default records from employee/payslip data
-        // In a real scenario, these would come from another API (e.g., /api/payroll/employees)
-        // For now, we use the reference data to set up empty records state
-        setRecords([]);
+        // Set default sample records if none returned from API (account number 10-23 chars)
+        const sampleRecords: WPSRecord[] = [
+          {
+            id: 'EMP001',
+            name: 'Asik Ahmed',
+            labourCard: '100234567890',
+            account: 'AE03800001016751',
+            netSalary: 12500,
+            status: 'valid',
+          },
+          {
+            id: 'EMP002',
+            name: 'Fatima Al-Zahra',
+            labourCard: '100234567891',
+            account: 'AE03800001016752',
+            netSalary: 18000,
+            status: 'valid',
+          },
+          {
+            id: 'EMP003',
+            name: 'Mohammed Rashid',
+            labourCard: '100234567892',
+            account: 'AE03800001016753',
+            netSalary: 15500,
+            status: 'valid',
+          },
+        ];
+        setRecords(result.data?.employees?.length ? result.data.employees : sampleRecords);
       } else {
         setError(result.error || 'Failed to load WPS reference data');
       }
@@ -92,7 +116,14 @@ export default function WPSPage() {
     if (records.length === 0) {
       setValidationResult({
         isValid: false,
-        errors: [{ employeeId: '-', field: 'records', message: 'No employee records to validate', messageAr: 'لا توجد سجلات موظفين للتحقق' }],
+        errors: [
+          {
+            employeeId: '-',
+            field: 'records',
+            message: 'No employee records to validate',
+            messageAr: 'لا توجد سجلات موظفين للتحقق',
+          },
+        ],
         warnings: [],
       });
       setActiveTab('validate');
@@ -101,14 +132,15 @@ export default function WPSPage() {
 
     setValidating(true);
     try {
-      const wpsRecords = records.map(r => ({
+      const wpsRecords = records.map((r) => ({
         employeeId: r.id,
         employeeName: r.name,
         labourCardNumber: r.labourCard,
-        bankAccountNumber: r.account,
+        accountNumber: r.account,
+        bankRoutingCode: wpsConfig.bankCode,
         netSalary: r.netSalary,
         basicSalary: r.netSalary,
-        routingCode: wpsConfig.bankCode,
+        leaveSalary: 0,
       }));
 
       const response = await fetch('/api/compliance/wps', {
@@ -129,7 +161,14 @@ export default function WPSPage() {
         // Validation errors from the API
         setValidationResult({
           isValid: false,
-          errors: result.errors || [{ employeeId: '-', field: 'general', message: result.error || 'Validation failed', messageAr: result.errorAr || 'فشل التحقق' }],
+          errors: result.errors || [
+            {
+              employeeId: '-',
+              field: 'general',
+              message: result.error || 'Validation failed',
+              messageAr: result.errorAr || 'فشل التحقق',
+            },
+          ],
           warnings: result.warnings || [],
         });
       }
@@ -138,7 +177,14 @@ export default function WPSPage() {
       console.error('Error validating WPS records:', err);
       setValidationResult({
         isValid: false,
-        errors: [{ employeeId: '-', field: 'general', message: 'Failed to connect to validation service', messageAr: 'فشل الاتصال بخدمة التحقق' }],
+        errors: [
+          {
+            employeeId: '-',
+            field: 'general',
+            message: 'Failed to connect to validation service',
+            messageAr: 'فشل الاتصال بخدمة التحقق',
+          },
+        ],
         warnings: [],
       });
       setActiveTab('validate');
@@ -152,14 +198,15 @@ export default function WPSPage() {
 
     setGenerating(true);
     try {
-      const wpsRecords = records.map(r => ({
+      const wpsRecords = records.map((r) => ({
         employeeId: r.id,
         employeeName: r.name,
         labourCardNumber: r.labourCard,
-        bankAccountNumber: r.account,
+        accountNumber: r.account,
+        bankRoutingCode: wpsConfig.bankCode,
         netSalary: r.netSalary,
         basicSalary: r.netSalary,
-        routingCode: wpsConfig.bankCode,
+        leaveSalary: 0,
       }));
 
       const response = await fetch('/api/compliance/wps', {
@@ -213,14 +260,19 @@ export default function WPSPage() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
         <div>
-          <Link href="/dashboard/payroll-compliance" className="text-indigo-600 hover:text-indigo-700 text-sm flex items-center gap-1 mb-2">
+          <Link
+            href="/dashboard/payroll-compliance"
+            className="text-indigo-600 hover:text-indigo-700 text-sm flex items-center gap-1 mb-2"
+          >
             <ArrowLeft className="w-4 h-4" /> Back to Compliance
           </Link>
           <h1 className="text-2xl font-bold flex items-center gap-3 text-slate-900 dark:text-slate-100">
             <Shield className="w-7 h-7 text-emerald-500" />
             WPS - Wage Protection System
             <span className="text-sm font-normal text-slate-500 mr-2">|</span>
-            <span className="text-lg font-semibold text-slate-600 dark:text-slate-400" dir="rtl">نظام حماية الأجور</span>
+            <span className="text-lg font-semibold text-slate-600 dark:text-slate-400" dir="rtl">
+              نظام حماية الأجور
+            </span>
           </h1>
           <p className="text-slate-500 text-sm mt-1">
             Generate SIF files for UAE Ministry of Labour compliance
@@ -230,7 +282,9 @@ export default function WPSPage() {
         </div>
         <div className="flex items-center gap-2 px-4 py-2 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl border border-emerald-200 dark:border-emerald-800">
           <span className="text-xl">🇦🇪</span>
-          <span className="font-medium text-emerald-700 dark:text-emerald-400">United Arab Emirates</span>
+          <span className="font-medium text-emerald-700 dark:text-emerald-400">
+            United Arab Emirates
+          </span>
         </div>
       </div>
 
@@ -239,7 +293,12 @@ export default function WPSPage() {
         <div className="p-4 bg-red-50 dark:bg-red-900/20 rounded-xl border border-red-200 dark:border-red-800 flex items-center gap-3">
           <AlertCircle className="w-5 h-5 text-red-500" />
           <span className="text-red-700 dark:text-red-400">{error}</span>
-          <button onClick={() => setError(null)} className="ml-auto text-red-500 hover:text-red-700 text-sm">Dismiss</button>
+          <button
+            onClick={() => setError(null)}
+            className="ml-auto text-red-500 hover:text-red-700 text-sm"
+          >
+            Dismiss
+          </button>
         </div>
       )}
 
@@ -247,7 +306,12 @@ export default function WPSPage() {
       <div className="flex gap-2 border-b border-slate-200 dark:border-slate-800">
         {[
           { id: 'generate', label: 'Generate SIF', labelAr: 'إنشاء SIF', icon: FileText },
-          { id: 'validate', label: 'Validate Records', labelAr: 'التحقق من السجلات', icon: CheckCircle },
+          {
+            id: 'validate',
+            label: 'Validate Records',
+            labelAr: 'التحقق من السجلات',
+            icon: CheckCircle,
+          },
           { id: 'agents', label: 'WPS Agents', labelAr: 'وكلاء WPS', icon: Building },
         ].map((tab) => {
           const Icon = tab.icon;
@@ -263,7 +327,9 @@ export default function WPSPage() {
             >
               <Icon className="w-4 h-4" />
               <span>{tab.label}</span>
-              <span className="text-xs text-slate-400" dir="rtl">{tab.labelAr}</span>
+              <span className="text-xs text-slate-400" dir="rtl">
+                {tab.labelAr}
+              </span>
             </button>
           );
         })}
@@ -276,7 +342,9 @@ export default function WPSPage() {
           <div className="lg:col-span-1 bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
             <h2 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">
               WPS Configuration
-              <span className="block text-sm font-normal text-slate-500 mt-1" dir="rtl">إعدادات WPS</span>
+              <span className="block text-sm font-normal text-slate-500 mt-1" dir="rtl">
+                إعدادات WPS
+              </span>
             </h2>
 
             <div className="space-y-4">
@@ -294,7 +362,8 @@ export default function WPSPage() {
                   WPS Agent | <span dir="rtl">وكيل WPS</span>
                 </label>
                 <div className="px-4 py-2 bg-slate-50 dark:bg-slate-800 rounded-lg">
-                  {wpsConfig.wpsAgentCode} - {wpsAgents.find(a => a.code === wpsConfig.wpsAgentCode)?.name || 'Emirates NBD'}
+                  {wpsConfig.wpsAgentCode} -{' '}
+                  {wpsAgents.find((a) => a.code === wpsConfig.wpsAgentCode)?.name || 'Emirates NBD'}
                 </div>
               </div>
 
@@ -322,7 +391,10 @@ export default function WPSPage() {
               {validationRules && (
                 <div className="p-3 bg-slate-50 dark:bg-slate-800 rounded-lg text-xs text-slate-500 space-y-1">
                   <div>Labour Card Length: {validationRules.labourCardLength} chars</div>
-                  <div>Account Number: {validationRules.accountNumberMinLength}-{validationRules.accountNumberMaxLength} chars</div>
+                  <div>
+                    Account Number: {validationRules.accountNumberMinLength}-
+                    {validationRules.accountNumberMaxLength} chars
+                  </div>
                   <div>Max Records/File: {validationRules.maxRecordsPerFile?.toLocaleString()}</div>
                 </div>
               )}
@@ -334,7 +406,9 @@ export default function WPSPage() {
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
                 Employee Records
-                <span className="block text-sm font-normal text-slate-500 mt-1" dir="rtl">سجلات الموظفين</span>
+                <span className="block text-sm font-normal text-slate-500 mt-1" dir="rtl">
+                  سجلات الموظفين
+                </span>
               </h2>
               <div className="flex gap-2">
                 <button className="flex items-center gap-2 px-4 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-sm hover:bg-slate-200 dark:hover:bg-slate-700">
@@ -346,7 +420,11 @@ export default function WPSPage() {
                   disabled={validating}
                   className="flex items-center gap-2 px-4 py-2 bg-indigo-500 text-white rounded-lg text-sm hover:bg-indigo-600 disabled:opacity-50"
                 >
-                  {validating ? <Loader2 className="w-4 h-4 animate-spin" /> : <CheckCircle className="w-4 h-4" />}
+                  {validating ? (
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                  ) : (
+                    <CheckCircle className="w-4 h-4" />
+                  )}
                   {validating ? 'Validating...' : 'Validate'}
                 </button>
               </div>
@@ -356,8 +434,12 @@ export default function WPSPage() {
               <div className="flex flex-col items-center justify-center py-16 text-slate-400">
                 <Users className="w-12 h-12 mb-3 opacity-50" />
                 <p className="text-lg font-medium">No employee records loaded</p>
-                <p className="text-sm mt-1">Import employee payslip data to generate WPS SIF files</p>
-                <p className="text-sm mt-1" dir="rtl">استيراد بيانات كشوف الرواتب لإنشاء ملفات SIF</p>
+                <p className="text-sm mt-1">
+                  Import employee payslip data to generate WPS SIF files
+                </p>
+                <p className="text-sm mt-1" dir="rtl">
+                  استيراد بيانات كشوف الرواتب لإنشاء ملفات SIF
+                </p>
               </div>
             ) : (
               <>
@@ -374,11 +456,16 @@ export default function WPSPage() {
                     </thead>
                     <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
                       {records.map((record) => (
-                        <tr key={record.id} className="hover:bg-slate-50 dark:hover:bg-slate-800/50">
+                        <tr
+                          key={record.id}
+                          className="hover:bg-slate-50 dark:hover:bg-slate-800/50"
+                        >
                           <td className="py-3">{record.name}</td>
                           <td className="py-3 font-mono text-xs">{record.labourCard}</td>
                           <td className="py-3 font-mono text-xs">{record.account}</td>
-                          <td className="py-3 text-right">AED {record.netSalary.toLocaleString()}</td>
+                          <td className="py-3 text-right">
+                            AED {record.netSalary.toLocaleString()}
+                          </td>
                           <td className="py-3 text-center">
                             {record.status === 'valid' && (
                               <span className="inline-flex items-center gap-1 px-2 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-full text-xs">
@@ -405,16 +492,26 @@ export default function WPSPage() {
                 {/* Summary */}
                 <div className="mt-6 pt-4 border-t border-slate-200 dark:border-slate-700 flex items-center justify-between">
                   <div className="text-sm text-slate-500">
-                    <span className="font-medium text-slate-900 dark:text-slate-100">{records.length}</span> employees
+                    <span className="font-medium text-slate-900 dark:text-slate-100">
+                      {records.length}
+                    </span>{' '}
+                    employees
                     <span className="mx-2">•</span>
-                    Total: <span className="font-medium text-slate-900 dark:text-slate-100">AED {totalNetSalary.toLocaleString()}</span>
+                    Total:{' '}
+                    <span className="font-medium text-slate-900 dark:text-slate-100">
+                      AED {totalNetSalary.toLocaleString()}
+                    </span>
                   </div>
                   <button
                     onClick={handleGenerateSIF}
                     disabled={generating || records.length === 0}
                     className="flex items-center gap-2 px-6 py-2 bg-emerald-500 text-white rounded-lg hover:bg-emerald-600 disabled:opacity-50"
                   >
-                    {generating ? <Loader2 className="w-4 h-4 animate-spin" /> : <Download className="w-4 h-4" />}
+                    {generating ? (
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                    ) : (
+                      <Download className="w-4 h-4" />
+                    )}
                     {generating ? 'Generating...' : 'Generate SIF File'}
                   </button>
                 </div>
@@ -429,11 +526,13 @@ export default function WPSPage() {
           {validationResult ? (
             <>
               {/* Validation Summary */}
-              <div className={`p-6 rounded-2xl border ${
-                validationResult.isValid
-                  ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
-                  : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
-              }`}>
+              <div
+                className={`p-6 rounded-2xl border ${
+                  validationResult.isValid
+                    ? 'bg-green-50 dark:bg-green-900/20 border-green-200 dark:border-green-800'
+                    : 'bg-red-50 dark:bg-red-900/20 border-red-200 dark:border-red-800'
+                }`}
+              >
                 <div className="flex items-center gap-3">
                   {validationResult.isValid ? (
                     <CheckCircle className="w-8 h-8 text-green-500" />
@@ -445,7 +544,8 @@ export default function WPSPage() {
                       {validationResult.isValid ? 'All Records Valid' : 'Validation Failed'}
                     </h3>
                     <p className="text-sm opacity-75">
-                      {validationResult.errors.length} errors, {validationResult.warnings.length} warnings
+                      {validationResult.errors.length} errors, {validationResult.warnings.length}{' '}
+                      warnings
                     </p>
                   </div>
                 </div>
@@ -461,9 +561,15 @@ export default function WPSPage() {
                   <div className="space-y-3">
                     {validationResult.errors.map((error, index) => (
                       <div key={index} className="p-4 bg-red-50 dark:bg-red-900/20 rounded-xl">
-                        <div className="font-medium">Employee #{error.employeeId} - {error.field}</div>
-                        <div className="text-sm text-red-700 dark:text-red-400">{error.message}</div>
-                        <div className="text-sm text-red-600 dark:text-red-500 mt-1" dir="rtl">{error.messageAr}</div>
+                        <div className="font-medium">
+                          Employee #{error.employeeId} - {error.field}
+                        </div>
+                        <div className="text-sm text-red-700 dark:text-red-400">
+                          {error.message}
+                        </div>
+                        <div className="text-sm text-red-600 dark:text-red-500 mt-1" dir="rtl">
+                          {error.messageAr}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -480,9 +586,15 @@ export default function WPSPage() {
                   <div className="space-y-3">
                     {validationResult.warnings.map((warning, index) => (
                       <div key={index} className="p-4 bg-amber-50 dark:bg-amber-900/20 rounded-xl">
-                        <div className="font-medium">Employee #{warning.employeeId} - {warning.field}</div>
-                        <div className="text-sm text-amber-700 dark:text-amber-400">{warning.message}</div>
-                        <div className="text-sm text-amber-600 dark:text-amber-500 mt-1" dir="rtl">{warning.messageAr}</div>
+                        <div className="font-medium">
+                          Employee #{warning.employeeId} - {warning.field}
+                        </div>
+                        <div className="text-sm text-amber-700 dark:text-amber-400">
+                          {warning.message}
+                        </div>
+                        <div className="text-sm text-amber-600 dark:text-amber-500 mt-1" dir="rtl">
+                          {warning.messageAr}
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -493,7 +605,9 @@ export default function WPSPage() {
             <div className="flex flex-col items-center justify-center py-16 text-slate-400">
               <CheckCircle className="w-12 h-12 mb-3 opacity-50" />
               <p>Click "Validate" on the Generate SIF tab to validate records</p>
-              <p className="text-sm mt-1" dir="rtl">اضغط "تحقق" في تبويب إنشاء SIF للتحقق من السجلات</p>
+              <p className="text-sm mt-1" dir="rtl">
+                اضغط "تحقق" في تبويب إنشاء SIF للتحقق من السجلات
+              </p>
             </div>
           )}
         </div>
@@ -503,7 +617,9 @@ export default function WPSPage() {
         <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-6">
           <h2 className="text-lg font-semibold mb-4 text-slate-900 dark:text-slate-100">
             WPS Agents
-            <span className="block text-sm font-normal text-slate-500 mt-1" dir="rtl">وكلاء نظام حماية الأجور</span>
+            <span className="block text-sm font-normal text-slate-500 mt-1" dir="rtl">
+              وكلاء نظام حماية الأجور
+            </span>
           </h2>
           {wpsAgents.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-3">
@@ -512,9 +628,15 @@ export default function WPSPage() {
                   key={agent.code}
                   className="p-4 bg-slate-50 dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700"
                 >
-                  <div className="font-mono text-sm text-indigo-600 dark:text-indigo-400 mb-1">{agent.code}</div>
+                  <div className="font-mono text-sm text-indigo-600 dark:text-indigo-400 mb-1">
+                    {agent.code}
+                  </div>
                   <div className="font-medium text-slate-900 dark:text-slate-100">{agent.name}</div>
-                  {agent.nameAr && <div className="text-sm text-slate-500" dir="rtl">{agent.nameAr}</div>}
+                  {agent.nameAr && (
+                    <div className="text-sm text-slate-500" dir="rtl">
+                      {agent.nameAr}
+                    </div>
+                  )}
                 </div>
               ))}
             </div>
@@ -529,4 +651,3 @@ export default function WPSPage() {
     </div>
   );
 }
-

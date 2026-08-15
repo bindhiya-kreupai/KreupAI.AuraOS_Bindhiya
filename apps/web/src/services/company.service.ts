@@ -10,10 +10,8 @@
  */
 
 import type { Company, CompanyStatus } from '@prisma/client';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@aura/database';
 import { logger } from '@/lib/logger';
-
-const prisma = new PrismaClient();
 
 /**
  * Service response wrapper

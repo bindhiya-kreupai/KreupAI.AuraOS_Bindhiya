@@ -474,13 +474,10 @@ Autonomous overnight pass that closed the highest-impact per-EPIC gap on 19 EPIC
 | EPIC-29           | Visa renewal multi-stage alerts (T-60 / 30 / 15 / 7 / 1 / +1) + dependent cascade  | `7244eaf9` | 12    |
 | EPIC-36           | Country-rule simulation engine (preview diff before publish)                       | `af8b6f46` | 8     |
 | EPIC-19           | Attendance absence-detection + missing-punch workflow                              | `5deb12d7` | 9     |
-<<<<<<< HEAD
-| EPIC-15-S11       | Bahrain SIO ↔ LMRA alignment service                                               | `c0dc7177` | 7     |
-=======
-| EPIC-15-S11       | Bahrain SIO ↔ LMRA alignment service                                              | `c0dc7177` | 7     |
->>>>>>> 8492df9bd42d74db150a3648a1db92b18beba01c
-| EPIC-30-S02       | Document classification engine with retention policy                               | `0a001f86` | 10    |
-| EPIC-31           | Country/entity drill-down + 2D risk heatmap (compliance dashboard)                 | `4bd140ea` | 12    |
+
+| EPIC-15-S11 | Bahrain SIO ↔ LMRA alignment service | `c0dc7177` | 7 |
+| EPIC-30-S02 | Document classification engine with retention policy | `0a001f86` | 10 |
+| EPIC-31 | Country/entity drill-down + 2D risk heatmap (compliance dashboard) | `4bd140ea` | 12 |
 
 **Cumulative:** ~170 new tests, every one passing in isolation. Every closure carries bilingual (en/ar) reason strings where applicable. Country-pack override is wired for the rule-bearing services (EPIC-26, EPIC-20, EPIC-25, EPIC-27) so the EPIC-02 "update rules without a deploy" contract holds across the new closures.
 

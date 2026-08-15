@@ -16,6 +16,7 @@ import type {
   StatutoryReport,
   PayrollSettings,
   PayrollStats,
+  PayrollAdjustment,
 } from './types';
 
 // ============================================================================
@@ -573,7 +574,6 @@ export class PayrollAnalyticsService {
       if (response.stats) {
         return response.stats;
       }
-      // Return default stats if none available
       return {
         totalEmployees: 0,
         activePayrolls: 0,
@@ -606,5 +606,163 @@ export class PayrollAnalyticsService {
         overdueReturns: 0,
       };
     }
+  }
+}
+
+// ============================================================================
+// PAYROLL ADJUSTMENT SERVICE
+// ============================================================================
+
+export class AdjustmentService {
+  private static endpoint = '/v1/payroll/adjustments';
+
+  /**
+   * List adjustments with optional filters
+   */
+  static async getAdjustments(params?: {
+    employeeId?: string;
+    payrollMonth?: string;
+    adjustmentType?: string;
+    approvalStatus?: string;
+    search?: string;
+    sortBy?: string;
+    sortDir?: string;
+    page?: number;
+    limit?: number;
+  }): Promise<{
+    data: PayrollAdjustment[];
+    meta: {
+      total: number;
+      page: number;
+      limit: number;
+      totalPages: number;
+      summary?: { totalEarnings: number; totalDeductions: number; pendingCount: number };
+    };
+  }> {
+    const response = await APIClient.get<unknown>(this.endpoint, params as Record<string, unknown>);
+    const data = APIClient.unwrapList<PayrollAdjustment>(response);
+    const obj = response as Record<string, any>;
+    const meta =
+      obj?.meta && typeof obj.meta === 'object' && !Array.isArray(obj.meta)
+        ? (obj.meta as {
+            total: number;
+            page: number;
+            limit: number;
+            totalPages: number;
+            summary?: { totalEarnings: number; totalDeductions: number; pendingCount: number };
+          })
+        : (obj?.meta?.pagination as {
+            total: number;
+            page: number;
+            limit: number;
+            totalPages: number;
+          });
+    return {
+      data,
+      meta: {
+        total: meta?.total ?? data.length,
+        page: meta?.page ?? 1,
+        limit: meta?.limit ?? 50,
+        totalPages: meta?.totalPages ?? 1,
+        summary: meta?.summary,
+      },
+    };
+  }
+
+  /**
+   * Get a single adjustment by ID
+   */
+  static async getAdjustment(id: string): Promise<PayrollAdjustment | null> {
+    const response = await APIClient.get<unknown>(`${this.endpoint}/${id}`);
+    return APIClient.unwrapItem<PayrollAdjustment>(response);
+  }
+
+  /**
+   * Create a new adjustment
+   */
+  static async createAdjustment(data: {
+    employeeId: string;
+    payrollMonth: string;
+    adjustmentType: 'EARNING' | 'DEDUCTION';
+    code: string;
+    name: string;
+    amount: number;
+    reason: string;
+    category?: string;
+    approvalStatus?: 'DRAFT' | 'PENDING';
+  }): Promise<PayrollAdjustment> {
+    const response = await APIClient.post<unknown>(this.endpoint, data);
+    const result = APIClient.unwrapItem<PayrollAdjustment>(response);
+    if (!result) throw new Error('Failed to create adjustment');
+    return result;
+  }
+
+  /**
+   * Update a DRAFT adjustment
+   */
+  static async updateAdjustment(
+    id: string,
+    data: {
+      employeeId?: string;
+      payrollMonth?: string;
+      adjustmentType?: 'EARNING' | 'DEDUCTION';
+      code?: string;
+      name?: string;
+      amount?: number;
+      reason?: string;
+      category?: string;
+    }
+  ): Promise<PayrollAdjustment> {
+    const response = await APIClient.patch<unknown>(`${this.endpoint}/${id}`, data);
+    const result = APIClient.unwrapItem<PayrollAdjustment>(response);
+    if (!result) throw new Error('Failed to update adjustment');
+    return result;
+  }
+
+  /**
+   * Submit a DRAFT adjustment into the approval queue
+   */
+  static async submitAdjustment(id: string): Promise<PayrollAdjustment> {
+    const response = await APIClient.post<unknown>(`${this.endpoint}/${id}/submit`, {});
+    const result = APIClient.unwrapItem<PayrollAdjustment>(response);
+    if (!result) throw new Error('Failed to submit adjustment');
+    return result;
+  }
+
+  /**
+   * Approve an adjustment (HR or Finance stage)
+   */
+  static async approveAdjustment(id: string, comments?: string): Promise<PayrollAdjustment> {
+    const response = await APIClient.post<unknown>(`${this.endpoint}/${id}/approve`, { comments });
+    const result = APIClient.unwrapItem<PayrollAdjustment>(response);
+    if (!result) throw new Error('Failed to approve adjustment');
+    return result;
+  }
+
+  /**
+   * Reject an adjustment
+   */
+  static async rejectAdjustment(id: string, reason: string): Promise<PayrollAdjustment> {
+    const response = await APIClient.post<unknown>(`${this.endpoint}/${id}/reject`, { reason });
+    const result = APIClient.unwrapItem<PayrollAdjustment>(response);
+    if (!result) throw new Error('Failed to reject adjustment');
+    return result;
+  }
+
+  /**
+   * Cancel an adjustment (only by creator while in DRAFT/PENDING)
+   */
+  static async cancelAdjustment(id: string): Promise<PayrollAdjustment> {
+    const response = await APIClient.post<unknown>(`${this.endpoint}/${id}/cancel`, {});
+    const result = APIClient.unwrapItem<PayrollAdjustment>(response);
+    if (!result) throw new Error('Failed to cancel adjustment');
+    return result;
+  }
+
+  /**
+   * Soft-delete a DRAFT adjustment
+   */
+  static async deleteAdjustment(id: string): Promise<void> {
+    await APIClient.delete(`${this.endpoint}/${id}`);
   }
 }

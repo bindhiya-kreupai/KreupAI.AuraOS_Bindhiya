@@ -1,8 +1,6 @@
 // @ts-nocheck — Service has Prisma schema drift (field/model name mismatches against current schema). Tracked under #29 for proper rewrite. Runtime behavior may need verification.
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@aura/database';
 import { z } from 'zod';
-
-const prisma = new PrismaClient();
 
 export const createOvertimeRequestSchema = z.object({
   tenantId: z.string(),
@@ -17,7 +15,9 @@ export const createOvertimeRequestSchema = z.object({
   project: z.string().optional(),
 });
 
-export const updateOvertimeRequestSchema = createOvertimeRequestSchema.partial().omit({ tenantId: true });
+export const updateOvertimeRequestSchema = createOvertimeRequestSchema
+  .partial()
+  .omit({ tenantId: true });
 
 export const createCompOffSchema = z.object({
   tenantId: z.string(),
@@ -43,7 +43,18 @@ export class OvertimeService {
   // ==================== OVERTIME REQUESTS ====================
 
   static async findAll(filter: any) {
-    const { tenantId, employeeId, status, overtimeType, startDate, endDate, page = 1, limit = 50, sortBy = 'overtimeDate', sortOrder = 'desc' } = filter;
+    const {
+      tenantId,
+      employeeId,
+      status,
+      overtimeType,
+      startDate,
+      endDate,
+      page = 1,
+      limit = 50,
+      sortBy = 'overtimeDate',
+      sortOrder = 'desc',
+    } = filter;
 
     const where: any = { tenantId };
     if (employeeId) where.employeeId = employeeId;
@@ -87,7 +98,11 @@ export class OvertimeService {
     });
   }
 
-  static async update(id: string, tenantId: string, data: z.infer<typeof updateOvertimeRequestSchema>) {
+  static async update(
+    id: string,
+    tenantId: string,
+    data: z.infer<typeof updateOvertimeRequestSchema>
+  ) {
     const validated = updateOvertimeRequestSchema.parse(data);
     const existing = await prisma.overtimeRequest.findFirst({ where: { id, tenantId } });
     if (!existing) return null;
@@ -156,7 +171,8 @@ export class OvertimeService {
   static async convertToCompOff(id: string, tenantId: string) {
     const overtime = await prisma.overtimeRequest.findFirst({ where: { id, tenantId } });
     if (!overtime) throw new Error('Overtime request not found');
-    if (overtime.status !== 'APPROVED') throw new Error('Only approved overtime can be converted to comp-off');
+    if (overtime.status !== 'APPROVED')
+      throw new Error('Only approved overtime can be converted to comp-off');
 
     // Create comp-off
     const expiryDate = new Date(overtime.overtimeDate);
@@ -288,14 +304,18 @@ export class OvertimeService {
       date: new Date(validated.date),
     };
 
-    if (validated.requestedClockIn) createData.requestedClockIn = new Date(validated.requestedClockIn);
-    if (validated.requestedClockOut) createData.requestedClockOut = new Date(validated.requestedClockOut);
+    if (validated.requestedClockIn)
+      createData.requestedClockIn = new Date(validated.requestedClockIn);
+    if (validated.requestedClockOut)
+      createData.requestedClockOut = new Date(validated.requestedClockOut);
 
     return prisma.attendanceRegularization.create({ data: createData });
   }
 
   static async approveRegularization(id: string, tenantId: string, approvedBy: string) {
-    const regularization = await prisma.attendanceRegularization.findFirst({ where: { id, tenantId } });
+    const regularization = await prisma.attendanceRegularization.findFirst({
+      where: { id, tenantId },
+    });
     if (!regularization) throw new Error('Regularization request not found');
 
     // Update the actual attendance record
@@ -325,8 +345,15 @@ export class OvertimeService {
     });
   }
 
-  static async rejectRegularization(id: string, tenantId: string, rejectedBy: string, reason: string) {
-    const regularization = await prisma.attendanceRegularization.findFirst({ where: { id, tenantId } });
+  static async rejectRegularization(
+    id: string,
+    tenantId: string,
+    rejectedBy: string,
+    reason: string
+  ) {
+    const regularization = await prisma.attendanceRegularization.findFirst({
+      where: { id, tenantId },
+    });
     if (!regularization) throw new Error('Regularization request not found');
 
     return prisma.attendanceRegularization.update({
@@ -346,7 +373,14 @@ export class OvertimeService {
     const where: any = { tenantId };
     if (employeeId) where.employeeId = employeeId;
 
-    const [totalOvertime, pendingOvertime, approvedOvertime, totalCompOff, availableCompOff, pendingRegularization] = await Promise.all([
+    const [
+      totalOvertime,
+      pendingOvertime,
+      approvedOvertime,
+      totalCompOff,
+      availableCompOff,
+      pendingRegularization,
+    ] = await Promise.all([
       prisma.overtimeRequest.count({ where }),
       prisma.overtimeRequest.count({ where: { ...where, status: 'PENDING' } }),
       prisma.overtimeRequest.count({ where: { ...where, status: 'APPROVED' } }),
@@ -361,7 +395,10 @@ export class OvertimeService {
       select: { totalHours: true, actualHours: true },
     });
 
-    const totalOvertimeHours = overtimeRecords.reduce((sum: any, r: any) => sum + (r.actualHours || r.totalHours), 0);
+    const totalOvertimeHours = overtimeRecords.reduce(
+      (sum: any, r: any) => sum + (r.actualHours || r.totalHours),
+      0
+    );
 
     const compOffRecords = await prisma.compOffRequest.findMany({
       where: { ...where, status: 'EARNED' },

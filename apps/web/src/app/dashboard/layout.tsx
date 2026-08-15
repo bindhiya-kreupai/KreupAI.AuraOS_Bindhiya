@@ -7,33 +7,30 @@ import { RightPanel } from '@aura/ui/components/layout';
 import { Info } from 'lucide-react';
 import { SearchProvider, useSearch } from '@/stores/search-store';
 import { ThemeProvider, useTheme } from '@/stores/theme-store';
+import { useCurrentUser } from '@/lib/auth/AuthProvider';
+import { I18nProvider, useI18n } from '@/lib/i18n/I18nProvider';
 
 // Modules that currently render demo UI only — their pages don't fetch from
 // any /api/ endpoint. Listed here so users see a clear "preview" banner
 // instead of wondering why nothing happens when they click.
 const PREVIEW_MODULES = new Set<string>([
   'agriculture',
-  'ai',
-  'ai-automation',
+  // 'ai-automation' removed — live APIs wired for attrition, coaching, resume, workflows
+  'alumni-network',
   'automotive',
   'aviation',
   'career',
   'collaboration',
   'community',
   'construction',
-  'education',
-  'energy',
   'esg',
   'expenses',
   'facilities',
-  'financial-services',
-  'government',
-  'healthcare',
-  'hospitality',
+  // 'healthcare' removed — live APIs wired for credentialing, rostering, locum
+  // 'hospitality' removed — live APIs wired for tip management, event staffing, housekeeping
   'hr-helpdesk',
   'industry',
   'industry-solutions',
-  'integration-hub',
   'legal',
   'localization',
   'logistics',
@@ -49,7 +46,6 @@ const PREVIEW_MODULES = new Set<string>([
   'projects',
   'remote-work',
   'retail',
-  'reveal',
 ]);
 
 interface FavoriteItem {
@@ -62,13 +58,19 @@ interface FavoriteItem {
 function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [favorites, setFavorites] = useState<FavoriteItem[]>([]);
+  const router = useRouter();
   const pathname = usePathname() || '';
   const moduleSegment = pathname.split('/').filter(Boolean)[1];
   const isPreviewModule = !!moduleSegment && PREVIEW_MODULES.has(moduleSegment);
 
-  const router = useRouter();
   const { isDark, toggleTheme } = useTheme();
   const { setIsOpen: setSearchOpen } = useSearch();
+  const { user: currentUser } = useCurrentUser();
+  const { locale, setLocale } = useI18n();
+
+  const handleLanguageToggle = useCallback(() => {
+    setLocale(locale === 'en' ? 'ar' : 'en');
+  }, [locale, setLocale]);
 
   const handleSignOut = useCallback(async () => {
     try {
@@ -126,12 +128,14 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
       <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
         {/* Top Navigation */}
         <TopNav
+          isDark={isDark}
+          onThemeToggle={toggleTheme}
+          onLanguageToggle={handleLanguageToggle}
           onSearchClick={() => setSearchOpen(true)}
           onAIAssistantClick={handleAIAssistantClick}
           onHelpClick={handleHelpClick}
           onSignOut={handleSignOut}
-          isDark={isDark}
-          onThemeToggle={toggleTheme}
+          user={currentUser}
         />
 
         {/* Page Content */}
@@ -162,10 +166,12 @@ function DashboardLayoutInner({ children }: { children: React.ReactNode }) {
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <ThemeProvider>
-      <SearchProvider>
-        <DashboardLayoutInner>{children}</DashboardLayoutInner>
-      </SearchProvider>
-    </ThemeProvider>
+    <I18nProvider>
+      <ThemeProvider>
+        <SearchProvider>
+          <DashboardLayoutInner>{children}</DashboardLayoutInner>
+        </SearchProvider>
+      </ThemeProvider>
+    </I18nProvider>
   );
 }

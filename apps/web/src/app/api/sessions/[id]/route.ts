@@ -34,6 +34,14 @@ export const DELETE = withEnhancedAuth(
         );
       }
 
+      // Prevent revoking your own current session
+      if (session.id === user.sessionId) {
+        return NextResponse.json(
+          { success: false, error: 'Cannot revoke your own current session. Use logout instead.' },
+          { status: 400 }
+        );
+      }
+
       // Revoke session
       await prisma.userSession.update({
         where: { id: sessionId },

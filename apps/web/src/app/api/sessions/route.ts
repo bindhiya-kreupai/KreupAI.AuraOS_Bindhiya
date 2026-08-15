@@ -1,4 +1,4 @@
-import type { NextRequest} from 'next/server';
+import type { NextRequest } from 'next/server';
 import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { z } from 'zod';
@@ -16,10 +16,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
 
     // Validate query parameters
     const { searchParams } = new URL(request.url);
-    const { userId, status, page, limit } = validateQueryParams(
-      SessionQuerySchema,
-      searchParams
-    );
+    const { userId, status, page, limit } = validateQueryParams(SessionQuerySchema, searchParams);
 
     // Build where clause
     const where: any = {};
@@ -61,6 +58,7 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
           lastActive: true,
           status: true,
           createdAt: true,
+          expiresAt: true,
           user: {
             select: {
               email: true,
@@ -74,9 +72,16 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
       prisma.userSession.count({ where }),
     ]);
 
+    const currentSessionId = user.sessionId;
+
+    const data = sessions.map((session) => ({
+      ...session,
+      isCurrent: session.id === currentSessionId,
+    }));
+
     return NextResponse.json({
       success: true,
-      data: sessions,
+      data,
       meta: {
         total,
         page,
@@ -92,6 +97,54 @@ export const GET = withEnhancedAuth(async (request: NextRequest, { user, permiss
     logger.error('Error fetching sessions:', error);
     return NextResponse.json(
       { success: false, error: 'Failed to fetch sessions' },
+      { status: 500 }
+    );
+  }
+});
+
+// DELETE - Revoke all sessions except the current one
+export const DELETE = withEnhancedAuth(async (request: NextRequest, { user, permissions }) => {
+  try {
+    const permissionError = requirePermission(Resource.SESSIONS, Action.DELETE, permissions);
+    if (permissionError) return permissionError;
+
+    const currentSessionId = user.sessionId;
+
+    const result = await prisma.userSession.updateMany({
+      where: {
+        userId: user.userId,
+        status: 'Active',
+        id: { not: currentSessionId },
+      },
+      data: { status: 'Revoked' },
+    });
+
+    const ipAddress =
+      request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown';
+
+    await prisma.auditLog.create({
+      data: {
+        tenantId: user.tenantId,
+        userId: user.userId,
+        action: 'DELETE',
+        module: 'Session Management',
+        resourceType: 'Session Management',
+        metadata: {
+          description: `Revoked all sessions except current (${result.count} sessions)`,
+        } as any,
+        ipAddress,
+      },
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: `Revoked ${result.count} session(s). Current session kept active.`,
+      data: { revokedCount: result.count },
+    });
+  } catch (error: any) {
+    logger.error('Error revoking all sessions:', error);
+    return NextResponse.json(
+      { success: false, error: 'Failed to revoke sessions' },
       { status: 500 }
     );
   }

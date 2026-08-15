@@ -232,6 +232,10 @@ export const POST = withAudit(
         // Calculate overtime
         if (shiftAssignment.shift.overtimeAllowed && workDurationMinutes > expectedWorkMinutes) {
           overtimeMinutes = workDurationMinutes - expectedWorkMinutes;
+          const maxOt = shiftAssignment.shift.maxOvertimeHours || 0;
+          if (maxOt > 0) {
+            overtimeMinutes = Math.min(overtimeMinutes, Math.round(maxOt * 60));
+          }
         }
       } else {
         // No shift: overtime is anything over 8 hours
@@ -262,6 +266,10 @@ export const POST = withAudit(
               (1000 * 60)
           );
         }
+      }
+      // Auto-deduct shift-configured break if no actual break punches recorded
+      if (breakMinutes === 0 && shiftAssignment?.shift?.breakDuration) {
+        breakMinutes = shiftAssignment.shift.breakDuration;
       }
 
       const workHours = parseFloat(((workDurationMinutes - breakMinutes) / 60).toFixed(2));

@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Bookmark, ChevronDown, Filter, Loader2, Plus, Trash2, X } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';

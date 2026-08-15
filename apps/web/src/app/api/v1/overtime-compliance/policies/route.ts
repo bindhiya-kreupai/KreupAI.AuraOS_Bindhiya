@@ -15,7 +15,8 @@ export const GET = withEnhancedAuth(async (_req: NextRequest, ctx: RouteContext)
 });
 
 export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) => {
-  if (!hasAny(ctx.permissions, 'tenant:manage')) return forbidden();
+  if (!hasAny(ctx.permissions, 'tenant:manage', 'tenant:read', 'dashboard:read', 'overtime:manage'))
+    return forbidden();
   try {
     const body = await req.json();
     for (const f of ['country', 'effectiveFrom']) {

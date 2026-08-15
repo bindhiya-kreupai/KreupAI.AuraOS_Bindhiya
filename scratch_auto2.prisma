@@ -1,0 +1,191 @@
+
+
+// ==========================================
+// AUTOMOTIVE MODULE
+// ==========================================
+
+model AutomotiveTechnician {
+  id                String   @id @default(uuid())
+  tenantId          String
+  employeeId        String
+  firstName         String
+  lastName          String
+  email             String
+  phone             String
+  specializations   String[]
+  skillLevel        String
+  hourlyRate        Float
+  employmentType    String
+  status            String
+  hireDate          DateTime
+  department        String
+  isDeleted         Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdBy         String?
+  updatedBy         String?
+
+  shifts AutomotiveTechnicianShift[]
+
+  @@map("aura_automotive_technician")
+}
+
+model AutomotiveTechnicianShift {
+  id                String   @id @default(uuid())
+  tenantId          String
+  technicianId      String
+  date              DateTime
+  shiftType         String
+  startTime         String
+  endTime           String
+  breakDuration     Int
+  location          String
+  serviceAdvisor    String?
+  assignedJobs      String[]
+  actualStartTime   String?
+  actualEndTime     String?
+  notes             String?
+  status            String
+  overtimeHours     Float?
+  isDeleted         Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdBy         String?
+  updatedBy         String?
+
+  technician AutomotiveTechnician @relation(fields: [technicianId], references: [id])
+
+  @@map("aura_automotive_technician_shift")
+}
+
+model AutomotiveTimeOffRequest {
+  id                String   @id @default(uuid())
+  tenantId          String
+  technicianId      String
+  startDate         DateTime
+  endDate           DateTime
+  requestType       String
+  reason            String?
+  affectedShifts    String[]
+  coverageArranged  Boolean
+  coverageTechnicianId String?
+  requestDate       DateTime
+  status            String
+  approvedBy        String?
+  approvalDate      DateTime?
+  isDeleted         Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdBy         String?
+  updatedBy         String?
+
+  @@map("aura_automotive_time_off_request")
+}
+
+model AutomotiveSalesCommission {
+  id                String   @id @default(uuid())
+  tenantId          String
+  salesPersonId     String
+  salesPersonName   String
+  periodStart       DateTime
+  periodEnd         DateTime
+  totalVehicleSales Float
+  totalServiceSales Float
+  totalSalesAmount  Float
+  baseCommission    Float
+  totalBonuses      Float
+  totalDeductions   Float
+  netCommission     Float
+  commissionRate    Float
+  status            String
+  calculatedDate    DateTime
+  approvedBy        String?
+  approvalDate      DateTime?
+  paymentDate       DateTime?
+  paymentMethod     String?
+  isDeleted         Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdBy         String?
+  updatedBy         String?
+
+  @@map("aura_automotive_sales_commission")
+}
+
+model AutomotiveCommissionStructure {
+  id                String   @id @default(uuid())
+  tenantId          String
+  structureName     String
+  description       String
+  applicableTo      String
+  commissionType    String
+  baseRate          Float?
+  flatAmount        Float?
+  effectiveFrom     DateTime
+  effectiveTo       DateTime?
+  isActive          Boolean
+  isDeleted         Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdBy         String?
+  updatedBy         String?
+
+  @@map("aura_automotive_commission_structure")
+}
+
+model AutomotivePart {
+  id                String   @id @default(uuid())
+  tenantId          String
+  partNumber        String
+  partName          String
+  description       String
+  category          String
+  manufacturer      String
+  barcode           String?
+  supplierId        String?
+  unitOfMeasure     String
+  costPrice         Float
+  retailPrice       Float
+  taxRate           Float
+  quantityOnHand    Int
+  reorderPoint      Int
+  reorderQuantity   Int
+  locationBin       String
+  status            String
+  lastRestockDate   DateTime?
+  isDeleted         Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdBy         String?
+  updatedBy         String?
+
+  movements AutomotivePartMovement[]
+
+  @@map("aura_automotive_part")
+}
+
+model AutomotivePartMovement {
+  id                String   @id @default(uuid())
+  tenantId          String
+  partId            String
+  movementType      String
+  quantity          Int
+  unitCost          Float?
+  totalCost         Float?
+  referenceId       String?
+  referenceType     String?
+  locationFrom      String?
+  locationTo        String?
+  notes             String?
+  movementDate      DateTime
+  performedBy       String
+  isDeleted         Boolean  @default(false)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  createdBy         String?
+  updatedBy         String?
+
+  part AutomotivePart @relation(fields: [partId], references: [id])
+
+  @@map("aura_automotive_part_movement")
+}

@@ -1,8 +1,6 @@
 // @ts-nocheck — Service has Prisma schema drift (field/model name mismatches against current schema). Tracked under #29 for proper rewrite. Runtime behavior may need verification.
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@aura/database';
 import { z } from 'zod';
-
-const prisma = new PrismaClient();
 
 export const createConfirmationSchema = z.object({
   tenantId: z.string(),
@@ -16,7 +14,15 @@ export const updateConfirmationSchema = createConfirmationSchema.partial().omit(
 
 export class ConfirmationService {
   static async findAll(filter: any) {
-    const { tenantId, status, search, page = 1, limit = 20, sortBy = 'eligibleDate', sortOrder = 'asc' } = filter;
+    const {
+      tenantId,
+      status,
+      search,
+      page = 1,
+      limit = 20,
+      sortBy = 'eligibleDate',
+      sortOrder = 'asc',
+    } = filter;
 
     const where: any = { tenantId };
     if (status) where.status = status;
@@ -90,7 +96,11 @@ export class ConfirmationService {
     });
   }
 
-  static async update(id: string, tenantId: string, data: z.infer<typeof updateConfirmationSchema>) {
+  static async update(
+    id: string,
+    tenantId: string,
+    data: z.infer<typeof updateConfirmationSchema>
+  ) {
     const validated = updateConfirmationSchema.parse(data);
     const existing = await prisma.confirmationRequest.findFirst({ where: { id, tenantId } });
     if (!existing) return null;
@@ -122,7 +132,8 @@ export class ConfirmationService {
   static async hrApprove(id: string, tenantId: string) {
     const confirmation = await prisma.confirmationRequest.findFirst({ where: { id, tenantId } });
     if (!confirmation) throw new Error('Confirmation request not found');
-    if (confirmation.managerApproval !== 'APPROVED') throw new Error('Manager approval required first');
+    if (confirmation.managerApproval !== 'APPROVED')
+      throw new Error('Manager approval required first');
 
     return prisma.confirmationRequest.update({
       where: { id },

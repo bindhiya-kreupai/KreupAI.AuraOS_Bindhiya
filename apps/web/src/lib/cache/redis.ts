@@ -5,6 +5,7 @@
 
 import Redis from 'ioredis';
 import { logger } from '@/lib/logger';
+import { isBuildPhase } from '@/lib/utils/build-phase';
 
 // Redis configuration from environment
 const REDIS_URL = process.env.REDIS_URL || 'redis://localhost:6379';
@@ -22,20 +23,22 @@ export const LONG_TTL = 86400; // 24 hours
 class RedisClient {
   private client: Redis | null = null;
   private isConnected: boolean = false;
+  private hasLoggedConnectionError = false;
 
   constructor() {
-    if (!REDIS_ENABLED) {
-      logger.info('Redis is disabled. Caching will be skipped.');
+    if (!REDIS_ENABLED || isBuildPhase()) {
       return;
     }
 
     try {
       this.client = new Redis(REDIS_URL, {
-        maxRetriesPerRequest: 3,
-        password: REDIS_PASSWORD,
+        maxRetriesPerRequest: 1,
+        enableOfflineQueue: false,
+        lazyConnect: true,
         retryStrategy: (times) => {
-          const delay = Math.min(times * 50, 2000);
-          return delay;
+          // Stop retrying after a few attempts in local/dev when Redis is down
+          if (times > 5) return null;
+          return Math.min(times * 200, 2000);
         },
         reconnectOnError: (err) => {
           const targetError = 'READONLY';
@@ -47,23 +50,36 @@ class RedisClient {
         },
       });
 
+      // Kick off connection without blocking module load; failures are non-fatal.
+      void this.client.connect().catch(() => {
+        // error handler below logs once
+      });
+
       this.client.on('connect', () => {
         this.isConnected = true;
+        this.hasLoggedConnectionError = false;
         logger.info('Redis connected successfully');
       });
 
       this.client.on('error', (error) => {
         this.isConnected = false;
-        // logger.error({ error }, 'Redis connection error');
+        if (!this.hasLoggedConnectionError) {
+          this.hasLoggedConnectionError = true;
+          logger.error(
+            { error },
+            'Redis connection error — caching disabled. Set REDIS_ENABLED=false or start Redis to silence this.'
+          );
+        }
       });
 
       this.client.on('close', () => {
         this.isConnected = false;
-        logger.warn('Redis connection closed');
       });
 
       this.client.on('reconnecting', () => {
-        logger.info('Redis reconnecting...');
+        if (!this.hasLoggedConnectionError) {
+          logger.info('Redis reconnecting...');
+        }
       });
     } catch (error: any) {
       logger.error({ error }, 'Failed to initialize Redis client');
@@ -309,8 +325,23 @@ class RedisClient {
   }
 }
 
-// Export singleton instance
-export const redis = new RedisClient();
+let redisInstance: RedisClient | undefined;
+
+export function getRedisClient(): RedisClient {
+  if (!redisInstance) {
+    redisInstance = new RedisClient();
+  }
+  return redisInstance;
+}
+
+// Proxy export for 100% backward compatibility with lazy evaluation
+export const redis = new Proxy({} as RedisClient, {
+  get(_target, prop) {
+    const instance = getRedisClient();
+    const value = (instance as any)[prop];
+    return typeof value === 'function' ? value.bind(instance) : value;
+  },
+});
 
 // Export for testing
 export { RedisClient };

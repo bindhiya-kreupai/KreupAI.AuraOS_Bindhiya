@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useEffect, useRef, useState } from 'react';
 import { Download, FileSpreadsheet, FileText, FileType2, Loader2 } from 'lucide-react';
 import { clsx, type ClassValue } from 'clsx';

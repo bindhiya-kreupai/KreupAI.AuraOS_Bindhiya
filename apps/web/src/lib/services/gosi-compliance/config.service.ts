@@ -58,7 +58,7 @@ export class GosiConfigService {
     const created: string[] = [];
     for (const [branch, applies] of Object.entries(BRANCH_APPLICABILITY)) {
       const existing = await (prisma as any).gosiBranchConfig.findUnique({
-        where: { aura_gosi_branch_config_unique: { tenantId: auth.tenantId, branch } },
+        where: { tenantId_branch: { tenantId: auth.tenantId, branch } },
       });
       if (existing) continue;
       await (prisma as any).gosiBranchConfig.create({

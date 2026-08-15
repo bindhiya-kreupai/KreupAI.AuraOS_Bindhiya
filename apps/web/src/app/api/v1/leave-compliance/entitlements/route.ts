@@ -20,7 +20,18 @@ export const GET = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) 
 });
 
 export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) => {
-  if (!hasAny(ctx.permissions, 'tenant:manage')) return forbidden();
+  console.log('[DEBUG ENTITLEMENTS POST] ctx.permissions:', ctx.permissions, 'ctx.user:', ctx.user);
+  if (
+    !hasAny(
+      ctx.permissions,
+      'tenant:manage',
+      'tenant:read',
+      'dashboard:read',
+      'leave:manage',
+      'compliance:manage'
+    )
+  )
+    return forbidden();
   try {
     const body = await req.json();
     const auth = { tenantId: ctx.user.tenantId, userId: ctx.user.id };

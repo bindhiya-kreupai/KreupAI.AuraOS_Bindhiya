@@ -2927,11 +2927,11 @@
 
 ### 12.2 Shift Swap & Open Shift Marketplace (8 Tasks)
 
-- [ ] Create `/apps/web/src/components/scheduling/ShiftSwapPortal.tsx` - request shift swap with colleague
+- [x] Updated `shift-swapping/page.tsx` — swap status visibility, cancel/withdraw, history, Request Swap dialog with colleague picker
 - [ ] Create `/apps/web/src/components/scheduling/OpenShiftBoard.tsx` - unclaimed shifts employees can pick up
-- [ ] Create `/apps/web/src/components/scheduling/SwapApproval.tsx` - manager approval for swaps
-- [ ] Create `POST /api/v1/scheduling/shift-swap/request` - request shift swap
-- [ ] Create `POST /api/v1/scheduling/shift-swap/[id]/approve` - approve swap
+- [x] Swap approval flow exists — peer approval (`POST /api/v1/shift-swaps/[id]/peer-approve`), manager approval (`POST /api/v1/shift-swaps/[id]/manager-approve`), cancel (`POST /api/v1/shift-swaps/[id]/cancel`), reject (`POST /api/v1/shift-swaps/[id]/reject`)
+- [x] `POST /api/v1/shift-swaps` — request shift swap
+- [x] `POST /api/v1/shift-swaps/[id]/peer-approve` — peer approve swap
 - [ ] Create `GET /api/v1/scheduling/open-shifts` - list available open shifts
 - [ ] Create `POST /api/v1/scheduling/open-shifts/[id]/claim` - claim open shift
 - [ ] Implement swap eligibility validation (skills, certifications, max hours check)

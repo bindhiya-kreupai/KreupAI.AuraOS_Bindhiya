@@ -1,0 +1,56 @@
+
+// ==========================================
+// HOSPITALITY MODULE
+// ==========================================
+
+model TipPool {
+  id                   String   @id @default(uuid())
+  poolId               String   @unique
+  poolName             String
+  date                 DateTime
+  totalAmount          Float
+  distributionMethod   String
+  participants         Json
+  distributions        Json
+  status               String
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model HospitalityEvent {
+  id                   String   @id @default(uuid())
+  eventId              String   @unique
+  eventName            String
+  eventType            String
+  eventDate            DateTime
+  startTime            String
+  endTime              String
+  venue                String
+  expectedGuests       Int
+  actualGuests         Int?
+  staffingPlan         Json
+  budget               Float
+  actualCost           Float?
+  status               String
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model HousekeepingTask {
+  id                   String   @id @default(uuid())
+  taskId               String   @unique
+  roomNumber           String
+  roomType             String
+  taskType             String
+  assignedTo           String?
+  priority             String
+  status               String
+  scheduledTime        DateTime
+  startTime            DateTime?
+  completionTime       DateTime?
+  duration             Int?
+  inspectionScore      Float?
+  notes                String?
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}

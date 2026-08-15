@@ -177,14 +177,31 @@ export class WorkflowEngine {
     context: ExecutionContext
   ): Promise<Record<string, unknown>> {
     const actionType = node.config.actionType as string;
+    let resultData: Record<string, unknown> = {};
 
-    // TODO: Implement action dispatching based on actionType
-    // e.g., 'send_email', 'update_record', 'call_api', etc.
+    switch (actionType) {
+      case 'send_email':
+        // Mock email sending
+        resultData = { emailSentTo: node.config.to, subject: node.config.subject };
+        break;
+      case 'update_record':
+        // Mock record update
+        resultData = { recordUpdated: node.config.recordId, status: 'success' };
+        break;
+      case 'call_api':
+        // Mock API call
+        resultData = { apiCalled: node.config.endpoint, statusCode: 200 };
+        break;
+      default:
+        console.warn(`Unknown action type: ${actionType}`);
+        resultData = { error: `Unsupported action: ${actionType}` };
+    }
 
     return {
       actionType,
       executed: true,
       timestamp: new Date().toISOString(),
+      ...resultData
     };
   }
 

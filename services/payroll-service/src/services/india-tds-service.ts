@@ -30,9 +30,7 @@
 
 import { z } from 'zod';
 import Decimal from 'decimal.js';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma } from '@aura/database';
 
 // ---------------------------------------------------------------------------
 // Constants — New Regime Slabs (Budget 2024)

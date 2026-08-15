@@ -27,7 +27,7 @@ export default function NitaqatCertificatePage() {
   async function load() {
     const r = await fetch('/api/v1/nitaqat-compliance/certificate');
     const p = await r.json();
-    if (p.success) setCerts(p.data ?? []);
+    if (p.success) setCerts(Array.isArray(p.data) ? p.data : (p.data?.items ?? []));
   }
   useEffect(() => {
     load();

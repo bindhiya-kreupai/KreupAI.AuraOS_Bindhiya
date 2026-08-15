@@ -75,6 +75,7 @@ export default function HandoverPage() {
 
   async function addItem() {
     setMessage('');
+    console.log('handoverForm:', handoverForm);
     const r = await fetch('/api/v1/separation-compliance/handover', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -127,6 +128,16 @@ export default function HandoverPage() {
     const p = await r.json();
     setMessage(p.success ? 'Saved' : (p.error?.details?.error ?? p.error?.message ?? 'failed'));
     if (p.success) await load();
+  }
+
+  async function removeHandoverItem(id: string) {
+    if (!confirm('Delete this handover item?')) return;
+    const r = await fetch(`/api/v1/separation-compliance/handover?id=${id}`, {
+      method: 'DELETE',
+    });
+    const p = await r.json();
+    setMessage(p.success ? 'Deleted' : (p.error?.message ?? 'failed'));
+    load();
   }
 
   return (
@@ -225,6 +236,7 @@ export default function HandoverPage() {
                     <th className="px-3 py-2">Completed</th>
                     <th className="px-3 py-2">Status</th>
                     <th className="px-3 py-2">Action</th>
+                    <th className="px-3 py-2">Delete</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -250,11 +262,20 @@ export default function HandoverPage() {
                           </button>
                         )}
                       </td>
+                      <td className="px-3 py-2">
+                        <button
+                          type="button"
+                          onClick={() => removeHandoverItem(i.id)}
+                          className="text-xs text-rose-600 hover:underline"
+                        >
+                          Delete
+                        </button>
+                      </td>
                     </tr>
                   ))}
                   {items.length === 0 && (
                     <tr>
-                      <td colSpan={7} className="px-3 py-6 text-center text-slate-500">
+                      <td colSpan={8} className="px-3 py-6 text-center text-slate-500">
                         No handover items.
                       </td>
                     </tr>

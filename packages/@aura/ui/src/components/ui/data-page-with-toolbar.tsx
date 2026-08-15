@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { DataPage, type DataPageProps } from './data-page';
 import { ExportMenu, type ExportFormat } from './export-menu';

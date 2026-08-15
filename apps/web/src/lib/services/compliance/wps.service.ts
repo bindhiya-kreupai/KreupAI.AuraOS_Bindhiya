@@ -19,9 +19,9 @@ import type {
 // ============================================================================
 
 const WPS_RECORD_TYPES = {
-  HEADER: 'SCR',     // Salary Control Record
-  EMPLOYEE: 'EDR',   // Employee Data Record
-  TRAILER: 'SUM',    // Summary Record
+  HEADER: 'SCR', // Salary Control Record
+  EMPLOYEE: 'EDR', // Employee Data Record
+  TRAILER: 'SUM', // Summary Record
 } as const;
 
 const WPS_VALIDATION_RULES = {
@@ -47,8 +47,11 @@ export class WPSService {
   ): WPSSIFFile {
     const creationDate = new Date().toISOString().slice(0, 10).replace(/-/g, '');
 
-    // Calculate totals
-    const totalAmount = records.reduce((sum, r) => sum + r.netSalary + r.leaveSalary, 0);
+    // Calculate totals safely avoiding NaN
+    const totalAmount = records.reduce(
+      (sum, r) => sum + Number(r.netSalary || 0) + Number(r.leaveSalary || 0),
+      0
+    );
 
     // Build header
     const header = {
@@ -62,13 +65,13 @@ export class WPSService {
     };
 
     // Build employee records
-    const sifRecords: WPSSIFRecord[] = records.map(record => ({
+    const sifRecords: WPSSIFRecord[] = records.map((record) => ({
       recordType: 'EDR' as const,
       labourCardNumber: record.labourCardNumber,
       routingCode: record.bankRoutingCode,
       accountNumber: record.accountNumber,
-      salaryAmount: record.netSalary,
-      leaveSalary: record.leaveSalary,
+      salaryAmount: Number(record.netSalary || 0),
+      leaveSalary: Number(record.leaveSalary || 0),
     }));
 
     // Build trailer
@@ -90,7 +93,7 @@ export class WPSService {
     lines.push(this.formatHeaderLine(sif.header));
 
     // Employee records (EDR)
-    sif.records.forEach(record => {
+    sif.records.forEach((record) => {
       lines.push(this.formatEmployeeRecordLine(record));
     });
 
@@ -178,7 +181,7 @@ export class WPSService {
       });
     }
 
-    records.forEach(record => {
+    records.forEach((record) => {
       // Validate labour card number
       if (!record.labourCardNumber) {
         errors.push({
@@ -275,7 +278,7 @@ export class WPSService {
       leaveSalary?: number;
     }>
   ): WPSRecord[] {
-    return payrollData.map(data => ({
+    return payrollData.map((data) => ({
       employeeId: data.employeeId,
       labourCardNumber: data.complianceData.labourCardNumber || '',
       personalNumber: data.complianceData.wpsPersonalNumber,

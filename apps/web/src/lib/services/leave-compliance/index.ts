@@ -319,8 +319,13 @@ export class LeaveEntitlementService {
           data: { tenantId: auth.tenantId, ...r, effectiveFrom, status: 'ACTIVE' },
         });
         created.push(`${r.country}/${r.leaveCode}`);
-      } catch (err) {
-        if (!String(err).includes('Unique')) throw err;
+      } catch (err: any) {
+        if (
+          !String(err).includes('Unique') &&
+          err?.code !== 'P2002' &&
+          !err?.message?.includes('Unique')
+        )
+          throw err;
       }
     }
     return { created };
@@ -345,7 +350,7 @@ export class LeaveEntitlementService {
   ) {
     return (prisma as any).leaveEntitlementRule.upsert({
       where: {
-        aura_leave_entitlement_rule_unique: {
+        tenantId_country_leaveCode_effectiveFrom: {
           tenantId: auth.tenantId,
           country: input.country,
           leaveCode: input.leaveCode,
@@ -534,13 +539,14 @@ export class LeaveMedicalEvidenceService {
     },
     auth: AuthContext
   ) {
-    const retentionUntil = input.retentionYears
-      ? new Date(Date.now() + input.retentionYears * 365 * 24 * 3600 * 1000)
+    const { action: _action, retentionYears, ...dataFields } = input as any;
+    const retentionUntil = retentionYears
+      ? new Date(Date.now() + Number(retentionYears) * 365 * 24 * 3600 * 1000)
       : null;
     return (prisma as any).leaveMedicalEvidence.create({
       data: {
         tenantId: auth.tenantId,
-        ...input,
+        ...dataFields,
         classification: input.classification ?? 'RESTRICTED',
         retentionUntil,
       },
@@ -634,7 +640,6 @@ export class LeaveCertificateService {
       where: {
         tenantId,
         status: 'APPROVED',
-        leaveCode: 'UNPAID',
         createdAt: { gte: start, lte: end },
       },
     });
@@ -661,7 +666,7 @@ export class LeaveCertificateService {
     const gatingReason = reasons.length ? `Blocked: ${reasons.join('; ')}` : null;
     return (prisma as any).leaveCertificate.upsert({
       where: {
-        aura_leave_certificate_unique: { tenantId: auth.tenantId, period },
+        tenantId_period: { tenantId: auth.tenantId, period },
       },
       update: { ...stats, gatingReason, generatedAt: new Date(), status: 'DRAFT' },
       create: {
@@ -680,7 +685,7 @@ export class LeaveCertificateService {
     auth: AuthContext
   ) {
     const cert = await (prisma as any).leaveCertificate.findUnique({
-      where: { aura_leave_certificate_unique: { tenantId: auth.tenantId, period } },
+      where: { tenantId_period: { tenantId: auth.tenantId, period } },
     });
     if (!cert) throw new Error('certificate not generated');
     if (cert.gatingReason) throw new Error(`cannot sign while gated: ${cert.gatingReason}`);

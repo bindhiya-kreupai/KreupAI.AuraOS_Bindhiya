@@ -1,3 +1,5 @@
+'use client';
+
 /**
  * @module RightSidebar
  * @description Right sidebar with Recent Activity and Favorites
@@ -6,7 +8,6 @@
  * @reference docs/aura-uiux-design.md
  */
 
-'use client';
 
 import React, { useState } from 'react';
 import Link from 'next/link';
@@ -20,7 +21,7 @@ import {
   PanelRight,
   History,
 } from 'lucide-react';
-import { cn } from '../../utils';
+import { cn } from '../../utils/index';
 
 interface ActivityItem {
   path: string;

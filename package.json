@@ -5,6 +5,7 @@
   "scripts": {
     "verify": "node verify-setup.js",
     "build": "turbo run build",
+    "build:web": "pnpm --filter web build",
     "dev": "turbo run dev --concurrency=30",
     "lint": "turbo run lint",
     "test": "turbo run test",
@@ -16,16 +17,7 @@
     "check:mobile-drift": "node scripts/check-mobile-contract-drift.mjs",
     "check:all": "pnpm check:tenant-isolation && pnpm check:authz-coverage && pnpm check:query-perf && pnpm check:api-contract && pnpm check:mobile-drift",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "prepare": "husky install"
-  },
-  "lint-staged": {
-    "apps/web/src/**/*.{ts,tsx}": [
-      "eslint --fix",
-      "prettier --write"
-    ],
-    "*.{json,md}": [
-      "prettier --write"
-    ]
+    "prepare": "husky || true"
   },
   "devDependencies": {
     "@prisma/client": "^5.22.0",
@@ -44,13 +36,12 @@
   "engines": {
     "node": ">=20.0.0"
   },
-  "pnpm": {
-    "overrides": {
-      "@types/react": "18.3.27",
-      "@types/react-dom": "18.3.7"
-    }
+  "pnpm.overrides": {
+    "@types/react": "18.3.27",
+    "@types/react-dom": "18.3.7"
   },
   "dependencies": {
-    "@prisma/client": "^7.8.0"
+    "@prisma/client": "^5.22.0",
+    "prisma": "^5.22.0"
   }
 }

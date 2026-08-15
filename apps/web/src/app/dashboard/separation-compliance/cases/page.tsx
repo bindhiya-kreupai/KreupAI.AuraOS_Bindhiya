@@ -48,7 +48,7 @@ export default function CasesPage() {
     if (filter) url.searchParams.set('status', filter);
     const r = await fetch(url.toString());
     const p = await r.json();
-    if (p.success) setRows(p.data ?? []);
+    if (p.success) setRows(p.data?.items ?? p.data ?? []);
   }
   useEffect(() => {
     load();
@@ -83,6 +83,16 @@ export default function CasesPage() {
     });
     const p = await r.json();
     setMessage(p.success ? action : p.error?.message);
+    load();
+  }
+
+  async function remove(id: string) {
+    if (!confirm('Delete this separation case? This will also remove its clearance and handover records.')) return;
+    const r = await fetch(`/api/v1/separation-compliance/cases?id=${id}`, {
+      method: 'DELETE',
+    });
+    const p = await r.json();
+    setMessage(p.success ? 'Deleted' : (p.error?.message ?? 'failed'));
     load();
   }
 
@@ -200,6 +210,7 @@ export default function CasesPage() {
                 <th className="px-3 py-2">IT</th>
                 <th className="px-3 py-2">Status</th>
                 <th className="px-3 py-2">Actions</th>
+                <th className="px-3 py-2">Delete</th>
               </tr>
             </thead>
             <tbody>
@@ -312,12 +323,21 @@ export default function CasesPage() {
                         )}
                       </div>
                     </td>
+                    <td className="px-3 py-2">
+                      <button
+                        type="button"
+                        onClick={() => remove(c.id)}
+                        className="text-xs text-rose-600 hover:underline"
+                      >
+                        Delete
+                      </button>
+                    </td>
                   </tr>
                 );
               })}
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={10} className="px-3 py-6 text-center text-slate-500">
+                  <td colSpan={11} className="px-3 py-6 text-center text-slate-500">
                     No cases.
                   </td>
                 </tr>

@@ -1,5 +1,7 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
+
+export const dynamic = 'force-dynamic';
 import '@/styles/globals.css';
 import { Toaster } from 'sonner';
 import { QueryProvider } from '@/providers/QueryProvider';

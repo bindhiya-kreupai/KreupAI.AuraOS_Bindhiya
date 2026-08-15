@@ -7,6 +7,7 @@
 import type { Connection, Channel, Options } from 'amqplib';
 import amqp from 'amqplib';
 import { logger } from '@/lib/logger';
+import { isBuildPhase } from '@/lib/utils/build-phase';
 
 // RabbitMQ configuration from environment
 const RABBITMQ_URL = process.env.RABBITMQ_URL || 'amqp://localhost:5672';
@@ -24,9 +25,8 @@ export const QUEUE_NAMES = {
 
 // Exchange names
 export const EXCHANGE_NAMES = {
-  DIRECT: 'auraos.direct',
-  TOPIC: 'auraos.topic',
-  FANOUT: 'auraos.fanout',
+  EVENTS: 'aura.events',
+  DEAD_LETTER: 'aura.dlx',
 } as const;
 
 /**
@@ -41,8 +41,7 @@ class RabbitMQClient {
   private reconnectDelay = 5000; // 5 seconds
 
   constructor() {
-    if (!RABBITMQ_ENABLED) {
-      logger.info('RabbitMQ is disabled. Async processing will be handled synchronously.');
+    if (!RABBITMQ_ENABLED || isBuildPhase()) {
       return;
     }
 
@@ -227,10 +226,7 @@ class RabbitMQClient {
   /**
    * Consume messages from queue
    */
-  async consume(
-    queue: string,
-    callback: (message: any) => Promise<void>
-  ): Promise<string | null> {
+  async consume(queue: string, callback: (message: any) => Promise<void>): Promise<string | null> {
     if (!this.isReady()) {
       logger.error('RabbitMQ not available. Cannot consume messages.');
       return null;
@@ -360,8 +356,22 @@ class RabbitMQClient {
   }
 }
 
-// Export singleton instance
-export const rabbitmq = new RabbitMQClient();
+let rabbitInstance: RabbitMQClient | undefined;
+
+export function getRabbitMQClient(): RabbitMQClient {
+  if (!rabbitInstance) {
+    rabbitInstance = new RabbitMQClient();
+  }
+  return rabbitInstance;
+}
+
+export const rabbitmq = new Proxy({} as RabbitMQClient, {
+  get(_target, prop) {
+    const instance = getRabbitMQClient();
+    const value = (instance as any)[prop];
+    return typeof value === 'function' ? value.bind(instance) : value;
+  },
+});
 
 // Graceful shutdown
 process.on('SIGINT', async () => {

@@ -47,13 +47,7 @@ export type SeparationType =
   | 'RETIREMENT';
 
 export type ClearanceDept =
-  | 'HR'
-  | 'IT'
-  | 'FINANCE'
-  | 'SECURITY'
-  | 'LINE_MANAGER'
-  | 'ADMIN'
-  | 'LEGAL';
+  'HR' | 'IT' | 'FINANCE' | 'SECURITY' | 'LINE_MANAGER' | 'ADMIN' | 'LEGAL';
 
 export const DEFAULT_NOTICE_DAYS: Record<string, number> = {
   UAE: 30,
@@ -280,6 +274,11 @@ export class SeparationCaseService {
       data: { status: 'CLOSED' },
     });
   }
+   async delete(id: string, _auth: AuthContext) {
+    await (prisma as any).separationClearance.deleteMany({ where: { caseId: id } });
+    await (prisma as any).separationHandover.deleteMany({ where: { caseId: id } });
+    return (prisma as any).separationCase.delete({ where: { id } });
+  }
 
   async list(
     tenantId: string,
@@ -327,6 +326,9 @@ export class SeparationClearanceService {
       },
     });
   }
+   async delete(id: string, _auth: AuthContext) {
+    return (prisma as any).separationClearance.delete({ where: { id } });
+  }
 
   async list(
     tenantId: string,
@@ -364,7 +366,14 @@ export class SeparationHandoverService {
     auth: AuthContext
   ) {
     return (prisma as any).separationHandover.create({
-      data: { tenantId: auth.tenantId, ...input, status: 'PENDING' },
+      data: {
+        tenantId: auth.tenantId,
+        caseId: input.caseId,
+        itemDescription: input.itemDescription,
+        itemType: input.itemType,
+        successorId: input.successorId,
+        status: 'PENDING',
+      },
     });
   }
 
@@ -379,6 +388,11 @@ export class SeparationHandoverService {
       },
     });
   }
+
+    async delete(id: string, _auth: AuthContext) {
+    return (prisma as any).separationHandover.delete({ where: { id } });
+  }
+
 
   async list(
     tenantId: string,

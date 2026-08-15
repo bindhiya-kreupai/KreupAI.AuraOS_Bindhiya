@@ -109,7 +109,11 @@ export const GET = withEnhancedAuth(async (request: NextRequest, context) => {
     const sortOrder = (searchParams.get('sortOrder') as 'asc' | 'desc') || 'desc';
 
     // Build where clause with tenant scoping
-    const where: Record<string, unknown> = { tenantId };
+    const where: Record<string, any> = {
+      company: {
+        tenantId,
+      },
+    };
 
     if (companyId) where.companyId = companyId;
     if (departmentId) where.departmentId = departmentId;
@@ -283,7 +287,6 @@ export const POST = auditMiddleware.createEmployee(
 
       const employee = await prisma.employee.create({
         data: {
-          tenantId,
           employeeCode: data.employeeCode,
           firstName: data.firstName,
           lastName: data.lastName,

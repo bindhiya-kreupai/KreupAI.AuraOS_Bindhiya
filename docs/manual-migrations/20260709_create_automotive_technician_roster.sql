@@ -1,0 +1,16 @@
+BEGIN;
+
+CREATE TABLE IF NOT EXISTS auraos.aura_automotive_technician_roster (
+  id TEXT PRIMARY KEY DEFAULT gen_random_uuid()::text,
+  bay TEXT NOT NULL,
+  tech TEXT NOT NULL,
+  job TEXT NOT NULL,
+  time TEXT NOT NULL,
+  status TEXT NOT NULL,
+  skill TEXT,
+  is_active BOOLEAN NOT NULL DEFAULT TRUE,
+  created_at TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP
+);
+
+COMMIT;

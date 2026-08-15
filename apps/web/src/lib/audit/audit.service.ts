@@ -63,6 +63,9 @@ export enum AuditAction {
   REPORT_GENERATED = 'REPORT_GENERATED',
   REPORT_DOWNLOADED = 'REPORT_DOWNLOADED',
 
+  // Shift Management actions
+  SHIFT_ROSTER_PUBLISHED = 'SHIFT_ROSTER_PUBLISHED',
+
   // System actions
   SETTINGS_UPDATED = 'SETTINGS_UPDATED',
   INTEGRATION_CONFIGURED = 'INTEGRATION_CONFIGURED',
@@ -141,6 +144,7 @@ export class AuditService {
           userEmail: entry.userEmail || null,
           action: entry.action as unknown as PrismaAuditAction,
           severity: (entry.severity || AuditSeverity.LOW) as unknown as PrismaAuditSeverity,
+          module: entry.resourceType || 'system',
           resourceType: entry.resourceType,
           resourceId: entry.resourceId || null,
           success: entry.success ?? true,

@@ -1,5 +1,126 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { IntegrationConnectionService } from '../connection.service';
+
+const mockDb: Record<string, any[]> = {
+  integrationConnection: [],
+  integrationSyncJob: [],
+  integrationLog: [],
+  webhook: [],
+};
+
+vi.mock('@aura/database', () => ({
+  prisma: {
+    integrationConnection: {
+      findUnique: vi.fn(({ where }: any) => {
+        const row = mockDb.integrationConnection.find((r) => r.id === where.id);
+        return Promise.resolve(row ?? null);
+      }),
+      findMany: vi.fn(({ where }: any) => {
+        let rows = [...mockDb.integrationConnection];
+        if (where?.tenantId) rows = rows.filter((r) => r.tenantId === where.tenantId);
+        if (where?.status) rows = rows.filter((r) => r.status === where.status);
+        if (where?.isDeleted !== undefined)
+          rows = rows.filter((r) => r.isDeleted === where.isDeleted);
+        return Promise.resolve(rows);
+      }),
+      create: vi.fn(({ data }: any) => {
+        const row = {
+          id: `conn_${Date.now()}`,
+          ...data,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          isDeleted: false,
+        };
+        mockDb.integrationConnection.push(row);
+        return Promise.resolve(row);
+      }),
+      update: vi.fn(({ where, data }: any) => {
+        const idx = mockDb.integrationConnection.findIndex((r) => r.id === where.id);
+        if (idx === -1) throw new Error('Record not found');
+        mockDb.integrationConnection[idx] = {
+          ...mockDb.integrationConnection[idx],
+          ...data,
+          updatedAt: new Date(),
+        };
+        return Promise.resolve(mockDb.integrationConnection[idx]);
+      }),
+      upsert: vi.fn(({ create, update }: any) => {
+        const existing = mockDb.integrationConnection.find(
+          (r) => r.tenantId === create.tenantId && r.integrationId === create.integrationId
+        );
+        if (existing) {
+          Object.assign(existing, update, { updatedAt: new Date() });
+          return Promise.resolve(existing);
+        }
+        const row = {
+          id: `conn_${Date.now()}`,
+          ...create,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          isDeleted: false,
+        };
+        mockDb.integrationConnection.push(row);
+        return Promise.resolve(row);
+      }),
+    },
+    integrationSyncJob: {
+      findUnique: vi.fn(() => Promise.resolve(null)),
+      findMany: vi.fn(() => Promise.resolve([])),
+      create: vi.fn(({ data }: any) => {
+        const row = {
+          id: `sync_${Date.now()}`,
+          ...data,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          isDeleted: false,
+          progress: 0,
+          recordsProcessed: 0,
+          recordsCreated: 0,
+          recordsUpdated: 0,
+          recordsFailed: 0,
+        };
+        mockDb.integrationSyncJob.push(row);
+        return Promise.resolve(row);
+      }),
+    },
+    integrationLog: {
+      findMany: vi.fn(() => Promise.resolve([])),
+      create: vi.fn(({ data }: any) => {
+        const row = {
+          id: `log_${Date.now()}`,
+          ...data,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          isDeleted: false,
+        };
+        mockDb.integrationLog.push(row);
+        return Promise.resolve(row);
+      }),
+    },
+    webhook: {
+      findUnique: vi.fn(() => Promise.resolve(null)),
+      findMany: vi.fn(() => Promise.resolve([])),
+      create: vi.fn(({ data }: any) => {
+        const row = {
+          id: `wh_${Date.now()}`,
+          ...data,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+          isDeleted: false,
+        };
+        mockDb.webhook.push(row);
+        return Promise.resolve(row);
+      }),
+    },
+  },
+  Prisma: {
+    DbNull: 'DbNull',
+  },
+}));
+
+beforeEach(() => {
+  Object.values(mockDb).forEach((arr) => arr.splice(0));
+});
 
 describe('IntegrationConnectionService.connectIntegration', () => {
   it('throws when integration not found', async () => {
@@ -65,8 +186,15 @@ describe('IntegrationConnectionService.testConnection', () => {
 
 describe('IntegrationConnectionService.disconnectIntegration', () => {
   it('returns a DISCONNECTED record with timestamp', async () => {
-    const r = await IntegrationConnectionService.disconnectIntegration('conn-1', 'user-1');
-    expect(r.id).toBe('conn-1');
+    const conn = await IntegrationConnectionService.connectIntegration(
+      'tenant-1',
+      'int_sap_hcm',
+      { companyId: 'CO-123', apiUrl: 'https://api' },
+      {},
+      'user-1'
+    );
+    const r = await IntegrationConnectionService.disconnectIntegration(conn.id, 'user-1');
+    expect(r.id).toBe(conn.id);
     expect(r.status).toBe('DISCONNECTED');
     expect(r.disconnectedAt).toBeInstanceOf(Date);
   });
@@ -74,7 +202,14 @@ describe('IntegrationConnectionService.disconnectIntegration', () => {
 
 describe('IntegrationConnectionService.updateConfiguration', () => {
   it('returns updated configuration', async () => {
-    const r = await IntegrationConnectionService.updateConfiguration('conn-1', { foo: 'bar' });
+    const conn = await IntegrationConnectionService.connectIntegration(
+      'tenant-1',
+      'int_sap_hcm',
+      { companyId: 'CO-123', apiUrl: 'https://api' },
+      {},
+      'user-1'
+    );
+    const r = await IntegrationConnectionService.updateConfiguration(conn.id, { foo: 'bar' });
     expect(r.configuration).toEqual({ foo: 'bar' });
     expect(r.status).toBe('CONNECTED');
   });
@@ -96,9 +231,22 @@ describe('IntegrationConnectionService.encryption round-trip', () => {
 });
 
 describe('IntegrationConnectionService.sync jobs', () => {
+  let connectionId: string;
+
+  beforeEach(async () => {
+    const conn = await IntegrationConnectionService.connectIntegration(
+      'tenant-1',
+      'int_sap_hcm',
+      { companyId: 'CO-123', apiUrl: 'https://api' },
+      {},
+      'user-1'
+    );
+    connectionId = conn.id;
+  });
+
   it('startSyncJob returns a QUEUED job with defaults', async () => {
-    const job = await IntegrationConnectionService.startSyncJob('conn-1', 'EMPLOYEE');
-    expect(job.connectionId).toBe('conn-1');
+    const job = await IntegrationConnectionService.startSyncJob(connectionId, 'EMPLOYEE');
+    expect(job.connectionId).toBe(connectionId);
     expect(job.entity).toBe('EMPLOYEE');
     expect(job.type).toBe('INCREMENTAL');
     expect(job.triggeredBy).toBe('MANUAL');
@@ -108,7 +256,7 @@ describe('IntegrationConnectionService.sync jobs', () => {
 
   it('startSyncJob respects custom type + triggeredBy', async () => {
     const job = await IntegrationConnectionService.startSyncJob(
-      'conn-1',
+      connectionId,
       'PAYROLL',
       'FULL',
       'SCHEDULED',
@@ -120,7 +268,7 @@ describe('IntegrationConnectionService.sync jobs', () => {
   });
 
   it('action is derived from entity (lowercase)', async () => {
-    const job = await IntegrationConnectionService.startSyncJob('conn-1', 'EMPLOYEE');
+    const job = await IntegrationConnectionService.startSyncJob(connectionId, 'EMPLOYEE');
     expect(job.action).toBe('sync_employee');
   });
 
@@ -128,8 +276,8 @@ describe('IntegrationConnectionService.sync jobs', () => {
     expect(await IntegrationConnectionService.getSyncJobStatus('nope')).toBeNull();
   });
 
-  it('getSyncHistory returns empty array (stub)', async () => {
-    expect(await IntegrationConnectionService.getSyncHistory('conn-1')).toEqual([]);
+  it('getSyncHistory returns empty array', async () => {
+    expect(await IntegrationConnectionService.getSyncHistory(connectionId)).toEqual([]);
   });
 });
 
@@ -150,28 +298,39 @@ describe('IntegrationConnectionService.tenant lookups', () => {
 });
 
 describe('IntegrationConnectionService.webhooks', () => {
+  let connectionId: string;
+
+  beforeEach(async () => {
+    const conn = await IntegrationConnectionService.connectIntegration(
+      'tenant-1',
+      'int_sap_hcm',
+      { companyId: 'CO-123', apiUrl: 'https://api' },
+      {},
+      'user-1'
+    );
+    connectionId = conn.id;
+  });
+
   it('createWebhook returns a populated WebhookConfig', async () => {
-    const wh = await IntegrationConnectionService.createWebhook('conn-1', {
+    const wh = await IntegrationConnectionService.createWebhook(connectionId, {
       name: 'My Webhook',
-      url: 'https://example.com/wh',
-      events: ['EMPLOYEE_CREATED'],
+      nameAr: 'My Webhook',
+      description: 'A test webhook',
+      direction: 'OUTBOUND',
+      outboundUrl: 'https://example.com/wh',
+      outboundEvents: ['EMPLOYEE_CREATED'],
       enabled: true,
-      authentication: { type: 'NONE' },
-      retryPolicy: {
-        maxAttempts: 3,
-        initialDelayMs: 1000,
-        backoffMultiplier: 2,
-        maxDelayMs: 60000,
-      },
+      retryEnabled: true,
+      maxRetries: 3,
+      retryDelay: 60,
     } as any);
-    expect(wh.id).toMatch(/^wh_/);
-    expect(wh.connectionId).toBe('conn-1');
+    expect(wh.connectionId).toBe(connectionId);
     expect(wh.successCount).toBe(0);
     expect(wh.failureCount).toBe(0);
   });
 
-  it('getWebhooks returns empty (stub)', async () => {
-    expect(await IntegrationConnectionService.getWebhooks('conn-1')).toEqual([]);
+  it('getWebhooks returns empty array initially', async () => {
+    expect(await IntegrationConnectionService.getWebhooks(connectionId)).toEqual([]);
   });
 
   it('processInboundWebhook returns success', async () => {
@@ -196,16 +355,20 @@ describe('IntegrationConnectionService.logging', () => {
       tenantId: 't',
       integrationId: 'i',
       connectionId: 'c',
-      level: 'INFO',
+      direction: 'OUTBOUND',
+      method: 'POST',
+      endpoint: '/api/test',
+      statusCode: 200,
+      responseTime: 100,
       action: 'SYNC',
-      message: 'started',
+      entity: 'Employee',
       success: true,
-    } as any);
-    expect(log.id).toMatch(/^log_/);
+    });
+    expect(log.id).toBeDefined();
     expect(log.timestamp).toBeInstanceOf(Date);
   });
 
-  it('getLogs returns array (stub)', async () => {
+  it('getLogs returns empty array', async () => {
     expect(await IntegrationConnectionService.getLogs('conn-1')).toEqual([]);
     expect(
       await IntegrationConnectionService.getLogs('conn-1', { success: true, limit: 10 })
@@ -214,12 +377,25 @@ describe('IntegrationConnectionService.logging', () => {
 });
 
 describe('IntegrationConnectionService.getHealthMetrics', () => {
-  it('returns health metrics with sensible defaults', async () => {
+  it('returns UNKNOWN for missing connection', async () => {
     const r = await IntegrationConnectionService.getHealthMetrics('conn-1');
+    expect(r.status).toBe('UNKNOWN');
+    expect(r.uptime).toBe(0);
+    expect(r.successRate).toBe(0);
+    expect(r.avgResponseTime).toBe(0);
+  });
+
+  it('returns metrics for an existing connection', async () => {
+    const conn = await IntegrationConnectionService.connectIntegration(
+      'tenant-1',
+      'int_sap_hcm',
+      { companyId: 'CO-123', apiUrl: 'https://api' },
+      {},
+      'user-1'
+    );
+    const r = await IntegrationConnectionService.getHealthMetrics(conn.id);
     expect(r.status).toBe('HEALTHY');
-    expect(r.uptime).toBeGreaterThan(0);
-    expect(r.successRate).toBeGreaterThan(0);
-    expect(r.avgResponseTime).toBeGreaterThan(0);
-    expect(r.lastSuccess).toBeInstanceOf(Date);
+    expect(r.uptime).toBe(100);
+    expect(r.successRate).toBe(100);
   });
 });

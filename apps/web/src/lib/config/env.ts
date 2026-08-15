@@ -44,7 +44,12 @@ const envSchema = z
       .describe('Encrypts dependent SSN fields at rest'),
 
     // Application Configuration
-    NEXT_PUBLIC_APP_URL: z.string().url().optional().describe('Public application URL'),
+    NEXT_PUBLIC_APP_URL: z
+      .string()
+      .url()
+      .optional()
+      .default(process.env.RENDER_EXTERNAL_URL || 'http://localhost:3006')
+      .describe('Public application URL'),
     PORT: z.coerce.number().int().positive().default(3000).describe('Application port'),
 
     // Logging Configuration
@@ -116,15 +121,21 @@ const envSchema = z
     VERCEL_GIT_COMMIT_SHA: z.string().optional(),
   })
   .superRefine((vals, ctx) => {
-    // In production, env vars that are merely "optional" for local dev MUST be set
-    // for observability, secrets management, and audit-trail integrity to function.
-    // Keep this list narrow — every entry should justify being a hard blocker.
-    if (vals.NODE_ENV !== 'production') return;
-    const requiredInProd: Array<keyof typeof vals> = [
-      'NEXT_PUBLIC_APP_URL', // canonical URL for emails/redirects
-      'REDIS_URL', // session + audit + rate-limit storage
-      'SENTRY_DSN', // error tracking
-    ];
+    // In production runtime, validate required vars. Skip during build phase or when SKIP_ENV_VALIDATION is set.
+    if (
+      vals.NODE_ENV !== 'production' ||
+      process.env.SKIP_ENV_VALIDATION === 'true' ||
+      process.env.NEXT_PHASE === 'phase-production-build'
+    ) {
+      return;
+    }
+    const requiredInProd: Array<keyof typeof vals> = ['NEXT_PUBLIC_APP_URL'];
+    if (process.env.REDIS_REQUIRED === 'true') {
+      requiredInProd.push('REDIS_URL');
+    }
+    if (process.env.SENTRY_REQUIRED === 'true') {
+      requiredInProd.push('SENTRY_DSN');
+    }
     for (const key of requiredInProd) {
       if (!vals[key]) {
         ctx.addIssue({

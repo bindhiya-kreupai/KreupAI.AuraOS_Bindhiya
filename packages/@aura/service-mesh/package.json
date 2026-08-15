@@ -2,14 +2,11 @@
   "name": "@aura/service-mesh",
   "version": "1.0.0",
   "description": "AuraOS Service Communication Layer — service discovery, circuit breaker, load balancer",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "src/index.ts",
+  "types": "src/index.ts",
   "exports": {
-    ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.mjs",
-      "require": "./dist/index.js"
-    }
+    ".": "./src/index.ts",
+    "./*": "./src/*"
   },
   "scripts": {
     "build": "tsup",

@@ -1,8 +1,6 @@
 // @ts-nocheck — Service has Prisma schema drift (field/model name mismatches against current schema). Tracked under #29 for proper rewrite. Runtime behavior may need verification.
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@aura/database';
 import { z } from 'zod';
-
-const prisma = new PrismaClient();
 
 export const createAttendancePunchSchema = z.object({
   tenantId: z.string(),
@@ -17,7 +15,9 @@ export const createAttendancePunchSchema = z.object({
   notes: z.string().optional(),
 });
 
-export const updateAttendancePunchSchema = createAttendancePunchSchema.partial().omit({ tenantId: true });
+export const updateAttendancePunchSchema = createAttendancePunchSchema
+  .partial()
+  .omit({ tenantId: true });
 
 export const createAttendanceRecordSchema = z.object({
   tenantId: z.string(),
@@ -34,11 +34,24 @@ export class TimeTrackingService {
   // ==================== ATTENDANCE PUNCHES ====================
 
   static async findAllPunches(filter: any) {
-    const { tenantId, employeeId, punchDate, punchType, page = 1, limit = 50, sortBy = 'punchTime', sortOrder = 'desc' } = filter;
+    const {
+      tenantId,
+      employeeId,
+      punchDate,
+      punchType,
+      page = 1,
+      limit = 50,
+      sortBy = 'punchTime',
+      sortOrder = 'desc',
+    } = filter;
 
     const where: any = { tenantId };
     if (employeeId) where.employeeId = employeeId;
-    if (punchDate) where.punchDate = { gte: new Date(punchDate), lt: new Date(new Date(punchDate).getTime() + 24 * 60 * 60 * 1000) };
+    if (punchDate)
+      where.punchDate = {
+        gte: new Date(punchDate),
+        lt: new Date(new Date(punchDate).getTime() + 24 * 60 * 60 * 1000),
+      };
     if (punchType) where.punchType = punchType;
 
     const [data, total] = await Promise.all([
@@ -71,7 +84,11 @@ export class TimeTrackingService {
     });
   }
 
-  static async updatePunch(id: string, tenantId: string, data: z.infer<typeof updateAttendancePunchSchema>) {
+  static async updatePunch(
+    id: string,
+    tenantId: string,
+    data: z.infer<typeof updateAttendancePunchSchema>
+  ) {
     const validated = updateAttendancePunchSchema.parse(data);
     const existing = await prisma.attendance.findFirst({ where: { id, tenantId } });
     if (!existing) return null;
@@ -106,7 +123,17 @@ export class TimeTrackingService {
   // ==================== ATTENDANCE RECORDS ====================
 
   static async findAllRecords(filter: any) {
-    const { tenantId, employeeId, startDate, endDate, status, page = 1, limit = 50, sortBy = 'date', sortOrder = 'desc' } = filter;
+    const {
+      tenantId,
+      employeeId,
+      startDate,
+      endDate,
+      status,
+      page = 1,
+      limit = 50,
+      sortBy = 'date',
+      sortOrder = 'desc',
+    } = filter;
 
     const where: any = { tenantId };
     if (employeeId) where.employeeId = employeeId;

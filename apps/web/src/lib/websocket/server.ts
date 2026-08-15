@@ -53,6 +53,19 @@ export enum NotificationType {
   EMPLOYEE_ONBOARDED = 'EMPLOYEE_ONBOARDED',
   EMPLOYEE_UPDATED = 'EMPLOYEE_UPDATED',
   EMPLOYEE_TERMINATED = 'EMPLOYEE_TERMINATED',
+
+  // Shift Management notifications
+  SHIFT_SWAP_REQUESTED = 'SHIFT_SWAP_REQUESTED',
+  SHIFT_SWAP_PEER_APPROVED = 'SHIFT_SWAP_PEER_APPROVED',
+  SHIFT_SWAP_COMPLETED = 'SHIFT_SWAP_COMPLETED',
+  SHIFT_SWAP_REJECTED = 'SHIFT_SWAP_REJECTED',
+  SHIFT_SWAP_CANCELLED = 'SHIFT_SWAP_CANCELLED',
+  SHIFT_ASSIGNED = 'SHIFT_ASSIGNED',
+  SHIFT_ASSIGNMENT_REMOVED = 'SHIFT_ASSIGNMENT_REMOVED',
+  SHIFT_ROSTER_ASSIGNED = 'SHIFT_ROSTER_ASSIGNED',
+  SHIFT_ROSTER_CONFIRMED = 'SHIFT_ROSTER_CONFIRMED',
+  SHIFT_ROSTER_CANCELLED = 'SHIFT_ROSTER_CANCELLED',
+  SHIFT_OPEN_CLAIMED = 'SHIFT_OPEN_CLAIMED',
 }
 
 /**
@@ -247,10 +260,7 @@ export class WebSocketServer {
     // Emit to user's room
     this.io.to(`user:${userId}`).emit('notification', notificationWithId);
 
-    logger.info(
-      { userId, notificationType: notification.type },
-      'Notification sent to user'
-    );
+    logger.info({ userId, notificationType: notification.type }, 'Notification sent to user');
   }
 
   /**
@@ -271,10 +281,7 @@ export class WebSocketServer {
 
     this.io.to(`company:${companyId}`).emit('notification', notificationWithId);
 
-    logger.info(
-      { companyId, notificationType: notification.type },
-      'Notification sent to company'
-    );
+    logger.info({ companyId, notificationType: notification.type }, 'Notification sent to company');
   }
 
   /**

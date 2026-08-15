@@ -89,20 +89,22 @@ export class OtPolicyService {
     },
     auth: AuthContext
   ) {
+    const grade = input.grade && String(input.grade).trim() !== '' ? String(input.grade) : 'ALL';
+    const { action: _action, ...cleanInput } = input as any;
     return (prisma as any).otPolicy.upsert({
       where: {
-        aura_ot_policy_unique: {
+        tenantId_country_grade_effectiveFrom: {
           tenantId: auth.tenantId,
           country: input.country,
-          grade: input.grade ?? null,
+          grade,
           effectiveFrom: input.effectiveFrom,
         },
       },
-      update: { ...input, grade: input.grade ?? null, status: 'ACTIVE' },
+      update: { ...cleanInput, grade, status: 'ACTIVE' },
       create: {
         tenantId: auth.tenantId,
-        ...input,
-        grade: input.grade ?? null,
+        ...cleanInput,
+        grade,
         status: 'ACTIVE',
       },
     });
@@ -184,7 +186,16 @@ export class OtRateCardService {
       orderBy: { effectiveFrom: 'desc' },
       take: 1,
     });
-    return rows[0] ? Number(rows[0].multiplier) : null;
+    if (rows[0]) return Number(rows[0].multiplier);
+
+    const defaults: Record<string, number> = {
+      WEEKDAY: 1.25,
+      WEEKEND: 1.5,
+      HOLIDAY: 2.0,
+      NIGHT: 1.5,
+      REST_DAY: 1.5,
+    };
+    return defaults[otType] ?? 1.25;
   }
 }
 
@@ -217,10 +228,11 @@ export class OtRequestService {
         `Requested ${input.plannedHours}h exceeds maxDailyOtHours ${policy.maxDailyOtHours}`
       );
     }
+    const { action: _action, ...cleanInput } = input as any;
     return (prisma as any).otRequest.create({
       data: {
         tenantId: auth.tenantId,
-        ...input,
+        ...cleanInput,
         status: 'PENDING',
       },
     });
@@ -372,7 +384,7 @@ export class OtActualService {
 
     const existing = await (prisma as any).otActual.findUnique({
       where: {
-        aura_ot_actual_unique: {
+        tenantId_employeeId_otDate_otType: {
           tenantId: auth.tenantId,
           employeeId: input.employeeId,
           otDate: input.otDate,
@@ -390,9 +402,10 @@ export class OtActualService {
       actualHours: input.actualHours,
     });
 
+    const { action: _action, ...cleanInput } = input as any;
     return (prisma as any).otActual.upsert({
       where: {
-        aura_ot_actual_unique: {
+        tenantId_employeeId_otDate_otType: {
           tenantId: auth.tenantId,
           employeeId: input.employeeId,
           otDate: input.otDate,
@@ -412,7 +425,7 @@ export class OtActualService {
       },
       create: {
         tenantId: auth.tenantId,
-        ...input,
+        ...cleanInput,
         multiplier,
         computedAmount,
         currency: input.currency ?? 'AED',
@@ -487,7 +500,7 @@ export class OtBudgetService {
   ) {
     return (prisma as any).otBudget.upsert({
       where: {
-        aura_ot_budget_unique: {
+        tenantId_period_costCenterId: {
           tenantId: auth.tenantId,
           period: input.period,
           costCenterId: input.costCenterId ?? null,
@@ -594,7 +607,7 @@ export class OtCertificateService {
     if (stats.budgetBreachCount > 0) reasons.push(`${stats.budgetBreachCount} budget breach(es)`);
     const gatingReason = reasons.length ? `Blocked: ${reasons.join('; ')}` : null;
     return (prisma as any).otCertificate.upsert({
-      where: { aura_ot_certificate_unique: { tenantId: auth.tenantId, period } },
+      where: { tenantId_period: { tenantId: auth.tenantId, period } },
       update: {
         totalHours: stats.totalHours,
         totalAmount: stats.totalAmount,
@@ -626,7 +639,7 @@ export class OtCertificateService {
     auth: AuthContext
   ) {
     const cert = await (prisma as any).otCertificate.findUnique({
-      where: { aura_ot_certificate_unique: { tenantId: auth.tenantId, period } },
+      where: { tenantId_period: { tenantId: auth.tenantId, period } },
     });
     if (!cert) throw new Error('certificate not generated');
     if (cert.gatingReason) throw new Error(`cannot sign while gated: ${cert.gatingReason}`);

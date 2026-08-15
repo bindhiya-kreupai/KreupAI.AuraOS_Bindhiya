@@ -6,7 +6,17 @@
 
 // Common Types
 export type Status = 'draft' | 'active' | 'inactive' | 'archived';
-export type ExecutionStatus = 'pending' | 'running' | 'paused' | 'completed' | 'failed' | 'cancelled';
+export type ExecutionStatus =
+  | 'initiated'
+  | 'in_progress'
+  | 'pending_approval'
+  | 'approved'
+  | 'rejected'
+  | 'completed'
+  | 'failed'
+  | 'cancelled'
+  | 'running'
+  | 'paused';
 
 // ============================================================================
 // Workflow Definition

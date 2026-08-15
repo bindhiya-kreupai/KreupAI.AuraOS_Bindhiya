@@ -13,18 +13,19 @@
   },
   "scripts": {
     "build": "tsup",
+    "postinstall": "tsup --no-dts",
     "dev": "tsup --watch",
     "lint": "eslint src/",
     "clean": "rm -rf dist",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "amqplib": "^0.10.3"
+    "amqplib": "^0.10.3",
+    "tsup": "^8.0.1"
   },
   "devDependencies": {
     "@types/amqplib": "^0.10.5",
     "@types/node": "^20.11.0",
-    "tsup": "^8.0.1",
     "typescript": "^5.3.3"
   },
   "peerDependencies": {

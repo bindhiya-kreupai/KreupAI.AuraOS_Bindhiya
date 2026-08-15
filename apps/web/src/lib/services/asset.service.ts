@@ -4,10 +4,8 @@
  * @project AURA HCM Platform
  */
 
-import { PrismaClient } from '@aura/database';
+import { prisma } from '@aura/database';
 import { z } from 'zod';
-
-const prisma = new PrismaClient();
 
 // ========================================
 // VALIDATION SCHEMAS
@@ -36,7 +34,9 @@ export const createAssetSchema = z.object({
 
   // Location & Status
   locationId: z.string().optional(),
-  status: z.enum(['AVAILABLE', 'ASSIGNED', 'IN_REPAIR', 'RETIRED', 'DISPOSED']).default('AVAILABLE'),
+  status: z
+    .enum(['AVAILABLE', 'ASSIGNED', 'IN_REPAIR', 'RETIRED', 'DISPOSED'])
+    .default('AVAILABLE'),
   condition: z.enum(['EXCELLENT', 'GOOD', 'FAIR', 'POOR']).optional(),
 
   // Warranty
@@ -240,8 +240,12 @@ export class AssetService {
         ...validatedData,
         tags: validatedData.tags ? JSON.stringify(validatedData.tags) : undefined,
         purchaseDate: validatedData.purchaseDate ? new Date(validatedData.purchaseDate) : undefined,
-        warrantyStartDate: validatedData.warrantyStartDate ? new Date(validatedData.warrantyStartDate) : undefined,
-        warrantyEndDate: validatedData.warrantyEndDate ? new Date(validatedData.warrantyEndDate) : undefined,
+        warrantyStartDate: validatedData.warrantyStartDate
+          ? new Date(validatedData.warrantyStartDate)
+          : undefined,
+        warrantyEndDate: validatedData.warrantyEndDate
+          ? new Date(validatedData.warrantyEndDate)
+          : undefined,
         // Calculate initial current value based on depreciation if provided
         currentValue: validatedData.currentValue || validatedData.purchasePrice,
       },
@@ -292,8 +296,12 @@ export class AssetService {
         ...validatedData,
         tags: validatedData.tags ? JSON.stringify(validatedData.tags) : undefined,
         purchaseDate: validatedData.purchaseDate ? new Date(validatedData.purchaseDate) : undefined,
-        warrantyStartDate: validatedData.warrantyStartDate ? new Date(validatedData.warrantyStartDate) : undefined,
-        warrantyEndDate: validatedData.warrantyEndDate ? new Date(validatedData.warrantyEndDate) : undefined,
+        warrantyStartDate: validatedData.warrantyStartDate
+          ? new Date(validatedData.warrantyStartDate)
+          : undefined,
+        warrantyEndDate: validatedData.warrantyEndDate
+          ? new Date(validatedData.warrantyEndDate)
+          : undefined,
       },
       include: {
         location: true,
@@ -344,7 +352,11 @@ export class AssetService {
   /**
    * Assign asset to employee
    */
-  static async assignAsset(assetId: string, tenantId: string, data: z.infer<typeof assignAssetSchema>) {
+  static async assignAsset(
+    assetId: string,
+    tenantId: string,
+    data: z.infer<typeof assignAssetSchema>
+  ) {
     // Validate input
     const validatedData = assignAssetSchema.parse(data);
 
@@ -381,7 +393,9 @@ export class AssetService {
           assetId,
           employeeId: validatedData.employeeId,
           assignedBy: validatedData.assignedBy,
-          expectedReturnDate: validatedData.expectedReturnDate ? new Date(validatedData.expectedReturnDate) : undefined,
+          expectedReturnDate: validatedData.expectedReturnDate
+            ? new Date(validatedData.expectedReturnDate)
+            : undefined,
           conditionAtAssignment: validatedData.conditionAtAssignment,
           assignmentNotes: validatedData.assignmentNotes,
           status: 'ACTIVE',
@@ -403,7 +417,11 @@ export class AssetService {
   /**
    * Return asset from employee
    */
-  static async returnAsset(assignmentId: string, tenantId: string, data: z.infer<typeof returnAssetSchema>) {
+  static async returnAsset(
+    assignmentId: string,
+    tenantId: string,
+    data: z.infer<typeof returnAssetSchema>
+  ) {
     // Validate input
     const validatedData = returnAssetSchema.parse(data);
 
@@ -506,7 +524,12 @@ export class AssetService {
   /**
    * Complete maintenance
    */
-  static async completeMaintenance(maintenanceId: string, tenantId: string, performedBy: string, cost?: number) {
+  static async completeMaintenance(
+    maintenanceId: string,
+    tenantId: string,
+    performedBy: string,
+    cost?: number
+  ) {
     // Check if maintenance exists
     const maintenance = await prisma.assetMaintenance.findFirst({
       where: { id: maintenanceId, tenantId },
@@ -603,7 +626,8 @@ export class AssetService {
     }
 
     const yearsElapsed = (Date.now() - asset.purchaseDate.getTime()) / (1000 * 60 * 60 * 24 * 365);
-    const depreciationAmount = Number(asset.purchasePrice) * (asset.depreciationRate / 100) * yearsElapsed;
+    const depreciationAmount =
+      Number(asset.purchasePrice) * (asset.depreciationRate / 100) * yearsElapsed;
     const currentValue = Math.max(
       Number(asset.purchasePrice) - depreciationAmount,
       asset.salvageValue ? Number(asset.salvageValue) : 0

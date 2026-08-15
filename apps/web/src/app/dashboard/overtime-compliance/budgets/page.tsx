@@ -35,7 +35,7 @@ export default function OtBudgetsPage() {
   async function load() {
     const r = await fetch('/api/v1/overtime-compliance/budgets');
     const p = await r.json();
-    if (p.success) setRows(p.data ?? []);
+    if (p.success) setRows(Array.isArray(p.data) ? p.data : (p.data?.items ?? []));
   }
   useEffect(() => {
     load();

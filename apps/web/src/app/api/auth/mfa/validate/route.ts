@@ -3,36 +3,42 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@aura/database';
 import { authenticator } from 'otplib';
 import bcrypt from 'bcryptjs';
-import crypto from 'crypto';
 import { z } from 'zod';
 import { generateTokens } from '@/lib/auth/jwt';
+import { generateDeviceFingerprint } from '@/lib/auth/device-fingerprint.service';
+import { resolveLocation, formatLocation } from '@/lib/auth/geolocation.service';
+import { decryptSecret } from '@/lib/auth/mfa-crypto';
+import { withRateLimit, RateLimitPresets } from '@/lib/middleware/advanced-rate-limit';
 import { logger } from '@/lib/logger';
+
+function parseDuration(duration: string): number {
+  const match = duration.match(/^(\d+)\s*(h|d|m|s)$/);
+  if (!match) return 24 * 60 * 60 * 1000;
+  const value = parseInt(match[1], 10);
+  const unit = match[2];
+  switch (unit) {
+    case 's':
+      return value * 1000;
+    case 'm':
+      return value * 60 * 1000;
+    case 'h':
+      return value * 60 * 60 * 1000;
+    case 'd':
+      return value * 24 * 60 * 60 * 1000;
+    default:
+      return 24 * 60 * 60 * 1000;
+  }
+}
 
 /**
  * MFA Validate API - Validate MFA code during login
  * Public endpoint (called after initial password verification)
+ * Rate-limited to 10 attempts per 5 minutes.
  */
-
-if (!process.env.MFA_ENCRYPTION_KEY) {
-  throw new Error(
-    'FATAL: MFA_ENCRYPTION_KEY environment variable is not set. Refusing to start with an insecure default.'
-  );
-}
-const ENCRYPTION_KEY = process.env.MFA_ENCRYPTION_KEY;
-
-/**
- * Simple decryption for TOTP secrets
- */
-function decryptSecret(encrypted: string): string {
-  const decipher = crypto.createDecipher('aes-256-cbc', ENCRYPTION_KEY);
-  let decrypted = decipher.update(encrypted, 'hex', 'utf8');
-  decrypted += decipher.final('utf8');
-  return decrypted;
-}
 
 // Validation Schema
 const ValidateMFASchema = z.object({
-  userId: z.string().uuid(),
+  userId: z.string().min(1),
   code: z.string().min(6).max(8), // 6 for TOTP, 8 for backup codes
   useBackupCode: z.boolean().default(false),
 });
@@ -41,7 +47,7 @@ const ValidateMFASchema = z.object({
  * POST /api/auth/mfa/validate
  * Validate MFA code during login process
  */
-export async function POST(request: NextRequest) {
+export const POST = withRateLimit(RateLimitPresets.MFA_VALIDATION, async (request: NextRequest) => {
   try {
     // Parse and validate request body
     const body = await request.json();
@@ -161,13 +167,31 @@ export async function POST(request: NextRequest) {
       tenantId: user.tenantId,
     });
 
-    // Create session
+    // Calculate session expiry from JWT_EXPIRES_IN (default 24h)
+    const expiresInStr = process.env.JWT_EXPIRES_IN || '24h';
+    const expiresInMs = parseDuration(expiresInStr);
+    const expiresAt = new Date(Date.now() + expiresInMs);
+
+    // Create session with device fingerprint and location
+    const userAgent = request.headers.get('user-agent') || 'Unknown';
+    const acceptLanguage = request.headers.get('accept-language');
+    const fingerprint = generateDeviceFingerprint(userAgent, ipAddress, acceptLanguage);
+    let locationStr = '';
+    try {
+      const geoLocation = await resolveLocation(ipAddress);
+      locationStr = formatLocation(geoLocation);
+    } catch (_) {}
+
     const session = await prisma.userSession.create({
       data: {
         userId: user.id,
         ipAddress,
-        device: request.headers.get('user-agent') || 'Unknown',
+        device: userAgent.substring(0, 200),
+        browser: userAgent.split('/')[0]?.substring(0, 100),
+        deviceFingerprint: fingerprint.hash,
+        location: locationStr || null,
         status: 'Active',
+        expiresAt,
       },
     });
 
@@ -229,4 +253,4 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: false, error: 'Failed to validate MFA' }, { status: 500 });
   }
-}
+});

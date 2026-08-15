@@ -1,5 +1,5 @@
 // @ts-nocheck — Presentation-layer drift from service signatures / mock-data shapes. Tracked under #29 for proper realignment.
-"use client";
+'use client';
 
 import React, { useState, useEffect } from 'react';
 import {
@@ -23,7 +23,7 @@ import {
   MoreVertical,
   RefreshCw,
   Zap,
-  BarChart3
+  BarChart3,
 } from 'lucide-react';
 import { jobBoards } from '@/lib/services/ai-automation-client';
 
@@ -269,8 +269,16 @@ function StatusBadge({ status }: { status: JobStatus }) {
   );
 }
 
-function PlatformBadge({ platform, status, boards }: { platform: JobBoardPlatform; status: string; boards: JobBoard[] }) {
-  const board = boards.find(b => b.platform === platform);
+function PlatformBadge({
+  platform,
+  status,
+  boards,
+}: {
+  platform: JobBoardPlatform;
+  status: string;
+  boards: JobBoard[];
+}) {
+  const board = boards.find((b) => b.platform === platform);
   if (!board) return null;
 
   return (
@@ -303,13 +311,46 @@ export default function JobBoardsPage() {
   const fetchJobBoards = async () => {
     try {
       const result = await jobBoards.getJobBoards();
-      if (result.success) {
-        if (result.data?.boards) setBoards(result.data.boards);
-        if (result.data?.postings) setPostings(result.data.postings);
+      if (result.success && result.data) {
+        if (Array.isArray(result.data.boards)) {
+          setBoards(
+            result.data.boards.map((b: any) => ({
+              platform: b.platform,
+              name: b.name || b.platform,
+              nameAr: b.nameAr || b.name || b.platform,
+              logo: b.logo || '',
+              connected: Boolean(b.connected),
+              region: b.region || ['Global'],
+              color: b.color || '#4f46e5',
+              stats: b.stats || { activeJobs: 0, applications: 0, views: 0 },
+            }))
+          );
+        }
+        if (Array.isArray(result.data.postings)) {
+          setPostings(
+            result.data.postings.map((p: any) => ({
+              id: p.id,
+              title: p.title || 'Untitled',
+              department: p.department || '',
+              location: p.location || '',
+              type: p.type || '',
+              status:
+                (p.status === 'published'
+                  ? 'published'
+                  : p.status === 'pending_credentials'
+                    ? 'draft'
+                    : p.status) || 'draft',
+              publishedAt: p.publishedAt || '',
+              applications: p.applications || 0,
+              views: p.views || 0,
+              platforms: p.platforms || [],
+            }))
+          );
+        }
       }
     } catch (error: any) {
-            console.error('Error:', error);
-          } finally {
+      console.error('Error:', error);
+    } finally {
       setLoading(false);
     }
   };
@@ -320,8 +361,8 @@ export default function JobBoardsPage() {
       await jobBoards.postJob(jobData, selectedBoards);
       await fetchJobBoards();
     } catch (error: any) {
-            console.error('Error:', error);
-          } finally {
+      console.error('Error:', error);
+    } finally {
       setLoading(false);
     }
   };
@@ -332,20 +373,21 @@ export default function JobBoardsPage() {
       await jobBoards.syncCandidates();
       await fetchJobBoards();
     } catch (error: any) {
-            console.error('Error:', error);
-          } finally {
+      console.error('Error:', error);
+    } finally {
       setLoading(false);
     }
   };
 
-  const filteredPostings = postings.filter(job => {
-    const matchesSearch = job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                         job.department.toLowerCase().includes(searchQuery.toLowerCase());
+  const filteredPostings = postings.filter((job) => {
+    const matchesSearch =
+      job.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      job.department.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesStatus = statusFilter === 'all' || job.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
 
-  const connectedPlatforms = boards.filter(b => b.connected);
+  const connectedPlatforms = boards.filter((b) => b.connected);
   const totalStats = connectedPlatforms.reduce(
     (acc, board) => ({
       jobs: acc.jobs + board.stats.activeJobs,
@@ -400,7 +442,9 @@ export default function JobBoardsPage() {
               <Users className="w-5 h-5 text-emerald-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-ink-black dark:text-pearl">{totalStats.applications}</p>
+              <p className="text-2xl font-bold text-ink-black dark:text-pearl">
+                {totalStats.applications}
+              </p>
               <p className="text-xs text-silver-mist">Total Applications</p>
             </div>
           </div>
@@ -411,7 +455,9 @@ export default function JobBoardsPage() {
               <Eye className="w-5 h-5 text-blue-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-ink-black dark:text-pearl">{totalStats.views.toLocaleString()}</p>
+              <p className="text-2xl font-bold text-ink-black dark:text-pearl">
+                {totalStats.views.toLocaleString()}
+              </p>
               <p className="text-xs text-silver-mist">Total Views</p>
             </div>
           </div>
@@ -422,7 +468,9 @@ export default function JobBoardsPage() {
               <TrendingUp className="w-5 h-5 text-purple-600" />
             </div>
             <div>
-              <p className="text-2xl font-bold text-ink-black dark:text-pearl">{ANALYTICS.conversionRate}%</p>
+              <p className="text-2xl font-bold text-ink-black dark:text-pearl">
+                {ANALYTICS.conversionRate}%
+              </p>
               <p className="text-xs text-silver-mist">Conversion Rate</p>
             </div>
           </div>
@@ -478,11 +526,16 @@ export default function JobBoardsPage() {
           {/* Job List */}
           <div className="divide-y divide-cloud dark:divide-nebula-purple/50">
             {filteredPostings.map((job) => (
-              <div key={job.id} className="p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+              <div
+                key={job.id}
+                className="p-4 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+              >
                 <div className="flex items-start justify-between gap-3">
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-3 mb-2">
-                      <h3 className="font-semibold text-ink-black dark:text-pearl truncate">{job.title}</h3>
+                      <h3 className="font-semibold text-ink-black dark:text-pearl truncate">
+                        {job.title}
+                      </h3>
                       <StatusBadge status={job.status} />
                     </div>
                     <div className="flex flex-wrap items-center gap-3 text-sm text-silver-mist mb-3">
@@ -501,10 +554,17 @@ export default function JobBoardsPage() {
                     </div>
                     <div className="flex flex-wrap gap-2">
                       {job.platforms.map((p, idx) => (
-                        <PlatformBadge key={idx} platform={p.platform} status={p.status} boards={boards} />
+                        <PlatformBadge
+                          key={idx}
+                          platform={p.platform}
+                          status={p.status}
+                          boards={boards}
+                        />
                       ))}
                       {job.platforms.length === 0 && (
-                        <span className="text-xs text-silver-mist italic">Not posted to any platform</span>
+                        <span className="text-xs text-silver-mist italic">
+                          Not posted to any platform
+                        </span>
                       )}
                     </div>
                   </div>
@@ -542,7 +602,9 @@ export default function JobBoardsPage() {
             >
               <div className="flex items-start justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <div className={`w-10 h-10 ${board.color} rounded-xl flex items-center justify-center text-xl`}>
+                  <div
+                    className={`w-10 h-10 ${board.color} rounded-xl flex items-center justify-center text-xl`}
+                  >
                     {board.logo}
                   </div>
                   <div>
@@ -560,11 +622,15 @@ export default function JobBoardsPage() {
               {board.connected ? (
                 <div className="grid grid-cols-3 gap-2 text-center">
                   <div className="p-2 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
-                    <p className="font-bold text-ink-black dark:text-pearl">{board.stats.activeJobs}</p>
+                    <p className="font-bold text-ink-black dark:text-pearl">
+                      {board.stats.activeJobs}
+                    </p>
                     <p className="text-xs text-silver-mist">Jobs</p>
                   </div>
                   <div className="p-2 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
-                    <p className="font-bold text-ink-black dark:text-pearl">{board.stats.applications}</p>
+                    <p className="font-bold text-ink-black dark:text-pearl">
+                      {board.stats.applications}
+                    </p>
                     <p className="text-xs text-silver-mist">Apps</p>
                   </div>
                   <div className="p-2 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
@@ -596,7 +662,9 @@ export default function JobBoardsPage() {
                   <span className="text-xs font-medium text-indigo-600">{count}</span>
                   <div
                     className="w-full bg-gradient-to-t from-indigo-500 to-indigo-300 rounded-t-lg"
-                    style={{ height: `${(count / Math.max(...ANALYTICS.applicationsByDay)) * 100}%` }}
+                    style={{
+                      height: `${(count / Math.max(...ANALYTICS.applicationsByDay)) * 100}%`,
+                    }}
                   />
                   <span className="text-xs text-silver-mist">
                     {['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'][idx]}
@@ -614,17 +682,22 @@ export default function JobBoardsPage() {
             </h3>
             <div className="space-y-4">
               {connectedPlatforms.slice(0, 5).map((board) => {
-                const conversionRate = board.stats.views > 0
-                  ? ((board.stats.applications / board.stats.views) * 100).toFixed(1)
-                  : '0';
+                const conversionRate =
+                  board.stats.views > 0
+                    ? ((board.stats.applications / board.stats.views) * 100).toFixed(1)
+                    : '0';
                 return (
                   <div key={board.platform} className="flex items-center gap-3">
-                    <div className={`w-8 h-8 ${board.color} rounded-lg flex items-center justify-center`}>
+                    <div
+                      className={`w-8 h-8 ${board.color} rounded-lg flex items-center justify-center`}
+                    >
                       {board.logo}
                     </div>
                     <div className="flex-1">
                       <div className="flex justify-between text-sm mb-1">
-                        <span className="font-medium text-ink-black dark:text-pearl">{board.name}</span>
+                        <span className="font-medium text-ink-black dark:text-pearl">
+                          {board.name}
+                        </span>
                         <span className="text-silver-mist">{conversionRate}% conv.</span>
                       </div>
                       <div className="h-2 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
@@ -659,7 +732,9 @@ export default function JobBoardsPage() {
               </div>
               <div className="bg-white/10 backdrop-blur-sm p-4 rounded-xl">
                 <p className="text-sm text-white/80 mb-2">Suggestion</p>
-                <p className="text-sm">Consider posting to Bayt for GCC roles - 35% higher response rate</p>
+                <p className="text-sm">
+                  Consider posting to Bayt for GCC roles - 35% higher response rate
+                </p>
               </div>
             </div>
           </div>
@@ -668,4 +743,3 @@ export default function JobBoardsPage() {
     </div>
   );
 }
-

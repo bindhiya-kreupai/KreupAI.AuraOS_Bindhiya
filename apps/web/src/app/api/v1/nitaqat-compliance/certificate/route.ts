@@ -15,7 +15,18 @@ export const GET = withEnhancedAuth(async (_req: NextRequest, ctx: RouteContext)
 });
 
 export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) => {
-  if (!hasAny(ctx.permissions, 'tenant:manage', 'risk_register:manage')) return forbidden();
+  if (
+    !hasAny(
+      ctx.permissions,
+      'tenant:manage',
+      'risk_register:manage',
+      'tenant:read',
+      'dashboard:read',
+      'compliance:manage',
+      'nationalisation:manage'
+    )
+  )
+    return forbidden();
   try {
     const body = await req.json();
     const auth = { tenantId: ctx.user.tenantId, userId: ctx.user.id };

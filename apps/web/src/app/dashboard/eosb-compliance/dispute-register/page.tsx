@@ -1,6 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useState } from 'react';
+import { useTheme } from '@/stores/theme-store';
+import { EmployeeSearchableSelect } from '@/components/shared/EmployeeSearchableSelect';
 
 interface Dispute {
   id: string;
@@ -17,14 +19,15 @@ interface Dispute {
 }
 
 const statusColor: Record<string, string> = {
-  OPEN: 'bg-rose-100 text-rose-800',
-  UNDER_REVIEW: 'bg-amber-100 text-amber-800',
-  RESOLVED: 'bg-emerald-100 text-emerald-800',
-  REJECTED: 'bg-slate-100 text-slate-700',
-  WITHDRAWN: 'bg-slate-100 text-slate-700',
+  OPEN: 'bg-rose-100 text-rose-800 dark:bg-rose-950/40 dark:text-rose-455',
+  UNDER_REVIEW: 'bg-amber-100 text-amber-800 dark:bg-amber-950/40 dark:text-amber-400',
+  RESOLVED: 'bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-400',
+  REJECTED: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
+  WITHDRAWN: 'bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300',
 };
 
 export default function DisputeRegisterPage() {
+  const { isDark } = useTheme();
   const [rows, setRows] = useState<Dispute[]>([]);
   const [filter, setFilter] = useState('');
   const [form, setForm] = useState({
@@ -92,59 +95,81 @@ export default function DisputeRegisterPage() {
     void post({ action: 'transition', id, next, resolutionNotes: rowNotes[id] || undefined }, next);
   }
 
+  const inputClass =
+    'mt-1 w-full rounded-md border border-slate-300 dark:border-slate-700 px-2 py-1.5 bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm';
+
   return (
-    <main className="min-h-screen bg-slate-50 p-6 text-slate-950">
+    <main
+      className="min-h-screen bg-slate-50 dark:bg-slate-950 p-6 text-slate-950 dark:text-slate-50 transition-colors duration-200"
+      style={{ colorScheme: isDark ? 'dark' : 'light' }}
+    >
       <div className="mx-auto flex max-w-7xl flex-col gap-6">
-        <header className="flex items-center justify-between border-b border-slate-200 pb-4">
+        <header className="flex items-center justify-between border-b border-slate-200 dark:border-slate-800 pb-4">
           <div>
-            <p className="text-sm uppercase text-slate-500">EPIC-28 · S13 / S20 / S28</p>
-            <h1 className="text-2xl font-semibold">EOSB Dispute Register</h1>
+            <p className="text-sm uppercase text-slate-500 dark:text-slate-400 font-semibold tracking-wider">
+              EPIC-28 · S13 / S20 / S28
+            </p>
+            <h1 className="text-2xl font-bold text-slate-900 dark:text-white mt-1">
+              EOSB Dispute Register
+            </h1>
           </div>
           <select
             value={filter}
             onChange={(e) => setFilter(e.target.value)}
-            className="rounded-md border border-slate-300 px-2 py-1.5 text-sm"
+            className="rounded-md border border-slate-300 dark:border-slate-700 px-2 py-1.5 text-sm bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100"
           >
-            <option value="">All</option>
-            <option value="OPEN">OPEN</option>
-            <option value="UNDER_REVIEW">UNDER_REVIEW</option>
-            <option value="RESOLVED">RESOLVED</option>
-            <option value="REJECTED">REJECTED</option>
-            <option value="WITHDRAWN">WITHDRAWN</option>
+            <option value="" className="bg-white dark:bg-slate-850">
+              All
+            </option>
+            <option value="OPEN" className="bg-white dark:bg-slate-850">
+              OPEN
+            </option>
+            <option value="UNDER_REVIEW" className="bg-white dark:bg-slate-850">
+              UNDER_REVIEW
+            </option>
+            <option value="RESOLVED" className="bg-white dark:bg-slate-850">
+              RESOLVED
+            </option>
+            <option value="REJECTED" className="bg-white dark:bg-slate-850">
+              REJECTED
+            </option>
+            <option value="WITHDRAWN" className="bg-white dark:bg-slate-850">
+              WITHDRAWN
+            </option>
           </select>
         </header>
 
-        <section className="grid gap-3 rounded-lg border border-slate-200 bg-white p-4 md:grid-cols-7">
-          <label className="text-sm">
-            Employee
-            <input
+        <section className="grid gap-3 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 md:grid-cols-7 items-end shadow-sm">
+          <label className="text-sm text-slate-700 dark:text-slate-300 flex flex-col gap-1">
+            Employee Name
+            <EmployeeSearchableSelect
               value={form.employeeId}
-              onChange={(e) => setForm((f) => ({ ...f, employeeId: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5"
+              onChange={(val) => setForm((f) => ({ ...f, employeeId: val }))}
+              placeholder="Search employee..."
             />
           </label>
-          <label className="text-sm">
+          <label className="text-sm text-slate-700 dark:text-slate-300">
             Calc ID
             <input
               value={form.calculationId}
               onChange={(e) => setForm((f) => ({ ...f, calculationId: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5"
+              className={inputClass}
             />
           </label>
-          <label className="text-sm md:col-span-2">
+          <label className="text-sm text-slate-700 dark:text-slate-300 md:col-span-2">
             Subject
             <input
               value={form.subject}
               onChange={(e) => setForm((f) => ({ ...f, subject: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5"
+              className={inputClass}
             />
           </label>
-          <label className="text-sm">
+          <label className="text-sm text-slate-700 dark:text-slate-300">
             Category
             <select
               value={form.category}
               onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5"
+              className={inputClass}
             >
               {[
                 'SALARY_BASIS',
@@ -154,40 +179,42 @@ export default function DisputeRegisterPage() {
                 'SI_OFFSET',
                 'OTHER',
               ].map((c) => (
-                <option key={c}>{c}</option>
+                <option key={c} className="bg-white dark:bg-slate-800">
+                  {c}
+                </option>
               ))}
             </select>
           </label>
-          <label className="text-sm">
+          <label className="text-sm text-slate-700 dark:text-slate-300">
             Claimed
             <input
               value={form.claimedAmount}
               onChange={(e) => setForm((f) => ({ ...f, claimedAmount: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5"
+              className={inputClass}
             />
           </label>
-          <label className="text-sm">
+          <label className="text-sm text-slate-700 dark:text-slate-300">
             Calculated
             <input
               value={form.calculatedAmount}
               onChange={(e) => setForm((f) => ({ ...f, calculatedAmount: e.target.value }))}
-              className="mt-1 w-full rounded-md border border-slate-300 px-2 py-1.5"
+              className={inputClass}
             />
           </label>
           <button
             type="button"
             onClick={raise}
             disabled={busy}
-            className="self-end rounded-md bg-slate-900 px-3 py-2 text-sm text-white disabled:opacity-50 md:col-span-7"
+            className="w-full rounded-md bg-slate-900 dark:bg-slate-750 hover:bg-slate-800 dark:hover:bg-slate-650 px-3 py-2 text-sm text-white disabled:opacity-50 transition-colors h-[38px] md:col-span-7 mt-2"
           >
             Raise Dispute
           </button>
         </section>
-        {message ? <p className="text-sm">{message}</p> : null}
+        {message ? <p className="text-sm text-amber-600 dark:text-amber-400">{message}</p> : null}
 
-        <section className="rounded-lg border border-slate-200 bg-white p-4">
+        <section className="rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 p-4 shadow-sm">
           <table className="w-full text-left text-sm">
-            <thead className="border-b border-slate-200 text-xs uppercase text-slate-500">
+            <thead className="border-b border-slate-200 dark:border-slate-800 text-xs uppercase text-slate-500 dark:text-slate-400">
               <tr>
                 <th className="px-3 py-2">Raised</th>
                 <th className="px-3 py-2">Employee</th>
@@ -199,17 +226,23 @@ export default function DisputeRegisterPage() {
                 <th className="px-3 py-2">Actions</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
               {rows.map((d) => (
-                <tr key={d.id} className="border-b border-slate-100">
-                  <td className="px-3 py-2 text-xs">{d.raisedAt?.slice(0, 10)}</td>
-                  <td className="px-3 py-2 font-mono text-xs">{d.employeeId}</td>
-                  <td className="px-3 py-2">{d.subject}</td>
-                  <td className="px-3 py-2 text-xs">{d.category}</td>
-                  <td className="px-3 py-2">
+                <tr key={d.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-850/50">
+                  <td className="px-3 py-2 text-xs text-slate-700 dark:text-slate-300">
+                    {d.raisedAt?.slice(0, 10)}
+                  </td>
+                  <td className="px-3 py-2 font-mono text-xs text-slate-700 dark:text-slate-300">
+                    {d.employeeId}
+                  </td>
+                  <td className="px-3 py-2 text-slate-800 dark:text-slate-200">{d.subject}</td>
+                  <td className="px-3 py-2 text-xs text-slate-700 dark:text-slate-300">
+                    {d.category}
+                  </td>
+                  <td className="px-3 py-2 text-slate-800 dark:text-slate-200">
                     {d.claimedAmount ?? '—'} {d.currency}
                   </td>
-                  <td className="px-3 py-2">
+                  <td className="px-3 py-2 text-slate-800 dark:text-slate-200">
                     {d.calculatedAmount ?? '—'} {d.currency}
                   </td>
                   <td className="px-3 py-2">
@@ -226,7 +259,7 @@ export default function DisputeRegisterPage() {
                           value={rowNotes[d.id] ?? ''}
                           onChange={(e) => setRowNotes((m) => ({ ...m, [d.id]: e.target.value }))}
                           placeholder="Resolution notes"
-                          className="w-44 rounded-md border border-slate-300 px-2 py-1 text-xs"
+                          className="w-44 rounded-md border border-slate-300 dark:border-slate-700 px-2 py-1 text-xs bg-white dark:bg-slate-800 text-slate-900 dark:text-slate-100 placeholder-slate-400 dark:placeholder-slate-500"
                         />
                         <div className="flex gap-1">
                           {d.status === 'OPEN' && (
@@ -234,7 +267,7 @@ export default function DisputeRegisterPage() {
                               type="button"
                               onClick={() => transition(d.id, 'UNDER_REVIEW')}
                               disabled={busy}
-                              className="rounded-md border border-slate-300 px-2 py-1 text-xs disabled:opacity-50"
+                              className="rounded-md border border-slate-300 dark:border-slate-700 hover:border-slate-400 dark:hover:border-slate-500 px-2 py-1 text-xs bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-300 transition-colors disabled:opacity-50"
                             >
                               Review
                             </button>
@@ -243,7 +276,7 @@ export default function DisputeRegisterPage() {
                             type="button"
                             onClick={() => transition(d.id, 'RESOLVED')}
                             disabled={busy}
-                            className="rounded-md bg-emerald-700 px-2 py-1 text-xs text-white disabled:opacity-50"
+                            className="rounded-md bg-emerald-700 dark:bg-emerald-650 hover:bg-emerald-800 dark:hover:bg-emerald-555 px-2 py-1 text-xs text-white disabled:opacity-50 transition-colors"
                           >
                             Resolve
                           </button>
@@ -251,7 +284,7 @@ export default function DisputeRegisterPage() {
                             type="button"
                             onClick={() => transition(d.id, 'REJECTED')}
                             disabled={busy}
-                            className="rounded-md bg-rose-700 px-2 py-1 text-xs text-white disabled:opacity-50"
+                            className="rounded-md bg-rose-700 dark:bg-rose-650 hover:bg-rose-800 dark:hover:bg-rose-555 px-2 py-1 text-xs text-white disabled:opacity-50 transition-colors"
                           >
                             Reject
                           </button>
@@ -263,7 +296,10 @@ export default function DisputeRegisterPage() {
               ))}
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={8} className="px-3 py-6 text-center text-slate-500">
+                  <td
+                    colSpan={8}
+                    className="px-3 py-6 text-center text-slate-500 dark:text-slate-400"
+                  >
                     No disputes.
                   </td>
                 </tr>

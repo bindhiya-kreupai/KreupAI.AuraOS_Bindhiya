@@ -3,8 +3,9 @@ generator client {
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+  provider          = "postgresql"
+  url               = env("DATABASE_URL")
+  shadowDatabaseUrl = env("SHADOW_DATABASE_URL")
 }
 
 model Tenant {
@@ -27,6 +28,12 @@ model Tenant {
   wpsSubmissions    WPSSubmission[]
   biometricDevices  BiometricDevice[]
   ramadanConfig     RamadanAutoSwitchConfig?
+  deactivations     UserDeactivation[]
+  passwordPolicies  PasswordPolicy[]
+  ssoConfigs        SSOConfig[]
+  licenses          License[]
+  shiftTypes        ShiftType[]
+  shiftTemplates    ShiftTemplate[]
 
   @@map("aura_tenant")
 }
@@ -66,6 +73,7 @@ model Company {
 model Department {
   id                        String              @id(map: "Department_pkey") @default(uuid())
   companyId                 String
+  businessUnitId            String?
   code                      String
   name                      String
   parentId                  String?
@@ -77,6 +85,7 @@ model Department {
   deletedAt                 DateTime?
   isDeleted                 Boolean             @default(false)
   company                   Company             @relation(fields: [companyId], references: [id], map: "Department_companyId_fkey")
+  businessUnit              BusinessUnit?       @relation(fields: [businessUnitId], references: [id], map: "Department_businessUnitId_fkey")
   costCenter                CostCenter?         @relation(fields: [costCenterId], references: [id], map: "Department_costCenterId_fkey")
   parent                    Department?         @relation("DeptHierarchy", fields: [parentId], references: [id], map: "Department_parentId_fkey")
   children                  Department[]        @relation("DeptHierarchy")
@@ -86,6 +95,7 @@ model Department {
   Position                  Position[]
 
   @@unique([companyId, code], map: "Department_companyId_code_key")
+  @@index([businessUnitId], map: "Department_businessUnitId_idx")
   @@map("aura_department")
 }
 
@@ -498,6 +508,7 @@ model User {
   refreshTokens       RefreshToken[]
   tenant              Tenant               @relation(fields: [tenantId], references: [id], map: "User_tenantId_fkey")
   deactivations       UserDeactivation[]
+  deactivatedUsers    UserDeactivation[]   @relation("DeactivatedBy")
   delegatedFrom       UserDelegation[]     @relation("Delegatee")
   delegatedTo         UserDelegation[]     @relation("Delegator")
   roles               UserRole[]
@@ -706,17 +717,18 @@ model DocumentType {
 }
 
 model BusinessUnit {
-  id        String    @id(map: "BusinessUnit_pkey") @default(uuid())
-  code      String    @unique(map: "BusinessUnit_code_key")
-  name      String
-  head      String?
-  status    String    @default("Active")
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @default(now())
-  createdBy String?
-  updatedBy String?
-  deletedAt DateTime?
-  isDeleted Boolean   @default(false)
+  id          String       @id(map: "BusinessUnit_pkey") @default(uuid())
+  code        String       @unique(map: "BusinessUnit_code_key")
+  name        String
+  head        String?
+  status      String       @default("Active")
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @default(now())
+  createdBy   String?
+  updatedBy   String?
+  deletedAt   DateTime?
+  isDeleted   Boolean      @default(false)
+  departments Department[]
 
   @@map("aura_business_unit")
 }
@@ -789,7 +801,8 @@ model LeaveType {
 
 model ShiftType {
   id        String    @id(map: "ShiftType_pkey") @default(uuid())
-  code      String    @unique(map: "ShiftType_code_key")
+  tenantId  String
+  code      String
   name      String
   startTime String
   endTime   String
@@ -801,6 +814,10 @@ model ShiftType {
   deletedAt DateTime?
   isDeleted Boolean   @default(false)
 
+  tenant Tenant @relation(fields: [tenantId], references: [id], map: "ShiftType_tenantId_fkey")
+
+  @@unique([tenantId, code], map: "ShiftType_tenantId_code_key")
+  @@index([tenantId], map: "ShiftType_tenantId_idx")
   @@map("aura_shift_type")
 }
 
@@ -966,10 +983,49 @@ model Shift {
   deletedAt        DateTime?
   isDeleted        Boolean   @default(false)
 
+  assignments     ShiftAssignment[]
+  rosters         ShiftRoster[]
+  swapAsRequestor ShiftSwapRequest[] @relation("RequestorShift")
+  swapAsTarget    ShiftSwapRequest[] @relation("SwapWithShift")
+
   @@unique([tenantId, code], map: "Shift_tenantId_code_key")
   @@index([isActive], map: "Shift_isActive_idx")
   @@index([tenantId], map: "Shift_tenantId_idx")
   @@map("aura_shift")
+}
+
+model ShiftTemplate {
+  id               String    @id @default(uuid())
+  tenantId         String
+  name             String
+  description      String?
+  icon             String    @default("Briefcase")
+  accent           String    @default("from-blue-500/15 to-blue-500/5 border-blue-500/30")
+  shiftCode        String
+  shiftName        String
+  shiftDescription String?
+  startTime        String
+  endTime          String
+  workHours        Float
+  graceInMinutes   Int       @default(15)
+  graceOutMinutes  Int       @default(15)
+  breakDuration    Int       @default(60)
+  overtimeAllowed  Boolean   @default(true)
+  maxOvertimeHours Float     @default(4)
+  isActive         Boolean   @default(true)
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  createdBy        String?
+  updatedBy        String?
+  deletedAt        DateTime?
+  isDeleted        Boolean   @default(false)
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, name], map: "ShiftTemplate_tenantId_name_key")
+  @@index([tenantId], map: "ShiftTemplate_tenantId_idx")
+  @@index([tenantId, isActive], map: "ShiftTemplate_tenantId_isActive_idx")
+  @@map("aura_shift_template")
 }
 
 model ShiftAssignment {
@@ -989,9 +1045,12 @@ model ShiftAssignment {
   deletedAt     DateTime?
   isDeleted     Boolean   @default(false)
 
+  shift Shift @relation(fields: [shiftId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
   @@index([employeeId], map: "ShiftAssignment_employeeId_idx")
   @@index([shiftId], map: "ShiftAssignment_shiftId_idx")
   @@index([tenantId], map: "ShiftAssignment_tenantId_idx")
+  @@index([tenantId, employeeId, isActive], map: "ShiftAssignment_tenant_employee_active_idx")
   @@map("aura_shift_assignment")
 }
 
@@ -1006,12 +1065,16 @@ model ShiftRoster {
   isWeekOff       Boolean   @default(false)
   isHoliday       Boolean   @default(false)
   status          String    @default("SCHEDULED")
+  publishedAt     DateTime?
+  publishedBy     String?
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   createdBy       String?
   updatedBy       String?
   deletedAt       DateTime?
   isDeleted       Boolean   @default(false)
+
+  shift Shift @relation(fields: [shiftId], references: [id], onDelete: Restrict, onUpdate: Cascade)
 
   @@unique([tenantId, employeeId, rosterDate], map: "ShiftRoster_tenantId_employeeId_rosterDate_key")
   @@index([employeeId], map: "ShiftRoster_employeeId_idx")
@@ -1043,10 +1106,69 @@ model ShiftSwapRequest {
   deletedAt        DateTime?
   isDeleted        Boolean   @default(false)
 
+  requestorShift Shift @relation("RequestorShift", fields: [requestorShiftId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+  swapWithShift  Shift @relation("SwapWithShift", fields: [swapWithShiftId], references: [id], onDelete: Restrict, onUpdate: Cascade)
+
   @@index([requestorId], map: "ShiftSwapRequest_requestorId_idx")
   @@index([status], map: "ShiftSwapRequest_status_idx")
   @@index([tenantId], map: "ShiftSwapRequest_tenantId_idx")
+  @@index([tenantId, status], map: "ShiftSwapRequest_tenant_status_idx")
   @@map("aura_shift_swap_request")
+}
+
+model ShiftPattern {
+  id                String    @id @default(uuid())
+  tenantId          String
+  name              String
+  type              String    @default("FIXED")
+  departmentId      String?
+  rotationDays      Int?
+  status            String    @default("ACTIVE")
+  shifts            Json      @default("[]")
+  weeklyHours       Float     @default(0)
+  employeesAssigned Int       @default(0)
+  isActive          Boolean   @default(true)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  createdBy         String?
+  updatedBy         String?
+  deletedAt         DateTime?
+  isDeleted         Boolean   @default(false)
+
+  @@index([tenantId], map: "ShiftPattern_tenantId_idx")
+  @@index([tenantId, isActive], map: "ShiftPattern_tenantId_isActive_idx")
+  @@index([tenantId, status], map: "ShiftPattern_tenantId_status_idx")
+  @@map("aura_shift_pattern")
+}
+
+model ShiftDifferential {
+  id               String    @id @default(uuid())
+  tenantId         String
+  name             String
+  shiftType        String
+  timeRange        Json?
+  differentialType String    @default("FLAT_AMOUNT")
+  amount           Float?
+  percentAmount    Float?
+  multiplier       Float?
+  applicableDays   Json?
+  eligibleRoles    Json?
+  jurisdiction     String    @default("DEFAULT")
+  regulatoryBasis  String?
+  isActive         Boolean   @default(true)
+  effectiveFrom    DateTime?
+  effectiveTo      DateTime?
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  createdBy        String?
+  updatedBy        String?
+  deletedAt        DateTime?
+  isDeleted        Boolean   @default(false)
+
+  @@index([tenantId], map: "ShiftDifferential_tenantId_idx")
+  @@index([tenantId, jurisdiction], map: "ShiftDifferential_tenantId_jurisdiction_idx")
+  @@index([tenantId, isActive], map: "ShiftDifferential_tenantId_isActive_idx")
+  @@map("aura_shift_differential")
 }
 
 model OvertimeRequest {
@@ -1266,6 +1388,7 @@ model AccessControl {
 
 model PasswordPolicy {
   id                  String    @id(map: "PasswordPolicy_pkey") @default(uuid())
+  tenantId            String
   minLength           Int       @default(8)
   requireUppercase    Boolean   @default(true)
   requireLowercase    Boolean   @default(true)
@@ -1280,12 +1403,15 @@ model PasswordPolicy {
   updatedBy           String?
   deletedAt           DateTime?
   isDeleted           Boolean   @default(false)
+  tenant              Tenant    @relation(fields: [tenantId], references: [id], map: "PasswordPolicy_tenantId_fkey")
 
+  @@index([tenantId], map: "PasswordPolicy_tenantId_idx")
   @@map("aura_password_policy")
 }
 
 model SSOConfig {
   id          String    @id(map: "SSOConfig_pkey") @default(uuid())
+  tenantId    String
   enabled     Boolean   @default(false)
   provider    String
   issuerUrl   String?
@@ -1297,27 +1423,30 @@ model SSOConfig {
   updatedBy   String?
   deletedAt   DateTime?
   isDeleted   Boolean   @default(false)
+  tenant      Tenant    @relation(fields: [tenantId], references: [id], map: "SSOConfig_tenantId_fkey")
 
+  @@index([tenantId], map: "SSOConfig_tenantId_idx")
   @@map("aura_sso_config")
 }
 
 model UserSession {
-  id         String    @id(map: "UserSession_pkey") @default(uuid())
-  userId     String
-  ipAddress  String
-  device     String?
-  browser    String?
-  location   String?
-  lastActive DateTime  @default(now())
-  status     String    @default("Active")
-  createdAt  DateTime  @default(now())
-  expiresAt  DateTime?
-  updatedAt  DateTime  @default(now())
-  createdBy  String?
-  updatedBy  String?
-  deletedAt  DateTime?
-  isDeleted  Boolean   @default(false)
-  user       User      @relation(fields: [userId], references: [id], map: "UserSession_userId_fkey")
+  id                String    @id(map: "UserSession_pkey") @default(uuid())
+  userId            String
+  ipAddress         String
+  device            String?
+  browser           String?
+  deviceFingerprint String?
+  location          String?
+  lastActive        DateTime  @default(now())
+  status            String    @default("Active")
+  createdAt         DateTime  @default(now())
+  expiresAt         DateTime?
+  updatedAt         DateTime  @default(now())
+  createdBy         String?
+  updatedBy         String?
+  deletedAt         DateTime?
+  isDeleted         Boolean   @default(false)
+  user              User      @relation(fields: [userId], references: [id], map: "UserSession_userId_fkey")
 
   @@map("aura_user_session")
 }
@@ -1423,7 +1552,8 @@ model UserDelegation {
 
 model License {
   id        String    @id(map: "License_pkey") @default(uuid())
-  name      String    @unique(map: "License_name_key")
+  tenantId  String
+  name      String
   total     Int
   used      Int       @default(0)
   type      String
@@ -1434,12 +1564,16 @@ model License {
   updatedBy String?
   deletedAt DateTime?
   isDeleted Boolean   @default(false)
+  tenant    Tenant    @relation(fields: [tenantId], references: [id], map: "License_tenantId_fkey")
 
+  @@unique([tenantId, name], map: "License_tenantId_name_key")
+  @@index([tenantId], map: "License_tenantId_idx")
   @@map("aura_license")
 }
 
 model UserDeactivation {
   id            String    @id(map: "UserDeactivation_pkey") @default(uuid())
+  tenantId      String
   userId        String
   reason        String?
   deactivatedBy String
@@ -1451,7 +1585,10 @@ model UserDeactivation {
   deletedAt     DateTime?
   isDeleted     Boolean   @default(false)
   user          User      @relation(fields: [userId], references: [id], map: "UserDeactivation_userId_fkey")
+  deactivator   User      @relation("DeactivatedBy", fields: [deactivatedBy], references: [id], map: "UserDeactivation_deactivatedBy_fkey")
+  tenant        Tenant    @relation(fields: [tenantId], references: [id], map: "UserDeactivation_tenantId_fkey")
 
+  @@index([tenantId], map: "UserDeactivation_tenantId_idx")
   @@map("aura_user_deactivation")
 }
 
@@ -4198,26 +4335,26 @@ model AIAgentMessage {
 // ============================================================================
 
 model ChatbotDialogueFlow {
-  id              String    @id @default(uuid())
-  tenantId        String
-  flowName        String
-  description     String?
-  category        String?
-  nodes           Json
-  connections     Json
-  variables       Json?
-  isActive        Boolean   @default(false)
-  version         String    @default("1.0")
-  status          String    @default("draft")
-  triggerIntents  Json?
-  tags            Json?
-  publishedAt     DateTime?
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  createdBy       String?
-  updatedBy       String?
-  deletedAt       DateTime?
-  isDeleted       Boolean   @default(false)
+  id             String    @id @default(uuid())
+  tenantId       String
+  flowName       String
+  description    String?
+  category       String?
+  nodes          Json
+  connections    Json
+  variables      Json?
+  isActive       Boolean   @default(false)
+  version        String    @default("1.0")
+  status         String    @default("draft")
+  triggerIntents Json?
+  tags           Json?
+  publishedAt    DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  createdBy      String?
+  updatedBy      String?
+  deletedAt      DateTime?
+  isDeleted      Boolean   @default(false)
 
   @@index([tenantId], map: "ChatbotDialogueFlow_tenantId_idx")
   @@index([tenantId, status], map: "ChatbotDialogueFlow_tenantId_status_idx")
@@ -4226,7 +4363,7 @@ model ChatbotDialogueFlow {
 }
 
 model ChatbotIntent {
-  id                  String   @id @default(uuid())
+  id                  String    @id @default(uuid())
   tenantId            String
   intentName          String
   displayName         String?
@@ -4236,19 +4373,19 @@ model ChatbotIntent {
   responses           Json?
   parameters          Json?
   contexts            Json?
-  priority            Int      @default(0)
-  webhookEnabled      Boolean  @default(false)
+  priority            Int       @default(0)
+  webhookEnabled      Boolean   @default(false)
   webhookUrl          String?
-  isActive            Boolean  @default(true)
-  confidenceThreshold Float    @default(0.7)
-  usageCount          Int      @default(0)
+  isActive            Boolean   @default(true)
+  confidenceThreshold Float     @default(0.7)
+  usageCount          Int       @default(0)
   averageConfidence   Float?
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
   createdBy           String?
   updatedBy           String?
   deletedAt           DateTime?
-  isDeleted           Boolean  @default(false)
+  isDeleted           Boolean   @default(false)
 
   @@index([tenantId], map: "ChatbotIntent_tenantId_idx")
   @@index([tenantId, isActive], map: "ChatbotIntent_tenantId_active_idx")
@@ -4256,21 +4393,21 @@ model ChatbotIntent {
 }
 
 model ChatbotEntity {
-  id              String   @id @default(uuid())
+  id              String    @id @default(uuid())
   tenantId        String
   entityName      String
   entityType      String
   description     String?
   values          Json?
-  fuzzyMatching   Boolean  @default(false)
-  isCaseSensitive Boolean  @default(false)
-  status          String   @default("active")
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  fuzzyMatching   Boolean   @default(false)
+  isCaseSensitive Boolean   @default(false)
+  status          String    @default("active")
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
   createdBy       String?
   updatedBy       String?
   deletedAt       DateTime?
-  isDeleted       Boolean  @default(false)
+  isDeleted       Boolean   @default(false)
 
   @@index([tenantId], map: "ChatbotEntity_tenantId_idx")
   @@index([tenantId, status], map: "ChatbotEntity_tenantId_status_idx")
@@ -4278,21 +4415,21 @@ model ChatbotEntity {
 }
 
 model ChatbotTrainingDataset {
-  id            String   @id @default(uuid())
+  id            String    @id @default(uuid())
   tenantId      String
   datasetName   String
   description   String?
-  language      String   @default("en")
-  totalExamples Int      @default(0)
+  language      String    @default("en")
+  totalExamples Int       @default(0)
   intents       Json?
   entities      Json?
-  status        String   @default("draft")
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  status        String    @default("draft")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
   createdBy     String?
   updatedBy     String?
   deletedAt     DateTime?
-  isDeleted     Boolean  @default(false)
+  isDeleted     Boolean   @default(false)
 
   @@index([tenantId], map: "ChatbotTrainingDataset_tenantId_idx")
   @@index([tenantId, status], map: "ChatbotTrainingDataset_tenantId_status_idx")
@@ -4300,21 +4437,21 @@ model ChatbotTrainingDataset {
 }
 
 model ChatbotTrainingExample {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   tenantId    String
   datasetId   String?
   text        String
   intent      String
   entities    Json?
-  language    String   @default("en")
-  source      String   @default("manual")
-  isValidated Boolean  @default(false)
+  language    String    @default("en")
+  source      String    @default("manual")
+  isValidated Boolean   @default(false)
   validatedBy String?
   addedBy     String?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
-  isDeleted   Boolean  @default(false)
+  isDeleted   Boolean   @default(false)
 
   @@index([tenantId], map: "ChatbotTrainingExample_tenantId_idx")
   @@index([datasetId], map: "ChatbotTrainingExample_datasetId_idx")
@@ -4345,21 +4482,21 @@ model ChatbotChannel {
 }
 
 model ChatbotHandoffRule {
-  id          String   @id @default(uuid())
+  id          String    @id @default(uuid())
   tenantId    String
   ruleName    String
   description String?
-  priority    Int      @default(0)
-  isActive    Boolean  @default(true)
+  priority    Int       @default(0)
+  isActive    Boolean   @default(true)
   triggers    Json?
   conditions  Json?
   action      Json?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
   createdBy   String?
   updatedBy   String?
   deletedAt   DateTime?
-  isDeleted   Boolean  @default(false)
+  isDeleted   Boolean   @default(false)
 
   @@index([tenantId], map: "ChatbotHandoffRule_tenantId_idx")
   @@index([tenantId, isActive], map: "ChatbotHandoffRule_tenantId_active_idx")
@@ -4367,21 +4504,21 @@ model ChatbotHandoffRule {
 }
 
 model ChatbotLanguage {
-  id                  String   @id @default(uuid())
+  id                  String    @id @default(uuid())
   tenantId            String
   languageCode        String
   languageName        String
-  isEnabled           Boolean  @default(false)
-  isDefault           Boolean  @default(false)
+  isEnabled           Boolean   @default(false)
+  isDefault           Boolean   @default(false)
   translationModel    String?
-  confidenceThreshold Float    @default(0.7)
+  confidenceThreshold Float     @default(0.7)
   supportedFeatures   Json?
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
   createdBy           String?
   updatedBy           String?
   deletedAt           DateTime?
-  isDeleted           Boolean  @default(false)
+  isDeleted           Boolean   @default(false)
 
   @@unique([tenantId, languageCode], map: "ChatbotLanguage_tenantId_code_key")
   @@index([tenantId], map: "ChatbotLanguage_tenantId_idx")
@@ -4389,41 +4526,41 @@ model ChatbotLanguage {
 }
 
 model ChatbotTranslation {
-  id                String   @id @default(uuid())
+  id                String    @id @default(uuid())
   tenantId          String
   sourceLanguage    String
   targetLanguage    String
   sourceText        String
   translatedText    String
-  translationMethod String   @default("automatic")
+  translationMethod String    @default("automatic")
   quality           Float?
   translatedBy      String?
-  translatedDate    DateTime @default(now())
-  isApproved        Boolean  @default(false)
-  createdAt         DateTime @default(now())
-  updatedAt         DateTime @updatedAt
+  translatedDate    DateTime  @default(now())
+  isApproved        Boolean   @default(false)
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
   createdBy         String?
   updatedBy         String?
   deletedAt         DateTime?
-  isDeleted         Boolean  @default(false)
+  isDeleted         Boolean   @default(false)
 
   @@index([tenantId], map: "ChatbotTranslation_tenantId_idx")
   @@map("aura_chatbot_translation")
 }
 
 model ChatbotLanguageContent {
-  id              String   @id @default(uuid())
+  id              String    @id @default(uuid())
   tenantId        String
   contentType     String
   referenceId     String
   translations    Json
   defaultLanguage String
-  createdAt       DateTime @default(now())
-  updatedAt       DateTime @updatedAt
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
   createdBy       String?
   updatedBy       String?
   deletedAt       DateTime?
-  isDeleted       Boolean  @default(false)
+  isDeleted       Boolean   @default(false)
 
   @@unique([tenantId, contentType, referenceId], map: "ChatbotContent_tenantId_type_ref_key")
   @@index([tenantId], map: "ChatbotLanguageContent_tenantId_idx")
@@ -4431,42 +4568,42 @@ model ChatbotLanguageContent {
 }
 
 model ChatbotLanguageDetection {
-  id                   String   @id @default(uuid())
+  id                   String    @id @default(uuid())
   tenantId             String
   text                 String
   detectedLanguage     String
   confidence           Float
   alternativeLanguages Json?
-  timestamp            DateTime @default(now())
-  createdAt            DateTime @default(now())
-  updatedAt            DateTime @updatedAt
+  timestamp            DateTime  @default(now())
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
   createdBy            String?
   updatedBy            String?
   deletedAt            DateTime?
-  isDeleted            Boolean  @default(false)
+  isDeleted            Boolean   @default(false)
 
   @@index([tenantId], map: "ChatbotLangDetection_tenantId_idx")
   @@map("aura_chatbot_language_detection")
 }
 
 model ChatbotLocalizationSettings {
-  id                              String   @id @default(uuid())
-  tenantId                        String   @unique(map: "ChatbotLocalization_tenantId_key")
-  autoDetectLanguage              Boolean  @default(false)
-  fallbackLanguage                String   @default("en")
-  supportedLanguages              Json?
-  translationProvider             String   @default("google")
-  translationApiKey               String?
-  enableAutoTranslation           Boolean  @default(false)
-  requireApprovalForAutoTranslation Boolean @default(true)
-  lastUpdatedAt                   DateTime @default(now())
-  lastUpdatedBy                   String?
-  createdAt                       DateTime @default(now())
-  updatedAt                       DateTime @updatedAt
-  createdBy                       String?
-  updatedBy                       String?
-  deletedAt                       DateTime?
-  isDeleted                       Boolean  @default(false)
+  id                                String    @id @default(uuid())
+  tenantId                          String    @unique(map: "ChatbotLocalization_tenantId_key")
+  autoDetectLanguage                Boolean   @default(false)
+  fallbackLanguage                  String    @default("en")
+  supportedLanguages                Json?
+  translationProvider               String    @default("google")
+  translationApiKey                 String?
+  enableAutoTranslation             Boolean   @default(false)
+  requireApprovalForAutoTranslation Boolean   @default(true)
+  lastUpdatedAt                     DateTime  @default(now())
+  lastUpdatedBy                     String?
+  createdAt                         DateTime  @default(now())
+  updatedAt                         DateTime  @updatedAt
+  createdBy                         String?
+  updatedBy                         String?
+  deletedAt                         DateTime?
+  isDeleted                         Boolean   @default(false)
 
   @@index([tenantId], map: "ChatbotLocalization_tenantId_idx")
   @@map("aura_chatbot_localization_settings")
@@ -5135,6 +5272,139 @@ model WebhookLog {
   @@map("aura_webhook_log")
 }
 
+model OAuthState {
+  id         String    @id @default(uuid())
+  state      String    @unique(map: "OAuthState_state_key")
+  tenantId   String
+  userId     String?
+  provider   String
+  redirectTo String?
+  data       Json?
+  expiresAt  DateTime
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  isDeleted  Boolean   @default(false)
+  deletedAt  DateTime?
+
+  @@index([expiresAt], map: "OAuthState_expiresAt_idx")
+  @@index([provider], map: "OAuthState_provider_idx")
+  @@index([tenantId], map: "OAuthState_tenantId_idx")
+  @@map("aura_oauth_state")
+}
+
+model IntegrationConnection {
+  id              String               @id @default(uuid())
+  tenantId        String
+  integrationId   String
+  integrationName String
+  provider        String?
+  category        String?
+  status          String               @default("PENDING")
+  configuration   Json?
+  credentials     Json?
+  fieldMappings   Json?
+  syncEnabled     Boolean              @default(false)
+  syncFrequency   String?
+  lastSyncAt      DateTime?
+  nextSyncAt      DateTime?
+  connectedAt     DateTime?
+  connectedBy     String?
+  disconnectedAt  DateTime?
+  disconnectedBy  String?
+  healthStatus    String               @default("UNKNOWN")
+  lastHealthCheck DateTime?
+  errorMessage    String?
+  isActive        Boolean              @default(true)
+  metadata        Json?
+  createdAt       DateTime             @default(now())
+  updatedAt       DateTime             @updatedAt
+  createdBy       String?
+  updatedBy       String?
+  deletedAt       DateTime?
+  isDeleted       Boolean              @default(false)
+  syncJobs        IntegrationSyncJob[]
+  logs            IntegrationLog[]
+
+  @@unique([tenantId, integrationId], map: "IntegrationConnection_tenantId_integrationId_key")
+  @@index([status], map: "IntegrationConnection_status_idx")
+  @@index([tenantId], map: "IntegrationConnection_tenantId_idx")
+  @@index([provider], map: "IntegrationConnection_provider_idx")
+  @@index([isActive], map: "IntegrationConnection_isActive_idx")
+  @@map("aura_integration_connection")
+}
+
+model IntegrationSyncJob {
+  id               String                @id @default(uuid())
+  tenantId         String
+  integrationId    String
+  connectionId     String
+  type             String                @default("INCREMENTAL")
+  direction        String                @default("BIDIRECTIONAL")
+  entity           String
+  action           String?
+  status           String                @default("QUEUED")
+  progress         Int                   @default(0)
+  recordsProcessed Int                   @default(0)
+  recordsCreated   Int                   @default(0)
+  recordsUpdated   Int                   @default(0)
+  recordsFailed    Int                   @default(0)
+  errors           Json?
+  scheduledAt      DateTime?
+  startedAt        DateTime?
+  completedAt      DateTime?
+  duration         Int?
+  triggeredBy      String                @default("MANUAL")
+  triggeredByUser  String?
+  createdAt        DateTime              @default(now())
+  updatedAt        DateTime              @updatedAt
+  createdBy        String?
+  updatedBy        String?
+  deletedAt        DateTime?
+  isDeleted        Boolean               @default(false)
+  connection       IntegrationConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade, map: "IntegrationSyncJob_connectionId_fkey")
+
+  @@index([status], map: "IntegrationSyncJob_status_idx")
+  @@index([connectionId], map: "IntegrationSyncJob_connectionId_idx")
+  @@index([tenantId], map: "IntegrationSyncJob_tenantId_idx")
+  @@map("aura_integration_sync_job")
+}
+
+model IntegrationLog {
+  id              String                @id @default(uuid())
+  tenantId        String
+  integrationId   String
+  connectionId    String
+  direction       String
+  method          String
+  endpoint        String
+  requestHeaders  Json?
+  requestBody     String?
+  statusCode      Int
+  responseHeaders Json?
+  responseBody    String?
+  responseTime    Int
+  action          String?
+  entity          String?
+  recordId        String?
+  syncJobId       String?
+  success         Boolean               @default(false)
+  errorMessage    String?
+  timestamp       DateTime              @default(now())
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @default(now())
+  createdBy       String?
+  updatedBy       String?
+  deletedAt       DateTime?
+  isDeleted       Boolean               @default(false)
+  connection      IntegrationConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade, map: "IntegrationLog_connectionId_fkey")
+
+  @@index([timestamp], map: "IntegrationLog_timestamp_idx")
+  @@index([connectionId], map: "IntegrationLog_connectionId_idx")
+  @@index([success], map: "IntegrationLog_success_idx")
+  @@index([tenantId], map: "IntegrationLog_tenantId_idx")
+  @@map("aura_integration_log")
+}
+
 model CustomReport {
   id          String    @id(map: "CustomReport_pkey") @default(uuid())
   tenantId    String
@@ -5160,53 +5430,278 @@ model CustomReport {
 }
 
 model WorkflowDefinition {
-  id           String             @id(map: "WorkflowDefinition_pkey") @default(uuid())
-  tenantId     String
-  name         String
-  description  String?
-  trigger      String
-  triggerEvent String?
-  nodes        Json
-  edges        Json
-  isActive     Boolean            @default(true)
-  version      Int                @default(1)
-  createdBy    String
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @updatedAt
-  isDeleted    Boolean            @default(false)
-  deletedAt    DateTime?
-  updatedBy    String?
-  instances    WorkflowInstance[]
+  id            String             @id(map: "WorkflowDefinition_pkey") @default(uuid())
+  tenantId      String
+  processType   String             @default("GENERIC") @map("process_type")
+  name          String
+  description   String?
+  trigger       String
+  triggerEvent  String?
+  nodes         Json
+  edges         Json
+  status        String             @default("ACTIVE") @map("status")
+  isActive      Boolean            @default(true)
+  version       Int                @default(1)
+  effectiveFrom DateTime?          @map("effective_from")
+  effectiveTo   DateTime?          @map("effective_to")
+  createdBy     String
+  createdAt     DateTime           @default(now())
+  updatedAt     DateTime           @updatedAt
+  isDeleted     Boolean            @default(false)
+  deletedAt     DateTime?
+  updatedBy     String?
+  instances     WorkflowInstance[]
+  steps         WorkflowStep[]
 
+  @@index([processType, version], map: "WorkflowDefinition_processType_version_idx")
   @@index([isActive], map: "WorkflowDefinition_isActive_idx")
   @@index([tenantId], map: "WorkflowDefinition_tenantId_idx")
   @@index([trigger], map: "WorkflowDefinition_trigger_idx")
+  @@index([processType], map: "WorkflowDefinition_processType_idx")
+  @@index([status], map: "WorkflowDefinition_status_idx")
   @@map("aura_workflow_definition")
 }
 
 model WorkflowInstance {
-  id           String             @id(map: "WorkflowInstance_pkey") @default(uuid())
-  definitionId String
-  tenantId     String
-  status       String             @default("RUNNING")
-  currentNode  String?
-  context      Json?
-  startedAt    DateTime           @default(now())
-  completedAt  DateTime?
-  error        String?
-  triggeredBy  String
-  isDeleted    Boolean            @default(false)
-  deletedAt    DateTime?
-  createdBy    String?
-  updatedBy    String?
-  createdAt    DateTime           @default(now())
-  updatedAt    DateTime           @default(now())
-  definition   WorkflowDefinition @relation(fields: [definitionId], references: [id], map: "WorkflowInstance_definitionId_fkey")
+  id                String               @id(map: "WorkflowInstance_pkey") @default(uuid())
+  definitionId      String
+  tenantId          String
+  processType       String               @default("GENERIC") @map("process_type")
+  definitionVersion Int                  @default(1) @map("definition_version")
+  referenceNumber   String?              @unique @map("reference_number")
+  documentRef       String?              @map("document_ref")
+  documentType      String?              @map("document_type")
+  status            String               @default("RUNNING")
+  currentStepId     String?              @map("current_step_id")
+  currentNode       String?
+  submittedBy       String?              @map("submitted_by")
+  submittedAt       DateTime             @default(now()) @map("submitted_at")
+  snapshotData      Json                 @default("{}") @map("snapshot_data")
+  context           Json?
+  variables         Json                 @default("{}")
+  overallSlaDueAt   DateTime?            @map("overall_sla_due_at")
+  startedAt         DateTime             @default(now())
+  completedAt       DateTime?
+  outcome           String?
+  error             String?
+  triggeredBy       String
+  version           Int                  @default(1)
+  isDeleted         Boolean              @default(false)
+  deletedAt         DateTime?
+  createdBy         String?
+  updatedBy         String?
+  createdAt         DateTime             @default(now())
+  updatedAt         DateTime             @default(now())
+  definition        WorkflowDefinition   @relation(fields: [definitionId], references: [id], map: "WorkflowInstance_definitionId_fkey")
+  steps             WorkflowStep[]
+  tasks             WorkflowTask[]
+  auditLogs         WorkflowAuditLog[]
+  comments          WorkflowComment[]
+  attachments       WorkflowAttachment[]
 
   @@index([definitionId], map: "WorkflowInstance_definitionId_idx")
   @@index([status], map: "WorkflowInstance_status_idx")
   @@index([tenantId], map: "WorkflowInstance_tenantId_idx")
+  @@index([processType], map: "WorkflowInstance_processType_idx")
+  @@index([submittedBy], map: "WorkflowInstance_submittedBy_idx")
+  @@index([referenceNumber], map: "WorkflowInstance_referenceNumber_idx")
+  @@index([currentStepId], map: "WorkflowInstance_currentStepId_idx")
   @@map("aura_workflow_instance")
+}
+
+model WorkflowStep {
+  id                       String               @id @default(uuid())
+  instanceId               String               @map("instance_id")
+  definitionId             String?              @map("definition_id")
+  stepId                   String               @map("step_id")
+  stepType                 String               @map("step_type")
+  stepName                 String               @map("step_name")
+  status                   String               @default("PENDING")
+  sequenceNumber           Int                  @default(0) @map("sequence_number")
+  startedAt                DateTime             @default(now()) @map("started_at")
+  completedAt              DateTime?            @map("completed_at")
+  slaDueAt                 DateTime?            @map("sla_due_at")
+  slaPausedAt              DateTime?            @map("sla_paused_at")
+  slaPausedDurationSeconds Int                  @default(0) @map("sla_paused_duration_seconds")
+  outcome                  String?
+  outcomeReasonCode        String?              @map("outcome_reason_code")
+  outcomeComment           String?              @map("outcome_comment")
+  outcomeBy                String?              @map("outcome_by")
+  retryCount               Int                  @default(0) @map("retry_count")
+  errorDetails             Json?                @map("error_details")
+  metadata                 Json                 @default("{}")
+  createdAt                DateTime             @default(now()) @map("created_at")
+  updatedAt                DateTime             @updatedAt @map("updated_at")
+  instance                 WorkflowInstance     @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+  definition               WorkflowDefinition?  @relation(fields: [definitionId], references: [id])
+  tasks                    WorkflowTask[]
+  auditLogs                WorkflowAuditLog[]
+  comments                 WorkflowComment[]
+  attachments              WorkflowAttachment[]
+
+  @@index([instanceId], map: "WorkflowStep_instanceId_idx")
+  @@index([status], map: "WorkflowStep_status_idx")
+  @@index([slaDueAt], map: "WorkflowStep_slaDueAt_idx")
+  @@map("aura_workflow_step")
+}
+
+model WorkflowTask {
+  id                  String           @id @default(uuid())
+  stepId              String           @map("step_id")
+  instanceId          String           @map("instance_id")
+  assignedTo          String?          @map("assigned_to")
+  assignedRole        String?          @map("assigned_role")
+  assignmentMode      String           @default("USER") @map("assignment_mode")
+  status              String           @default("PENDING")
+  claimedBy           String?          @map("claimed_by")
+  claimedAt           DateTime?        @map("claimed_at")
+  actionTaken         String?          @map("action_taken")
+  actionReasonCode    String?          @map("action_reason_code")
+  actionComment       String?          @map("action_comment")
+  actionAt            DateTime?        @map("action_at")
+  actionBy            String?          @map("action_by")
+  delegatedFrom       String?          @map("delegated_from")
+  delegationReason    String?          @map("delegation_reason")
+  delegationExpiresAt DateTime?        @map("delegation_expires_at")
+  slaDueAt            DateTime?        @map("sla_due_at")
+  reminderSentAt      DateTime?        @map("reminder_sent_at")
+  escalationLevel     Int              @default(0) @map("escalation_level")
+  createdAt           DateTime         @default(now()) @map("created_at")
+  updatedAt           DateTime         @updatedAt @map("updated_at")
+  version             Int              @default(1)
+  step                WorkflowStep     @relation(fields: [stepId], references: [id], onDelete: Cascade)
+  instance            WorkflowInstance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+
+  @@index([assignedTo], map: "WorkflowTask_assignedTo_idx")
+  @@index([assignedRole], map: "WorkflowTask_assignedRole_idx")
+  @@index([instanceId], map: "WorkflowTask_instanceId_idx")
+  @@index([stepId], map: "WorkflowTask_stepId_idx")
+  @@index([slaDueAt], map: "WorkflowTask_slaDueAt_idx")
+  @@index([status], map: "WorkflowTask_status_idx")
+  @@map("aura_workflow_task")
+}
+
+model WorkflowAuditLog {
+  id             String           @id @default(uuid())
+  instanceId     String           @map("instance_id")
+  stepId         String?          @map("step_id")
+  taskId         String?          @map("task_id")
+  eventType      String           @map("event_type")
+  action         String
+  actorId        String?          @map("actor_id")
+  actorType      String           @default("USER") @map("actor_type")
+  actorIp        String?          @map("actor_ip")
+  actorUserAgent String?          @map("actor_user_agent")
+  previousState  Json?            @map("previous_state")
+  newState       Json?            @map("new_state")
+  reasonCode     String?          @map("reason_code")
+  comment        String?
+  attachments    Json             @default("[]")
+  metadata       Json             @default("{}")
+  createdAt      DateTime         @default(now()) @map("created_at")
+  instance       WorkflowInstance @relation(fields: [instanceId], references: [id])
+  step           WorkflowStep?    @relation(fields: [stepId], references: [id])
+
+  @@index([instanceId], map: "WorkflowAuditLog_instanceId_idx")
+  @@index([actorId], map: "WorkflowAuditLog_actorId_idx")
+  @@index([eventType], map: "WorkflowAuditLog_eventType_idx")
+  @@index([createdAt], map: "WorkflowAuditLog_createdAt_idx")
+  @@map("aura_workflow_audit_log")
+}
+
+model WorkflowDelegation {
+  id             String   @id @default(uuid())
+  fromUserId     String   @map("from_user_id")
+  toUserId       String   @map("to_user_id")
+  delegationType String   @map("delegation_type")
+  processTypes   String[] @default([]) @map("process_types")
+  reason         String?
+  effectiveFrom  DateTime @map("effective_from")
+  effectiveTo    DateTime @map("effective_to")
+  isActive       Boolean  @default(true) @map("is_active")
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  @@index([fromUserId, isActive], map: "WorkflowDelegation_fromUserId_isActive_idx")
+  @@index([effectiveFrom, effectiveTo], map: "WorkflowDelegation_effectiveFrom_effectiveTo_idx")
+  @@map("aura_workflow_delegation")
+}
+
+model WorkflowComment {
+  id          String           @id @default(uuid())
+  instanceId  String           @map("instance_id")
+  stepId      String?          @map("step_id")
+  parentId    String?          @map("parent_id")
+  commentType String           @default("COMMENT") @map("comment_type")
+  visibility  String           @default("ALL")
+  content     String
+  mentions    String[]         @default([])
+  createdBy   String           @map("created_by")
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+  instance    WorkflowInstance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+  step        WorkflowStep?    @relation(fields: [stepId], references: [id])
+
+  @@index([instanceId], map: "WorkflowComment_instanceId_idx")
+  @@map("aura_workflow_comment")
+}
+
+model WorkflowAttachment {
+  id             String           @id @default(uuid())
+  instanceId     String           @map("instance_id")
+  stepId         String?          @map("step_id")
+  commentId      String?          @map("comment_id")
+  fileName       String           @map("file_name")
+  fileType       String           @map("file_type")
+  fileSize       Int              @map("file_size")
+  storagePath    String           @map("storage_path")
+  attachmentType String           @default("SUPPORTING") @map("attachment_type")
+  uploadedBy     String           @map("uploaded_by")
+  uploadedAt     DateTime         @default(now()) @map("uploaded_at")
+  instance       WorkflowInstance @relation(fields: [instanceId], references: [id], onDelete: Cascade)
+  step           WorkflowStep?    @relation(fields: [stepId], references: [id])
+
+  @@index([instanceId], map: "WorkflowAttachment_instanceId_idx")
+  @@map("aura_workflow_attachment")
+}
+
+model WorkflowReasonCode {
+  id          String  @id @default(uuid())
+  processType String  @map("process_type")
+  actionType  String  @map("action_type")
+  code        String
+  label       String
+  description String?
+  isActive    Boolean @default(true) @map("is_active")
+  sortOrder   Int     @default(0) @map("sort_order")
+
+  @@unique([processType, actionType, code], map: "WorkflowReasonCode_processType_actionType_code_key")
+  @@map("aura_workflow_reason_code")
+}
+
+model WorkflowSlaSchedule {
+  id           String    @id @default(uuid())
+  taskId       String    @map("task_id")
+  scheduleType String    @map("schedule_type")
+  scheduledAt  DateTime  @map("scheduled_at")
+  executedAt   DateTime? @map("executed_at")
+  status       String    @default("PENDING")
+
+  @@index([scheduledAt], map: "WorkflowSlaSchedule_scheduledAt_idx")
+  @@map("aura_workflow_sla_schedule")
+}
+
+model WorkflowIdempotencyKey {
+  idempotencyKey String   @id @map("idempotency_key")
+  instanceId     String   @map("instance_id")
+  stepId         String   @map("step_id")
+  actionId       String   @map("action_id")
+  result         Json?
+  createdAt      DateTime @default(now()) @map("created_at")
+  expiresAt      DateTime @map("expires_at")
+
+  @@index([expiresAt], map: "WorkflowIdempotencyKey_expiresAt_idx")
+  @@map("aura_workflow_idempotency_key")
 }
 
 model ProjectTimeEntry {
@@ -7388,41 +7883,53 @@ model ManufacturingAlert {
 }
 
 model AviationCabinCrewMember {
-  id            String    @id @default(uuid())
-  tenantId      String
-  employeeId    String    @unique
-  certification String?
-  languages     String[]
-  baseAirport   String?
-  status        String    @default("ACTIVE")
-  certExpiresAt DateTime?
-  createdAt     DateTime  @default(now())
-  updatedAt     DateTime  @updatedAt
-  createdBy     String?
-  updatedBy     String?
-  deletedAt     DateTime?
-  isDeleted     Boolean   @default(false)
-
-  @@index([tenantId])
-  @@map("aura_av_cabin_crew")
-}
-
-model AviationPilotTraining {
   id                String    @id @default(uuid())
   tenantId          String
-  pilotId           String
-  trainingType      String
-  aircraftType      String?
-  startDate         DateTime
-  endDate           DateTime?
-  status            String    @default("SCHEDULED")
-  certificateNumber String?
+  crewId            String    @unique
+  employeeId        String    @unique
+  personalInfo      Json
+  crewType          String
+  seniority         Json?
+  qualifications    Json?
+  languages         Json?
+  certifications    Json?
+  medicalStatus     Json?
+  dutyStatus        String
+  preferences       Json?
+  performanceRating Json?
+  status            String    @default("active")
   createdAt         DateTime  @default(now())
   updatedAt         DateTime  @updatedAt
   createdBy         String?
   updatedBy         String?
   deletedAt         DateTime?
   isDeleted         Boolean   @default(false)
+
+  @@index([tenantId])
+  @@map("aura_av_cabin_crew")
+}
+
+model AviationPilotTraining {
+  id            String    @id @default(uuid())
+  tenantId      String
+  recordId      String    @unique
+  pilotId       String
+  programName   String
+  programType   String
+  startDate     DateTime
+  endDate       DateTime?
+  status        String
+  syllabus      Json?
+  progress      Json?
+  instructor    Json?
+  certification Json?
+  notes         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  createdBy     String?
+  updatedBy     String?
+  deletedAt     DateTime?
+  isDeleted     Boolean   @default(false)
 
   @@index([tenantId])
   @@index([pilotId])
@@ -7448,18 +7955,27 @@ model AviationGroundEquipment {
 }
 
 model AviationGroundStaff {
-  id             String    @id @default(uuid())
-  tenantId       String
-  employeeId     String    @unique
-  role           String
-  baseAirport    String
-  certifications String[]
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  createdBy      String?
-  updatedBy      String?
-  deletedAt      DateTime?
-  isDeleted      Boolean   @default(false)
+  id                      String    @id @default(uuid())
+  tenantId                String
+  staffId                 String    @unique
+  employeeId              String    @unique
+  personalInfo            Json
+  jobRole                 String
+  department              String
+  baseStation             String
+  shiftInfo               Json?
+  qualifications          Json?
+  certifications          Json?
+  equipmentQualifications Json?
+  safetyRecord            Json?
+  performanceMetrics      Json?
+  status                  String
+  createdAt               DateTime  @default(now())
+  updatedAt               DateTime  @updatedAt
+  createdBy               String?
+  updatedBy               String?
+  deletedAt               DateTime?
+  isDeleted               Boolean   @default(false)
 
   @@index([tenantId])
   @@map("aura_av_ground_staff")
@@ -7534,21 +8050,22 @@ model HealthcareCredentialing {
 }
 
 model LocumProvider {
-  id           String            @id @default(uuid())
-  tenantId     String
-  providerName String
-  specialty    String
-  npi          String?
-  hourlyRate   Decimal?          @db.Decimal(10, 2)
-  availability Json?
-  status       String            @default("ACTIVE")
-  createdAt    DateTime          @default(now())
-  updatedAt    DateTime          @updatedAt
-  createdBy    String?
-  updatedBy    String?
-  deletedAt    DateTime?
-  isDeleted    Boolean           @default(false)
-  assignments  LocumAssignment[]
+  id                String            @id @default(uuid())
+  tenantId          String
+  providerName      String
+  specialty         String
+  npi               String?
+  hourlyRate        Decimal?          @db.Decimal(10, 2)
+  availability      Json?
+  performanceRating Float?            @default(0.0)
+  status            String            @default("ACTIVE")
+  createdAt         DateTime          @default(now())
+  updatedAt         DateTime          @updatedAt
+  createdBy         String?
+  updatedBy         String?
+  deletedAt         DateTime?
+  isDeleted         Boolean           @default(false)
+  assignments       LocumAssignment[]
 
   @@index([tenantId])
   @@map("aura_hc_locum_provider")
@@ -11994,7 +12511,7 @@ model SeparationCase {
   deletedAt                 DateTime?
   isDeleted                 Boolean   @default(false)
 
-  @@unique([tenantId, caseNumber], map: "aura_separation_case_unique")
+  @@unique([tenantId, caseNumber], name: "aura_separation_case_unique", map: "aura_separation_case_unique")
   @@index([tenantId, employeeId], map: "aura_separation_case_employee")
   @@map("aura_separation_case")
 }
@@ -12064,7 +12581,7 @@ model SeparationExitInterview {
   deletedAt         DateTime?
   isDeleted         Boolean   @default(false)
 
-  @@unique([tenantId, caseId], map: "aura_separation_exit_interview_unique")
+  @@unique([tenantId, caseId], name: "aura_separation_exit_interview_unique", map: "aura_separation_exit_interview_unique")
   @@map("aura_separation_exit_interview")
 }
 
@@ -12095,7 +12612,7 @@ model SeparationCertificate {
   deletedAt              DateTime?
   isDeleted              Boolean   @default(false)
 
-  @@unique([tenantId, period], map: "aura_separation_certificate_unique")
+  @@unique([tenantId, period], name: "aura_separation_certificate_unique", map: "aura_separation_certificate_unique")
   @@map("aura_separation_certificate")
 }
 
@@ -12158,6 +12675,7 @@ model ComplianceCorrectiveAction {
   description       String?
   rootCause         String?
   severity          String    @default("MEDIUM")
+  priority          String    @default("MEDIUM")
   ownerId           String?
   raisedAt          DateTime  @default(now())
   raisedBy          String?
@@ -12641,6 +13159,7 @@ enum AuditAction {
   APPROVE_LEAVE_REQUEST
   APPROVE_OVERTIME_REQUEST
   APPROVE_SHIFT_SWAP_REQUEST
+  PUBLISH_SHIFT_ROSTER
   REJECT_ATTENDANCE_REGULARIZATION
   REJECT_COMP_OFF_REQUEST
   REJECT_CONFIRMATION_REQUEST
@@ -16214,4 +16733,1731 @@ model GovernmentReportArchive {
   @@index([tenantId], map: "GovernmentReportArchive_tenantId_idx")
   @@index([tenantId, country], map: "GovernmentReportArchive_tenantId_country_idx")
   @@map("aura_government_report_archive")
+}
+
+model LogisticsDriver {
+  id        String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  name      String
+  route     String
+  vehicle   String
+  status    String
+  eta       String?
+  license   String?
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  @@map("aura_logistics_driver")
+}
+
+model LogisticsFleetSafety {
+  id        String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  event     String
+  driver    String
+  time      String
+  location  String
+  severity  String
+  score     Int?
+  trend     String?
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  @@map("aura_logistics_fleet_safety")
+}
+
+model LogisticsWarehouseStaffing {
+  id           String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  shift        String
+  time         String
+  staff        Int
+  required     Int
+  status       String
+  productivity Int?
+  target       Int?
+  role         String?
+  schedule     String?
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @default(now()) @map("updated_at")
+
+  @@map("aura_logistics_warehouse_staffing")
+}
+
+model IndustrySolution {
+  id          String   @id @default(uuid())
+  code        String   @unique
+  name        String
+  icon        String?
+  description String
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("aura_industry_solution")
+}
+
+// ============================================================================
+// EDUCATION MODULE
+// ============================================================================
+
+model EducationFacultyMember {
+  id           String   @id @default(uuid())
+  userId       String?
+  name         String
+  department   String
+  title        String
+  tenureStatus String // e.g. "Tenured", "Tenure-Track", "Non-Tenure-Track"
+  joinDate     DateTime
+  publications Int      @default(0)
+  evaluations  Json? // Store array of evaluations
+  isActive     Boolean  @default(true) @map("is_active")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("aura_education_faculty_member")
+}
+
+model EducationTenureApplication {
+  id             String    @id @default(uuid())
+  facultyId      String
+  status         String // e.g. "Draft", "Submitted", "Under Review", "Approved", "Rejected"
+  submissionDate DateTime?
+  portfolio      Json? // Store portfolio details
+  committeeVotes Json? // Store votes
+  decision       Json? // Store final decision
+  isActive       Boolean   @default(true) @map("is_active")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  @@map("aura_education_tenure_application")
+}
+
+model EducationResearchGrant {
+  id                      String    @id @default(uuid())
+  title                   String
+  principalInvestigatorId String
+  fundingAgency           String
+  amount                  Decimal   @db.Decimal(18, 2)
+  awardedAmount           Decimal?  @db.Decimal(18, 2)
+  status                  String // e.g. "Draft", "Submitted", "Awarded", "Closed"
+  startDate               DateTime?
+  endDate                 DateTime?
+  expenditures            Json?
+  milestones              Json?
+  isActive                Boolean   @default(true) @map("is_active")
+  createdAt               DateTime  @default(now()) @map("created_at")
+  updatedAt               DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  @@map("aura_education_research_grant")
+}
+
+model EducationGrantReport {
+  id             String    @id @default(uuid())
+  grantId        String
+  type           String // e.g. "Quarterly", "Annual", "Final"
+  submissionDate DateTime?
+  status         String // e.g. "Draft", "Submitted", "Approved"
+  findings       String?
+  expenditures   Decimal   @default(0) @db.Decimal(18, 2)
+  isActive       Boolean   @default(true) @map("is_active")
+  createdAt      DateTime  @default(now()) @map("created_at")
+  updatedAt      DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  @@map("aura_education_grant_report")
+}
+
+model EducationAdjunctFaculty {
+  id                    String   @id @default(uuid())
+  name                  String
+  department            String
+  coursesTaught         Int      @default(0)
+  credentials           Json? // Store credentials and verification status
+  backgroundCheckStatus String // e.g. "Pending", "Cleared", "Failed"
+  active                Boolean  @default(true)
+  isActive              Boolean  @default(true) @map("is_active")
+  createdAt             DateTime @default(now()) @map("created_at")
+  updatedAt             DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("aura_education_adjunct_faculty")
+}
+
+model EducationAdjunctContract {
+  id           String    @id @default(uuid())
+  adjunctId    String
+  term         String // e.g. "Fall 2026"
+  courseLoad   Int       @default(1)
+  compensation Decimal   @db.Decimal(18, 2)
+  status       String // e.g. "Draft", "Pending Signature", "Active", "Completed"
+  signedDate   DateTime?
+  signedBy     String?
+  approvedBy   String?
+  payments     Json?
+  isActive     Boolean   @default(true) @map("is_active")
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @default(now()) @updatedAt @map("updated_at")
+
+  @@map("aura_education_adjunct_contract")
+}
+
+model EducationAdjunctPool {
+  id              String   @id @default(uuid())
+  department      String   @unique
+  totalCandidates Int      @default(0)
+  activeNeeds     Int      @default(0)
+  averageRate     Decimal  @default(0) @db.Decimal(18, 2)
+  isActive        Boolean  @default(true) @map("is_active")
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @default(now()) @updatedAt @map("updated_at")
+
+  @@map("aura_education_adjunct_pool")
+}
+
+// ==========================================
+// FINANCIAL SERVICES MODULE
+// ==========================================
+
+model FinancialAccount {
+  id             String    @id @default(uuid())
+  accountId      String    @unique
+  accountNumber  String
+  accountType    String
+  customerId     String
+  customerName   String
+  balance        Json // Stores AccountBalance
+  status         String
+  openDate       DateTime
+  closedDate     DateTime?
+  interestRate   Decimal?  @db.Decimal(5, 2)
+  minimumBalance Decimal?  @db.Decimal(18, 2)
+  fees           Json? // Array of AccountFee
+  features       Json? // Array of strings
+  linkedAccounts Json? // Array of strings
+  alerts         Json? // Array of AccountAlert
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @default(now()) @updatedAt
+
+  @@map("aura_financial_account")
+}
+
+model FinancialTransaction {
+  id            String   @id @default(uuid())
+  transactionId String   @unique
+  accountId     String
+  accountName   String
+  type          String
+  amount        Decimal  @db.Decimal(18, 2)
+  currency      String
+  status        String
+  date          DateTime
+  description   String
+  category      String
+  merchant      String?
+  location      Json? // Stores TransactionLocation
+  metadata      Json? // Stores TransactionMetadata
+  reference     String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @default(now()) @updatedAt
+
+  @@map("aura_financial_transaction")
+}
+
+model FinancialLoan {
+  id              String   @id @default(uuid())
+  loanId          String   @unique
+  customerId      String
+  customerName    String
+  loanType        String
+  status          String
+  principalAmount Decimal  @db.Decimal(18, 2)
+  currentBalance  Decimal  @db.Decimal(18, 2)
+  interestRate    Decimal  @db.Decimal(5, 2)
+  startDate       DateTime
+  endDate         DateTime
+  term            Json // Stores LoanTerm
+  nextPayment     Json // Stores LoanPayment
+  paymentHistory  Json? // Array of PaymentRecord
+  collateral      Json? // Array of Collateral
+  delinquency     Json? // Stores DelinquencyInfo
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
+
+  @@map("aura_financial_loan")
+}
+
+model InsurancePolicy {
+  id             String   @id @default(uuid())
+  policyId       String   @unique
+  policyType     String
+  policyNumber   String
+  status         String
+  holder         Json // Stores PolicyHolder
+  riskProfile    Json? // Stores RiskProfile
+  coverage       Json // Stores Coverage
+  riders         Json? // Array of PolicyRider
+  premium        Json // Stores Premium
+  deductible     Decimal  @db.Decimal(18, 2)
+  beneficiaries  Json? // Array of Beneficiary
+  effectiveDate  DateTime
+  expirationDate DateTime
+  documents      Json? // Array of strings
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @default(now()) @updatedAt
+
+  @@map("aura_insurance_policy")
+}
+
+model InsuranceClaim {
+  id             String   @id @default(uuid())
+  claimId        String   @unique
+  policyId       String
+  claimNumber    String
+  status         String
+  dateOfLoss     DateTime
+  dateReported   DateTime
+  claimant       Json // Stores Claimant
+  incident       Json // Stores Incident
+  adjuster       Json? // Stores Adjuster
+  investigation  Json? // Stores Investigation
+  reserveAmount  Decimal? @db.Decimal(18, 2)
+  paidAmount     Decimal? @db.Decimal(18, 2)
+  timeline       Json? // Array of ClaimTimeline
+  documents      Json? // Array of ClaimDocument
+  communications Json? // Array of Communication
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @default(now()) @updatedAt
+
+  @@map("aura_insurance_claim")
+}
+
+model WealthPortfolio {
+  id              String   @id @default(uuid())
+  portfolioId     String   @unique
+  clientId        String
+  clientName      String
+  portfolioType   String
+  status          String
+  totalValue      Decimal  @db.Decimal(18, 2)
+  cashBalance     Decimal  @db.Decimal(18, 2)
+  currency        String
+  advisor         Json? // Stores Advisor
+  assetAllocation Json // Array of AssetAllocation
+  holdings        Json // Array of Holding
+  performance     Json? // Stores Performance
+  riskProfile     Json? // Stores InvestmentRiskProfile
+  taxInfo         Json? // Stores TaxConsideration
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @default(now()) @updatedAt
+
+  @@map("aura_wealth_portfolio")
+}
+
+model WealthTradeOrder {
+  id             String    @id @default(uuid())
+  orderId        String    @unique
+  portfolioId    String
+  ticker         String
+  assetClass     String
+  orderType      String
+  action         String
+  quantity       Decimal   @db.Decimal(18, 4)
+  limitPrice     Decimal?  @db.Decimal(18, 2)
+  status         String
+  submittedAt    DateTime
+  executedAt     DateTime?
+  executionPrice Decimal?  @db.Decimal(18, 2)
+  fees           Decimal?  @db.Decimal(18, 2)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @default(now()) @updatedAt
+
+  @@map("aura_wealth_trade_order")
+}
+
+model ComplianceProgram {
+  id                 String   @id @default(uuid())
+  programId          String   @unique
+  programName        String
+  complianceArea     String
+  status             String
+  lastReviewDate     DateTime
+  nextReviewDate     DateTime
+  responsibleOfficer String
+  policies           Json? // Array of CompliancePolicy
+  procedures         Json? // Array of ComplianceProcedure
+  controls           Json? // Array of ComplianceControl
+  training           Json? // Array of ComplianceTraining
+  audits             Json? // Array of string (Audit IDs)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @default(now()) @updatedAt
+
+  @@map("aura_compliance_program")
+}
+
+model ComplianceAudit {
+  id             String    @id @default(uuid())
+  auditId        String    @unique
+  auditName      String
+  auditType      String
+  status         String
+  scheduledDate  DateTime
+  completionDate DateTime?
+  overallRating  String
+  scope          Json? // Array of strings
+  auditor        Json? // Stores AuditorInfo
+  findings       Json? // Array of AuditFinding
+  reportUrl      String?
+  followUpDate   DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @default(now()) @updatedAt
+
+  @@map("aura_compliance_audit")
+}
+
+// ==========================================
+// GOVERNMENT MODULE
+// ==========================================
+
+model CivilServiceGrade {
+  id                   String   @id @default(uuid())
+  gradeId              String   @unique
+  employeeId           String
+  employeeName         String
+  department           String
+  position             String
+  gradeLevel           String
+  step                 Int
+  series               String
+  effectiveDate        DateTime
+  salaryInformation    Json
+  promotionEligibility Json
+  performanceHistory   Json
+  qualifications       Json
+  status               String
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model SecurityClearance {
+  id                   String   @id @default(uuid())
+  clearanceId          String   @unique
+  employeeId           String
+  employeeName         String
+  department           String
+  position             String
+  clearanceLevel       String
+  status               String
+  grantedDate          DateTime
+  expiryDate           DateTime
+  investigationType    String
+  investigationDetails Json
+  polygraphRequired    Boolean
+  polygraphStatus      String?
+  continuousEvaluation Json
+  accessAuthorizations Json
+  suspensionHistory    Json
+  debriefRequired      Boolean
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+}
+
+model PensionScheme {
+  id                     String   @id @default(uuid())
+  pensionId              String   @unique
+  employeeId             String
+  employeeName           String
+  department             String
+  pensionType            String
+  enrollmentDate         DateTime
+  serviceComputationDate DateTime
+  yearsOfService         Int
+  vestingStatus          String
+  retirementEligibility  Json
+  contributions          Json
+  projections            Json
+  beneficiaries          Json
+  thriftSavingsPlan      Json
+  status                 String
+  createdAt              DateTime @default(now())
+  updatedAt              DateTime @updatedAt
+}
+
+// ==========================================
+// AUTOMOTIVE MODULE
+// ==========================================
+
+model Technician {
+  id             String   @id @default(uuid())
+  technicianId   String   @unique
+  name           String
+  email          String
+  phone          String
+  role           String
+  status         String
+  certifications Json
+  skills         Json
+  hireDate       DateTime
+  hourlyRate     Float
+  availability   Json
+  performance    Json
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model TechnicianShift {
+  id             String   @id @default(uuid())
+  shiftId        String   @unique
+  technicianId   String
+  technicianName String
+  date           DateTime
+  startTime      String
+  endTime        String
+  type           String
+  status         String
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model RosterTemplate {
+  id          String   @id @default(uuid())
+  templateId  String   @unique
+  name        String
+  description String
+  department  String
+  weeks       Json
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model AutoShiftSwapRequest {
+  id                 String   @id @default(uuid())
+  requestId          String   @unique
+  requestingTechId   String
+  requestingTechName String
+  targetTechId       String
+  targetTechName     String
+  originalShiftId    String
+  targetShiftId      String
+  date               DateTime
+  reason             String
+  status             String
+  approvedBy         String?
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model TimeOffRequest {
+  id             String   @id @default(uuid())
+  requestId      String   @unique
+  technicianId   String
+  technicianName String
+  type           String
+  startDate      DateTime
+  endDate        DateTime
+  status         String
+  reason         String
+  approvedBy     String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model SalesPerson {
+  id             String   @id @default(uuid())
+  salesPersonId  String   @unique
+  name           String
+  email          String
+  department     String
+  baseSalary     Float
+  commissionRate Float
+  status         String
+  performance    Json
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model SalesCommission {
+  id               String   @id @default(uuid())
+  commissionId     String   @unique
+  salesPersonId    String
+  salesPersonName  String
+  period           String
+  totalSales       Float
+  commissionAmount Float
+  bonusAmount      Float
+  deductions       Float
+  netCommission    Float
+  status           String
+  salesDetails     Json
+  bonuses          Json
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model VehicleSale {
+  id               String   @id @default(uuid())
+  saleId           String   @unique
+  salesPersonId    String
+  vin              String
+  make             String
+  model            String
+  year             Int
+  salePrice        Float
+  costPrice        Float
+  grossProfit      Float
+  saleDate         DateTime
+  customerName     String
+  status           String
+  commissionAmount Float?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model ServiceSale {
+  id            String   @id @default(uuid())
+  saleId        String   @unique
+  advisorId     String
+  technicianId  String
+  repairOrderId String
+  serviceType   String
+  laborAmount   Float
+  partsAmount   Float
+  totalAmount   Float
+  saleDate      DateTime
+  status        String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model CommissionStructure {
+  id            String   @id @default(uuid())
+  structureId   String   @unique
+  name          String
+  department    String
+  type          String
+  tiers         Json
+  rules         Json
+  effectiveDate DateTime
+  status        String
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Part {
+  id                 String   @id @default(uuid())
+  partId             String   @unique
+  partNumber         String
+  name               String
+  description        String
+  category           String
+  manufacturer       String
+  costPrice          Float
+  retailPrice        Float
+  quantityOnHand     Int
+  reorderPoint       Int
+  reorderQuantity    Int
+  location           Json
+  applicableVehicles Json
+  suppliers          Json
+  status             String
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model InventoryMovement {
+  id          String   @id @default(uuid())
+  movementId  String   @unique
+  partId      String
+  partNumber  String
+  type        String
+  quantity    Int
+  date        DateTime
+  reference   String
+  notes       String?
+  performedBy String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model PurchaseOrder {
+  id                   String    @id @default(uuid())
+  orderId              String    @unique
+  supplierId           String
+  supplierName         String
+  date                 DateTime
+  expectedDeliveryDate DateTime?
+  status               String
+  totalAmount          Float
+  items                Json
+  notes                String?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
+}
+
+model StockAdjustment {
+  id           String   @id @default(uuid())
+  adjustmentId String   @unique
+  date         DateTime
+  type         String
+  reason       String
+  items        Json
+  status       String
+  approvedBy   String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// ==========================================
+// ENERGY MODULE
+// ==========================================
+
+model SmartMeter {
+  id               String   @id @default(uuid())
+  facilityId       String?
+  meterId          String
+  location         Json
+  type             String
+  status           String
+  installationDate DateTime
+  manufacturer     String?
+  model            String?
+  firmwareVersion  String
+  connectivity     String?
+  interval         Int?
+  lastCalibration  DateTime
+  lastReading      Json?
+  readings         Json
+  alerts           Json
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  createdBy        String?
+  isDeleted        Boolean  @default(false)
+}
+
+model EnergyConsumption {
+  id                    String   @id @default(uuid())
+  consumptionId         String   @unique
+  facilityId            String
+  period                Json
+  totalConsumption      Float
+  peakDemand            Float
+  breakdown             Json
+  departmentConsumption Json
+  equipmentConsumption  Json
+  comparison            Json
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+}
+
+model LoadManagement {
+  id              String   @id @default(uuid())
+  programId       String   @unique
+  name            String
+  type            String
+  status          String
+  targetReduction Float
+  actualReduction Float
+  events          Json
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model GridEvent {
+  id                String   @id @default(uuid())
+  eventId           String   @unique
+  programId         String
+  type              String
+  status            String
+  startTime         DateTime
+  endTime           DateTime
+  requiredReduction Float
+  actualReduction   Float
+  impact            Json
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+}
+
+model WaterMeter {
+  id               String   @id @default(uuid())
+  meterId          String   @unique
+  location         Json
+  type             String
+  status           String
+  installationDate DateTime
+  lastCalibration  DateTime
+  readings         Json
+  alerts           Json
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+}
+
+model WaterUsage {
+  id              String   @id @default(uuid())
+  usageId         String   @unique
+  facilityId      String
+  period          Json
+  totalUsage      Float
+  breakdown       Json
+  departmentUsage Json
+  fixtureUsage    Json
+  comparison      Json
+  efficiency      Json
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model LeakDetection {
+  id            String    @id @default(uuid())
+  leakId        String    @unique
+  location      Json
+  severity      String
+  status        String
+  detectedAt    DateTime
+  estimatedLoss Float
+  repairedAt    DateTime?
+  repairCost    Float?
+  notes         String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model ConservationInitiative {
+  id            String    @id @default(uuid())
+  initiativeId  String    @unique
+  name          String
+  description   String
+  targetSavings Float
+  actualSavings Float
+  startDate     DateTime
+  endDate       DateTime?
+  status        String
+  budget        Float
+  spent         Float
+  metrics       Json
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model RenewableAsset {
+  id           String   @id @default(uuid())
+  assetId      String   @unique
+  name         String
+  type         String
+  status       String
+  location     Json
+  capacity     Json
+  installation Json
+  performance  Json
+  maintenance  Json
+  financials   Json
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model EnergyProduction {
+  id                 String   @id @default(uuid())
+  productionId       String   @unique
+  assetId            String
+  period             Json
+  totalProduced      Float
+  expectedProduction Float
+  efficiency         Float
+  weather            Json
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model UtilityAccount {
+  id             String   @id @default(uuid())
+  accountId      String   @unique
+  provider       Json
+  accountNumber  String
+  serviceAddress Json
+  rateSchedule   Json
+  status         String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model UtilityBill {
+  id           String   @id @default(uuid())
+  billId       String   @unique
+  accountId    String
+  billingCycle Json
+  consumption  Json
+  charges      Json
+  total        Json
+  dueDate      DateTime
+  status       String
+  paymentInfo  Json
+  documents    Json
+  alerts       Json
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model EnergyPayment {
+  id        String   @id @default(uuid())
+  paymentId String   @unique
+  billId    String
+  accountId String
+  amount    Float
+  date      DateTime
+  method    Json
+  status    String
+  reference String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+// ==========================================
+// HOSPITALITY MODULE
+// ==========================================
+
+model TipPool {
+  id                 String   @id @default(uuid())
+  poolId             String   @unique
+  poolName           String
+  date               DateTime
+  totalAmount        Float
+  distributionMethod String
+  participants       Json
+  distributions      Json
+  status             String
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}
+
+model HospitalityEvent {
+  id             String   @id @default(uuid())
+  eventId        String   @unique
+  eventName      String
+  eventType      String
+  eventDate      DateTime
+  startTime      String
+  endTime        String
+  venue          String
+  expectedGuests Int
+  actualGuests   Int?
+  staffingPlan   Json
+  budget         Float
+  actualCost     Float?
+  status         String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+model HousekeepingTask {
+  id              String    @id @default(uuid())
+  taskId          String    @unique
+  roomNumber      String
+  roomType        String
+  taskType        String
+  assignedTo      String?
+  priority        String
+  status          String
+  scheduledTime   DateTime
+  startTime       DateTime?
+  completionTime  DateTime?
+  duration        Int?
+  inspectionScore Float?
+  notes           String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+}
+
+model ComplianceAuditChecklistItem {
+  id                  String    @id @default(uuid())
+  tenantId            String
+  domainCode          String
+  categoryCode        String
+  itemCode            String
+  label               String
+  expectedBehavior    String?
+  evidenceRequirement String?
+  ownerRole           String?
+  isMandatory         Boolean   @default(false)
+  status              String    @default("OPEN")
+  owner               String?
+  dueDate             DateTime?
+  evidenceUrl         String?
+  notes               String?
+  completedAt         DateTime?
+  completedBy         String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+  createdBy           String?
+  updatedBy           String?
+  deletedAt           DateTime?
+  isDeleted           Boolean   @default(false)
+
+  @@unique([tenantId, domainCode, itemCode], map: "aura_compliance_audit_checklist_item_unique")
+  @@index([tenantId])
+  @@index([status])
+  @@map("aura_compliance_audit_checklist_item")
+}
+
+model ComplianceRiskRegisterEntry {
+  id             String    @id @default(uuid())
+  tenantId       String
+  domainCode     String
+  riskCode       String
+  title          String
+  description    String?
+  category       String?
+  likelihood     Int
+  impact         Int
+  score          Int
+  band           String
+  ownerRole      String?
+  controlRef     String?
+  mitigationPlan String?
+  status         String    @default("OPEN")
+  reviewedAt     DateTime?
+  reviewedBy     String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  createdBy      String?
+  updatedBy      String?
+  deletedAt      DateTime?
+  isDeleted      Boolean   @default(false)
+
+  @@unique([tenantId, domainCode, riskCode], map: "aura_compliance_risk_register_entry_unique")
+  @@index([tenantId])
+  @@index([band])
+  @@index([status])
+  @@map("aura_compliance_risk_register_entry")
+}
+
+model ComplianceRegisterEvidence {
+  id             String    @id @default(uuid())
+  tenantId       String
+  targetType     String // CHECKLIST | RISK | CAPA
+  targetId       String // itemCode / riskCode / capaId
+  fileName       String
+  fileUrl        String
+  mimeType       String
+  fileSize       Int
+  uploadedBy     String?
+  uploadedAt     DateTime  @default(now())
+  verifiedBy     String?
+  verifiedAt     DateTime?
+  acceptedStatus String    @default("PENDING") // PENDING | ACCEPTED | REJECTED
+  checksum       String?
+  version        Int       @default(1)
+  expiresAt      DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  isDeleted      Boolean   @default(false)
+
+  @@index([tenantId])
+  @@index([targetType, targetId])
+  @@map("aura_compliance_register_evidence")
+}
+
+model ComplianceRegisterTimelineEvent {
+  id          String   @id @default(uuid())
+  tenantId    String
+  targetType  String // CHECKLIST | RISK | CAPA
+  targetId    String // itemCode / riskCode / capaId
+  eventType   String // CREATED | EVIDENCE_UPLOADED | CONTROL_REVIEWED | RISK_ACCEPTED | RISK_MITIGATED | CAPA_CREATED | CAPA_CLOSED | APPROVED | REJECTED
+  title       String
+  description String?
+  userId      String?
+  userName    String?
+  timestamp   DateTime @default(now())
+  createdAt   DateTime @default(now())
+
+  @@index([tenantId])
+  @@index([targetType, targetId])
+  @@map("aura_compliance_register_timeline")
+}
+
+model RecordsDocumentMatrix {
+  id                   String  @id @default(cuid())
+  tenantId             String
+  country              String
+  documentCode         String
+  label                String
+  category             String
+  isMandatory          Boolean @default(true)
+  appliesWhen          String?
+  retentionYears       Int     @default(7)
+  renewalCadenceMonths Int?
+  sensitivity          String  @default("CONFIDENTIAL")
+  regulatorRef         String?
+  notes                String?
+  status               String  @default("ACTIVE")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, country, documentCode], name: "aura_records_document_matrix_unique")
+  @@index([tenantId])
+  @@map("records_document_matrix")
+}
+
+model RecordsCompletenessSnapshot {
+  id         String  @id @default(cuid())
+  tenantId   String
+  period     String
+  employeeId String
+  country    String?
+
+  mandatoryTotal   Int
+  mandatoryPresent Int
+  mandatoryMissing Int
+  expiringWithin30 Int @default(0)
+  expired          Int @default(0)
+
+  score        Float
+  band         String
+  missingCodes Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, period, employeeId], name: "aura_records_completeness_snapshot_unique")
+  @@index([tenantId, period])
+  @@map("records_completeness_snapshot")
+}
+
+model RecordsAuditChecklistItem {
+  id          String  @id @default(cuid())
+  tenantId    String
+  itemCode    String
+  label       String
+  category    String
+  country     String?
+  expectation String?
+  severity    String  @default("MEDIUM")
+
+  lastReviewedAt DateTime?
+  lastReviewedBy String?
+  lastResult     String?
+  notes          String?
+
+  status String @default("ACTIVE")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, itemCode], name: "aura_records_audit_checklist_item_unique")
+  @@index([tenantId])
+  @@map("records_audit_checklist_item")
+}
+
+model RecordsRiskEntry {
+  id         String  @id @default(cuid())
+  tenantId   String
+  riskCode   String
+  title      String
+  category   String
+  country    String?
+  likelihood Int
+  impact     Int
+  score      Int
+  band       String
+  ownerId    String?
+  mitigation String?
+  status     String  @default("OPEN")
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, riskCode], name: "aura_records_risk_entry_unique")
+  @@index([tenantId])
+  @@map("records_risk_entry")
+}
+
+model RecordsComplianceCertificate {
+  id       String @id @default(cuid())
+  tenantId String
+  period   String
+
+  status String @default("DRAFT")
+
+  employeesEvaluated Int
+  averageScore       Float
+  greenEmployees     Int
+  amberEmployees     Int
+  redEmployees       Int
+
+  mandatoryMissingTotal Int
+  expiredDocsTotal      Int
+
+  checklistFailing  Int
+  checklistOverdue  Int
+  criticalRisksOpen Int
+
+  gatingReason String?
+
+  metricsJson      Json?
+  attestationsJson Json?
+
+  generatedAt DateTime
+  signedAt    DateTime?
+  signedBy    String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@unique([tenantId, period], name: "aura_records_compliance_certificate_unique")
+  @@index([tenantId])
+  @@map("records_compliance_certificate")
+}
+
+model AgricultureSeasonalCrew {
+  id        String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  name      String
+  location  String
+  size      Int
+  origin    String
+  status    String
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  @@map("aura_agriculture_seasonal_crew")
+}
+
+model AgricultureHousingUnit {
+  id        String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  unit      String
+  occupied  Int
+  capacity  Int
+  status    String
+  type      String
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  @@map("aura_agriculture_housing_unit")
+}
+
+model AgricultureCropCycle {
+  id        String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  crop      String
+  field     String
+  stage     String
+  harvest   String
+  progress  Int
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  @@map("aura_agriculture_crop_cycle")
+}
+
+model AutomotiveTechnicianRoster {
+  id        String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  bay       String
+  tech      String
+  job       String
+  time      String
+  status    String
+  skill     String?
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  @@map("aura_automotive_technician_roster")
+}
+
+model AutomotivePartInventory {
+  id        String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  part      String
+  sku       String
+  stock     Int
+  minStock  Int      @map("min_stock")
+  status    String
+  supplier  String?
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  @@map("aura_automotive_part_inventory")
+}
+
+model AutomotiveSalesCommission {
+  id          String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  rank        Int
+  salesperson String
+  unitsSold   Int      @map("units_sold")
+  grossProfit Int      @map("gross_profit")
+  commission  Int
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @default(now()) @map("updated_at")
+
+  @@map("aura_automotive_sales_commission")
+}
+
+model AutomotiveServiceBay {
+  id         String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  name       String
+  status     String
+  car        String?
+  technician String?
+  isActive   Boolean  @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @default(now()) @map("updated_at")
+
+  @@map("aura_automotive_service_bay")
+}
+
+model AutomotiveServiceTechnician {
+  id         String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  name       String
+  level      String
+  efficiency Int
+  hours      Float
+  status     String
+  isActive   Boolean  @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @default(now()) @map("updated_at")
+
+  @@map("aura_automotive_service_technician")
+}
+
+model AutomotivePartStock {
+  id        String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  part      String
+  category  String
+  stock     Int
+  minStock  Int      @map("min_stock")
+  location  String
+  status    String
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @default(now()) @map("updated_at")
+
+  @@map("aura_automotive_part_stock")
+}
+
+model AutomotivePartRequisition {
+  id         String   @id @default(dbgenerated("(gen_random_uuid())::text"))
+  technician String
+  bay        String
+  item       String
+  priority   String
+  status     String   @default("Pending")
+  isActive   Boolean  @default(true) @map("is_active")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @default(now()) @map("updated_at")
+
+  @@map("aura_automotive_part_requisition")
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// EPIC-03 / EPIC-04 / EPIC-05  Talent Acquisition Compliance Overlay
+// Previously absent — service code in talent-acquisition-compliance/index.ts
+// referenced these via (prisma as any) bypass. Adding proper model definitions
+// restores full Prisma Client type-safety and prevents runtime P2021 failures.
+// ─────────────────────────────────────────────────────────────────────────────
+
+model TaAuditChecklistItem {
+  id             String    @id @default(uuid())
+  tenantId       String
+  itemCode       String
+  label          String
+  stage          String // PLANNING | SOURCING | SELECTION | OFFER | PRE_EMPLOYMENT
+  category       String // 25-category TA taxonomy
+  country        String? // null = global; ISO-3166 alpha-2 = country-specific rule
+  expectation    String? // human-readable control expectation text
+  severity       String    @default("MEDIUM") // LOW | MEDIUM | HIGH | CRITICAL
+  isMandatory    Boolean   @default(false)
+  sortOrder      Int       @default(0)
+  status         String    @default("ACTIVE") // ACTIVE | DEPRECATED
+  lastReviewedAt DateTime?
+  lastReviewedBy String?
+  lastResult     String? // PASS | FAIL | OBSERVATION | null (not yet reviewed)
+  notes          String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  createdBy      String?
+  updatedBy      String?
+  deletedAt      DateTime?
+  isDeleted      Boolean   @default(false)
+
+  @@unique([tenantId, itemCode], map: "aura_ta_audit_checklist_item_unique")
+  @@index([tenantId], map: "aura_ta_audit_checklist_item_tenant_idx")
+  @@index([tenantId, stage], map: "aura_ta_audit_checklist_item_stage_idx")
+  @@index([tenantId, category], map: "aura_ta_audit_checklist_item_category_idx")
+  @@index([tenantId, status, severity], map: "aura_ta_audit_checklist_item_severity_idx")
+  @@index([lastResult], map: "aura_ta_audit_checklist_item_result_idx")
+  @@map("aura_ta_audit_checklist_item")
+}
+
+model TaRiskEntry {
+  id         String    @id @default(uuid())
+  tenantId   String
+  riskCode   String
+  title      String
+  stage      String // PLANNING | SOURCING | SELECTION | OFFER | PRE_EMPLOYMENT
+  category   String // maps to 25-category TA taxonomy
+  country    String?
+  likelihood Int // 1-5 scale
+  impact     Int // 1-5 scale
+  score      Int // likelihood × impact (1-25)
+  band       String // LOW | MEDIUM | HIGH | CRITICAL
+  ownerId    String? // Employee/User id of risk owner
+  mitigation String?
+  controlRef String?
+  status     String    @default("OPEN") // OPEN | MITIGATED | ACCEPTED | CLOSED
+  reviewedAt DateTime?
+  reviewedBy String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  createdBy  String?
+  updatedBy  String?
+  deletedAt  DateTime?
+  isDeleted  Boolean   @default(false)
+
+  @@unique([tenantId, riskCode], map: "aura_ta_risk_entry_unique")
+  @@index([tenantId], map: "aura_ta_risk_entry_tenant_idx")
+  @@index([tenantId, band], map: "aura_ta_risk_entry_band_idx")
+  @@index([tenantId, status], map: "aura_ta_risk_entry_status_idx")
+  @@index([tenantId, stage], map: "aura_ta_risk_entry_stage_idx")
+  @@map("aura_ta_risk_entry")
+}
+
+model TaComplianceCertificate {
+  id                 String    @id @default(uuid())
+  tenantId           String
+  period             String // YYYY-MM format
+  status             String    @default("DRAFT") // DRAFT | SIGNED
+  checklistTotal     Int       @default(0)
+  checklistFailing   Int       @default(0)
+  checklistOverdue   Int       @default(0)
+  criticalRisksOpen  Int       @default(0)
+  stagesCovered      Int       @default(0)
+  stageBreakdownJson Json? // snapshot of stage breakdown at generation time
+  gatingReason       String? // null = signable; non-null = blocked with reason
+  metricsJson        Json? // extended KPI snapshot at generation time
+  attestationsJson   Json? // [{ field, value }] recorded at sign time
+  generatedAt        DateTime
+  signedAt           DateTime?
+  signedBy           String?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  createdBy          String?
+  updatedBy          String?
+  deletedAt          DateTime?
+  isDeleted          Boolean   @default(false)
+
+  @@unique([tenantId, period], map: "aura_ta_compliance_certificate_unique")
+  @@index([tenantId], map: "aura_ta_compliance_certificate_tenant_idx")
+  @@index([tenantId, status], map: "aura_ta_compliance_certificate_status_idx")
+  @@map("aura_ta_compliance_certificate")
+}
+
+// ============================================================================
+// Recruitment Compliance (EPIC-04) — S01/S06/S10/S11/S14/S16
+// ============================================================================
+
+model RecruitmentCase {
+  id           String    @id @default(uuid())
+  tenantId     String
+  vacancyId    String
+  candidateId  String
+  ownerId      String
+  slaDays      Int       @default(30)
+  currentStage String    @default("APPLIED")
+  status       String    @default("OPEN")
+  openedAt     DateTime  @default(now())
+  closedAt     DateTime?
+  closedReason String?
+
+  @@index([tenantId])
+  @@index([vacancyId])
+  @@index([candidateId])
+  @@map("aura_recruitment_case")
+}
+
+model RecruitmentCandidateScreening {
+  id               String    @id @default(uuid())
+  tenantId         String
+  caseId           String
+  candidateId      String
+  score            Float
+  outcome          String
+  rejectionReason  String?
+  knockoutReason   String?
+  protectedFactors String[]  @default([])
+  detailJson       Json?
+  decidedById      String?
+  decidedAt        DateTime?
+
+  @@unique([tenantId, caseId], name: "aura_recruitment_candidate_screening_unique", map: "aura_recruitment_candidate_screening_unique")
+  @@map("aura_recruitment_candidate_screening")
+}
+
+model RecruitmentBgvCase {
+  id              String    @id @default(uuid())
+  tenantId        String
+  caseId          String
+  candidateId     String
+  vendorName      String?
+  consentCaptured Boolean   @default(false)
+  consentAt       DateTime?
+  consentRef      String?
+  status          String    @default("PENDING")
+  blockedReason   String?
+
+  @@unique([tenantId, caseId], name: "aura_recruitment_bgv_case_unique", map: "aura_recruitment_bgv_case_unique")
+  @@map("aura_recruitment_bgv_case")
+}
+
+model RecruitmentBgvCheck {
+  id                String    @id @default(uuid())
+  tenantId          String
+  bgvCaseId         String
+  checkType         String
+  result            String    @default("PENDING")
+  discrepancyAction String?
+  vendorRef         String?
+  evidenceUrl       String?
+  notes             String?
+  completedAt       DateTime?
+
+  @@unique([tenantId, bgvCaseId, checkType], name: "aura_recruitment_bgv_check_unique", map: "aura_recruitment_bgv_check_unique")
+  @@map("aura_recruitment_bgv_check")
+}
+
+model RecruitmentImmigrationEligibility {
+  id          String    @id @default(uuid())
+  tenantId    String
+  caseId      String
+  candidateId String
+  countryCode String
+  nationality String
+  profession  String?
+  banStatus   String    @default("UNKNOWN")
+  nocRequired Boolean   @default(false)
+  nocReceived Boolean   @default(false)
+  eligibility String    @default("PENDING")
+  checkedById String?
+  checkedAt   DateTime?
+
+  @@unique([tenantId, caseId], name: "aura_recruitment_imm_elig_unique", map: "aura_recruitment_imm_elig_unique")
+  @@map("aura_recruitment_immigration_eligibility")
+}
+
+model RecruitmentScreeningCriteria {
+  id            String  @id @default(uuid())
+  tenantId      String
+  vacancyId     String
+  criterionCode String
+  description   String
+  weight        Float   @default(1)
+  isMandatory   Boolean @default(false)
+
+  @@unique([tenantId, vacancyId, criterionCode], name: "aura_recruitment_screening_criteria_unique", map: "aura_recruitment_screening_criteria_unique")
+  @@map("aura_recruitment_screening_criteria")
+}
+
+model RecruitmentCandidateConsent {
+  id            String    @id @default(uuid())
+  tenantId      String
+  candidateId   String
+  lawfulBasis   String
+  purpose       String
+  retentionDays Int       @default(365)
+  evidenceRef   String?
+  metadata      Json?
+  consentedAt   DateTime  @default(now())
+  withdrawnAt   DateTime?
+
+  @@index([tenantId])
+  @@index([candidateId])
+  @@map("aura_recruitment_candidate_consent")
+}
+
+model RecruitmentAuditChecklist {
+  id           String    @id @default(uuid())
+  tenantId     String
+  period       String
+  itemCode     String
+  description  String
+  status       String    @default("PENDING")
+  evidenceRef  String?
+  notes        String?
+  reviewedById String?
+  reviewedAt   DateTime?
+
+  @@unique([tenantId, period, itemCode], name: "aura_recruitment_audit_checklist_unique", map: "aura_recruitment_audit_checklist_unique")
+  @@map("aura_recruitment_audit_checklist")
+}
+
+model RecruitmentRisk {
+  id             String    @id @default(uuid())
+  tenantId       String
+  code           String
+  description    String
+  likelihood     Int
+  impact         Int
+  band           String
+  mitigationPlan String?
+  ownerId        String?
+  status         String    @default("OPEN")
+  raisedAt       DateTime  @default(now())
+  mitigatedAt    DateTime?
+
+  @@unique([tenantId, code], name: "aura_recruitment_risk_unique", map: "aura_recruitment_risk_unique")
+  @@map("aura_recruitment_risk")
+}
+
+// ============================================================================
+// Workforce Extensions Models (Themes E, F, I — EPIC-19, EPIC-21, EPIC-22, EPIC-23, EPIC-24)
+// ============================================================================
+
+model ContractorAssignment {
+  id          String    @id @default(uuid())
+  tenantId    String
+  subjectId   String
+  subjectName String
+  domain      String
+  vendorId    String?
+  vendorName  String?
+  contractRef String?
+  siteId      String?
+  startDate   DateTime
+  endDate     DateTime?
+  status      String    @default("ACTIVE")
+  notes       String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@unique([tenantId, subjectId, domain, startDate], name: "aura_contractor_assignment_unique")
+  @@index([tenantId, status])
+  @@index([tenantId, domain])
+  @@index([tenantId, siteId])
+  @@map("aura_contractor_assignment")
+}
+
+model EmployeeLoanSchedule {
+  id             String   @id @default(uuid())
+  tenantId       String
+  employeeId     String
+  loanCode       String
+  principal      Float
+  annualRatePct  Float    @default(0)
+  installments   Int
+  monthlyPayment Float
+  balance        Float
+  startDate      DateTime
+  status         String   @default("ACTIVE")
+  notes          String?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@unique([tenantId, loanCode], name: "aura_employee_loan_schedule_unique")
+  @@index([tenantId, employeeId])
+  @@index([tenantId, status])
+  @@map("aura_employee_loan_schedule")
+}
+
+model UniformPpeIssuance {
+  id         String    @id @default(uuid())
+  tenantId   String
+  employeeId String
+  itemCode   String
+  itemLabel  String
+  category   String    @default("UNIFORM")
+  quantity   Int       @default(1)
+  issuedAt   DateTime  @default(now())
+  issuedBy   String?
+  returnedAt DateTime?
+  returnedBy String?
+  condition  String?
+  notes      String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+
+  @@index([tenantId, employeeId])
+  @@index([tenantId, category])
+  @@map("aura_uniform_ppe_issuance")
+}
+
+model AccommodationTransportRoute {
+  id                String   @id @default(uuid())
+  tenantId          String
+  siteId            String
+  routeCode         String
+  label             String
+  vehicleType       String   @default("BUS")
+  capacity          Int      @default(0)
+  departureFromSite String?
+  arrivalAtSite     String?
+  worksiteAddress   String?
+  distanceKm        Float?
+  isActive          Boolean  @default(true)
+  notes             String?
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  @@unique([tenantId, siteId, routeCode], name: "aura_accommodation_transport_route_unique")
+  @@index([tenantId, siteId])
+  @@map("aura_accommodation_transport_route")
+}
+
+model AccommodationClinic {
+  id                        String    @id @default(uuid())
+  tenantId                  String
+  siteId                    String
+  clinicCode                String
+  label                     String
+  isOnSite                  Boolean   @default(true)
+  nearestHospital           String?
+  nearestHospitalDistanceKm Float?
+  operatingHours            String?
+  doctorOnCall              Boolean   @default(false)
+  lastInspectionAt          DateTime?
+  lastInspectionResult      String?
+  isActive                  Boolean   @default(true)
+  notes                     String?
+  createdAt                 DateTime  @default(now())
+  updatedAt                 DateTime  @updatedAt
+
+  @@unique([tenantId, siteId, clinicCode], name: "aura_accommodation_clinic_unique")
+  @@index([tenantId, siteId])
+  @@map("aura_accommodation_clinic")
+}
+
+model AccommodationMaintenanceTicket {
+  id              String    @id @default(uuid())
+  tenantId        String
+  siteId          String
+  ticketCode      String
+  category        String
+  severity        String    @default("MEDIUM")
+  status          String    @default("OPEN")
+  description     String
+  reportedBy      String?
+  assignedTo      String?
+  reportedAt      DateTime  @default(now())
+  slaDueAt        DateTime?
+  resolvedAt      DateTime?
+  resolutionNotes String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  @@index([tenantId, siteId])
+  @@index([tenantId, status, severity])
+  @@map("aura_accommodation_maintenance_ticket")
+}
+
+model NurseSchedule {
+  id                   String    @id @default(uuid())
+  scheduleId           String    @unique
+  scheduleName         String
+  startDate            DateTime
+  endDate              DateTime
+  shifts               Json
+  staffingRequirements Json
+  status               String
+  publishedDate        DateTime?
+  createdBy            String
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
 }

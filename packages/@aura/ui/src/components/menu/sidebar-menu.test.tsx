@@ -343,7 +343,7 @@ describe('SidebarMenu', () => {
 
       render(<SidebarMenu collapsed={true} />);
 
-      const modules = screen.getAllByRole('generic').filter((el) =>
+      const modules = screen.getAllByRole('generic').filter((el: HTMLElement) =>
         el.className.includes('cursor-pointer')
       );
 
@@ -444,7 +444,7 @@ describe('SidebarMenu', () => {
 
       const employeeItem = screen.getByText('Employee Management').closest('div');
       const starButton = within(employeeItem!).getAllByRole('button').find(
-        (btn) => btn.title?.includes('favorite')
+        (btn: HTMLElement) => btn.title?.includes('favorite')
       );
 
       if (starButton) {
@@ -482,7 +482,7 @@ describe('SidebarMenu', () => {
       const buttons = within(employeeItem!).getAllByRole('button');
 
       // Should only have the link, no star button
-      const favoriteButtons = buttons.filter((btn) => btn.title?.includes('favorite'));
+      const favoriteButtons = buttons.filter((btn: HTMLElement) => btn.title?.includes('favorite'));
       expect(favoriteButtons.length).toBe(0);
     });
   });

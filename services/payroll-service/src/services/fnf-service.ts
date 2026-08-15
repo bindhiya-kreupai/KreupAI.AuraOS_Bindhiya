@@ -27,11 +27,9 @@
 
 import { z } from 'zod';
 import Decimal from 'decimal.js';
-import { PrismaClient } from '@prisma/client';
+import { prisma } from '@aura/database';
 import { indiaTDSService } from './india-tds-service';
 import { indiaPFService } from './india-pf-service';
-
-const prisma = new PrismaClient();
 
 // ---------------------------------------------------------------------------
 // Constants

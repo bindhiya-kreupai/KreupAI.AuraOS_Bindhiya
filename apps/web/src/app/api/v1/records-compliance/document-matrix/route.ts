@@ -43,3 +43,19 @@ export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext)
     return serverError('Failed to update document matrix', err);
   }
 });
+
+export const DELETE = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext) => {
+  if (!hasAny(ctx.permissions, 'records_compliance:manage', 'employee:manage')) return forbidden();
+  try {
+    const url = new URL(req.url);
+    const id = url.searchParams.get('id');
+    if (!id) return badRequest('id required');
+    await recordsDocumentMatrixService.delete(id, {
+      tenantId: ctx.user.tenantId,
+      userId: ctx.user.id,
+    });
+    return ok({ id }, 'Deleted');
+  } catch (err) {
+    return serverError('Failed to delete document matrix item', err);
+  }
+});

@@ -7,8 +7,10 @@ import * as Sentry from '@sentry/nextjs';
 
 const SENTRY_DSN = process.env.SENTRY_DSN;
 const SENTRY_ENVIRONMENT = process.env.SENTRY_ENVIRONMENT || 'development';
+const isBuildPhase = process.env.NEXT_PHASE === 'phase-production-build';
 
-Sentry.init({
+if (!isBuildPhase) {
+  Sentry.init({
   dsn: SENTRY_DSN,
   environment: SENTRY_ENVIRONMENT,
 
@@ -57,3 +59,4 @@ Sentry.init({
     'ValidationError',
   ],
 });
+}

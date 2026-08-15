@@ -25,7 +25,7 @@ export default function SioRegistrationsPage() {
   async function load() {
     const r = await fetch('/api/v1/sio-compliance/registrations');
     const p = await r.json();
-    if (p.success) setRegs(p.data ?? []);
+    if (p.success) setRegs(p.data?.items ?? []);
   }
   useEffect(() => {
     load();

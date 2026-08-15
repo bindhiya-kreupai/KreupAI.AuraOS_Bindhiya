@@ -44,7 +44,10 @@ export const POST = withEnhancedAuth(async (req: NextRequest, ctx: RouteContext)
         body.impact == null
       )
         return badRequest('riskCode, title, stage, category, likelihood, impact required');
-      return ok(await taRiskService.upsert(body, auth), 'Saved');
+
+      const { action, ...riskData } = body;
+
+      return ok(await taRiskService.upsert(riskData, auth), 'Saved');
     }
     if (body.action === 'close') {
       if (!body.id) return badRequest('id required');

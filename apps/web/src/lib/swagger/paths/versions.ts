@@ -226,7 +226,7 @@
  *                   example: Both "from" and "to" query parameters are required
  *                 message:
  *                   type: string
- *                   example: One or both versions are invalid. Valid versions: v1
+ *                   example: 'One or both versions are invalid. Valid versions: v1'
  *       500:
  *         description: Internal server error
  *         content:
