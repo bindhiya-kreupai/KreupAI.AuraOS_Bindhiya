@@ -1,13 +1,11 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { generateNonce, buildCspHeader } from '@/lib/security/csp';
+import { parseAndValidateCorsOrigins } from '@/lib/security/cors';
 
 // Allow-list of origins permitted to call /api/* with credentials.
 // Production tenants belong here; dev origins are allowed when NODE_ENV !== 'production'.
-const PROD_ORIGINS = (process.env.CORS_ALLOWED_ORIGINS ?? '')
-  .split(',')
-  .map((o) => o.trim())
-  .filter(Boolean);
+const PROD_ORIGINS = parseAndValidateCorsOrigins(process.env.CORS_ALLOWED_ORIGINS);
 
 const DEV_ORIGINS = [
   'http://localhost:3000',
