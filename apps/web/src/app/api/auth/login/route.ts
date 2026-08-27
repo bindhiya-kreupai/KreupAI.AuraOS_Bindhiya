@@ -170,14 +170,22 @@ export const POST = authRateLimit(async function (request: NextRequest) {
     try {
       const geoLocation = await resolveLocation(ipAddress);
       locationStr = formatLocation(geoLocation);
-    } catch (_) {}
+    } catch (err: any) {
+      logger.warn({ err, ipAddress }, 'Failed to resolve IP location — login proceeds');
+    }
 
     // Check if this is a known device (best-effort)
     const deviceFingerprint = fingerprint.hash;
     let isKnown = true;
     try {
       isKnown = await isKnownDevice(user.id, deviceFingerprint, prisma);
-    } catch (_) {}
+    } catch (err: any) {
+      logger.warn(
+        { err, userId: user.id },
+        'Failed to check known device status — assuming unknown device'
+      );
+      isKnown = false;
+    }
 
     // Create user session
     const session = await prisma.userSession.create({
@@ -193,7 +201,7 @@ export const POST = authRateLimit(async function (request: NextRequest) {
       },
     });
 
-    // Detect and log anomaly if new device (best-effort, never blocks login)
+    // Detect and log anomaly if new device (best-effort, never blocks login — errors logged at ERROR level per AOS-SEC-010)
     if (!isKnown) {
       try {
         const anomalyType = locationStr ? 'NEW_DEVICE' : 'NEW_DEVICE';
@@ -222,7 +230,18 @@ export const POST = authRateLimit(async function (request: NextRequest) {
           locationStr || 'Unknown',
           new Date().toLocaleString()
         );
-      } catch (_) {}
+      } catch (err: any) {
+        logger.error(
+          {
+            err,
+            userId: user.id,
+            email: user.email,
+            ipAddress,
+            device: userAgent.substring(0, 100),
+          },
+          'Failed to record or notify anomaly event for new device login — login proceeds'
+        );
+      }
     }
 
     // Generate tokens
