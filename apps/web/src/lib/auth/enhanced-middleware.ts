@@ -8,6 +8,7 @@ import type { JWTPayload } from './jwt';
 import { logger } from '@/lib/logger';
 import { createRateLimit, RateLimitPresets } from '@/lib/middleware/advanced-rate-limit';
 import { setAuthIdentifiers } from '@/lib/observability/request-context';
+import { enforceAutomaticTenantIsolation, CrossTenantAccessError } from './tenant-isolation';
 
 export interface EnhancedAuthContext {
   user: JWTPayload;
@@ -184,6 +185,31 @@ export function withEnhancedAuth<T = any>(
     // downstream log line carries them. No-op when called outside a request
     // scope (e.g. unit tests that drive the handler directly).
     setAuthIdentifiers(context!.user.tenantId, context!.user.userId);
+
+    // Enforce automatic tenant isolation at the middleware/wrapper level (AOS-SEC-011)
+    const isSuperAdmin =
+      context!.permissions?.includes('*' as any) ||
+      context!.roles?.includes('SUPER_ADMIN') ||
+      context!.user.tenantId === '*';
+
+    try {
+      enforceAutomaticTenantIsolation(request, context!.user.tenantId, isSuperAdmin);
+    } catch (err: any) {
+      if (err instanceof CrossTenantAccessError) {
+        logger.warn(
+          {
+            userId: context!.user.userId,
+            tenantId: context!.user.tenantId,
+            path: request.nextUrl.pathname,
+          },
+          'Automatic tenant isolation blocked cross-tenant request'
+        );
+        return NextResponse.json(
+          { success: false, error: err.message, code: 'E4031' },
+          { status: 403 }
+        );
+      }
+    }
 
     const isMutation = ['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method);
 
